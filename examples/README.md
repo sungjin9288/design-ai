@@ -17,6 +17,18 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-modal.md](component-modal.md) | Modal / Dialog / Sheet | Focus trap, scroll lock, keyboard contract, three variants in one spec (dialog/alert-dialog/sheet). |
 | [component-toast.md](component-toast.md) | Toast / Snackbar | Imperative API (`toast.success(...)`), promise wrapper, intent + duration matrix, persistent errors. |
 | [component-card.md](component-card.md) | Card | Composition slots, variants, interactive cards, block-link pattern, when NOT to use a card. |
+| [component-form.md](component-form.md) | Form (composition pattern) | Field/Label/Control/HelpText/ErrorText composition, Zod schema validation, multi-step, server-error mapping, accessibility wiring. |
+| [component-table.md](component-table.md) | Table / DataTable | Headless engine (TanStack), sort/select/paginate, density, mobile→card-list, sticky columns. |
+| [component-tabs.md](component-tabs.md) | Tabs | Underline / segmented / card / bottom-bar variants, WAI-ARIA tabs pattern, manual vs automatic activation. |
+| [component-datepicker.md](component-datepicker.md) | DatePicker | Single/range/dateTime/quickRange modes, Korean date formats, calendar grid keyboard contract, mobile bottom sheet. |
+| [component-select.md](component-select.md) | Select / Combobox | Single/multi/searchable/creatable/async, WAI-ARIA combobox pattern, Korean IME composition handling. |
+| [component-pagination.md](component-pagination.md) | Pagination | Numbered + Load More + simple variants, sibling/boundary algorithm, URL sync, accessibility. |
+
+### End-to-end deliverables
+
+| File | Skill | Demonstrates |
+| --- | --- | --- |
+| [dogfood-korean-fintech-system.md](dogfood-korean-fintech-system.md) | `design-system-builder` | Full design system bootstrap for a Korean fintech mobile app. Token cascade + foundations + component baseline + starter set + handoff. |
 
 ## How to use these
 
