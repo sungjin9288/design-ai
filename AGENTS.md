@@ -28,9 +28,14 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Visual style by product category | `knowledge/patterns/ui-reasoning.md`, `knowledge/patterns/styles-catalog.md` |
 | UX issues / pre-ship checklist | `knowledge/patterns/ux-guidelines.md` |
 | Brand reference / peer comparison | `knowledge/patterns/brand-references.md` |
+| Lists, feeds, infinite scroll, pull-to-refresh | `knowledge/patterns/list-and-feed.md` |
+| Mobile navigation (tab bar, drawer, top app bar) | `knowledge/patterns/mobile-navigation.md` |
+| Money display / amount input / currency rules | `knowledge/patterns/money-and-amount.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
+| React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
+| Korean payments (Toss, Kakao, Naver, 본인인증) | `knowledge/i18n/korean-payments.md` |
 | Korean app store submission | `knowledge/i18n/korean-publishing.md` |
 
 For reference quality of expected output, see [`examples/`](examples/) — worked outputs from each skill.
