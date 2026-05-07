@@ -60,7 +60,7 @@ design-ai/
 │
 ├── tools/               # Scripts that build/refresh the knowledge base
 │   ├── extractors/      # Pull tokens/components/patterns from refs/ into knowledge/
-│   ├── audit/           # Coverage audit (knowledge/COVERAGE.md generator)
+│   ├── audit/           # Coverage, frontmatter validation, link checker, CHANGELOG generator
 │   └── preview/         # HTML preview generator (token swatches + live components)
 │
 └── docs/                # How this system works
@@ -70,6 +70,8 @@ design-ai/
     ├── FIGMA-INTEGRATION.md     # Figma MCP, Variables, Code Connect workflows
     ├── TOKEN-SYNC.md            # Token sync between code, Figma, design-ai
     ├── CODEX-INTEGRATION.md     # Codex CLI deep-dive (skill invocation, MCP setup)
+    ├── CURSOR-INTEGRATION.md    # Cursor IDE setup (.cursorrules, @-mentions, MCP)
+    ├── AIDER-INTEGRATION.md     # Aider terminal pair-programmer setup
     ├── PLUGIN-PACKAGING.md      # Claude Code plugin packaging (current + future)
     ├── DOGFOOD-FINDINGS.md      # Self-critique from end-to-end validation
     └── ROADMAP.md

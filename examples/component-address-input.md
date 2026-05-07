@@ -164,7 +164,7 @@ Inherited from Input + Button. No new tokens.
 
 ## Korean considerations
 
-Per [`knowledge/i18n/korean-product-conventions.md`](../i18n/korean-product-conventions.md):
+Per [`knowledge/i18n/korean-product-conventions.md`](../knowledge/i18n/korean-product-conventions.md):
 
 - Always use Daum Postcode. Korean users expect it; free-form is broken.
 - Address-type defaults to 도로명 for modern apps (matches government standardization).

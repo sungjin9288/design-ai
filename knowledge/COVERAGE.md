@@ -14,10 +14,10 @@ generated_at: 2026-05-07
 | --- | --- | --- |
 | Knowledge files | 43 | 28 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 7 | 7 with verification phase |
-| Worked examples | 40 | |
+| Worked examples | 53 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 29 | **14.6% spec coverage** |
+| Components with worked spec | 37 | **18.6% spec coverage** |
 
 ## Knowledge by category
 
@@ -159,9 +159,12 @@ generated_at: 2026-05-07
 | File | Lines | Title |
 | --- | --- | --- |
 | [examples/component-accordion.md](../examples/component-accordion.md) | 229 | `Accordion` (Collapse) — spec |
+| [examples/component-account-card.md](../examples/component-account-card.md) | 284 | `AccountCard` (custom — Korean banking / fintech) — spec |
 | [examples/component-address-input.md](../examples/component-address-input.md) | 260 | `AddressInput` (custom — Korean) — spec |
+| [examples/component-affix.md](../examples/component-affix.md) | 190 | `Affix` (sticky positioning) — spec |
 | [examples/component-alert.md](../examples/component-alert.md) | 192 | `Alert` (Banner) — spec |
 | [examples/component-amount-input.md](../examples/component-amount-input.md) | 278 | `AmountInput` (custom) — spec |
+| [examples/component-autocomplete.md](../examples/component-autocomplete.md) | 199 | `AutoComplete` — spec |
 | [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
 | [examples/component-biometric-gate.md](../examples/component-biometric-gate.md) | 281 | `BiometricGate` (custom — Korean mobile fintech) — spec |
 | [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
@@ -169,6 +172,9 @@ generated_at: 2026-05-07
 | [examples/component-calendar.md](../examples/component-calendar.md) | 280 | `Calendar` (full month view) — spec |
 | [examples/component-card.md](../examples/component-card.md) | 233 | `Card` — spec |
 | [examples/component-carousel.md](../examples/component-carousel.md) | 266 | `Carousel` — spec |
+| [examples/component-cascader.md](../examples/component-cascader.md) | 135 | `Cascader` — spec |
+| [examples/component-category-picker.md](../examples/component-category-picker.md) | 271 | `CategoryPicker` (custom — Korean fintech / 가계부) — spec |
+| [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
@@ -176,6 +182,7 @@ generated_at: 2026-05-07
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
+| [examples/component-mention.md](../examples/component-mention.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
 | [examples/component-payment-brand-button.md](../examples/component-payment-brand-button.md) | 253 | `PaymentBrandButton` (custom — Korean) — spec |
@@ -184,16 +191,22 @@ generated_at: 2026-05-07
 | [examples/component-progress.md](../examples/component-progress.md) | 195 | `Progress` — spec |
 | [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
 | [examples/component-result.md](../examples/component-result.md) | 270 | `Result` + `Empty` — combined spec |
+| [examples/component-segmented.md](../examples/component-segmented.md) | 178 | `Segmented` (Toggle button group) — spec |
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
 | [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
+| [examples/component-spin.md](../examples/component-spin.md) | 173 | `Spin` (Spinner) — spec |
 | [examples/component-statistic.md](../examples/component-statistic.md) | 282 | `Statistic` — spec |
 | [examples/component-steps.md](../examples/component-steps.md) | 264 | `Steps` (Stepper) — spec |
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-tag-badge.md](../examples/component-tag-badge.md) | 309 | `Tag` + `Badge` — combined spec |
+| [examples/component-timeline.md](../examples/component-timeline.md) | 170 | `Timeline` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
 | [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
+| [examples/component-tour.md](../examples/component-tour.md) | 176 | `Tour` (in-product overlay tour) — spec |
+| [examples/component-transaction-list-item.md](../examples/component-transaction-list-item.md) | 243 | `TransactionListItem` (custom — Korean fintech / 가계부) — spec |
+| [examples/component-transfer.md](../examples/component-transfer.md) | 156 | `Transfer` (dual list) — spec |
 | [examples/component-tree.md](../examples/component-tree.md) | 297 | `Tree` (TreeView) — spec |
 | [examples/component-upload.md](../examples/component-upload.md) | 295 | `Upload` — spec |
 | [examples/dogfood-korean-fintech-system.md](../examples/dogfood-korean-fintech-system.md) | 433 | Dogfood: Korean fintech mobile app — design system bootstrap |
@@ -201,17 +214,20 @@ generated_at: 2026-05-07
 
 ## Component spec coverage
 
-**29 / 199 canonical components have a worked spec (14.6%)**
+**37 / 199 canonical components have a worked spec (18.6%)**
 
 Specs that match canonical names:
 
 - `accordion` → [examples/component-accordion.md](../examples/component-accordion.md)
+- `affix` → [examples/component-affix.md](../examples/component-affix.md)
 - `alert` → [examples/component-alert.md](../examples/component-alert.md)
 - `avatar` → [examples/component-avatar.md](../examples/component-avatar.md)
 - `breadcrumb` → [examples/component-breadcrumb.md](../examples/component-breadcrumb.md)
 - `button` → [examples/component-button.md](../examples/component-button.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
 - `carousel` → [examples/component-carousel.md](../examples/component-carousel.md)
+- `cascader` → [examples/component-cascader.md](../examples/component-cascader.md)
+- `color-picker` → [examples/component-color-picker.md](../examples/component-color-picker.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
 - `divider` → [examples/component-divider.md](../examples/component-divider.md)
 - `drawer` → [examples/component-drawer.md](../examples/component-drawer.md)
@@ -224,28 +240,38 @@ Specs that match canonical names:
 - `progress` → [examples/component-progress.md](../examples/component-progress.md)
 - `rate` → [examples/component-rate.md](../examples/component-rate.md)
 - `result` → [examples/component-result.md](../examples/component-result.md)
+- `segmented` → [examples/component-segmented.md](../examples/component-segmented.md)
 - `select` → [examples/component-select.md](../examples/component-select.md)
 - `skeleton` → [examples/component-skeleton.md](../examples/component-skeleton.md)
 - `slider` → [examples/component-slider.md](../examples/component-slider.md)
+- `spin` → [examples/component-spin.md](../examples/component-spin.md)
 - `statistic` → [examples/component-statistic.md](../examples/component-statistic.md)
 - `steps` → [examples/component-steps.md](../examples/component-steps.md)
 - `table` → [examples/component-table.md](../examples/component-table.md)
 - `tabs` → [examples/component-tabs.md](../examples/component-tabs.md)
+- `timeline` → [examples/component-timeline.md](../examples/component-timeline.md)
 - `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
+- `tour` → [examples/component-tour.md](../examples/component-tour.md)
+- `transfer` → [examples/component-transfer.md](../examples/component-transfer.md)
 - `tree` → [examples/component-tree.md](../examples/component-tree.md)
 - `upload` → [examples/component-upload.md](../examples/component-upload.md)
 
 Specs that don't match the canonical index (probably aliases — investigate):
 
+- `account-card`
 - `address-input`
 - `amount-input`
+- `autocomplete`
 - `biometric-gate`
 - `calendar`
+- `category-picker`
 - `form-controls`
+- `mention`
 - `payment-brand-button`
 - `payment-method-selector`
 - `tag-badge`
 - `toast`
+- `transaction-list-item`
 
 ## Extractors
 

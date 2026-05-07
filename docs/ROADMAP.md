@@ -51,6 +51,17 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 7 — Coverage push + automation tooling (v1.6) ✓ shipped
+
+- [x] **Cursor + Aider integration guides** (docs/CURSOR-INTEGRATION.md, docs/AIDER-INTEGRATION.md): `.cursorrules` template, `@`-mention patterns, Aider `--read` configuration, per-task aliases.
+- [x] **10 component specs** (Cascader, ColorPicker, Transfer, Spin, Segmented, AutoComplete, Mention, Timeline, Tour, Affix): coverage 14.6% → 19.6%.
+- [x] **3 Korean fintech custom specs**: CategoryPicker (가계부 emoji-first), TransactionListItem (high-volume row), AccountCard (banking card).
+- [x] **3 automation tools** (`tools/audit/`):
+  - `changelog-generate.py` — generates CHANGELOG.md from git log
+  - `frontmatter-check.py` — validates YAML frontmatter on knowledge files
+  - `link-check.py` — validates internal markdown links resolve
+- [x] AGENTS.md / examples/README / README updated. Knowledge: 43 → 43 (added 0 — all of v1.6 was examples + tooling). Examples: 40 → 53.
+
 ## Phase 6 — Token references + QA + integrations ✓ shipped (v1.5)
 
 - [x] 3 design token reference docs:

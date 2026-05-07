@@ -45,6 +45,16 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-carousel.md](component-carousel.md) | Carousel | When NOT to use. Multi-slide view, auto-play warnings, WAI-ARIA carousel pattern. |
 | [component-image.md](component-image.md) | Image | Wrapper with lazy load, aspect-ratio, fallback, lightbox, srcset, alt rules. |
 | [component-calendar.md](component-calendar.md) | Calendar (full month view) | Distinct from DatePicker. Event rendering, holiday/weekend Korean colors, view modes. |
+| [component-cascader.md](component-cascader.md) | Cascader (multi-level select) | 2–4 level hierarchy picker. When NOT to use (mobile drill-in instead). |
+| [component-color-picker.md](component-color-picker.md) | ColorPicker | HSV square + hue slider, hex/rgb/hsl/oklch inputs, presets, alpha. |
+| [component-transfer.md](component-transfer.md) | Transfer (dual list) | Permission/tag editor pattern. When NOT to use (Multi-Select instead). |
+| [component-spin.md](component-spin.md) | Spin (Spinner) | Indeterminate loading. Distinct from Skeleton/Progress. Delay to avoid flash, reduced motion. |
+| [component-segmented.md](component-segmented.md) | Segmented (toggle button group) | iOS-native pill, time/view filters, WAI-ARIA radiogroup pattern. |
+| [component-autocomplete.md](component-autocomplete.md) | AutoComplete | Free-text + suggestions. Distinct from Select. Korean IME composition handling. |
+| [component-mention.md](component-mention.md) | Mention (@-trigger) | Trigger char (@/#/:) opens picker, chip insertion. Storage formats, IME. |
+| [component-timeline.md](component-timeline.md) | Timeline | Sequential events: order tracking, activity feed, audit log. Status indicators. |
+| [component-tour.md](component-tour.md) | Tour (in-product overlay) | Step-by-step UI walkthrough. When NOT to use (most cases). |
+| [component-affix.md](component-affix.md) | Affix (sticky positioning) | When CSS `position: sticky` isn't enough. Container-scoped sticky. |
 
 ### Custom components (Korean fintech / commerce)
 
@@ -55,6 +65,9 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-biometric-gate.md](component-biometric-gate.md) | BiometricGate | Face ID / Touch ID / fingerprint gate for fintech app launch + sensitive flows. OS API integration, fallback to PIN. |
 | [component-payment-method-selector.md](component-payment-method-selector.md) | PaymentMethodSelector | Korean payment method selector. Audience-driven ordering (consumer vs B2B), saved cards, amount-based filtering. |
 | [component-payment-brand-button.md](component-payment-brand-button.md) | PaymentBrandButton | Brand-styled CTA for KakaoPay / NaverPay / Toss / Apple Pay / Samsung Pay. Official asset compliance. |
+| [component-category-picker.md](component-category-picker.md) | CategoryPicker | 가계부 emoji-first category selector. Horizontal pills / grid / list, custom category creation. |
+| [component-transaction-list-item.md](component-transaction-list-item.md) | TransactionListItem | Most-rendered row in 가계부 / banking. Tabular numerals, amount color semantics, status badges. |
+| [component-account-card.md](component-account-card.md) | AccountCard | Bank account card. Branded logo + masked number + balance. compact/default/hero variants. |
 
 ### End-to-end deliverables
 
