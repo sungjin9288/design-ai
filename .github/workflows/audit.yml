@@ -1,0 +1,64 @@
+name: Design-AI audit
+
+on:
+  pull_request:
+    paths:
+      - "knowledge/**"
+      - "examples/**"
+      - "skills/**"
+      - "agents/**"
+      - "commands/**"
+      - "tools/**"
+      - "docs/**"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "README.md"
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    name: Validate knowledge base
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Frontmatter check
+        run: python3 tools/audit/frontmatter-check.py
+
+      - name: Internal link check
+        run: python3 tools/audit/link-check.py
+
+      - name: Coverage report (regenerate + diff)
+        run: |
+          python3 tools/audit/check-coverage.py
+          # Verify the committed COVERAGE.md matches the regenerated one
+          if ! git diff --exit-code knowledge/COVERAGE.md; then
+            echo "::error::knowledge/COVERAGE.md is out of date. Run 'python3 tools/audit/check-coverage.py' and commit."
+            exit 1
+          fi
+
+      - name: Lint extractor scripts
+        run: |
+          python3 -m py_compile tools/extractors/*.py
+          python3 -m py_compile tools/audit/*.py
+          python3 -m py_compile tools/preview/*.py
+
+  size-budget:
+    runs-on: ubuntu-latest
+    name: Knowledge size budget
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify total knowledge size under 50K lines
+        run: |
+          TOTAL=$(find knowledge examples docs -name "*.md" | xargs wc -l | tail -1 | awk '{print $1}')
+          echo "Total: $TOTAL lines"
+          if [ "$TOTAL" -gt 50000 ]; then
+            echo "::warning::Knowledge base exceeds 50K lines ($TOTAL). Consider splitting or pruning."
+          fi

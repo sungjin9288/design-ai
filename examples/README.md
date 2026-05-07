@@ -55,6 +55,16 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-timeline.md](component-timeline.md) | Timeline | Sequential events: order tracking, activity feed, audit log. Status indicators. |
 | [component-tour.md](component-tour.md) | Tour (in-product overlay) | Step-by-step UI walkthrough. When NOT to use (most cases). |
 | [component-affix.md](component-affix.md) | Affix (sticky positioning) | When CSS `position: sticky` isn't enough. Container-scoped sticky. |
+| [component-float-button.md](component-float-button.md) | FloatButton (FAB) | Floating action button. Speed-dial menu, safe-area handling. |
+| [component-qrcode.md](component-qrcode.md) | QRCode | Encoding strings as QR. Error correction levels, center logo, color contrast. |
+| [component-splitter.md](component-splitter.md) | Splitter (resizable panel) | When CSS sticky isn't enough. IDE / 3-pane layouts. |
+| [component-anchor.md](component-anchor.md) | Anchor (scrollspy / TOC) | Side-rail nav for long-form content. Active section detection. |
+| [component-app-bar.md](component-app-bar.md) | AppBar (top app bar) | Persistent top header. iOS large-title variant, search overlay, sub-tabs. |
+| [component-layout.md](component-layout.md) | Layout (page chrome) | Header / Sidebar / Content / Footer slots. Responsive sider collapse. |
+| [component-input-otp.md](component-input-otp.md) | InputOTP (verification code) | Multi-cell digit input. Korean SMS verification flow, autocomplete=one-time-code. |
+| [component-watermark.md](component-watermark.md) | Watermark | Repeating overlay for sensitive content. Per-user trace, screenshot deterrent. |
+| [component-code.md](component-code.md) | Code (inline + block) | Monospace text + syntax highlighting + copy button. |
+| [component-typography.md](component-typography.md) | Typography (text primitive) | Variant-driven text. When NOT to use (Tailwind utility classes are usually clearer). |
 
 ### Custom components (Korean fintech / commerce)
 
@@ -68,6 +78,9 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-category-picker.md](component-category-picker.md) | CategoryPicker | 가계부 emoji-first category selector. Horizontal pills / grid / list, custom category creation. |
 | [component-transaction-list-item.md](component-transaction-list-item.md) | TransactionListItem | Most-rendered row in 가계부 / banking. Tabular numerals, amount color semantics, status badges. |
 | [component-account-card.md](component-account-card.md) | AccountCard | Bank account card. Branded logo + masked number + balance. compact/default/hero variants. |
+| [component-stock-chart.md](component-stock-chart.md) | StockChart | Korean inverted color convention (red=up, blue=down). Candle/line/area, crosshair, performance with canvas. |
+| [component-krw-amount.md](component-krw-amount.md) | KRWAmount (display-only) | Display counterpart to AmountInput. Comma vs Korean number format, sign, hero variant. |
+| [component-payment-receipt.md](component-payment-receipt.md) | PaymentReceipt | Korean receipt convention with dotted dividers, structured price breakdown, share/reorder actions. |
 
 ### End-to-end deliverables
 

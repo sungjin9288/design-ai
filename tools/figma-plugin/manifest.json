@@ -1,0 +1,15 @@
+{
+  "name": "design-ai token importer",
+  "id": "design-ai-token-importer",
+  "api": "1.0.0",
+  "main": "build/code.js",
+  "ui": "build/ui.html",
+  "editorType": ["figma"],
+  "capabilities": ["inspect"],
+  "permissions": ["currentuser"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "reasoning": "All token data is provided directly via the plugin UI; no network access needed."
+  }
+}
