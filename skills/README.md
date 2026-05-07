@@ -15,6 +15,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [ux-audit](ux-audit/) | Audit a screen, flow, or page against UX best practices and a11y. |
 | [design-critique](design-critique/) | Senior-designer feedback on a design proposal. |
 | [handoff-spec](handoff-spec/) | Produce a developer handoff document from a finalized design. |
+| [design-system-qa](design-system-qa/) | Audit a design system across 5 testing layers (types / tokens / contract / a11y / visual) and recommend CI integration. |
 
 ## Invoking a skill
 

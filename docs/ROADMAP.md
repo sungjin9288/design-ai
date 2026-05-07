@@ -51,6 +51,19 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 6 — Token references + QA + integrations ✓ shipped (v1.5)
+
+- [x] 3 design token reference docs:
+  - `knowledge/design-tokens/tailwind-v4.md` — OKLCH defaults, full color/spacing/typography/motion
+  - `knowledge/design-tokens/material-3.md` — HCT tonal palettes, container pattern, M3 type scale
+  - `knowledge/design-tokens/polaris-and-carbon.md` — Shopify + IBM enterprise reference
+- [x] New skill: `design-system-qa` — 5-layer test pyramid audit (TypeScript / token drift / contract / a11y / visual regression)
+- [x] `knowledge/patterns/design-system-qa.md` — full QA layer model
+- [x] `docs/CODEX-INTEGRATION.md` — Codex CLI deep-dive: skill invocation, slash command translation, MCP setup, token budget per task, common pitfalls
+- [x] `docs/PLUGIN-PACKAGING.md` — current symlink approach + future Claude Code plugin format, distribution channels, versioning, CI for releases
+- [x] AGENTS.md / skills/README / README updated. Skills: 6 → 7.
+- [x] Token references: 1 → 4. Knowledge: 39 → 43.
+
 ## Phase 5 — Coverage push + data viz + Korean fintech ✓ shipped (v1.4)
 
 - [x] 8 component specs: Tag+Badge, Tree, Statistic, Upload, Result+Empty, Carousel, Image, Calendar.

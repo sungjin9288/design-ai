@@ -69,6 +69,9 @@ design-ai/
     ├── USING.md                 # Per-agent setup (Codex, Claude Code, Cursor, Aider)
     ├── FIGMA-INTEGRATION.md     # Figma MCP, Variables, Code Connect workflows
     ├── TOKEN-SYNC.md            # Token sync between code, Figma, design-ai
+    ├── CODEX-INTEGRATION.md     # Codex CLI deep-dive (skill invocation, MCP setup)
+    ├── PLUGIN-PACKAGING.md      # Claude Code plugin packaging (current + future)
+    ├── DOGFOOD-FINDINGS.md      # Self-critique from end-to-end validation
     └── ROADMAP.md
 ```
 

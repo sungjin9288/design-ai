@@ -12,8 +12,8 @@ generated_at: 2026-05-07
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 39 | 24 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 6 | 6 with verification phase |
+| Knowledge files | 43 | 28 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 7 | 7 with verification phase |
 | Worked examples | 40 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
@@ -27,12 +27,12 @@ generated_at: 2026-05-07
 | `a11y` | 2 | 2 | 0 |
 | `colors` | 3 | 1 | 2 |
 | `components` | 2 | 0 | 2 |
-| `design-tokens` | 1 | 0 | 1 |
+| `design-tokens` | 4 | 3 | 1 |
 | `i18n` | 4 | 4 | 0 |
 | `icons` | 1 | 0 | 1 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 1 | 1 | 0 |
-| `patterns` | 18 | 12 | 6 |
+| `patterns` | 19 | 13 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `typography` | 3 | 1 | 2 |
 
@@ -43,7 +43,7 @@ generated_at: 2026-05-07
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 234 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 264 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 96 | hand-written | Design-AI principles |
 
 #### a11y
@@ -73,6 +73,9 @@ generated_at: 2026-05-07
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/design-tokens/ant-design.md](../knowledge/design-tokens/ant-design.md) | 121 | generated | Ant Design seed tokens |
+| [knowledge/design-tokens/material-3.md](../knowledge/design-tokens/material-3.md) | 232 | hand-written | Material Design 3 (Material You) |
+| [knowledge/design-tokens/polaris-and-carbon.md](../knowledge/design-tokens/polaris-and-carbon.md) | 228 | hand-written | Polaris and Carbon |
+| [knowledge/design-tokens/tailwind-v4.md](../knowledge/design-tokens/tailwind-v4.md) | 281 | hand-written | Tailwind CSS v4 default theme |
 
 #### i18n
 
@@ -109,6 +112,7 @@ generated_at: 2026-05-07
 | [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 266 | hand-written | Chart color encoding |
 | [knowledge/patterns/chart-types.md](../knowledge/patterns/chart-types.md) | 341 | generated | Chart type selection guide |
 | [knowledge/patterns/dashboard-composition.md](../knowledge/patterns/dashboard-composition.md) | 296 | hand-written | Dashboard composition |
+| [knowledge/patterns/design-system-qa.md](../knowledge/patterns/design-system-qa.md) | 353 | hand-written | Design system QA |
 | [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 260 | hand-written | Empty states |
 | [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 315 | hand-written | Error states |
 | [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 234 | hand-written | Form design patterns |
@@ -146,6 +150,7 @@ generated_at: 2026-05-07
 | [component-spec-writer](../skills/component-spec-writer/PLAYBOOK.md) | ✓ | ✓ | ✓ | ✓ | 169 |
 | [design-critique](../skills/design-critique/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 137 |
 | [design-system-builder](../skills/design-system-builder/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 218 |
+| [design-system-qa](../skills/design-system-qa/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 163 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 

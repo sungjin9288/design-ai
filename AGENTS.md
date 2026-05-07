@@ -25,7 +25,10 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Component API or anatomy | `knowledge/components/INDEX.md`, `knowledge/components/shadcn-registry.md` |
 | Layout / grid / spacing | `knowledge/layout/spacing-and-grid.md` |
 | Icons (library choice + common names) | `knowledge/icons/curated-sets.md` |
-| Token names / structure | `knowledge/design-tokens/ant-design.md` |
+| Token names / structure (Ant) | `knowledge/design-tokens/ant-design.md` |
+| Token reference — Tailwind v4 (OKLCH) | `knowledge/design-tokens/tailwind-v4.md` |
+| Token reference — Material 3 (HCT, dynamic theming) | `knowledge/design-tokens/material-3.md` |
+| Token reference — Polaris (Shopify) + Carbon (IBM) | `knowledge/design-tokens/polaris-and-carbon.md` |
 | Form design (fields, validation, multi-step) | `knowledge/patterns/form-design.md` |
 | Chart / data viz selection | `knowledge/patterns/chart-types.md` |
 | Landing page section order | `knowledge/patterns/landing-page-patterns.md` |
@@ -43,6 +46,7 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Dashboard composition (KPI / charts / table / responsive) | `knowledge/patterns/dashboard-composition.md` |
 | Chart color encoding (sequential / diverging / categorical) | `knowledge/patterns/chart-color-encoding.md` |
 | Real-time data UX (WebSocket / polling / optimistic / disconnection) | `knowledge/patterns/realtime-data.md` |
+| Design system QA (5-layer test pyramid: types/tokens/contract/a11y/visual) | `knowledge/patterns/design-system-qa.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
@@ -68,6 +72,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Audit this UI" | `skills/ux-audit/` |
 | "Critique this design" | `skills/design-critique/` |
 | "Write a dev handoff" | `skills/handoff-spec/` |
+| "Audit our design system QA / set up testing" | `skills/design-system-qa/` |
 
 ### 3. Cite sources
 
