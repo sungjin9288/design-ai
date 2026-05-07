@@ -25,4 +25,7 @@ python3 tools/extractors/awesome_design_mirror.py
 echo "==> Mirroring ui-ux-pro-max catalog"
 python3 tools/extractors/ui_ux_pro_max.py
 
+echo "==> Extracting ui-ux-pro-max extras (charts, icons, ui-reasoning, landing)"
+python3 tools/extractors/ui_ux_pro_max_extras.py
+
 echo "==> Done. See knowledge/ for outputs."

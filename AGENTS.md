@@ -18,11 +18,16 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 |---|---|
 | Pick colors / build a palette | `knowledge/colors/`, `knowledge/a11y/contrast.md` |
 | Type scale / font pairing | `knowledge/typography/` |
-| Component API or anatomy | `knowledge/components/<name>/` |
-| Layout / grid / spacing | `knowledge/layout/` |
-| Icons | `knowledge/icons/` |
-| Token names / structure | `knowledge/design-tokens/` |
-| UX flow / pattern | `knowledge/patterns/<pattern>/` |
+| Component API or anatomy | `knowledge/components/INDEX.md`, `knowledge/components/shadcn-registry.md` |
+| Layout / grid / spacing | `knowledge/layout/spacing-and-grid.md` |
+| Icons (library choice + common names) | `knowledge/icons/curated-sets.md` |
+| Token names / structure | `knowledge/design-tokens/ant-design.md` |
+| Form design (fields, validation, multi-step) | `knowledge/patterns/form-design.md` |
+| Chart / data viz selection | `knowledge/patterns/chart-types.md` |
+| Landing page section order | `knowledge/patterns/landing-page-patterns.md` |
+| Visual style by product category | `knowledge/patterns/ui-reasoning.md`, `knowledge/patterns/styles-catalog.md` |
+| UX issues / pre-ship checklist | `knowledge/patterns/ux-guidelines.md` |
+| Brand reference / peer comparison | `knowledge/patterns/brand-references.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
