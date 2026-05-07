@@ -20,7 +20,7 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-form.md](component-form.md) | Form (composition pattern) | Field/Label/Control/HelpText/ErrorText composition, Zod schema validation, multi-step, server-error mapping, accessibility wiring. |
 | [component-table.md](component-table.md) | Table / DataTable | Headless engine (TanStack), sort/select/paginate, density, mobile→card-list, sticky columns. |
 | [component-tabs.md](component-tabs.md) | Tabs | Underline / segmented / card / bottom-bar variants, WAI-ARIA tabs pattern, manual vs automatic activation. |
-| [component-datepicker.md](component-datepicker.md) | DatePicker | Single/range/dateTime/quickRange modes, Korean date formats, calendar grid keyboard contract, mobile bottom sheet. |
+| [component-date-picker.md](component-date-picker.md) | DatePicker | Single/range/dateTime/quickRange modes, Korean date formats, calendar grid keyboard contract, mobile bottom sheet. |
 | [component-select.md](component-select.md) | Select / Combobox | Single/multi/searchable/creatable/async, WAI-ARIA combobox pattern, Korean IME composition handling. |
 | [component-pagination.md](component-pagination.md) | Pagination | Numbered + Load More + simple variants, sibling/boundary algorithm, URL sync, accessibility. |
 

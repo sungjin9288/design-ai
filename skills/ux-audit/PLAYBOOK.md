@@ -116,6 +116,21 @@ A structured report:
 - [`knowledge/colors/color-theory.md`](../../knowledge/colors/color-theory.md)
 - [`knowledge/typography/type-scale-fundamentals.md`](../../knowledge/typography/type-scale-fundamentals.md)
 - [`knowledge/layout/spacing-and-grid.md`](../../knowledge/layout/spacing-and-grid.md)
+- [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md) — when auditing forms
+- [`knowledge/patterns/list-and-feed.md`](../../knowledge/patterns/list-and-feed.md) — when auditing feeds/lists
+- [`knowledge/patterns/mobile-navigation.md`](../../knowledge/patterns/mobile-navigation.md) — when auditing mobile nav
+- [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — Korean apps
+
+## Verification phase (run before declaring done)
+
+- [ ] Did I name the user goal at the top of the report?
+- [ ] Does every issue have a citation to a knowledge/ file or WCAG section?
+- [ ] Does every CRITICAL issue cite a specific WCAG criterion (e.g., 1.4.3, 2.4.7)?
+- [ ] Are issues sorted within each severity (most blocking first)?
+- [ ] Did I include a "things that work well" section (constructive balance)?
+- [ ] Is each fix recommendation actionable (not "consider improving")?
+- [ ] If platform-specific (mobile / KR): did I check the relevant convention file?
+- [ ] Are duplicate issues merged (not listed in both a11y and UX)?
 
 ## Done when
 
@@ -124,3 +139,4 @@ A structured report:
 - Every Critical issue has at least one knowledge/ or WCAG citation.
 - The report names the user goal up top.
 - The report is **specific** — no "could be improved" without a stated alternative.
+- The verification phase checklist passes.

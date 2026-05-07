@@ -115,6 +115,18 @@ End every critique with **one** recommendation. Not three, not five. The most im
 - [`knowledge/typography/type-scale-fundamentals.md`](../../knowledge/typography/type-scale-fundamentals.md)
 - [`knowledge/layout/spacing-and-grid.md`](../../knowledge/layout/spacing-and-grid.md)
 - [`knowledge/patterns/brand-references.md`](../../knowledge/patterns/brand-references.md) — for compare/contrast with peer brands.
+- [`knowledge/patterns/ui-reasoning.md`](../../knowledge/patterns/ui-reasoning.md) — category-level expectations vs the design
+
+## Verification phase (run before declaring done)
+
+- [ ] Did I open with the named problem (not visual feedback first)?
+- [ ] Does the hierarchy walk identify what the eye lands on 1st / 2nd / 3rd?
+- [ ] Did I praise specific things (not "looks great")?
+- [ ] Are craft observations actionable (specific element + specific change)?
+- [ ] Is the named tradeoff genuine (designer gave up something specific)?
+- [ ] Is there exactly **one** top recommendation in bold at the end?
+- [ ] No jargon a non-designer can't follow?
+- [ ] Did I critique the decision ("the CTA's blue blends"), not the designer ("you should")?
 
 ## Done when
 
@@ -122,3 +134,4 @@ End every critique with **one** recommendation. Not three, not five. The most im
 - Each observation is specific (a designer could act on it).
 - The critique is balanced (praise + concerns, not just concerns).
 - One top recommendation, not several.
+- The verification phase checklist passes.

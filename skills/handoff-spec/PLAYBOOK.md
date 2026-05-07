@@ -141,6 +141,21 @@ Don't leave decisions implicit. List anything ambiguous:
 - [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md)
 - [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md)
 - [`knowledge/layout/spacing-and-grid.md`](../../knowledge/layout/spacing-and-grid.md)
+- [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md) — animation specs
+- [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md) — when forms are involved
+- [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — Korean apps
+
+## Verification phase (run before declaring done)
+
+- [ ] Every screen has: purpose, entry/exit, layout, states, edge cases?
+- [ ] Every component is either a system reference OR has an inline sub-spec?
+- [ ] Are interactions documented as a table (element / trigger / action)?
+- [ ] Is responsive behavior named per breakpoint (xs / sm / md / lg / xl)?
+- [ ] Are a11y requirements explicit (semantic HTML, ARIA, keyboard, focus management)?
+- [ ] Are analytics events listed (or explicitly "none for v1")?
+- [ ] Are open questions listed (not implicit)?
+- [ ] Could an engineer implement without DM'ing the designer? (If unsure, you've left an open question.)
+- [ ] Are design tokens referenced by name, not inlined as hex?
 
 ## Done when
 
@@ -152,3 +167,4 @@ Don't leave decisions implicit. List anything ambiguous:
 - A11y requirements are explicit.
 - Open questions are listed (or "none").
 - An engineer would not need to ask design follow-up questions to implement.
+- The verification phase checklist passes.

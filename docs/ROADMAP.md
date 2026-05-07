@@ -16,38 +16,40 @@ Three commits. See `git log --oneline`.
 - [x] Dogfood validation: Korean fintech app design system bootstrap end-to-end
 - [x] Self-critique published as [`docs/DOGFOOD-FINDINGS.md`](DOGFOOD-FINDINGS.md)
 
-## Phase 2 — Depth (next)
+## Phase 2 — Depth ✓ shipped (v1.1)
 
-Driven by the dogfood findings.
+Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 
-### Knowledge gaps to fill
+### Knowledge gaps filled
 
-- [ ] `knowledge/patterns/money-and-amount.md` — fintech-essential. Currency display, amount input ergonomics, color semantics for ±, tabular numerals, rounding rules.
-- [ ] `knowledge/patterns/mobile-navigation.md` — bottom tab bar, top app bar, modal screen pattern, search behavior on mobile.
-- [ ] `knowledge/patterns/list-and-feed.md` — pull-to-refresh, infinite scroll, swipe actions, empty/loading/error/skeleton.
-- [ ] `knowledge/platforms/react-native.md` — RN-specific differences (StyleSheet, Pressable, no hover, NativeWind).
-- [ ] `knowledge/i18n/korean-payments.md` — split from the conventions doc. Toss / KakaoPay / NaverPay / 휴대폰결제 selection rules + integration patterns.
+- [x] `knowledge/patterns/money-and-amount.md` — currency display, amount input ergonomics, ± color semantics (separate axis from primary/error), Korean stock convention (red=up), tabular numerals, edge cases.
+- [x] `knowledge/patterns/mobile-navigation.md` — bottom tab bar, top app bar, drawer (when NOT), stack, back navigation contract, search patterns, sheets.
+- [x] `knowledge/patterns/list-and-feed.md` — list anatomy, settings/chat/transaction/search patterns, pull-to-refresh, infinite scroll vs Load More, empty/loading/error states, swipe actions, virtualization.
+- [x] `knowledge/platforms/react-native.md` — web↔RN gap matrix, token translation, Pressable, touch targets/hitSlop, safe area, keyboard handling, animations (Reanimated), Pretendard loading, navigation, common pitfalls.
+- [x] `knowledge/i18n/korean-payments.md` — vendor landscape, decision tree by product type, payment selector ordering, subscription disclosure, 청약철회, 본인인증, ESCROW, cost structure.
 
 ### More component specs (examples/)
 
-- [ ] Form (full pattern, not just inputs) — multi-field layout, validation orchestration
-- [ ] Table / DataTable — sort, filter, pagination, selection, cell types
-- [ ] Tabs — including bottom-tab-bar variant for mobile
-- [ ] DatePicker — calendar UI, range, Korean locale
-- [ ] Select / Combobox — including async loading
-- [ ] Pagination
+- [x] Form (composition pattern with Zod + react-hook-form)
+- [x] Table / DataTable (TanStack engine, mobile→card-list)
+- [x] Tabs (underline / segmented / card / bottom-bar in one spec)
+- [x] DatePicker (single / range / dateTime / quickRange, Korean formats)
+- [x] Select / Combobox (single/multi/searchable/creatable/async)
+- [x] Pagination (numbered / Load More / simple, URL sync)
 
 ### Skill upgrades
 
-- [ ] `color-palette` PLAYBOOK adds "mood → hue mapping" section.
-- [ ] `design-system-builder` PLAYBOOK adds "starter component set by category".
-- [ ] `handoff-spec` PLAYBOOK adds "system bootstrap handoff" sub-template.
-- [ ] All skills add a verification phase ("Did I cite at least one knowledge file per claim category?").
+- [x] `color-palette` PLAYBOOK — added "mood → hue mapping" section + differentiation check + Korean considerations + verification phase.
+- [x] `design-system-builder` PLAYBOOK — added "starter component set by category" with extension matrix for 8 product categories + verification phase.
+- [x] `component-spec-writer` PLAYBOOK — added verification phase (cite ≥ 2 references, all states, ARIA, keyboard, RN/IME conditional).
+- [x] `ux-audit` PLAYBOOK — verification phase (user goal stated, every issue cited, CRITICAL has WCAG section).
+- [x] `design-critique` PLAYBOOK — verification phase (problem-fit first, hierarchy walk, single recommendation).
+- [x] `handoff-spec` PLAYBOOK — verification phase (every screen, every component referenced or sub-spec'd).
 
 ### Tooling
 
-- [ ] `tools/audit/check-coverage.py` — coverage report (e.g., `12 / 199 components have worked specs`).
-- [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias).
+- [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
+- [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
 ## Phase 3 — Connective
 

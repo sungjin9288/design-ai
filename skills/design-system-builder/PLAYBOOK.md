@@ -91,18 +91,55 @@ Don't recommend more than one — pick the strongest fit and explain why.
 
 ### 7. List the starter component set
 
-A minimal v1 system needs:
+Pick the right starter set for the product category. Don't ship a 30-component v1 if 12 will do. Don't ship a 12-component v1 if you're building a fintech that needs AmountInput on day 1.
+
+#### Always-needed core (every system, no exceptions)
+
 - Button (3 sizes × 4 intents)
-- Input, Textarea, Select, Checkbox, Radio, Switch
+- Input, Textarea
+- Select / Combobox
+- Checkbox, Radio, Switch
 - Card
-- Modal, Drawer, Toast
-- Badge, Tag, Tooltip
-- Tabs, Breadcrumb, Pagination
-- Form (label, help-text, error-text, layout)
+- Modal / Sheet
+- Toast
+- Form (Field/Label/Control composition — see [examples/component-form.md](../../examples/component-form.md))
 - Alert (4 intents: info, success, warning, error)
 - Skeleton, EmptyState
+- Tooltip
+- Badge, Tag
 
-Mark each as **derived from baseline** or **custom**. The custom ones get spec'd via `component-spec-writer` next.
+#### Category-specific extensions
+
+| Category | Add to core |
+| --- | --- |
+| **Consumer mobile (B2C)** | Bottom-tab-bar, top-app-bar, list item primitives, pull-to-refresh, swipe actions, quick action sheet, biometric gate (KR fintech) |
+| **B2B SaaS / dashboard** | Table (TanStack), advanced filter bar, column visibility menu, bulk-action bar, breadcrumb, pagination, sidebar nav, command palette (`Cmd+K`) |
+| **Fintech consumer** | All consumer mobile + AmountInput, AmountDisplay (hero), TransactionListItem, AccountCard, CategoryPicker, PaymentMethodSelector, biometric gate, 본인인증 modal |
+| **E-commerce** | Product card grid, AddToCart button, QuantityStepper, Price (with discount), ImageGallery, ProductOptionPicker (size/color), CartSummary, Address autocomplete (Daum Postcode for KR) |
+| **Content / Publishing** | Article header, byline, table-of-contents, share menu, comment thread, reaction bar, related-articles list |
+| **Marketing / Landing** | Hero block, FeatureGrid, TestimonialCarousel, PricingCards, FAQ accordion, NewsletterCTA, Banner (announcement bar) |
+| **Productivity / Tools** | Sidebar with collapsible nav, command palette, keyboard-shortcut display, progress bar, activity log, mention picker |
+| **Social / Community** | Post composer, FeedItem, reactions, comment thread, mention/hashtag autocomplete, infinite-scroll feed, follow button |
+| **Health / Wellness** | Tracker chart (line + area), goal progress ring, streak indicator, reminder card, log entry list |
+
+#### Marked component status
+
+Format the list as:
+
+```
+| Component | Status | Source |
+| --- | --- | --- |
+| Button | derived | shadcn-ui baseline + token override |
+| Input | derived | shadcn-ui baseline |
+| AmountInput | custom | spec via `component-spec-writer` (Phase 2) |
+| TransactionListItem | custom | spec via `component-spec-writer` (Phase 2) |
+```
+
+The custom ones go on the **Phase 2** spec list to be authored next via `component-spec-writer`.
+
+#### Worked example
+
+For a Korean fintech consumer app, the starter set is articulated in [`examples/dogfood-korean-fintech-system.md`](../../examples/dogfood-korean-fintech-system.md). Use it as a structural reference.
 
 ### 8. Output structure
 
@@ -151,11 +188,31 @@ Before declaring done, verify:
 - [`knowledge/layout/spacing-and-grid.md`](../../knowledge/layout/spacing-and-grid.md)
 - [`knowledge/design-tokens/ant-design.md`](../../knowledge/design-tokens/ant-design.md)
 - [`knowledge/components/INDEX.md`](../../knowledge/components/INDEX.md)
+- [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md)
+- [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md) (Korean content)
+- [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) (Korean content)
+- [`knowledge/platforms/react-native.md`](../../knowledge/platforms/react-native.md) (RN target)
+
+## Verification phase (run before declaring done)
+
+- [ ] Did I cite at least one knowledge file per major domain (color, typography, spacing, motion)?
+- [ ] Are tokens named by **role** in the semantic layer, not by hex value?
+- [ ] Does the contrast matrix flag pass/fail for every UI-relevant pair?
+- [ ] Light AND dark are both populated (when both requested)?
+- [ ] Type scale has line-height AND weight AND letter-spacing?
+- [ ] If Korean content: did I apply +10% line-height bump? Recommend Pretendard?
+- [ ] If RN target: did I provide tokens as numbers (not strings)?
+- [ ] Did I pick exactly **one** component baseline with rationale (not multiple)?
+- [ ] Is the starter set sized for the product category (consumer mobile vs B2B SaaS)?
+- [ ] Does each starter component have a status (derived / custom)?
+- [ ] Did I include foundations docs (color, type, spacing, motion, iconography)?
+- [ ] Is the engineering hand-off list specific (commands, configs, vendor SDKs)?
 
 ## Done when
 
 - Token files in the requested format(s).
 - Foundations docs cover color, type, spacing, motion, iconography.
 - Component baseline is named with one-paragraph rationale.
-- Starter component list with derived/custom labels.
+- Starter component list with derived/custom labels and category-appropriate scope.
 - A consumer (frontend dev) can import and start building without questions.
+- The verification phase checklist passes.

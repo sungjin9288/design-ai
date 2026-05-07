@@ -132,7 +132,26 @@ Use [TEMPLATE.md](TEMPLATE.md). Verify:
 - [`knowledge/components/INDEX.md`](../../knowledge/components/INDEX.md)
 - [`knowledge/components/shadcn-registry.md`](../../knowledge/components/shadcn-registry.md)
 - [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md)
+- [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md)
+- [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md) — for animation specs
+- [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md) — when Korean IME is relevant
+- [`knowledge/platforms/react-native.md`](../../knowledge/platforms/react-native.md) — when target is RN
 - Source files in `refs/` (cite the exact paths).
+- Existing worked specs in [`examples/`](../../examples/) — reference for shape and depth.
+
+## Verification phase (run before declaring done)
+
+- [ ] Did I cite at least 2 of the 3 reference libraries (Ant / MUI / shadcn)?
+- [ ] Are API choices explained ("API choices made" section) — not just listed?
+- [ ] Do all states (default/hover/focus/active/disabled/loading/error) have visual rules?
+- [ ] Is every keyboard interaction listed for the WAI-ARIA pattern this component implements?
+- [ ] Are the required ARIA attributes spelled out (not just "use ARIA")?
+- [ ] Is there a touch-target size note (≥ 44pt mobile / ≥ 24px web AA)?
+- [ ] Does the spec address reduced-motion handling?
+- [ ] Are at least 3 edge cases covered (empty, long content, RTL, etc.)?
+- [ ] Does the "Don't" section have at least 2 specific misuses?
+- [ ] If RN-targeted: are tokens as numbers and is `Pressable` used (not `<button>`)?
+- [ ] If Korean-relevant input: is IME composition handling addressed?
 
 ## Done when
 
@@ -147,3 +166,4 @@ Use [TEMPLATE.md](TEMPLATE.md). Verify:
 - Code example.
 - Edge cases section.
 - "Don't" section.
+- The verification phase checklist passes.
