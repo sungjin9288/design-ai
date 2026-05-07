@@ -1,0 +1,1464 @@
+{
+  "_registry": {
+    "shadcn": {
+      "name": "_registry",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/_registry.ts"
+    }
+  },
+  "accordion": {
+    "ant": {
+      "name": "collapse",
+      "path": "refs/ant-design/components/collapse"
+    },
+    "mui": {
+      "name": "Collapse",
+      "path": "refs/mui/packages/mui-material/src/Collapse"
+    },
+    "shadcn": {
+      "name": "accordion",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx"
+    }
+  },
+  "accordion-actions": {
+    "mui": {
+      "name": "AccordionActions",
+      "path": "refs/mui/packages/mui-material/src/AccordionActions"
+    }
+  },
+  "accordion-details": {
+    "mui": {
+      "name": "AccordionDetails",
+      "path": "refs/mui/packages/mui-material/src/AccordionDetails"
+    }
+  },
+  "accordion-summary": {
+    "mui": {
+      "name": "AccordionSummary",
+      "path": "refs/mui/packages/mui-material/src/AccordionSummary"
+    }
+  },
+  "affix": {
+    "ant": {
+      "name": "affix",
+      "path": "refs/ant-design/components/affix"
+    }
+  },
+  "alert": {
+    "ant": {
+      "name": "alert",
+      "path": "refs/ant-design/components/alert"
+    },
+    "mui": {
+      "name": "Alert",
+      "path": "refs/mui/packages/mui-material/src/Alert"
+    },
+    "shadcn": {
+      "name": "alert",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert.tsx"
+    }
+  },
+  "alert-dialog": {
+    "shadcn": {
+      "name": "alert-dialog",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert-dialog.tsx"
+    }
+  },
+  "alert-title": {
+    "mui": {
+      "name": "AlertTitle",
+      "path": "refs/mui/packages/mui-material/src/AlertTitle"
+    }
+  },
+  "anchor": {
+    "ant": {
+      "name": "anchor",
+      "path": "refs/ant-design/components/anchor"
+    }
+  },
+  "app": {
+    "ant": {
+      "name": "app",
+      "path": "refs/ant-design/components/app"
+    }
+  },
+  "app-bar": {
+    "mui": {
+      "name": "AppBar",
+      "path": "refs/mui/packages/mui-material/src/AppBar"
+    }
+  },
+  "aspect-ratio": {
+    "shadcn": {
+      "name": "aspect-ratio",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/aspect-ratio.tsx"
+    }
+  },
+  "auto-complete": {
+    "ant": {
+      "name": "auto-complete",
+      "path": "refs/ant-design/components/auto-complete"
+    },
+    "mui": {
+      "name": "Autocomplete",
+      "path": "refs/mui/packages/mui-material/src/Autocomplete"
+    }
+  },
+  "avatar": {
+    "ant": {
+      "name": "avatar",
+      "path": "refs/ant-design/components/avatar"
+    },
+    "mui": {
+      "name": "Avatar",
+      "path": "refs/mui/packages/mui-material/src/Avatar"
+    },
+    "shadcn": {
+      "name": "avatar",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx"
+    }
+  },
+  "avatar-group": {
+    "mui": {
+      "name": "AvatarGroup",
+      "path": "refs/mui/packages/mui-material/src/AvatarGroup"
+    }
+  },
+  "back-top": {
+    "ant": {
+      "name": "back-top",
+      "path": "refs/ant-design/components/back-top"
+    },
+    "mui": {
+      "name": "Fab",
+      "path": "refs/mui/packages/mui-material/src/Fab"
+    }
+  },
+  "backdrop": {
+    "mui": {
+      "name": "Backdrop",
+      "path": "refs/mui/packages/mui-material/src/Backdrop"
+    }
+  },
+  "badge": {
+    "ant": {
+      "name": "badge",
+      "path": "refs/ant-design/components/badge"
+    },
+    "mui": {
+      "name": "Badge",
+      "path": "refs/mui/packages/mui-material/src/Badge"
+    },
+    "shadcn": {
+      "name": "badge",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx"
+    }
+  },
+  "bottom-navigation": {
+    "mui": {
+      "name": "BottomNavigation",
+      "path": "refs/mui/packages/mui-material/src/BottomNavigation"
+    }
+  },
+  "bottom-navigation-action": {
+    "mui": {
+      "name": "BottomNavigationAction",
+      "path": "refs/mui/packages/mui-material/src/BottomNavigationAction"
+    }
+  },
+  "box": {
+    "mui": {
+      "name": "Box",
+      "path": "refs/mui/packages/mui-material/src/Box"
+    }
+  },
+  "breadcrumb": {
+    "ant": {
+      "name": "breadcrumb",
+      "path": "refs/ant-design/components/breadcrumb"
+    },
+    "mui": {
+      "name": "Breadcrumbs",
+      "path": "refs/mui/packages/mui-material/src/Breadcrumbs"
+    },
+    "shadcn": {
+      "name": "breadcrumb",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/breadcrumb.tsx"
+    }
+  },
+  "button": {
+    "ant": {
+      "name": "button",
+      "path": "refs/ant-design/components/button"
+    },
+    "mui": {
+      "name": "Button",
+      "path": "refs/mui/packages/mui-material/src/Button"
+    },
+    "shadcn": {
+      "name": "button",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx"
+    }
+  },
+  "button-base": {
+    "mui": {
+      "name": "ButtonBase",
+      "path": "refs/mui/packages/mui-material/src/ButtonBase"
+    }
+  },
+  "button-group": {
+    "mui": {
+      "name": "ButtonGroup",
+      "path": "refs/mui/packages/mui-material/src/ButtonGroup"
+    },
+    "shadcn": {
+      "name": "button-group",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button-group.tsx"
+    }
+  },
+  "card": {
+    "ant": {
+      "name": "card",
+      "path": "refs/ant-design/components/card"
+    },
+    "mui": {
+      "name": "Card",
+      "path": "refs/mui/packages/mui-material/src/Card"
+    },
+    "shadcn": {
+      "name": "card",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/card.tsx"
+    }
+  },
+  "card-action-area": {
+    "mui": {
+      "name": "CardActionArea",
+      "path": "refs/mui/packages/mui-material/src/CardActionArea"
+    }
+  },
+  "card-actions": {
+    "mui": {
+      "name": "CardActions",
+      "path": "refs/mui/packages/mui-material/src/CardActions"
+    }
+  },
+  "card-content": {
+    "mui": {
+      "name": "CardContent",
+      "path": "refs/mui/packages/mui-material/src/CardContent"
+    }
+  },
+  "card-header": {
+    "mui": {
+      "name": "CardHeader",
+      "path": "refs/mui/packages/mui-material/src/CardHeader"
+    }
+  },
+  "card-media": {
+    "mui": {
+      "name": "CardMedia",
+      "path": "refs/mui/packages/mui-material/src/CardMedia"
+    }
+  },
+  "carousel": {
+    "ant": {
+      "name": "carousel",
+      "path": "refs/ant-design/components/carousel"
+    },
+    "shadcn": {
+      "name": "carousel",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/carousel.tsx"
+    }
+  },
+  "cascader": {
+    "ant": {
+      "name": "cascader",
+      "path": "refs/ant-design/components/cascader"
+    }
+  },
+  "chart": {
+    "shadcn": {
+      "name": "chart",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/chart.tsx"
+    }
+  },
+  "checkbox": {
+    "ant": {
+      "name": "checkbox",
+      "path": "refs/ant-design/components/checkbox"
+    },
+    "mui": {
+      "name": "Checkbox",
+      "path": "refs/mui/packages/mui-material/src/Checkbox"
+    },
+    "shadcn": {
+      "name": "checkbox",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/checkbox.tsx"
+    }
+  },
+  "class-name": {
+    "mui": {
+      "name": "className",
+      "path": "refs/mui/packages/mui-material/src/className"
+    }
+  },
+  "click-away-listener": {
+    "mui": {
+      "name": "ClickAwayListener",
+      "path": "refs/mui/packages/mui-material/src/ClickAwayListener"
+    }
+  },
+  "col": {
+    "ant": {
+      "name": "col",
+      "path": "refs/ant-design/components/col"
+    }
+  },
+  "collapsible": {
+    "shadcn": {
+      "name": "collapsible",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/collapsible.tsx"
+    }
+  },
+  "color-picker": {
+    "ant": {
+      "name": "color-picker",
+      "path": "refs/ant-design/components/color-picker"
+    }
+  },
+  "colors": {
+    "mui": {
+      "name": "colors",
+      "path": "refs/mui/packages/mui-material/src/colors"
+    }
+  },
+  "combobox": {
+    "shadcn": {
+      "name": "combobox",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/combobox.tsx"
+    }
+  },
+  "command": {
+    "shadcn": {
+      "name": "command",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/command.tsx"
+    }
+  },
+  "config-provider": {
+    "ant": {
+      "name": "config-provider",
+      "path": "refs/ant-design/components/config-provider"
+    }
+  },
+  "context-menu": {
+    "shadcn": {
+      "name": "context-menu",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/context-menu.tsx"
+    }
+  },
+  "css-baseline": {
+    "mui": {
+      "name": "CssBaseline",
+      "path": "refs/mui/packages/mui-material/src/CssBaseline"
+    }
+  },
+  "dark-scrollbar": {
+    "mui": {
+      "name": "darkScrollbar",
+      "path": "refs/mui/packages/mui-material/src/darkScrollbar"
+    }
+  },
+  "date-picker": {
+    "ant": {
+      "name": "date-picker",
+      "path": "refs/ant-design/components/date-picker"
+    },
+    "shadcn": {
+      "name": "calendar",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx"
+    }
+  },
+  "descriptions": {
+    "ant": {
+      "name": "descriptions",
+      "path": "refs/ant-design/components/descriptions"
+    }
+  },
+  "dialog-actions": {
+    "mui": {
+      "name": "DialogActions",
+      "path": "refs/mui/packages/mui-material/src/DialogActions"
+    }
+  },
+  "dialog-content": {
+    "mui": {
+      "name": "DialogContent",
+      "path": "refs/mui/packages/mui-material/src/DialogContent"
+    }
+  },
+  "dialog-content-text": {
+    "mui": {
+      "name": "DialogContentText",
+      "path": "refs/mui/packages/mui-material/src/DialogContentText"
+    }
+  },
+  "dialog-title": {
+    "mui": {
+      "name": "DialogTitle",
+      "path": "refs/mui/packages/mui-material/src/DialogTitle"
+    }
+  },
+  "direction": {
+    "shadcn": {
+      "name": "direction",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/direction.tsx"
+    }
+  },
+  "divider": {
+    "ant": {
+      "name": "divider",
+      "path": "refs/ant-design/components/divider"
+    },
+    "mui": {
+      "name": "Divider",
+      "path": "refs/mui/packages/mui-material/src/Divider"
+    }
+  },
+  "drawer": {
+    "ant": {
+      "name": "drawer",
+      "path": "refs/ant-design/components/drawer"
+    },
+    "mui": {
+      "name": "Drawer",
+      "path": "refs/mui/packages/mui-material/src/Drawer"
+    },
+    "shadcn": {
+      "name": "drawer",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/drawer.tsx"
+    }
+  },
+  "dropdown": {
+    "ant": {
+      "name": "dropdown",
+      "path": "refs/ant-design/components/dropdown"
+    }
+  },
+  "empty": {
+    "ant": {
+      "name": "empty",
+      "path": "refs/ant-design/components/empty"
+    },
+    "shadcn": {
+      "name": "empty",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/empty.tsx"
+    }
+  },
+  "fade": {
+    "mui": {
+      "name": "Fade",
+      "path": "refs/mui/packages/mui-material/src/Fade"
+    }
+  },
+  "field": {
+    "shadcn": {
+      "name": "field",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/field.tsx"
+    }
+  },
+  "filled-input": {
+    "mui": {
+      "name": "FilledInput",
+      "path": "refs/mui/packages/mui-material/src/FilledInput"
+    }
+  },
+  "flex": {
+    "ant": {
+      "name": "flex",
+      "path": "refs/ant-design/components/flex"
+    }
+  },
+  "float-button": {
+    "ant": {
+      "name": "float-button",
+      "path": "refs/ant-design/components/float-button"
+    }
+  },
+  "form": {
+    "ant": {
+      "name": "form",
+      "path": "refs/ant-design/components/form"
+    },
+    "shadcn": {
+      "name": "form",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/form.tsx"
+    }
+  },
+  "form-control": {
+    "mui": {
+      "name": "FormControl",
+      "path": "refs/mui/packages/mui-material/src/FormControl"
+    }
+  },
+  "form-control-label": {
+    "mui": {
+      "name": "FormControlLabel",
+      "path": "refs/mui/packages/mui-material/src/FormControlLabel"
+    }
+  },
+  "form-group": {
+    "mui": {
+      "name": "FormGroup",
+      "path": "refs/mui/packages/mui-material/src/FormGroup"
+    }
+  },
+  "form-helper-text": {
+    "mui": {
+      "name": "FormHelperText",
+      "path": "refs/mui/packages/mui-material/src/FormHelperText"
+    }
+  },
+  "form-label": {
+    "mui": {
+      "name": "FormLabel",
+      "path": "refs/mui/packages/mui-material/src/FormLabel"
+    }
+  },
+  "generate-utility-classes": {
+    "mui": {
+      "name": "generateUtilityClasses",
+      "path": "refs/mui/packages/mui-material/src/generateUtilityClasses"
+    }
+  },
+  "grid": {
+    "ant": {
+      "name": "grid",
+      "path": "refs/ant-design/components/grid"
+    },
+    "mui": {
+      "name": "Grid",
+      "path": "refs/mui/packages/mui-material/src/Grid"
+    }
+  },
+  "grow": {
+    "mui": {
+      "name": "Grow",
+      "path": "refs/mui/packages/mui-material/src/Grow"
+    }
+  },
+  "hover-card": {
+    "shadcn": {
+      "name": "hover-card",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/hover-card.tsx"
+    }
+  },
+  "icon": {
+    "ant": {
+      "name": "icon",
+      "path": "refs/ant-design/components/icon"
+    },
+    "mui": {
+      "name": "Icon",
+      "path": "refs/mui/packages/mui-material/src/Icon"
+    }
+  },
+  "icon-button": {
+    "mui": {
+      "name": "IconButton",
+      "path": "refs/mui/packages/mui-material/src/IconButton"
+    }
+  },
+  "image": {
+    "ant": {
+      "name": "image",
+      "path": "refs/ant-design/components/image"
+    }
+  },
+  "image-list": {
+    "mui": {
+      "name": "ImageList",
+      "path": "refs/mui/packages/mui-material/src/ImageList"
+    }
+  },
+  "image-list-item": {
+    "mui": {
+      "name": "ImageListItem",
+      "path": "refs/mui/packages/mui-material/src/ImageListItem"
+    }
+  },
+  "image-list-item-bar": {
+    "mui": {
+      "name": "ImageListItemBar",
+      "path": "refs/mui/packages/mui-material/src/ImageListItemBar"
+    }
+  },
+  "input": {
+    "ant": {
+      "name": "input",
+      "path": "refs/ant-design/components/input"
+    },
+    "mui": {
+      "name": "TextField",
+      "path": "refs/mui/packages/mui-material/src/TextField"
+    },
+    "shadcn": {
+      "name": "input",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input.tsx"
+    }
+  },
+  "input-adornment": {
+    "mui": {
+      "name": "InputAdornment",
+      "path": "refs/mui/packages/mui-material/src/InputAdornment"
+    }
+  },
+  "input-base": {
+    "mui": {
+      "name": "InputBase",
+      "path": "refs/mui/packages/mui-material/src/InputBase"
+    }
+  },
+  "input-group": {
+    "shadcn": {
+      "name": "input-group",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input-group.tsx"
+    }
+  },
+  "input-label": {
+    "mui": {
+      "name": "InputLabel",
+      "path": "refs/mui/packages/mui-material/src/InputLabel"
+    }
+  },
+  "input-number": {
+    "ant": {
+      "name": "input-number",
+      "path": "refs/ant-design/components/input-number"
+    }
+  },
+  "input-otp": {
+    "shadcn": {
+      "name": "input-otp",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input-otp.tsx"
+    }
+  },
+  "item": {
+    "shadcn": {
+      "name": "item",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/item.tsx"
+    }
+  },
+  "kbd": {
+    "shadcn": {
+      "name": "kbd",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/kbd.tsx"
+    }
+  },
+  "label": {
+    "shadcn": {
+      "name": "label",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/label.tsx"
+    }
+  },
+  "layout": {
+    "ant": {
+      "name": "layout",
+      "path": "refs/ant-design/components/layout"
+    },
+    "mui": {
+      "name": "Container",
+      "path": "refs/mui/packages/mui-material/src/Container"
+    }
+  },
+  "link": {
+    "mui": {
+      "name": "Link",
+      "path": "refs/mui/packages/mui-material/src/Link"
+    }
+  },
+  "list": {
+    "ant": {
+      "name": "list",
+      "path": "refs/ant-design/components/list"
+    },
+    "mui": {
+      "name": "List",
+      "path": "refs/mui/packages/mui-material/src/List"
+    }
+  },
+  "list-item": {
+    "mui": {
+      "name": "ListItem",
+      "path": "refs/mui/packages/mui-material/src/ListItem"
+    }
+  },
+  "list-item-avatar": {
+    "mui": {
+      "name": "ListItemAvatar",
+      "path": "refs/mui/packages/mui-material/src/ListItemAvatar"
+    }
+  },
+  "list-item-button": {
+    "mui": {
+      "name": "ListItemButton",
+      "path": "refs/mui/packages/mui-material/src/ListItemButton"
+    }
+  },
+  "list-item-icon": {
+    "mui": {
+      "name": "ListItemIcon",
+      "path": "refs/mui/packages/mui-material/src/ListItemIcon"
+    }
+  },
+  "list-item-secondary-action": {
+    "mui": {
+      "name": "ListItemSecondaryAction",
+      "path": "refs/mui/packages/mui-material/src/ListItemSecondaryAction"
+    }
+  },
+  "list-item-text": {
+    "mui": {
+      "name": "ListItemText",
+      "path": "refs/mui/packages/mui-material/src/ListItemText"
+    }
+  },
+  "list-subheader": {
+    "mui": {
+      "name": "ListSubheader",
+      "path": "refs/mui/packages/mui-material/src/ListSubheader"
+    }
+  },
+  "locale": {
+    "ant": {
+      "name": "locale",
+      "path": "refs/ant-design/components/locale"
+    },
+    "mui": {
+      "name": "locale",
+      "path": "refs/mui/packages/mui-material/src/locale"
+    }
+  },
+  "masonry": {
+    "ant": {
+      "name": "masonry",
+      "path": "refs/ant-design/components/masonry"
+    }
+  },
+  "mentions": {
+    "ant": {
+      "name": "mentions",
+      "path": "refs/ant-design/components/mentions"
+    }
+  },
+  "menu": {
+    "ant": {
+      "name": "menu",
+      "path": "refs/ant-design/components/menu"
+    },
+    "mui": {
+      "name": "Menu",
+      "path": "refs/mui/packages/mui-material/src/Menu"
+    },
+    "shadcn": {
+      "name": "navigation-menu",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/navigation-menu.tsx"
+    }
+  },
+  "menu-item": {
+    "mui": {
+      "name": "MenuItem",
+      "path": "refs/mui/packages/mui-material/src/MenuItem"
+    }
+  },
+  "menu-list": {
+    "mui": {
+      "name": "MenuList",
+      "path": "refs/mui/packages/mui-material/src/MenuList"
+    }
+  },
+  "menubar": {
+    "shadcn": {
+      "name": "menubar",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/menubar.tsx"
+    }
+  },
+  "message": {
+    "ant": {
+      "name": "message",
+      "path": "refs/ant-design/components/message"
+    }
+  },
+  "mobile-stepper": {
+    "mui": {
+      "name": "MobileStepper",
+      "path": "refs/mui/packages/mui-material/src/MobileStepper"
+    }
+  },
+  "modal": {
+    "ant": {
+      "name": "modal",
+      "path": "refs/ant-design/components/modal"
+    },
+    "mui": {
+      "name": "Dialog",
+      "path": "refs/mui/packages/mui-material/src/Dialog"
+    },
+    "shadcn": {
+      "name": "dialog",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx"
+    }
+  },
+  "native-select": {
+    "mui": {
+      "name": "NativeSelect",
+      "path": "refs/mui/packages/mui-material/src/NativeSelect"
+    },
+    "shadcn": {
+      "name": "native-select",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/native-select.tsx"
+    }
+  },
+  "no-ssr": {
+    "mui": {
+      "name": "NoSsr",
+      "path": "refs/mui/packages/mui-material/src/NoSsr"
+    }
+  },
+  "notification": {
+    "ant": {
+      "name": "notification",
+      "path": "refs/ant-design/components/notification"
+    }
+  },
+  "outlined-input": {
+    "mui": {
+      "name": "OutlinedInput",
+      "path": "refs/mui/packages/mui-material/src/OutlinedInput"
+    }
+  },
+  "overridable-component": {
+    "mui": {
+      "name": "OverridableComponent",
+      "path": "refs/mui/packages/mui-material/src/OverridableComponent"
+    }
+  },
+  "overview": {
+    "ant": {
+      "name": "overview",
+      "path": "refs/ant-design/components/overview"
+    }
+  },
+  "pagination": {
+    "ant": {
+      "name": "pagination",
+      "path": "refs/ant-design/components/pagination"
+    },
+    "mui": {
+      "name": "Pagination",
+      "path": "refs/mui/packages/mui-material/src/Pagination"
+    },
+    "shadcn": {
+      "name": "pagination",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/pagination.tsx"
+    }
+  },
+  "pagination-item": {
+    "mui": {
+      "name": "PaginationItem",
+      "path": "refs/mui/packages/mui-material/src/PaginationItem"
+    }
+  },
+  "paper": {
+    "mui": {
+      "name": "Paper",
+      "path": "refs/mui/packages/mui-material/src/Paper"
+    }
+  },
+  "popconfirm": {
+    "ant": {
+      "name": "popconfirm",
+      "path": "refs/ant-design/components/popconfirm"
+    }
+  },
+  "popover": {
+    "ant": {
+      "name": "popover",
+      "path": "refs/ant-design/components/popover"
+    },
+    "mui": {
+      "name": "Popover",
+      "path": "refs/mui/packages/mui-material/src/Popover"
+    },
+    "shadcn": {
+      "name": "popover",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/popover.tsx"
+    }
+  },
+  "popper": {
+    "mui": {
+      "name": "Popper",
+      "path": "refs/mui/packages/mui-material/src/Popper"
+    }
+  },
+  "progress": {
+    "ant": {
+      "name": "progress",
+      "path": "refs/ant-design/components/progress"
+    },
+    "mui": {
+      "name": "LinearProgress",
+      "path": "refs/mui/packages/mui-material/src/LinearProgress"
+    },
+    "shadcn": {
+      "name": "progress",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/progress.tsx"
+    }
+  },
+  "qr-code": {
+    "ant": {
+      "name": "qr-code",
+      "path": "refs/ant-design/components/qr-code"
+    }
+  },
+  "qrcode": {
+    "ant": {
+      "name": "qrcode",
+      "path": "refs/ant-design/components/qrcode"
+    }
+  },
+  "radio": {
+    "ant": {
+      "name": "radio",
+      "path": "refs/ant-design/components/radio"
+    },
+    "mui": {
+      "name": "RadioGroup",
+      "path": "refs/mui/packages/mui-material/src/RadioGroup"
+    },
+    "shadcn": {
+      "name": "radio-group",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/radio-group.tsx"
+    }
+  },
+  "rate": {
+    "ant": {
+      "name": "rate",
+      "path": "refs/ant-design/components/rate"
+    },
+    "mui": {
+      "name": "Rating",
+      "path": "refs/mui/packages/mui-material/src/Rating"
+    }
+  },
+  "resizable": {
+    "shadcn": {
+      "name": "resizable",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/resizable.tsx"
+    }
+  },
+  "result": {
+    "ant": {
+      "name": "result",
+      "path": "refs/ant-design/components/result"
+    }
+  },
+  "row": {
+    "ant": {
+      "name": "row",
+      "path": "refs/ant-design/components/row"
+    }
+  },
+  "scroll-area": {
+    "shadcn": {
+      "name": "scroll-area",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/scroll-area.tsx"
+    }
+  },
+  "segmented": {
+    "ant": {
+      "name": "segmented",
+      "path": "refs/ant-design/components/segmented"
+    },
+    "mui": {
+      "name": "ToggleButtonGroup",
+      "path": "refs/mui/packages/mui-material/src/ToggleButtonGroup"
+    }
+  },
+  "select": {
+    "ant": {
+      "name": "select",
+      "path": "refs/ant-design/components/select"
+    },
+    "mui": {
+      "name": "Select",
+      "path": "refs/mui/packages/mui-material/src/Select"
+    },
+    "shadcn": {
+      "name": "select",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/select.tsx"
+    }
+  },
+  "separator": {
+    "shadcn": {
+      "name": "separator",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/separator.tsx"
+    }
+  },
+  "sheet": {
+    "shadcn": {
+      "name": "sheet",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx"
+    }
+  },
+  "sidebar": {
+    "shadcn": {
+      "name": "sidebar",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sidebar.tsx"
+    }
+  },
+  "skeleton": {
+    "ant": {
+      "name": "skeleton",
+      "path": "refs/ant-design/components/skeleton"
+    },
+    "mui": {
+      "name": "Skeleton",
+      "path": "refs/mui/packages/mui-material/src/Skeleton"
+    },
+    "shadcn": {
+      "name": "skeleton",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/skeleton.tsx"
+    }
+  },
+  "slide": {
+    "mui": {
+      "name": "Slide",
+      "path": "refs/mui/packages/mui-material/src/Slide"
+    }
+  },
+  "slider": {
+    "ant": {
+      "name": "slider",
+      "path": "refs/ant-design/components/slider"
+    },
+    "mui": {
+      "name": "Slider",
+      "path": "refs/mui/packages/mui-material/src/Slider"
+    },
+    "shadcn": {
+      "name": "slider",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/slider.tsx"
+    }
+  },
+  "snackbar": {
+    "mui": {
+      "name": "Snackbar",
+      "path": "refs/mui/packages/mui-material/src/Snackbar"
+    }
+  },
+  "snackbar-content": {
+    "mui": {
+      "name": "SnackbarContent",
+      "path": "refs/mui/packages/mui-material/src/SnackbarContent"
+    }
+  },
+  "sonner": {
+    "shadcn": {
+      "name": "sonner",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sonner.tsx"
+    }
+  },
+  "space": {
+    "ant": {
+      "name": "space",
+      "path": "refs/ant-design/components/space"
+    },
+    "mui": {
+      "name": "Stack",
+      "path": "refs/mui/packages/mui-material/src/Stack"
+    }
+  },
+  "speed-dial": {
+    "mui": {
+      "name": "SpeedDial",
+      "path": "refs/mui/packages/mui-material/src/SpeedDial"
+    }
+  },
+  "speed-dial-action": {
+    "mui": {
+      "name": "SpeedDialAction",
+      "path": "refs/mui/packages/mui-material/src/SpeedDialAction"
+    }
+  },
+  "speed-dial-icon": {
+    "mui": {
+      "name": "SpeedDialIcon",
+      "path": "refs/mui/packages/mui-material/src/SpeedDialIcon"
+    }
+  },
+  "spin": {
+    "ant": {
+      "name": "spin",
+      "path": "refs/ant-design/components/spin"
+    }
+  },
+  "spinner": {
+    "shadcn": {
+      "name": "spinner",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/spinner.tsx"
+    }
+  },
+  "splitter": {
+    "ant": {
+      "name": "splitter",
+      "path": "refs/ant-design/components/splitter"
+    }
+  },
+  "statistic": {
+    "ant": {
+      "name": "statistic",
+      "path": "refs/ant-design/components/statistic"
+    }
+  },
+  "step": {
+    "mui": {
+      "name": "Step",
+      "path": "refs/mui/packages/mui-material/src/Step"
+    }
+  },
+  "step-button": {
+    "mui": {
+      "name": "StepButton",
+      "path": "refs/mui/packages/mui-material/src/StepButton"
+    }
+  },
+  "step-connector": {
+    "mui": {
+      "name": "StepConnector",
+      "path": "refs/mui/packages/mui-material/src/StepConnector"
+    }
+  },
+  "step-content": {
+    "mui": {
+      "name": "StepContent",
+      "path": "refs/mui/packages/mui-material/src/StepContent"
+    }
+  },
+  "step-icon": {
+    "mui": {
+      "name": "StepIcon",
+      "path": "refs/mui/packages/mui-material/src/StepIcon"
+    }
+  },
+  "step-label": {
+    "mui": {
+      "name": "StepLabel",
+      "path": "refs/mui/packages/mui-material/src/StepLabel"
+    }
+  },
+  "steps": {
+    "ant": {
+      "name": "steps",
+      "path": "refs/ant-design/components/steps"
+    },
+    "mui": {
+      "name": "Stepper",
+      "path": "refs/mui/packages/mui-material/src/Stepper"
+    }
+  },
+  "style": {
+    "ant": {
+      "name": "style",
+      "path": "refs/ant-design/components/style"
+    }
+  },
+  "svg-icon": {
+    "mui": {
+      "name": "SvgIcon",
+      "path": "refs/mui/packages/mui-material/src/SvgIcon"
+    }
+  },
+  "swipeable-drawer": {
+    "mui": {
+      "name": "SwipeableDrawer",
+      "path": "refs/mui/packages/mui-material/src/SwipeableDrawer"
+    }
+  },
+  "switch": {
+    "ant": {
+      "name": "switch",
+      "path": "refs/ant-design/components/switch"
+    },
+    "mui": {
+      "name": "Switch",
+      "path": "refs/mui/packages/mui-material/src/Switch"
+    },
+    "shadcn": {
+      "name": "switch",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/switch.tsx"
+    }
+  },
+  "tab": {
+    "mui": {
+      "name": "Tab",
+      "path": "refs/mui/packages/mui-material/src/Tab"
+    }
+  },
+  "tab-scroll-button": {
+    "mui": {
+      "name": "TabScrollButton",
+      "path": "refs/mui/packages/mui-material/src/TabScrollButton"
+    }
+  },
+  "table": {
+    "ant": {
+      "name": "table",
+      "path": "refs/ant-design/components/table"
+    },
+    "mui": {
+      "name": "Table",
+      "path": "refs/mui/packages/mui-material/src/Table"
+    },
+    "shadcn": {
+      "name": "table",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/table.tsx"
+    }
+  },
+  "table-body": {
+    "mui": {
+      "name": "TableBody",
+      "path": "refs/mui/packages/mui-material/src/TableBody"
+    }
+  },
+  "table-cell": {
+    "mui": {
+      "name": "TableCell",
+      "path": "refs/mui/packages/mui-material/src/TableCell"
+    }
+  },
+  "table-container": {
+    "mui": {
+      "name": "TableContainer",
+      "path": "refs/mui/packages/mui-material/src/TableContainer"
+    }
+  },
+  "table-footer": {
+    "mui": {
+      "name": "TableFooter",
+      "path": "refs/mui/packages/mui-material/src/TableFooter"
+    }
+  },
+  "table-head": {
+    "mui": {
+      "name": "TableHead",
+      "path": "refs/mui/packages/mui-material/src/TableHead"
+    }
+  },
+  "table-pagination": {
+    "mui": {
+      "name": "TablePagination",
+      "path": "refs/mui/packages/mui-material/src/TablePagination"
+    }
+  },
+  "table-pagination-actions": {
+    "mui": {
+      "name": "TablePaginationActions",
+      "path": "refs/mui/packages/mui-material/src/TablePaginationActions"
+    }
+  },
+  "table-row": {
+    "mui": {
+      "name": "TableRow",
+      "path": "refs/mui/packages/mui-material/src/TableRow"
+    }
+  },
+  "table-sort-label": {
+    "mui": {
+      "name": "TableSortLabel",
+      "path": "refs/mui/packages/mui-material/src/TableSortLabel"
+    }
+  },
+  "tabs": {
+    "ant": {
+      "name": "tabs",
+      "path": "refs/ant-design/components/tabs"
+    },
+    "mui": {
+      "name": "Tabs",
+      "path": "refs/mui/packages/mui-material/src/Tabs"
+    },
+    "shadcn": {
+      "name": "tabs",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx"
+    }
+  },
+  "tag": {
+    "ant": {
+      "name": "tag",
+      "path": "refs/ant-design/components/tag"
+    },
+    "mui": {
+      "name": "Chip",
+      "path": "refs/mui/packages/mui-material/src/Chip"
+    }
+  },
+  "textarea": {
+    "shadcn": {
+      "name": "textarea",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/textarea.tsx"
+    }
+  },
+  "textarea-autosize": {
+    "mui": {
+      "name": "TextareaAutosize",
+      "path": "refs/mui/packages/mui-material/src/TextareaAutosize"
+    }
+  },
+  "theme": {
+    "ant": {
+      "name": "theme",
+      "path": "refs/ant-design/components/theme"
+    }
+  },
+  "time-picker": {
+    "ant": {
+      "name": "time-picker",
+      "path": "refs/ant-design/components/time-picker"
+    }
+  },
+  "timeline": {
+    "ant": {
+      "name": "timeline",
+      "path": "refs/ant-design/components/timeline"
+    }
+  },
+  "toggle": {
+    "shadcn": {
+      "name": "toggle",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/toggle.tsx"
+    }
+  },
+  "toggle-button": {
+    "mui": {
+      "name": "ToggleButton",
+      "path": "refs/mui/packages/mui-material/src/ToggleButton"
+    }
+  },
+  "toggle-group": {
+    "shadcn": {
+      "name": "toggle-group",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/toggle-group.tsx"
+    }
+  },
+  "toolbar": {
+    "mui": {
+      "name": "Toolbar",
+      "path": "refs/mui/packages/mui-material/src/Toolbar"
+    }
+  },
+  "tooltip": {
+    "ant": {
+      "name": "tooltip",
+      "path": "refs/ant-design/components/tooltip"
+    },
+    "mui": {
+      "name": "Tooltip",
+      "path": "refs/mui/packages/mui-material/src/Tooltip"
+    },
+    "shadcn": {
+      "name": "tooltip",
+      "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tooltip.tsx"
+    }
+  },
+  "tour": {
+    "ant": {
+      "name": "tour",
+      "path": "refs/ant-design/components/tour"
+    }
+  },
+  "transfer": {
+    "ant": {
+      "name": "transfer",
+      "path": "refs/ant-design/components/transfer"
+    }
+  },
+  "tree": {
+    "ant": {
+      "name": "tree",
+      "path": "refs/ant-design/components/tree"
+    }
+  },
+  "tree-select": {
+    "ant": {
+      "name": "tree-select",
+      "path": "refs/ant-design/components/tree-select"
+    }
+  },
+  "types": {
+    "mui": {
+      "name": "types",
+      "path": "refs/mui/packages/mui-material/src/types"
+    }
+  },
+  "typography": {
+    "ant": {
+      "name": "typography",
+      "path": "refs/ant-design/components/typography"
+    },
+    "mui": {
+      "name": "Typography",
+      "path": "refs/mui/packages/mui-material/src/Typography"
+    }
+  },
+  "unstable_-trap-focus": {
+    "mui": {
+      "name": "Unstable_TrapFocus",
+      "path": "refs/mui/packages/mui-material/src/Unstable_TrapFocus"
+    }
+  },
+  "upload": {
+    "ant": {
+      "name": "upload",
+      "path": "refs/ant-design/components/upload"
+    }
+  },
+  "use-lazy-ripple": {
+    "mui": {
+      "name": "useLazyRipple",
+      "path": "refs/mui/packages/mui-material/src/useLazyRipple"
+    }
+  },
+  "utils": {
+    "mui": {
+      "name": "utils",
+      "path": "refs/mui/packages/mui-material/src/utils"
+    }
+  },
+  "version": {
+    "ant": {
+      "name": "version",
+      "path": "refs/ant-design/components/version"
+    },
+    "mui": {
+      "name": "version",
+      "path": "refs/mui/packages/mui-material/src/version"
+    }
+  },
+  "watermark": {
+    "ant": {
+      "name": "watermark",
+      "path": "refs/ant-design/components/watermark"
+    }
+  },
+  "zero-styled": {
+    "mui": {
+      "name": "zero-styled",
+      "path": "refs/mui/packages/mui-material/src/zero-styled"
+    }
+  },
+  "zoom": {
+    "mui": {
+      "name": "Zoom",
+      "path": "refs/mui/packages/mui-material/src/Zoom"
+    }
+  }
+}

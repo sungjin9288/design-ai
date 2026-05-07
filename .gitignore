@@ -1,0 +1,21 @@
+# Upstream source material — sparse-cloned, large, regenerable.
+# Each user can clone fresh via `tools/extractors/clone-refs.sh`.
+refs/
+
+# Game project (alchemica) lives on other branches — never tracked here.
+personal/
+
+# Claude Code local state (worktree leftovers, local settings) — not part of
+# the design system itself.
+.claude/
+
+# Knowledge files are generated artifacts but DO commit them — the value of this
+# repo for Codex / other agents is that knowledge/ is ready to read without
+# running extractors first.
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

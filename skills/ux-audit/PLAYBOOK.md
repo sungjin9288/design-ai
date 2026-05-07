@@ -1,0 +1,126 @@
+# ux-audit — playbook
+
+Audit a screen, flow, or page against UX best practices and accessibility. Output is a prioritized list of issues with severity, citation, and fix recommendation.
+
+## When to use
+
+- "Review this signup flow."
+- "What's wrong with our settings page?"
+- "Audit the checkout."
+- Pre-ship gate before release.
+
+## Inputs (ask if missing)
+
+1. **Artifact** — screenshot, Figma link, live URL, or HTML/code.
+2. **Context** — who the user is, what they're trying to accomplish, what step in the flow this is.
+3. **Platform** — web, iOS, Android, responsive web. Affects platform conventions.
+4. **Specific concerns?** — sometimes the user already suspects an area; deep-dive that.
+
+## Steps
+
+### 1. Establish the user goal
+
+Before evaluating, name the **primary user goal** for the artifact in one sentence. Every issue is rated against whether it helps or hurts that goal.
+
+### 2. Walk the issue catalog
+
+Open [`knowledge/patterns/ux-guidelines.md`](../../knowledge/patterns/ux-guidelines.md). For each category that applies (Navigation, Forms, Feedback, Loading, etc.), check the artifact against the listed do/don't pairs. Mark each as: **pass / fail / N/A**.
+
+### 3. Run the a11y pass
+
+For every interactive element on the artifact:
+- Is it reachable by keyboard? (Cite [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md))
+- Does the focus indicator clear 3:1 contrast and 2px thickness?
+- Is the touch target ≥ 44×44 (mobile) or ≥ 24×24 (web AA)?
+- Does it have a label that a screen reader can announce?
+
+For every text element:
+- Does it clear 4.5:1 (body) or 3:1 (large)? Cite [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md).
+- Is meaning conveyed by anything other than color alone?
+
+### 4. Check the visual style consistency
+
+- Is spacing on the 4-px grid?
+- Are font sizes from a defined scale, or random?
+- Are colors from a defined palette, or one-offs?
+- Are corner radii consistent across components on the page?
+- Are interactive elements visually distinct from static elements?
+
+### 5. Check the cognitive load
+
+- How many decisions does the user face at once?
+- Is the primary action visually dominant? (1 per screen.)
+- Are required fields marked, errors specific, success acknowledged?
+- Is the back/escape path obvious?
+- Reading load: can the user accomplish the goal without reading more than ~50 words?
+
+### 6. Check the platform conventions
+
+| Platform | Watch for |
+| --- | --- |
+| iOS | Native back gesture, system fonts, sheet presentation, safe-area, dynamic type |
+| Android | Material elevation, FAB placement, system-back, gesture nav inset |
+| Web | Browser back behavior, deep linking, copy-pastable URLs, refresh resilience |
+| Responsive web | Touch on touchscreens, hover only as enhancement |
+
+### 7. Score each issue
+
+| Severity | Definition | Action |
+| --- | --- | --- |
+| 🔴 Critical | Blocks the goal OR fails WCAG AA | **Must fix before ship.** |
+| 🟠 High | Significantly slows or confuses users | **Fix this cycle.** |
+| 🟡 Medium | Inconsistency, minor friction | **Schedule.** |
+| 🟢 Low | Polish, suggestion | **Backlog.** |
+
+A11y failures (contrast < 4.5:1 for body text, missing labels, inaccessible keyboard paths) are **always Critical**, regardless of how minor they look.
+
+### 8. Output
+
+A structured report:
+
+```markdown
+# UX Audit: <artifact name>
+
+> User goal: <one sentence>
+> Platform: <platform>
+> Reviewed: <date>
+
+## Summary
+<3 bullets: what works, what's at risk, top recommendation>
+
+## Critical (n)
+1. **<title>** — <where>
+   - Issue: <what's wrong>
+   - Why: <impact on user>
+   - Fix: <specific recommendation>
+   - Reference: <citation to knowledge/ or WCAG>
+
+## High (n)
+...
+
+## Medium (n)
+...
+
+## Low (n)
+...
+
+## Things that work well
+<2–4 bullets, genuine praise — keeps the report constructive>
+```
+
+## Source files this skill reads
+
+- [`knowledge/patterns/ux-guidelines.md`](../../knowledge/patterns/ux-guidelines.md)
+- [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md)
+- [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md)
+- [`knowledge/colors/color-theory.md`](../../knowledge/colors/color-theory.md)
+- [`knowledge/typography/type-scale-fundamentals.md`](../../knowledge/typography/type-scale-fundamentals.md)
+- [`knowledge/layout/spacing-and-grid.md`](../../knowledge/layout/spacing-and-grid.md)
+
+## Done when
+
+- One report file with summary + 4 severity sections + "things that work well".
+- Every issue has: where, what, why, fix, citation.
+- Every Critical issue has at least one knowledge/ or WCAG citation.
+- The report names the user goal up top.
+- The report is **specific** — no "could be improved" without a stated alternative.
