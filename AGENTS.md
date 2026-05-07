@@ -40,6 +40,9 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Onboarding (account setup / first-run / feature discovery / re-engagement) | `knowledge/patterns/onboarding.md` |
 | Search UX (typeahead / filter / Korean IME) | `knowledge/patterns/search-ux.md` |
 | Settings page (single-page vs sidebar / save behaviors / destructive actions) | `knowledge/patterns/settings-page.md` |
+| Dashboard composition (KPI / charts / table / responsive) | `knowledge/patterns/dashboard-composition.md` |
+| Chart color encoding (sequential / diverging / categorical) | `knowledge/patterns/chart-color-encoding.md` |
+| Real-time data UX (WebSocket / polling / optimistic / disconnection) | `knowledge/patterns/realtime-data.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |

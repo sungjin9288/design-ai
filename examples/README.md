@@ -37,6 +37,14 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-divider.md](component-divider.md) | Divider (Separator) | Horizontal + vertical, solid/dashed/dotted, inset, decorative vs semantic, when whitespace is better. |
 | [component-steps.md](component-steps.md) | Steps (Stepper) | Multi-step progress visualization. Status states, mobile compact variant, when Steps vs Tabs vs Progress. |
 | [component-rate.md](component-rate.md) | Rate (Rating) | Stars / emoji / custom icons. Input + display modes, half-star precision, slider-pattern a11y. |
+| [component-tag-badge.md](component-tag-badge.md) | Tag + Badge | Two sibling status indicators in one spec. Inline label vs dot/count overlay. |
+| [component-tree.md](component-tree.md) | Tree (TreeView) | Hierarchical data, async lazy-load, check + select modes, WAI-ARIA tree pattern, mobile drill-in alternative. |
+| [component-statistic.md](component-statistic.md) | Statistic | Hero KPI display. Delta semantics (goalDirection-aware coloring), Korean stock convention, sparkline. |
+| [component-upload.md](component-upload.md) | Upload | Drop zone + button + avatar patterns. Per-file progress, async validation, retry, Korean copy. |
+| [component-result.md](component-result.md) | Result + Empty | Two sibling full-page components in one spec. Status icons, primary/secondary actions, inline mode. |
+| [component-carousel.md](component-carousel.md) | Carousel | When NOT to use. Multi-slide view, auto-play warnings, WAI-ARIA carousel pattern. |
+| [component-image.md](component-image.md) | Image | Wrapper with lazy load, aspect-ratio, fallback, lightbox, srcset, alt rules. |
+| [component-calendar.md](component-calendar.md) | Calendar (full month view) | Distinct from DatePicker. Event rendering, holiday/weekend Korean colors, view modes. |
 
 ### Custom components (Korean fintech / commerce)
 
@@ -44,6 +52,9 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | --- | --- | --- |
 | [component-amount-input.md](component-amount-input.md) | AmountInput | KRW-aware currency input. Auto-format, paste handling, IME composition, quick chips, max-balance affordance. |
 | [component-address-input.md](component-address-input.md) | AddressInput | Korean address with Daum Postcode lookup. Two-line structure (zip + main + detail), 도로명/지번 toggle. |
+| [component-biometric-gate.md](component-biometric-gate.md) | BiometricGate | Face ID / Touch ID / fingerprint gate for fintech app launch + sensitive flows. OS API integration, fallback to PIN. |
+| [component-payment-method-selector.md](component-payment-method-selector.md) | PaymentMethodSelector | Korean payment method selector. Audience-driven ordering (consumer vs B2B), saved cards, amount-based filtering. |
+| [component-payment-brand-button.md](component-payment-brand-button.md) | PaymentBrandButton | Brand-styled CTA for KakaoPay / NaverPay / Toss / Apple Pay / Samsung Pay. Official asset compliance. |
 
 ### End-to-end deliverables
 

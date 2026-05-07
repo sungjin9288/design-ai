@@ -63,6 +63,14 @@ The 30 load-bearing rules across this knowledge base. Read this first; it primes
 
 30. **When specing a component, cite all 3 references** (Ant Design, MUI, shadcn-ui) and explain API choices ("API choices made" section). Don't invent — adapt. Cite [`skills/component-spec-writer/PLAYBOOK.md`](../skills/component-spec-writer/PLAYBOOK.md).
 
+## Data visualization
+
+31. **Pick palette type by data shape**: sequential (low→high), diverging (positive↔negative), categorical (distinct). Cite [`patterns/chart-color-encoding.md`](patterns/chart-color-encoding.md).
+32. **≤ 8 categorical colors.** More than 8 = user can't track. Cite [`patterns/chart-color-encoding.md`](patterns/chart-color-encoding.md).
+33. **Dashboard order: KPI row → primary chart → secondary 2-up → detail table.** Cite [`patterns/dashboard-composition.md`](patterns/dashboard-composition.md).
+34. **"Last updated" indicator on every live dashboard.** Cite [`patterns/realtime-data.md`](patterns/realtime-data.md).
+35. **Don't blast updates** — throttle to ≤10/sec per element, batch high-frequency. Respect `prefers-reduced-motion`. Cite [`patterns/realtime-data.md`](patterns/realtime-data.md).
+
 ## Output discipline
 
 When producing any design artifact:
