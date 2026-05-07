@@ -2,10 +2,21 @@
 
 Worked outputs from each skill — what "good" looks like. Use as reference when invoking the skill on your own task.
 
+### Color & tokens
+
 | File | Skill | Input | What it demonstrates |
 | --- | --- | --- | --- |
 | [palette-saas-violet.md](palette-saas-violet.md) | `color-palette` | B2B SaaS, violet seed `#7C3AED` | Full palette with OKLCH ramps, semantic aliases, light + dark, contrast matrix, Tailwind v4 + shadcn-ui + Style Dictionary outputs, use guidance |
-| [component-button.md](component-button.md) | `component-spec-writer` | Button | Anatomy, full API, states, variants, tokens, a11y, code examples, edge cases — synthesized from Ant Design, MUI, and shadcn-ui |
+
+### Component specs (synthesized from Ant Design + MUI + shadcn-ui)
+
+| File | Component | What it covers |
+| --- | --- | --- |
+| [component-button.md](component-button.md) | Button | The most-used control. Variants, intent, sizes, loading state, asChild pattern. |
+| [component-input.md](component-input.md) | Input (text field) | Label/help/error, validation timing, autocomplete, IME (Korean) handling, password/clearable affordances. |
+| [component-modal.md](component-modal.md) | Modal / Dialog / Sheet | Focus trap, scroll lock, keyboard contract, three variants in one spec (dialog/alert-dialog/sheet). |
+| [component-toast.md](component-toast.md) | Toast / Snackbar | Imperative API (`toast.success(...)`), promise wrapper, intent + duration matrix, persistent errors. |
+| [component-card.md](component-card.md) | Card | Composition slots, variants, interactive cards, block-link pattern, when NOT to use a card. |
 
 ## How to use these
 

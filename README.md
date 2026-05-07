@@ -62,8 +62,11 @@ design-ai/
 │   └── extractors/      # Pull tokens/components/patterns from refs/ into knowledge/
 │
 └── docs/                # How this system works
-    ├── ARCHITECTURE.md
-    ├── CONTRIBUTING.md
+    ├── ARCHITECTURE.md          # Three-layer architecture
+    ├── CONTRIBUTING.md          # How to add knowledge / extractors / skills
+    ├── USING.md                 # Per-agent setup (Codex, Claude Code, Cursor, Aider)
+    ├── FIGMA-INTEGRATION.md     # Figma MCP, Variables, Code Connect workflows
+    ├── TOKEN-SYNC.md            # Token sync between code, Figma, design-ai
     └── ROADMAP.md
 ```
 
@@ -74,6 +77,9 @@ design-ai/
 3. Ask design questions or request artifacts. The agent navigates `knowledge/`, applies `skills/`, and produces deliverables.
 
 See [docs/USING.md](docs/USING.md) for setup instructions per agent (Codex CLI, Claude Code, Cursor, Aider, plain prompts).
+
+For Figma workflows (variables, components, Code Connect): [docs/FIGMA-INTEGRATION.md](docs/FIGMA-INTEGRATION.md).
+For moving tokens between code and Figma: [docs/TOKEN-SYNC.md](docs/TOKEN-SYNC.md).
 
 ## Source material
 
