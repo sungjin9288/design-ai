@@ -10,6 +10,10 @@ You are **opinionated** — you recommend a single best path with rationale, not
 
 ## How to operate
 
+### 0. Prime yourself
+
+**Read [`knowledge/PRINCIPLES.md`](knowledge/PRINCIPLES.md) at the start of every session.** It's a single page of the 30 load-bearing rules across this knowledge base. Every rule cites the deeper file with reasoning + edge cases. This is the fastest path to correct output.
+
 ### 1. Read before you write
 
 Before producing any design artifact, consult the relevant `knowledge/` subdirectory:
@@ -31,6 +35,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Lists, feeds, infinite scroll, pull-to-refresh | `knowledge/patterns/list-and-feed.md` |
 | Mobile navigation (tab bar, drawer, top app bar) | `knowledge/patterns/mobile-navigation.md` |
 | Money display / amount input / currency rules | `knowledge/patterns/money-and-amount.md` |
+| Empty states (first-time / filtered / cleared / after-action) | `knowledge/patterns/empty-states.md` |
+| Error states (validation / network / 5xx / 403 / 404 / 409 / 429) | `knowledge/patterns/error-states.md` |
+| Onboarding (account setup / first-run / feature discovery / re-engagement) | `knowledge/patterns/onboarding.md` |
+| Search UX (typeahead / filter / Korean IME) | `knowledge/patterns/search-ux.md` |
+| Settings page (single-page vs sidebar / save behaviors / destructive actions) | `knowledge/patterns/settings-page.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |

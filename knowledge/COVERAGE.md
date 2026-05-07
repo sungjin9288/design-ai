@@ -12,18 +12,18 @@ generated_at: 2026-05-07
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 30 | 15 hand-written + 15 generated |
+| Knowledge files | 36 | 21 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 6 | 6 with verification phase |
-| Worked examples | 21 | |
+| Worked examples | 29 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 17 | **8.5% spec coverage** |
+| Components with worked spec | 23 | **11.6% spec coverage** |
 
 ## Knowledge by category
 
 | Category | Files | Hand-written | Generated |
 | --- | --- | --- | --- |
-| `(root)` | 1 | 0 | 1 |
+| `(root)` | 2 | 1 | 1 |
 | `a11y` | 2 | 2 | 0 |
 | `colors` | 3 | 1 | 2 |
 | `components` | 2 | 0 | 2 |
@@ -32,7 +32,7 @@ generated_at: 2026-05-07
 | `icons` | 1 | 0 | 1 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 1 | 1 | 0 |
-| `patterns` | 10 | 4 | 6 |
+| `patterns` | 15 | 9 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `typography` | 3 | 1 | 2 |
 
@@ -44,6 +44,7 @@ generated_at: 2026-05-07
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 212 | generated | Coverage report |
+| [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 88 | hand-written | Design-AI principles |
 
 #### a11y
 
@@ -106,11 +107,16 @@ generated_at: 2026-05-07
 | --- | --- | --- | --- |
 | [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 93 | generated | Brand reference index |
 | [knowledge/patterns/chart-types.md](../knowledge/patterns/chart-types.md) | 341 | generated | Chart type selection guide |
+| [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 260 | hand-written | Empty states |
+| [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 315 | hand-written | Error states |
 | [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 234 | hand-written | Form design patterns |
 | [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 678 | generated | Landing page patterns |
 | [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md) | 368 | hand-written | List and feed patterns |
 | [knowledge/patterns/mobile-navigation.md](../knowledge/patterns/mobile-navigation.md) | 275 | hand-written | Mobile navigation patterns |
 | [knowledge/patterns/money-and-amount.md](../knowledge/patterns/money-and-amount.md) | 298 | hand-written | Money and amount |
+| [knowledge/patterns/onboarding.md](../knowledge/patterns/onboarding.md) | 297 | hand-written | Onboarding patterns |
+| [knowledge/patterns/search-ux.md](../knowledge/patterns/search-ux.md) | 370 | hand-written | Search UX |
+| [knowledge/patterns/settings-page.md](../knowledge/patterns/settings-page.md) | 322 | hand-written | Settings page patterns |
 | [knowledge/patterns/styles-catalog.md](../knowledge/patterns/styles-catalog.md) | 2596 | generated | Visual style catalog |
 | [knowledge/patterns/ui-reasoning.md](../knowledge/patterns/ui-reasoning.md) | 1850 | generated | UI category decision rules |
 | [knowledge/patterns/ux-guidelines.md](../knowledge/patterns/ux-guidelines.md) | 1451 | generated | UX guidelines |
@@ -145,20 +151,28 @@ generated_at: 2026-05-07
 | File | Lines | Title |
 | --- | --- | --- |
 | [examples/component-accordion.md](../examples/component-accordion.md) | 229 | `Accordion` (Collapse) — spec |
+| [examples/component-address-input.md](../examples/component-address-input.md) | 260 | `AddressInput` (custom — Korean) — spec |
 | [examples/component-alert.md](../examples/component-alert.md) | 192 | `Alert` (Banner) — spec |
+| [examples/component-amount-input.md](../examples/component-amount-input.md) | 278 | `AmountInput` (custom) — spec |
 | [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
 | [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
 | [examples/component-button.md](../examples/component-button.md) | 213 | `Button` — spec |
 | [examples/component-card.md](../examples/component-card.md) | 233 | `Card` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
+| [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
+| [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
+| [examples/component-popover.md](../examples/component-popover.md) | 239 | `Popover` — spec |
 | [examples/component-progress.md](../examples/component-progress.md) | 195 | `Progress` — spec |
+| [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
+| [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
+| [examples/component-steps.md](../examples/component-steps.md) | 264 | `Steps` (Stepper) — spec |
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
@@ -168,7 +182,7 @@ generated_at: 2026-05-07
 
 ## Component spec coverage
 
-**17 / 199 canonical components have a worked spec (8.5%)**
+**23 / 199 canonical components have a worked spec (11.6%)**
 
 Specs that match canonical names:
 
@@ -179,19 +193,27 @@ Specs that match canonical names:
 - `button` → [examples/component-button.md](../examples/component-button.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
+- `divider` → [examples/component-divider.md](../examples/component-divider.md)
+- `drawer` → [examples/component-drawer.md](../examples/component-drawer.md)
 - `form` → [examples/component-form.md](../examples/component-form.md)
 - `input` → [examples/component-input.md](../examples/component-input.md)
 - `modal` → [examples/component-modal.md](../examples/component-modal.md)
 - `pagination` → [examples/component-pagination.md](../examples/component-pagination.md)
+- `popover` → [examples/component-popover.md](../examples/component-popover.md)
 - `progress` → [examples/component-progress.md](../examples/component-progress.md)
+- `rate` → [examples/component-rate.md](../examples/component-rate.md)
 - `select` → [examples/component-select.md](../examples/component-select.md)
 - `skeleton` → [examples/component-skeleton.md](../examples/component-skeleton.md)
+- `slider` → [examples/component-slider.md](../examples/component-slider.md)
+- `steps` → [examples/component-steps.md](../examples/component-steps.md)
 - `table` → [examples/component-table.md](../examples/component-table.md)
 - `tabs` → [examples/component-tabs.md](../examples/component-tabs.md)
 - `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
 
 Specs that don't match the canonical index (probably aliases — investigate):
 
+- `address-input`
+- `amount-input`
 - `form-controls`
 - `toast`
 

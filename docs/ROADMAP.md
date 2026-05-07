@@ -51,6 +51,15 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 4 — Depth + agent priming ✓ shipped (v1.3)
+
+- [x] `knowledge/PRINCIPLES.md` — agent priming cheat sheet. 30 load-bearing rules across the system, each citing its deeper file. Loaded at session start.
+- [x] 5 universal pattern knowledge files: `empty-states.md`, `error-states.md`, `onboarding.md`, `search-ux.md`, `settings-page.md`.
+- [x] 6 more component specs: Drawer, Slider, Popover, Divider, Steps, Rate.
+- [x] 2 custom component specs (Korean fintech): `component-amount-input.md`, `component-address-input.md` — proves the system handles non-upstream patterns.
+- [x] Component spec coverage: 19 → 27 worked specs (8.5% → ~13%).
+- [x] AGENTS.md updated with new lookup-table entries. ROADMAP marked.
+
 ## Phase 3 — Connective ✓ shipped (v1.2)
 
 - [x] `/design-from-brief` — full design from a one-paragraph product brief. Orchestrates color-palette + design-system-builder + handoff-spec.

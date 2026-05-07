@@ -31,6 +31,19 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-avatar.md](component-avatar.md) | Avatar | Image → initials → icon fallback chain, Korean initials convention, AvatarGroup overlap, status indicators, hash-to-color. |
 | [component-breadcrumb.md](component-breadcrumb.md) | Breadcrumb | Hierarchy navigation, truncation algorithm, when not to use (mobile), aria-current="page", ordered list semantics. |
 | [component-accordion.md](component-accordion.md) | Accordion (Collapse) | Single vs multiple, four visual variants, height animation via grid-template-rows, WAI-ARIA disclosure pattern. |
+| [component-drawer.md](component-drawer.md) | Drawer | Side-anchored panel for navigation. Modal vs persistent mode, mobile detents, swipe-to-dismiss. |
+| [component-slider.md](component-slider.md) | Slider | Single + range, step semantics, when slider vs number input, WAI-ARIA slider pattern. |
+| [component-popover.md](component-popover.md) | Popover | Click-triggered overlay with interactive content. Distinct from Tooltip / Modal / Dropdown. |
+| [component-divider.md](component-divider.md) | Divider (Separator) | Horizontal + vertical, solid/dashed/dotted, inset, decorative vs semantic, when whitespace is better. |
+| [component-steps.md](component-steps.md) | Steps (Stepper) | Multi-step progress visualization. Status states, mobile compact variant, when Steps vs Tabs vs Progress. |
+| [component-rate.md](component-rate.md) | Rate (Rating) | Stars / emoji / custom icons. Input + display modes, half-star precision, slider-pattern a11y. |
+
+### Custom components (Korean fintech / commerce)
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-amount-input.md](component-amount-input.md) | AmountInput | KRW-aware currency input. Auto-format, paste handling, IME composition, quick chips, max-balance affordance. |
+| [component-address-input.md](component-address-input.md) | AddressInput | Korean address with Daum Postcode lookup. Two-line structure (zip + main + detail), 도로명/지번 toggle. |
 
 ### End-to-end deliverables
 
