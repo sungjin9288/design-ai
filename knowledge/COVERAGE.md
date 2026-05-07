@@ -14,10 +14,10 @@ generated_at: 2026-05-07
 | --- | --- | --- |
 | Knowledge files | 30 | 15 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 6 | 6 with verification phase |
-| Worked examples | 13 | |
+| Worked examples | 21 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 10 | **5.0% spec coverage** |
+| Components with worked spec | 17 | **8.5% spec coverage** |
 
 ## Knowledge by category
 
@@ -43,7 +43,7 @@ generated_at: 2026-05-07
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 189 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 212 | generated | Coverage report |
 
 #### a11y
 
@@ -144,26 +144,38 @@ generated_at: 2026-05-07
 
 | File | Lines | Title |
 | --- | --- | --- |
+| [examples/component-accordion.md](../examples/component-accordion.md) | 229 | `Accordion` (Collapse) — spec |
+| [examples/component-alert.md](../examples/component-alert.md) | 192 | `Alert` (Banner) — spec |
+| [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
+| [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
 | [examples/component-button.md](../examples/component-button.md) | 213 | `Button` — spec |
 | [examples/component-card.md](../examples/component-card.md) | 233 | `Card` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
+| [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
+| [examples/component-progress.md](../examples/component-progress.md) | 195 | `Progress` — spec |
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
+| [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
+| [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
 | [examples/dogfood-korean-fintech-system.md](../examples/dogfood-korean-fintech-system.md) | 433 | Dogfood: Korean fintech mobile app — design system bootstrap |
 | [examples/palette-saas-violet.md](../examples/palette-saas-violet.md) | 225 | Palette: B2B SaaS — violet primary |
 
 ## Component spec coverage
 
-**10 / 199 canonical components have a worked spec (5.0%)**
+**17 / 199 canonical components have a worked spec (8.5%)**
 
 Specs that match canonical names:
 
+- `accordion` → [examples/component-accordion.md](../examples/component-accordion.md)
+- `alert` → [examples/component-alert.md](../examples/component-alert.md)
+- `avatar` → [examples/component-avatar.md](../examples/component-avatar.md)
+- `breadcrumb` → [examples/component-breadcrumb.md](../examples/component-breadcrumb.md)
 - `button` → [examples/component-button.md](../examples/component-button.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
@@ -171,12 +183,16 @@ Specs that match canonical names:
 - `input` → [examples/component-input.md](../examples/component-input.md)
 - `modal` → [examples/component-modal.md](../examples/component-modal.md)
 - `pagination` → [examples/component-pagination.md](../examples/component-pagination.md)
+- `progress` → [examples/component-progress.md](../examples/component-progress.md)
 - `select` → [examples/component-select.md](../examples/component-select.md)
+- `skeleton` → [examples/component-skeleton.md](../examples/component-skeleton.md)
 - `table` → [examples/component-table.md](../examples/component-table.md)
 - `tabs` → [examples/component-tabs.md](../examples/component-tabs.md)
+- `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
 
 Specs that don't match the canonical index (probably aliases — investigate):
 
+- `form-controls`
 - `toast`
 
 ## Extractors

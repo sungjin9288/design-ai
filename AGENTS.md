@@ -49,6 +49,8 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | User request | Skill |
 |---|---|
 | "Build a design system" | `skills/design-system-builder/` |
+| "Build me X from this brief..." | `commands/design-from-brief.md` (orchestrates multiple skills) |
+| "Apply this critique to..." | `commands/iterate.md` |
 | "Spec this component" | `skills/component-spec-writer/` |
 | "Generate a color palette" | `skills/color-palette/` |
 | "Audit this UI" | `skills/ux-audit/` |

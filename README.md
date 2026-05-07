@@ -59,7 +59,9 @@ design-ai/
 │   └── palette-from-brand.md
 │
 ├── tools/               # Scripts that build/refresh the knowledge base
-│   └── extractors/      # Pull tokens/components/patterns from refs/ into knowledge/
+│   ├── extractors/      # Pull tokens/components/patterns from refs/ into knowledge/
+│   ├── audit/           # Coverage audit (knowledge/COVERAGE.md generator)
+│   └── preview/         # HTML preview generator (token swatches + live components)
 │
 └── docs/                # How this system works
     ├── ARCHITECTURE.md          # Three-layer architecture

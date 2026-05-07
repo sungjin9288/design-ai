@@ -51,12 +51,13 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
-## Phase 3 — Connective
+## Phase 3 — Connective ✓ shipped (v1.2)
 
-- [ ] `/design-from-brief` — full design from a one-paragraph product brief.
-- [ ] `/iterate` — apply a critique and produce a revision artifact.
-- [ ] HTML preview generator — render token sets and component specs as a static page for visual review.
-- [ ] Optional embedding index if knowledge base exceeds 100K tokens.
+- [x] `/design-from-brief` — full design from a one-paragraph product brief. Orchestrates color-palette + design-system-builder + handoff-spec.
+- [x] `/iterate` — apply a critique and produce a revision + changelog.
+- [x] HTML preview generator (`tools/preview/render-tokens.py`) — extracts tokens, renders light+dark swatches, contrast matrix, live component previews, theme toggle.
+- [x] Component spec coverage push: 11 → 19 worked specs (5% → 8.5%). New: Alert, Tooltip, Form-controls (Switch/Checkbox/Radio combined), Skeleton, Progress, Avatar, Breadcrumb, Accordion.
+- [ ] Optional embedding index if knowledge base exceeds 100K tokens. _(Deferred — base is currently ~13K lines / well under threshold.)_
 
 ## Phase 4 — Multi-tool
 

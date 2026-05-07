@@ -23,6 +23,14 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-date-picker.md](component-date-picker.md) | DatePicker | Single/range/dateTime/quickRange modes, Korean date formats, calendar grid keyboard contract, mobile bottom sheet. |
 | [component-select.md](component-select.md) | Select / Combobox | Single/multi/searchable/creatable/async, WAI-ARIA combobox pattern, Korean IME composition handling. |
 | [component-pagination.md](component-pagination.md) | Pagination | Numbered + Load More + simple variants, sibling/boundary algorithm, URL sync, accessibility. |
+| [component-alert.md](component-alert.md) | Alert (Banner) | Persistent in-page feedback. Subtle/outlined/solid variants, intent + icon redundancy, action buttons, role=alert vs status. |
+| [component-tooltip.md](component-tooltip.md) | Tooltip | Hover/focus hint, why native `title` is wrong, touch handling, WAI-ARIA tooltip pattern, when NOT to use. |
+| [component-form-controls.md](component-form-controls.md) | Switch / Checkbox / Radio | Three sibling controls in one spec — semantic differences, when each, shared accessibility patterns, Korean marketing-consent rule. |
+| [component-skeleton.md](component-skeleton.md) | Skeleton | Loading shape (not progress %), shimmer animation, primitive composition, transition rules, reduced motion. |
+| [component-progress.md](component-progress.md) | Progress | Linear + circular, determinate vs indeterminate, intent variants, aria-valuenow rules, when Progress vs Spinner vs Skeleton. |
+| [component-avatar.md](component-avatar.md) | Avatar | Image → initials → icon fallback chain, Korean initials convention, AvatarGroup overlap, status indicators, hash-to-color. |
+| [component-breadcrumb.md](component-breadcrumb.md) | Breadcrumb | Hierarchy navigation, truncation algorithm, when not to use (mobile), aria-current="page", ordered list semantics. |
+| [component-accordion.md](component-accordion.md) | Accordion (Collapse) | Single vs multiple, four visual variants, height animation via grid-template-rows, WAI-ARIA disclosure pattern. |
 
 ### End-to-end deliverables
 
