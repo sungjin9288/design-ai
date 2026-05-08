@@ -51,6 +51,21 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 9 — MCP integrations (v1.8) ✓ shipped
+
+- [x] **MCP-INTEGRATION.md** overview — supported MCPs (Tier 1: Figma/Notion/GitHub/Slack; Tier 2: Linear/Atlassian/Asana/Intercom), setup per agent, graceful fallback strategy, MCP catalog with design-ai relevance.
+- [x] **5 per-MCP integration guides** in `docs/integrations/`:
+  - `figma-mcp.md` — read variables/components, audit Figma designs, spec components from Figma, write tokens (limited), Code Connect via MCP.
+  - `notion-mcp.md` — mirror knowledge to Notion, capture design decisions, read brand briefs, weekly status.
+  - `github-mcp.md` — PR design review, issue creation for design debt, status reports, token-bump notifications.
+  - `slack-mcp.md` — design review summaries, token version notifications, palette artifacts, scheduled status posts.
+  - `linear-mcp.md` — convert audit findings to issues, track design system rollout, severity → priority mapping.
+- [x] **3 MCP-aware skills**:
+  - `skills/design-pr-review/` — reviews GitHub PRs for design compliance (uses GitHub MCP, falls back to markdown output).
+  - `skills/figma-token-sync/` — bidirectional token sync Figma↔code (uses Figma MCP, falls back to Tokens Studio).
+  - `skills/design-broadcast/` — post artifacts to Slack/Notion (uses Slack + Notion MCPs, falls back to formatted paste).
+- [x] AGENTS.md adds "Use MCPs when available" section + skill lookup entries. Skills: 7 → 10.
+
 ## Phase 8 — Last big push (v1.7) ✓ shipped
 
 - [x] **10 component specs**: FloatButton, QRCode, Splitter, Anchor, AppBar, Layout, InputOTP, Watermark, Code, Typography. Coverage 18.6% → ~22%.

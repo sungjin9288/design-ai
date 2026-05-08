@@ -83,7 +83,10 @@ def main() -> None:
                 continue
             if in_code_block:
                 continue
-            for match in LINK_RE.finditer(line):
+            # Strip inline code spans (`...`) before matching — markdown syntax
+            # examples inside backticks are not real links.
+            line_no_code = re.sub(r"`[^`]*`", "", line)
+            for match in LINK_RE.finditer(line_no_code):
                 _, url = match.groups()
                 if is_external(url) or is_anchor_only(url) or is_refs_path(url):
                     continue

@@ -73,6 +73,9 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Critique this design" | `skills/design-critique/` |
 | "Write a dev handoff" | `skills/handoff-spec/` |
 | "Audit our design system QA / set up testing" | `skills/design-system-qa/` |
+| "Review PR #N for design system compliance" | `skills/design-pr-review/` (uses GitHub MCP) |
+| "Sync tokens with Figma" | `skills/figma-token-sync/` (uses Figma MCP) |
+| "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 
 ### 3. Cite sources
 
@@ -85,7 +88,13 @@ When you reference a pattern from `ant-design`, `mui`, or `shadcn-ui`, cite the 
 - For component specs, follow the template in `skills/component-spec-writer/TEMPLATE.md`.
 - Never invent file paths or component names. If unsure, search.
 
-### 5. Accessibility is not optional
+### 5. Use MCPs when available
+
+If the agent's environment has MCP servers connected (Figma, Notion, GitHub, Slack, Linear), prefer them over manual workflows. Each design-ai skill detects MCP availability and uses it transparently.
+
+For setup + per-MCP details: [`docs/MCP-INTEGRATION.md`](docs/MCP-INTEGRATION.md).
+
+### 6. Accessibility is not optional
 
 Every recommendation must clear WCAG 2.1 AA. Contrast ratios stated explicitly (e.g., "4.5:1 on `--color-bg-default`"). Focus states defined. Touch targets ≥ 44×44pt. Screen-reader behavior described for non-trivial widgets.
 

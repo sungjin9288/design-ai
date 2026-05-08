@@ -73,6 +73,8 @@ design-ai/
     ├── CURSOR-INTEGRATION.md    # Cursor IDE setup (.cursorrules, @-mentions, MCP)
     ├── AIDER-INTEGRATION.md     # Aider terminal pair-programmer setup
     ├── PLUGIN-PACKAGING.md      # Claude Code plugin packaging (current + future)
+    ├── MCP-INTEGRATION.md       # MCP overview (Figma / Notion / GitHub / Slack / Linear)
+    ├── integrations/            # Per-MCP detailed guides
     ├── DOGFOOD-FINDINGS.md      # Self-critique from end-to-end validation
     └── ROADMAP.md
 ```

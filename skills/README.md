@@ -16,6 +16,9 @@ Task-focused playbooks. Each skill is a directory containing:
 | [design-critique](design-critique/) | Senior-designer feedback on a design proposal. |
 | [handoff-spec](handoff-spec/) | Produce a developer handoff document from a finalized design. |
 | [design-system-qa](design-system-qa/) | Audit a design system across 5 testing layers (types / tokens / contract / a11y / visual) and recommend CI integration. |
+| [design-pr-review](design-pr-review/) | Review a GitHub PR for design system compliance. Uses GitHub MCP when connected. |
+| [figma-token-sync](figma-token-sync/) | Sync tokens between Figma and code. Uses Figma MCP. |
+| [design-broadcast](design-broadcast/) | Post artifacts to Slack / Notion. Uses Slack + Notion MCPs. |
 
 ## Invoking a skill
 

@@ -13,7 +13,7 @@ generated_at: 2026-05-08
 | Layer | Count | Detail |
 | --- | --- | --- |
 | Knowledge files | 43 | 28 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 7 | 7 with verification phase |
+| Skills (PLAYBOOK + SKILL) | 10 | 10 with verification phase |
 | Worked examples | 66 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
@@ -43,7 +43,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 290 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 319 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 96 | hand-written | Design-AI principles |
 
 #### a11y
@@ -148,9 +148,12 @@ generated_at: 2026-05-08
 | --- | --- | --- | --- | --- | --- |
 | [color-palette](../skills/color-palette/PLAYBOOK.md) | ✓ | ✓ | ✓ | ✓ | 175 |
 | [component-spec-writer](../skills/component-spec-writer/PLAYBOOK.md) | ✓ | ✓ | ✓ | ✓ | 169 |
+| [design-broadcast](../skills/design-broadcast/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 146 |
 | [design-critique](../skills/design-critique/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 137 |
+| [design-pr-review](../skills/design-pr-review/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 171 |
 | [design-system-builder](../skills/design-system-builder/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 218 |
 | [design-system-qa](../skills/design-system-qa/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 163 |
+| [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 

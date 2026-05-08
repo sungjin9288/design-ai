@@ -1,0 +1,229 @@
+# MCP integration overview
+
+design-ai is an MCP-aware system. When MCP servers are connected to your AI agent, design-ai's skills and commands invoke them directly to read from / write to external tools (Figma, Notion, GitHub, Slack, Linear).
+
+## What MCP enables for design-ai
+
+Without MCP, design-ai produces markdown deliverables. The user manually pastes/copies them into other tools.
+
+With MCP, design-ai can:
+
+| MCP | Input from | Output to |
+| --- | --- | --- |
+| **Figma** | Read Variables, components, frames | Write Variables, comment on frames |
+| **Notion** | Read team's design decisions, brand briefs | Sync knowledge base to a Notion site |
+| **GitHub** | Read PRs for design review | Comment on PRs with audit findings |
+| **Slack** | — | Post design review summaries to a channel |
+| **Linear** | Read design system tasks | Create issues for design debt |
+| **Atlassian (Jira/Confluence)** | Read briefs, design decisions | Mirror knowledge to Confluence |
+
+This turns design-ai from "a document generator" into "an agent that operates on real product workflows."
+
+## Supported MCPs
+
+### Tier 1 — high-value, well-supported
+
+| MCP | Status | Use cases |
+| --- | --- | --- |
+| **Figma** | ✓ stable, official | Token sync, component spec extraction, code-connect mapping |
+| **Notion** | ✓ stable | Knowledge mirror, design-decision capture |
+| **GitHub** | ✓ stable | PR design review, issue creation |
+| **Slack** | ✓ stable | Posting design review summaries, sharing artifacts |
+
+### Tier 2 — useful, mature
+
+| MCP | Use cases |
+| --- | --- |
+| **Linear** | Track design system debt as issues |
+| **Atlassian** (Jira/Confluence) | Enterprise alternative to Linear+Notion |
+| **Asana** | Alternative project tracking |
+| **Intercom** | Read user feedback for design audits |
+
+### Tier 3 — situational
+
+| MCP | Use cases |
+| --- | --- |
+| **Canva** | Asset reference (less common for design systems) |
+| **Apollo / Common Room** | Sales/CRM — not design |
+| **Hubspot** | Marketing — UX feedback only |
+
+design-ai's per-MCP integration guides cover Tier 1 + 2.
+
+## Per-integration guides
+
+| Guide | What it covers |
+| --- | --- |
+| [`integrations/figma-mcp.md`](integrations/figma-mcp.md) | Reading variables/components, writing tokens, code-connect via MCP |
+| [`integrations/notion-mcp.md`](integrations/notion-mcp.md) | Mirror knowledge base to a Notion site, capture design decisions |
+| [`integrations/github-mcp.md`](integrations/github-mcp.md) | PR design review, issue creation, design system change tracking |
+| [`integrations/slack-mcp.md`](integrations/slack-mcp.md) | Post review summaries, share artifacts, notify on token changes |
+| [`integrations/linear-mcp.md`](integrations/linear-mcp.md) | Create/update issues, track design debt |
+
+## Setup overview
+
+Each MCP requires:
+1. **Server installation** (per-MCP — see vendor docs).
+2. **Auth** (OAuth flow per MCP — done once per workspace).
+3. **Agent configuration** (e.g., `~/.codex/mcp.json`, Claude Code's MCP settings).
+
+After setup, MCP tools appear in your agent's available tools. design-ai's skills detect and use them.
+
+### Claude Code
+
+```bash
+# Install Figma MCP (example)
+claude mcp add figma -- node /path/to/figma-mcp-server
+# Auth flow opens browser
+```
+
+### Codex CLI
+
+Edit `~/.codex/mcp.json`:
+
+```jsonc
+{
+  "mcpServers": {
+    "figma": {
+      "command": "node",
+      "args": ["/path/to/figma-mcp-server"]
+    }
+  }
+}
+```
+
+### Cursor
+
+Cursor's MCP settings UI (mid-2025+). Add server, complete auth.
+
+## When MCP is unavailable (graceful fallback)
+
+design-ai's skills are designed to work **without** MCPs. When an MCP is missing:
+
+- Figma read → user provides Figma export JSON manually
+- Notion sync → user copies the markdown manually
+- GitHub PR comment → user pastes the audit into the PR review
+
+Skills detect MCP availability and choose path:
+
+```
+[skill check]
+- mcp__Figma__get_variable_defs available? Use it.
+- Else? Ask user for the exported JSON or paste of token list.
+```
+
+This keeps design-ai useful in environments without MCP setup.
+
+## MCP-aware skills
+
+These skills explicitly leverage MCPs when present:
+
+| Skill | MCP used (when available) |
+| --- | --- |
+| `design-pr-review` | GitHub (read PR), Figma (compare designs) |
+| `figma-token-sync` | Figma (read/write Variables) |
+| `design-broadcast` | Slack (post), Notion (page) |
+
+See [`skills/`](../skills/) for full playbooks.
+
+## MCP catalog with design-ai relevance
+
+For each MCP, note **what design-ai can do with it** (concrete actions):
+
+### Figma MCP
+
+```
+mcp__Figma__get_metadata          # File structure
+mcp__Figma__get_design_context    # Selected node's tokens, styles, components
+mcp__Figma__get_variable_defs     # All Figma Variables
+mcp__Figma__get_screenshot        # Render frame as image
+mcp__Figma__get_code_connect_map  # Existing Code Connect mappings
+mcp__Figma__add_code_connect_map  # Add new mapping
+mcp__Figma__create_design_system_rules  # Apply rules to a file
+```
+
+design-ai uses these for:
+- Extracting tokens from a real Figma file
+- Auditing a Figma design against the spec
+- Generating component specs from existing Figma components
+
+### Notion MCP
+
+```
+mcp__864aac7f-...__notion-fetch          # Read page/database
+mcp__864aac7f-...__notion-search         # Find pages
+mcp__864aac7f-...__notion-create-pages   # Create new
+mcp__864aac7f-...__notion-update-page    # Edit existing
+mcp__864aac7f-...__notion-create-database
+mcp__864aac7f-...__notion-create-comment
+mcp__864aac7f-...__notion-get-users
+```
+
+design-ai uses these for:
+- Mirroring knowledge files as Notion pages
+- Reading team's design decisions / brand briefs
+- Creating the design-ai knowledge index in Notion
+
+### GitHub MCP
+
+```
+mcp__plugin_engineering_github__authenticate
+# After auth:
+github__get_pull_request
+github__list_pull_requests
+github__create_pr_comment
+github__create_issue
+github__list_issues
+github__get_repo_contents
+```
+
+design-ai uses these for:
+- Reading PR diff to audit design system compliance
+- Posting review comments on PRs
+- Creating issues for design debt found in audits
+
+### Slack MCP
+
+```
+mcp__plugin_design_slack__authenticate
+# After auth:
+slack__send_message
+slack__list_channels
+slack__find_user
+slack__upload_file
+```
+
+design-ai uses these for:
+- Posting design review summaries
+- Sharing palette / spec artifacts to a `#design` channel
+- Pinging the right people on token changes
+
+### Linear MCP
+
+```
+mcp__plugin_design_linear__authenticate
+# After auth:
+linear__list_issues
+linear__create_issue
+linear__update_issue
+linear__list_projects
+```
+
+design-ai uses these for:
+- Creating issues for each gap found in a design system audit
+- Tracking the rollout of a new design system version
+- Querying status of design debt items
+
+## Privacy considerations
+
+- **Figma file URLs are sensitive**. Don't commit to public repos.
+- **Notion / GitHub auth tokens** are stored per-agent in their respective config files. Don't share.
+- **Don't post auth secrets to chat or commit logs**.
+- design-ai's skills should never log or echo MCP auth tokens.
+
+## Cross-reference
+
+- [`docs/USING.md`](USING.md) — multi-agent setup
+- [`docs/CODEX-INTEGRATION.md`](CODEX-INTEGRATION.md) — Codex MCP setup
+- [`docs/CURSOR-INTEGRATION.md`](CURSOR-INTEGRATION.md) — Cursor MCP setup
+- [`docs/AIDER-INTEGRATION.md`](AIDER-INTEGRATION.md) — Aider (no MCP yet)
+- [`docs/integrations/`](integrations/) — per-MCP guides
