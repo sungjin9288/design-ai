@@ -47,6 +47,15 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Chart color encoding (sequential / diverging / categorical) | `knowledge/patterns/chart-color-encoding.md` |
 | Real-time data UX (WebSocket / polling / optimistic / disconnection) | `knowledge/patterns/realtime-data.md` |
 | Design system QA (5-layer test pyramid: types/tokens/contract/a11y/visual) | `knowledge/patterns/design-system-qa.md` |
+| Document typography (long-form reading, hierarchy, vertical rhythm) | `knowledge/patterns/document-typography.md` |
+| Information architecture (Diátaxis, sidebar, IA, naming) | `knowledge/patterns/information-architecture.md` |
+| Technical writing (voice, structure, code samples per doc type) | `knowledge/patterns/technical-writing.md` |
+| Slide deck design (talk / pitch / reading archetypes, message-led titles) | `knowledge/patterns/slide-deck-design.md` |
+| Report design (TL;DR pyramid, audit format, severity) | `knowledge/patterns/report-design.md` |
+| Brand identity (logo / color / type / voice / imagery foundations) | `knowledge/patterns/brand-identity.md` |
+| Email design (transactional + marketing, bulletproof button, KR spam law) | `knowledge/patterns/email-design.md` |
+| Korean document style (honorific level, hierarchy, conventions) | `knowledge/i18n/korean-document-style.md` |
+| Korean app store visual (icon design, screenshot composition) | `knowledge/i18n/korean-app-store-visual.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
@@ -76,6 +85,10 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Review PR #N for design system compliance" | `skills/design-pr-review/` (uses GitHub MCP) |
 | "Sync tokens with Figma" | `skills/figma-token-sync/` (uses Figma MCP) |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
+| "Write documentation for X" | `skills/document-author/` |
+| "Make a slide deck on Y" | `skills/slide-deck-author/` |
+| "Generate doc from this brief" | `commands/document-from-brief.md` |
+| "Generate slide deck from this brief" | `commands/slide-deck.md` |
 
 ### 3. Cite sources
 

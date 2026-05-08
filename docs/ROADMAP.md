@@ -51,6 +51,38 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 10 — Document design + brand + email (v1.9) ✓ shipped
+
+Expansion beyond product UI into the full design domain.
+
+- [x] **5 document design knowledge files**:
+  - `document-typography.md` — long-form reading (body 18px+, vertical rhythm, paragraph styling).
+  - `information-architecture.md` — Diátaxis 4 types, sidebar structure, naming, versioning, search.
+  - `technical-writing.md` — active/imperative/second-person voice, sentence length, code samples, voice-per-doc-type.
+  - `slide-deck-design.md` — talk vs pitch vs reading archetypes, message-led titles, layouts.
+  - `report-design.md` — TL;DR pyramid, audit format, severity rating, research findings template.
+- [x] **3 brand/medium knowledge files**:
+  - `brand-identity.md` — logo / color / type / voice / imagery foundations.
+  - `email-design.md` — HTML email constraints, transactional vs marketing, bulletproof button, Korean spam law.
+  - `i18n/korean-app-store-visual.md` — icon design, screenshot composition, Korean storefront expectations.
+- [x] **`i18n/korean-document-style.md`** — honorific level (합쇼체 vs 해요체), hierarchy (가/나/다 + numeric), spacing rules, common Korean technical-writing errors.
+- [x] **4 doc component specs**:
+  - `component-callout.md` — info/warning/note for docs (distinct from Alert).
+  - `component-blockquote.md` — attributed quotations.
+  - `component-doc-page.md` — full doc site layout (header / sidebar / TOC / footer).
+  - `component-email-layout.md` — table-based responsive email scaffolding.
+- [x] **2 new skills**: `document-author` (Diátaxis-aware doc writing), `slide-deck-author` (deck outlining).
+- [x] **2 new commands**: `/document-from-brief`, `/slide-deck`.
+- [x] **PRINCIPLES.md** extended with rules 36–41 (documentation & long-form).
+- [x] AGENTS.md / examples/README / skills/README / commands/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 43 → 52 (28 hand-written + 15 generated → 37 hand-written + 15 generated).
+- Skills: 10 → 12 (all with verification phase).
+- Commands: 6 → 8.
+- Examples: 66 → 70.
+- Total lines: ~42K → ~52K.
+
 ## Phase 9 — MCP integrations (v1.8) ✓ shipped
 
 - [x] **MCP-INTEGRATION.md** overview — supported MCPs (Tier 1: Figma/Notion/GitHub/Slack; Tier 2: Linear/Atlassian/Asana/Intercom), setup per agent, graceful fallback strategy, MCP catalog with design-ai relevance.

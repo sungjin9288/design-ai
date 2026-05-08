@@ -66,6 +66,15 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-code.md](component-code.md) | Code (inline + block) | Monospace text + syntax highlighting + copy button. |
 | [component-typography.md](component-typography.md) | Typography (text primitive) | Variant-driven text. When NOT to use (Tailwind utility classes are usually clearer). |
 
+### Documentation components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-callout.md](component-callout.md) | Callout (doc info/warning/note) | Distinct from Alert. note/tip/info/warning/danger/success types, Korean header conventions. |
+| [component-blockquote.md](component-blockquote.md) | Blockquote | Attributed quotations. Italic Latin / weight-shift Korean. |
+| [component-doc-page.md](component-doc-page.md) | DocPage (doc-site layout) | Header + sidebar + body + right TOC + footer. Distinct from product app Layout. |
+| [component-email-layout.md](component-email-layout.md) | EmailLayout | Table-based responsive email scaffolding. Bulletproof button, preheader, Korean spam law. |
+
 ### Custom components (Korean fintech / commerce)
 
 | File | Component | Demonstrates |

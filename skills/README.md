@@ -19,6 +19,8 @@ Task-focused playbooks. Each skill is a directory containing:
 | [design-pr-review](design-pr-review/) | Review a GitHub PR for design system compliance. Uses GitHub MCP when connected. |
 | [figma-token-sync](figma-token-sync/) | Sync tokens between Figma and code. Uses Figma MCP. |
 | [design-broadcast](design-broadcast/) | Post artifacts to Slack / Notion. Uses Slack + Notion MCPs. |
+| [document-author](document-author/) | Write technical / product documentation. Picks the right Diátaxis type, applies template, follows technical-writing voice rules. Korean-aware. |
+| [slide-deck-author](slide-deck-author/) | Outline a slide deck (talk / pitch / reading). Message-led titles, brand-applied, Korean-aware. |
 
 ## Invoking a skill
 

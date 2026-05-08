@@ -71,6 +71,15 @@ The 30 load-bearing rules across this knowledge base. Read this first; it primes
 34. **"Last updated" indicator on every live dashboard.** Cite [`patterns/realtime-data.md`](patterns/realtime-data.md).
 35. **Don't blast updates** — throttle to ≤10/sec per element, batch high-frequency. Respect `prefers-reduced-motion`. Cite [`patterns/realtime-data.md`](patterns/realtime-data.md).
 
+## Documentation & long-form
+
+36. **Documents follow Diátaxis types**: tutorial / how-to / reference / explanation. Each has a different template + voice. Don't mix in one doc. Cite [`patterns/information-architecture.md`](patterns/information-architecture.md).
+37. **Body 18px on docs, not 14px.** Long-form reading needs bigger text than UI. Cite [`patterns/document-typography.md`](patterns/document-typography.md).
+38. **Lead with the answer (TL;DR pyramid).** Especially in reports. Senior reader stops at the first paragraph; structure for that. Cite [`patterns/report-design.md`](patterns/report-design.md).
+39. **Active voice, second person, imperative for instructions.** Cite [`patterns/technical-writing.md`](patterns/technical-writing.md).
+40. **Slide title = the message, not the topic.** "Revenue tripled in Q4" beats "Revenue". Cite [`patterns/slide-deck-design.md`](patterns/slide-deck-design.md).
+41. **Korean documents: pick honorific level (~합니다 vs ~해요) and stay consistent.** Cite [`i18n/korean-document-style.md`](i18n/korean-document-style.md).
+
 ## Output discipline
 
 When producing any design artifact:

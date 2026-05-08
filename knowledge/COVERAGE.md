@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 43 | 28 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 10 | 10 with verification phase |
-| Worked examples | 66 | |
+| Knowledge files | 52 | 37 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 12 | 12 with verification phase |
+| Worked examples | 70 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 46 | **23.1% spec coverage** |
@@ -28,11 +28,11 @@ generated_at: 2026-05-08
 | `colors` | 3 | 1 | 2 |
 | `components` | 2 | 0 | 2 |
 | `design-tokens` | 4 | 3 | 1 |
-| `i18n` | 4 | 4 | 0 |
+| `i18n` | 6 | 6 | 0 |
 | `icons` | 1 | 0 | 1 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 1 | 1 | 0 |
-| `patterns` | 19 | 13 | 6 |
+| `patterns` | 26 | 20 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `typography` | 3 | 1 | 2 |
 
@@ -44,7 +44,7 @@ generated_at: 2026-05-08
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 319 | generated | Coverage report |
-| [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 96 | hand-written | Design-AI principles |
+| [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
 
@@ -81,6 +81,8 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
+| [knowledge/i18n/korean-app-store-visual.md](../knowledge/i18n/korean-app-store-visual.md) | 220 | hand-written | Korean app store visual design |
+| [knowledge/i18n/korean-document-style.md](../knowledge/i18n/korean-document-style.md) | 298 | hand-written | Korean document style |
 | [knowledge/i18n/korean-payments.md](../knowledge/i18n/korean-payments.md) | 208 | hand-written | Korean payments |
 | [knowledge/i18n/korean-product-conventions.md](../knowledge/i18n/korean-product-conventions.md) | 93 | hand-written | Korean product UX conventions |
 | [knowledge/i18n/korean-publishing.md](../knowledge/i18n/korean-publishing.md) | 136 | hand-written | Korean app store & publishing requirements |
@@ -108,23 +110,30 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
+| [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 235 | hand-written | Brand identity |
 | [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 93 | generated | Brand reference index |
 | [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 266 | hand-written | Chart color encoding |
 | [knowledge/patterns/chart-types.md](../knowledge/patterns/chart-types.md) | 341 | generated | Chart type selection guide |
 | [knowledge/patterns/dashboard-composition.md](../knowledge/patterns/dashboard-composition.md) | 296 | hand-written | Dashboard composition |
 | [knowledge/patterns/design-system-qa.md](../knowledge/patterns/design-system-qa.md) | 353 | hand-written | Design system QA |
+| [knowledge/patterns/document-typography.md](../knowledge/patterns/document-typography.md) | 245 | hand-written | Document typography |
+| [knowledge/patterns/email-design.md](../knowledge/patterns/email-design.md) | 335 | hand-written | Email design |
 | [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 260 | hand-written | Empty states |
 | [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 315 | hand-written | Error states |
 | [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 234 | hand-written | Form design patterns |
+| [knowledge/patterns/information-architecture.md](../knowledge/patterns/information-architecture.md) | 338 | hand-written | Information architecture |
 | [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 678 | generated | Landing page patterns |
 | [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md) | 368 | hand-written | List and feed patterns |
 | [knowledge/patterns/mobile-navigation.md](../knowledge/patterns/mobile-navigation.md) | 275 | hand-written | Mobile navigation patterns |
 | [knowledge/patterns/money-and-amount.md](../knowledge/patterns/money-and-amount.md) | 298 | hand-written | Money and amount |
 | [knowledge/patterns/onboarding.md](../knowledge/patterns/onboarding.md) | 297 | hand-written | Onboarding patterns |
 | [knowledge/patterns/realtime-data.md](../knowledge/patterns/realtime-data.md) | 277 | hand-written | Real-time data UX |
+| [knowledge/patterns/report-design.md](../knowledge/patterns/report-design.md) | 327 | hand-written | Report design |
 | [knowledge/patterns/search-ux.md](../knowledge/patterns/search-ux.md) | 370 | hand-written | Search UX |
 | [knowledge/patterns/settings-page.md](../knowledge/patterns/settings-page.md) | 322 | hand-written | Settings page patterns |
+| [knowledge/patterns/slide-deck-design.md](../knowledge/patterns/slide-deck-design.md) | 313 | hand-written | Slide deck design |
 | [knowledge/patterns/styles-catalog.md](../knowledge/patterns/styles-catalog.md) | 2596 | generated | Visual style catalog |
+| [knowledge/patterns/technical-writing.md](../knowledge/patterns/technical-writing.md) | 303 | hand-written | Technical writing |
 | [knowledge/patterns/ui-reasoning.md](../knowledge/patterns/ui-reasoning.md) | 1850 | generated | UI category decision rules |
 | [knowledge/patterns/ux-guidelines.md](../knowledge/patterns/ux-guidelines.md) | 1451 | generated | UX guidelines |
 
@@ -153,8 +162,10 @@ generated_at: 2026-05-08
 | [design-pr-review](../skills/design-pr-review/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 171 |
 | [design-system-builder](../skills/design-system-builder/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 218 |
 | [design-system-qa](../skills/design-system-qa/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 163 |
+| [document-author](../skills/document-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 167 |
 | [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
+| [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 
 ## Worked examples
@@ -172,9 +183,11 @@ generated_at: 2026-05-08
 | [examples/component-autocomplete.md](../examples/component-autocomplete.md) | 199 | `AutoComplete` — spec |
 | [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
 | [examples/component-biometric-gate.md](../examples/component-biometric-gate.md) | 281 | `BiometricGate` (custom — Korean mobile fintech) — spec |
+| [examples/component-blockquote.md](../examples/component-blockquote.md) | 153 | `Blockquote` — spec |
 | [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
 | [examples/component-button.md](../examples/component-button.md) | 213 | `Button` — spec |
 | [examples/component-calendar.md](../examples/component-calendar.md) | 280 | `Calendar` (full month view) — spec |
+| [examples/component-callout.md](../examples/component-callout.md) | 131 | `Callout` (info/warning/note in docs) — spec |
 | [examples/component-card.md](../examples/component-card.md) | 233 | `Card` — spec |
 | [examples/component-carousel.md](../examples/component-carousel.md) | 266 | `Carousel` — spec |
 | [examples/component-cascader.md](../examples/component-cascader.md) | 135 | `Cascader` — spec |
@@ -183,7 +196,9 @@ generated_at: 2026-05-08
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
+| [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
+| [examples/component-email-layout.md](../examples/component-email-layout.md) | 253 | `EmailLayout` — spec |
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
@@ -288,9 +303,13 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `amount-input`
 - `autocomplete`
 - `biometric-gate`
+- `blockquote`
 - `calendar`
+- `callout`
 - `category-picker`
 - `code`
+- `doc-page`
+- `email-layout`
 - `form-controls`
 - `krw-amount`
 - `mention`
