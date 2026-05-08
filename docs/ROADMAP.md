@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 18 — AR / VR / spatial design (v2.7) ✓ shipped — completes v2 expansion
+
+Final phase of the v2 expansion. Adds spatial computing as a first-class design surface alongside motion / illustration / print / video / game UI / conversational. Covers fundamentals (Milgram continuum, FOV, comfort zones, units, vergence-accommodation), VR patterns (Quest / PSVR2 / Vision Pro immersive / locomotion), AR patterns (ARKit / ARCore / HoloLens / world + image + object anchors), spatial UI elements (panels, billboards, controls, menus), and comfort + accessibility (motion sickness mitigations, vision / hearing / motor / cognitive / photosensitive / mobility).
+
+- [x] **5 spatial knowledge files**:
+  - `spatial/spatial-design-fundamentals.md` — Milgram continuum, spatial units, visual angle, FOV, comfort zones (vertical + horizontal), stereoscopic depth, vergence-accommodation conflict, locomotion overview, comfort vignette, spatial audio, hand vs controller vs gaze, anchoring, resolution + PPD, performance budget, platforms, Korean market context.
+  - `spatial/vr-patterns.md` — VR experience categories, three core principles (presence / comfort / use-the-body), HUD anti-patterns + diegetic alternatives, locomotion in detail (teleport / smooth / snap turn / room-scale / hybrid), spatial UI placement, hands + avatars, multiplayer / social, reading text in VR, cinema in VR, performance.
+  - `spatial/ar-patterns.md` — three AR contexts (mobile handheld / glasses / world-anchored), visibility against real backgrounds, spatial mapping, anchoring strategies (world / image / body / screen), onboarding, common interactions, permission + privacy, tracking failure handling, Korean AR market.
+  - `spatial/spatial-ui-elements.md` — panels (the core), billboarding, buttons (push / tap), sliders, menus (wrist / floating / radial / pie), input affordances (pointer / hand cursor / gaze / voice), notifications, lists, forms, Korean text in spatial, dialogs, loading / progress, icons.
+  - `spatial/comfort-and-accessibility.md` — motion sickness triggers + mitigations, comfort settings menu, vision / hearing / motor / cognitive / photosensitive accessibility, eye strain, physical safety, wheelchair / mobility, Korean accessibility, hygiene for shared headsets, session length guidance.
+- [x] **2 component specs**:
+  - `component-spatial-panel.md` — floating 2D-in-3D panel; anchoring (world / wrist / hand / head), visual angle vs absolute sizing, billboarding, hand + gaze + ray-cast + direct-touch input handling, comfort positioning, occlusion.
+  - `component-spatial-locomotion.md` — VR locomotion controller; teleport (with arc + landing indicator + fade), smooth (with vignette), snap-turn (with fade), room-scale, hybrid; comfort settings menu; one-handed + voice alt; comfort defaults for new users.
+- [x] **`skills/spatial-designer/`** — pick mode (VR / AR / MR / WebXR) + platform; spec geometry, anchoring, locomotion, input, UI elements, comfort, accessibility, onboarding.
+- [x] **`/spatial`** slash command.
+- [x] AGENTS.md / skills/README / commands/README / examples/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 86 → 91 (+5 spatial).
+- Examples: 97 → 99 (+2 spatial components).
+- Skills: 18 → 19 (+ spatial-designer).
+- Commands: 14 → 15 (+ /spatial).
+
+### v2 expansion summary (Phases 12 → 18)
+
+Phases 12-18 added 7 new design domains:
+
+| Phase | Domain | Knowledge | Examples | Skill | Command |
+|---|---|---|---|---|---|
+| 12 | Motion design depth | 5 | 4 | motion-designer | /motion-design |
+| 13 | Illustration systems | 5 | 2 | illustration-designer | /illustration |
+| 14 | Print / physical design | 6 | 2 | print-designer | /print |
+| 15 | Video content | 5 | 2 | video-designer | /video |
+| 16 | Game UI | 5 | 2 | game-ui-designer | /game-ui |
+| 17 | Voice / conversational | 5 | 2 | conversational-ui-designer | /conversational |
+| 18 | Spatial / AR / VR | 5 | 2 | spatial-designer | /spatial |
+| | **Total v2.1-v2.7** | **+36** | **+16** | **+7** | **+7** |
+
+Full repo: knowledge 55→91, examples 83→99, skills 12→19, commands 8→15. Korean market focus across all phases. All audits pass throughout. Ready for v3 stabilization / productization phase.
+
 ## Phase 17 — Voice / conversational UI (v2.6) ✓ shipped
 
 Conversational UI as a first-class design surface. Covers fundamentals (turn-taking, intents, modalities, latency, hallucinations), voice UI patterns, traditional chatbot design, AI chat (LLM-based) interfaces, and Korean conventions (Bixby, Clova, NUGU, KakaoTalk channel, 해요체 / 합쇼체).

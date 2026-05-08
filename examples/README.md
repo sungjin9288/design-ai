@@ -142,6 +142,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-chat-interface.md](component-chat-interface.md) | ChatInterface | Reusable chat shell for chatbot / AI / live agent. Markdown + code block rendering, streaming, suggested chips, typing indicator, attachments, Korean IME + 해요체 defaults. |
 | [component-voice-input.md](component-voice-input.md) | VoiceInput | Push-to-talk + transcript voice input. Web Speech / Clova / Whisper backends, listening visualization, permission handling, Korean STT defaults. |
 
+### Spatial / AR / VR components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-spatial-panel.md](component-spatial-panel.md) | SpatialPanel | Floating 2D-in-3D panel for VR / AR / spatial computing. Anchoring (world / wrist / hand / head), distance / scale / billboarding, comfort positioning, hand + gaze input, depth occlusion. |
+| [component-spatial-locomotion.md](component-spatial-locomotion.md) | SpatialLocomotion | VR locomotion controller with teleport, smooth, snap-turn, room-scale modes; comfort vignette, fade transitions, comfort-default presets. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

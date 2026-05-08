@@ -27,6 +27,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [video-designer](video-designer/) | Spec video for marketing, social, or in-product use. Length, format, aspect, codec, captions, voiceover; Korean ad disclosure + KFDA compliance. |
 | [game-ui-designer](game-ui-designer/) | Spec game UI — HUD, menus, inventory, store — across genres + platforms. Korean gaming conventions (확률 표시, 본인인증, PC bang) + accessibility. |
 | [conversational-ui-designer](conversational-ui-designer/) | Spec a conversational UI — voice assistant, chatbot, AI chat (LLM), or live agent. Modality, persona (해요체 / 합쇼체), intents, flows, Korean conventions (Bixby / Clova / KakaoTalk channel). |
+| [spatial-designer](spatial-designer/) | Spec spatial / AR / VR / MR experiences. Platform (Vision Pro / Quest / HoloLens / mobile AR / WebXR), anchoring, locomotion (teleport / smooth / snap turn), comfort, accessibility, Korean Galaxy XR. |
 
 ## Invoking a skill
 

@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 86 | 71 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 18 | 18 with verification phase |
-| Worked examples | 97 | |
+| Knowledge files | 91 | 76 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
+| Worked examples | 99 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -38,6 +38,7 @@ generated_at: 2026-05-08
 | `patterns` | 29 | 23 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `print` | 6 | 6 | 0 |
+| `spatial` | 5 | 5 | 0 |
 | `typography` | 3 | 1 | 2 |
 | `video` | 5 | 5 | 0 |
 
@@ -48,7 +49,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 438 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 454 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -197,6 +198,16 @@ generated_at: 2026-05-08
 | [knowledge/print/signage-and-posters.md](../knowledge/print/signage-and-posters.md) | 232 | hand-written | Signage and posters |
 | [knowledge/print/stationery.md](../knowledge/print/stationery.md) | 259 | hand-written | Stationery |
 
+#### spatial
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/spatial/ar-patterns.md](../knowledge/spatial/ar-patterns.md) | 250 | hand-written | AR patterns |
+| [knowledge/spatial/comfort-and-accessibility.md](../knowledge/spatial/comfort-and-accessibility.md) | 242 | hand-written | Comfort and accessibility in spatial |
+| [knowledge/spatial/spatial-design-fundamentals.md](../knowledge/spatial/spatial-design-fundamentals.md) | 343 | hand-written | Spatial design fundamentals |
+| [knowledge/spatial/spatial-ui-elements.md](../knowledge/spatial/spatial-ui-elements.md) | 340 | hand-written | Spatial UI elements |
+| [knowledge/spatial/vr-patterns.md](../knowledge/spatial/vr-patterns.md) | 299 | hand-written | VR patterns |
+
 #### typography
 
 | File | Lines | Type | Title |
@@ -235,6 +246,7 @@ generated_at: 2026-05-08
 | [motion-designer](../skills/motion-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 223 |
 | [print-designer](../skills/print-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 209 |
 | [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
+| [spatial-designer](../skills/spatial-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 238 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 | [video-designer](../skills/video-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 240 |
 
@@ -307,6 +319,8 @@ generated_at: 2026-05-08
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
 | [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
+| [examples/component-spatial-locomotion.md](../examples/component-spatial-locomotion.md) | 373 | `SpatialLocomotion` (custom — VR locomotion controller with comfort options) — spec |
+| [examples/component-spatial-panel.md](../examples/component-spatial-panel.md) | 330 | `SpatialPanel` (custom — floating UI panel for VR / AR / spatial computing) — spec |
 | [examples/component-spin.md](../examples/component-spin.md) | 173 | `Spin` (Spinner) — spec |
 | [examples/component-splitter.md](../examples/component-splitter.md) | 210 | `Splitter` (resizable panel) — spec |
 | [examples/component-statistic.md](../examples/component-statistic.md) | 282 | `Statistic` — spec |
@@ -428,6 +442,8 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `payment-receipt`
 - `pricing-cards`
 - `scroll-reveal`
+- `spatial-locomotion`
+- `spatial-panel`
 - `stock-chart`
 - `tag-badge`
 - `testimonial-carousel`

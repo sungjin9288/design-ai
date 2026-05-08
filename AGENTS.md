@@ -91,6 +91,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Chatbot design (rule-based, intent-driven, hybrid) | `knowledge/conversational/chatbot-design.md` |
 | AI chat interfaces (ChatGPT, Claude, LLM-based UX) | `knowledge/conversational/ai-chat-interfaces.md` |
 | Korean voice / conversational conventions (Bixby, Clova, 해요체 / 합쇼체) | `knowledge/conversational/korean-voice-conventions.md` |
+| Spatial design fundamentals (3D, depth, comfort, FOV, units) | `knowledge/spatial/spatial-design-fundamentals.md` |
+| VR patterns (Quest, PSVR2, Vision Pro immersive, locomotion) | `knowledge/spatial/vr-patterns.md` |
+| AR patterns (ARKit, ARCore, HoloLens, world / image / object anchors) | `knowledge/spatial/ar-patterns.md` |
+| Spatial UI elements (panels, billboards, controls, menus) | `knowledge/spatial/spatial-ui-elements.md` |
+| Spatial comfort + accessibility (motion sickness, vision, hearing, motor) | `knowledge/spatial/comfort-and-accessibility.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -124,6 +129,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Spec a video (hero loop / demo / Shorts / onboarding)" | `skills/video-designer/` |
 | "Design game UI (HUD / menu / inventory / store)" | `skills/game-ui-designer/` |
 | "Spec a chatbot / voice / AI chat" | `skills/conversational-ui-designer/` |
+| "Design a VR / AR / spatial experience" | `skills/spatial-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

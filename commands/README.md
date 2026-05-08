@@ -18,5 +18,6 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/video](video.md) | Spec video for marketing, social, or in-product. Length, format, captions, voiceover; KR ad disclosure. |
 | [/game-ui](game-ui.md) | Spec game UI (HUD / menu / inventory / store). Genre + platform + KR conventions + a11y. |
 | [/conversational](conversational.md) | Spec a chatbot / voice / AI chat / live agent. Persona, intents, flows; KR conventions (해요체 / 합쇼체, Bixby / Clova / KakaoTalk channel). |
+| [/spatial](spatial.md) | Spec a VR / AR / MR / WebXR experience. Platform, anchoring, locomotion, comfort, accessibility; Korean Galaxy XR + KR market. |
 
 Each file has YAML frontmatter (`description`) and a body. The body is the prompt the command expands to.
