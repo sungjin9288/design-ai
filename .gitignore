@@ -20,3 +20,8 @@ __pycache__/
 # OS
 .DS_Store
 *.preview.html
+
+# NPM
+node_modules/
+*.tgz
+.npm/

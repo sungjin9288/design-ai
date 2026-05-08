@@ -2,6 +2,29 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.1.0 — Distribution / NPM CLI (2026-05)
+
+NPM CLI distribution. One-command install for adopters.
+
+### Added
+- **`@design-ai/cli` npm package** — `npx @design-ai/cli install` from any machine with Node ≥ 18.
+- **CLI** (`cli/`): `install`, `update`, `uninstall`, `status`, `list`, `version`, `help`. Aliases (`i`, `u`, `s`, `ls`, `v`).
+- **`docs/DISTRIBUTION.md`** — three install paths, CLI reference, versioning rules, publishing checklist, troubleshooting.
+- **`.github/workflows/publish.yml`** — auto-publish on `v*` tag with version-match enforcement, audit run, `npm pack --dry-run`, `--provenance` attestation.
+- **`.npmignore`** — safety net for what stays out of the npm tarball.
+
+### Changed
+- **`.claude-plugin/plugin.json`** version: 3.0.0 → 3.1.0 (aligned with CLI).
+- **`README.md`** — lead with `npx @design-ai/cli install` as primary install path.
+
+### What you can do now
+```bash
+npx @design-ai/cli install
+design-ai status
+design-ai list skills
+design-ai update
+```
+
 ## v3.0.0 — Stabilization (2026-05)
 
 Productization phase. Makes design-ai installable as a Claude Code plugin and prepares the corpus for adopters beyond the original author.

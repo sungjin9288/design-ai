@@ -28,13 +28,28 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 ## Install (Claude Code)
 
+### Option A: NPM (one command, recommended)
+
+```bash
+npx @design-ai/cli install
+```
+
+Or globally:
+
+```bash
+npm install -g @design-ai/cli
+design-ai install
+```
+
+### Option B: Git clone (for contributors)
+
 ```bash
 git clone https://github.com/sungjin/design-ai.git
 cd design-ai
 ./install.sh
 ```
 
-That installs all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+Either way, you get all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -43,7 +58,9 @@ That installs all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `
 /design-from-brief Korean fintech for freelancers
 ```
 
-`./install.sh --status` to see what's installed; `./install.sh --uninstall` to remove.
+CLI commands: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `version`, `help`.
+
+See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 
 ## Install (other agents)
 

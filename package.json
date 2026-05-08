@@ -1,0 +1,65 @@
+{
+  "name": "@design-ai/cli",
+  "version": "3.1.0",
+  "description": "Senior product designer for any AI coding agent. Installs design-ai (19 skills, 15 commands, 4 agents) into Claude Code globally. Korean market depth.",
+  "bin": {
+    "design-ai": "./cli/bin/design-ai.mjs"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test cli/lib/*.test.mjs 2>/dev/null || echo 'no tests yet'",
+    "audit": "python3 tools/audit/frontmatter-check.py && python3 tools/audit/link-check.py && python3 tools/audit/korean-copy-check.py && python3 tools/audit/check-coverage.py",
+    "preview": "python3 tools/preview/render-tokens.py"
+  },
+  "keywords": [
+    "design",
+    "design-system",
+    "ui",
+    "ux",
+    "design-tokens",
+    "claude-code",
+    "claude-code-plugin",
+    "ai-agent",
+    "korean",
+    "motion",
+    "illustration",
+    "print",
+    "video",
+    "game-ui",
+    "conversational",
+    "spatial",
+    "vr",
+    "ar"
+  ],
+  "author": "Sungjin Park <sungjin9288@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sungjin/design-ai.git"
+  },
+  "homepage": "https://github.com/sungjin/design-ai#readme",
+  "bugs": {
+    "url": "https://github.com/sungjin/design-ai/issues"
+  },
+  "files": [
+    "cli/",
+    "install.sh",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    ".claude-plugin/",
+    "knowledge/",
+    "examples/",
+    "skills/",
+    "agents/",
+    "commands/",
+    "docs/",
+    "tools/audit/",
+    "tools/preview/"
+  ]
+}

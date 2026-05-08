@@ -51,6 +51,52 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 20 — Distribution (v3.1) ✓ shipped — productization phase
+
+NPM CLI distribution. Adopters now go from zero to installed in one command (`npx @design-ai/cli install`) without cloning the repo.
+
+### Added
+- **`package.json`** — npm package `@design-ai/cli`, bin `design-ai`, ESM, Node ≥18.
+- **`cli/`** — Node.js CLI:
+  - `cli/bin/design-ai.mjs` — entry point.
+  - `cli/lib/dispatch.mjs` — command router with aliases (`i` / `u` / `s` / `ls` / `v`).
+  - `cli/lib/paths.mjs` — path resolution (npm package vs git clone, env overrides).
+  - `cli/lib/log.mjs` — colorized terminal output (NO_COLOR-aware).
+  - `cli/lib/exec.mjs` — shell exec helpers.
+  - 7 commands: `install`, `update`, `uninstall`, `status`, `list`, `version`, `help`.
+  - `install` / `uninstall` delegate to the existing `install.sh` (single source of truth).
+  - `list` reads from `.claude-plugin/plugin.json` to show full catalog.
+- **`.npmignore`** — safety net for what stays out of the npm tarball; primary control via `package.json` `files` allowlist.
+- **`.github/workflows/publish.yml`** — auto-publish on `v*` tag. Verifies tag matches `package.json`, plugin.json matches package.json, runs all 4 audits, runs `npm pack --dry-run`, publishes with `--provenance`.
+- **`docs/DISTRIBUTION.md`** — three install paths (npm / git clone / manual symlinks), CLI command reference, env override reference, versioning rules, publishing checklist, troubleshooting.
+
+### Changed
+- **`.claude-plugin/plugin.json`** version: 3.0.0 → 3.1.0 (aligned with CLI).
+- **`README.md`** — lead with `npx @design-ai/cli install` as primary install path; git clone retained as Option B for contributors.
+- **`docs/ROADMAP.md`** updated with this section.
+
+### Coverage (no corpus change in this phase)
+- Knowledge: 91 (no change)
+- Examples: 99 (no change)
+- Skills: 19 (no change)
+- Commands: 15 (no change) — different from CLI commands; refers to slash commands
+- New: NPM CLI with 7 commands, publish workflow, DISTRIBUTION docs
+
+### What this enables
+- **One-command install** — `npx @design-ai/cli install` works on any Node ≥ 18 machine.
+- **Update path** — `design-ai update` pulls + reinstalls without manual git work.
+- **Catalog browsing** — `design-ai list skills` shows what's available before deciding to install.
+- **Cross-machine consistency** — npm-published version is the canonical reference; git clone tracks `main` for contributors.
+- **Provenance attestation** — npm `--provenance` flag verifies builds came from this GitHub repo.
+
+### What's still ahead (v3.x and beyond)
+- Public doc site (mkdocs-material on GitHub Pages) for browsing knowledge without install.
+- Versioned knowledge files (`version:` in frontmatter for fine-grained pinning).
+- Cross-tool integration tests (Codex CLI / Cursor / Aider sessions captured as worked examples).
+- Component coverage push 23.6% → 30%+.
+- Homebrew formula.
+- VS Code extension wrapper.
+
 ## Phase 19 — Stabilization (v3.0) ✓ shipped — productization phase
 
 The v2 expansion proved the corpus works across 7 new design domains. Phase 19 is the stabilization step the user requested: "안정화 후 시장성, 대중성이 있으면 프로그램화 진행" — stabilize first, productize next.

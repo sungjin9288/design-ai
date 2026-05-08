@@ -1,0 +1,44 @@
+# What stays out of the npm tarball.
+# `files` in package.json is the allowlist (preferred); .npmignore is the
+# safety net for anything that sneaks in.
+
+# Source material — large, gitignored upstream clones, not needed at runtime
+refs/
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts that shouldn't ship
+node_modules/
+*.log
+.npm/
+.cache/
+
+# Test fixtures (if added later)
+test/
+tests/
+__tests__/
+*.test.mjs
+*.test.js
+*.spec.mjs
+*.spec.js
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Per-developer config
+.env
+.env.local
+.envrc
+
+# Big files we don't ship via npm (use git clone for these)
+tools/extractors/
