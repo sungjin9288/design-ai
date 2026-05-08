@@ -2,6 +2,34 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.4.0 — Multi-agent integration + Homebrew (2026-05)
+
+Concrete proof of design-ai's "model-agnostic" tagline. Four worked-example walkthroughs (Codex CLI / Cursor / Aider / SDK), Homebrew formula for `brew install`, and a CI audit that keeps walkthroughs from drifting.
+
+### Added
+- **`docs/integrations/codex-walkthrough.md`** — 4 walkthroughs (component spec, design system, iterate critique, Figma audit) + Codex-specific tips (file paths, MCP config, AGENTS.md fragments).
+- **`docs/integrations/cursor-walkthrough.md`** — 5 walkthroughs (inline component spec, audit existing component, Figma critique, token generation, `Cmd+K` inline edits) + Composer mode patterns.
+- **`docs/integrations/aider-walkthrough.md`** — 4 walkthroughs (component impl, refactor to spec, design system bootstrap, audit-then-fix) + Aider-specific patterns (architect mode, auto-test, bash aliases).
+- **`docs/integrations/sdk-walkthrough.md`** — Anthropic SDK + OpenAI SDK adoption with prompt caching, tool use, streaming. Production chatbot example.
+- **`Formula/design-ai.rb`** — Homebrew formula for `brew install design-ai`. Tap-based distribution; future-ready for homebrew-core submission.
+- **`Formula/README.md`** — Maintainer instructions for releasing new versions via Homebrew.
+- **`tools/audit/integration-check.py`** — verifies each walkthrough has required sections (Prerequisites, Setup, ≥3 Walkthrough N, Next/cross-reference). Wired into CI.
+
+### Changed
+- **`docs/CODEX-INTEGRATION.md`**, **`docs/CURSOR-INTEGRATION.md`**, **`docs/AIDER-INTEGRATION.md`** — link to the new walkthroughs at the top.
+- **`README.md`** — added Option B: Homebrew install path; agent table now links to per-agent walkthroughs.
+- **`mkdocs.yml`** — Integrations nav restructured: each agent now has Setup + Walkthrough sub-entries; SDK and Distribution pages added at top level.
+- **`.github/workflows/audit.yml`** — added `integration-check.py` step. CI now has 5 audits.
+
+### Versions
+- CLI: 3.3.0 → 3.4.0
+- Plugin / corpus: 3.3.0 → 3.4.0
+
+### What this enables
+- **Model-agnostic adoption** — adopters can choose Codex, Cursor, Aider, or pure SDK without reverse-engineering setup.
+- **Homebrew install** — Mac users get `brew install design-ai`. Cleaner than git clone for non-developer audiences.
+- **Quality bar on integration docs** — CI fails if a walkthrough loses its standard structure (Prerequisites / Setup / Walkthroughs / Next).
+
 ## v3.3.0 — Component coverage push (2026-05)
 
 Component spec coverage 23.6% → **30.7%** (47 → 61 of 199 canonical components).

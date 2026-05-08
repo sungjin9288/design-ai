@@ -2,6 +2,8 @@
 
 How to use design-ai with **OpenAI Codex CLI** (Anthropic-compatible MCP). Codex is the primary "non-Claude-Code" agent target for this project.
 
+> **Looking for a worked example?** See [`docs/integrations/codex-walkthrough.md`](integrations/codex-walkthrough.md) — concrete session walkthroughs for spec'ing components, generating design systems, iterating on critiques, and auditing Figma exports.
+
 ## Quickstart
 
 ```bash

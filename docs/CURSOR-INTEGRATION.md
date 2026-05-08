@@ -2,6 +2,8 @@
 
 How to use design-ai with **Cursor IDE** (AI-native editor with Claude/GPT models).
 
+> **Looking for a worked example?** See [`docs/integrations/cursor-walkthrough.md`](integrations/cursor-walkthrough.md) — concrete sessions for spec'ing components, auditing existing code, iterating on Figma screenshots, generating tokens, and using `Cmd+K` inline edits.
+
 ## Quickstart
 
 Two paths:

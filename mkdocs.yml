@@ -248,9 +248,17 @@ nav:
   - Integrations:
       - Figma: docs/FIGMA-INTEGRATION.md
       - MCP: docs/MCP-INTEGRATION.md
-      - Codex CLI: docs/CODEX-INTEGRATION.md
-      - Cursor: docs/CURSOR-INTEGRATION.md
-      - Aider: docs/AIDER-INTEGRATION.md
+      - Codex CLI:
+          - Setup: docs/CODEX-INTEGRATION.md
+          - Walkthrough: docs/integrations/codex-walkthrough.md
+      - Cursor:
+          - Setup: docs/CURSOR-INTEGRATION.md
+          - Walkthrough: docs/integrations/cursor-walkthrough.md
+      - Aider:
+          - Setup: docs/AIDER-INTEGRATION.md
+          - Walkthrough: docs/integrations/aider-walkthrough.md
+      - SDK (Anthropic / OpenAI): docs/integrations/sdk-walkthrough.md
+      - Distribution: docs/DISTRIBUTION.md
       - Token sync: docs/TOKEN-SYNC.md
       - Plugin packaging: docs/PLUGIN-PACKAGING.md
   - Reference:

@@ -51,6 +51,54 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 23 — Multi-agent integration + Homebrew (v3.4) ✓ shipped
+
+Concrete proof that design-ai's "model-agnostic" tagline is real. Until now, the corpus had been heavily exercised through Claude Code; this phase adds worked walkthroughs for Codex CLI / Cursor / Aider / SDK and a Homebrew formula for broader install reach.
+
+### Added
+- **4 integration walkthroughs** in `docs/integrations/`:
+  - `codex-walkthrough.md` — 4 sessions (component spec, design system, iterate critique, Figma audit) + Codex-specific tips (paths, MCP config, AGENTS.md fragments).
+  - `cursor-walkthrough.md` — 5 sessions (inline spec, audit existing, Figma critique, token gen, `Cmd+K` inline) + Composer mode + MCP config.
+  - `aider-walkthrough.md` — 4 sessions (impl, refactor, design-system bootstrap, audit-then-fix) + Aider patterns (architect mode, auto-test, bash aliases).
+  - `sdk-walkthrough.md` — Anthropic + OpenAI SDK adoption with prompt caching, tool use, streaming. Production chatbot example.
+- **`Formula/design-ai.rb`** — Homebrew formula:
+  - Installs corpus to `libexec`.
+  - Wraps `install.sh` as `design-ai-install` binary.
+  - Symlinks the npm CLI as `design-ai` if Node is present.
+  - Includes a `test do` block validating plugin manifest + skill counts.
+- **`Formula/README.md`** — maintainer release runbook (tag, release, get sha256, update formula, test, push).
+- **`tools/audit/integration-check.py`** — verifies each walkthrough has required sections (Prerequisites / Setup / ≥3 Walkthroughs / Next). Catches structural drift over time.
+- **`.github/workflows/audit.yml`** — wired the new audit into CI. 5 audits now run on every PR.
+
+### Changed
+- **`docs/CODEX-INTEGRATION.md`** + **`CURSOR-INTEGRATION.md`** + **`AIDER-INTEGRATION.md`** — top-of-file callouts linking to the corresponding walkthrough.
+- **`README.md`** — Option B: Homebrew install path added; agent table links to per-agent walkthroughs.
+- **`mkdocs.yml`** — Integrations nav restructured per agent (Setup + Walkthrough sub-entries); SDK + Distribution promoted to top-level entries.
+
+### Verified
+- All 5 audits pass (frontmatter / link / Korean / coverage / integration-check).
+- Integration audit confirms all 4 walkthroughs have the required structure.
+- CLI smoke tests still pass.
+- mkdocs build with new nav succeeds.
+
+### Versions
+- CLI: 3.3.0 → 3.4.0
+- Plugin / corpus: 3.3.0 → 3.4.0
+
+### What this enables
+- **Model-agnostic adoption** — adopters can choose Codex / Cursor / Aider / SDK without reverse-engineering setup. Each walkthrough is self-contained.
+- **Homebrew install** — `brew install design-ai` lowers friction for Mac users (especially designers who aren't comfortable with npm or git clones).
+- **Production SDK adoption** — concrete patterns (prompt caching, streaming, tool use, chatbot example) lower the barrier for embedding design-ai into products.
+- **CI safeguards** — integration walkthroughs can't silently rot; audit catches missing sections.
+
+### What's still ahead (v3.5+)
+- Versioned knowledge files (`version:` in frontmatter for fine-grained pinning).
+- Coverage push 30% → 40%+ (next batch of canonical specs).
+- VS Code extension wrapper.
+- Component spec extractor (scaffold from upstream diff).
+- Semantic search index for the doc site (algolia / typesense).
+- Internationalization of the doc site (English primary; Korean translation of key pages).
+
 ## Phase 22 — Component coverage push (v3.3) ✓ shipped
 
 Component spec coverage from 23.6% → **30.7%** (47 → 61 of 199 canonical components).

@@ -2,6 +2,8 @@
 
 How to use design-ai with **Aider** (terminal-based AI pair programmer, supports Claude/GPT models).
 
+> **Looking for a worked example?** See [`docs/integrations/aider-walkthrough.md`](integrations/aider-walkthrough.md) — concrete sessions for component implementation, refactoring, design system bootstrap, and audit-then-fix workflows. Includes architect-mode, auto-test, and bash alias patterns.
+
 ## Quickstart
 
 Aider's `--read` flag adds files as read-only context. Pass design-ai entry docs at startup:

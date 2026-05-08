@@ -42,7 +42,15 @@ npm install -g @design-ai/cli
 design-ai install
 ```
 
-### Option B: Git clone (for contributors)
+### Option B: Homebrew
+
+```bash
+brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew install design-ai
+design-ai install
+```
+
+### Option C: Git clone (for contributors)
 
 ```bash
 git clone https://github.com/sungjin/design-ai.git
@@ -50,7 +58,7 @@ cd design-ai
 ./install.sh
 ```
 
-Either way, you get all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+Any of the three: you get all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -67,13 +75,13 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 
 | Agent | Setup |
 |---|---|
-| **Codex CLI** | Open this dir as project root. `AGENTS.md` is read automatically. |
-| **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. |
-| **Aider** | Pass `AGENTS.md` as system prompt. |
-| **Claude API / SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. |
+| **Codex CLI** | Open this dir as project root. `AGENTS.md` is read automatically. [Walkthrough](docs/integrations/codex-walkthrough.md). |
+| **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. [Walkthrough](docs/integrations/cursor-walkthrough.md). |
+| **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
+| **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
-See [`docs/USING.md`](docs/USING.md) for per-agent details.
+See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.
 
 ## What you get
 

@@ -37,6 +37,9 @@ jobs:
       - name: Korean copy check
         run: python3 tools/audit/korean-copy-check.py
 
+      - name: Integration walkthroughs check
+        run: python3 tools/audit/integration-check.py
+
       - name: Coverage report (regenerate + diff)
         run: |
           python3 tools/audit/check-coverage.py
