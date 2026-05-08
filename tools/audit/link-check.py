@@ -56,7 +56,7 @@ def find_similar(broken: Path) -> list[Path]:
     # Search anywhere in the repo
     candidates = []
     for p in ROOT.rglob(name):
-        if "refs/" in str(p) or ".claude/" in str(p):
+        if any(skip in str(p) for skip in ("refs/", ".claude/", "site-src/", "/site/", "node_modules/")):
             continue
         candidates.append(p)
     return candidates[:3]
@@ -67,7 +67,10 @@ def main() -> None:
     parser.add_argument("--fix-suggestions", action="store_true", help="Suggest similar files for broken links")
     args = parser.parse_args()
 
-    files = [p for p in ROOT.rglob("*.md") if "refs/" not in str(p) and ".claude/" not in str(p)]
+    files = [
+        p for p in ROOT.rglob("*.md")
+        if not any(skip in str(p) for skip in ("refs/", ".claude/", "site-src/", "/site/", "node_modules/"))
+    ]
 
     broken: list[tuple[Path, str, int]] = []  # (source, link, line)
     files_checked = 0

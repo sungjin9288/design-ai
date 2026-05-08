@@ -1,0 +1,15 @@
+# mkdocs-material requirements for the design-ai doc site.
+#
+# Local preview:
+#   pip install -r docs/requirements.txt
+#   ./tools/build-docs.sh   # populate site-src/ with symlinks
+#   mkdocs serve
+#
+# Pinned to floor versions known to work as of 2026-05.
+# Older versions (mkdocs-material 9.5 + pymdown-extensions 10.12) had a
+# pygments/pymdown interaction bug; the versions below resolve it.
+
+mkdocs>=1.6.1
+mkdocs-material>=9.7.0
+pymdown-extensions>=10.21.0
+pygments>=2.18.0

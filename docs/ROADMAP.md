@@ -51,6 +51,63 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 21 — Public doc site (v3.2) ✓ shipped
+
+mkdocs-material site auto-deploying to GitHub Pages. Discoverability + search for prospective adopters before they install.
+
+### Added
+- **`mkdocs.yml`** — site config:
+  - Material theme, indigo / violet brand palette (light + dark schemes via `prefers-color-scheme`).
+  - Pretendard variable font for Korean, Inter for Latin, JetBrains Mono for code.
+  - Full nav tree covering Knowledge / Skills / Commands / Agents / Examples / Integrations / Reference.
+  - 17 markdown extensions enabled (admonition, tabs, tasklist, mermaid, etc).
+- **`tools/build-docs.sh`** — populates `site-src/` with a symlink farm (mkdocs requires docs_dir to be a sibling/descendant of config, not parent). Idempotent. Index symlink: `site-src/index.md → ../README.md`.
+- **`docs/site-overrides/`** — theme customizations:
+  - `extra.css` — Pretendard variable font from jsDelivr CDN, brand color tweaks, Korean reading optimizations (`word-break: keep-all`, `font-feature-settings: "kern"`).
+  - `main.html` — announcement bar pushing the npx install command + OpenGraph / Twitter Card metadata.
+  - `logo.svg`, `favicon.svg` — gradient indigo/violet "D" mark.
+- **`docs/requirements.txt`** — pinned mkdocs-material `>=9.7.0` (older 9.5.x had a pygments/pymdown-extensions interaction bug that caused build to crash on `highlight.pygments_lang_class: true`).
+- **`.github/workflows/docs.yml`** — auto-deploy to GitHub Pages:
+  - Triggers on push to main (paths-filtered to docs-relevant changes only) + manual dispatch.
+  - Uses `actions/configure-pages@v4`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`.
+  - Concurrency-grouped under `pages` with `cancel-in-progress: false`.
+  - Runs `./tools/build-docs.sh` then `mkdocs build --clean` (deliberately not `--strict` — informational cross-reference warnings aren't blocking; actual broken links are caught by the existing `link-check.py` audit on every PR).
+
+### Changed
+- **`README.md`** — added doc-site badge linking to the live site.
+- **`tools/audit/link-check.py`** + **`korean-copy-check.py`** — now skip `site-src/`, `site/`, `node_modules/` walk paths so audits don't double-count symlinked content.
+- **`.gitignore`** — excludes `site/`, `site-src/` build artifacts.
+
+### Local preview
+```bash
+pip install -r docs/requirements.txt
+./tools/build-docs.sh
+mkdocs serve
+# → http://127.0.0.1:8000
+```
+
+### Verified
+- All 4 audits still pass (frontmatter / link / Korean copy / coverage).
+- `mkdocs build --clean` succeeds in 8 seconds.
+- 333 HTML files generated, 35MB total (includes search index + asset duplication).
+- Theme overrides loaded (Pretendard, indigo brand colors, custom logo).
+
+### What this enables
+- **Discoverability** — prospective adopters can browse the corpus on the public site before deciding to install.
+- **Search** — built-in mkdocs-material search across all 91 knowledge files + 99 examples + skill playbooks. Korean + English search both supported.
+- **Korean readability** — Pretendard font + word-break rules render Hangul correctly across all pages.
+- **Lower-friction evaluation** — open-source evaluators can read full skill / pattern docs without cloning.
+- **SEO** — structured site improves Google indexing for design-ai content.
+
+### What's still ahead (v3.3+)
+- Versioned knowledge files (`version:` in frontmatter for fine-grained pinning).
+- Cross-tool integration tests (Codex CLI / Cursor / Aider sessions captured as worked examples).
+- Component coverage push 23.6% → 30%+.
+- Homebrew formula.
+- VS Code extension wrapper.
+- Search analytics (which knowledge files are most-read).
+- Versioned doc site (mkdocs `mike` plugin) for snapshotting v3.x docs.
+
 ## Phase 20 — Distribution (v3.1) ✓ shipped — productization phase
 
 NPM CLI distribution. Adopters now go from zero to installed in one command (`npx @design-ai/cli install`) without cloning the repo.

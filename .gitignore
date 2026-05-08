@@ -25,3 +25,7 @@ __pycache__/
 node_modules/
 *.tgz
 .npm/
+
+# mkdocs build artifacts
+site/
+site-src/

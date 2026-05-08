@@ -1,0 +1,75 @@
+name: Deploy doc site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "knowledge/**"
+      - "examples/**"
+      - "skills/**"
+      - "agents/**"
+      - "commands/**"
+      - "docs/**"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+# GitHub Pages settings
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; cancel in-progress runs.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build mkdocs site
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # for git log timestamps in mkdocs
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install mkdocs-material
+        run: pip install -r docs/requirements.txt
+
+      - name: Populate site-src/ symlink farm
+        run: ./tools/build-docs.sh
+
+      - name: Build site
+        run: mkdocs build --clean
+        # Note: deliberately not --strict. The corpus has many cross-references
+        # that mkdocs flags as INFO (e.g., links to directories that resolve to
+        # README.md, or hex colors interpreted as anchors). Real broken links
+        # are caught by the dedicated link-check.py audit on every PR.
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,6 +1,7 @@
 # Design AI
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](.github/workflows/audit.yml)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/)
 [![Examples](https://img.shields.io/badge/examples-99-blue)](examples/)
 [![Skills](https://img.shields.io/badge/skills-19-blue)](skills/)

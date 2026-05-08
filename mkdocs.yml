@@ -1,0 +1,261 @@
+# mkdocs-material site config for design-ai
+# Renders the design-ai corpus as a browsable doc site at GitHub Pages.
+#
+# Local preview:
+#   pip install -r docs/requirements.txt
+#   ./tools/build-docs.sh   # populates site-src/ with symlinks
+#   mkdocs serve
+#
+# Auto-deploy: see .github/workflows/docs.yml — runs on every push to main.
+
+site_name: design-ai
+site_description: >-
+  A model-agnostic design knowledge base + skill system. Senior product designer
+  for any AI coding agent (Claude Code, Codex CLI, Cursor, Aider). Korean market
+  depth. 91 knowledge files, 99 worked examples, 19 skills, 15 slash commands.
+site_author: Sungjin Park
+site_url: https://sungjin9288.github.io/design-ai/
+
+repo_url: https://github.com/sungjin/design-ai
+repo_name: sungjin/design-ai
+edit_uri: edit/main/
+
+# mkdocs requires docs_dir to be a sibling or descendant of the config file,
+# not the parent. We use a symlink-farm directory `site-src/` populated by
+# `tools/build-docs.sh` (idempotent) before `mkdocs build` / `mkdocs serve`.
+docs_dir: site-src
+
+theme:
+  name: material
+  custom_dir: docs/site-overrides
+  language: en
+  logo: docs/site-overrides/logo.svg
+  favicon: docs/site-overrides/favicon.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - toc.follow
+    - announce.dismiss
+
+plugins:
+  - search:
+      lang:
+        - en
+        - ko
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra_css:
+  - docs/site-overrides/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sungjin/design-ai
+    - icon: fontawesome/brands/npm
+      link: https://www.npmjs.com/package/@design-ai/cli
+  generator: false
+  status:
+    new: Recently added
+    deprecated: Deprecated
+
+nav:
+  - Home: index.md
+  - Quickstart: docs/QUICKSTART.md
+  - Distribution: docs/DISTRIBUTION.md
+  - Architecture: docs/ARCHITECTURE.md
+  - Knowledge:
+      - Principles: knowledge/PRINCIPLES.md
+      - Coverage report: knowledge/COVERAGE.md
+      - Design tokens:
+          - Ant Design tokens: knowledge/design-tokens/ant-design.md
+          - Material 3 tokens: knowledge/design-tokens/material-3.md
+          - Polaris and Carbon: knowledge/design-tokens/polaris-and-carbon.md
+          - Tailwind v4: knowledge/design-tokens/tailwind-v4.md
+      - Components:
+          - Index: knowledge/components/INDEX.md
+          - shadcn registry: knowledge/components/shadcn-registry.md
+      - Patterns:
+          - Brand identity: knowledge/patterns/brand-identity.md
+          - Brand references: knowledge/patterns/brand-references.md
+          - Auth flow design: knowledge/patterns/auth-flow-design.md
+          - Pricing page design: knowledge/patterns/pricing-page-design.md
+          - Landing hero design: knowledge/patterns/landing-hero-design.md
+          - Landing page patterns: knowledge/patterns/landing-page-patterns.md
+          - Email design: knowledge/patterns/email-design.md
+          - Document typography: knowledge/patterns/document-typography.md
+          - Information architecture: knowledge/patterns/information-architecture.md
+          - Technical writing: knowledge/patterns/technical-writing.md
+          - Slide deck design: knowledge/patterns/slide-deck-design.md
+          - Report design: knowledge/patterns/report-design.md
+          - Form design: knowledge/patterns/form-design.md
+          - Empty states: knowledge/patterns/empty-states.md
+          - Error states: knowledge/patterns/error-states.md
+          - Onboarding: knowledge/patterns/onboarding.md
+          - List and feed: knowledge/patterns/list-and-feed.md
+          - Search UX: knowledge/patterns/search-ux.md
+          - Settings page: knowledge/patterns/settings-page.md
+          - Mobile navigation: knowledge/patterns/mobile-navigation.md
+          - Money and amount: knowledge/patterns/money-and-amount.md
+          - Realtime data: knowledge/patterns/realtime-data.md
+          - Dashboard composition: knowledge/patterns/dashboard-composition.md
+          - Chart types: knowledge/patterns/chart-types.md
+          - Chart color encoding: knowledge/patterns/chart-color-encoding.md
+          - Design system QA: knowledge/patterns/design-system-qa.md
+          - Styles catalog: knowledge/patterns/styles-catalog.md
+          - UI reasoning: knowledge/patterns/ui-reasoning.md
+          - UX guidelines: knowledge/patterns/ux-guidelines.md
+      - Colors:
+          - Color theory: knowledge/colors/color-theory.md
+          - Palettes by product type: knowledge/colors/palettes-by-product-type.md
+          - MUI palette structure: knowledge/colors/mui-palette-structure.md
+      - Typography:
+          - Type-scale fundamentals: knowledge/typography/type-scale-fundamentals.md
+          - Font pairings: knowledge/typography/font-pairings.md
+          - MUI type scale: knowledge/typography/mui-type-scale.md
+      - Layout:
+          - Spacing and grid: knowledge/layout/spacing-and-grid.md
+      - Icons:
+          - Curated sets: knowledge/icons/curated-sets.md
+      - Accessibility:
+          - Contrast: knowledge/a11y/contrast.md
+          - Keyboard + focus: knowledge/a11y/keyboard-and-focus.md
+      - Motion:
+          - Principles: knowledge/motion/principles.md
+          - Marketing motion: knowledge/motion/marketing-motion.md
+          - App loading sequences: knowledge/motion/app-loading-sequences.md
+          - Micro-interactions: knowledge/motion/micro-interactions.md
+          - Choreography depth: knowledge/motion/choreography-depth.md
+          - Motion tools: knowledge/motion/motion-tools.md
+      - Illustration:
+          - Illustration systems: knowledge/illustration/illustration-systems.md
+          - Spot illustrations: knowledge/illustration/spot-illustrations.md
+          - Hero illustrations: knowledge/illustration/hero-illustrations.md
+          - Mascot design: knowledge/illustration/mascot-design.md
+          - SVG optimization: knowledge/illustration/svg-optimization.md
+      - Print:
+          - Fundamentals: knowledge/print/print-fundamentals.md
+          - Stationery: knowledge/print/stationery.md
+          - Brochures and flyers: knowledge/print/brochures-and-flyers.md
+          - Signage and posters: knowledge/print/signage-and-posters.md
+          - Packaging: knowledge/print/packaging.md
+          - Korean print conventions: knowledge/print/korean-print-conventions.md
+      - Video:
+          - Fundamentals: knowledge/video/video-fundamentals.md
+          - Marketing video: knowledge/video/marketing-video.md
+          - Social and short-form: knowledge/video/social-and-short-form.md
+          - In-product video: knowledge/video/in-product-video.md
+          - Korean video conventions: knowledge/video/korean-video-conventions.md
+      - Game UI:
+          - Fundamentals: knowledge/game-ui/game-ui-fundamentals.md
+          - HUD design: knowledge/game-ui/hud-design.md
+          - Menu systems: knowledge/game-ui/menu-systems.md
+          - Korean gaming conventions: knowledge/game-ui/korean-gaming-conventions.md
+          - Game accessibility: knowledge/game-ui/game-accessibility.md
+      - Conversational:
+          - Fundamentals: knowledge/conversational/conversational-ui-fundamentals.md
+          - Voice UI patterns: knowledge/conversational/voice-ui-patterns.md
+          - Chatbot design: knowledge/conversational/chatbot-design.md
+          - AI chat interfaces: knowledge/conversational/ai-chat-interfaces.md
+          - Korean voice conventions: knowledge/conversational/korean-voice-conventions.md
+      - Spatial / AR / VR:
+          - Fundamentals: knowledge/spatial/spatial-design-fundamentals.md
+          - VR patterns: knowledge/spatial/vr-patterns.md
+          - AR patterns: knowledge/spatial/ar-patterns.md
+          - Spatial UI elements: knowledge/spatial/spatial-ui-elements.md
+          - Comfort + accessibility: knowledge/spatial/comfort-and-accessibility.md
+      - i18n (Korean):
+          - Korean typography: knowledge/i18n/korean-typography.md
+          - Korean product conventions: knowledge/i18n/korean-product-conventions.md
+          - Korean payments: knowledge/i18n/korean-payments.md
+          - Korean publishing: knowledge/i18n/korean-publishing.md
+          - Korean document style: knowledge/i18n/korean-document-style.md
+          - Korean app store visual: knowledge/i18n/korean-app-store-visual.md
+      - Platforms:
+          - React Native: knowledge/platforms/react-native.md
+  - Skills: skills/README.md
+  - Commands: commands/README.md
+  - Agents: agents/README.md
+  - Examples: examples/README.md
+  - Integrations:
+      - Figma: docs/FIGMA-INTEGRATION.md
+      - MCP: docs/MCP-INTEGRATION.md
+      - Codex CLI: docs/CODEX-INTEGRATION.md
+      - Cursor: docs/CURSOR-INTEGRATION.md
+      - Aider: docs/AIDER-INTEGRATION.md
+      - Token sync: docs/TOKEN-SYNC.md
+      - Plugin packaging: docs/PLUGIN-PACKAGING.md
+  - Reference:
+      - Using design-ai: docs/USING.md
+      - Contributing: docs/CONTRIBUTING.md
+      - Roadmap: docs/ROADMAP.md
+      - Dogfood findings: docs/DOGFOOD-FINDINGS.md
+      - Changelog: CHANGELOG.md

@@ -126,7 +126,11 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true", help="Show all matches even when no issues")
     args = parser.parse_args()
 
-    targets = [p for p in ROOT.rglob("*.md") if is_korean_relevant(p) and "refs/" not in str(p)]
+    targets = [
+        p for p in ROOT.rglob("*.md")
+        if is_korean_relevant(p)
+        and not any(skip in str(p) for skip in ("refs/", ".claude/", "site-src/", "/site/", "node_modules/"))
+    ]
 
     print(f"Scanning {len(targets)} Korean-relevant files...\n")
 

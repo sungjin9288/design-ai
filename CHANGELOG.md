@@ -2,6 +2,35 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.2.0 — Public doc site (2026-05)
+
+mkdocs-material site at GitHub Pages. The corpus is now browsable + searchable for prospective adopters before they install.
+
+### Added
+- **`mkdocs.yml`** — site config with full nav covering knowledge / skills / commands / agents / examples / integrations / reference. Material theme with brand-colored palette (indigo/violet) and Korean typography (Pretendard variable font from CDN).
+- **`tools/build-docs.sh`** — populates `site-src/` with a symlink farm pointing to corpus content (mkdocs requires docs_dir to be a sibling of the config, not the parent — symlink farm is the standard workaround).
+- **`docs/site-overrides/`** — theme customizations: `extra.css` (Pretendard for Korean, brand color tweaks, `word-break: keep-all` for Hangul), `main.html` (announcement bar + OpenGraph metadata), `logo.svg`, `favicon.svg`.
+- **`docs/requirements.txt`** — pinned mkdocs-material dependencies (resolves a pygments/pymdown-extensions interaction bug in older 9.5.x).
+- **`.github/workflows/docs.yml`** — auto-deploy to GitHub Pages on every push to main. Uses `actions/configure-pages@v4` + `actions/deploy-pages@v4`.
+- **README badge** linking to the live doc site.
+
+### Changed
+- `tools/audit/link-check.py` and `korean-copy-check.py` — now skip `site-src/`, `site/`, `node_modules/` walk paths so audits don't double-count symlinked content.
+- `.gitignore` — excludes `site/`, `site-src/` build artifacts.
+
+### Local preview
+```bash
+pip install -r docs/requirements.txt
+./tools/build-docs.sh
+mkdocs serve
+```
+
+### What this enables
+- **Discoverability** — prospective adopters can browse the corpus on the public site before deciding to install.
+- **Search** — built-in mkdocs-material search across all 91 knowledge files + 99 examples + skill playbooks.
+- **Korean readability** — Pretendard font + word-break rules render Hangul correctly throughout the site.
+- **Lower-friction evaluation** — open-source contributors can read full skill / pattern docs without cloning.
+
 ## v3.1.0 — Distribution / NPM CLI (2026-05)
 
 NPM CLI distribution. One-command install for adopters.
