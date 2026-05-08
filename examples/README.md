@@ -128,6 +128,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-video-player.md](component-video-player.md) | VideoPlayer | Accessible HTML5 video with multi-language captions, speed control, transcript link, reduced-motion handling. |
 | [component-video-hero.md](component-video-hero.md) | VideoHero | Above-the-fold autoplay loop with poster fallback, art-direction (mobile vs desktop video), reduced-motion + slow-connection skip. |
 
+### Game UI components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-game-hud.md](component-game-hud.md) | GameHUD | Composable HUD shell with anchored slots, customization, color-blind / contrast modes, UI scale, cross-platform input. |
+| [component-game-menu.md](component-game-menu.md) | GameMenu | Composable menu shell — main / pause / settings / inventory / store. Focus management, controller / d-pad nav, button-prompt swapping per platform, modal stacking. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

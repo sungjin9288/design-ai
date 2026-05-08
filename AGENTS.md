@@ -81,6 +81,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Social and short-form video (Reels, Shorts, TikTok) | `knowledge/video/social-and-short-form.md` |
 | In-product video (onboarding, help, explainers) | `knowledge/video/in-product-video.md` |
 | Korean video conventions (자막, 표시광고법, platforms) | `knowledge/video/korean-video-conventions.md` |
+| Game UI fundamentals (diegetic / spatial taxonomy, genres, platforms) | `knowledge/game-ui/game-ui-fundamentals.md` |
+| HUD design (health, ammo, mini-map, cooldowns, notifications) | `knowledge/game-ui/hud-design.md` |
+| Menu systems (main menu, pause, inventory, settings, store) | `knowledge/game-ui/menu-systems.md` |
+| Korean gaming conventions (PC bang, gacha, 확률 표시, MMO) | `knowledge/game-ui/korean-gaming-conventions.md` |
+| Game accessibility (subtitles, color-blind, remap, motor, cognitive) | `knowledge/game-ui/game-accessibility.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -112,6 +117,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Design illustrations / mascot for X" | `skills/illustration-designer/` |
 | "Spec a print piece (business card / brochure / packaging)" | `skills/print-designer/` |
 | "Spec a video (hero loop / demo / Shorts / onboarding)" | `skills/video-designer/` |
+| "Design game UI (HUD / menu / inventory / store)" | `skills/game-ui-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

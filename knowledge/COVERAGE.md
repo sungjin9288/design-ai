@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 76 | 61 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 16 | 16 with verification phase |
-| Worked examples | 93 | |
+| Knowledge files | 81 | 66 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 17 | 17 with verification phase |
+| Worked examples | 95 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -28,6 +28,7 @@ generated_at: 2026-05-08
 | `colors` | 3 | 1 | 2 |
 | `components` | 2 | 0 | 2 |
 | `design-tokens` | 4 | 3 | 1 |
+| `game-ui` | 5 | 5 | 0 |
 | `i18n` | 6 | 6 | 0 |
 | `icons` | 1 | 0 | 1 |
 | `illustration` | 5 | 5 | 0 |
@@ -46,7 +47,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 406 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 422 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -79,6 +80,16 @@ generated_at: 2026-05-08
 | [knowledge/design-tokens/material-3.md](../knowledge/design-tokens/material-3.md) | 232 | hand-written | Material Design 3 (Material You) |
 | [knowledge/design-tokens/polaris-and-carbon.md](../knowledge/design-tokens/polaris-and-carbon.md) | 228 | hand-written | Polaris and Carbon |
 | [knowledge/design-tokens/tailwind-v4.md](../knowledge/design-tokens/tailwind-v4.md) | 281 | hand-written | Tailwind CSS v4 default theme |
+
+#### game-ui
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/game-ui/game-accessibility.md](../knowledge/game-ui/game-accessibility.md) | 314 | hand-written | Game accessibility |
+| [knowledge/game-ui/game-ui-fundamentals.md](../knowledge/game-ui/game-ui-fundamentals.md) | 278 | hand-written | Game UI fundamentals |
+| [knowledge/game-ui/hud-design.md](../knowledge/game-ui/hud-design.md) | 321 | hand-written | HUD design |
+| [knowledge/game-ui/korean-gaming-conventions.md](../knowledge/game-ui/korean-gaming-conventions.md) | 309 | hand-written | Korean gaming conventions |
+| [knowledge/game-ui/menu-systems.md](../knowledge/game-ui/menu-systems.md) | 385 | hand-written | Menu systems |
 
 #### i18n
 
@@ -206,6 +217,7 @@ generated_at: 2026-05-08
 | [design-system-qa](../skills/design-system-qa/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 163 |
 | [document-author](../skills/document-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 167 |
 | [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
+| [game-ui-designer](../skills/game-ui-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 209 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
 | [illustration-designer](../skills/illustration-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 166 |
 | [motion-designer](../skills/motion-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 223 |
@@ -251,6 +263,8 @@ generated_at: 2026-05-08
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
+| [examples/component-game-hud.md](../examples/component-game-hud.md) | 362 | `GameHUD` (custom — composable in-game heads-up display) — spec |
+| [examples/component-game-menu.md](../examples/component-game-menu.md) | 327 | `GameMenu` (custom — composable game menu shell with focus / input handling) — spec |
 | [examples/component-hero-block.md](../examples/component-hero-block.md) | 252 | `HeroBlock` (landing hero) — spec |
 | [examples/component-illustration.md](../examples/component-illustration.md) | 273 | `Illustration` (custom — themeable SVG illustration display) — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
@@ -383,6 +397,8 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `empty-state`
 - `feature-grid`
 - `form-controls`
+- `game-hud`
+- `game-menu`
 - `hero-block`
 - `illustration`
 - `krw-amount`
