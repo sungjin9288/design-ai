@@ -24,6 +24,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [motion-designer](motion-designer/) | Spec motion for a screen / component / page. Picks tool (CSS / Framer Motion / GSAP / Lottie / Rive), durations, easings, choreography. Reduced-motion-safe by default. |
 | [illustration-designer](illustration-designer/) | Design or spec an illustration system (or single illustration). Style, voice, color, format (SVG / Lottie / PNG), accessibility, SVG optimization. Korean-market-aware. |
 | [print-designer](print-designer/) | Spec a print piece — business card, brochure, poster, packaging, stationery. CMYK + Pantone, bleed, finish, regulatory content; Korean print conventions. |
+| [video-designer](video-designer/) | Spec video for marketing, social, or in-product use. Length, format, aspect, codec, captions, voiceover; Korean ad disclosure + KFDA compliance. |
 
 ## Invoking a skill
 

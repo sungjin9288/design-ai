@@ -76,6 +76,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Signage and posters (large-format print) | `knowledge/print/signage-and-posters.md` |
 | Packaging (boxes, labels, dielines, KR regulatory) | `knowledge/print/packaging.md` |
 | Korean print conventions (KFDA, recycling marks, 명함) | `knowledge/print/korean-print-conventions.md` |
+| Video fundamentals (codecs, resolution, framerate, captions) | `knowledge/video/video-fundamentals.md` |
+| Marketing video (hero loop, brand film, demos) | `knowledge/video/marketing-video.md` |
+| Social and short-form video (Reels, Shorts, TikTok) | `knowledge/video/social-and-short-form.md` |
+| In-product video (onboarding, help, explainers) | `knowledge/video/in-product-video.md` |
+| Korean video conventions (자막, 표시광고법, platforms) | `knowledge/video/korean-video-conventions.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -106,6 +111,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Spec the motion / animation for X" | `skills/motion-designer/` |
 | "Design illustrations / mascot for X" | `skills/illustration-designer/` |
 | "Spec a print piece (business card / brochure / packaging)" | `skills/print-designer/` |
+| "Spec a video (hero loop / demo / Shorts / onboarding)" | `skills/video-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

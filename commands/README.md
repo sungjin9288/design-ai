@@ -15,5 +15,6 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/motion-design](motion-design.md) | Spec motion for a screen / component / page. Picks tool, durations, easings; reduced-motion-safe. |
 | [/illustration](illustration.md) | Design or spec an illustration system or piece. Style, voice, format; Korean-market-aware. |
 | [/print](print.md) | Spec a print piece (business card, brochure, poster, packaging). CMYK + Pantone, bleed, finish; KR conventions. |
+| [/video](video.md) | Spec video for marketing, social, or in-product. Length, format, captions, voiceover; KR ad disclosure. |
 
 Each file has YAML frontmatter (`description`) and a body. The body is the prompt the command expands to.

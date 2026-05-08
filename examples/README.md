@@ -121,6 +121,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [print-business-card-spec.md](print-business-card-spec.md) | Korean 명함 (premium tier) | Korean fintech business card spec: 90×50mm, 350gsm uncoated, soft-touch + spot UV, Pretendard, Pantone + CMYK, file delivery checklist. |
 | [print-packaging-spec.md](print-packaging-spec.md) | Folding carton (cosmetics) | Korean cosmetics carton spec: dieline, KFDA regulatory content (전성분 / 사용기한 / 분리배출 표시), FSC + soy ink, press proof. |
 
+### Video components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-video-player.md](component-video-player.md) | VideoPlayer | Accessible HTML5 video with multi-language captions, speed control, transcript link, reduced-motion handling. |
+| [component-video-hero.md](component-video-hero.md) | VideoHero | Above-the-fold autoplay loop with poster fallback, art-direction (mobile vs desktop video), reduced-motion + slow-connection skip. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

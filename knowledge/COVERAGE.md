@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 71 | 56 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 15 | 15 with verification phase |
-| Worked examples | 91 | |
+| Knowledge files | 76 | 61 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 16 | 16 with verification phase |
+| Worked examples | 93 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -37,6 +37,7 @@ generated_at: 2026-05-08
 | `platforms` | 1 | 1 | 0 |
 | `print` | 6 | 6 | 0 |
 | `typography` | 3 | 1 | 2 |
+| `video` | 5 | 5 | 0 |
 
 ### File details
 
@@ -45,7 +46,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 391 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 406 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -182,6 +183,16 @@ generated_at: 2026-05-08
 | [knowledge/typography/mui-type-scale.md](../knowledge/typography/mui-type-scale.md) | 54 | generated | MUI default type scale |
 | [knowledge/typography/type-scale-fundamentals.md](../knowledge/typography/type-scale-fundamentals.md) | 102 | hand-written | Type scale fundamentals |
 
+#### video
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/video/in-product-video.md](../knowledge/video/in-product-video.md) | 274 | hand-written | In-product video |
+| [knowledge/video/korean-video-conventions.md](../knowledge/video/korean-video-conventions.md) | 244 | hand-written | Korean video conventions |
+| [knowledge/video/marketing-video.md](../knowledge/video/marketing-video.md) | 255 | hand-written | Marketing video |
+| [knowledge/video/social-and-short-form.md](../knowledge/video/social-and-short-form.md) | 254 | hand-written | Social and short-form video |
+| [knowledge/video/video-fundamentals.md](../knowledge/video/video-fundamentals.md) | 293 | hand-written | Video fundamentals |
+
 ## Skills
 
 | Skill | Playbook | SKILL.md | Template | Verification phase | Lines |
@@ -201,6 +212,7 @@ generated_at: 2026-05-08
 | [print-designer](../skills/print-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 209 |
 | [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
+| [video-designer](../skills/video-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 240 |
 
 ## Worked examples
 
@@ -286,6 +298,8 @@ generated_at: 2026-05-08
 | [examples/component-tree.md](../examples/component-tree.md) | 297 | `Tree` (TreeView) — spec |
 | [examples/component-typography.md](../examples/component-typography.md) | 215 | `Typography` (text primitive) — spec |
 | [examples/component-upload.md](../examples/component-upload.md) | 295 | `Upload` — spec |
+| [examples/component-video-hero.md](../examples/component-video-hero.md) | 405 | `VideoHero` (custom — autoplay landing-page video hero) — spec |
+| [examples/component-video-player.md](../examples/component-video-player.md) | 340 | `VideoPlayer` (custom — accessible HTML5 video with captions, speed, transcript) — spec |
 | [examples/component-watermark.md](../examples/component-watermark.md) | 217 | `Watermark` — spec |
 | [examples/doc-explanation-example.md](../examples/doc-explanation-example.md) | 196 | Worked example: explanation |
 | [examples/doc-how-to-example.md](../examples/doc-how-to-example.md) | 203 | Worked example: how-to |
@@ -388,6 +402,8 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `testimonial-carousel`
 - `toast`
 - `transaction-list-item`
+- `video-hero`
+- `video-player`
 
 ## Extractors
 
