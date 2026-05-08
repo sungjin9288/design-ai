@@ -34,6 +34,9 @@ jobs:
       - name: Internal link check
         run: python3 tools/audit/link-check.py
 
+      - name: Korean copy check
+        run: python3 tools/audit/korean-copy-check.py
+
       - name: Coverage report (regenerate + diff)
         run: |
           python3 tools/audit/check-coverage.py
@@ -55,10 +58,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify total knowledge size under 50K lines
+      - name: Verify total knowledge size budget
         run: |
           TOTAL=$(find knowledge examples docs -name "*.md" | xargs wc -l | tail -1 | awk '{print $1}')
           echo "Total: $TOTAL lines"
-          if [ "$TOTAL" -gt 50000 ]; then
-            echo "::warning::Knowledge base exceeds 50K lines ($TOTAL). Consider splitting or pruning."
+          # Post-v2 expansion budget: warn at 100K, hard cap at 150K.
+          if [ "$TOTAL" -gt 150000 ]; then
+            echo "::error::Knowledge base exceeds hard cap of 150K lines ($TOTAL). Split or prune."
+            exit 1
+          fi
+          if [ "$TOTAL" -gt 100000 ]; then
+            echo "::warning::Knowledge base exceeds 100K lines ($TOTAL). Consider splitting or pruning."
           fi

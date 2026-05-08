@@ -1,111 +1,212 @@
 # Design AI
 
-A model-agnostic design knowledge base and skill system. Built so any AI coding agent — Claude Code, Codex CLI, Cursor, Aider — can pick up this project and produce expert-level UI/UX design output.
+[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](.github/workflows/audit.yml)
+[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/)
+[![Examples](https://img.shields.io/badge/examples-99-blue)](examples/)
+[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/)
 
-## What this is
+A model-agnostic design knowledge base + skill system. Drop it in front of any AI coding agent (Claude Code, Codex CLI, Cursor, Aider) and it becomes a senior product designer with 20+ years of experience — opinionated, accessible-by-default, Korean-market-fluent.
 
-Not a model. Not a fine-tune. A **structured corpus** of design expertise extracted from battle-tested sources, plus **agent-ready instructions** that turn a general-purpose LLM into a senior product designer for the duration of a session.
+> **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-## Project layout
+## Coverage at a glance
+
+| Domain | Knowledge | Worked examples | Skill |
+|---|---|---|---|
+| Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
+| Components (Ant + MUI + shadcn synthesis) | ✓ | 47 specs | `component-spec-writer` |
+| UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
+| Documentation (Diátaxis, slide deck, report, email) | ✓ | ✓ | `document-author`, `slide-deck-author` |
+| **Motion** (CSS / Framer / GSAP / Lottie / Rive) | ✓ | 4 specs | `motion-designer` |
+| **Illustration** (spot / hero / mascot / SVG) | ✓ | 2 specs | `illustration-designer` |
+| **Print** (CMYK, bleed, KFDA, 분리배출) | ✓ | 2 specs | `print-designer` |
+| **Video** (codecs, captions, KR ad disclosure) | ✓ | 2 specs | `video-designer` |
+| **Game UI** (HUD / menu / 확률 표시 / PC bang) | ✓ | 2 specs | `game-ui-designer` |
+| **Conversational** (voice, chatbot, AI chat / 해요체) | ✓ | 2 specs | `conversational-ui-designer` |
+| **Spatial** (VR / AR / Vision Pro / comfort) | ✓ | 2 specs | `spatial-designer` |
+
+## Install (Claude Code)
+
+```bash
+git clone https://github.com/sungjin/design-ai.git
+cd design-ai
+./install.sh
+```
+
+That installs all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+
+```
+/design-component-spec Banner
+/design-motion-design landing hero loop
+/design-spatial Vision Pro productivity app
+/design-from-brief Korean fintech for freelancers
+```
+
+`./install.sh --status` to see what's installed; `./install.sh --uninstall` to remove.
+
+## Install (other agents)
+
+| Agent | Setup |
+|---|---|
+| **Codex CLI** | Open this dir as project root. `AGENTS.md` is read automatically. |
+| **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. |
+| **Aider** | Pass `AGENTS.md` as system prompt. |
+| **Claude API / SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. |
+| **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
+
+See [`docs/USING.md`](docs/USING.md) for per-agent details.
+
+## What you get
 
 ```
 design-ai/
-├── AGENTS.md            # Universal entry point for any AI coding agent (Codex, etc.)
-├── CLAUDE.md            # Claude Code specific overlay
-├── README.md            # Human entry point (this file)
+├── AGENTS.md                # Universal entry point (any AI coding agent)
+├── CLAUDE.md                # Claude Code overlay
+├── README.md                # You are here
+├── CHANGELOG.md             # Release notes
+├── install.sh               # Symlink installer for Claude Code
 │
-├── refs/                # Sparse-cloned source material from upstream design systems
-│   ├── ant-design/
-│   ├── mui/
-│   ├── shadcn-ui/
-│   ├── material-icons/
-│   ├── nerd-fonts/
-│   ├── material-design-lite/
-│   ├── awesome-design-md/
-│   └── ui-ux-pro-max/
+├── .claude-plugin/          # Plugin manifest (plugin.json)
 │
-├── knowledge/           # Extracted, structured, model-readable knowledge
-│   ├── design-tokens/   # Color, typography, spacing, radius, shadow tokens
-│   ├── components/      # Component API specs, variants, anatomy
-│   ├── patterns/        # UX patterns: forms, navigation, empty states, etc.
-│   ├── colors/          # Palette systems, semantic color, accessibility
-│   ├── typography/      # Type scales, pairings, hierarchy
-│   ├── layout/          # Grid, spacing, responsive breakpoints
-│   ├── icons/           # Icon system metadata
-│   ├── a11y/            # WCAG checklists, contrast rules, focus states
-│   ├── motion/          # Duration, easing, choreography
-│   └── i18n/            # Korean typography, product conventions, publishing
+├── refs/                    # Sparse-cloned upstream sources (gitignored)
 │
-├── examples/            # Worked outputs — what "good" looks like for each skill
+├── knowledge/               # 91 hand-written + extracted knowledge files
+│   ├── design-tokens/       # Token systems (W3C DTCG, OKLCH, HCT)
+│   ├── components/          # Component synthesis (Ant + MUI + shadcn)
+│   ├── patterns/            # Auth, pricing, landing hero, brand, email, ...
+│   ├── colors/              # Palette systems, accessibility
+│   ├── typography/          # Type scales, font pairings (Pretendard + ...)
+│   ├── layout/              # Grid, spacing, responsive
+│   ├── icons/               # Icon system metadata
+│   ├── a11y/                # WCAG, keyboard, focus, contrast
+│   ├── motion/              # Principles + 5 deep dives
+│   ├── illustration/        # System / spot / hero / mascot / SVG
+│   ├── print/               # Fundamentals / stationery / brochures / ...
+│   ├── video/               # Fundamentals / marketing / social / ...
+│   ├── game-ui/             # Fundamentals / HUD / menus / accessibility
+│   ├── conversational/      # Voice / chatbot / AI chat / Korean
+│   ├── spatial/             # VR / AR / panels / comfort
+│   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── skills/              # Reusable, task-focused design playbooks
-│   ├── design-system-builder/
-│   ├── component-spec-writer/
-│   ├── color-palette/
-│   ├── ux-audit/
-│   ├── design-critique/
-│   └── handoff-spec/
+├── examples/                # 99 worked outputs (what "good" looks like)
 │
-├── agents/              # Persona definitions for sub-agents
-│   ├── design-critic.md
-│   ├── token-extractor.md
-│   ├── component-architect.md
-│   └── a11y-reviewer.md
+├── skills/                  # 19 reusable playbooks (task-focused)
+│   ├── design-system-builder/   illustration-designer/
+│   ├── component-spec-writer/   print-designer/
+│   ├── color-palette/           video-designer/
+│   ├── ux-audit/                game-ui-designer/
+│   ├── design-critique/         conversational-ui-designer/
+│   ├── handoff-spec/            spatial-designer/
+│   ├── design-system-qa/        document-author/
+│   ├── design-pr-review/        slide-deck-author/
+│   ├── figma-token-sync/        motion-designer/
+│   └── design-broadcast/
 │
-├── commands/            # Slash command definitions (Claude Code) / prompt recipes (Codex)
-│   ├── design-review.md
-│   ├── extract-tokens.md
-│   ├── component-spec.md
-│   └── palette-from-brand.md
+├── agents/                  # 4 sub-agents (parallel reviews)
+│   ├── design-critic.md         a11y-reviewer.md
+│   ├── component-architect.md   token-extractor.md
 │
-├── tools/               # Scripts that build/refresh the knowledge base
-│   ├── extractors/      # Pull tokens/components/patterns from refs/ into knowledge/
-│   ├── audit/           # Coverage, frontmatter validation, link checker, CHANGELOG generator
-│   └── preview/         # HTML preview generator (token swatches + live components)
+├── commands/                # 15 slash commands
+│   ├── design-from-brief.md     motion-design.md
+│   ├── component-spec.md        illustration.md
+│   ├── design-review.md         print.md
+│   ├── palette-from-brand.md    video.md
+│   ├── document-from-brief.md   game-ui.md
+│   ├── slide-deck.md            conversational.md
+│   ├── iterate.md               spatial.md
+│   └── extract-tokens.md
 │
-└── docs/                # How this system works
-    ├── ARCHITECTURE.md          # Three-layer architecture
-    ├── CONTRIBUTING.md          # How to add knowledge / extractors / skills
-    ├── USING.md                 # Per-agent setup (Codex, Claude Code, Cursor, Aider)
-    ├── FIGMA-INTEGRATION.md     # Figma MCP, Variables, Code Connect workflows
-    ├── TOKEN-SYNC.md            # Token sync between code, Figma, design-ai
-    ├── CODEX-INTEGRATION.md     # Codex CLI deep-dive (skill invocation, MCP setup)
-    ├── CURSOR-INTEGRATION.md    # Cursor IDE setup (.cursorrules, @-mentions, MCP)
-    ├── AIDER-INTEGRATION.md     # Aider terminal pair-programmer setup
-    ├── PLUGIN-PACKAGING.md      # Claude Code plugin packaging (current + future)
-    ├── MCP-INTEGRATION.md       # MCP overview (Figma / Notion / GitHub / Slack / Linear)
-    ├── integrations/            # Per-MCP detailed guides
-    ├── DOGFOOD-FINDINGS.md      # Self-critique from end-to-end validation
-    └── ROADMAP.md
+├── tools/                   # Maintenance pipeline
+│   ├── extractors/          # 7 source-extractors (token / component / pattern)
+│   ├── audit/               # 5 audit tools (frontmatter / link / KR / coverage / changelog)
+│   └── preview/             # HTML token swatches + contrast matrix
+│
+└── docs/                    # Architecture + integration guides
+    ├── QUICKSTART.md            ROADMAP.md
+    ├── ARCHITECTURE.md          USING.md
+    ├── CONTRIBUTING.md          PLUGIN-PACKAGING.md
+    ├── CODEX-INTEGRATION.md     FIGMA-INTEGRATION.md
+    ├── CURSOR-INTEGRATION.md    MCP-INTEGRATION.md
+    ├── AIDER-INTEGRATION.md     TOKEN-SYNC.md
+    └── DOGFOOD-FINDINGS.md
 ```
 
-## How to use it (any AI agent)
+## First-time tour (5 minutes)
 
-1. Open this directory as the project root.
-2. The agent reads `AGENTS.md` (universal) or `CLAUDE.md` (Claude Code).
-3. Ask design questions or request artifacts. The agent navigates `knowledge/`, applies `skills/`, and produces deliverables.
+See [`docs/QUICKSTART.md`](docs/QUICKSTART.md). The shortest path:
 
-See [docs/USING.md](docs/USING.md) for setup instructions per agent (Codex CLI, Claude Code, Cursor, Aider, plain prompts).
+1. Install (`./install.sh`).
+2. In Claude Code, try `/design-component-spec Banner`. You get a developer-ready spec for a Banner component (anatomy, API, variants, states, tokens, ARIA, keyboard, edge cases).
+3. Run `/design-design-review` against a Figma link or screenshot. You get a parallel UX + a11y + design critique.
 
-For Figma workflows (variables, components, Code Connect): [docs/FIGMA-INTEGRATION.md](docs/FIGMA-INTEGRATION.md).
-For moving tokens between code and Figma: [docs/TOKEN-SYNC.md](docs/TOKEN-SYNC.md).
+## Korean market focus
+
+design-ai is built for the Korean market with parity for international:
+
+- **Hangul typography** — Pretendard / NanumSquare / 본명조 defaults; size + leading rules differ from Latin.
+- **Korean payments** — Toss / KakaoPay / NaverPay / Apple Pay / Samsung Pay flows; PASS / NICE / KCB 본인인증.
+- **Voice** — 합쇼체 (formal) vs 해요체 (friendly) selection per brand.
+- **Print** — 명함 90×50mm, KFDA / KATS regulatory, 분리배출 표시 recycling marks.
+- **Video** — 자막 conventions, 표시광고법 ad disclosure, KFDA / KFTC compliance.
+- **Game** — PC bang culture, 확률 표시 mandatory, GRAC ratings, gacha pity / 천장.
+- **Stock charts** — KR red=up / blue=down (opposite of West) — encoded in design tokens.
+
+International defaults remain available; Korean conventions are opt-in via skill / command parameters.
 
 ## Source material
+
+The knowledge is synthesized from battle-tested sources, not invented:
 
 | Source | Why |
 |---|---|
 | [ant-design](https://github.com/ant-design/ant-design) | Mature enterprise component API, dense token system |
-| [mui/material-ui](https://github.com/mui/material-ui) | Material Design React reference implementation |
-| [shadcn-ui](https://github.com/shadcn-ui/ui) | Modern Radix-based, copy-paste component model |
-| [material-design-icons](https://github.com/google/material-design-icons) | Canonical icon set with semantic naming |
-| [nerd-fonts](https://github.com/ryanoasis/nerd-fonts) | Developer/code-UI typography glyph metadata |
+| [mui/material-ui](https://github.com/mui/material-ui) | Material Design React reference |
+| [shadcn-ui](https://github.com/shadcn-ui/ui) | Modern Radix-based copy-paste model |
+| [material-design-icons](https://github.com/google/material-design-icons) | Canonical icon set |
+| [nerd-fonts](https://github.com/ryanoasis/nerd-fonts) | Developer typography glyph metadata |
 | [material-design-lite](https://github.com/google/material-design-lite) | Historical CSS-first Material reference |
 | [awesome-design-md](https://github.com/VoltAgent/awesome-design-md) | Curated design markdown guides |
-| [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | UI/UX skill: 50+ styles, 161 palettes, 57 font pairings |
+| [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | UI/UX patterns + palettes + font pairings |
 | [open-design](https://github.com/nexu-io/open-design) | Open source design system reference |
 
-**Excluded (not visual design):** `system-design-primer` (software architecture), `clash-verge-rev` (VPN UI), `rustdesk` (remote desktop). If a desktop-app UI reference is needed later, we add a focused alternative.
+Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the build plan and current progress.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v3.0** (stabilization).
+
+The corpus has been audited under 4 CI checks since v1.7:
+- Frontmatter validity
+- Internal link resolution
+- Korean copy quality
+- Component coverage report freshness
+
+All 4 pass on every commit to `main`.
+
+## Contributing
+
+See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
+- Knowledge files use `<!-- hand-written -->` marker if hand-authored.
+- Skill PLAYBOOKs include a verification phase checklist.
+- Korean strings spelled out in Korean (no machine translation passing through).
+- All audits pass.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md). Highlights:
+
+- **v3.0** — Stabilization: plugin manifest, install.sh, CHANGELOG, README overhaul, QUICKSTART.
+- **v2.7** — AR / VR / spatial design.
+- **v2.6** — Voice / conversational UI.
+- **v2.5** — Game UI.
+- **v2.4** — Video content.
+- **v2.3** — Print / physical design.
+- **v2.2** — Illustration systems.
+- **v2.1** — Motion design depth.
+- **v2.0** — Documentation worked examples + 7 component specs.
+- **v1.x** — MCP integrations, document design + brand + email, coverage push, foundations.

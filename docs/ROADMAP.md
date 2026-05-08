@@ -51,6 +51,48 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 19 — Stabilization (v3.0) ✓ shipped — productization phase
+
+The v2 expansion proved the corpus works across 7 new design domains. Phase 19 is the stabilization step the user requested: "안정화 후 시장성, 대중성이 있으면 프로그램화 진행" — stabilize first, productize next.
+
+### Added
+- **`.claude-plugin/plugin.json`** — Claude Code plugin manifest. All 19 skills, 15 commands, 4 agents declared with names + paths + descriptions; supports plugin discovery and future `/plugin install` flow.
+- **`install.sh`** — automated installer:
+  - Symlinks `skills/`, `agents/`, `commands/` into `~/.claude/` with `design-` prefix.
+  - Idempotent (safe to re-run).
+  - Subcommands: `install` (default), `--uninstall`, `--status`, `--help`.
+  - Configurable: `DESIGN_AI_PREFIX`, `CLAUDE_HOME` env overrides.
+- **`CHANGELOG.md`** — full release history, v1.0 through v3.0, semver-compliant.
+- **`README.md` overhaul** — coverage-at-a-glance table reflecting v2 expansion (motion / illustration / print / video / game UI / conversational / spatial); install instructions; first-task tour; Korean market focus section.
+- **`docs/QUICKSTART.md`** — 5-minute getting-started for new adopters.
+- **CI: Korean copy check** added to `audit.yml` (was missing despite the script existing).
+- **CI: size budget** updated from 50K-line warning (long since exceeded) to 100K warn / 150K hard-cap.
+
+### Changed
+- Knowledge size now ~57K lines; budget recalibrated.
+- `docs/ROADMAP.md` updated with v3.0 entry (this section).
+
+### Coverage
+- Knowledge: 91 (no change in this phase)
+- Examples: 99 (no change)
+- Skills: 19 (no change)
+- Commands: 15 (no change)
+- New: plugin manifest, install script, CHANGELOG, QUICKSTART
+- CI checks: 4 → 5 (added korean-copy-check)
+
+### What this enables
+- **Adopters can install design-ai globally** with `./install.sh` instead of the manual symlink loop documented in `PLUGIN-PACKAGING.md`.
+- **CHANGELOG.md** is the canonical reference for "what changed when" — adopters can pin to a version.
+- **README** stops being a launch-day artifact and becomes a maintained adoption surface.
+- **CI parity** — all 4 audits (frontmatter / link / Korean copy / coverage) run on every PR; no skipped checks.
+
+### What's still ahead (v3.x and beyond)
+- Versioned knowledge files (`version:` in frontmatter; `version` field optional today).
+- Public doc site (mkdocs / docusaurus). Knowledge already markdown-friendly.
+- NPM package distribution (`npx design-ai install`).
+- Cross-tool integration tests (real sessions in Codex CLI / Cursor / Aider captured as worked examples).
+- Component coverage push to 30%+ (currently 23.6%).
+
 ## Phase 18 — AR / VR / spatial design (v2.7) ✓ shipped — completes v2 expansion
 
 Final phase of the v2 expansion. Adds spatial computing as a first-class design surface alongside motion / illustration / print / video / game UI / conversational. Covers fundamentals (Milgram continuum, FOV, comfort zones, units, vergence-accommodation), VR patterns (Quest / PSVR2 / Vision Pro immersive / locomotion), AR patterns (ARKit / ARCore / HoloLens / world + image + object anchors), spatial UI elements (panels, billboards, controls, menus), and comfort + accessibility (motion sickness mitigations, vision / hearing / motor / cognitive / photosensitive / mobility).
