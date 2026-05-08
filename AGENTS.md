@@ -86,6 +86,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Menu systems (main menu, pause, inventory, settings, store) | `knowledge/game-ui/menu-systems.md` |
 | Korean gaming conventions (PC bang, gacha, 확률 표시, MMO) | `knowledge/game-ui/korean-gaming-conventions.md` |
 | Game accessibility (subtitles, color-blind, remap, motor, cognitive) | `knowledge/game-ui/game-accessibility.md` |
+| Conversational UI fundamentals (turn-taking, intents, modalities) | `knowledge/conversational/conversational-ui-fundamentals.md` |
+| Voice UI patterns (smart speakers, in-app voice, IVR) | `knowledge/conversational/voice-ui-patterns.md` |
+| Chatbot design (rule-based, intent-driven, hybrid) | `knowledge/conversational/chatbot-design.md` |
+| AI chat interfaces (ChatGPT, Claude, LLM-based UX) | `knowledge/conversational/ai-chat-interfaces.md` |
+| Korean voice / conversational conventions (Bixby, Clova, 해요체 / 합쇼체) | `knowledge/conversational/korean-voice-conventions.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -118,6 +123,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Spec a print piece (business card / brochure / packaging)" | `skills/print-designer/` |
 | "Spec a video (hero loop / demo / Shorts / onboarding)" | `skills/video-designer/` |
 | "Design game UI (HUD / menu / inventory / store)" | `skills/game-ui-designer/` |
+| "Spec a chatbot / voice / AI chat" | `skills/conversational-ui-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

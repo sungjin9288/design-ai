@@ -135,6 +135,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-game-hud.md](component-game-hud.md) | GameHUD | Composable HUD shell with anchored slots, customization, color-blind / contrast modes, UI scale, cross-platform input. |
 | [component-game-menu.md](component-game-menu.md) | GameMenu | Composable menu shell — main / pause / settings / inventory / store. Focus management, controller / d-pad nav, button-prompt swapping per platform, modal stacking. |
 
+### Conversational UI components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-chat-interface.md](component-chat-interface.md) | ChatInterface | Reusable chat shell for chatbot / AI / live agent. Markdown + code block rendering, streaming, suggested chips, typing indicator, attachments, Korean IME + 해요체 defaults. |
+| [component-voice-input.md](component-voice-input.md) | VoiceInput | Push-to-talk + transcript voice input. Web Speech / Clova / Whisper backends, listening visualization, permission handling, Korean STT defaults. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

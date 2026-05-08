@@ -51,6 +51,29 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 17 — Voice / conversational UI (v2.6) ✓ shipped
+
+Conversational UI as a first-class design surface. Covers fundamentals (turn-taking, intents, modalities, latency, hallucinations), voice UI patterns, traditional chatbot design, AI chat (LLM-based) interfaces, and Korean conventions (Bixby, Clova, NUGU, KakaoTalk channel, 해요체 / 합쇼체).
+
+- [x] **5 conversational knowledge files**:
+  - `conversational/conversational-ui-fundamentals.md` — modalities, turn-taking, intents + slots, conversational design principles, streaming, latency budgets, personality, STT/TTS, code-switching.
+  - `conversational/voice-ui-patterns.md` — wake word / tap-to-talk / multi-turn / voice search; smart speaker UX, phone assistant UX, in-car, IVR; Korean assistants; SSML; accessibility.
+  - `conversational/chatbot-design.md` — rule-based / intent-based / hybrid; anatomy, conversation patterns (greeting, quick replies, forms, lists, cards, confirmation); KakaoTalk channel; human handoff.
+  - `conversational/ai-chat-interfaces.md` — LLM chat: streaming, markdown / code rendering, stop / regenerate / continue, context length, hallucination handling, voice mode, memory, keyboard shortcuts.
+  - `conversational/korean-voice-conventions.md` — KR voice assistants (Bixby / Clova / NUGU / GiGA Genie / Kakao i), 합쇼체 / 해요체 selection, code-switching, TTS / STT options, KR regulatory (개인정보보호법, 정보통신망법, 자본시장법), KakaoTalk channel.
+- [x] **2 component specs**:
+  - `component-chat-interface.md` — generic chat UI for chatbot / AI / live agent; markdown / code rendering, streaming, suggested chips, attachments, Korean IME handling.
+  - `component-voice-input.md` — push-to-talk + transcript voice input; Web Speech / Clova / Whisper backends, listening visualization, permission handling, accessibility alt.
+- [x] **`skills/conversational-ui-designer/`** — pick type, modality, persona, intents, flows, error recovery, KR compliance, accessibility.
+- [x] **`/conversational`** slash command.
+- [x] AGENTS.md / skills/README / commands/README / examples/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 81 → 86 (+5 conversational).
+- Examples: 95 → 97 (+2 conversational components).
+- Skills: 17 → 18 (+ conversational-ui-designer).
+- Commands: 13 → 14 (+ /conversational).
+
 ## Phase 16 — Game UI (v2.5) ✓ shipped
 
 Game UI as a first-class design surface. Covers fundamentals (diegetic / spatial taxonomy, genre conventions, platform variations), HUD design, menu systems, Korean gaming conventions (PC bang, 확률 표시, mobile gacha, MMO), and game accessibility.

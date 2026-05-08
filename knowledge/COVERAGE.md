@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 81 | 66 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 17 | 17 with verification phase |
-| Worked examples | 95 | |
+| Knowledge files | 86 | 71 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 18 | 18 with verification phase |
+| Worked examples | 97 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -27,6 +27,7 @@ generated_at: 2026-05-08
 | `a11y` | 2 | 2 | 0 |
 | `colors` | 3 | 1 | 2 |
 | `components` | 2 | 0 | 2 |
+| `conversational` | 5 | 5 | 0 |
 | `design-tokens` | 4 | 3 | 1 |
 | `game-ui` | 5 | 5 | 0 |
 | `i18n` | 6 | 6 | 0 |
@@ -47,7 +48,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 422 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 438 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -71,6 +72,16 @@ generated_at: 2026-05-08
 | --- | --- | --- | --- |
 | [knowledge/components/INDEX.md](../knowledge/components/INDEX.md) | 227 | generated | Component index |
 | [knowledge/components/shadcn-registry.md](../knowledge/components/shadcn-registry.md) | 156 | generated | shadcn-ui registry catalog (new-york-v4) |
+
+#### conversational
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/conversational/ai-chat-interfaces.md](../knowledge/conversational/ai-chat-interfaces.md) | 320 | hand-written | AI chat interfaces |
+| [knowledge/conversational/chatbot-design.md](../knowledge/conversational/chatbot-design.md) | 309 | hand-written | Chatbot design |
+| [knowledge/conversational/conversational-ui-fundamentals.md](../knowledge/conversational/conversational-ui-fundamentals.md) | 296 | hand-written | Conversational UI fundamentals |
+| [knowledge/conversational/korean-voice-conventions.md](../knowledge/conversational/korean-voice-conventions.md) | 278 | hand-written | Korean voice and conversational conventions |
+| [knowledge/conversational/voice-ui-patterns.md](../knowledge/conversational/voice-ui-patterns.md) | 294 | hand-written | Voice UI patterns |
 
 #### design-tokens
 
@@ -210,6 +221,7 @@ generated_at: 2026-05-08
 | --- | --- | --- | --- | --- | --- |
 | [color-palette](../skills/color-palette/PLAYBOOK.md) | ✓ | ✓ | ✓ | ✓ | 175 |
 | [component-spec-writer](../skills/component-spec-writer/PLAYBOOK.md) | ✓ | ✓ | ✓ | ✓ | 169 |
+| [conversational-ui-designer](../skills/conversational-ui-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 231 |
 | [design-broadcast](../skills/design-broadcast/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 146 |
 | [design-critique](../skills/design-critique/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 137 |
 | [design-pr-review](../skills/design-pr-review/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 171 |
@@ -250,6 +262,7 @@ generated_at: 2026-05-08
 | [examples/component-carousel.md](../examples/component-carousel.md) | 266 | `Carousel` — spec |
 | [examples/component-cascader.md](../examples/component-cascader.md) | 135 | `Cascader` — spec |
 | [examples/component-category-picker.md](../examples/component-category-picker.md) | 271 | `CategoryPicker` (custom — Korean fintech / 가계부) — spec |
+| [examples/component-chat-interface.md](../examples/component-chat-interface.md) | 399 | `ChatInterface` (custom — generic chat UI for chatbot / AI / live agent) — spec |
 | [examples/component-code.md](../examples/component-code.md) | 213 | `Code` (inline + block) — spec |
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
@@ -314,6 +327,7 @@ generated_at: 2026-05-08
 | [examples/component-upload.md](../examples/component-upload.md) | 295 | `Upload` — spec |
 | [examples/component-video-hero.md](../examples/component-video-hero.md) | 405 | `VideoHero` (custom — autoplay landing-page video hero) — spec |
 | [examples/component-video-player.md](../examples/component-video-player.md) | 340 | `VideoPlayer` (custom — accessible HTML5 video with captions, speed, transcript) — spec |
+| [examples/component-voice-input.md](../examples/component-voice-input.md) | 408 | `VoiceInput` (custom — push-to-talk + transcript voice input) — spec |
 | [examples/component-watermark.md](../examples/component-watermark.md) | 217 | `Watermark` — spec |
 | [examples/doc-explanation-example.md](../examples/doc-explanation-example.md) | 196 | Worked example: explanation |
 | [examples/doc-how-to-example.md](../examples/doc-how-to-example.md) | 203 | Worked example: how-to |
@@ -391,6 +405,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `calendar`
 - `callout`
 - `category-picker`
+- `chat-interface`
 - `code`
 - `doc-page`
 - `email-layout`
@@ -420,6 +435,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `transaction-list-item`
 - `video-hero`
 - `video-player`
+- `voice-input`
 
 ## Extractors
 
