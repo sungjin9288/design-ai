@@ -2,6 +2,47 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.3.0 — Component coverage push (2026-05)
+
+Component spec coverage 23.6% → **30.7%** (47 → 61 of 199 canonical components).
+
+### Added (15 component specs)
+
+**Overlay primitives**:
+- `component-badge.md` — standalone label + indicator dual modes
+- `component-dropdown.md` — Dropdown / DropdownMenu (renamed from `component-dropdown-menu.md` to match canonical)
+- `component-context-menu.md` — right-click / long-press triggered
+- `component-hover-card.md` — hover-triggered floating preview
+- `component-sheet.md` — side-anchored modal panel with mobile detents
+- `component-command.md` — Command / CommandPalette (renamed from `component-command-palette.md`); cmdk-based searchable palette
+
+**Navigation / layout**:
+- `component-sidebar.md` — persistent collapsible navigation
+- `component-navigation-menu.md` — top horizontal nav with mega-menu
+- `component-menubar.md` — desktop-style File / Edit / View menus
+
+**Utilities**:
+- `component-aspect-ratio.md` — proportions wrapper
+- `component-collapsible.md` — single expandable section primitive
+- `component-toggle.md` — Toggle + ToggleGroup pressable buttons
+- `component-scroll-area.md` — custom-styled scrollbar
+- `component-banner.md` — persistent in-page strip (distinct from Alert + Toast)
+- `component-kbd.md` — keyboard shortcut display (platform-aware symbols)
+- `component-separator.md` — horizontal / vertical divider
+
+### Coverage
+- Examples: 99 → 113 (+14; 2 renamed, 13 net new + 2 small)
+- Component coverage: 47 → **61** (23.6% → **30.7%**)
+- Knowledge: 91 (no change)
+- Skills: 19 (no change)
+- Commands: 15 (no change)
+
+### Versions
+- CLI: 3.1.0 → 3.3.0
+- Plugin / corpus: 3.1.0 → 3.3.0
+
+(v3.2 didn't bump versions — that phase added the doc site without changing the corpus / CLI.)
+
 ## v3.2.0 — Public doc site (2026-05)
 
 mkdocs-material site at GitHub Pages. The corpus is now browsable + searchable for prospective adopters before they install.

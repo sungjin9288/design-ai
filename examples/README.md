@@ -65,6 +65,22 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-watermark.md](component-watermark.md) | Watermark | Repeating overlay for sensitive content. Per-user trace, screenshot deterrent. |
 | [component-code.md](component-code.md) | Code (inline + block) | Monospace text + syntax highlighting + copy button. |
 | [component-typography.md](component-typography.md) | Typography (text primitive) | Variant-driven text. When NOT to use (Tailwind utility classes are usually clearer). |
+| [component-badge.md](component-badge.md) | Badge | Standalone label + indicator dual modes. Variants (default/secondary/destructive/outline), count + dot indicator on parent. |
+| [component-dropdown.md](component-dropdown.md) | Dropdown / DropdownMenu | Triggered overlay menu of actions. WAI-ARIA Menu pattern, sub-menus, checkbox / radio items, shortcuts. |
+| [component-context-menu.md](component-context-menu.md) | ContextMenu | Right-click / long-press triggered menu. Same WAI-ARIA Menu pattern as Dropdown. |
+| [component-hover-card.md](component-hover-card.md) | HoverCard | Hover-triggered floating preview. Distinct from Tooltip + Popover; profile previews, link previews. |
+| [component-sheet.md](component-sheet.md) | Sheet | Side-anchored modal panel. Mobile-first detents, side variants (top/right/bottom/left). |
+| [component-command.md](component-command.md) | Command / CommandPalette | cmdk-based searchable command palette. Cmd+K pattern, fuzzy match, async results. |
+| [component-sidebar.md](component-sidebar.md) | Sidebar | Persistent collapsible navigation panel. Icon-only mode, mobile offcanvas, multi-level menu. |
+| [component-navigation-menu.md](component-navigation-menu.md) | NavigationMenu | Top horizontal nav with mega-menu panels. Marketing site / SaaS header pattern. |
+| [component-menubar.md](component-menubar.md) | Menubar | Persistent menu bar (File / Edit / View). Desktop-style web apps; hover-roving between menus. |
+| [component-aspect-ratio.md](component-aspect-ratio.md) | AspectRatio | Lock child to specific aspect ratio. Image, video, card thumbnail wrapper. |
+| [component-collapsible.md](component-collapsible.md) | Collapsible | Single expandable section primitive. Base for Accordion; FAQ, "Show more" patterns. |
+| [component-toggle.md](component-toggle.md) | Toggle / ToggleGroup | Two-state pressable button. Toolbar formatting, mutually-exclusive (single) or independent (multiple) groups. |
+| [component-scroll-area.md](component-scroll-area.md) | ScrollArea | Custom-styled scrollbar. Cross-platform consistency; visibility modes (auto/always/scroll/hover). |
+| [component-banner.md](component-banner.md) | Banner | Persistent in-page strip (system status, trial, cookie consent). Distinct from Alert + Toast. |
+| [component-kbd.md](component-kbd.md) | Kbd | Keyboard shortcut display. Platform-aware Mac/Win symbols, used in tooltips + menus. |
+| [component-separator.md](component-separator.md) | Separator | Horizontal / vertical divider. Decorative vs semantic; aliased as Divider in some libs. |
 
 ### Documentation components
 

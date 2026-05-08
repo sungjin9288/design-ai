@@ -51,6 +51,66 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 22 — Component coverage push (v3.3) ✓ shipped
+
+Component spec coverage from 23.6% → **30.7%** (47 → 61 of 199 canonical components).
+
+### Added (15 specs total)
+
+13 net new + 2 renames (to align filenames with canonical names from `knowledge/components/index.json`).
+
+**Overlay primitives** (5):
+- `component-badge.md` — Standalone label + Indicator dual modes (Ant + MUI + shadcn synthesis).
+- `component-dropdown.md` — Dropdown / DropdownMenu; WAI-ARIA Menu pattern, sub-menus, checkbox / radio items, shortcuts. (Renamed from `component-dropdown-menu.md`.)
+- `component-context-menu.md` — Right-click / long-press triggered; same Menu pattern as Dropdown.
+- `component-hover-card.md` — Hover-triggered floating preview; profile previews, link previews.
+- `component-sheet.md` — Side-anchored modal panel; mobile-first detents (peek vs full).
+- `component-command.md` — Command / CommandPalette (cmdk-based); Cmd+K pattern, fuzzy match, async results, multi-page navigation. (Renamed from `component-command-palette.md`.)
+
+**Navigation / layout** (3):
+- `component-sidebar.md` — Persistent collapsible navigation (the shadcn flagship); icon-only mode, mobile offcanvas.
+- `component-navigation-menu.md` — Top horizontal nav with mega-menu panels; marketing site / SaaS header.
+- `component-menubar.md` — Desktop File / Edit / View pattern; hover-roving between menus, keyboard nav.
+
+**Utilities** (7):
+- `component-aspect-ratio.md` — Lock child to specific aspect ratio.
+- `component-collapsible.md` — Single expandable section primitive.
+- `component-toggle.md` — Toggle + ToggleGroup pressable buttons (single + multiple).
+- `component-scroll-area.md` — Custom-styled scrollbar; visibility modes.
+- `component-banner.md` — Persistent in-page strip (system status, trial, cookie consent); distinct from Alert + Toast.
+- `component-kbd.md` — Keyboard shortcut display; platform-aware Mac/Win symbols.
+- `component-separator.md` — Horizontal / vertical divider; decorative vs semantic.
+
+### Renamed
+- `component-dropdown-menu.md` → `component-dropdown.md` (matches canonical `dropdown` from Ant)
+- `component-command-palette.md` → `component-command.md` (matches canonical `command` from shadcn)
+
+### Cross-references updated
+All in-corpus links updated via `sed`. `link-check.py` confirms no broken references.
+
+### Coverage
+- Examples: 99 → 113 (+14)
+- Component coverage: 47 → **61** (23.6% → **30.7%**)
+- Versions bumped: CLI 3.1.0 → 3.3.0, Plugin 3.1.0 → 3.3.0
+
+### Verified
+- All 4 audits pass (frontmatter / link / Korean / coverage).
+- mkdocs build still succeeds.
+- npm pack tarball clean.
+
+### What this enables
+- **Stronger component-spec-writer output** — more canonical patterns matched, better synthesis quality.
+- **Closer parity with shadcn-ui** — most flagship primitives (sidebar, command, sheet, dropdown-menu) now have specs.
+- **30%+ canonical coverage milestone** — the corpus now covers 30% of the canonical Ant + MUI + shadcn surface.
+
+### What's still ahead (v3.4+)
+- Versioned knowledge files (`version:` in frontmatter for fine-grained pinning).
+- Cross-tool integration tests (Codex CLI / Cursor / Aider sessions captured as worked examples).
+- Coverage push from 30% → 40%+ (more canonical specs).
+- Homebrew formula.
+- VS Code extension wrapper.
+- Component spec extractor (scaffold a spec from upstream source diff).
+
 ## Phase 21 — Public doc site (v3.2) ✓ shipped
 
 mkdocs-material site auto-deploying to GitHub Pages. Discoverability + search for prospective adopters before they install.

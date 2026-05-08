@@ -14,10 +14,10 @@ generated_at: 2026-05-09
 | --- | --- | --- |
 | Knowledge files | 91 | 76 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 99 | |
+| Worked examples | 115 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 47 | **23.6% spec coverage** |
+| Components with worked spec | 61 | **30.7% spec coverage** |
 
 ## Knowledge by category
 
@@ -49,7 +49,7 @@ generated_at: 2026-05-09
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 470 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 502 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -262,8 +262,11 @@ generated_at: 2026-05-09
 | [examples/component-amount-input.md](../examples/component-amount-input.md) | 278 | `AmountInput` (custom) — spec |
 | [examples/component-anchor.md](../examples/component-anchor.md) | 198 | `Anchor` (scrollspy / TOC) — spec |
 | [examples/component-app-bar.md](../examples/component-app-bar.md) | 249 | `AppBar` (Top app bar / header) — spec |
+| [examples/component-aspect-ratio.md](../examples/component-aspect-ratio.md) | 156 | `AspectRatio` — spec |
 | [examples/component-autocomplete.md](../examples/component-autocomplete.md) | 199 | `AutoComplete` — spec |
 | [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
+| [examples/component-badge.md](../examples/component-badge.md) | 181 | `Badge` — spec |
+| [examples/component-banner.md](../examples/component-banner.md) | 237 | `Banner` — spec |
 | [examples/component-biometric-gate.md](../examples/component-biometric-gate.md) | 281 | `BiometricGate` (custom — Korean mobile fintech) — spec |
 | [examples/component-blockquote.md](../examples/component-blockquote.md) | 153 | `Blockquote` — spec |
 | [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
@@ -276,12 +279,16 @@ generated_at: 2026-05-09
 | [examples/component-category-picker.md](../examples/component-category-picker.md) | 271 | `CategoryPicker` (custom — Korean fintech / 가계부) — spec |
 | [examples/component-chat-interface.md](../examples/component-chat-interface.md) | 399 | `ChatInterface` (custom — generic chat UI for chatbot / AI / live agent) — spec |
 | [examples/component-code.md](../examples/component-code.md) | 213 | `Code` (inline + block) — spec |
+| [examples/component-collapsible.md](../examples/component-collapsible.md) | 219 | `Collapsible` — spec |
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
+| [examples/component-command.md](../examples/component-command.md) | 299 | `CommandPalette` — spec |
+| [examples/component-context-menu.md](../examples/component-context-menu.md) | 179 | `ContextMenu` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
 | [examples/component-descriptions.md](../examples/component-descriptions.md) | 242 | `Descriptions` (key-value list) — spec |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
 | [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
+| [examples/component-dropdown.md](../examples/component-dropdown.md) | 220 | `DropdownMenu` — spec |
 | [examples/component-email-layout.md](../examples/component-email-layout.md) | 253 | `EmailLayout` — spec |
 | [examples/component-empty-state.md](../examples/component-empty-state.md) | 269 | `EmptyState` (custom — no-data + filtered-empty + first-run shell) — spec |
 | [examples/component-feature-grid.md](../examples/component-feature-grid.md) | 201 | `FeatureGrid` (3-up / 4-up feature display) — spec |
@@ -291,16 +298,20 @@ generated_at: 2026-05-09
 | [examples/component-game-hud.md](../examples/component-game-hud.md) | 362 | `GameHUD` (custom — composable in-game heads-up display) — spec |
 | [examples/component-game-menu.md](../examples/component-game-menu.md) | 327 | `GameMenu` (custom — composable game menu shell with focus / input handling) — spec |
 | [examples/component-hero-block.md](../examples/component-hero-block.md) | 252 | `HeroBlock` (landing hero) — spec |
+| [examples/component-hover-card.md](../examples/component-hover-card.md) | 211 | `HoverCard` — spec |
 | [examples/component-illustration.md](../examples/component-illustration.md) | 273 | `Illustration` (custom — themeable SVG illustration display) — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
 | [examples/component-input-otp.md](../examples/component-input-otp.md) | 271 | `InputOTP` (one-time password input) — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
+| [examples/component-kbd.md](../examples/component-kbd.md) | 197 | `Kbd` — spec |
 | [examples/component-krw-amount.md](../examples/component-krw-amount.md) | 219 | `KRWAmount` (custom — display-only currency formatter) — spec |
 | [examples/component-layout.md](../examples/component-layout.md) | 217 | `Layout` (page chrome) — spec |
 | [examples/component-loading-sequence.md](../examples/component-loading-sequence.md) | 254 | `LoadingSequence` (custom — splash + first-screen coordination) — spec |
 | [examples/component-lottie-player.md](../examples/component-lottie-player.md) | 279 | `LottiePlayer` (custom — designer-led After Effects animation in product UI) — spec |
 | [examples/component-mention.md](../examples/component-mention.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
+| [examples/component-menubar.md](../examples/component-menubar.md) | 259 | `Menubar` — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
+| [examples/component-navigation-menu.md](../examples/component-navigation-menu.md) | 295 | `NavigationMenu` — spec |
 | [examples/component-otp-countdown.md](../examples/component-otp-countdown.md) | 245 | `OTPCountdown` (custom — Korean SMS verification timer) — spec |
 | [examples/component-page-transition.md](../examples/component-page-transition.md) | 281 | `PageTransition` (custom — route-level animation wrapper) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
@@ -314,9 +325,13 @@ generated_at: 2026-05-09
 | [examples/component-qrcode.md](../examples/component-qrcode.md) | 201 | `QRCode` — spec |
 | [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
 | [examples/component-result.md](../examples/component-result.md) | 270 | `Result` + `Empty` — combined spec |
+| [examples/component-scroll-area.md](../examples/component-scroll-area.md) | 199 | `ScrollArea` — spec |
 | [examples/component-scroll-reveal.md](../examples/component-scroll-reveal.md) | 320 | `ScrollReveal` (custom — viewport-triggered animation primitive) — spec |
 | [examples/component-segmented.md](../examples/component-segmented.md) | 178 | `Segmented` (Toggle button group) — spec |
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
+| [examples/component-separator.md](../examples/component-separator.md) | 177 | `Separator` — spec |
+| [examples/component-sheet.md](../examples/component-sheet.md) | 277 | `Sheet` — spec |
+| [examples/component-sidebar.md](../examples/component-sidebar.md) | 257 | `Sidebar` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
 | [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
 | [examples/component-spatial-locomotion.md](../examples/component-spatial-locomotion.md) | 373 | `SpatialLocomotion` (custom — VR locomotion controller with comfort options) — spec |
@@ -332,6 +347,7 @@ generated_at: 2026-05-09
 | [examples/component-testimonial-carousel.md](../examples/component-testimonial-carousel.md) | 218 | `TestimonialCarousel` — spec |
 | [examples/component-timeline.md](../examples/component-timeline.md) | 170 | `Timeline` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
+| [examples/component-toggle.md](../examples/component-toggle.md) | 220 | `Toggle` and `ToggleGroup` — spec |
 | [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
 | [examples/component-tour.md](../examples/component-tour.md) | 176 | `Tour` (in-product overlay tour) — spec |
 | [examples/component-transaction-list-item.md](../examples/component-transaction-list-item.md) | 243 | `TransactionListItem` (custom — Korean fintech / 가계부) — spec |
@@ -356,7 +372,7 @@ generated_at: 2026-05-09
 
 ## Component spec coverage
 
-**47 / 199 canonical components have a worked spec (23.6%)**
+**61 / 199 canonical components have a worked spec (30.7%)**
 
 Specs that match canonical names:
 
@@ -365,23 +381,32 @@ Specs that match canonical names:
 - `alert` → [examples/component-alert.md](../examples/component-alert.md)
 - `anchor` → [examples/component-anchor.md](../examples/component-anchor.md)
 - `app-bar` → [examples/component-app-bar.md](../examples/component-app-bar.md)
+- `aspect-ratio` → [examples/component-aspect-ratio.md](../examples/component-aspect-ratio.md)
 - `avatar` → [examples/component-avatar.md](../examples/component-avatar.md)
+- `badge` → [examples/component-badge.md](../examples/component-badge.md)
 - `breadcrumb` → [examples/component-breadcrumb.md](../examples/component-breadcrumb.md)
 - `button` → [examples/component-button.md](../examples/component-button.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
 - `carousel` → [examples/component-carousel.md](../examples/component-carousel.md)
 - `cascader` → [examples/component-cascader.md](../examples/component-cascader.md)
+- `collapsible` → [examples/component-collapsible.md](../examples/component-collapsible.md)
 - `color-picker` → [examples/component-color-picker.md](../examples/component-color-picker.md)
+- `command` → [examples/component-command.md](../examples/component-command.md)
+- `context-menu` → [examples/component-context-menu.md](../examples/component-context-menu.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
 - `descriptions` → [examples/component-descriptions.md](../examples/component-descriptions.md)
 - `divider` → [examples/component-divider.md](../examples/component-divider.md)
 - `drawer` → [examples/component-drawer.md](../examples/component-drawer.md)
+- `dropdown` → [examples/component-dropdown.md](../examples/component-dropdown.md)
 - `float-button` → [examples/component-float-button.md](../examples/component-float-button.md)
 - `form` → [examples/component-form.md](../examples/component-form.md)
+- `hover-card` → [examples/component-hover-card.md](../examples/component-hover-card.md)
 - `image` → [examples/component-image.md](../examples/component-image.md)
 - `input` → [examples/component-input.md](../examples/component-input.md)
 - `input-otp` → [examples/component-input-otp.md](../examples/component-input-otp.md)
+- `kbd` → [examples/component-kbd.md](../examples/component-kbd.md)
 - `layout` → [examples/component-layout.md](../examples/component-layout.md)
+- `menubar` → [examples/component-menubar.md](../examples/component-menubar.md)
 - `modal` → [examples/component-modal.md](../examples/component-modal.md)
 - `pagination` → [examples/component-pagination.md](../examples/component-pagination.md)
 - `popover` → [examples/component-popover.md](../examples/component-popover.md)
@@ -389,8 +414,12 @@ Specs that match canonical names:
 - `qrcode` → [examples/component-qrcode.md](../examples/component-qrcode.md)
 - `rate` → [examples/component-rate.md](../examples/component-rate.md)
 - `result` → [examples/component-result.md](../examples/component-result.md)
+- `scroll-area` → [examples/component-scroll-area.md](../examples/component-scroll-area.md)
 - `segmented` → [examples/component-segmented.md](../examples/component-segmented.md)
 - `select` → [examples/component-select.md](../examples/component-select.md)
+- `separator` → [examples/component-separator.md](../examples/component-separator.md)
+- `sheet` → [examples/component-sheet.md](../examples/component-sheet.md)
+- `sidebar` → [examples/component-sidebar.md](../examples/component-sidebar.md)
 - `skeleton` → [examples/component-skeleton.md](../examples/component-skeleton.md)
 - `slider` → [examples/component-slider.md](../examples/component-slider.md)
 - `spin` → [examples/component-spin.md](../examples/component-spin.md)
@@ -400,6 +429,7 @@ Specs that match canonical names:
 - `table` → [examples/component-table.md](../examples/component-table.md)
 - `tabs` → [examples/component-tabs.md](../examples/component-tabs.md)
 - `timeline` → [examples/component-timeline.md](../examples/component-timeline.md)
+- `toggle` → [examples/component-toggle.md](../examples/component-toggle.md)
 - `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
 - `tour` → [examples/component-tour.md](../examples/component-tour.md)
 - `transfer` → [examples/component-transfer.md](../examples/component-transfer.md)
@@ -414,6 +444,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `address-input`
 - `amount-input`
 - `autocomplete`
+- `banner`
 - `biometric-gate`
 - `blockquote`
 - `calendar`
@@ -434,6 +465,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `loading-sequence`
 - `lottie-player`
 - `mention`
+- `navigation-menu`
 - `otp-countdown`
 - `page-transition`
 - `pass-auth`
