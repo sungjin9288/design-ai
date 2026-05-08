@@ -51,6 +51,56 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 25 — Doc site Korean i18n (v3.6) ✓ shipped
+
+design-ai's primary audience is Korean. The doc site was English-only; this phase makes it bilingual so KR users can evaluate and adopt without English friction. Direct lever for the user's stated 시장성 / 대중성 goal.
+
+### Added
+- **4 Korean translations of high-traffic pages**:
+  - `README.ko.md` — Korean primary landing with full feature coverage, install paths, agent table, KR market focus, source material, status, contribution guidelines, changelog highlights.
+  - `docs/QUICKSTART.ko.md` — 5-minute getting-started in Korean.
+  - `docs/DISTRIBUTION.ko.md` — Distribution guide (NPM / Homebrew / git clone) in Korean with 한국어 어댑터 가이드 section.
+  - `AGENTS.ko.md` — Universal agent entry point in Korean. Mirrors English AGENTS.md with KR-specific guidance built in.
+- **`mkdocs-static-i18n` plugin** — file-suffix translation pattern. Same content tree, two languages.
+- **mkdocs nav translations** — Home / Quickstart / Distribution / Architecture / Knowledge / Skills / Commands / Agents / Examples / Integrations / Reference all translated.
+- **Header language switcher** — mkdocs-material's `extra.alternate` provides English / 한국어 toggle in nav.
+- **README badges** — language toggle at top of both READMEs.
+- **`tools/build-docs.sh`** updated to symlink Korean translations into `site-src/`.
+
+### Changed
+- `docs/requirements.txt` — added `mkdocs-static-i18n>=1.3.0`.
+- `mkdocs.yml` — i18n plugin config + nav_translations + extra.alternate.
+- `README.md` (English) — language toggle to Korean variant.
+- `package.json` + `.claude-plugin/plugin.json` versions: 3.5.0 → 3.6.0.
+
+### Verified
+- All 5 audits pass (frontmatter / link / Korean / coverage / integration-check).
+- mkdocs build succeeds in 12s with both languages.
+- Korean pages render at `/ko/` with translated nav.
+- Search supports both English and Korean tokenizers.
+
+### Voice / register choices
+
+For Korean translations:
+- **README + QUICKSTART**: 해요체 (friendly) — adopters / explorers
+- **AGENTS.md**: 해요체 — agent-facing instructions
+- **DISTRIBUTION**: mixed — code blocks in code, narrative in 해요체
+- Direct translation rejected — adapted to natural Korean (e.g., "let's get started" → "시작해 봐요" not "시작합시다 우리는")
+
+### What this enables
+- **Korean adopters can evaluate** without bouncing off English.
+- **SEO for the primary market** — Korean meta tags improve Naver / Google KR indexing.
+- **B2B Korean teams** can share Korean docs with non-developer stakeholders.
+- **Lower adoption barrier** — KR designers see "made for our market" via the toggle alone.
+
+### What's still ahead (v3.7+)
+- Translate more pages (CONTRIBUTING.ko.md, ARCHITECTURE.ko.md, integrations Korean).
+- Coverage push 36% → 50% (extractor accelerates).
+- VS Code extension wrapper.
+- Semantic search index (Algolia / Typesense) for cross-language search.
+- Versioned knowledge files (semver in frontmatter).
+- Component spec extractor v2 (TS AST parsing).
+
 ## Phase 24 — Component spec scaffolder + coverage push (v3.5) ✓ shipped
 
 Component coverage from 30.7% → **36.2%** (61 → 72 of 199 canonical components). Builds an extractor that scaffolds future spec drafts from upstream sources, then exercises the muscle with 11 new manual specs.

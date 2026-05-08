@@ -11,5 +11,6 @@
 
 mkdocs>=1.6.1
 mkdocs-material>=9.7.0
+mkdocs-static-i18n>=1.3.0
 pymdown-extensions>=10.21.0
 pygments>=2.18.0

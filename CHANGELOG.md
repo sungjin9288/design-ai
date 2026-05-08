@@ -2,6 +2,37 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.6.0 — Doc site Korean i18n (2026-05)
+
+design-ai's primary audience is Korean designers / developers. The doc site is now bilingual: English (default) + Korean translations of the highest-traffic pages.
+
+### Added
+- **`README.ko.md`** — Korean primary landing. Coverage table, install paths, agent table, project structure, Korean market focus.
+- **`docs/QUICKSTART.ko.md`** — 5-minute getting-started in Korean.
+- **`docs/DISTRIBUTION.ko.md`** — distribution guide in Korean (NPM / Homebrew / git clone).
+- **`AGENTS.ko.md`** — universal agent entry point in Korean.
+- **`mkdocs-static-i18n` plugin** — file-suffix-based translations (`README.ko.md`, `index.ko.md`); language switcher in mkdocs-material header.
+- **mkdocs nav translations** — section labels (Home / Quickstart / Distribution / etc.) translated to Korean.
+- **README badges** — language toggle at top of both English and Korean READMEs.
+
+### Changed
+- **`tools/build-docs.sh`** — symlinks Korean translations into `site-src/`.
+- **`docs/requirements.txt`** — added `mkdocs-static-i18n>=1.3.0`.
+- **`mkdocs.yml`** — `extra.alternate` declares English / Korean languages; `i18n` plugin configured.
+- **`README.md`** (English) — language toggle to Korean version; examples count corrected to 124.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 3.5.0 → 3.6.0.
+
+### Verified
+- All 5 audits pass.
+- mkdocs build succeeds in 12s with both languages.
+- Korean pages render at `/ko/` with translated nav.
+- Search supports both English and Korean.
+
+### What this enables
+- **Korean B2C / B2B audiences** can browse the corpus without English friction.
+- **SEO for the primary market** — Korean meta tags + content indexed by Naver / Google KR.
+- **Lower adoption friction** — KR designers / developers evaluate in their native language before installing.
+
 ## v3.5.0 — Component spec scaffolder + coverage push (2026-05)
 
 Component coverage 30.7% → **36.2%** (61 → 72 of 199 canonical components). Adds an extractor that scaffolds future spec drafts from upstream sources, accelerating future coverage pushes.

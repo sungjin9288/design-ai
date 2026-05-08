@@ -32,8 +32,13 @@ mkdir -p "$SITE_SRC"
 # Index page (mkdocs convention) → README.md
 ln -sf "../README.md" "$SITE_SRC/index.md"
 
-# Top-level docs that should be browsable
-for f in AGENTS.md CLAUDE.md CHANGELOG.md; do
+# Korean index page (mkdocs-static-i18n convention: index.ko.md)
+if [ -f "$REPO_ROOT/README.ko.md" ]; then
+  ln -sf "../README.ko.md" "$SITE_SRC/index.ko.md"
+fi
+
+# Top-level docs that should be browsable (English + Korean translations)
+for f in AGENTS.md AGENTS.ko.md CLAUDE.md CHANGELOG.md; do
   if [ -f "$REPO_ROOT/$f" ]; then
     ln -sf "../$f" "$SITE_SRC/$f"
   fi

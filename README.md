@@ -3,8 +3,10 @@
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](.github/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/)
-[![Examples](https://img.shields.io/badge/examples-99-blue)](examples/)
+[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/)
 [![Skills](https://img.shields.io/badge/skills-19-blue)](skills/)
+
+> 🇺🇸 English / [🇰🇷 한국어](README.ko.md)
 
 A model-agnostic design knowledge base + skill system. Drop it in front of any AI coding agent (Claude Code, Codex CLI, Cursor, Aider) and it becomes a senior product designer with 20+ years of experience — opinionated, accessible-by-default, Korean-market-fluent.
 

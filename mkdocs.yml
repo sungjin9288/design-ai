@@ -74,6 +74,30 @@ plugins:
       lang:
         - en
         - ko
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: ko
+          name: 한국어
+          build: true
+          nav_translations:
+            Home: 홈
+            Quickstart: 빠른 시작
+            Distribution: 배포
+            Architecture: 아키텍처
+            Knowledge: 지식
+            Skills: 스킬
+            Commands: 명령어
+            Agents: 에이전트
+            Examples: 예제
+            Integrations: 통합
+            Reference: 참고
 
 markdown_extensions:
   - admonition
@@ -117,6 +141,13 @@ extra_css:
   - docs/site-overrides/extra.css
 
 extra:
+  alternate:
+    - name: English
+      link: /
+      lang: en
+    - name: 한국어
+      link: /ko/
+      lang: ko
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/sungjin/design-ai
