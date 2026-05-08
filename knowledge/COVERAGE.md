@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 60 | 45 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 13 | 13 with verification phase |
-| Worked examples | 87 | |
+| Knowledge files | 65 | 50 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 14 | 14 with verification phase |
+| Worked examples | 89 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -30,6 +30,7 @@ generated_at: 2026-05-08
 | `design-tokens` | 4 | 3 | 1 |
 | `i18n` | 6 | 6 | 0 |
 | `icons` | 1 | 0 | 1 |
+| `illustration` | 5 | 5 | 0 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 6 | 6 | 0 |
 | `patterns` | 29 | 23 | 6 |
@@ -43,7 +44,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 361 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 375 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -93,6 +94,16 @@ generated_at: 2026-05-08
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/icons/curated-sets.md](../knowledge/icons/curated-sets.md) | 222 | generated | Curated icon sets |
+
+#### illustration
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/illustration/hero-illustrations.md](../knowledge/illustration/hero-illustrations.md) | 231 | hand-written | Hero illustrations |
+| [knowledge/illustration/illustration-systems.md](../knowledge/illustration/illustration-systems.md) | 218 | hand-written | Illustration systems |
+| [knowledge/illustration/mascot-design.md](../knowledge/illustration/mascot-design.md) | 205 | hand-written | Mascot design |
+| [knowledge/illustration/spot-illustrations.md](../knowledge/illustration/spot-illustrations.md) | 243 | hand-written | Spot illustrations |
+| [knowledge/illustration/svg-optimization.md](../knowledge/illustration/svg-optimization.md) | 305 | hand-written | SVG optimization |
 
 #### layout
 
@@ -173,6 +184,7 @@ generated_at: 2026-05-08
 | [document-author](../skills/document-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 167 |
 | [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
+| [illustration-designer](../skills/illustration-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 166 |
 | [motion-designer](../skills/motion-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 223 |
 | [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
@@ -209,11 +221,13 @@ generated_at: 2026-05-08
 | [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
 | [examples/component-email-layout.md](../examples/component-email-layout.md) | 253 | `EmailLayout` — spec |
+| [examples/component-empty-state.md](../examples/component-empty-state.md) | 269 | `EmptyState` (custom — no-data + filtered-empty + first-run shell) — spec |
 | [examples/component-feature-grid.md](../examples/component-feature-grid.md) | 201 | `FeatureGrid` (3-up / 4-up feature display) — spec |
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
 | [examples/component-hero-block.md](../examples/component-hero-block.md) | 252 | `HeroBlock` (landing hero) — spec |
+| [examples/component-illustration.md](../examples/component-illustration.md) | 273 | `Illustration` (custom — themeable SVG illustration display) — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
 | [examples/component-input-otp.md](../examples/component-input-otp.md) | 271 | `InputOTP` (one-time password input) — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
@@ -337,9 +351,11 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `code`
 - `doc-page`
 - `email-layout`
+- `empty-state`
 - `feature-grid`
 - `form-controls`
 - `hero-block`
+- `illustration`
 - `krw-amount`
 - `loading-sequence`
 - `lottie-player`

@@ -51,6 +51,29 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 13 — Illustration systems (v2.2) ✓ shipped
+
+Lift illustration from an unwritten gap into a full subsystem: knowledge per type, component specs, dedicated skill, slash command. Covers spot illustrations, hero illustrations, mascots (Korean fintech relevance), and SVG production. Korean-market conventions baked in.
+
+- [x] **5 illustration knowledge files**:
+  - `illustration/illustration-systems.md` — style, voice, system design (geometric vs organic, line weight, color treatment, perspective).
+  - `illustration/spot-illustrations.md` — empty / success / error / onboarding / permissions; composition + sizing + voice.
+  - `illustration/hero-illustrations.md` — marketing-led; conceptual / product-in-context / character-driven archetypes.
+  - `illustration/mascot-design.md` — Kakao / Toss / Naver mascot conventions, design process, governance.
+  - `illustration/svg-optimization.md` — SVGO, currentColor, accessibility, file size targets.
+- [x] **2 component specs**:
+  - `component-empty-state.md` — illustration + headline + description + CTA stack with registry + voice rules.
+  - `component-illustration.md` — themeable SVG / Lottie display backed by typesafe illustration registry.
+- [x] **`skills/illustration-designer/`** — pick scope, style, voice, color, format; spec assets; SVGO checklist.
+- [x] **`/illustration`** slash command.
+- [x] AGENTS.md / skills/README / commands/README / examples/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 60 → 65 (+5 illustration).
+- Examples: 87 → 89 (+2 illustration components).
+- Skills: 13 → 14 (+ illustration-designer).
+- Commands: 9 → 10 (+ /illustration).
+
 ## Phase 12 — Motion design depth (v2.1) ✓ shipped
 
 Lift motion from a single principles file into a full subsystem: knowledge per category, component specs, a dedicated skill, and a slash command. Covers marketing, app loading, micro-interactions, and multi-element choreography. Reduced-motion-safe by default.

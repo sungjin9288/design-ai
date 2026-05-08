@@ -107,6 +107,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-lottie-player.md](component-lottie-player.md) | LottiePlayer | After Effects animation embed with lazy-load, offscreen pause, poster fallback, reduced-motion handling. |
 | [component-scroll-reveal.md](component-scroll-reveal.md) | ScrollReveal | Viewport-triggered animation primitive (fade-up / fade-in-blur / scale-in) with stagger and `once` semantics. |
 
+### Illustration components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-empty-state.md](component-empty-state.md) | EmptyState | Layout for "no data yet" surfaces. Illustration registry, voice rules, KR 해요체 default. |
+| [component-illustration.md](component-illustration.md) | Illustration | Themeable SVG / Lottie display backed by a typesafe illustration registry. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

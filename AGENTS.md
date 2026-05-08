@@ -65,6 +65,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Micro-interactions (press / hover / focus / state-change) | `knowledge/motion/micro-interactions.md` |
 | Multi-element choreography (cascade / FLIP / shared element) | `knowledge/motion/choreography-depth.md` |
 | Motion tools (CSS / Framer Motion / GSAP / Lottie / Rive / react-spring) | `knowledge/motion/motion-tools.md` |
+| Illustration systems (style, voice, system design) | `knowledge/illustration/illustration-systems.md` |
+| Spot illustrations (empty / success / error / onboarding) | `knowledge/illustration/spot-illustrations.md` |
+| Hero illustrations (marketing landing-page artwork) | `knowledge/illustration/hero-illustrations.md` |
+| Mascot design (characters, Korean fintech relevance) | `knowledge/illustration/mascot-design.md` |
+| SVG optimization (SVGO, currentColor, performance) | `knowledge/illustration/svg-optimization.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -93,6 +98,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Review PR #N for design system compliance" | `skills/design-pr-review/` (uses GitHub MCP) |
 | "Sync tokens with Figma" | `skills/figma-token-sync/` (uses Figma MCP) |
 | "Spec the motion / animation for X" | `skills/motion-designer/` |
+| "Design illustrations / mascot for X" | `skills/illustration-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

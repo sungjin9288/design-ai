@@ -13,5 +13,6 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/component-spec](component-spec.md) | Spec a single component using the component-spec-writer skill. |
 | [/extract-tokens](extract-tokens.md) | Run the token extractor pipeline. |
 | [/motion-design](motion-design.md) | Spec motion for a screen / component / page. Picks tool, durations, easings; reduced-motion-safe. |
+| [/illustration](illustration.md) | Design or spec an illustration system or piece. Style, voice, format; Korean-market-aware. |
 
 Each file has YAML frontmatter (`description`) and a body. The body is the prompt the command expands to.
