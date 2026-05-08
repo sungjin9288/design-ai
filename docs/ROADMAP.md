@@ -51,6 +51,58 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 24 — Component spec scaffolder + coverage push (v3.5) ✓ shipped
+
+Component coverage from 30.7% → **36.2%** (61 → 72 of 199 canonical components). Builds an extractor that scaffolds future spec drafts from upstream sources, then exercises the muscle with 11 new manual specs.
+
+### Added
+- **`tools/extractors/component_spec_scaffold.py`** — leverage tool:
+  - Given a canonical name (e.g., `combobox`), reads upstream sources from `refs/{ant,mui,shadcn}`.
+  - Best-effort prop extraction from TypeScript interfaces.
+  - Emits `examples/component-{name}.md` as a draft following the established skill template.
+  - Banner clearly marks output as DRAFT — maintainer must review narrative sections + tokens before shipping.
+  - CLI flags: `--name X`, `--all-missing`, `--limit N`, `--force`, `--dry-run`.
+  - Graceful degradation when `refs/` is missing — produces template anyway.
+- **11 component specs** (manual, full-quality):
+  - `component-alert-dialog.md` — destructive confirmation; `role="alertdialog"` + Cancel default focus
+  - `component-bottom-navigation.md` — mobile primary nav; iOS + Android + M3 conventions
+  - `component-chart.md` — Recharts wrapper; KR stock convention (red=up); chart-type selection
+  - `component-combobox.md` — searchable select; WAI-ARIA combobox; Korean IME handling
+  - `component-field.md` — Field family form-wrapper (Field / FieldLabel / FieldDescription / FieldError / FieldGroup / FieldSet / FieldLegend)
+  - `component-item.md` — list-item primitive (Item / ItemMedia / ItemContent / ItemTitle / etc.)
+  - `component-link.md` — text link primitive; Link vs Button decision; external indicator
+  - `component-paper.md` — MUI surface primitive (elevation + outlined)
+  - `component-spinner.md` — indeterminate loading; Spinner vs Progress vs Skeleton
+  - `component-empty.md` — inline "no data" primitive; distinct from EmptyState (custom)
+  - `component-masonry.md` — Pinterest-style staggered grid; CSS multicolumn vs JS trade-offs
+
+### Changed
+- `examples/README.md` — added new specs to Component specs table.
+- `package.json` + `.claude-plugin/plugin.json` versions: 3.4.0 → 3.5.0.
+
+### Verified
+- All 5 audits pass (frontmatter / link / Korean / coverage / integration-check).
+- Scaffolder dry-run + smoke-test produces valid output.
+- No regressions in existing specs.
+
+### Coverage
+- Examples: 113 → 124 (+11)
+- Component coverage: 61 → **72** (30.7% → **36.2%**)
+
+### What this enables
+- **Future coverage pushes are 5-10× faster** — scaffold 30 drafts in seconds, then maintainers refine the narrative sections (anatomy, edge cases, code examples, "Don'ts").
+- **Closer parity with shadcn-ui** — most flagship primitives now have specs (alert-dialog, command, sheet, dropdown, navigation-menu, menubar, sidebar, combobox, field, item, hover-card, context-menu).
+- **Form construction primitives ready** — Field family is the canonical form-wrapper across the corpus, used internally by `Form` skill output.
+- **Korean stock convention canonicalized** — chart spec captures the red=up / blue=down inversion as a token-driven default.
+
+### What's still ahead (v3.6+)
+- Versioned knowledge files (`version:` in frontmatter for fine-grained pinning).
+- Coverage push 36% → 50% (next 30+ specs — extractor accelerates this).
+- VS Code extension wrapper.
+- Semantic search index for the doc site (Algolia / Typesense).
+- Doc site i18n (Korean translations of QUICKSTART, README, AGENTS).
+- Component spec extractor v2 — TypeScript AST parsing for fuller prop extraction.
+
 ## Phase 23 — Multi-agent integration + Homebrew (v3.4) ✓ shipped
 
 Concrete proof that design-ai's "model-agnostic" tagline is real. Until now, the corpus had been heavily exercised through Claude Code; this phase adds worked walkthroughs for Codex CLI / Cursor / Aider / SDK and a Homebrew formula for broader install reach.

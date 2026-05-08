@@ -2,6 +2,44 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.5.0 — Component spec scaffolder + coverage push (2026-05)
+
+Component coverage 30.7% → **36.2%** (61 → 72 of 199 canonical components). Adds an extractor that scaffolds future spec drafts from upstream sources, accelerating future coverage pushes.
+
+### Added (1 extractor + 11 specs)
+
+**Extractor**:
+- `tools/extractors/component_spec_scaffold.py` — given a canonical component name, reads its sources from `refs/{ant,mui,shadcn}` and emits a draft `examples/component-{name}.md`. Best-effort prop extraction from TS interfaces. Supports `--name`, `--all-missing`, `--limit`, `--dry-run`, `--force`. Graceful degradation when refs/ is missing (still produces template).
+
+**11 component specs**:
+- `component-alert-dialog.md` — destructive action confirmation; default focus on Cancel; `role="alertdialog"`.
+- `component-bottom-navigation.md` — mobile primary nav; iOS / Android / M3 conventions; safe-area handling.
+- `component-chart.md` — Recharts wrapper with theming + a11y; KR stock convention (red=up); engine-agnostic chart-type table.
+- `component-combobox.md` — searchable select with WAI-ARIA combobox pattern; Korean IME composition handling.
+- `component-field.md` — Field family form-wrapper (Field / FieldLabel / FieldDescription / FieldError / FieldGroup / FieldSet / FieldLegend).
+- `component-item.md` — list-item primitive (Item / ItemMedia / ItemContent / ItemTitle / ItemDescription / ItemActions).
+- `component-link.md` — text link primitive; Link vs Button decision; external indicator; underline policies.
+- `component-paper.md` — MUI surface primitive; elevation + outlined; building block for Card / Modal / Drawer.
+- `component-spinner.md` — indeterminate loading; Spinner vs Progress vs Skeleton; reduced-motion.
+- `component-empty.md` — inline "no data" primitive; distinct from EmptyState (full-page custom).
+- `component-masonry.md` — Pinterest-style staggered grid; CSS multicolumn vs JS measurement trade-offs; a11y reading order.
+
+### Coverage
+- Examples: 113 → 124 (+11)
+- Component coverage: 61 → **72** (30.7% → **36.2%**)
+- Knowledge: 91 (no change)
+- Skills: 19 (no change)
+- Commands: 15 (no change)
+
+### Versions
+- CLI: 3.4.0 → 3.5.0
+- Plugin / corpus: 3.4.0 → 3.5.0
+
+### What this enables
+- **Future coverage pushes accelerate** — scaffold 30+ drafts in seconds, refine + ship.
+- **Closer parity with shadcn-ui** — most flagship primitives now have specs (alert-dialog, command, sheet, dropdown, navigation-menu, menubar, sidebar, combobox, field, item).
+- **Form scaffolding ready** — Field family enables structured form construction across the corpus.
+
 ## v3.4.0 — Multi-agent integration + Homebrew (2026-05)
 
 Concrete proof of design-ai's "model-agnostic" tagline. Four worked-example walkthroughs (Codex CLI / Cursor / Aider / SDK), Homebrew formula for `brew install`, and a CI audit that keeps walkthroughs from drifting.

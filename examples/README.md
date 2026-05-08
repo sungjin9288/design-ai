@@ -81,6 +81,17 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-banner.md](component-banner.md) | Banner | Persistent in-page strip (system status, trial, cookie consent). Distinct from Alert + Toast. |
 | [component-kbd.md](component-kbd.md) | Kbd | Keyboard shortcut display. Platform-aware Mac/Win symbols, used in tooltips + menus. |
 | [component-separator.md](component-separator.md) | Separator | Horizontal / vertical divider. Decorative vs semantic; aliased as Divider in some libs. |
+| [component-alert-dialog.md](component-alert-dialog.md) | AlertDialog | Modal confirmation for destructive actions. Distinct from Modal; default focus on Cancel; `role="alertdialog"`. |
+| [component-bottom-navigation.md](component-bottom-navigation.md) | BottomNavigation | Mobile primary nav (3-5 tabs). iOS / Android / Material 3 conventions; safe-area handling. |
+| [component-chart.md](component-chart.md) | Chart | Recharts wrapper with theming + a11y. Korean stock convention (red=up); engine-agnostic chart-type table. |
+| [component-combobox.md](component-combobox.md) | Combobox | Searchable select. WAI-ARIA combobox pattern; Korean IME composition handling; multi-select + creatable variants. |
+| [component-field.md](component-field.md) | Field family | Form-field wrapper (Field / FieldLabel / FieldDescription / FieldError / FieldGroup / FieldSet / FieldLegend). |
+| [component-item.md](component-item.md) | Item family | List-item primitive (Item / ItemMedia / ItemContent / ItemTitle / ItemDescription / ItemActions). |
+| [component-link.md](component-link.md) | Link | Text link primitive. Link vs Button decision; external indicator; underline policies; Korean conventions. |
+| [component-paper.md](component-paper.md) | Paper | MUI surface primitive — elevation + outlined variants. Building block for Card, Modal, Drawer. |
+| [component-spinner.md](component-spinner.md) | Spinner | Indeterminate loading indicator. Spinner vs Progress vs Skeleton; size scale; reduced-motion. |
+| [component-empty.md](component-empty.md) | Empty | Inline "no data" primitive. Distinct from EmptyState (full-page custom KR-aware). |
+| [component-masonry.md](component-masonry.md) | Masonry | Pinterest-style staggered grid. CSS multicolumn vs JS measurement trade-offs; a11y reading order. |
 
 ### Documentation components
 
