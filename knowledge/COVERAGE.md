@@ -12,12 +12,12 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 52 | 37 hand-written + 15 generated |
+| Knowledge files | 55 | 40 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 12 | 12 with verification phase |
-| Worked examples | 70 | |
+| Worked examples | 83 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 46 | **23.1% spec coverage** |
+| Components with worked spec | 47 | **23.6% spec coverage** |
 
 ## Knowledge by category
 
@@ -32,7 +32,7 @@ generated_at: 2026-05-08
 | `icons` | 1 | 0 | 1 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 1 | 1 | 0 |
-| `patterns` | 26 | 20 | 6 |
+| `patterns` | 29 | 23 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `typography` | 3 | 1 | 2 |
 
@@ -43,7 +43,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 319 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 338 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -110,6 +110,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
+| [knowledge/patterns/auth-flow-design.md](../knowledge/patterns/auth-flow-design.md) | 313 | hand-written | Authentication flow design |
 | [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 235 | hand-written | Brand identity |
 | [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 93 | generated | Brand reference index |
 | [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 266 | hand-written | Chart color encoding |
@@ -122,11 +123,13 @@ generated_at: 2026-05-08
 | [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 315 | hand-written | Error states |
 | [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 234 | hand-written | Form design patterns |
 | [knowledge/patterns/information-architecture.md](../knowledge/patterns/information-architecture.md) | 338 | hand-written | Information architecture |
+| [knowledge/patterns/landing-hero-design.md](../knowledge/patterns/landing-hero-design.md) | 280 | hand-written | Landing hero design |
 | [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 678 | generated | Landing page patterns |
 | [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md) | 368 | hand-written | List and feed patterns |
 | [knowledge/patterns/mobile-navigation.md](../knowledge/patterns/mobile-navigation.md) | 275 | hand-written | Mobile navigation patterns |
 | [knowledge/patterns/money-and-amount.md](../knowledge/patterns/money-and-amount.md) | 298 | hand-written | Money and amount |
 | [knowledge/patterns/onboarding.md](../knowledge/patterns/onboarding.md) | 297 | hand-written | Onboarding patterns |
+| [knowledge/patterns/pricing-page-design.md](../knowledge/patterns/pricing-page-design.md) | 258 | hand-written | Pricing page design |
 | [knowledge/patterns/realtime-data.md](../knowledge/patterns/realtime-data.md) | 277 | hand-written | Real-time data UX |
 | [knowledge/patterns/report-design.md](../knowledge/patterns/report-design.md) | 327 | hand-written | Report design |
 | [knowledge/patterns/search-ux.md](../knowledge/patterns/search-ux.md) | 370 | hand-written | Search UX |
@@ -195,13 +198,16 @@ generated_at: 2026-05-08
 | [examples/component-code.md](../examples/component-code.md) | 213 | `Code` (inline + block) — spec |
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
+| [examples/component-descriptions.md](../examples/component-descriptions.md) | 242 | `Descriptions` (key-value list) — spec |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
 | [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
 | [examples/component-email-layout.md](../examples/component-email-layout.md) | 253 | `EmailLayout` — spec |
+| [examples/component-feature-grid.md](../examples/component-feature-grid.md) | 201 | `FeatureGrid` (3-up / 4-up feature display) — spec |
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
+| [examples/component-hero-block.md](../examples/component-hero-block.md) | 252 | `HeroBlock` (landing hero) — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
 | [examples/component-input-otp.md](../examples/component-input-otp.md) | 271 | `InputOTP` (one-time password input) — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
@@ -209,11 +215,14 @@ generated_at: 2026-05-08
 | [examples/component-layout.md](../examples/component-layout.md) | 217 | `Layout` (page chrome) — spec |
 | [examples/component-mention.md](../examples/component-mention.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
+| [examples/component-otp-countdown.md](../examples/component-otp-countdown.md) | 245 | `OTPCountdown` (custom — Korean SMS verification timer) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
+| [examples/component-pass-auth.md](../examples/component-pass-auth.md) | 265 | `PASSAuth` (custom — Korean 본인인증) — spec |
 | [examples/component-payment-brand-button.md](../examples/component-payment-brand-button.md) | 253 | `PaymentBrandButton` (custom — Korean) — spec |
 | [examples/component-payment-method-selector.md](../examples/component-payment-method-selector.md) | 272 | `PaymentMethodSelector` (custom — Korean) — spec |
 | [examples/component-payment-receipt.md](../examples/component-payment-receipt.md) | 277 | `PaymentReceipt` (custom — Korean fintech) — spec |
 | [examples/component-popover.md](../examples/component-popover.md) | 239 | `Popover` — spec |
+| [examples/component-pricing-cards.md](../examples/component-pricing-cards.md) | 247 | `PricingCards` — spec |
 | [examples/component-progress.md](../examples/component-progress.md) | 195 | `Progress` — spec |
 | [examples/component-qrcode.md](../examples/component-qrcode.md) | 201 | `QRCode` — spec |
 | [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
@@ -230,6 +239,7 @@ generated_at: 2026-05-08
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-tag-badge.md](../examples/component-tag-badge.md) | 309 | `Tag` + `Badge` — combined spec |
+| [examples/component-testimonial-carousel.md](../examples/component-testimonial-carousel.md) | 218 | `TestimonialCarousel` — spec |
 | [examples/component-timeline.md](../examples/component-timeline.md) | 170 | `Timeline` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
 | [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
@@ -240,12 +250,18 @@ generated_at: 2026-05-08
 | [examples/component-typography.md](../examples/component-typography.md) | 215 | `Typography` (text primitive) — spec |
 | [examples/component-upload.md](../examples/component-upload.md) | 295 | `Upload` — spec |
 | [examples/component-watermark.md](../examples/component-watermark.md) | 217 | `Watermark` — spec |
+| [examples/doc-explanation-example.md](../examples/doc-explanation-example.md) | 196 | Worked example: explanation |
+| [examples/doc-how-to-example.md](../examples/doc-how-to-example.md) | 203 | Worked example: how-to |
+| [examples/doc-tutorial-example.md](../examples/doc-tutorial-example.md) | 162 | Worked example: tutorial |
 | [examples/dogfood-korean-fintech-system.md](../examples/dogfood-korean-fintech-system.md) | 433 | Dogfood: Korean fintech mobile app — design system bootstrap |
+| [examples/email-transactional-example.md](../examples/email-transactional-example.md) | 259 | Worked example: transactional email (Korean fintech) |
 | [examples/palette-saas-violet.md](../examples/palette-saas-violet.md) | 225 | Palette: B2B SaaS — violet primary |
+| [examples/report-example.md](../examples/report-example.md) | 225 | Worked example: design audit report |
+| [examples/slide-deck-example.md](../examples/slide-deck-example.md) | 229 | Worked example: slide deck (talk archetype) |
 
 ## Component spec coverage
 
-**46 / 199 canonical components have a worked spec (23.1%)**
+**47 / 199 canonical components have a worked spec (23.6%)**
 
 Specs that match canonical names:
 
@@ -262,6 +278,7 @@ Specs that match canonical names:
 - `cascader` → [examples/component-cascader.md](../examples/component-cascader.md)
 - `color-picker` → [examples/component-color-picker.md](../examples/component-color-picker.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
+- `descriptions` → [examples/component-descriptions.md](../examples/component-descriptions.md)
 - `divider` → [examples/component-divider.md](../examples/component-divider.md)
 - `drawer` → [examples/component-drawer.md](../examples/component-drawer.md)
 - `float-button` → [examples/component-float-button.md](../examples/component-float-button.md)
@@ -310,14 +327,20 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `code`
 - `doc-page`
 - `email-layout`
+- `feature-grid`
 - `form-controls`
+- `hero-block`
 - `krw-amount`
 - `mention`
+- `otp-countdown`
+- `pass-auth`
 - `payment-brand-button`
 - `payment-method-selector`
 - `payment-receipt`
+- `pricing-cards`
 - `stock-chart`
 - `tag-badge`
+- `testimonial-carousel`
 - `toast`
 - `transaction-list-item`
 

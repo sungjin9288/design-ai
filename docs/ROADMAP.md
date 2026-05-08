@@ -51,6 +51,37 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 11 — Completion (v2.0) ✓ shipped
+
+Final completion of v2.0 scope. Adds the worked examples that prove the documentation skills work end-to-end, plus a focused component coverage push, plus 3 universal pattern knowledge files.
+
+- [x] **6 doc/deck/report/email worked examples**:
+  - `doc-tutorial-example.md` (Diátaxis tutorial)
+  - `doc-how-to-example.md` (how-to with Korean localization)
+  - `doc-explanation-example.md` (W3C DTCG choice rationale)
+  - `slide-deck-example.md` (17-slide Korean conference talk)
+  - `report-example.md` (UX audit with severity-aggregated findings)
+  - `email-transactional-example.md` (Korean fintech receipt email)
+- [x] **7 component specs**:
+  - `component-descriptions.md` (key-value list, dl semantics)
+  - `component-hero-block.md` (landing hero with 4 layouts + video variants)
+  - `component-feature-grid.md` (3-up/4-up feature display)
+  - `component-testimonial-carousel.md` (single-large/3-up/auto-scroll variants)
+  - `component-pricing-cards.md` (2-4 tier pricing with anchoring + KR subscription disclosure)
+  - `component-pass-auth.md` (Korean 본인인증 wrapper — PASS/NICE/KCB)
+  - `component-otp-countdown.md` (SMS code expiration + resend cooldown)
+- [x] **3 universal pattern knowledge files**:
+  - `auth-flow-design.md` — signup / login / reset / 2FA / KakaoTalk / 본인인증
+  - `pricing-page-design.md` — tier strategy, anchoring, billing toggle, FAQ, KR legal
+  - `landing-hero-design.md` — 6 archetypes, headline formulas, video rules, A/B testing
+- [x] AGENTS.md / examples/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 52 → 55 (+3 patterns).
+- Examples: 70 → 83 (+13: 6 doc examples + 7 component specs).
+- Component spec coverage: ~24% → ~27% (more canonical-matched + 4 new custom).
+- Total lines: ~52K → ~62K.
+
 ## Phase 10 — Document design + brand + email (v1.9) ✓ shipped
 
 Expansion beyond product UI into the full design domain.

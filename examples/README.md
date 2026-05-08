@@ -74,6 +74,11 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-blockquote.md](component-blockquote.md) | Blockquote | Attributed quotations. Italic Latin / weight-shift Korean. |
 | [component-doc-page.md](component-doc-page.md) | DocPage (doc-site layout) | Header + sidebar + body + right TOC + footer. Distinct from product app Layout. |
 | [component-email-layout.md](component-email-layout.md) | EmailLayout | Table-based responsive email scaffolding. Bulletproof button, preheader, Korean spam law. |
+| [component-descriptions.md](component-descriptions.md) | Descriptions (key-value list) | Static read-only multi-row labels + values. dl semantics, Korean labels. |
+| [component-hero-block.md](component-hero-block.md) | HeroBlock (landing hero) | Headline + sub-headline + CTA + visual. 4 layouts, video/image variants, Korean conventions. |
+| [component-feature-grid.md](component-feature-grid.md) | FeatureGrid | 3-up/4-up feature cells. Icon + title + description per cell. Mobile stacks. |
+| [component-testimonial-carousel.md](component-testimonial-carousel.md) | TestimonialCarousel | Customer quotes. single-large / 3-up-grid / auto-scroll variants. Don't fabricate. |
+| [component-pricing-cards.md](component-pricing-cards.md) | PricingCards | 2–4 pricing tiers with anchoring, monthly/annual toggle, Korean subscription disclosure. |
 
 ### Custom components (Korean fintech / commerce)
 
@@ -90,6 +95,19 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-stock-chart.md](component-stock-chart.md) | StockChart | Korean inverted color convention (red=up, blue=down). Candle/line/area, crosshair, performance with canvas. |
 | [component-krw-amount.md](component-krw-amount.md) | KRWAmount (display-only) | Display counterpart to AmountInput. Comma vs Korean number format, sign, hero variant. |
 | [component-payment-receipt.md](component-payment-receipt.md) | PaymentReceipt | Korean receipt convention with dotted dividers, structured price breakdown, share/reorder actions. |
+| [component-pass-auth.md](component-pass-auth.md) | PASSAuth (Korean 본인인증) | Wraps PASS app / NICE / KCB identity verification. Required for high-value Korean fintech transactions. |
+| [component-otp-countdown.md](component-otp-countdown.md) | OTPCountdown | SMS code expiration timer + resend cooldown. Pairs with InputOTP. |
+
+### Documentation worked examples
+
+| File | Skill | Demonstrates |
+| --- | --- | --- |
+| [doc-tutorial-example.md](doc-tutorial-example.md) | `document-author` (tutorial) | Canonical tutorial format — time + audience, "what you'll build", numbered steps with confirmation, "what's next". |
+| [doc-how-to-example.md](doc-how-to-example.md) | `document-author` (how-to) | Problem-driven format — TL;DR + steps + variations + pitfalls. Korean localization context. |
+| [doc-explanation-example.md](doc-explanation-example.md) | `document-author` (explanation) | Discursive format — problem / alternatives / decision / tradeoffs. W3C DTCG choice rationale. |
+| [slide-deck-example.md](slide-deck-example.md) | `slide-deck-author` (talk) | 17-slide talk deck outline. Message-led titles, one visual per slide, speaker notes, Korean conference voice. |
+| [report-example.md](report-example.md) | `ux-audit` | UX audit report — TL;DR pyramid, severity-aggregated findings, citations, code diffs, "things that work well". |
+| [email-transactional-example.md](email-transactional-example.md) | `document-author` (email) | Korean fintech transactional email — preheader, receipt structure, bulletproof button, sender info per 정보통신망법. |
 
 ### End-to-end deliverables
 

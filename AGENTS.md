@@ -56,6 +56,9 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Email design (transactional + marketing, bulletproof button, KR spam law) | `knowledge/patterns/email-design.md` |
 | Korean document style (honorific level, hierarchy, conventions) | `knowledge/i18n/korean-document-style.md` |
 | Korean app store visual (icon design, screenshot composition) | `knowledge/i18n/korean-app-store-visual.md` |
+| Auth flow design (signup / login / reset / 2FA / social / KakaoTalk) | `knowledge/patterns/auth-flow-design.md` |
+| Pricing page design (tier strategy, anchoring, KR subscription disclosure) | `knowledge/patterns/pricing-page-design.md` |
+| Landing hero design (6 archetypes, headline formulas, video rules) | `knowledge/patterns/landing-hero-design.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
