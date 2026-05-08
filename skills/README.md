@@ -21,6 +21,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [design-broadcast](design-broadcast/) | Post artifacts to Slack / Notion. Uses Slack + Notion MCPs. |
 | [document-author](document-author/) | Write technical / product documentation. Picks the right Diátaxis type, applies template, follows technical-writing voice rules. Korean-aware. |
 | [slide-deck-author](slide-deck-author/) | Outline a slide deck (talk / pitch / reading). Message-led titles, brand-applied, Korean-aware. |
+| [motion-designer](motion-designer/) | Spec motion for a screen / component / page. Picks tool (CSS / Framer Motion / GSAP / Lottie / Rive), durations, easings, choreography. Reduced-motion-safe by default. |
 
 ## Invoking a skill
 

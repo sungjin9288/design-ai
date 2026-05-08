@@ -1,0 +1,223 @@
+# motion-designer — playbook
+
+Design and spec motion for a screen, component, or page. Output is a **motion spec**: a markdown document a developer can implement against without follow-ups, with the right tool chosen, durations and easings derived from tokens, and reduced-motion handled.
+
+## When to use
+
+- "Design the entrance for our landing page hero."
+- "Spec the loading sequence for our app cold launch."
+- "We want the success state to feel celebratory — design it."
+- "Add motion to the modal open/close."
+- "Pick a tool: should we use Framer Motion or GSAP?"
+
+## Inputs (ask if missing)
+
+1. **Surface** — landing page / app screen / component / route transition.
+2. **Intent** — what motion should accomplish (stop scroll, confirm action, smooth navigation, brand moment).
+3. **Trigger** — page load / scroll / tap / state change / hover.
+4. **Audience + platform** — web / mobile web / native / hybrid; Korean / global.
+5. **Performance budget** — bundle target, target devices.
+6. **Existing motion language** — does the brand have one (rubber-band? snappy? gentle?). If not, this skill helps define it.
+
+## Steps
+
+### 1. Classify the moment
+
+Pick the category. The category determines the rules:
+
+| Category | Goal | Reference |
+| --- | --- | --- |
+| Micro-interaction | Confirm input within 100ms | [`knowledge/motion/micro-interactions.md`](../../knowledge/motion/micro-interactions.md) |
+| Marketing motion | Stop scroll / reveal value / anchor brand | [`knowledge/motion/marketing-motion.md`](../../knowledge/motion/marketing-motion.md) |
+| App loading | Hide load latency; feel intentional | [`knowledge/motion/app-loading-sequences.md`](../../knowledge/motion/app-loading-sequences.md) |
+| Choreography | Coordinate multi-element reveal | [`knowledge/motion/choreography-depth.md`](../../knowledge/motion/choreography-depth.md) |
+| State transition | Show change in product UI | [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md) |
+
+Get this wrong and the rules don't apply. A marketing reveal is NOT a micro-interaction; a button press is NOT a choreographed sequence.
+
+### 2. Pick duration tier
+
+From [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md):
+
+| Tier | Range | Use |
+| --- | --- | --- |
+| Instant | 0–80ms | Press feedback, focus rings |
+| Fast | 100–200ms | Hover, micro-interactions, route fades |
+| Medium | 200–300ms | Modal / drawer / panel open |
+| Slow | 300–500ms | Hero entrance, page transition |
+| Long | 500ms–1.5s | Marketing storytelling, choreographed reveals |
+| Beyond | > 1.5s | Almost never. Justify or cut. |
+
+State the chosen tier explicitly. Map to token: `--motion-fast`, `--motion-medium`, etc.
+
+### 3. Pick easing
+
+| Easing | Curve | Use |
+| --- | --- | --- |
+| `ease-out` | Decelerate to stop | Default for entrances ("arrive and settle") |
+| `ease-in` | Accelerate from rest | Exits ("leave the screen") |
+| `ease-in-out` | Both | Position-to-position movement |
+| `cubic-bezier(0.34, 1.56, 0.64, 1)` | Slight overshoot | Confirm / playful (rubber-band) |
+| `linear` | Constant | Loading bars, infinite spinners |
+
+Map to token: `--ease-out`, `--ease-in`, etc. Don't ship raw cubic-beziers in components — promote them to tokens first.
+
+### 4. Pick tool
+
+Use [`knowledge/motion/motion-tools.md`](../../knowledge/motion/motion-tools.md) decision tree.
+
+Bias rules:
+- **CSS first**. Hover / press / focus / simple entrances. ~80% of motion needs this and only this.
+- **Framer Motion** for React-side state-driven animation (modals, route transitions, layout animations).
+- **GSAP** for marketing timelines / scroll-triggered choreography longer than 600ms.
+- **Lottie** when designer brings After Effects animation.
+- **Rive** when motion needs state machines and interactivity.
+- **react-spring** only when you need physics (drag, swipe).
+
+Don't load 4 motion libraries. Pick 1–2 max. Justify each.
+
+### 5. Spec the motion
+
+For each motion event, write:
+
+```
+Trigger: <what causes this>
+Duration: <ms>, tier <tier>, token <var>
+Easing: <name>, token <var>
+Properties: <opacity | transform | filter — animate ONLY these>
+Initial: <starting value>
+Final: <end value>
+Stagger (if multiple): <ms between siblings>
+```
+
+Animate only `opacity`, `transform`, and (sparingly) `filter`. Never `width`/`height`/`top`/`left` — they trigger layout.
+
+### 6. Choreograph (if multi-element)
+
+For sequences with > 1 element, use stagger formula from [`knowledge/motion/choreography-depth.md`](../../knowledge/motion/choreography-depth.md):
+
+```
+total budget = parent duration + (children − 1) × stagger
+```
+
+Cap stagger at 80ms; cap total at 800ms for entrance, 300ms for in-app transitions.
+
+Provide a timing diagram:
+
+```
+0ms ┃■■■■■                          ┃ headline (200ms fade)
+50ms┃   ■■■■■                       ┃ sub (200ms fade)
+100ms┃     ■■■■■■                   ┃ CTA (250ms fade-up)
+200ms┃           ■■■■■■■■           ┃ visual (300ms scale-in)
+```
+
+### 7. Reduced motion
+
+Always specify behavior when `prefers-reduced-motion: reduce`:
+
+| Original | Reduced fallback |
+| --- | --- |
+| Fade + translate | Pure fade |
+| Slide-in | Pure fade or instant |
+| Scale-in | Pure fade |
+| Parallax | Disable |
+| Auto-loop | Pause; show static frame |
+| Hero / shared element | Instant layout swap |
+
+Reduced motion ≠ no motion. Opacity-only is usually OK; large translations / scales are not.
+
+### 8. Performance check
+
+For every motion spec, verify:
+
+- [ ] Animates only `opacity` / `transform` / (sparingly) `filter`
+- [ ] Total page-level animation count under 10 simultaneously
+- [ ] If above-the-fold: doesn't block LCP
+- [ ] If using JS lib: bundle cost stated and justified
+- [ ] If looping: pauses when offscreen / tab hidden
+- [ ] If `filter: blur()`: only on small areas, not large lists
+- [ ] No `setInterval` driving animation (use `requestAnimationFrame` or CSS / library)
+
+### 9. Korean market check (if relevant)
+
+| Question | Default for Korean B2C |
+| --- | --- |
+| How much motion? | Restrained, fast, smooth (Toss-style) |
+| Brand mascot motion? | Yes if Kakao-adjacent, no otherwise |
+| Auto-play video? | No — bandwidth + battery |
+| Korean-language label? | All motion control labels in Korean |
+
+Heavy motion reads as foreign / over-designed in Korean B2C. Lean restrained.
+
+### 10. Output
+
+Use this structure:
+
+```markdown
+# Motion spec: <surface name>
+
+> Surface: <landing page hero | settings drawer | etc>
+> Intent: <one sentence>
+> Trigger: <what fires it>
+> Tool: <CSS | Framer Motion | GSAP | Lottie | Rive | react-spring>
+
+## Tokens used
+<list>
+
+## Sequence
+<step-by-step with durations, easings, properties>
+
+## Timing diagram
+<gantt-style ASCII>
+
+## Reduced motion
+<fallback per element>
+
+## Performance budget
+<bundle delta, animation count, LCP impact>
+
+## Code stub
+<minimal CSS / React snippet>
+
+## Don't
+<2-3 specific misuses>
+```
+
+## Source files this skill reads
+
+- [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md) — durations / easings / fundamentals
+- [`knowledge/motion/micro-interactions.md`](../../knowledge/motion/micro-interactions.md) — < 200ms moments
+- [`knowledge/motion/marketing-motion.md`](../../knowledge/motion/marketing-motion.md) — landing / hero / scroll
+- [`knowledge/motion/app-loading-sequences.md`](../../knowledge/motion/app-loading-sequences.md) — splash / route / progressive
+- [`knowledge/motion/choreography-depth.md`](../../knowledge/motion/choreography-depth.md) — multi-element coordination
+- [`knowledge/motion/motion-tools.md`](../../knowledge/motion/motion-tools.md) — tool decision tree
+- [`examples/component-loading-sequence.md`](../../examples/component-loading-sequence.md) — reference spec
+- [`examples/component-page-transition.md`](../../examples/component-page-transition.md) — reference spec
+- [`examples/component-lottie-player.md`](../../examples/component-lottie-player.md) — Lottie integration
+- [`examples/component-scroll-reveal.md`](../../examples/component-scroll-reveal.md) — scroll-triggered
+
+## Verification phase (run before declaring done)
+
+- [ ] Was the moment classified into one of the 5 categories?
+- [ ] Is the duration tier explicit (not just "200ms" — "fast tier")?
+- [ ] Is the easing named AND mapped to a token?
+- [ ] Is the tool choice justified ("CSS because it's a < 100ms hover" — not just "Framer Motion")?
+- [ ] Are only `opacity` / `transform` / `filter` animated?
+- [ ] If multi-element: is stagger ≤ 80ms and total ≤ 800ms (entrance) / 300ms (in-app)?
+- [ ] Is `prefers-reduced-motion` behavior specified for every element?
+- [ ] Is bundle cost stated if a library is used?
+- [ ] Does the "Don't" section catch 2–3 specific misuses?
+- [ ] If Korean B2C: is the restraint check applied?
+
+## Done when
+
+- One markdown spec, < 400 lines.
+- Surface, intent, trigger, tool stated up top.
+- Tokens listed (no raw values in body — reference tokens).
+- Sequence with durations + easings + properties.
+- Timing diagram (if multi-element).
+- Reduced-motion fallback for every element.
+- Performance budget stated.
+- Code stub developer can paste in.
+- "Don't" section.
+- Verification phase passes.

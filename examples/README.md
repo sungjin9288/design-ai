@@ -98,6 +98,15 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-pass-auth.md](component-pass-auth.md) | PASSAuth (Korean 본인인증) | Wraps PASS app / NICE / KCB identity verification. Required for high-value Korean fintech transactions. |
 | [component-otp-countdown.md](component-otp-countdown.md) | OTPCountdown | SMS code expiration timer + resend cooldown. Pairs with InputOTP. |
 
+### Motion components
+
+| File | Component | Demonstrates |
+| --- | --- | --- |
+| [component-loading-sequence.md](component-loading-sequence.md) | LoadingSequence | Splash + biometric gate + first-screen reveal coordination for cold launch. Korean fintech default. |
+| [component-page-transition.md](component-page-transition.md) | PageTransition | Route-level wrapper (fade / slide / hero variants). Framer Motion + View Transitions API implementations. |
+| [component-lottie-player.md](component-lottie-player.md) | LottiePlayer | After Effects animation embed with lazy-load, offscreen pause, poster fallback, reduced-motion handling. |
+| [component-scroll-reveal.md](component-scroll-reveal.md) | ScrollReveal | Viewport-triggered animation primitive (fade-up / fade-in-blur / scale-in) with stagger and `once` semantics. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

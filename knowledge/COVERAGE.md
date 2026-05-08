@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 55 | 40 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 12 | 12 with verification phase |
-| Worked examples | 83 | |
+| Knowledge files | 60 | 45 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 13 | 13 with verification phase |
+| Worked examples | 87 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -31,7 +31,7 @@ generated_at: 2026-05-08
 | `i18n` | 6 | 6 | 0 |
 | `icons` | 1 | 0 | 1 |
 | `layout` | 1 | 1 | 0 |
-| `motion` | 1 | 1 | 0 |
+| `motion` | 6 | 6 | 0 |
 | `patterns` | 29 | 23 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `typography` | 3 | 1 | 2 |
@@ -43,7 +43,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 338 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 361 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -104,6 +104,11 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
+| [knowledge/motion/app-loading-sequences.md](../knowledge/motion/app-loading-sequences.md) | 274 | hand-written | App loading sequences |
+| [knowledge/motion/choreography-depth.md](../knowledge/motion/choreography-depth.md) | 294 | hand-written | Motion choreography |
+| [knowledge/motion/marketing-motion.md](../knowledge/motion/marketing-motion.md) | 220 | hand-written | Marketing motion |
+| [knowledge/motion/micro-interactions.md](../knowledge/motion/micro-interactions.md) | 263 | hand-written | Micro-interactions |
+| [knowledge/motion/motion-tools.md](../knowledge/motion/motion-tools.md) | 278 | hand-written | Motion tools comparison |
 | [knowledge/motion/principles.md](../knowledge/motion/principles.md) | 123 | hand-written | Motion principles for product UI |
 
 #### patterns
@@ -168,6 +173,7 @@ generated_at: 2026-05-08
 | [document-author](../skills/document-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 167 |
 | [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
+| [motion-designer](../skills/motion-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 223 |
 | [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 
@@ -213,9 +219,12 @@ generated_at: 2026-05-08
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
 | [examples/component-krw-amount.md](../examples/component-krw-amount.md) | 219 | `KRWAmount` (custom — display-only currency formatter) — spec |
 | [examples/component-layout.md](../examples/component-layout.md) | 217 | `Layout` (page chrome) — spec |
+| [examples/component-loading-sequence.md](../examples/component-loading-sequence.md) | 254 | `LoadingSequence` (custom — splash + first-screen coordination) — spec |
+| [examples/component-lottie-player.md](../examples/component-lottie-player.md) | 279 | `LottiePlayer` (custom — designer-led After Effects animation in product UI) — spec |
 | [examples/component-mention.md](../examples/component-mention.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
 | [examples/component-otp-countdown.md](../examples/component-otp-countdown.md) | 245 | `OTPCountdown` (custom — Korean SMS verification timer) — spec |
+| [examples/component-page-transition.md](../examples/component-page-transition.md) | 281 | `PageTransition` (custom — route-level animation wrapper) — spec |
 | [examples/component-pagination.md](../examples/component-pagination.md) | 226 | `Pagination` — spec |
 | [examples/component-pass-auth.md](../examples/component-pass-auth.md) | 265 | `PASSAuth` (custom — Korean 본인인증) — spec |
 | [examples/component-payment-brand-button.md](../examples/component-payment-brand-button.md) | 253 | `PaymentBrandButton` (custom — Korean) — spec |
@@ -227,6 +236,7 @@ generated_at: 2026-05-08
 | [examples/component-qrcode.md](../examples/component-qrcode.md) | 201 | `QRCode` — spec |
 | [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
 | [examples/component-result.md](../examples/component-result.md) | 270 | `Result` + `Empty` — combined spec |
+| [examples/component-scroll-reveal.md](../examples/component-scroll-reveal.md) | 320 | `ScrollReveal` (custom — viewport-triggered animation primitive) — spec |
 | [examples/component-segmented.md](../examples/component-segmented.md) | 178 | `Segmented` (Toggle button group) — spec |
 | [examples/component-select.md](../examples/component-select.md) | 258 | `Select` / `Combobox` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
@@ -331,13 +341,17 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `form-controls`
 - `hero-block`
 - `krw-amount`
+- `loading-sequence`
+- `lottie-player`
 - `mention`
 - `otp-countdown`
+- `page-transition`
 - `pass-auth`
 - `payment-brand-button`
 - `payment-method-selector`
 - `payment-receipt`
 - `pricing-cards`
+- `scroll-reveal`
 - `stock-chart`
 - `tag-badge`
 - `testimonial-carousel`

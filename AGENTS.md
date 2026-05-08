@@ -60,6 +60,11 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Pricing page design (tier strategy, anchoring, KR subscription disclosure) | `knowledge/patterns/pricing-page-design.md` |
 | Landing hero design (6 archetypes, headline formulas, video rules) | `knowledge/patterns/landing-hero-design.md` |
 | Motion (duration, easing, choreography) | `knowledge/motion/principles.md` |
+| Marketing motion (hero / scroll-triggered / parallax) | `knowledge/motion/marketing-motion.md` |
+| App loading sequences (splash / route transitions / progressive load) | `knowledge/motion/app-loading-sequences.md` |
+| Micro-interactions (press / hover / focus / state-change) | `knowledge/motion/micro-interactions.md` |
+| Multi-element choreography (cascade / FLIP / shared element) | `knowledge/motion/choreography-depth.md` |
+| Motion tools (CSS / Framer Motion / GSAP / Lottie / Rive / react-spring) | `knowledge/motion/motion-tools.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -87,6 +92,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Audit our design system QA / set up testing" | `skills/design-system-qa/` |
 | "Review PR #N for design system compliance" | `skills/design-pr-review/` (uses GitHub MCP) |
 | "Sync tokens with Figma" | `skills/figma-token-sync/` (uses Figma MCP) |
+| "Spec the motion / animation for X" | `skills/motion-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |

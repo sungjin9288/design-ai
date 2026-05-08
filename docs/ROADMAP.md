@@ -51,6 +51,31 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 12 — Motion design depth (v2.1) ✓ shipped
+
+Lift motion from a single principles file into a full subsystem: knowledge per category, component specs, a dedicated skill, and a slash command. Covers marketing, app loading, micro-interactions, and multi-element choreography. Reduced-motion-safe by default.
+
+- [x] **5 motion knowledge files**:
+  - `motion/marketing-motion.md` — hero entrance, scroll-triggered, parallax, choreographed sequences, hover/cursor, loop animations; KR conventions.
+  - `motion/app-loading-sequences.md` — cold launch / warm launch / route changes, splash strategy, View Transitions API, FLIP, progressive content loading.
+  - `motion/micro-interactions.md` — 5 categories (press, state change, hover, focus, loading), 4 laws (be fast / functional / match input / no stagger redundancy).
+  - `motion/choreography-depth.md` — 5 patterns (cascade, FLIP, View Transitions, choreographed sequences, reactive choreography), stagger formulas, exit choreography, timing diagrams.
+  - `motion/motion-tools.md` — CSS / Framer Motion / GSAP / Lottie / Rive / react-spring decision tree + comparison matrix.
+- [x] **4 motion component specs**:
+  - `component-loading-sequence.md` — splash + biometric gate + first-screen reveal coordination.
+  - `component-page-transition.md` — route-level wrapper (fade / slide / hero variants) using Framer Motion or View Transitions API.
+  - `component-lottie-player.md` — designer-led After Effects animation embed with lazy-load, offscreen pause, poster fallback.
+  - `component-scroll-reveal.md` — viewport-triggered animation primitive (fade-up / fade-in-blur / scale-in) with stagger.
+- [x] **`skills/motion-designer/`** — pick category, duration tier, easing, tool; choreograph; verify reduced motion + performance budget.
+- [x] **`/motion-design`** slash command.
+- [x] AGENTS.md / skills/README / commands/README / examples/README / ROADMAP updated.
+
+Coverage:
+- Knowledge: 55 → 60 (+5 motion).
+- Examples: 83 → 87 (+4 motion components).
+- Skills: 12 → 13 (+ motion-designer).
+- Commands: 8 → 9 (+ /motion-design).
+
 ## Phase 11 — Completion (v2.0) ✓ shipped
 
 Final completion of v2.0 scope. Adds the worked examples that prove the documentation skills work end-to-end, plus a focused component coverage push, plus 3 universal pattern knowledge files.

@@ -12,5 +12,6 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/palette-from-brand](palette-from-brand.md) | Generate a full palette from a brand input (hex, category, or mood). |
 | [/component-spec](component-spec.md) | Spec a single component using the component-spec-writer skill. |
 | [/extract-tokens](extract-tokens.md) | Run the token extractor pipeline. |
+| [/motion-design](motion-design.md) | Spec motion for a screen / component / page. Picks tool, durations, easings; reduced-motion-safe. |
 
 Each file has YAML frontmatter (`description`) and a body. The body is the prompt the command expands to.
