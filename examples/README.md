@@ -114,6 +114,13 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-empty-state.md](component-empty-state.md) | EmptyState | Layout for "no data yet" surfaces. Illustration registry, voice rules, KR 해요체 default. |
 | [component-illustration.md](component-illustration.md) | Illustration | Themeable SVG / Lottie display backed by a typesafe illustration registry. |
 
+### Print specs
+
+| File | Piece | Demonstrates |
+| --- | --- | --- |
+| [print-business-card-spec.md](print-business-card-spec.md) | Korean 명함 (premium tier) | Korean fintech business card spec: 90×50mm, 350gsm uncoated, soft-touch + spot UV, Pretendard, Pantone + CMYK, file delivery checklist. |
+| [print-packaging-spec.md](print-packaging-spec.md) | Folding carton (cosmetics) | Korean cosmetics carton spec: dieline, KFDA regulatory content (전성분 / 사용기한 / 분리배출 표시), FSC + soy ink, press proof. |
+
 ### Documentation worked examples
 
 | File | Skill | Demonstrates |

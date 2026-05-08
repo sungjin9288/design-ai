@@ -23,6 +23,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [slide-deck-author](slide-deck-author/) | Outline a slide deck (talk / pitch / reading). Message-led titles, brand-applied, Korean-aware. |
 | [motion-designer](motion-designer/) | Spec motion for a screen / component / page. Picks tool (CSS / Framer Motion / GSAP / Lottie / Rive), durations, easings, choreography. Reduced-motion-safe by default. |
 | [illustration-designer](illustration-designer/) | Design or spec an illustration system (or single illustration). Style, voice, color, format (SVG / Lottie / PNG), accessibility, SVG optimization. Korean-market-aware. |
+| [print-designer](print-designer/) | Spec a print piece — business card, brochure, poster, packaging, stationery. CMYK + Pantone, bleed, finish, regulatory content; Korean print conventions. |
 
 ## Invoking a skill
 

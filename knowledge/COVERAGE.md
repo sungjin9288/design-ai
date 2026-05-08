@@ -12,9 +12,9 @@ generated_at: 2026-05-08
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 65 | 50 hand-written + 15 generated |
-| Skills (PLAYBOOK + SKILL) | 14 | 14 with verification phase |
-| Worked examples | 89 | |
+| Knowledge files | 71 | 56 hand-written + 15 generated |
+| Skills (PLAYBOOK + SKILL) | 15 | 15 with verification phase |
+| Worked examples | 91 | |
 | Extractors | 7 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 47 | **23.6% spec coverage** |
@@ -35,6 +35,7 @@ generated_at: 2026-05-08
 | `motion` | 6 | 6 | 0 |
 | `patterns` | 29 | 23 | 6 |
 | `platforms` | 1 | 1 | 0 |
+| `print` | 6 | 6 | 0 |
 | `typography` | 3 | 1 | 2 |
 
 ### File details
@@ -44,7 +45,7 @@ generated_at: 2026-05-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 375 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 391 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -162,6 +163,17 @@ generated_at: 2026-05-08
 | --- | --- | --- | --- |
 | [knowledge/platforms/react-native.md](../knowledge/platforms/react-native.md) | 392 | hand-written | React Native platform notes |
 
+#### print
+
+| File | Lines | Type | Title |
+| --- | --- | --- | --- |
+| [knowledge/print/brochures-and-flyers.md](../knowledge/print/brochures-and-flyers.md) | 273 | hand-written | Brochures and flyers |
+| [knowledge/print/korean-print-conventions.md](../knowledge/print/korean-print-conventions.md) | 281 | hand-written | Korean print conventions |
+| [knowledge/print/packaging.md](../knowledge/print/packaging.md) | 318 | hand-written | Packaging |
+| [knowledge/print/print-fundamentals.md](../knowledge/print/print-fundamentals.md) | 235 | hand-written | Print fundamentals |
+| [knowledge/print/signage-and-posters.md](../knowledge/print/signage-and-posters.md) | 232 | hand-written | Signage and posters |
+| [knowledge/print/stationery.md](../knowledge/print/stationery.md) | 259 | hand-written | Stationery |
+
 #### typography
 
 | File | Lines | Type | Title |
@@ -186,6 +198,7 @@ generated_at: 2026-05-08
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
 | [illustration-designer](../skills/illustration-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 166 |
 | [motion-designer](../skills/motion-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 223 |
+| [print-designer](../skills/print-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 209 |
 | [slide-deck-author](../skills/slide-deck-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 198 |
 | [ux-audit](../skills/ux-audit/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 142 |
 
@@ -280,6 +293,8 @@ generated_at: 2026-05-08
 | [examples/dogfood-korean-fintech-system.md](../examples/dogfood-korean-fintech-system.md) | 433 | Dogfood: Korean fintech mobile app — design system bootstrap |
 | [examples/email-transactional-example.md](../examples/email-transactional-example.md) | 259 | Worked example: transactional email (Korean fintech) |
 | [examples/palette-saas-violet.md](../examples/palette-saas-violet.md) | 225 | Palette: B2B SaaS — violet primary |
+| [examples/print-business-card-spec.md](../examples/print-business-card-spec.md) | 199 | Print spec: business card (Korean 명함, premium tier) |
+| [examples/print-packaging-spec.md](../examples/print-packaging-spec.md) | 285 | Print spec: folding carton (Korean cosmetics, mid-tier) |
 | [examples/report-example.md](../examples/report-example.md) | 225 | Worked example: design audit report |
 | [examples/slide-deck-example.md](../examples/slide-deck-example.md) | 229 | Worked example: slide deck (talk archetype) |
 

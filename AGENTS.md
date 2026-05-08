@@ -70,6 +70,12 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Hero illustrations (marketing landing-page artwork) | `knowledge/illustration/hero-illustrations.md` |
 | Mascot design (characters, Korean fintech relevance) | `knowledge/illustration/mascot-design.md` |
 | SVG optimization (SVGO, currentColor, performance) | `knowledge/illustration/svg-optimization.md` |
+| Print fundamentals (CMYK, bleed, DPI, paper) | `knowledge/print/print-fundamentals.md` |
+| Stationery (business cards, letterhead, envelopes) | `knowledge/print/stationery.md` |
+| Brochures and flyers (multi-page + folded pieces) | `knowledge/print/brochures-and-flyers.md` |
+| Signage and posters (large-format print) | `knowledge/print/signage-and-posters.md` |
+| Packaging (boxes, labels, dielines, KR regulatory) | `knowledge/print/packaging.md` |
+| Korean print conventions (KFDA, recycling marks, 명함) | `knowledge/print/korean-print-conventions.md` |
 | React Native platform (tokens, Pressable, animations) | `knowledge/platforms/react-native.md` |
 | Korean / Hangul typography | `knowledge/i18n/korean-typography.md` |
 | Korean product UX conventions | `knowledge/i18n/korean-product-conventions.md` |
@@ -99,6 +105,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Sync tokens with Figma" | `skills/figma-token-sync/` (uses Figma MCP) |
 | "Spec the motion / animation for X" | `skills/motion-designer/` |
 | "Design illustrations / mascot for X" | `skills/illustration-designer/` |
+| "Spec a print piece (business card / brochure / packaging)" | `skills/print-designer/` |
 | "Post this to #design / Notion" | `skills/design-broadcast/` (uses Slack + Notion MCPs) |
 | "Write documentation for X" | `skills/document-author/` |
 | "Make a slide deck on Y" | `skills/slide-deck-author/` |
