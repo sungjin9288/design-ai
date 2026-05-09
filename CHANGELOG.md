@@ -2,6 +2,45 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.2.0 — Launch kit (2026-05)
+
+Ready-to-post announcement materials for the v4.0 launch. Drafts only — posting is owner action.
+
+### Added
+- **`docs/announcements/`** directory — 7 launch-channel drafts:
+  - `README.md` — index, posting order (HN → dev.to → r/programming → KR channels), tracking template, channel tone matrix.
+  - `press-kit.md` — reusable assets: one-liner / two-liner / three-bullet (EN + KO), stats card, origin narrative, FAQ, links.
+  - `show-hn.md` — Show HN submission (title alts, body, comment-prep replies for likely questions).
+  - `okky-post.ko.md` — OKKY long-form Korean post (해요체 voice, KR adoption focus, prepared 답글).
+  - `hashnode-post.ko.md` — hashnode KR-tagged blog post (~800 words, technical retrospective tone).
+  - `dev-to-korea.md` — dev.to post (English with Korean code/example fragments).
+  - `twitter-thread.md` — parallel EN + KO threads (8 tweets each), hook → architecture → journey → CTA.
+  - `reddit-r-korea.md` — r/programming + r/korea + r/ClaudeAI drafts with sub-specific rule notes.
+
+### Changed
+- `package.json` + `.claude-plugin/plugin.json`: 4.1.0 → 4.2.0.
+
+### Verified
+- All 6 audits pass.
+- Drafts written in target voice per channel — no auto-translation; KR drafts in natural Korean (해요체).
+
+### Posting strategy
+- Stagger over 7 days, not same-day burst.
+- Day 1: HN + dev.to (US/EU primary).
+- Day 2: r/programming.
+- Day 3: r/korea + r/ClaudeAI.
+- Day 4-7: KR community (OKKY, hashnode), Twitter EN + KO threads.
+- Track in `docs/announcements/posted.md` (created at first post).
+
+### What this enables
+- **Owner-ready launch.** Push the v4.0 tag, verify CI publish, then post in any order — no last-minute writing under pressure.
+- **Channel-tailored tone.** Each draft uses the voice that channel rewards (HN: low-key engineer-to-engineer; OKKY: 해요체 KR community; dev.to: technical blog; Twitter: scannable hooks).
+- **Reusable on future releases.** Press kit, FAQ, and stats card carry forward; just refresh numbers per release.
+
+### Reminder
+
+These are **drafts only**. Posting is your action — I won't push to remote, npm, or any external service without your explicit confirmation. The v4.0.0 git tag is also still local from Phase 32.
+
 ## v4.1.0 — Korean adopter / contributor docs (2026-05)
 
 First 4.x minor. Continues v3.6 / v3.10 KR i18n investment. Korean adopters now have full Korean docs for using, contributing, and understanding the architecture — three foundational docs that previously existed only in English.

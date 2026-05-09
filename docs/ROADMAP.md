@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 34 — Launch kit (v4.2.0) ✓ shipped
+
+Ready-to-post announcement materials. Drafts only — posting is owner action. Each draft uses the voice/length its channel rewards.
+
+### Added — `docs/announcements/` (7 drafts + index)
+- **`README.md`** — index, posting order, tracking template, channel tone matrix.
+- **`press-kit.md`** — one-liner / stats card / origin narrative / FAQ (EN + KO).
+- **`show-hn.md`** — Show HN title alts + body + reply-prep for likely questions.
+- **`okky-post.ko.md`** — OKKY long-form (해요체, ~600 words, KR adoption focus).
+- **`hashnode-post.ko.md`** — hashnode blog (해요체, ~800 words, retrospective tone).
+- **`dev-to-korea.md`** — dev.to (EN + bilingual examples, ~600 words).
+- **`twitter-thread.md`** — parallel EN + KO threads (8 tweets each).
+- **`reddit-r-korea.md`** — r/programming + r/korea + r/ClaudeAI with rule notes per sub.
+
+### Changed
+- `package.json` + `.claude-plugin/plugin.json`: 4.1.0 → 4.2.0.
+
+### Verified
+- All 6 audits pass.
+- KR drafts in natural Korean (no auto-translation).
+
+### Posting cadence (suggested)
+- Day 1: HN + dev.to.
+- Day 2: r/programming.
+- Day 3: r/korea + r/ClaudeAI.
+- Day 4-7: OKKY + hashnode + Twitter threads (EN + KO 2hr offset).
+- Track in `docs/announcements/posted.md`.
+
+### What this enables
+- Owner pushes v4.0 tag → verifies CI publish → posts in any order without last-minute writing.
+- Channel-tailored tone per draft — lower friction for owner, higher engagement per channel.
+- Press kit reusable for v4.1 / v5.0 releases.
+
+### What's still ahead (4.x)
+- VS Code marketplace publish (1.0.0).
+- Coverage push 55% → 70%.
+- Component spec extractor v2 (TS AST).
+- Semantic search index (Algolia / Typesense).
+- Stability re-review ritual (quarterly stale-check at warn-months 3).
+- Homebrew formula refresh post-tag.
+
 ## Phase 33 — Korean adopter / contributor docs (v4.1.0) ✓ shipped
 
 First 4.x minor. Continues v3.6 / v3.10 KR i18n investment. Three foundational docs previously English-only are now Korean-native.
