@@ -124,7 +124,17 @@ def skill_coverage() -> dict:
     for skill in skills:
         playbook = skill / "PLAYBOOK.md"
         text = playbook.read_text(encoding="utf-8")
-        has_verification = "## Verification phase" in text or "verification phase" in text.lower()
+        # Strict: require canonical heading. Any "## Verification phase ..." level-2 heading.
+        # Loose fallback (only counted with a warning): any "verification" subheading.
+        has_canonical_verification = bool(
+            re.search(r"^##\s+Verification phase\b", text, re.MULTILINE)
+        )
+        has_loose_verification = bool(
+            re.search(r"^#{2,4}\s+.*[Vv]erification", text, re.MULTILINE)
+        )
+        has_verification = has_canonical_verification
+        # Track loose-only cases as a soft signal — surfaced in console output below.
+        loose_only = (not has_canonical_verification) and has_loose_verification
         has_template = (skill / "TEMPLATE.md").exists()
         has_skill_md = (skill / "SKILL.md").exists()
         rows.append({
@@ -133,6 +143,7 @@ def skill_coverage() -> dict:
             "has_skill_md": has_skill_md,
             "has_template": has_template,
             "has_verification": has_verification,
+            "loose_only": loose_only,
             "playbook_lines": len(text.splitlines()),
         })
     return {"skills": rows, "total": len(rows)}
@@ -263,8 +274,11 @@ Examples:     {examples['total']}
 Extractors:   {extractors['total']}
 Components:   {components['with_spec']} / {components['total_canonical']} have worked specs ({components['coverage_pct']}%)
 
-Skills missing verification phase:
+Skills missing verification phase (no canonical "## Verification phase" heading):
 {chr(10).join('  - ' + s['name'] for s in skills['skills'] if not s['has_verification']) or '  (none)'}
+
+Skills with non-canonical verification heading (use "## Verification phase ..." for consistency):
+{chr(10).join('  - ' + s['name'] for s in skills['skills'] if s.get('loose_only')) or '  (none)'}
 
 Wrote: knowledge/COVERAGE.md
 """

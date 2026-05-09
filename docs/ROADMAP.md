@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 35 — Internal completeness (v4.3.0) ✓ shipped
+
+Tightens internal quality. Pure dogfooding work — no new content, but the corpus and tooling are now more consistent and testable.
+
+### Added
+- **`tools/audit/run-all.py`** — unified runner for all 6 audits. ~0.8s end-to-end. `--strict` for CI, `--quiet` for minimal output.
+- **CLI unit tests** — 16 tests across `cli/lib/paths.test.mjs` + `cli/lib/log.test.mjs`. Covers path resolution, file/dir checks, color helpers in NO_COLOR mode. Uses `node --test` (Node 18+ built-in).
+- **VS Code extension `design-ai.openReadme`** — language-aware README opener.
+- **VS Code extension `design-ai.search`** — corpus-wide markdown search with jump-to-line.
+
+### Changed
+- **`tools/audit/check-coverage.py`** — verification phase check tightened. Strict: canonical `## Verification phase` heading. Loose-only cases surfaced separately for nudging.
+- **`skills/figma-token-sync/PLAYBOOK.md`** — `### 7. Verification phase` → `## Verification phase (run before declaring done)`.
+- **`skills/slide-deck-author/PLAYBOOK.md`** — same standardization.
+- **VS Code extension `design-ai.openWalkthrough`** — language-aware. Prefers `.ko.md` when `design-ai.language: ko`; quick-pick shows `[KO]` / `[EN]` tags.
+- **VS Code extension `design-ai.status`** — Korean labels when `design-ai.language: ko`.
+- **VS Code extension `commands.ts`** — extracted `readManifest()` + `PluginManifest` interface. Removed unused `child_process` import.
+- **`vscode-extension/package.json`** — extension version 0.1.0 → 0.2.0. New commands registered.
+- **`package.json` scripts** — `npm test` runs CLI tests; `npm run audit` uses unified runner; `npm run audit:strict` for CI.
+- `package.json` + `.claude-plugin/plugin.json`: 4.2.0 → 4.3.0.
+
+### Verified
+- All 6 audits pass via unified runner (0.81s).
+- 16 CLI unit tests pass.
+- VS Code extension compiles cleanly (`tsc --noEmit` zero errors).
+- All 19 skills use canonical `## Verification phase` heading.
+
+### What this enables
+- One-command quality gate (`npm run audit`).
+- First test-backed CLI helpers — foundation for further test growth.
+- Language-aware VS Code experience for KR adopters.
+- Searchable corpus from inside VS Code.
+- Skill heading consistency — future audits can hard-fail on non-canonical formats.
+
+### What's still ahead (4.x)
+- Coverage push 55% → 70%.
+- Component spec extractor v2 (TS AST parsing).
+- Semantic search index (Algolia / Typesense) — externally hosted, complements VS Code in-tree search.
+- Dispatch / commands integration tests (currently only pure-logic helpers tested).
+- VS Code marketplace publish (1.0.0).
+- Stability re-review ritual (quarterly stale-check at warn-months 3).
+- Homebrew formula refresh post-tag.
+
 ## Phase 34 — Launch kit (v4.2.0) ✓ shipped
 
 Ready-to-post announcement materials. Drafts only — posting is owner action. Each draft uses the voice/length its channel rewards.

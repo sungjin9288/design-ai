@@ -2,6 +2,42 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.3.0 — Internal completeness (2026-05)
+
+Tightens internal quality. Standardizes skill verification headings, strengthens the audit that enforces them, adds 3 VS Code commands (language-aware walkthroughs / README opener / corpus search), introduces a unified audit runner, and adds the first CLI unit tests.
+
+### Added
+- **`tools/audit/run-all.py`** — unified runner for all 6 audits. Single command instead of six. `--strict` flag fails CI on any audit failure. `--quiet` suppresses pass-output. ~0.8s end-to-end.
+- **CLI tests** (`cli/lib/paths.test.mjs`, `cli/lib/log.test.mjs`) — 16 unit tests covering pure-logic helpers (path resolution, file/dir checks, color helpers in NO_COLOR mode). Uses Node 18+ built-in `node --test`. No new deps.
+- **VS Code extension — `design-ai.openReadme`** — opens `README.ko.md` if `design-ai.language` is `ko`, else `README.md`.
+- **VS Code extension — `design-ai.search`** — searches across `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`. Surfaces first match per file. Jumps to the matching line on selection. Korean / English UI strings via `getLanguagePreference()`.
+
+### Changed
+- **`tools/audit/check-coverage.py`** — strengthened skill verification check:
+  - Strict: requires canonical `## Verification phase` level-2 heading.
+  - Loose-only files (e.g., `### 7. Verification`) surfaced separately as a soft signal — encourages standardization.
+- **`skills/figma-token-sync/PLAYBOOK.md`** — verification phase promoted from `### 7. Verification phase` to standalone `## Verification phase (run before declaring done)`.
+- **`skills/slide-deck-author/PLAYBOOK.md`** — same standardization (`### 7. Verification` → `## Verification phase ...`).
+- **VS Code extension — `design-ai.openWalkthrough`** — now language-aware. Prefers `.ko.md` when `design-ai.language` is `ko`; falls back to `.md`. Quick-pick labels show `[KO]` / `[EN]` tags.
+- **VS Code extension — `design-ai.status`** — labels in Korean when `design-ai.language` is `ko` (소스 / 스킬 / 커맨드 / 에이전트).
+- **VS Code extension — `commands.ts`** — extracted `readManifest()` helper with explicit `PluginManifest` interface. Removed unused `child_process` import.
+- **`vscode-extension/package.json`** — extension version 0.1.0 → 0.2.0. Two new commands registered.
+- **`package.json` scripts** — `npm test` now runs CLI tests. `npm run audit` uses unified runner. New `npm run audit:strict` for CI.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 4.2.0 → 4.3.0.
+
+### Verified
+- All 6 audits pass (via unified runner, 0.81s).
+- 16 CLI unit tests pass.
+- VS Code extension compiles cleanly (`tsc --noEmit` zero errors).
+- All 19 skills now have canonical `## Verification phase` heading.
+
+### What this enables
+- **One-command quality gate.** `npm run audit` runs all 6 in 0.8s with a unified summary. `npm run audit:strict` for CI.
+- **Test-backed CLI.** First unit tests for the CLI surface — paths resolution and color helpers covered. Foundation for more tests.
+- **Language-aware VS Code.** Korean adopters get Korean READMEs / walkthroughs / status labels by setting `design-ai.language: ko` once.
+- **Searchable corpus.** No more "where was that knowledge file?" — VS Code search across the full corpus, jumps to the line.
+- **Skill verification consistency.** All 19 skills use the same canonical heading. Future audit can fail (not just warn) on non-canonical formats.
+
 ## v4.2.0 — Launch kit (2026-05)
 
 Ready-to-post announcement materials for the v4.0 launch. Drafts only — posting is owner action.

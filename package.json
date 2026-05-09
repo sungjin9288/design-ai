@@ -1,6 +1,6 @@
 {
   "name": "@design-ai/cli",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Senior product designer for any AI coding agent. Installs design-ai (19 skills, 15 commands, 4 agents) into Claude Code globally. Korean market depth.",
   "bin": {
     "design-ai": "./cli/bin/design-ai.mjs"
@@ -10,8 +10,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test cli/lib/*.test.mjs 2>/dev/null || echo 'no tests yet'",
-    "audit": "python3 tools/audit/frontmatter-check.py && python3 tools/audit/link-check.py && python3 tools/audit/korean-copy-check.py && python3 tools/audit/check-coverage.py",
+    "test": "node --test cli/lib/*.test.mjs",
+    "audit": "python3 tools/audit/run-all.py",
+    "audit:strict": "python3 tools/audit/run-all.py --strict",
     "preview": "python3 tools/preview/render-tokens.py"
   },
   "keywords": [

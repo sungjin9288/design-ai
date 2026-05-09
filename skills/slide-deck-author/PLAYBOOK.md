@@ -167,7 +167,7 @@ From First Principles
 [chart: rework-hours.png]
 ```
 
-### 7. Verification
+## Verification phase (run before declaring done)
 
 - [ ] Did I pick the right archetype (warn if reading-deck)?
 - [ ] Is the title of every slide a **message** (not a topic)?

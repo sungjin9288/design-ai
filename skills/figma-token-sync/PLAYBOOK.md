@@ -120,13 +120,18 @@ For verify mode without MCP:
 2. Save to /tmp/figma-tokens.json.
 3. Agent: diff against tokens/source.json. Output report.
 
-### 7. Verification phase
+### 7. Apply changes (or stop and ask)
+
+For destructive operations (push, overwrite), stop after diff and confirm before proceeding. Read-only diff/verify operations can complete without confirmation.
+
+## Verification phase (run before declaring done)
 
 - [ ] Did I confirm direction (figma→code / code→figma / verify) before acting?
 - [ ] Did I check for write access before pushing (read-only auth = abort)?
 - [ ] Did I show the diff to user before applying changes?
 - [ ] Did I cite the source-of-truth strategy ([`docs/TOKEN-SYNC.md`](../../docs/TOKEN-SYNC.md))?
 - [ ] Did I warn about MCP write limitations when relevant?
+- [ ] Did I produce a final report with synced / drifted / extra counts?
 
 ## Source files this skill reads
 

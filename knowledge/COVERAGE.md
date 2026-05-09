@@ -239,7 +239,7 @@ generated_at: 2026-05-09
 | [design-system-builder](../skills/design-system-builder/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 218 |
 | [design-system-qa](../skills/design-system-qa/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 163 |
 | [document-author](../skills/document-author/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 167 |
-| [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 144 |
+| [figma-token-sync](../skills/figma-token-sync/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 149 |
 | [game-ui-designer](../skills/game-ui-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 209 |
 | [handoff-spec](../skills/handoff-spec/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 170 |
 | [illustration-designer](../skills/illustration-designer/PLAYBOOK.md) | ✓ | ✓ | — | ✓ | 166 |

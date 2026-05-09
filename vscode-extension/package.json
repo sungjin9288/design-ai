@@ -2,7 +2,7 @@
   "name": "design-ai-vscode",
   "displayName": "design-ai",
   "description": "Senior product designer for any AI coding agent. Surfaces 19 skills, 15 commands, 142 worked examples. Korean market depth.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "sungjin",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -68,6 +68,16 @@
       {
         "command": "design-ai.openWalkthrough",
         "title": "design-ai: Open integration walkthrough...",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.openReadme",
+        "title": "design-ai: Open README (language-aware)",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.search",
+        "title": "design-ai: Search corpus...",
         "category": "design-ai"
       },
       {
