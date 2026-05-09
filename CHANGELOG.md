@@ -2,6 +2,46 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.8.0 — VS Code extension (2026-05)
+
+design-ai is now accessible inside VS Code via a dedicated extension. Surfaces the corpus as sidebar trees + quick-pick commands; pairs with any AI assistant (Copilot Chat, Cursor Chat, Continue, Claude in VS Code, etc.).
+
+### Added
+- **`vscode-extension/`** — TypeScript-based VS Code extension:
+  - `package.json` manifest with 8 commands + 4 sidebar views + 2 settings.
+  - `src/extension.ts` — entry point with path auto-probing.
+  - `src/paths.ts` — locates design-ai source via setting / workspace folder / common locations / npm-global / Homebrew.
+  - `src/commands.ts` — 8 commands (Install, Status, Open knowledge, Open spec, Open skill, Open walkthrough, Refresh, Settings).
+  - `src/providers/trees.ts` — TreeDataProviders for Skills / Knowledge (recursive) / Examples / Walkthroughs.
+  - `media/icon.svg` — gradient indigo/violet "D" mark.
+  - `tsconfig.json`, `.vscodeignore`, `LICENSE`, `README.md`, `CHANGELOG.md`.
+- **`docs/integrations/vscode-walkthrough.md`** — 5 worked sessions (browse + reference, audit existing, generate from PLAYBOOK, quick-pick across corpus, multi-file design system bootstrap).
+- **`tools/audit/integration-check.py`** — added vscode-walkthrough.md to the validation list (now 5 walkthroughs).
+- **`README.md`** — agent table now lists VS Code as a supported environment.
+- **`mkdocs.yml`** — Integrations nav adds VS Code entry.
+
+### Versions
+- CLI: 3.7.0 → 3.8.0
+- Plugin / corpus: 3.7.0 → 3.8.0
+- VS Code extension: 0.1.0 (initial release; lives in `vscode-extension/`)
+
+### What this enables
+- **Millions of VS Code users** can browse design-ai content without leaving the editor.
+- **Pair with any AI assistant** — Copilot Chat / Cursor / Continue / Claude / CodeWhisperer all work via `#file:` / `@file` references.
+- **Korean preference setting** — `design-ai.language: "ko"` opens Korean translations of README / QUICKSTART / etc.
+- **Doesn't compete with AI assistants** — provides design-aware **content** that complements any AI tool.
+
+### How to publish (maintainer note)
+The extension is scaffolded but not yet published to the VS Code Marketplace. To publish:
+```bash
+cd vscode-extension
+npm install
+npm run compile
+npx @vscode/vsce package         # produces .vsix
+npx @vscode/vsce publish         # requires Azure DevOps PAT + publisher account
+```
+Or distribute via the GitHub Releases page until marketplace publication.
+
 ## v3.7.0 — Coverage push 36% → 45% (2026-05)
 
 Component coverage 36.2% → **45.2%** (72 → 90 of 199 canonical components). Crosses the halfway-to-100% threshold for canonical primitive coverage.

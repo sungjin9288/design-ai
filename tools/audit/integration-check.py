@@ -24,6 +24,7 @@ WALKTHROUGH_FILES = [
     "cursor-walkthrough.md",
     "aider-walkthrough.md",
     "sdk-walkthrough.md",
+    "vscode-walkthrough.md",
 ]
 
 # Required headings (substring match, case-insensitive).

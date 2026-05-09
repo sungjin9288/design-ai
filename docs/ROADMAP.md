@@ -51,6 +51,72 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 27 — VS Code extension (v3.8) ✓ shipped
+
+design-ai is now accessible inside VS Code via a dedicated extension. New distribution surface for the millions of VS Code users — pairs with any AI assistant (Copilot Chat / Cursor / Continue / Claude / CodeWhisperer) without competing.
+
+### Added
+- **`vscode-extension/`** — TypeScript-based VS Code extension:
+  - `package.json` manifest:
+    - 8 commands (Install / Status / Open knowledge / Open spec / Open skill / Open walkthrough / Refresh / Settings).
+    - 4 sidebar TreeViews (Skills / Knowledge / Examples / Walkthroughs) under a dedicated activity bar entry.
+    - 2 settings (`design-ai.path`, `design-ai.language`).
+  - `src/extension.ts` — entry point. Path auto-probing on activation; reactive to setting changes.
+  - `src/paths.ts` — locates design-ai source via setting → workspace folder → common locations (~/dev/design-ai, ~/.local/lib, /opt, npm-global, Homebrew lib).
+  - `src/commands.ts` — 8 command implementations. `Install` invokes the project's `install.sh`. `Status` reads `.claude-plugin/plugin.json` for version + counts. Open commands use `showQuickPick` for fast filtering across the corpus.
+  - `src/providers/trees.ts` — 4 TreeDataProviders. Knowledge tree is recursive (categories → files); Skills / Examples / Walkthroughs are flat lists.
+  - `media/icon.svg` — gradient indigo/violet "D" mark.
+  - `tsconfig.json`, `.vscodeignore`, `LICENSE`, `README.md`, `CHANGELOG.md`.
+- **`docs/integrations/vscode-walkthrough.md`** — 5 worked sessions:
+  - Browse + reference in chat
+  - Audit existing component
+  - Generate from skill PLAYBOOK
+  - Quick-pick across the corpus
+  - Multi-file design system bootstrap
+- **`tools/audit/integration-check.py`** — added vscode-walkthrough.md to validation list (5 walkthroughs total).
+
+### Changed
+- `README.md` agent table — VS Code added as supported environment with link to walkthrough.
+- `mkdocs.yml` Integrations nav — VS Code entry added.
+- `package.json` + `.claude-plugin/plugin.json`: 3.7.0 → 3.8.0.
+
+### Verified
+- All 5 audits pass.
+- Integration audit covers all 5 walkthroughs (added vscode-walkthrough.md).
+- Extension scaffold compiles cleanly via `tsc -p .` (TypeScript 5.3+ required).
+
+### Versions
+- CLI: 3.7.0 → 3.8.0
+- Plugin / corpus: 3.7.0 → 3.8.0
+- VS Code extension: 0.1.0 (initial release; lives in `vscode-extension/`)
+
+### What this enables
+- **VS Code users** browse design-ai content without leaving the editor.
+- **Pair with any AI assistant** — Copilot Chat / Cursor / Continue / Claude / CodeWhisperer.
+- **Korean preference setting** — `design-ai.language: "ko"` opens Korean translations.
+- **Doesn't compete with AI assistants** — surfaces design-aware **content**, complements AI tools.
+
+### Publication path (maintainer)
+The extension is scaffolded but not yet published to the VS Code Marketplace. Steps:
+```bash
+cd vscode-extension
+npm install
+npm run compile
+npx @vscode/vsce package        # produces .vsix
+npx @vscode/vsce publish        # requires Azure DevOps PAT + publisher account
+```
+
+Until then, distribute via GitHub Releases.
+
+### What's still ahead (v3.9+)
+- Coverage push 45% → 60%.
+- Versioned knowledge files (semver in frontmatter).
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- VS Code marketplace publication (1.0.0 milestone).
+- More Korean translations.
+- VS Code extension: walkthroughs panel (vscode walkthrough API), code actions for spec compliance.
+
 ## Phase 26 — Coverage push 36.2% → 45.2% (v3.7) ✓ shipped
 
 Component coverage from 36.2% → **45.2%** (72 → 90 of 199 canonical components). Crosses the halfway-to-100% threshold for canonical primitive coverage.

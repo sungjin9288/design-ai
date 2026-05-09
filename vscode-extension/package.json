@@ -1,0 +1,157 @@
+{
+  "name": "design-ai-vscode",
+  "displayName": "design-ai",
+  "description": "Senior product designer for any AI coding agent. Surfaces 19 skills, 15 commands, 142 worked examples. Korean market depth.",
+  "version": "0.1.0",
+  "publisher": "sungjin",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "AI"
+  ],
+  "keywords": [
+    "design",
+    "design-system",
+    "ui",
+    "ux",
+    "design-tokens",
+    "components",
+    "ai",
+    "claude",
+    "korean",
+    "figma"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sungjin/design-ai.git",
+    "directory": "vscode-extension"
+  },
+  "homepage": "https://github.com/sungjin/design-ai/tree/main/vscode-extension",
+  "bugs": {
+    "url": "https://github.com/sungjin/design-ai/issues"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "design-ai.install",
+        "title": "design-ai: Install (Claude Code)",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.status",
+        "title": "design-ai: Show install status",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.openKnowledge",
+        "title": "design-ai: Open knowledge file...",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.openSpec",
+        "title": "design-ai: Open component spec...",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.openSkill",
+        "title": "design-ai: Open skill PLAYBOOK...",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.openWalkthrough",
+        "title": "design-ai: Open integration walkthrough...",
+        "category": "design-ai"
+      },
+      {
+        "command": "design-ai.refreshTree",
+        "title": "design-ai: Refresh tree",
+        "category": "design-ai",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "design-ai.openSettings",
+        "title": "design-ai: Open extension settings",
+        "category": "design-ai"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "design-ai",
+          "title": "design-ai",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "design-ai": [
+        {
+          "id": "design-ai.skills",
+          "name": "Skills",
+          "icon": "$(extensions)"
+        },
+        {
+          "id": "design-ai.knowledge",
+          "name": "Knowledge",
+          "icon": "$(book)"
+        },
+        {
+          "id": "design-ai.examples",
+          "name": "Component specs",
+          "icon": "$(symbol-class)"
+        },
+        {
+          "id": "design-ai.walkthroughs",
+          "name": "Integration walkthroughs",
+          "icon": "$(rocket)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "design-ai.refreshTree",
+          "when": "view == design-ai.skills || view == design-ai.knowledge || view == design-ai.examples || view == design-ai.walkthroughs",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "design-ai",
+      "properties": {
+        "design-ai.path": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the design-ai source directory. If empty, the extension probes common locations (~/dev/design-ai, ~/.local/lib/design-ai, /opt/design-ai, npm-global node_modules)."
+        },
+        "design-ai.language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "ko"
+          ],
+          "default": "en",
+          "description": "Preferred language when opening README / QUICKSTART / etc."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}
