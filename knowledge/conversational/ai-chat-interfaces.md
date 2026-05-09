@@ -2,6 +2,9 @@
 ---
 title: AI chat interfaces (ChatGPT, Claude, LLM-based UX)
 applies_to: [ai-chat, llm, chatgpt, conversational]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # AI chat interfaces

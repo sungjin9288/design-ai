@@ -4,6 +4,9 @@ source: refs/awesome-design-md/design-md/
 upstream: https://github.com/VoltAgent/awesome-design-md
 extracted_at: 2026-05-07
 applies_to: [art-direction, brand-research]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Brand reference index

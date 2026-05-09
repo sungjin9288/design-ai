@@ -2,6 +2,9 @@
 ---
 title: Korean document style — voice, hierarchy, conventions
 applies_to: [korean-docs, korean-reports, korean-presentations, korean-marketing-prose]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean document style

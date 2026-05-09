@@ -2,6 +2,9 @@
 ---
 title: VR patterns (immersive virtual reality design)
 applies_to: [vr, virtual-reality, immersive, quest, psvr]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # VR patterns

@@ -3,6 +3,9 @@
 title: Design-AI principles — agent priming cheat sheet
 applies_to: [all]
 purpose: Single-page reference. Read at the start of every design task. Every rule cites a deeper knowledge file.
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Design-AI principles

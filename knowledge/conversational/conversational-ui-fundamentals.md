@@ -2,6 +2,9 @@
 ---
 title: Conversational UI fundamentals (turn-taking, intents, context, modalities)
 applies_to: [conversational-ui, voice, chat, ai-chat]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Conversational UI fundamentals

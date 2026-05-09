@@ -2,6 +2,9 @@
 ---
 title: Illustration systems (style, voice, system design)
 applies_to: [illustration, brand, marketing, empty-states]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Illustration systems

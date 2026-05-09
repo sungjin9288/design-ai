@@ -2,6 +2,9 @@
 ---
 title: Mobile navigation patterns
 applies_to: [mobile, ios, android, react-native, responsive-web]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Mobile navigation patterns

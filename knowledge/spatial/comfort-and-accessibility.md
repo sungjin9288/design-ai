@@ -2,6 +2,9 @@
 ---
 title: Comfort and accessibility in spatial / VR / AR
 applies_to: [spatial, vr, ar, accessibility, comfort]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Comfort and accessibility in spatial

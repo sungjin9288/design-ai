@@ -2,6 +2,9 @@
 ---
 title: Micro-interactions (the small motions that make UI feel alive)
 applies_to: [ui, motion, interactive-elements]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Micro-interactions

@@ -2,6 +2,9 @@
 ---
 title: Video fundamentals (codecs, resolution, framerate, bitrate, captions)
 applies_to: [video, production, encoding, accessibility]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Video fundamentals

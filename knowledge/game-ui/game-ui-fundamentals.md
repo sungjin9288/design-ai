@@ -2,6 +2,9 @@
 ---
 title: Game UI fundamentals (diegetic, non-diegetic, spatial, meta)
 applies_to: [game-ui, hud, game-design]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Game UI fundamentals

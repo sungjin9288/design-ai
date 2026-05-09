@@ -2,6 +2,9 @@
 ---
 title: Motion choreography (multi-element coordination)
 applies_to: [motion, animation, page-transition, complex-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Motion choreography

@@ -2,6 +2,9 @@
 ---
 title: Voice UI patterns (smart speakers, in-app voice, IVR)
 applies_to: [voice-ui, smart-speaker, ivr, voice-assistant]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Voice UI patterns

@@ -2,6 +2,9 @@
 ---
 title: Korean video conventions (KR market, broadcast standards, ad disclosure)
 applies_to: [video, korean, kr-market, broadcast, advertising]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean video conventions

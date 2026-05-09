@@ -2,6 +2,9 @@
 ---
 title: Menu systems (main menu, pause, inventory, settings, store)
 applies_to: [game-ui, menus, navigation]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Menu systems

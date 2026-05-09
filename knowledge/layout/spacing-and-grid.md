@@ -2,6 +2,9 @@
 ---
 title: Spacing, grid, and responsive layout
 applies_to: [web, mobile, all-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Spacing, grid, and responsive layout

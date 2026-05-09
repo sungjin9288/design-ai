@@ -2,6 +2,9 @@
 ---
 title: Korean app store & publishing requirements
 applies_to: [korean-market, ios, android, app-store-connect, google-play, onestore]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean app store & publishing requirements

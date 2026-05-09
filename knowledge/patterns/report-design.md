@@ -2,6 +2,9 @@
 ---
 title: Report design — research, audit, executive summary
 applies_to: [reports, audits, research-findings, executive-summaries]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Report design

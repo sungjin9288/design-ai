@@ -2,6 +2,9 @@
 ---
 title: Spatial design fundamentals (3D, depth, comfort, distance, units)
 applies_to: [spatial, ar, vr, xr, 3d]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Spatial design fundamentals

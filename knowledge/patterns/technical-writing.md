@@ -2,6 +2,9 @@
 ---
 title: Technical writing — voice, structure, common pitfalls
 applies_to: [docs, technical-writing, api-docs, guides]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Technical writing

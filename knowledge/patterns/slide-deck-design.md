@@ -2,6 +2,9 @@
 ---
 title: Slide deck design
 applies_to: [presentations, slide-decks, pitch-decks, conference-talks]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Slide deck design

@@ -51,6 +51,56 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 30 — Versioned knowledge frontmatter (v3.11) ✓ shipped
+
+Foundation for v4.0 stability. Every knowledge file now carries `version`, `last_updated`, and `stability` metadata. Adopters can pin to specific versions; future audits can flag stale content.
+
+### Added
+- **`tools/migrations/add-version-frontmatter.py`** — one-shot migration script:
+  - Idempotent (re-running skips already-versioned files).
+  - Detects existing frontmatter (with optional leading HTML comment), inserts before closing `---`.
+  - `--write` to apply; default is dry-run.
+  - Locates 91 knowledge files; all updated.
+- **`tools/audit/frontmatter-check.py`** — validates new optional fields:
+  - `version`: semver-shaped (`1.0.0`, `1.2.3-beta`).
+  - `last_updated`: `YYYY-MM` or `YYYY-MM-DD`.
+  - `stability`: one of `stable` / `beta` / `experimental` / `deprecated`.
+  - Missing keys remain OK (backward-compatible).
+- **`tools/migrations/`** directory — new home for one-shot migration scripts.
+
+### Changed
+- All 91 knowledge files — frontmatter extended with version metadata; no content changes.
+- `package.json` + `.claude-plugin/plugin.json`: 3.10.0 → 3.11.0.
+
+### Stability levels
+| Level | Meaning |
+| --- | --- |
+| `stable` | Reviewed; canonical; safe to depend on |
+| `beta` | Substantively complete but pending review or polish |
+| `experimental` | Active iteration; may change significantly |
+| `deprecated` | Superseded; will be removed in a future major version |
+
+All current knowledge starts at `stable`.
+
+### Verified
+- All 5 audits pass.
+- Migration script idempotent.
+- Format identical across 91 files.
+
+### What this enables
+- **Version pinning** — "knowledge v1.0.0" reference for adopters.
+- **Stale-content detection** — future audit can flag `last_updated > 12 months ago`.
+- **Stability-aware skills** — skills can prefer `stable` knowledge.
+- **Migration tracking** — `last_updated` will diverge over time as files are reviewed individually.
+
+### What's still ahead (v3.12+)
+- Coverage push 55% → 70%.
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- VS Code marketplace publication (1.0.0).
+- Stale-content audit (flag files with old `last_updated`).
+- More Korean translations.
+
 ## Phase 29 — Korean integration walkthroughs (v3.10) ✓ shipped
 
 Five integration walkthroughs translated to Korean. Continues v3.6 KR i18n investment — primary audience (KR designers / developers) can use Codex / Cursor / Aider / SDK / VS Code without English friction.

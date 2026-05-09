@@ -2,6 +2,9 @@
 ---
 title: HUD design (in-game heads-up display elements)
 applies_to: [game-ui, hud, in-game]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # HUD design

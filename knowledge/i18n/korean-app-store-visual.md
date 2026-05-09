@@ -2,6 +2,9 @@
 ---
 title: Korean app store visual design
 applies_to: [app-icon, app-store-screenshots, korean-app-store, ios, android]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean app store visual design

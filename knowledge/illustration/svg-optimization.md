@@ -2,6 +2,9 @@
 ---
 title: SVG optimization (file size, performance, accessibility)
 applies_to: [svg, illustration, performance, optimization]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # SVG optimization

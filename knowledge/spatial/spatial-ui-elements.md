@@ -2,6 +2,9 @@
 ---
 title: Spatial UI elements (panels, billboards, controls, menus)
 applies_to: [spatial, vr, ar, ui-elements, panels]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Spatial UI elements

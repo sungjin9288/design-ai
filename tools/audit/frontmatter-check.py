@@ -26,6 +26,11 @@ ROOT = Path(__file__).resolve().parents[2]
 REQUIRED_KEYS = {"title"}
 RECOMMENDED_KEYS = {"applies_to"}
 GENERATED_KEYS = {"source", "extracted_at"}
+# Optional versioning keys (added in v3.11). Validated only if present —
+# missing them is fine for backward compatibility, but if present they
+# should be well-formed.
+VERSIONING_KEYS = {"version", "last_updated", "stability"}
+STABILITY_VALUES = {"stable", "beta", "experimental", "deprecated"}
 
 
 def is_hand_written(text: str) -> bool:
@@ -131,7 +136,35 @@ def validate(path: Path, strict: bool) -> list[str]:
         if missing_rec:
             errors.append(f"{rel}: (warn) recommended keys missing {missing_rec}")
 
+    # Versioning keys: validate format if present (added v3.11)
+    version = fm.get("version")
+    if version is not None and not _is_valid_version(version):
+        errors.append(f"{rel}: invalid version '{version}' — expected semver (e.g., 1.0.0)")
+
+    last_updated = fm.get("last_updated")
+    if last_updated is not None and not _is_valid_date_or_yearmonth(last_updated):
+        errors.append(f"{rel}: invalid last_updated '{last_updated}' — expected YYYY-MM or YYYY-MM-DD")
+
+    stability = fm.get("stability")
+    if stability is not None and str(stability) not in STABILITY_VALUES:
+        errors.append(
+            f"{rel}: invalid stability '{stability}' — expected one of {sorted(STABILITY_VALUES)}"
+        )
+
     return errors
+
+
+def _is_valid_version(value: object) -> bool:
+    """Match semver-like X.Y.Z (with optional -prerelease)."""
+    if not isinstance(value, str):
+        return False
+    return bool(re.match(r"^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$", value))
+
+
+def _is_valid_date_or_yearmonth(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    return bool(re.match(r"^\d{4}-\d{2}(-\d{2})?$", value))
 
 
 def main() -> None:

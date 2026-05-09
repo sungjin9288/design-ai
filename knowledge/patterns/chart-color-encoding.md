@@ -2,6 +2,9 @@
 ---
 title: Chart color encoding
 applies_to: [data-visualization, dashboard, all-data-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Chart color encoding

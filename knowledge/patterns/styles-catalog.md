@@ -4,6 +4,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/styles.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
 extracted_at: 2026-05-07
 applies_to: [visual-design, art-direction]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Visual style catalog

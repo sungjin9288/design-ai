@@ -2,6 +2,9 @@
 ---
 title: Brochures, leaflets, and flyers
 applies_to: [print, brochure, flyer, marketing]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Brochures and flyers

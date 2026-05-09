@@ -2,6 +2,9 @@
 ---
 title: Landing hero design (variants and rationale)
 applies_to: [landing, marketing, hero]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Landing hero design

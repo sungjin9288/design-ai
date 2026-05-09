@@ -2,6 +2,9 @@
 ---
 title: Hero illustrations (marketing landing-page artwork)
 applies_to: [illustration, marketing, hero, landing]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Hero illustrations

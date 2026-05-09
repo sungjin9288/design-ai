@@ -2,6 +2,9 @@
 ---
 title: Social and short-form video (TikTok, Reels, Shorts, vertical)
 applies_to: [video, social, short-form, tiktok, reels, shorts]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Social and short-form video

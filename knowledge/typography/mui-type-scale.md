@@ -4,6 +4,9 @@ source: refs/mui/packages/mui-material/src/styles/createTypography.js
 upstream: https://github.com/mui/material-ui/blob/master/packages/mui-material/src/styles/createTypography.js
 extracted_at: 2026-05-07
 applies_to: [react, mui, material-design]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # MUI default type scale

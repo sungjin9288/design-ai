@@ -2,6 +2,9 @@
 ---
 title: Game accessibility (subtitles, color-blind, remap, motor, cognitive)
 applies_to: [game-ui, accessibility, a11y]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Game accessibility

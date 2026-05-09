@@ -2,6 +2,9 @@
 ---
 title: Design system QA — visual regression, token drift, a11y regression
 applies_to: [design-system, ci, testing]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Design system QA

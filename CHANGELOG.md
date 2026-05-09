@@ -2,6 +2,44 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.11.0 — Versioned knowledge frontmatter (2026-05)
+
+Foundation for v4.0 stability. Every knowledge file now carries `version`, `last_updated`, and `stability` metadata. Adopters can pin to specific versions; future audits can flag stale content.
+
+### Added
+- **`tools/migrations/add-version-frontmatter.py`** — one-shot migration script. Idempotent. Adds `version: 1.0.0`, `last_updated: 2026-05`, `stability: stable` to all 91 knowledge frontmatters. Supports `--write` (apply) and dry-run.
+- **`tools/audit/frontmatter-check.py`** — validates the new optional fields:
+  - `version`: must be semver-shaped (e.g., `1.0.0`, `1.2.3-beta`).
+  - `last_updated`: must be `YYYY-MM` or `YYYY-MM-DD`.
+  - `stability`: must be one of `stable` / `beta` / `experimental` / `deprecated`.
+  - Missing keys remain OK (backward-compatible).
+- **`tools/migrations/`** directory — new home for one-shot migration scripts (separate from `tools/audit/` and `tools/extractors/`).
+
+### Changed
+- **All 91 knowledge files** — frontmatter extended with version metadata. No content changes.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 3.10.0 → 3.11.0.
+
+### Stability levels
+| Level | Meaning |
+| --- | --- |
+| `stable` | Reviewed; canonical; safe to depend on |
+| `beta` | Substantively complete but pending review or final polish |
+| `experimental` | Active iteration; may change significantly |
+| `deprecated` | Superseded; will be removed in a future major version |
+
+All current knowledge starts at `stable` — they were all reviewed during their respective phases.
+
+### Verified
+- All 5 audits pass (frontmatter / link / Korean copy / coverage / integration-check).
+- Migration script idempotent (re-running detects existing version keys, skips).
+- All 91 files updated; format identical to existing convention.
+
+### What this enables
+- **Version pinning** — adopters can reference "knowledge v1.0.0" or "design-ai @ 3.11" with confidence.
+- **Stale-content detection** — future audit can flag files with `last_updated > 12 months ago`.
+- **Stability-aware skills** — skills can prefer `stable` knowledge over `experimental` when both exist.
+- **Migration tracking** — `last_updated` reflects the substantive last review of each file (currently 2026-05 for all; will diverge over time).
+
 ## v3.10.0 — Korean integration walkthroughs (2026-05)
 
 Five integration walkthroughs translated to Korean. Continues v3.6 KR i18n investment — primary audience (KR designers / developers) can now use Codex / Cursor / Aider / SDK / VS Code without English friction.

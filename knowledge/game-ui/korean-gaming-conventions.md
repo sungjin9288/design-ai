@@ -2,6 +2,9 @@
 ---
 title: Korean gaming conventions (PC bang, mobile gacha, MMO, regulations)
 applies_to: [game-ui, korean, kr-market, gacha, mmo]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean gaming conventions

@@ -2,6 +2,9 @@
 ---
 title: Motion tools comparison
 applies_to: [motion, animation, tools]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Motion tools comparison

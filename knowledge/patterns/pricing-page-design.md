@@ -2,6 +2,9 @@
 ---
 title: Pricing page design
 applies_to: [pricing, saas, marketing]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Pricing page design

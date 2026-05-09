@@ -2,6 +2,9 @@
 ---
 title: Korean (Hangul) typography for product UI
 applies_to: [korean-market, hangul, cjk, web, mobile]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean (Hangul) typography for product UI

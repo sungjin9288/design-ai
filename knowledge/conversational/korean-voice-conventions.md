@@ -2,6 +2,9 @@
 ---
 title: Korean voice and conversational conventions
 applies_to: [korean, voice, chatbot, conversational, kr-market]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean voice and conversational conventions

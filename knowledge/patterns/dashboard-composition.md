@@ -2,6 +2,9 @@
 ---
 title: Dashboard composition
 applies_to: [analytics, fintech, b2b-saas, all-data-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Dashboard composition

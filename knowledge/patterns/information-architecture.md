@@ -2,6 +2,9 @@
 ---
 title: Information architecture for documents
 applies_to: [docs, knowledge-base, technical-docs, product-docs]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Information architecture

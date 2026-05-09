@@ -2,6 +2,9 @@
 ---
 title: Material Design 3 token reference
 applies_to: [material-design, hct, design-tokens, android, web]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Material Design 3 (Material You)

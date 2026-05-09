@@ -2,6 +2,9 @@
 ---
 title: Chatbot design (rule-based, intent-driven, hybrid)
 applies_to: [chatbot, conversational, customer-support]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Chatbot design

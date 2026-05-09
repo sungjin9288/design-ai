@@ -2,6 +2,9 @@
 ---
 title: Tailwind CSS v4 default theme reference
 applies_to: [tailwindcss, oklch, design-tokens, web]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Tailwind CSS v4 default theme

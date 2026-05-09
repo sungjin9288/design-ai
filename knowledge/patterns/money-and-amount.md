@@ -2,6 +2,9 @@
 ---
 title: Money and amount — display, input, color semantics
 applies_to: [fintech, e-commerce, all-money-aware-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Money and amount

@@ -4,6 +4,9 @@ source: refs/ant-design/components/theme/themes/seed.ts
 upstream: https://github.com/ant-design/ant-design/blob/master/components/theme/themes/seed.ts
 extracted_at: 2026-05-07
 applies_to: [react, antd, design-system]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Ant Design seed tokens

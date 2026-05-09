@@ -2,6 +2,9 @@
 ---
 title: Document typography (long-form reading)
 applies_to: [docs, articles, reports, books, marketing-prose]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Document typography

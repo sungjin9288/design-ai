@@ -2,6 +2,9 @@
 ---
 title: Real-time data UX
 applies_to: [dashboard, fintech, chat, monitoring, all-live-data-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Real-time data UX

@@ -2,6 +2,9 @@
 ---
 title: AR patterns (mobile AR, headset MR, world-anchored UI)
 applies_to: [ar, mixed-reality, augmented-reality, arkit, arcore, hololens]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # AR patterns

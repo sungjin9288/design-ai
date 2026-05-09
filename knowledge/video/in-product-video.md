@@ -2,6 +2,9 @@
 ---
 title: In-product video (onboarding, help, explainers)
 applies_to: [video, in-product, onboarding, help]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # In-product video

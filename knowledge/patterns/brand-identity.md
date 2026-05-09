@@ -2,6 +2,9 @@
 ---
 title: Brand identity foundations
 applies_to: [brand, identity, logo, voice]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Brand identity

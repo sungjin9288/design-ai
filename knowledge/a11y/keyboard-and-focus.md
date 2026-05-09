@@ -2,6 +2,9 @@
 ---
 title: Keyboard and focus — WCAG operable
 applies_to: [web, all-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Keyboard and focus

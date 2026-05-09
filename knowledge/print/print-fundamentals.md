@@ -2,6 +2,9 @@
 ---
 title: Print fundamentals (CMYK, bleed, trim, DPI, paper)
 applies_to: [print, physical, production, prepress]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Print fundamentals

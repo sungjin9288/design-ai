@@ -2,6 +2,9 @@
 ---
 title: React Native — platform-specific design notes
 applies_to: [react-native, mobile, ios, android, expo]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # React Native platform notes

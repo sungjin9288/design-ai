@@ -2,6 +2,9 @@
 ---
 title: Marketing video (landing-page hero, brand films, product demos)
 applies_to: [video, marketing, landing, brand]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Marketing video

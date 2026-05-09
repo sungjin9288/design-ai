@@ -2,6 +2,9 @@
 ---
 title: Korean product UX conventions
 applies_to: [korean-market, mobile, web, payments]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean product UX conventions

@@ -2,6 +2,9 @@
 ---
 title: Korean payments — vendor selection and integration UX
 applies_to: [korean-market, fintech, e-commerce, payments]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Korean payments

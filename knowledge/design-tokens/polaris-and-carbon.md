@@ -2,6 +2,9 @@
 ---
 title: Polaris (Shopify) and Carbon (IBM) — enterprise token references
 applies_to: [enterprise, b2b-saas, design-tokens]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Polaris and Carbon

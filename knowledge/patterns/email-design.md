@@ -2,6 +2,9 @@
 ---
 title: Email design (transactional + marketing)
 applies_to: [email, transactional, marketing-email, html-email]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Email design

@@ -49,182 +49,182 @@ generated_at: 2026-05-09
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 597 | generated | Coverage report |
-| [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 600 | generated | Coverage report |
+| [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/a11y/contrast.md](../knowledge/a11y/contrast.md) | 67 | hand-written | Contrast |
-| [knowledge/a11y/keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) | 105 | hand-written | Keyboard and focus |
+| [knowledge/a11y/contrast.md](../knowledge/a11y/contrast.md) | 70 | hand-written | Contrast |
+| [knowledge/a11y/keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) | 108 | hand-written | Keyboard and focus |
 
 #### colors
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/colors/color-theory.md](../knowledge/colors/color-theory.md) | 87 | hand-written | Color theory for product UI |
-| [knowledge/colors/mui-palette-structure.md](../knowledge/colors/mui-palette-structure.md) | 102 | generated | MUI palette structure |
-| [knowledge/colors/palettes-by-product-type.md](../knowledge/colors/palettes-by-product-type.md) | 872 | generated | Curated palettes by product type |
+| [knowledge/colors/color-theory.md](../knowledge/colors/color-theory.md) | 90 | hand-written | Color theory for product UI |
+| [knowledge/colors/mui-palette-structure.md](../knowledge/colors/mui-palette-structure.md) | 105 | generated | MUI palette structure |
+| [knowledge/colors/palettes-by-product-type.md](../knowledge/colors/palettes-by-product-type.md) | 875 | generated | Curated palettes by product type |
 
 #### components
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/components/INDEX.md](../knowledge/components/INDEX.md) | 227 | generated | Component index |
-| [knowledge/components/shadcn-registry.md](../knowledge/components/shadcn-registry.md) | 156 | generated | shadcn-ui registry catalog (new-york-v4) |
+| [knowledge/components/INDEX.md](../knowledge/components/INDEX.md) | 230 | generated | Component index |
+| [knowledge/components/shadcn-registry.md](../knowledge/components/shadcn-registry.md) | 159 | generated | shadcn-ui registry catalog (new-york-v4) |
 
 #### conversational
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/conversational/ai-chat-interfaces.md](../knowledge/conversational/ai-chat-interfaces.md) | 320 | hand-written | AI chat interfaces |
-| [knowledge/conversational/chatbot-design.md](../knowledge/conversational/chatbot-design.md) | 309 | hand-written | Chatbot design |
-| [knowledge/conversational/conversational-ui-fundamentals.md](../knowledge/conversational/conversational-ui-fundamentals.md) | 296 | hand-written | Conversational UI fundamentals |
-| [knowledge/conversational/korean-voice-conventions.md](../knowledge/conversational/korean-voice-conventions.md) | 278 | hand-written | Korean voice and conversational conventions |
-| [knowledge/conversational/voice-ui-patterns.md](../knowledge/conversational/voice-ui-patterns.md) | 294 | hand-written | Voice UI patterns |
+| [knowledge/conversational/ai-chat-interfaces.md](../knowledge/conversational/ai-chat-interfaces.md) | 323 | hand-written | AI chat interfaces |
+| [knowledge/conversational/chatbot-design.md](../knowledge/conversational/chatbot-design.md) | 312 | hand-written | Chatbot design |
+| [knowledge/conversational/conversational-ui-fundamentals.md](../knowledge/conversational/conversational-ui-fundamentals.md) | 299 | hand-written | Conversational UI fundamentals |
+| [knowledge/conversational/korean-voice-conventions.md](../knowledge/conversational/korean-voice-conventions.md) | 281 | hand-written | Korean voice and conversational conventions |
+| [knowledge/conversational/voice-ui-patterns.md](../knowledge/conversational/voice-ui-patterns.md) | 297 | hand-written | Voice UI patterns |
 
 #### design-tokens
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/design-tokens/ant-design.md](../knowledge/design-tokens/ant-design.md) | 121 | generated | Ant Design seed tokens |
-| [knowledge/design-tokens/material-3.md](../knowledge/design-tokens/material-3.md) | 232 | hand-written | Material Design 3 (Material You) |
-| [knowledge/design-tokens/polaris-and-carbon.md](../knowledge/design-tokens/polaris-and-carbon.md) | 228 | hand-written | Polaris and Carbon |
-| [knowledge/design-tokens/tailwind-v4.md](../knowledge/design-tokens/tailwind-v4.md) | 281 | hand-written | Tailwind CSS v4 default theme |
+| [knowledge/design-tokens/ant-design.md](../knowledge/design-tokens/ant-design.md) | 124 | generated | Ant Design seed tokens |
+| [knowledge/design-tokens/material-3.md](../knowledge/design-tokens/material-3.md) | 235 | hand-written | Material Design 3 (Material You) |
+| [knowledge/design-tokens/polaris-and-carbon.md](../knowledge/design-tokens/polaris-and-carbon.md) | 231 | hand-written | Polaris and Carbon |
+| [knowledge/design-tokens/tailwind-v4.md](../knowledge/design-tokens/tailwind-v4.md) | 284 | hand-written | Tailwind CSS v4 default theme |
 
 #### game-ui
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/game-ui/game-accessibility.md](../knowledge/game-ui/game-accessibility.md) | 314 | hand-written | Game accessibility |
-| [knowledge/game-ui/game-ui-fundamentals.md](../knowledge/game-ui/game-ui-fundamentals.md) | 278 | hand-written | Game UI fundamentals |
-| [knowledge/game-ui/hud-design.md](../knowledge/game-ui/hud-design.md) | 321 | hand-written | HUD design |
-| [knowledge/game-ui/korean-gaming-conventions.md](../knowledge/game-ui/korean-gaming-conventions.md) | 309 | hand-written | Korean gaming conventions |
-| [knowledge/game-ui/menu-systems.md](../knowledge/game-ui/menu-systems.md) | 385 | hand-written | Menu systems |
+| [knowledge/game-ui/game-accessibility.md](../knowledge/game-ui/game-accessibility.md) | 317 | hand-written | Game accessibility |
+| [knowledge/game-ui/game-ui-fundamentals.md](../knowledge/game-ui/game-ui-fundamentals.md) | 281 | hand-written | Game UI fundamentals |
+| [knowledge/game-ui/hud-design.md](../knowledge/game-ui/hud-design.md) | 324 | hand-written | HUD design |
+| [knowledge/game-ui/korean-gaming-conventions.md](../knowledge/game-ui/korean-gaming-conventions.md) | 312 | hand-written | Korean gaming conventions |
+| [knowledge/game-ui/menu-systems.md](../knowledge/game-ui/menu-systems.md) | 388 | hand-written | Menu systems |
 
 #### i18n
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/i18n/korean-app-store-visual.md](../knowledge/i18n/korean-app-store-visual.md) | 220 | hand-written | Korean app store visual design |
-| [knowledge/i18n/korean-document-style.md](../knowledge/i18n/korean-document-style.md) | 298 | hand-written | Korean document style |
-| [knowledge/i18n/korean-payments.md](../knowledge/i18n/korean-payments.md) | 208 | hand-written | Korean payments |
-| [knowledge/i18n/korean-product-conventions.md](../knowledge/i18n/korean-product-conventions.md) | 93 | hand-written | Korean product UX conventions |
-| [knowledge/i18n/korean-publishing.md](../knowledge/i18n/korean-publishing.md) | 136 | hand-written | Korean app store & publishing requirements |
-| [knowledge/i18n/korean-typography.md](../knowledge/i18n/korean-typography.md) | 120 | hand-written | Korean (Hangul) typography for product UI |
+| [knowledge/i18n/korean-app-store-visual.md](../knowledge/i18n/korean-app-store-visual.md) | 223 | hand-written | Korean app store visual design |
+| [knowledge/i18n/korean-document-style.md](../knowledge/i18n/korean-document-style.md) | 301 | hand-written | Korean document style |
+| [knowledge/i18n/korean-payments.md](../knowledge/i18n/korean-payments.md) | 211 | hand-written | Korean payments |
+| [knowledge/i18n/korean-product-conventions.md](../knowledge/i18n/korean-product-conventions.md) | 96 | hand-written | Korean product UX conventions |
+| [knowledge/i18n/korean-publishing.md](../knowledge/i18n/korean-publishing.md) | 139 | hand-written | Korean app store & publishing requirements |
+| [knowledge/i18n/korean-typography.md](../knowledge/i18n/korean-typography.md) | 123 | hand-written | Korean (Hangul) typography for product UI |
 
 #### icons
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/icons/curated-sets.md](../knowledge/icons/curated-sets.md) | 222 | generated | Curated icon sets |
+| [knowledge/icons/curated-sets.md](../knowledge/icons/curated-sets.md) | 225 | generated | Curated icon sets |
 
 #### illustration
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/illustration/hero-illustrations.md](../knowledge/illustration/hero-illustrations.md) | 231 | hand-written | Hero illustrations |
-| [knowledge/illustration/illustration-systems.md](../knowledge/illustration/illustration-systems.md) | 218 | hand-written | Illustration systems |
-| [knowledge/illustration/mascot-design.md](../knowledge/illustration/mascot-design.md) | 205 | hand-written | Mascot design |
-| [knowledge/illustration/spot-illustrations.md](../knowledge/illustration/spot-illustrations.md) | 243 | hand-written | Spot illustrations |
-| [knowledge/illustration/svg-optimization.md](../knowledge/illustration/svg-optimization.md) | 305 | hand-written | SVG optimization |
+| [knowledge/illustration/hero-illustrations.md](../knowledge/illustration/hero-illustrations.md) | 234 | hand-written | Hero illustrations |
+| [knowledge/illustration/illustration-systems.md](../knowledge/illustration/illustration-systems.md) | 221 | hand-written | Illustration systems |
+| [knowledge/illustration/mascot-design.md](../knowledge/illustration/mascot-design.md) | 208 | hand-written | Mascot design |
+| [knowledge/illustration/spot-illustrations.md](../knowledge/illustration/spot-illustrations.md) | 246 | hand-written | Spot illustrations |
+| [knowledge/illustration/svg-optimization.md](../knowledge/illustration/svg-optimization.md) | 308 | hand-written | SVG optimization |
 
 #### layout
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/layout/spacing-and-grid.md](../knowledge/layout/spacing-and-grid.md) | 116 | hand-written | Spacing, grid, and responsive layout |
+| [knowledge/layout/spacing-and-grid.md](../knowledge/layout/spacing-and-grid.md) | 119 | hand-written | Spacing, grid, and responsive layout |
 
 #### motion
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/motion/app-loading-sequences.md](../knowledge/motion/app-loading-sequences.md) | 274 | hand-written | App loading sequences |
-| [knowledge/motion/choreography-depth.md](../knowledge/motion/choreography-depth.md) | 294 | hand-written | Motion choreography |
-| [knowledge/motion/marketing-motion.md](../knowledge/motion/marketing-motion.md) | 220 | hand-written | Marketing motion |
-| [knowledge/motion/micro-interactions.md](../knowledge/motion/micro-interactions.md) | 263 | hand-written | Micro-interactions |
-| [knowledge/motion/motion-tools.md](../knowledge/motion/motion-tools.md) | 278 | hand-written | Motion tools comparison |
-| [knowledge/motion/principles.md](../knowledge/motion/principles.md) | 123 | hand-written | Motion principles for product UI |
+| [knowledge/motion/app-loading-sequences.md](../knowledge/motion/app-loading-sequences.md) | 277 | hand-written | App loading sequences |
+| [knowledge/motion/choreography-depth.md](../knowledge/motion/choreography-depth.md) | 297 | hand-written | Motion choreography |
+| [knowledge/motion/marketing-motion.md](../knowledge/motion/marketing-motion.md) | 223 | hand-written | Marketing motion |
+| [knowledge/motion/micro-interactions.md](../knowledge/motion/micro-interactions.md) | 266 | hand-written | Micro-interactions |
+| [knowledge/motion/motion-tools.md](../knowledge/motion/motion-tools.md) | 281 | hand-written | Motion tools comparison |
+| [knowledge/motion/principles.md](../knowledge/motion/principles.md) | 126 | hand-written | Motion principles for product UI |
 
 #### patterns
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/patterns/auth-flow-design.md](../knowledge/patterns/auth-flow-design.md) | 313 | hand-written | Authentication flow design |
-| [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 235 | hand-written | Brand identity |
-| [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 93 | generated | Brand reference index |
-| [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 266 | hand-written | Chart color encoding |
-| [knowledge/patterns/chart-types.md](../knowledge/patterns/chart-types.md) | 341 | generated | Chart type selection guide |
-| [knowledge/patterns/dashboard-composition.md](../knowledge/patterns/dashboard-composition.md) | 296 | hand-written | Dashboard composition |
-| [knowledge/patterns/design-system-qa.md](../knowledge/patterns/design-system-qa.md) | 353 | hand-written | Design system QA |
-| [knowledge/patterns/document-typography.md](../knowledge/patterns/document-typography.md) | 245 | hand-written | Document typography |
-| [knowledge/patterns/email-design.md](../knowledge/patterns/email-design.md) | 335 | hand-written | Email design |
-| [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 260 | hand-written | Empty states |
-| [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 315 | hand-written | Error states |
-| [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 234 | hand-written | Form design patterns |
-| [knowledge/patterns/information-architecture.md](../knowledge/patterns/information-architecture.md) | 338 | hand-written | Information architecture |
-| [knowledge/patterns/landing-hero-design.md](../knowledge/patterns/landing-hero-design.md) | 280 | hand-written | Landing hero design |
-| [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 678 | generated | Landing page patterns |
-| [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md) | 368 | hand-written | List and feed patterns |
-| [knowledge/patterns/mobile-navigation.md](../knowledge/patterns/mobile-navigation.md) | 275 | hand-written | Mobile navigation patterns |
-| [knowledge/patterns/money-and-amount.md](../knowledge/patterns/money-and-amount.md) | 298 | hand-written | Money and amount |
-| [knowledge/patterns/onboarding.md](../knowledge/patterns/onboarding.md) | 297 | hand-written | Onboarding patterns |
-| [knowledge/patterns/pricing-page-design.md](../knowledge/patterns/pricing-page-design.md) | 258 | hand-written | Pricing page design |
-| [knowledge/patterns/realtime-data.md](../knowledge/patterns/realtime-data.md) | 277 | hand-written | Real-time data UX |
-| [knowledge/patterns/report-design.md](../knowledge/patterns/report-design.md) | 327 | hand-written | Report design |
-| [knowledge/patterns/search-ux.md](../knowledge/patterns/search-ux.md) | 370 | hand-written | Search UX |
-| [knowledge/patterns/settings-page.md](../knowledge/patterns/settings-page.md) | 322 | hand-written | Settings page patterns |
-| [knowledge/patterns/slide-deck-design.md](../knowledge/patterns/slide-deck-design.md) | 313 | hand-written | Slide deck design |
-| [knowledge/patterns/styles-catalog.md](../knowledge/patterns/styles-catalog.md) | 2596 | generated | Visual style catalog |
-| [knowledge/patterns/technical-writing.md](../knowledge/patterns/technical-writing.md) | 303 | hand-written | Technical writing |
-| [knowledge/patterns/ui-reasoning.md](../knowledge/patterns/ui-reasoning.md) | 1850 | generated | UI category decision rules |
-| [knowledge/patterns/ux-guidelines.md](../knowledge/patterns/ux-guidelines.md) | 1451 | generated | UX guidelines |
+| [knowledge/patterns/auth-flow-design.md](../knowledge/patterns/auth-flow-design.md) | 316 | hand-written | Authentication flow design |
+| [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 238 | hand-written | Brand identity |
+| [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 96 | generated | Brand reference index |
+| [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 269 | hand-written | Chart color encoding |
+| [knowledge/patterns/chart-types.md](../knowledge/patterns/chart-types.md) | 344 | generated | Chart type selection guide |
+| [knowledge/patterns/dashboard-composition.md](../knowledge/patterns/dashboard-composition.md) | 299 | hand-written | Dashboard composition |
+| [knowledge/patterns/design-system-qa.md](../knowledge/patterns/design-system-qa.md) | 356 | hand-written | Design system QA |
+| [knowledge/patterns/document-typography.md](../knowledge/patterns/document-typography.md) | 248 | hand-written | Document typography |
+| [knowledge/patterns/email-design.md](../knowledge/patterns/email-design.md) | 338 | hand-written | Email design |
+| [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 263 | hand-written | Empty states |
+| [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 318 | hand-written | Error states |
+| [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 237 | hand-written | Form design patterns |
+| [knowledge/patterns/information-architecture.md](../knowledge/patterns/information-architecture.md) | 341 | hand-written | Information architecture |
+| [knowledge/patterns/landing-hero-design.md](../knowledge/patterns/landing-hero-design.md) | 283 | hand-written | Landing hero design |
+| [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 681 | generated | Landing page patterns |
+| [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md) | 371 | hand-written | List and feed patterns |
+| [knowledge/patterns/mobile-navigation.md](../knowledge/patterns/mobile-navigation.md) | 278 | hand-written | Mobile navigation patterns |
+| [knowledge/patterns/money-and-amount.md](../knowledge/patterns/money-and-amount.md) | 301 | hand-written | Money and amount |
+| [knowledge/patterns/onboarding.md](../knowledge/patterns/onboarding.md) | 300 | hand-written | Onboarding patterns |
+| [knowledge/patterns/pricing-page-design.md](../knowledge/patterns/pricing-page-design.md) | 261 | hand-written | Pricing page design |
+| [knowledge/patterns/realtime-data.md](../knowledge/patterns/realtime-data.md) | 280 | hand-written | Real-time data UX |
+| [knowledge/patterns/report-design.md](../knowledge/patterns/report-design.md) | 330 | hand-written | Report design |
+| [knowledge/patterns/search-ux.md](../knowledge/patterns/search-ux.md) | 373 | hand-written | Search UX |
+| [knowledge/patterns/settings-page.md](../knowledge/patterns/settings-page.md) | 325 | hand-written | Settings page patterns |
+| [knowledge/patterns/slide-deck-design.md](../knowledge/patterns/slide-deck-design.md) | 316 | hand-written | Slide deck design |
+| [knowledge/patterns/styles-catalog.md](../knowledge/patterns/styles-catalog.md) | 2599 | generated | Visual style catalog |
+| [knowledge/patterns/technical-writing.md](../knowledge/patterns/technical-writing.md) | 306 | hand-written | Technical writing |
+| [knowledge/patterns/ui-reasoning.md](../knowledge/patterns/ui-reasoning.md) | 1853 | generated | UI category decision rules |
+| [knowledge/patterns/ux-guidelines.md](../knowledge/patterns/ux-guidelines.md) | 1454 | generated | UX guidelines |
 
 #### platforms
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/platforms/react-native.md](../knowledge/platforms/react-native.md) | 392 | hand-written | React Native platform notes |
+| [knowledge/platforms/react-native.md](../knowledge/platforms/react-native.md) | 395 | hand-written | React Native platform notes |
 
 #### print
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/print/brochures-and-flyers.md](../knowledge/print/brochures-and-flyers.md) | 273 | hand-written | Brochures and flyers |
-| [knowledge/print/korean-print-conventions.md](../knowledge/print/korean-print-conventions.md) | 281 | hand-written | Korean print conventions |
-| [knowledge/print/packaging.md](../knowledge/print/packaging.md) | 318 | hand-written | Packaging |
-| [knowledge/print/print-fundamentals.md](../knowledge/print/print-fundamentals.md) | 235 | hand-written | Print fundamentals |
-| [knowledge/print/signage-and-posters.md](../knowledge/print/signage-and-posters.md) | 232 | hand-written | Signage and posters |
-| [knowledge/print/stationery.md](../knowledge/print/stationery.md) | 259 | hand-written | Stationery |
+| [knowledge/print/brochures-and-flyers.md](../knowledge/print/brochures-and-flyers.md) | 276 | hand-written | Brochures and flyers |
+| [knowledge/print/korean-print-conventions.md](../knowledge/print/korean-print-conventions.md) | 284 | hand-written | Korean print conventions |
+| [knowledge/print/packaging.md](../knowledge/print/packaging.md) | 321 | hand-written | Packaging |
+| [knowledge/print/print-fundamentals.md](../knowledge/print/print-fundamentals.md) | 238 | hand-written | Print fundamentals |
+| [knowledge/print/signage-and-posters.md](../knowledge/print/signage-and-posters.md) | 235 | hand-written | Signage and posters |
+| [knowledge/print/stationery.md](../knowledge/print/stationery.md) | 262 | hand-written | Stationery |
 
 #### spatial
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/spatial/ar-patterns.md](../knowledge/spatial/ar-patterns.md) | 250 | hand-written | AR patterns |
-| [knowledge/spatial/comfort-and-accessibility.md](../knowledge/spatial/comfort-and-accessibility.md) | 242 | hand-written | Comfort and accessibility in spatial |
-| [knowledge/spatial/spatial-design-fundamentals.md](../knowledge/spatial/spatial-design-fundamentals.md) | 343 | hand-written | Spatial design fundamentals |
-| [knowledge/spatial/spatial-ui-elements.md](../knowledge/spatial/spatial-ui-elements.md) | 340 | hand-written | Spatial UI elements |
-| [knowledge/spatial/vr-patterns.md](../knowledge/spatial/vr-patterns.md) | 299 | hand-written | VR patterns |
+| [knowledge/spatial/ar-patterns.md](../knowledge/spatial/ar-patterns.md) | 253 | hand-written | AR patterns |
+| [knowledge/spatial/comfort-and-accessibility.md](../knowledge/spatial/comfort-and-accessibility.md) | 245 | hand-written | Comfort and accessibility in spatial |
+| [knowledge/spatial/spatial-design-fundamentals.md](../knowledge/spatial/spatial-design-fundamentals.md) | 346 | hand-written | Spatial design fundamentals |
+| [knowledge/spatial/spatial-ui-elements.md](../knowledge/spatial/spatial-ui-elements.md) | 343 | hand-written | Spatial UI elements |
+| [knowledge/spatial/vr-patterns.md](../knowledge/spatial/vr-patterns.md) | 302 | hand-written | VR patterns |
 
 #### typography
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/typography/font-pairings.md](../knowledge/typography/font-pairings.md) | 329 | generated | Curated font pairings |
-| [knowledge/typography/mui-type-scale.md](../knowledge/typography/mui-type-scale.md) | 54 | generated | MUI default type scale |
-| [knowledge/typography/type-scale-fundamentals.md](../knowledge/typography/type-scale-fundamentals.md) | 102 | hand-written | Type scale fundamentals |
+| [knowledge/typography/font-pairings.md](../knowledge/typography/font-pairings.md) | 332 | generated | Curated font pairings |
+| [knowledge/typography/mui-type-scale.md](../knowledge/typography/mui-type-scale.md) | 57 | generated | MUI default type scale |
+| [knowledge/typography/type-scale-fundamentals.md](../knowledge/typography/type-scale-fundamentals.md) | 105 | hand-written | Type scale fundamentals |
 
 #### video
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/video/in-product-video.md](../knowledge/video/in-product-video.md) | 274 | hand-written | In-product video |
-| [knowledge/video/korean-video-conventions.md](../knowledge/video/korean-video-conventions.md) | 244 | hand-written | Korean video conventions |
-| [knowledge/video/marketing-video.md](../knowledge/video/marketing-video.md) | 255 | hand-written | Marketing video |
-| [knowledge/video/social-and-short-form.md](../knowledge/video/social-and-short-form.md) | 254 | hand-written | Social and short-form video |
-| [knowledge/video/video-fundamentals.md](../knowledge/video/video-fundamentals.md) | 293 | hand-written | Video fundamentals |
+| [knowledge/video/in-product-video.md](../knowledge/video/in-product-video.md) | 277 | hand-written | In-product video |
+| [knowledge/video/korean-video-conventions.md](../knowledge/video/korean-video-conventions.md) | 247 | hand-written | Korean video conventions |
+| [knowledge/video/marketing-video.md](../knowledge/video/marketing-video.md) | 258 | hand-written | Marketing video |
+| [knowledge/video/social-and-short-form.md](../knowledge/video/social-and-short-form.md) | 257 | hand-written | Social and short-form video |
+| [knowledge/video/video-fundamentals.md](../knowledge/video/video-fundamentals.md) | 296 | hand-written | Video fundamentals |
 
 ## Skills
 

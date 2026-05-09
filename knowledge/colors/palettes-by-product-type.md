@@ -4,6 +4,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/colors.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
 extracted_at: 2026-05-07
 applies_to: [tailwindcss, shadcn-ui, design-system]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Curated palettes by product type

@@ -2,6 +2,9 @@
 ---
 title: Stationery (business cards, letterhead, envelopes)
 applies_to: [print, stationery, business-card, brand]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Stationery

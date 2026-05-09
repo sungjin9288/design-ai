@@ -2,6 +2,9 @@
 ---
 title: App loading sequences
 applies_to: [splash, app-launch, route-transitions, progressive-load]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # App loading sequences

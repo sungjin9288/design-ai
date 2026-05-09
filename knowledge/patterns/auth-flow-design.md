@@ -2,6 +2,9 @@
 ---
 title: Authentication flow design
 applies_to: [signup, login, password-reset, 2fa, all-auth]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Authentication flow design

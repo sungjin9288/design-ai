@@ -2,6 +2,9 @@
 ---
 title: Signage and posters (large-format print)
 applies_to: [print, signage, poster, large-format]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Signage and posters

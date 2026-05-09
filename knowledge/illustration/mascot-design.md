@@ -2,6 +2,9 @@
 ---
 title: Mascot design (characters and brand creatures)
 applies_to: [mascot, character, brand, korean]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Mascot design

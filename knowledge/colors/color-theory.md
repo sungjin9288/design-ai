@@ -2,6 +2,9 @@
 ---
 title: Color theory for product UI
 applies_to: [design-system, brand, all-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Color theory for product UI
