@@ -51,6 +51,67 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 31 — Release readiness (v3.12) ✓ shipped
+
+Closes the v3.x arc. Operationalizes the versioned frontmatter from v3.11 with a stale-content audit, codifies the pre-release ritual, and narrates the journey for adopters / contributors / future maintainers.
+
+### Added
+- **`tools/audit/stale-check.py`** — flags knowledge files whose `last_updated` is too old:
+  - Default thresholds: warn at 6 months, error at 12 months.
+  - Configurable via `--warn-months` / `--error-months`.
+  - `--strict` exits 1 on stale (for CI).
+  - `--today YYYY-MM-DD` for testing.
+  - Files without `last_updated` are skipped (backward-compatible).
+  - Treats `YYYY-MM` as last day of month (most generous reading).
+- **`docs/RELEASE-CHECKLIST.md`** — pre-release ritual:
+  - 11 main sections: audits / version alignment / CHANGELOG / ROADMAP / CLI smoke test / NPM preview / doc site build / VS Code build / Korean copy spot-check / tag and push / post-tag.
+  - Major-version add-ons: migration guide / announcement template / stability re-review.
+  - Channel-specific: VS Code marketplace publish (`vsce`), Homebrew formula update (`shasum -a 256`).
+  - Common failure modes table (8 symptoms → causes → fixes).
+  - Stability promotion ritual (quarterly review cycle).
+- **`docs/SESSION-LOG.md`** — single-page narrative v2.0 → v3.12:
+  - At-a-glance metrics table (knowledge / examples / skills / commands / coverage / channels / languages / audits).
+  - The arc: foundation → domain expansion → distribution → coverage acceleration → VS Code → Korean depth → release readiness.
+  - Phase log v2.1 → v3.12 (20 phases).
+  - Patterns that worked / didn't.
+  - Repo structure.
+
+### Changed
+- **`.github/workflows/audit.yml`** — added stale-content audit step:
+  - Strict mode (`--strict`) on `push` to `main` (CI fails on ≥12-month-stale files).
+  - Warn-only on PRs (so contributors can see warnings without blocking).
+- `package.json` + `.claude-plugin/plugin.json`: 3.11.0 → 3.12.0.
+
+### Verified
+- All 6 audits pass (frontmatter / link / Korean copy / coverage / integration-check / stale-check).
+- Stale-check output: "Fresh (≤ 6 months): 90, Skipped (no last_updated): 1, Total knowledge files: 91, All knowledge files within freshness window ✓".
+- Stale-check tested with `--today 2027-08-15` — correctly flagged 75 files as 15 months stale (would fail CI under `--strict`).
+
+### Audits — now 6
+| # | Script | Purpose |
+| --- | --- | --- |
+| 1 | `frontmatter-check.py` | YAML frontmatter validity + version field shape |
+| 2 | `link-check.py` | Internal link resolution |
+| 3 | `korean-copy-check.py` | Korean voice / register / typography |
+| 4 | `check-coverage.py` | Component coverage report |
+| 5 | `integration-check.py` | Integration walkthrough completeness |
+| 6 | `stale-check.py` | Knowledge freshness (last_updated thresholds) |
+
+### What this enables
+- **Confident releases** — RELEASE-CHECKLIST.md codifies the pre-tag ritual; nothing slips through.
+- **Continuous freshness** — stale-check runs on every push to main; surfaces files that need review before they rot.
+- **Project narrative** — adopters / contributors can read SESSION-LOG.md to understand the arc.
+- **v4.0 readiness** — design-ai is now versioned, audited, distributed (4 channels), localized (EN + KO), release-checklisted.
+
+### What's still ahead (v4.0+)
+- Tag v4.0.0 stable.
+- VS Code marketplace publication (1.0.0).
+- KR tech community announcement (OKKY, hashnode.kr, dev.to/korea).
+- Coverage push 55% → 70%.
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- More Korean translations (CONTRIBUTING.ko.md, ARCHITECTURE.ko.md, USING.ko.md).
+
 ## Phase 30 — Versioned knowledge frontmatter (v3.11) ✓ shipped
 
 Foundation for v4.0 stability. Every knowledge file now carries `version`, `last_updated`, and `stability` metadata. Adopters can pin to specific versions; future audits can flag stale content.

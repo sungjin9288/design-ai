@@ -40,6 +40,14 @@ jobs:
       - name: Integration walkthroughs check
         run: python3 tools/audit/integration-check.py
 
+      - name: Stale-content check (warn-only on PR; ≥12 months → CI failure on push to main)
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            python3 tools/audit/stale-check.py --strict
+          else
+            python3 tools/audit/stale-check.py
+          fi
+
       - name: Coverage report (regenerate + diff)
         run: |
           python3 tools/audit/check-coverage.py
