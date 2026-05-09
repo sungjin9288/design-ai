@@ -2,6 +2,62 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.7.0 — Coverage push 36% → 45% (2026-05)
+
+Component coverage 36.2% → **45.2%** (72 → 90 of 199 canonical components). Crosses the halfway-to-100% threshold for canonical primitive coverage.
+
+### Added (18 specs total — 17 new + 1 rename)
+
+**Form / control primitives** (5):
+- `component-checkbox.md` — sibling spec to form-controls; indeterminate state, KR marketing-consent rule
+- `component-radio.md` + RadioGroup — mutually exclusive choice; KR payment-method picker
+- `component-label.md` — htmlFor linking; required / optional indicators; KR conventions
+- `component-icon.md` — base primitive; size scale, currentColor theming
+- `component-icon-button.md` — icon-only variant; mandatory aria-label
+
+**Layout primitives** (4):
+- `component-box.md` — most generic styled `<div>` with system props
+- `component-flex.md` — flex layout primitive; direction / gap / align / justify
+- `component-grid.md` — 2D layout (Ant Row+Col / MUI v2 / modern CSS Grid)
+- `component-space.md` — tiny inline-gap utility (sibling to Flex / Stack)
+
+**Navigation / overlays** (3):
+- `component-menu.md` — Ant-style structured nav; distinct from Dropdown / NavigationMenu / Sidebar
+- `component-button-group.md` — visually unified action cluster
+- `component-speed-dial.md` — FAB with 2-5 secondary action FABs (mobile compose pattern)
+
+**Feedback / data** (3):
+- `component-message.md` — top thin pill notification (Ant); distinct from Toast / Notification
+- `component-notification.md` — richer corner card with title + description + actions
+- `component-list.md` — semantic + styled wrapper around Item rows; pagination, virtualization
+
+**Pickers** (2):
+- `component-time-picker.md` — hour/minute/second; 24/12-hour; KR step conventions
+- `component-tree-select.md` — dropdown hierarchical picker; distinct from Cascader / Tree
+
+**Utility** (1):
+- `component-backdrop.md` — semi-opaque scrim overlay
+
+**Renamed** (1):
+- `component-qrcode.md` → `component-qr-code.md` (matches canonical kebab-case naming)
+
+### Coverage
+- Examples: 124 → 142 (+18)
+- Component coverage: 72 → **90** (36.2% → **45.2%**)
+- Knowledge: 91 (no change)
+- Skills: 19 (no change)
+- Commands: 15 (no change)
+
+### Versions
+- CLI: 3.6.0 → 3.7.0
+- Plugin / corpus: 3.6.0 → 3.7.0
+
+### What this enables
+- **Halfway to 100%** — 45.2% is a meaningful milestone; the canonical primitive surface is well-covered.
+- **Form construction primitives complete** — Checkbox / Radio / Label / Field family / Switch (in form-controls) all covered. Form skill output uses real spec foundations.
+- **Layout primitives covered** — Box / Flex / Grid / Stack / Space / Masonry — adopters can pick the right tool.
+- **Notification family unified** — Toast / Message / Notification / Banner / Alert all distinct, comparable; team picks the right one.
+
 ## v3.6.0 — Doc site Korean i18n (2026-05)
 
 design-ai's primary audience is Korean designers / developers. The doc site is now bilingual: English (default) + Korean translations of the highest-traffic pages.

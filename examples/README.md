@@ -56,7 +56,7 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-tour.md](component-tour.md) | Tour (in-product overlay) | Step-by-step UI walkthrough. When NOT to use (most cases). |
 | [component-affix.md](component-affix.md) | Affix (sticky positioning) | When CSS `position: sticky` isn't enough. Container-scoped sticky. |
 | [component-float-button.md](component-float-button.md) | FloatButton (FAB) | Floating action button. Speed-dial menu, safe-area handling. |
-| [component-qrcode.md](component-qrcode.md) | QRCode | Encoding strings as QR. Error correction levels, center logo, color contrast. |
+| [component-qr-code.md](component-qr-code.md) | QRCode | Encoding strings as QR. Error correction levels, center logo, color contrast. |
 | [component-splitter.md](component-splitter.md) | Splitter (resizable panel) | When CSS sticky isn't enough. IDE / 3-pane layouts. |
 | [component-anchor.md](component-anchor.md) | Anchor (scrollspy / TOC) | Side-rail nav for long-form content. Active section detection. |
 | [component-app-bar.md](component-app-bar.md) | AppBar (top app bar) | Persistent top header. iOS large-title variant, search overlay, sub-tabs. |
@@ -92,6 +92,24 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-spinner.md](component-spinner.md) | Spinner | Indeterminate loading indicator. Spinner vs Progress vs Skeleton; size scale; reduced-motion. |
 | [component-empty.md](component-empty.md) | Empty | Inline "no data" primitive. Distinct from EmptyState (full-page custom KR-aware). |
 | [component-masonry.md](component-masonry.md) | Masonry | Pinterest-style staggered grid. CSS multicolumn vs JS measurement trade-offs; a11y reading order. |
+| [component-icon.md](component-icon.md) | Icon | Base primitive for rendering icons; size scale, currentColor theming, decorative vs meaningful. |
+| [component-icon-button.md](component-icon-button.md) | IconButton | Icon-only button. Variants (ghost/outline/filled/tonal), sizes, mandatory aria-label. |
+| [component-checkbox.md](component-checkbox.md) | Checkbox | Form selection control. Indeterminate state, "select all" pattern, Korean marketing-consent rule. |
+| [component-radio.md](component-radio.md) | Radio + RadioGroup | Mutually exclusive choice control. Radio vs Select decision; KR payment-method picker example. |
+| [component-label.md](component-label.md) | Label | Form-control label primitive. htmlFor linking, required/optional indicators, KR conventions. |
+| [component-box.md](component-box.md) | Box | Most generic styled `<div>` primitive. System-prop access; when to use vs Stack/Grid/Flex. |
+| [component-flex.md](component-flex.md) | Flex | flex layout primitive. Direction, gap, align, justify, wrap; common patterns. |
+| [component-grid.md](component-grid.md) | Grid | 2D grid layout. Ant Row+Col / MUI v2 / modern CSS Grid wrapper. |
+| [component-list.md](component-list.md) | List | Semantic + styled wrapper around Item rows. Pagination, infinite scroll, virtualization, empty state. |
+| [component-menu.md](component-menu.md) | Menu | Structured navigation menu (Ant style). Distinct from DropdownMenu / NavigationMenu / Sidebar. |
+| [component-message.md](component-message.md) | Message | Top thin pill notification (Ant). Imperative API; distinct from Toast / Notification. |
+| [component-notification.md](component-notification.md) | Notification | Richer corner card notification. Title + description + actions; placement variants. |
+| [component-space.md](component-space.md) | Space | Tiny utility for inline gap. Direction, size, wrap, split element-between-children. |
+| [component-button-group.md](component-button-group.md) | ButtonGroup | Visually-unified action button cluster. Distinct from ToggleGroup / Segmented. |
+| [component-speed-dial.md](component-speed-dial.md) | SpeedDial | FAB that expands into 2-5 secondary action FABs. Mobile compose pattern. |
+| [component-time-picker.md](component-time-picker.md) | TimePicker | Hour/minute/second picker. 24- vs 12-hour, step granularity, KR conventions, range variant. |
+| [component-tree-select.md](component-tree-select.md) | TreeSelect | Dropdown with hierarchical tree picker. Distinct from Cascader (columns) / Tree (full-page). |
+| [component-backdrop.md](component-backdrop.md) | Backdrop | Semi-opaque scrim overlay. Used internally by Modal/Drawer/Sheet; standalone for full-page loading. |
 
 ### Documentation components
 

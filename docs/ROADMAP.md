@@ -51,6 +51,68 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 26 — Coverage push 36.2% → 45.2% (v3.7) ✓ shipped
+
+Component coverage from 36.2% → **45.2%** (72 → 90 of 199 canonical components). Crosses the halfway-to-100% threshold for canonical primitive coverage.
+
+### Added (18 specs)
+
+17 net new + 1 rename.
+
+**Form / control primitives** (5):
+- `component-checkbox.md` — indeterminate state, "select all", KR marketing-consent rule
+- `component-radio.md` (+ RadioGroup) — mutually exclusive choice; Korean payment-method picker
+- `component-label.md` — htmlFor linking; required / optional indicators
+- `component-icon.md` — base primitive (size, currentColor, decorative vs meaningful)
+- `component-icon-button.md` — icon-only variant; mandatory aria-label
+
+**Layout primitives** (4):
+- `component-box.md` — most generic styled `<div>` (system props pattern)
+- `component-flex.md` — flex layout (direction / gap / align / justify)
+- `component-grid.md` — 2D layout (Ant Row+Col / MUI v2 / CSS Grid)
+- `component-space.md` — inline-gap utility (sibling to Flex / Stack)
+
+**Navigation / overlays** (3):
+- `component-menu.md` — Ant-style structured nav (distinct from Dropdown / NavigationMenu / Sidebar)
+- `component-button-group.md` — visually unified action cluster
+- `component-speed-dial.md` — FAB + 2-5 sub-action FABs (mobile compose pattern)
+
+**Feedback / data** (3):
+- `component-message.md` — Ant top thin pill notification (vs Toast / Notification / Banner)
+- `component-notification.md` — richer corner card (title + description + actions)
+- `component-list.md` — semantic wrapper around Item rows; pagination + virtualization
+
+**Pickers** (2):
+- `component-time-picker.md` — hour/minute/second; 24/12-hour; KR step conventions
+- `component-tree-select.md` — dropdown hierarchy picker (vs Cascader / Tree)
+
+**Utility** (1):
+- `component-backdrop.md` — semi-opaque scrim overlay
+
+**Renamed** (1):
+- `component-qrcode.md` → `component-qr-code.md` (canonical kebab-case)
+
+### Verified
+- All 5 audits pass.
+- Coverage: 72 → 90 (45.2%).
+- Examples: 124 → 142.
+- Versions bumped: 3.6.0 → 3.7.0.
+
+### What this enables
+- **Halfway to 100%** — 45.2% milestone for canonical primitive coverage.
+- **Form construction primitives complete** — Checkbox / Radio / Label / Field family / Switch (form-controls) all specced. Form skill output uses real spec foundations.
+- **Layout primitives covered** — Box / Flex / Grid / Stack / Space / Masonry — adopters pick the right tool.
+- **Notification family unified** — Toast / Message / Notification / Banner / Alert all distinct + comparable.
+- **Pickers complete enough** — DatePicker / TimePicker / TreeSelect / Cascader / Combobox / Select all specced.
+
+### What's still ahead (v3.8+)
+- Coverage push 45% → 60% (next 30+ specs).
+- VS Code extension wrapper.
+- Semantic search index for the doc site.
+- Versioned knowledge files (semver in frontmatter).
+- Component spec extractor v2 (TS AST parsing).
+- More Korean translations of integration walkthroughs.
+
 ## Phase 25 — Doc site Korean i18n (v3.6) ✓ shipped
 
 design-ai's primary audience is Korean. The doc site was English-only; this phase makes it bilingual so KR users can evaluate and adopt without English friction. Direct lever for the user's stated 시장성 / 대중성 goal.
