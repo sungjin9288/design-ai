@@ -295,5 +295,5 @@ function GlobalCommandPalette() {
 
 - [`examples/component-dropdown.md`](component-dropdown.md) — for non-search menus
 - [`examples/component-modal.md`](component-modal.md) — focus trap pattern
-- [`examples/component-autocomplete.md`](component-autocomplete.md) — single-field search
+- [`examples/component-auto-complete.md`](component-auto-complete.md) — single-field search
 - [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)

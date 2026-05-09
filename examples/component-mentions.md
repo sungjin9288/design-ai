@@ -183,7 +183,7 @@ When chip inserted: announce via live region: "김민지 mentioned" or similar.
 
 ## Cross-reference
 
-- [`examples/component-autocomplete.md`](component-autocomplete.md) — when no trigger character is needed
+- [`examples/component-auto-complete.md`](component-auto-complete.md) — when no trigger character is needed
 - [`examples/component-select.md`](component-select.md) — combobox pattern
 - [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md) — IME composition
 - [`knowledge/patterns/search-ux.md`](../knowledge/patterns/search-ux.md) — typeahead patterns

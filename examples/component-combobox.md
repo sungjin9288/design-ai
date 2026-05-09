@@ -262,6 +262,6 @@ function CountryPicker({ value, onChange }: Props) {
 ## Cross-reference
 
 - [`examples/component-select.md`](component-select.md) — non-search variant
-- [`examples/component-autocomplete.md`](component-autocomplete.md) — freeform variant
+- [`examples/component-auto-complete.md`](component-auto-complete.md) — freeform variant
 - [`examples/component-command.md`](component-command.md) — command palette (similar primitive)
 - [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md) — IME handling

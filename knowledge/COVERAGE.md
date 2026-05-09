@@ -14,10 +14,10 @@ generated_at: 2026-05-09
 | --- | --- | --- |
 | Knowledge files | 91 | 76 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 144 | |
+| Worked examples | 162 | |
 | Extractors | 8 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 90 | **45.2% spec coverage** |
+| Components with worked spec | 110 | **55.3% spec coverage** |
 
 ## Knowledge by category
 
@@ -49,7 +49,7 @@ generated_at: 2026-05-09
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 561 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 597 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 105 | hand-written | Design-AI principles |
 
 #### a11y
@@ -264,8 +264,9 @@ generated_at: 2026-05-09
 | [examples/component-anchor.md](../examples/component-anchor.md) | 198 | `Anchor` (scrollspy / TOC) — spec |
 | [examples/component-app-bar.md](../examples/component-app-bar.md) | 249 | `AppBar` (Top app bar / header) — spec |
 | [examples/component-aspect-ratio.md](../examples/component-aspect-ratio.md) | 156 | `AspectRatio` — spec |
-| [examples/component-autocomplete.md](../examples/component-autocomplete.md) | 199 | `AutoComplete` — spec |
+| [examples/component-auto-complete.md](../examples/component-auto-complete.md) | 199 | `AutoComplete` — spec |
 | [examples/component-avatar.md](../examples/component-avatar.md) | 191 | `Avatar` — spec |
+| [examples/component-back-top.md](../examples/component-back-top.md) | 123 | `BackTop` — spec |
 | [examples/component-backdrop.md](../examples/component-backdrop.md) | 148 | `Backdrop` — spec |
 | [examples/component-badge.md](../examples/component-badge.md) | 181 | `Badge` — spec |
 | [examples/component-banner.md](../examples/component-banner.md) | 237 | `Banner` — spec |
@@ -285,6 +286,7 @@ generated_at: 2026-05-09
 | [examples/component-chart.md](../examples/component-chart.md) | 237 | `Chart` — spec |
 | [examples/component-chat-interface.md](../examples/component-chat-interface.md) | 399 | `ChatInterface` (custom — generic chat UI for chatbot / AI / live agent) — spec |
 | [examples/component-checkbox.md](../examples/component-checkbox.md) | 149 | `Checkbox` — spec |
+| [examples/component-click-away-listener.md](../examples/component-click-away-listener.md) | 87 | `ClickAwayListener` — spec |
 | [examples/component-code.md](../examples/component-code.md) | 213 | `Code` (inline + block) — spec |
 | [examples/component-collapsible.md](../examples/component-collapsible.md) | 219 | `Collapsible` — spec |
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
@@ -314,6 +316,7 @@ generated_at: 2026-05-09
 | [examples/component-icon-button.md](../examples/component-icon-button.md) | 142 | `IconButton` — spec |
 | [examples/component-icon.md](../examples/component-icon.md) | 102 | `Icon` — spec |
 | [examples/component-illustration.md](../examples/component-illustration.md) | 273 | `Illustration` (custom — themeable SVG illustration display) — spec |
+| [examples/component-image-list.md](../examples/component-image-list.md) | 107 | `ImageList` — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
 | [examples/component-input-otp.md](../examples/component-input-otp.md) | 271 | `InputOTP` (one-time password input) — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
@@ -327,7 +330,7 @@ generated_at: 2026-05-09
 | [examples/component-loading-sequence.md](../examples/component-loading-sequence.md) | 254 | `LoadingSequence` (custom — splash + first-screen coordination) — spec |
 | [examples/component-lottie-player.md](../examples/component-lottie-player.md) | 279 | `LottiePlayer` (custom — designer-led After Effects animation in product UI) — spec |
 | [examples/component-masonry.md](../examples/component-masonry.md) | 191 | `Masonry` — spec |
-| [examples/component-mention.md](../examples/component-mention.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
+| [examples/component-mentions.md](../examples/component-mentions.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
 | [examples/component-menu.md](../examples/component-menu.md) | 139 | `Menu` — spec |
 | [examples/component-menubar.md](../examples/component-menubar.md) | 259 | `Menubar` — spec |
 | [examples/component-message.md](../examples/component-message.md) | 162 | `Message` — spec |
@@ -342,12 +345,15 @@ generated_at: 2026-05-09
 | [examples/component-payment-brand-button.md](../examples/component-payment-brand-button.md) | 253 | `PaymentBrandButton` (custom — Korean) — spec |
 | [examples/component-payment-method-selector.md](../examples/component-payment-method-selector.md) | 272 | `PaymentMethodSelector` (custom — Korean) — spec |
 | [examples/component-payment-receipt.md](../examples/component-payment-receipt.md) | 277 | `PaymentReceipt` (custom — Korean fintech) — spec |
+| [examples/component-popconfirm.md](../examples/component-popconfirm.md) | 144 | `Popconfirm` — spec |
 | [examples/component-popover.md](../examples/component-popover.md) | 239 | `Popover` — spec |
+| [examples/component-popper.md](../examples/component-popper.md) | 129 | `Popper` — spec |
 | [examples/component-pricing-cards.md](../examples/component-pricing-cards.md) | 247 | `PricingCards` — spec |
 | [examples/component-progress.md](../examples/component-progress.md) | 195 | `Progress` — spec |
 | [examples/component-qr-code.md](../examples/component-qr-code.md) | 201 | `QRCode` — spec |
 | [examples/component-radio.md](../examples/component-radio.md) | 167 | `Radio` (and `RadioGroup`) — spec |
 | [examples/component-rate.md](../examples/component-rate.md) | 202 | `Rate` (Rating) — spec |
+| [examples/component-resizable.md](../examples/component-resizable.md) | 163 | `Resizable` — spec |
 | [examples/component-result.md](../examples/component-result.md) | 270 | `Result` + `Empty` — combined spec |
 | [examples/component-scroll-area.md](../examples/component-scroll-area.md) | 199 | `ScrollArea` — spec |
 | [examples/component-scroll-reveal.md](../examples/component-scroll-reveal.md) | 320 | `ScrollReveal` (custom — viewport-triggered animation primitive) — spec |
@@ -357,25 +363,36 @@ generated_at: 2026-05-09
 | [examples/component-sheet.md](../examples/component-sheet.md) | 277 | `Sheet` — spec |
 | [examples/component-sidebar.md](../examples/component-sidebar.md) | 257 | `Sidebar` — spec |
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
+| [examples/component-slide.md](../examples/component-slide.md) | 89 | `Slide` — spec |
 | [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
+| [examples/component-snackbar.md](../examples/component-snackbar.md) | 121 | `Snackbar` — spec |
+| [examples/component-sonner.md](../examples/component-sonner.md) | 165 | `Sonner` — spec |
 | [examples/component-space.md](../examples/component-space.md) | 125 | `Space` — spec |
 | [examples/component-spatial-locomotion.md](../examples/component-spatial-locomotion.md) | 373 | `SpatialLocomotion` (custom — VR locomotion controller with comfort options) — spec |
 | [examples/component-spatial-panel.md](../examples/component-spatial-panel.md) | 330 | `SpatialPanel` (custom — floating UI panel for VR / AR / spatial computing) — spec |
+| [examples/component-speed-dial-action.md](../examples/component-speed-dial-action.md) | 78 | `SpeedDialAction` — spec |
 | [examples/component-speed-dial.md](../examples/component-speed-dial.md) | 177 | `SpeedDial` — spec |
 | [examples/component-spin.md](../examples/component-spin.md) | 173 | `Spin` (Spinner) — spec |
 | [examples/component-spinner.md](../examples/component-spinner.md) | 204 | `Spinner` — spec |
 | [examples/component-splitter.md](../examples/component-splitter.md) | 210 | `Splitter` (resizable panel) — spec |
 | [examples/component-statistic.md](../examples/component-statistic.md) | 282 | `Statistic` — spec |
+| [examples/component-step.md](../examples/component-step.md) | 84 | `Step` — spec |
 | [examples/component-steps.md](../examples/component-steps.md) | 264 | `Steps` (Stepper) — spec |
 | [examples/component-stock-chart.md](../examples/component-stock-chart.md) | 251 | `StockChart` (custom — Korean stock convention) — spec |
+| [examples/component-swipeable-drawer.md](../examples/component-swipeable-drawer.md) | 149 | `SwipeableDrawer` — spec |
+| [examples/component-switch.md](../examples/component-switch.md) | 99 | `Switch` — spec |
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-tag-badge.md](../examples/component-tag-badge.md) | 309 | `Tag` + `Badge` — combined spec |
+| [examples/component-tag.md](../examples/component-tag.md) | 102 | `Tag` — spec |
 | [examples/component-testimonial-carousel.md](../examples/component-testimonial-carousel.md) | 218 | `TestimonialCarousel` — spec |
+| [examples/component-textarea-autosize.md](../examples/component-textarea-autosize.md) | 114 | `TextareaAutosize` — spec |
+| [examples/component-textarea.md](../examples/component-textarea.md) | 173 | `Textarea` — spec |
 | [examples/component-time-picker.md](../examples/component-time-picker.md) | 205 | `TimePicker` — spec |
 | [examples/component-timeline.md](../examples/component-timeline.md) | 170 | `Timeline` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
 | [examples/component-toggle.md](../examples/component-toggle.md) | 220 | `Toggle` and `ToggleGroup` — spec |
+| [examples/component-toolbar.md](../examples/component-toolbar.md) | 104 | `Toolbar` — spec |
 | [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
 | [examples/component-tour.md](../examples/component-tour.md) | 176 | `Tour` (in-product overlay tour) — spec |
 | [examples/component-transaction-list-item.md](../examples/component-transaction-list-item.md) | 243 | `TransactionListItem` (custom — Korean fintech / 가계부) — spec |
@@ -388,6 +405,7 @@ generated_at: 2026-05-09
 | [examples/component-video-player.md](../examples/component-video-player.md) | 340 | `VideoPlayer` (custom — accessible HTML5 video with captions, speed, transcript) — spec |
 | [examples/component-voice-input.md](../examples/component-voice-input.md) | 408 | `VoiceInput` (custom — push-to-talk + transcript voice input) — spec |
 | [examples/component-watermark.md](../examples/component-watermark.md) | 217 | `Watermark` — spec |
+| [examples/component-zoom.md](../examples/component-zoom.md) | 92 | `Zoom` — spec |
 | [examples/doc-explanation-example.md](../examples/doc-explanation-example.md) | 196 | Worked example: explanation |
 | [examples/doc-how-to-example.md](../examples/doc-how-to-example.md) | 203 | Worked example: how-to |
 | [examples/doc-tutorial-example.md](../examples/doc-tutorial-example.md) | 162 | Worked example: tutorial |
@@ -401,7 +419,7 @@ generated_at: 2026-05-09
 
 ## Component spec coverage
 
-**90 / 199 canonical components have a worked spec (45.2%)**
+**110 / 199 canonical components have a worked spec (55.3%)**
 
 Specs that match canonical names:
 
@@ -412,7 +430,9 @@ Specs that match canonical names:
 - `anchor` → [examples/component-anchor.md](../examples/component-anchor.md)
 - `app-bar` → [examples/component-app-bar.md](../examples/component-app-bar.md)
 - `aspect-ratio` → [examples/component-aspect-ratio.md](../examples/component-aspect-ratio.md)
+- `auto-complete` → [examples/component-auto-complete.md](../examples/component-auto-complete.md)
 - `avatar` → [examples/component-avatar.md](../examples/component-avatar.md)
+- `back-top` → [examples/component-back-top.md](../examples/component-back-top.md)
 - `backdrop` → [examples/component-backdrop.md](../examples/component-backdrop.md)
 - `badge` → [examples/component-badge.md](../examples/component-badge.md)
 - `bottom-navigation` → [examples/component-bottom-navigation.md](../examples/component-bottom-navigation.md)
@@ -425,6 +445,7 @@ Specs that match canonical names:
 - `cascader` → [examples/component-cascader.md](../examples/component-cascader.md)
 - `chart` → [examples/component-chart.md](../examples/component-chart.md)
 - `checkbox` → [examples/component-checkbox.md](../examples/component-checkbox.md)
+- `click-away-listener` → [examples/component-click-away-listener.md](../examples/component-click-away-listener.md)
 - `collapsible` → [examples/component-collapsible.md](../examples/component-collapsible.md)
 - `color-picker` → [examples/component-color-picker.md](../examples/component-color-picker.md)
 - `combobox` → [examples/component-combobox.md](../examples/component-combobox.md)
@@ -445,6 +466,7 @@ Specs that match canonical names:
 - `icon` → [examples/component-icon.md](../examples/component-icon.md)
 - `icon-button` → [examples/component-icon-button.md](../examples/component-icon-button.md)
 - `image` → [examples/component-image.md](../examples/component-image.md)
+- `image-list` → [examples/component-image-list.md](../examples/component-image-list.md)
 - `input` → [examples/component-input.md](../examples/component-input.md)
 - `input-otp` → [examples/component-input-otp.md](../examples/component-input-otp.md)
 - `item` → [examples/component-item.md](../examples/component-item.md)
@@ -454,6 +476,7 @@ Specs that match canonical names:
 - `link` → [examples/component-link.md](../examples/component-link.md)
 - `list` → [examples/component-list.md](../examples/component-list.md)
 - `masonry` → [examples/component-masonry.md](../examples/component-masonry.md)
+- `mentions` → [examples/component-mentions.md](../examples/component-mentions.md)
 - `menu` → [examples/component-menu.md](../examples/component-menu.md)
 - `menubar` → [examples/component-menubar.md](../examples/component-menubar.md)
 - `message` → [examples/component-message.md](../examples/component-message.md)
@@ -461,11 +484,14 @@ Specs that match canonical names:
 - `notification` → [examples/component-notification.md](../examples/component-notification.md)
 - `pagination` → [examples/component-pagination.md](../examples/component-pagination.md)
 - `paper` → [examples/component-paper.md](../examples/component-paper.md)
+- `popconfirm` → [examples/component-popconfirm.md](../examples/component-popconfirm.md)
 - `popover` → [examples/component-popover.md](../examples/component-popover.md)
+- `popper` → [examples/component-popper.md](../examples/component-popper.md)
 - `progress` → [examples/component-progress.md](../examples/component-progress.md)
 - `qr-code` → [examples/component-qr-code.md](../examples/component-qr-code.md)
 - `radio` → [examples/component-radio.md](../examples/component-radio.md)
 - `rate` → [examples/component-rate.md](../examples/component-rate.md)
+- `resizable` → [examples/component-resizable.md](../examples/component-resizable.md)
 - `result` → [examples/component-result.md](../examples/component-result.md)
 - `scroll-area` → [examples/component-scroll-area.md](../examples/component-scroll-area.md)
 - `segmented` → [examples/component-segmented.md](../examples/component-segmented.md)
@@ -474,19 +500,30 @@ Specs that match canonical names:
 - `sheet` → [examples/component-sheet.md](../examples/component-sheet.md)
 - `sidebar` → [examples/component-sidebar.md](../examples/component-sidebar.md)
 - `skeleton` → [examples/component-skeleton.md](../examples/component-skeleton.md)
+- `slide` → [examples/component-slide.md](../examples/component-slide.md)
 - `slider` → [examples/component-slider.md](../examples/component-slider.md)
+- `snackbar` → [examples/component-snackbar.md](../examples/component-snackbar.md)
+- `sonner` → [examples/component-sonner.md](../examples/component-sonner.md)
 - `space` → [examples/component-space.md](../examples/component-space.md)
 - `speed-dial` → [examples/component-speed-dial.md](../examples/component-speed-dial.md)
+- `speed-dial-action` → [examples/component-speed-dial-action.md](../examples/component-speed-dial-action.md)
 - `spin` → [examples/component-spin.md](../examples/component-spin.md)
 - `spinner` → [examples/component-spinner.md](../examples/component-spinner.md)
 - `splitter` → [examples/component-splitter.md](../examples/component-splitter.md)
 - `statistic` → [examples/component-statistic.md](../examples/component-statistic.md)
+- `step` → [examples/component-step.md](../examples/component-step.md)
 - `steps` → [examples/component-steps.md](../examples/component-steps.md)
+- `swipeable-drawer` → [examples/component-swipeable-drawer.md](../examples/component-swipeable-drawer.md)
+- `switch` → [examples/component-switch.md](../examples/component-switch.md)
 - `table` → [examples/component-table.md](../examples/component-table.md)
 - `tabs` → [examples/component-tabs.md](../examples/component-tabs.md)
+- `tag` → [examples/component-tag.md](../examples/component-tag.md)
+- `textarea` → [examples/component-textarea.md](../examples/component-textarea.md)
+- `textarea-autosize` → [examples/component-textarea-autosize.md](../examples/component-textarea-autosize.md)
 - `time-picker` → [examples/component-time-picker.md](../examples/component-time-picker.md)
 - `timeline` → [examples/component-timeline.md](../examples/component-timeline.md)
 - `toggle` → [examples/component-toggle.md](../examples/component-toggle.md)
+- `toolbar` → [examples/component-toolbar.md](../examples/component-toolbar.md)
 - `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
 - `tour` → [examples/component-tour.md](../examples/component-tour.md)
 - `transfer` → [examples/component-transfer.md](../examples/component-transfer.md)
@@ -495,13 +532,13 @@ Specs that match canonical names:
 - `typography` → [examples/component-typography.md](../examples/component-typography.md)
 - `upload` → [examples/component-upload.md](../examples/component-upload.md)
 - `watermark` → [examples/component-watermark.md](../examples/component-watermark.md)
+- `zoom` → [examples/component-zoom.md](../examples/component-zoom.md)
 
 Specs that don't match the canonical index (probably aliases — investigate):
 
 - `account-card`
 - `address-input`
 - `amount-input`
-- `autocomplete`
 - `banner`
 - `biometric-gate`
 - `blockquote`
@@ -522,7 +559,6 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `krw-amount`
 - `loading-sequence`
 - `lottie-player`
-- `mention`
 - `navigation-menu`
 - `otp-countdown`
 - `page-transition`

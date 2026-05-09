@@ -50,8 +50,8 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-transfer.md](component-transfer.md) | Transfer (dual list) | Permission/tag editor pattern. When NOT to use (Multi-Select instead). |
 | [component-spin.md](component-spin.md) | Spin (Spinner) | Indeterminate loading. Distinct from Skeleton/Progress. Delay to avoid flash, reduced motion. |
 | [component-segmented.md](component-segmented.md) | Segmented (toggle button group) | iOS-native pill, time/view filters, WAI-ARIA radiogroup pattern. |
-| [component-autocomplete.md](component-autocomplete.md) | AutoComplete | Free-text + suggestions. Distinct from Select. Korean IME composition handling. |
-| [component-mention.md](component-mention.md) | Mention (@-trigger) | Trigger char (@/#/:) opens picker, chip insertion. Storage formats, IME. |
+| [component-auto-complete.md](component-auto-complete.md) | AutoComplete | Free-text + suggestions. Distinct from Select. Korean IME composition handling. |
+| [component-mentions.md](component-mentions.md) | Mention (@-trigger) | Trigger char (@/#/:) opens picker, chip insertion. Storage formats, IME. |
 | [component-timeline.md](component-timeline.md) | Timeline | Sequential events: order tracking, activity feed, audit log. Status indicators. |
 | [component-tour.md](component-tour.md) | Tour (in-product overlay) | Step-by-step UI walkthrough. When NOT to use (most cases). |
 | [component-affix.md](component-affix.md) | Affix (sticky positioning) | When CSS `position: sticky` isn't enough. Container-scoped sticky. |
@@ -110,6 +110,26 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-time-picker.md](component-time-picker.md) | TimePicker | Hour/minute/second picker. 24- vs 12-hour, step granularity, KR conventions, range variant. |
 | [component-tree-select.md](component-tree-select.md) | TreeSelect | Dropdown with hierarchical tree picker. Distinct from Cascader (columns) / Tree (full-page). |
 | [component-backdrop.md](component-backdrop.md) | Backdrop | Semi-opaque scrim overlay. Used internally by Modal/Drawer/Sheet; standalone for full-page loading. |
+| [component-switch.md](component-switch.md) | Switch | iOS-style toggle for binary on/off settings. Distinct from Checkbox (form). |
+| [component-tag.md](component-tag.md) | Tag | Closeable label / chip; filter chips, multi-select selected items. |
+| [component-snackbar.md](component-snackbar.md) | Snackbar | Material's bottom-anchored Toast variant; brief result + optional Undo. |
+| [component-sonner.md](component-sonner.md) | Sonner | Modern shadcn toast library; stacking depth, promise wrapper, rich actions. |
+| [component-textarea.md](component-textarea.md) | Textarea | Multi-line text input. Korean IME composition handling, character counter. |
+| [component-textarea-autosize.md](component-textarea-autosize.md) | TextareaAutosize | Textarea that grows with content; CSS field-sizing + JS measurement fallback. |
+| [component-popconfirm.md](component-popconfirm.md) | Popconfirm | Inline confirmation popover; lightweight alternative to AlertDialog. |
+| [component-popper.md](component-popper.md) | Popper | Low-level positioning primitive. Used internally by Tooltip / Popover / Menu. |
+| [component-swipeable-drawer.md](component-swipeable-drawer.md) | SwipeableDrawer | Drawer with swipe-to-open / swipe-to-close gestures; mobile-first. |
+| [component-resizable.md](component-resizable.md) | Resizable | IDE-style resizable panel groups (horizontal + vertical); layout persistence. |
+| [component-image-list.md](component-image-list.md) | ImageList | Uniform-grid photo display. Distinct from Masonry (varied) and Grid (general). |
+| [component-back-top.md](component-back-top.md) | BackTop | Floating "scroll to top" button after threshold; reduced-motion aware. |
+| [component-click-away-listener.md](component-click-away-listener.md) | ClickAwayListener | Outside-click callback utility. Used internally by overlays. |
+| [component-toolbar.md](component-toolbar.md) | Toolbar | Horizontal action container; app bar / editor / dialog footer. `role="toolbar"`. |
+| [component-step.md](component-step.md) | Step | Single step sub-component within a Steps / Stepper flow. |
+| [component-zoom.md](component-zoom.md) | Zoom | Transition primitive (scale + fade). Sibling to Fade / Slide / Grow. |
+| [component-speed-dial-action.md](component-speed-dial-action.md) | SpeedDialAction | Single action item inside a SpeedDial; child component spec. |
+| [component-slide.md](component-slide.md) | Slide | Direction-based slide-in/out transition. Used internally by Drawer / Sheet / Snackbar. |
+| [component-auto-complete.md](component-auto-complete.md) | AutoComplete | Free-text + suggestions input. (Canonical name; sibling of Combobox.) |
+| [component-mentions.md](component-mentions.md) | Mentions / Mention | @-trigger picker for inline chips / tagging. |
 
 ### Documentation components
 

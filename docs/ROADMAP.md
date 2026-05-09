@@ -51,6 +51,73 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 28 — Coverage push 45% → 55% (v3.9) ✓ shipped
+
+Component coverage from 45.2% → **55.3%** (90 → 110 of 199 canonical components). Majority canonical coverage milestone. Form / overlay / transition / notification primitives largely complete.
+
+### Added (18 net new + 2 renames)
+
+**Form / control primitives** (3):
+- `component-switch.md` — iOS-style toggle (Switch vs Checkbox decision)
+- `component-textarea.md` — multi-line input; Korean IME handling
+- `component-textarea-autosize.md` — grows-with-content variant
+
+**Notifications** (2):
+- `component-snackbar.md` — Material's bottom-Toast variant
+- `component-sonner.md` — modern shadcn library; stacking + promise wrapper
+
+**Overlays** (3):
+- `component-popconfirm.md` — inline confirmation
+- `component-popper.md` — low-level positioning primitive
+- `component-click-away-listener.md` — outside-click utility
+
+**Display / layout** (4):
+- `component-tag.md` — closeable chip
+- `component-resizable.md` — IDE-style panels
+- `component-image-list.md` — uniform-grid photos
+- `component-toolbar.md` — action container
+
+**Mobile** (1):
+- `component-swipeable-drawer.md` — swipe-to-open
+
+**Floating / scroll** (2):
+- `component-back-top.md` — scroll-to-top
+- `component-speed-dial-action.md` — sub-action
+
+**Transitions** (2):
+- `component-zoom.md` — scale + fade
+- `component-slide.md` — direction-based
+
+**Sub-components** (1):
+- `component-step.md` — sub-component of Steps
+
+**Renames** (2):
+- `component-autocomplete.md` → `component-auto-complete.md`
+- `component-mention.md` → `component-mentions.md`
+
+### Versions
+- CLI: 3.8.0 → 3.9.0
+- Plugin / corpus: 3.8.0 → 3.9.0
+
+### Verified
+- All 5 audits pass.
+- 110/199 = 55.3% coverage.
+- Examples: 142 → 160 (+18).
+
+### What this enables
+- **Majority canonical coverage** — over half the 199-component surface.
+- **Notification family complete** — Toast / Snackbar / Sonner / Message / Notification / Banner / Alert distinguished + comparable.
+- **Transition primitives complete** — Fade / Zoom / Slide / Grow / Collapse referenced from one consistent vocabulary.
+- **Form primitives complete** — Switch / Checkbox / Radio / Label / Textarea + autosize / Field family all distinct.
+
+### What's still ahead (v3.10+)
+- Coverage push 55% → 70% (next batch).
+- Versioned knowledge files (semver in frontmatter).
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- VS Code marketplace publication (1.0.0 milestone).
+- Korean translations of integration walkthroughs.
+
 ## Phase 27 — VS Code extension (v3.8) ✓ shipped
 
 design-ai is now accessible inside VS Code via a dedicated extension. New distribution surface for the millions of VS Code users — pairs with any AI assistant (Copilot Chat / Cursor / Continue / Claude / CodeWhisperer) without competing.

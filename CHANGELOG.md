@@ -2,6 +2,64 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.9.0 — Coverage push 45% → 55% (2026-05)
+
+Component coverage 45.2% → **55.3%** (90 → 110 of 199 canonical components). Crosses majority canonical coverage. Form / overlay / transition primitives largely complete.
+
+### Added (20 specs total — 18 new + 2 renames)
+
+**Form / control primitives** (3):
+- `component-switch.md` — sibling to form-controls; iOS-style toggle; Switch vs Checkbox decision
+- `component-textarea.md` — multi-line input; Korean IME composition handling
+- `component-textarea-autosize.md` — grows-with-content variant; CSS field-sizing + JS fallback
+
+**Notifications** (2):
+- `component-snackbar.md` — Material's Toast (bottom-anchored)
+- `component-sonner.md` — modern shadcn toast library; stacking depth, promise wrapper
+
+**Overlays** (3):
+- `component-popconfirm.md` — inline confirmation popover; lightweight vs AlertDialog
+- `component-popper.md` — low-level positioning primitive used by all overlays
+- `component-click-away-listener.md` — outside-click utility wrapper
+
+**Display / layout** (4):
+- `component-tag.md` — closeable label / chip
+- `component-resizable.md` — IDE-style resizable panel groups
+- `component-image-list.md` — uniform-grid photo display
+- `component-toolbar.md` — horizontal action container with role="toolbar"
+
+**Mobile-first** (1):
+- `component-swipeable-drawer.md` — swipe-to-open / swipe-to-close drawer
+
+**Floating / scroll** (2):
+- `component-back-top.md` — scroll-to-top button after threshold
+- `component-speed-dial-action.md` — sub-action inside SpeedDial
+
+**Transitions** (2):
+- `component-zoom.md` — scale + fade transition primitive
+- `component-slide.md` — direction-based slide transition
+
+**Sub-components** (1):
+- `component-step.md` — single Step inside Steps/Stepper
+
+**Renames** (2):
+- `component-autocomplete.md` → `component-auto-complete.md` (matches canonical)
+- `component-mention.md` → `component-mentions.md` (matches canonical)
+
+### Coverage
+- Examples: 142 → 160 (+18)
+- Component coverage: 90 → **110** (45.2% → **55.3%**)
+
+### Versions
+- CLI: 3.8.0 → 3.9.0
+- Plugin / corpus: 3.8.0 → 3.9.0
+
+### What this enables
+- **Majority canonical coverage** — over half of the 199-component surface specced.
+- **Notification family complete** — Toast / Snackbar / Sonner / Message / Notification / Banner / Alert all distinct + comparable.
+- **Transition primitives complete** — Fade / Zoom / Slide / Grow / Collapse all referenced.
+- **Form primitives complete** — Switch / Checkbox / Radio / Label / Textarea + autosize / Field family.
+
 ## v3.8.0 — VS Code extension (2026-05)
 
 design-ai is now accessible inside VS Code via a dedicated extension. Surfaces the corpus as sidebar trees + quick-pick commands; pairs with any AI assistant (Copilot Chat, Cursor Chat, Continue, Claude in VS Code, etc.).
