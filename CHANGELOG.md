@@ -2,6 +2,37 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.1.0 — Korean adopter / contributor docs (2026-05)
+
+First 4.x minor. Continues v3.6 / v3.10 KR i18n investment. Korean adopters now have full Korean docs for using, contributing, and understanding the architecture — three foundational docs that previously existed only in English.
+
+### Added
+- **`docs/USING.ko.md`** — 사용자 가이드. Codex / Claude Code / Cursor / Aider / VS Code 통합, 토큰 예산 표, 한국 프로젝트 추가 컨텍스트 (KR 결제 / 타이포 / 음성 / 게임 / 영상 / 인쇄 / 일러스트 / 공간), 새로고침 주기.
+- **`docs/CONTRIBUTING.ko.md`** — 기여 가이드. 소스 레포 추가, 새 스킬 / 에이전트 / 커맨드 추가, 지식 파일 편집, 버전 메타데이터 (v3.11+), 인용 규칙, 한국어 콘텐츠 기여 톤 가이드 (해요체 / 합쇼체 분기), 6개 감사, PR 워크플로.
+- **`docs/ARCHITECTURE.ko.md`** — 아키텍처. 4 계층 다이어그램, model-agnostic 철학, 지식 / 추출기 / 스킬 파일 계약, 검증 단계, 6개 감사 표, 4개 배포 채널, i18n 구조.
+
+### Changed
+- **`mkdocs.yml`** — `nav_translations`에 `Using design-ai: 사용 가이드`, `Contributing: 기여 가이드` 추가. `docs_structure: suffix`로 `.ko.md` 파일은 자동으로 `/ko/...` 경로 매핑.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 4.0.0 → 4.1.0.
+
+### Verified
+- All 6 audits pass.
+- Korean copy check now scans 29 Korean-relevant files (was 26).
+- Translations adapted to natural Korean — 해요체 voice for adopter-facing docs (USING / CONTRIBUTING), neutral technical tone for ARCHITECTURE.
+
+### Translation choices
+- 사용자 / 기여자 대상 본문: 해요체 (친근, 일상).
+- 코드 블록 / 명령어: 영문 그대로.
+- 기술 용어 (API, frontmatter, schema 등): 영문 그대로 자연스러우면 영문 유지.
+- 한국 브랜드 / 컨벤션: 한국어 유지 (Toss, KakaoPay, Pretendard, 카카오톡).
+- 직역 거부 — 한국어 자연스러움 우선.
+
+### What this enables
+- **Korean adopters** can read full sense-making docs in Korean (USING + ARCHITECTURE) before committing to adopt.
+- **Korean contributors** can follow the contribution flow without English friction (CONTRIBUTING).
+- **Lower English-friction barrier** for KR design / engineering teams evaluating design-ai for company adoption.
+- **KR community announcement** (planned for 4.x): when design-ai is announced on OKKY / hashnode.kr / dev.to/korea, the linked docs are now Korean-native.
+
 ## v4.0.0 — Stable (2026-05)
 
 **design-ai graduates to stable.** No code changes from v3.12.0 — this is a graduation release that promises API stability across skills, commands, agents, CLI, and plugin manifest. See [`docs/MIGRATION-v4.md`](docs/MIGRATION-v4.md) for the (deliberately small) migration story.

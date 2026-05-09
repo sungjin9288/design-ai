@@ -51,6 +51,50 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 33 — Korean adopter / contributor docs (v4.1.0) ✓ shipped
+
+First 4.x minor. Continues v3.6 / v3.10 KR i18n investment. Three foundational docs previously English-only are now Korean-native.
+
+### Added
+- **`docs/USING.ko.md`** — 사용자 가이드 (5개 도구 통합, 토큰 예산, KR 컨텍스트 표).
+- **`docs/CONTRIBUTING.ko.md`** — 기여 가이드 (스킬 / 에이전트 / 커맨드 추가, 버전 메타데이터, 한국어 톤 가이드, 6개 감사, PR 플로).
+- **`docs/ARCHITECTURE.ko.md`** — 아키텍처 (4 계층 다이어그램, 계약, 6개 감사 표, 4개 배포 채널).
+
+### Changed
+- `mkdocs.yml` — `nav_translations`에 사용 가이드 / 기여 가이드 추가. `docs_structure: suffix`로 `.ko.md` 자동 매핑.
+- `package.json` + `.claude-plugin/plugin.json`: 4.0.0 → 4.1.0.
+
+### Verified
+- All 6 audits pass.
+- Korean copy check now scans 29 files (was 26).
+
+### Translation approach
+- 사용자 / 기여자 대상: 해요체 (친근).
+- 아키텍처 / 기술 문서: 중립적 톤 (해요체 유지하되 설명형).
+- 코드 / 명령어: 영문 유지.
+- 기술 용어 (API, frontmatter): 영문이 자연스러우면 영문.
+- 한국 브랜드 / 컨벤션: 한국어 유지.
+
+### What this enables
+- Korean adopters can sense-check (USING.ko, ARCHITECTURE.ko) before adopting.
+- Korean contributors can follow the contribution flow without English friction.
+- KR community announcement materials can link to Korean-native docs.
+
+### Korean docs coverage now
+| Doc | EN | KO |
+| --- | --- | --- |
+| README | ✓ | ✓ (v3.6) |
+| QUICKSTART | ✓ | ✓ (v3.6) |
+| AGENTS | ✓ | ✓ (v3.6) |
+| DISTRIBUTION | ✓ | ✓ (v3.6) |
+| USING | ✓ | ✓ (v4.1) |
+| CONTRIBUTING | ✓ | ✓ (v4.1) |
+| ARCHITECTURE | ✓ | ✓ (v4.1) |
+| 5 integration walkthroughs | ✓ | ✓ (v3.10) |
+| 8 KR-specific knowledge files | ✓ | KR-native already |
+
+Foundational doc set: now fully bilingual.
+
 ## Phase 32 — Stable (v4.0.0) ✓ shipped
 
 **Graduation release.** No code changes from v3.12.0 — this phase promotes the corpus to stable, codifies the API surface, and commits to a deprecation policy. The major bump signals to adopters: design-ai is no longer a moving target.

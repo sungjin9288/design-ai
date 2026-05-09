@@ -1,6 +1,6 @@
 {
   "name": "@design-ai/cli",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Senior product designer for any AI coding agent. Installs design-ai (19 skills, 15 commands, 4 agents) into Claude Code globally. Korean market depth.",
   "bin": {
     "design-ai": "./cli/bin/design-ai.mjs"
