@@ -51,6 +51,66 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 32 — Stable (v4.0.0) ✓ shipped
+
+**Graduation release.** No code changes from v3.12.0 — this phase promotes the corpus to stable, codifies the API surface, and commits to a deprecation policy. The major bump signals to adopters: design-ai is no longer a moving target.
+
+### Added
+- **`docs/MIGRATION-v4.md`** — graduation migration guide:
+  - TL;DR: no code changes required.
+  - What v4.0 promises (8 surfaces: knowledge / skills / commands / agents / CLI / plugin / VS Code / doc site).
+  - What v4.0 does NOT promise (content evolution still expected).
+  - Stability levels recap.
+  - Deprecation policy: deprecate in 4.x → maintain in 4.x → remove in 5.0.
+  - Upgrade instructions per channel (npm / git / Homebrew / VS Code).
+  - Verification commands.
+
+### Changed
+- `package.json` + `.claude-plugin/plugin.json`: 3.12.0 → 4.0.0.
+
+### Verified (RELEASE-CHECKLIST.md run)
+- All 6 audits pass (frontmatter / link / Korean copy / coverage / integration-check / stale-check).
+- Version alignment: package.json + plugin.json + CHANGELOG.md top entry all match.
+- CLI smoke test: `version` / `help` / `status` / `list skills` clean.
+- `npm pack --dry-run`: tarball within budget; allowlist correct.
+- Doc site builds.
+- VS Code extension compiles.
+
+### Deprecation policy (effective from v4.0)
+
+Anything publicly documented (skills, commands, CLI flags, plugin fields, knowledge file IDs) follows:
+
+1. **Deprecate in 4.x:** Mark `deprecated: true` (or `stability: deprecated` for knowledge); update docs; log warning.
+2. **Maintain in 4.x:** All deprecated surfaces keep working through the 4.x line.
+3. **Remove in 5.0:** Only at next major.
+
+Adopters always get one full minor cycle of warnings.
+
+### The journey (v2.0 → v4.0)
+
+| Surface | v2.0 | v4.0 |
+|---|---|---|
+| Knowledge files | 55 | 91 |
+| Worked examples | 83 | 160 |
+| Skills | 12 | 19 |
+| Slash commands | 8 | 15 |
+| Review agents | 4 | 4 |
+| Component coverage | ~24% | 55.3% |
+| Distribution channels | 1 | 4 |
+| Integration walkthroughs | 0 | 5 (EN + KO) |
+| Site languages | 0 | 2 |
+| CI audits | 4 | 6 |
+
+### What's still ahead (4.x)
+- KR tech community announcement (OKKY, hashnode.kr, dev.to/korea).
+- VS Code marketplace publish (1.0.0).
+- Homebrew formula refresh post-tag (sha256 + version).
+- Coverage push 55% → 70%.
+- More Korean translations (CONTRIBUTING.ko.md, ARCHITECTURE.ko.md, USING.ko.md).
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- Stability re-review ritual (quarterly cycle defined in RELEASE-CHECKLIST.md).
+
 ## Phase 31 — Release readiness (v3.12) ✓ shipped
 
 Closes the v3.x arc. Operationalizes the versioned frontmatter from v3.11 with a stale-content audit, codifies the pre-release ritual, and narrates the journey for adopters / contributors / future maintainers.

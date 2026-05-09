@@ -2,6 +2,67 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.0.0 — Stable (2026-05)
+
+**design-ai graduates to stable.** No code changes from v3.12.0 — this is a graduation release that promises API stability across skills, commands, agents, CLI, and plugin manifest. See [`docs/MIGRATION-v4.md`](docs/MIGRATION-v4.md) for the (deliberately small) migration story.
+
+### What v4.0 means
+
+| Surface | Promise |
+|---|---|
+| Knowledge files (91) | Frozen at `version: 1.0.0`, `stability: stable` |
+| Skills (19) | API-stable; deprecation cycle required for removals |
+| Slash commands (15) | API-stable; deprecation cycle required for removals |
+| Review agents (4) | API-stable |
+| CLI (`@design-ai/cli`) | Argv contract stable; pin to `^4.0.0` |
+| Plugin manifest | Schema stable |
+| VS Code extension | Configuration keys stable |
+| Doc site | URL structure frozen |
+
+### Added
+- **`docs/MIGRATION-v4.md`** — graduation migration guide. TL;DR (no code changes), what v4.0 promises (API stability across 8 surfaces), what it does NOT promise (content evolution still expected), deprecation policy (deprecate in 4.x → remove in 5.0), upgrade instructions per channel.
+
+### Changed
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 3.12.0 → 4.0.0.
+
+### Verified
+- All 6 audits pass (frontmatter / link / Korean copy / coverage / integration-check / stale-check).
+- CLI smoke test: `version`, `help`, `status`, `list skills` all clean.
+- NPM pack preview: tarball within budget; allowlist correct.
+- Doc site builds.
+- VS Code extension compiles.
+
+### Deprecation policy (effective from v4.0)
+
+Anything publicly documented follows: deprecate in 4.x → maintain in 4.x → remove in 5.0. Adopters always get one full minor cycle of warnings.
+
+### What's still ahead (4.x)
+- KR tech community announcement (OKKY, hashnode.kr, dev.to/korea).
+- VS Code marketplace publish (1.0.0).
+- Coverage push 55% → 70%.
+- More Korean translations (CONTRIBUTING.ko.md, ARCHITECTURE.ko.md, USING.ko.md).
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+
+### The journey
+
+v2.0 → v4.0 in one table:
+
+| Surface | v2.0 | v4.0 |
+|---|---|---|
+| Knowledge files | 55 | 91 |
+| Worked examples | 83 | 160 |
+| Skills | 12 | 19 |
+| Slash commands | 8 | 15 |
+| Review agents | 4 | 4 |
+| Component coverage | ~24% | 55.3% |
+| Distribution channels | 1 | 4 (npm / Homebrew / git / VS Code) |
+| Integration walkthroughs | 0 | 5 (each EN + KO) |
+| Site languages | 0 | 2 (EN + KO) |
+| CI audits | 4 | 6 |
+
+See [`docs/SESSION-LOG.md`](docs/SESSION-LOG.md) for the full narrative.
+
 ## v3.12.0 — Release readiness (2026-05)
 
 Operationalizes the versioned frontmatter from v3.11. Adds a stale-content audit, a release checklist, and a session log. Closes the v3.x arc — design-ai is now release-ready (versioned, audited, distributed, localized).
