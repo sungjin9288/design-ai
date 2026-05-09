@@ -51,6 +51,50 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 29 — Korean integration walkthroughs (v3.10) ✓ shipped
+
+Five integration walkthroughs translated to Korean. Continues v3.6 KR i18n investment — primary audience (KR designers / developers) can use Codex / Cursor / Aider / SDK / VS Code without English friction.
+
+### Added
+- **5 Korean walkthroughs** in `docs/integrations/`:
+  - `codex-walkthrough.ko.md` — Codex CLI 워크스루
+  - `cursor-walkthrough.ko.md` — Cursor 워크스루
+  - `aider-walkthrough.ko.md` — Aider 워크스루
+  - `sdk-walkthrough.ko.md` — Anthropic + OpenAI SDK 워크스루
+  - `vscode-walkthrough.ko.md` — VS Code 확장 워크스루
+- Each translation includes 4-5 worked sessions (matching English depth), not abridged summaries.
+
+### Changed
+- **`tools/audit/korean-copy-check.py`** — added `.ko.md` pattern; now scans 26 Korean-relevant files (was 17).
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 3.9.0 → 3.10.0.
+
+### Translation approach
+- 어댑터 / 사용자 대상 콘텐츠는 해요체 (친근).
+- 코드 블록은 영문 유지 (대부분 명령어 / API).
+- 한국어 브랜드 이름은 한국어 유지 (Toss, KakaoPay, Pretendard).
+- Direct word-for-word translation 거부 — 한국어 자연스러움 우선.
+- Each Korean file mirrors the English structure (Prerequisites / Setup / Walkthroughs / Tips / Troubleshooting) but with Korean phrasing.
+
+### Verified
+- All 5 audits pass.
+- Korean copy check picks up 26 files (was 17).
+- 358 internal links resolve.
+
+### What this enables
+- **Korean adopters** can use any of 5 AI coding tools with full Korean walkthroughs.
+- **Korean B2B teams** can share walkthroughs with non-developer stakeholders.
+- **Lower English-friction** for KR designers evaluating design-ai.
+- **Audit coverage** — Korean files validated by korean-copy-check on every PR.
+
+### What's still ahead (v3.11+)
+- Coverage push 55% → 70%.
+- Versioned knowledge files (semver in frontmatter).
+- Semantic search index (Algolia / Typesense).
+- Component spec extractor v2 (TS AST parsing).
+- VS Code marketplace publication (1.0.0).
+- More Korean translations (CONTRIBUTING.ko.md, ARCHITECTURE.ko.md, USING.ko.md).
+- Brand identity polish for v4.0 (logo refinement, marketing landing).
+
 ## Phase 28 — Coverage push 45% → 55% (v3.9) ✓ shipped
 
 Component coverage from 45.2% → **55.3%** (90 → 110 of 199 canonical components). Majority canonical coverage milestone. Form / overlay / transition / notification primitives largely complete.

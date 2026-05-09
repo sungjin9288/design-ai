@@ -70,6 +70,8 @@ KOREAN_PATH_PATTERNS = [
     "examples/component-stock-chart.md",
     "examples/component-krw-amount.md",
     "examples/component-payment-receipt.md",
+    # Korean translation files (mkdocs-static-i18n suffix convention)
+    ".ko.md",
 ]
 
 

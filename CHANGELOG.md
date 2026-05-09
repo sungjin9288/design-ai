@@ -2,6 +2,39 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v3.10.0 — Korean integration walkthroughs (2026-05)
+
+Five integration walkthroughs translated to Korean. Continues v3.6 KR i18n investment — primary audience (KR designers / developers) can now use Codex / Cursor / Aider / SDK / VS Code without English friction.
+
+### Added
+- **`docs/integrations/codex-walkthrough.ko.md`** — Codex CLI 워크스루 (4 sessions: 컴포넌트 spec / 디자인 시스템 / 비평 반복 / Figma 감사) + Codex 전용 팁 (파일 경로, MCP 설정, AGENTS.md 조각).
+- **`docs/integrations/cursor-walkthrough.ko.md`** — Cursor 워크스루 (5 sessions: 인라인 spec / 기존 감사 / Figma 비평 / 토큰 생성 / Cmd+K 인플레이스 편집) + Composer 모드 + MCP 설정.
+- **`docs/integrations/aider-walkthrough.ko.md`** — Aider 워크스루 (4 sessions: 구현 / 리팩토링 / 디자인 시스템 부트스트랩 / 감사-수정) + Aider 패턴 (architect mode, auto-test, bash alias).
+- **`docs/integrations/sdk-walkthrough.ko.md`** — Anthropic + OpenAI SDK 워크스루 (5 sessions: prompt caching, 도구 사용, 스트리밍, 프로덕션 챗봇).
+- **`docs/integrations/vscode-walkthrough.ko.md`** — VS Code 확장 워크스루 (5 sessions: 채팅 참조 / 기존 감사 / PLAYBOOK 생성 / 빠른 선택 / 멀티 파일 부트스트랩).
+
+### Changed
+- **`tools/audit/korean-copy-check.py`** — `.ko.md` 패턴 추가; 26개 한국어 관련 파일 스캔 (이전 17).
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 3.9.0 → 3.10.0.
+
+### Verified
+- All 5 audits pass.
+- Korean copy check now scans `.ko.md` files (26 total).
+- 358 internal links resolve.
+- Translations adapted to natural Korean — 해요체 voice for adopter-facing content; not literal English-to-Korean.
+
+### Voice / register choices
+- 어댑터 / 사용자 대상 콘텐츠 — 해요체 (친근).
+- 코드 블록은 영문 그대로 유지 (대부분의 명령어 / API).
+- 한국어 브랜드 이름 / 컨벤션은 한국어 유지 (Toss, KakaoPay, Pretendard).
+- Direct translation 거부 — 한국어 자연스러움 우선 ("Let's get started" → "시작해 봐요" 아닌 영어 직역 "시작합시다 우리는").
+
+### What this enables
+- **Korean adopters** can use any of 5 AI coding tools with full walkthroughs in Korean.
+- **B2B 한국 팀** can share Korean walkthroughs with non-developer stakeholders.
+- **Lower English-friction** for KR designers / developers evaluating design-ai.
+- **Audit coverage** — Korean files now validated by korean-copy-check on every PR.
+
 ## v3.9.0 — Coverage push 45% → 55% (2026-05)
 
 Component coverage 45.2% → **55.3%** (90 → 110 of 199 canonical components). Crosses majority canonical coverage. Form / overlay / transition primitives largely complete.
