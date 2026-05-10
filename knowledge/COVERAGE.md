@@ -49,7 +49,7 @@ generated_at: 2026-05-11
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 707 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 708 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y

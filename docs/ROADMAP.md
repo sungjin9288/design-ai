@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 48 — CI wiring (v4.11.0) ✓ shipped
+
+The infrastructure from v4.3–v4.10 (unit tests / audit runner / e2e tests / conflict checker) wasn't being used by CI. v4.11 wires it all in.
+
+### Changed
+- `.github/workflows/audit.yml` — 1 job → 4 jobs:
+  - `audit`: uses `run-all.py` (was 5 separate steps).
+  - `unit-tests` (NEW): runs CLI + VS Code lib unit tests (41 total).
+  - `vscode-e2e` (NEW): real VS Code instance under xvfb; gated to push-main or PR label.
+  - `conflict-check` (NEW): cross-source API drift; informational on push-main.
+- `.github/workflows/publish.yml` — uses `run-all.py --strict` + adds unit-tests step.
+- `package.json` + `.claude-plugin/plugin.json`: 4.10.0 → 4.11.0.
+
+### Verified
+- All 4 workflows parse as valid YAML.
+- All workflow commands execute locally.
+- 6 audits + 41 unit tests + size budget all run via the new pipeline.
+
+### CI matrix
+| Trigger | Runs |
+| --- | --- |
+| PR | audit + unit-tests |
+| PR + `test:e2e` label | + vscode-e2e |
+| push main | audit (--strict) + unit-tests + vscode-e2e + conflict-check |
+| tag `v*` | audit (--strict) + unit-tests + npm pack + publish |
+
+### What's still ahead
+- Polish remaining ~24 v2-DRAFT specs (incremental).
+- Coverage 80.9% → 90% (utility types — diminishing value).
+- Real-CI verification (push these workflows; observe them green).
+- v3 extractor reconciliation mode (auto-suggest unified API for HIGH conflicts).
+- External launch (held).
+
 ## Phases 45-47 — VS Code e2e + extractor v3 + SESSION-LOG (v4.10.0) ✓ shipped
 
 Three independent threads in one release.

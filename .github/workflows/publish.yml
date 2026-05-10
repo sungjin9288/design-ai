@@ -53,12 +53,13 @@ jobs:
           fi
           echo "Plugin manifest version: $PLUGIN_VERSION ✓"
 
-      - name: Run audits before publishing
+      - name: Run all 6 audits before publishing
+        run: python3 tools/audit/run-all.py --strict
+
+      - name: Run CLI unit tests
         run: |
-          python3 tools/audit/frontmatter-check.py
-          python3 tools/audit/link-check.py
-          python3 tools/audit/korean-copy-check.py
-          python3 tools/audit/check-coverage.py
+          npm install --no-audit --no-fund
+          npm test
 
       - name: Pack (verify what would publish)
         run: |

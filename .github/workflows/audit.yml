@@ -13,13 +13,14 @@ on:
       - "AGENTS.md"
       - "CLAUDE.md"
       - "README.md"
+      - ".github/workflows/audit.yml"
   push:
     branches: [main]
 
 jobs:
   audit:
     runs-on: ubuntu-latest
-    name: Validate knowledge base
+    name: 6 audits + size budget
     steps:
       - uses: actions/checkout@v4
 
@@ -28,56 +29,150 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Frontmatter check
-        run: python3 tools/audit/frontmatter-check.py
-
-      - name: Internal link check
-        run: python3 tools/audit/link-check.py
-
-      - name: Korean copy check
-        run: python3 tools/audit/korean-copy-check.py
-
-      - name: Integration walkthroughs check
-        run: python3 tools/audit/integration-check.py
-
-      - name: Stale-content check (warn-only on PR; ≥12 months → CI failure on push to main)
+      # Use the unified audit runner instead of 6 separate steps.
+      # On PR: warn-only (matches local dev experience).
+      # On push to main: --strict (CI fails on stale content >12 months).
+      - name: Run all 6 audits
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            python3 tools/audit/stale-check.py --strict
+            python3 tools/audit/run-all.py --strict
           else
-            python3 tools/audit/stale-check.py
+            python3 tools/audit/run-all.py
           fi
 
-      - name: Coverage report (regenerate + diff)
+      - name: COVERAGE.md is up to date
         run: |
-          python3 tools/audit/check-coverage.py
-          # Verify the committed COVERAGE.md matches the regenerated one
+          # check-coverage.py runs as part of run-all.py and overwrites
+          # knowledge/COVERAGE.md. Verify the committed file matched the
+          # regenerated one; if not, the contributor forgot to commit.
           if ! git diff --exit-code knowledge/COVERAGE.md; then
             echo "::error::knowledge/COVERAGE.md is out of date. Run 'python3 tools/audit/check-coverage.py' and commit."
             exit 1
           fi
 
-      - name: Lint extractor scripts
+      - name: Lint Python tools
         run: |
           python3 -m py_compile tools/extractors/*.py
           python3 -m py_compile tools/audit/*.py
+          python3 -m py_compile tools/migrations/*.py
           python3 -m py_compile tools/preview/*.py
-
-  size-budget:
-    runs-on: ubuntu-latest
-    name: Knowledge size budget
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Verify total knowledge size budget
         run: |
           TOTAL=$(find knowledge examples docs -name "*.md" | xargs wc -l | tail -1 | awk '{print $1}')
           echo "Total: $TOTAL lines"
-          # Post-v2 expansion budget: warn at 100K, hard cap at 150K.
-          if [ "$TOTAL" -gt 150000 ]; then
-            echo "::error::Knowledge base exceeds hard cap of 150K lines ($TOTAL). Split or prune."
+          # Post-v4 expansion budget: warn at 150K, hard cap at 200K.
+          if [ "$TOTAL" -gt 200000 ]; then
+            echo "::error::Knowledge base exceeds hard cap of 200K lines ($TOTAL). Split or prune."
             exit 1
           fi
-          if [ "$TOTAL" -gt 100000 ]; then
-            echo "::warning::Knowledge base exceeds 100K lines ($TOTAL). Consider splitting or pruning."
+          if [ "$TOTAL" -gt 150000 ]; then
+            echo "::warning::Knowledge base exceeds 150K lines ($TOTAL). Consider splitting or pruning."
           fi
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit tests (CLI + VS Code lib)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install root deps
+        run: npm install --no-audit --no-fund
+
+      - name: CLI unit tests
+        run: npm test
+
+      - name: Install VS Code extension deps
+        working-directory: vscode-extension
+        run: npm install --no-audit --no-fund
+
+      - name: Compile VS Code extension
+        working-directory: vscode-extension
+        run: npm run compile
+
+      - name: VS Code lib unit tests
+        working-directory: vscode-extension
+        run: npm run test:unit
+
+  vscode-e2e:
+    runs-on: ubuntu-latest
+    name: VS Code e2e (real-instance)
+    # E2E is slow (downloads VS Code ~300MB on first run). Run on push to main
+    # and when explicitly enabled via PR label "test:e2e".
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'test:e2e')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install VS Code extension deps
+        working-directory: vscode-extension
+        run: npm install --no-audit --no-fund
+
+      - name: Compile extension + integration tests
+        working-directory: vscode-extension
+        run: |
+          npm run compile
+          npx tsc -p ./test/integration
+
+      - name: Cache VS Code download
+        uses: actions/cache@v4
+        with:
+          path: vscode-extension/.vscode-test
+          key: vscode-test-${{ runner.os }}
+
+      - name: Run e2e tests under xvfb
+        working-directory: vscode-extension
+        run: xvfb-run -a node ./test/integration/out/runTest.js
+
+  conflict-check:
+    runs-on: ubuntu-latest
+    name: Cross-source API conflict check (informational)
+    # Doesn't fail CI; surfaces drift between Ant + MUI + shadcn for review.
+    # Only meaningful when refs/ is populated, which it isn't in CI by default —
+    # so this job skips gracefully if refs/ is empty.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check refs/ availability
+        id: refs
+        run: |
+          if [ -d refs/ant-design ] && [ -d refs/mui ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "refs/ not populated — conflict check skipped (this is expected in fork CI)."
+          fi
+
+      - name: Install TS AST parser deps
+        if: steps.refs.outputs.available == 'true'
+        working-directory: tools/extractors/ts-ast
+        run: npm install --no-audit --no-fund
+
+      - name: Run conflict check on multi-source canonicals
+        if: steps.refs.outputs.available == 'true'
+        run: python3 tools/extractors/component_spec_conflict_check.py --multi-source

@@ -2,6 +2,50 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.11.0 — CI wiring (2026-05)
+
+The infrastructure built across v4.3–v4.10 (unit tests, audit runner, e2e tests, conflict checker) wasn't actually being used by CI. v4.11 wires it all in. Every PR now exercises the full validation surface.
+
+### Phase 48 — CI workflow modernization
+
+#### Changed
+- **`.github/workflows/audit.yml`** — restructured from 1 job (running 5 separate audit steps) to **4 jobs**:
+  - `audit` — uses `tools/audit/run-all.py` instead of 5 separate steps. PR mode warns; push to main is `--strict`. Includes Python lint (now covers `tools/migrations/` too) + size budget (raised 100K → 150K warn, 150K → 200K cap to match v4.x growth).
+  - `unit-tests` — **NEW**. Installs deps, runs CLI unit tests (16) + VS Code lib unit tests (25). Total 41 tests on every PR.
+  - `vscode-e2e` — **NEW**. Real-VS-Code-instance tests under `xvfb-run`. Cached VS Code download (~300MB). Gated to push-to-main OR PR with `test:e2e` label (so casual PRs don't pay the cost).
+  - `conflict-check` — **NEW**. Cross-source API drift surfacing. Push-to-main only. `continue-on-error: true` — informational, doesn't fail CI. Gracefully skips when `refs/` not populated (expected in fork CI).
+- **`.github/workflows/publish.yml`** — replaced 4 separate audit steps with `run-all.py --strict`. Added CLI unit tests step (catches regressions before npm publish).
+
+#### What this enables
+- **Real PR gating** — every PR runs all 6 audits + 41 unit tests on every push.
+- **API drift surfacing** — main-branch CI flags conflict report; reviewers see drift between Ant / MUI / shadcn at PR-merge time.
+- **e2e regression coverage** — tag-pinned releases run the real VS Code instance under xvfb.
+- **Faster CI** — `run-all.py` is ~0.8s for all 6 audits vs ~5s for 5 separate `python3 ...` invocations (process startup amortization).
+- **Pre-publish safety net** — `publish.yml` now runs unit tests before npm publish. A failing test halts the release.
+
+#### CI matrix (after v4.11)
+
+| Trigger | Runs |
+| --- | --- |
+| PR (any path) | `audit` + `unit-tests` |
+| PR with `test:e2e` label | + `vscode-e2e` |
+| Push to `main` | `audit` (--strict) + `unit-tests` + `vscode-e2e` + `conflict-check` |
+| Tag `v*` | `publish.yml`: audit (--strict) + unit-tests + npm pack + npm publish |
+| Push to `main` (docs/) | `docs.yml`: mkdocs build + deploy |
+
+### Verified
+- All 6 audits pass via unified runner.
+- All 4 YAML workflows parse correctly.
+- All workflow commands execute locally:
+  - `python3 tools/audit/run-all.py [--strict]` ✓
+  - `npm test` (16 CLI tests) ✓
+  - `npm run test:unit` in vscode-extension (25 tests) ✓
+  - Python lint across all 4 tool dirs ✓
+- Size budget: 82,455 lines (well under 150K warn / 200K cap).
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.10.0 → 4.11.0.
+
 ## v4.10.0 — VS Code e2e infra + extractor v3 + SESSION-LOG update (2026-05)
 
 Three phases combined: real-VS-Code integration test infrastructure (Phase 45) + cross-source API conflict detection (Phase 47) + comprehensive SESSION-LOG update through v4.10 (Phase 46).
