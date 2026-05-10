@@ -2,6 +2,70 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.6.0 — Stability re-review automation (2026-05)
+
+Operationalizes the quarterly stability review ritual described in `RELEASE-CHECKLIST.md` and `ARCHITECTURE.ko.md`. Until v4.6 this was a manual step; now it's a script + two bulk-mutation tools + a slash command.
+
+### Added
+- **`tools/audit/stability-review.py`** — generates a quarterly review markdown report. Sections:
+  - Summary table (counts by stability level + oldest file per level).
+  - Promotion candidates: experimental → stable (≥ 6 months held).
+  - Promotion candidates: beta → stable (≥ 3 months held).
+  - Stable files due for re-review (≥ 12 months old).
+  - Deprecated files (review for next major).
+  - Files missing `stability` metadata.
+  - Ritual checklist at the bottom.
+  - Configurable thresholds via `--warn-months` / `--promote-after` / `--stale-months`.
+  - `--today YYYY-MM-DD` for testing future scenarios.
+  - `--output <path>` writes report; default stdout.
+- **`tools/migrations/promote-stability.py`** — bulk promote / demote `stability:` field:
+  - Enforces `--from <level>` (verifies current state before mutating).
+  - `--force` to override the check (rare).
+  - `--dry-run` previews.
+  - Atomic per-file (temp + rename).
+  - Bumps `last_updated` to current month on promotion.
+- **`tools/migrations/bump-last-updated.py`** — bulk-bump `last_updated` to current month:
+  - Use after a quarterly review when files are still accurate.
+  - `--dry-run`, `--today YYYY-MM` for testing.
+  - Idempotent (no-op if already at target date).
+- **`commands/stability-review.md`** — slash command `/stability-review` runs the report + summarizes inline + suggests next bulk operations (with confirmation gate before mutation). Verification phase included.
+- **`docs/CONTRIBUTING.md`** "Quarterly stability review" — full 5-step ritual: generate report → walk it → apply via bulk tools → document outcome → commit. Examples included.
+
+### Changed
+- **`.claude-plugin/plugin.json`** — registered `/stability-review` as the 16th slash command.
+- **`package.json` + `.claude-plugin/plugin.json` + `vscode-extension/package.json`** description strings updated: 15 commands → 16 commands.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 4.5.0 → 4.6.0.
+
+### Verified
+- All 6 audits pass.
+- Stability review runs correctly: surfaces files without `stability` (1 found: `knowledge/COVERAGE.md` — generated artifact, intentional).
+- Promote tool dry-run correctly verifies `--from` level before allowing transition.
+- Bump tool dry-run correctly identifies which files would change vs are already at target.
+- Slash command file passes frontmatter + verification-phase checks.
+
+### Workflow
+
+```bash
+# Quarter-start (once per Q):
+python3 tools/audit/stability-review.py --output docs/STABILITY-REVIEW.md
+
+# Read the report. For each candidate, decide.
+
+# Apply decisions:
+python3 tools/migrations/promote-stability.py --from experimental --to stable knowledge/foo.md
+python3 tools/migrations/bump-last-updated.py knowledge/bar.md knowledge/baz.md
+
+# Document outcome in CHANGELOG, commit.
+```
+
+Or in Claude Code: `/stability-review` — runs the report + walks you through.
+
+### What this enables
+- **Knowledge stays fresh.** No more "we should review old files sometime" — the script tells you exactly which.
+- **Stability promotions become routine.** beta / experimental files don't accumulate; they're promoted when they hold up.
+- **Deprecation hygiene.** Deprecated files are flagged at every review until removed; CHANGELOG captures removal plan.
+- **Discoverable in Claude Code.** `/stability-review` surfaces the ritual as a one-command operation.
+
 ## v4.5.0 — Coverage push 55% → 68.8% (2026-05)
 
 First coverage push using v2 extractor. Crosses 2/3 canonical coverage. Family-completion focus: List / Card / Dialog / Form-Control / Menu sub-components — the primitives most-used in real Korean B2B / fintech UIs.

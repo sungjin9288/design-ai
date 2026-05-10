@@ -1,7 +1,7 @@
 {
   "name": "design-ai",
-  "version": "4.5.0",
-  "description": "Senior product designer for any AI coding agent. 19 skills, 15 commands, 4 review agents covering UI/UX, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
+  "version": "4.6.0",
+  "description": "Senior product designer for any AI coding agent. 19 skills, 16 commands, 4 review agents covering UI/UX, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
   "author": {
     "name": "Sungjin Park",
     "email": "sungjin9288@gmail.com"
@@ -140,7 +140,8 @@
     { "name": "video", "path": "commands/video.md", "description": "Spec video for marketing, social, or in-product." },
     { "name": "game-ui", "path": "commands/game-ui.md", "description": "Spec game UI." },
     { "name": "conversational", "path": "commands/conversational.md", "description": "Spec a chatbot / voice / AI chat / live agent." },
-    { "name": "spatial", "path": "commands/spatial.md", "description": "Spec a VR / AR / MR / WebXR experience." }
+    { "name": "spatial", "path": "commands/spatial.md", "description": "Spec a VR / AR / MR / WebXR experience." },
+    { "name": "stability-review", "path": "commands/stability-review.md", "description": "Run the quarterly stability review report. Surfaces promotion candidates + stale files." }
   ],
   "agents": [
     { "name": "design-critic", "path": "agents/design-critic.md", "description": "Senior-designer critique with focus on hierarchy, craft, decisions." },

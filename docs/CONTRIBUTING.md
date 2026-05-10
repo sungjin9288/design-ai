@@ -76,6 +76,77 @@ sources:
   - refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx
 ```
 
+## Quarterly stability review
+
+Operationalized in v4.6. Run quarterly (March / June / September / December — or per-major) to keep knowledge fresh and stability levels honest.
+
+### Step 1 — Generate the report
+
+```bash
+python3 tools/audit/stability-review.py --output docs/STABILITY-REVIEW.md
+```
+
+This produces a markdown report with sections:
+- **Summary table** — counts by stability level, oldest file per level.
+- **experimental → stable promotion candidates** — files that held up ≥ 6 months.
+- **beta → stable promotion candidates** — files that held up ≥ 3 months.
+- **Stable files due for re-review** — `last_updated ≥ 12 months ago`.
+- **Deprecated files** — confirm removal plan.
+- **Files without `stability`** — add the metadata.
+
+### Step 2 — Walk the report
+
+For each section, decide per file:
+- Still accurate? → Bump `last_updated`.
+- Needs revision? → Edit + bump.
+- Obsolete? → Mark `stability: deprecated` and add a deprecation note.
+- Promotion candidate confirmed? → Promote.
+
+### Step 3 — Apply changes via the bulk tools
+
+```bash
+# Bulk bump last_updated for files that are still accurate
+python3 tools/migrations/bump-last-updated.py knowledge/a11y/contrast.md knowledge/a11y/keyboard-and-focus.md
+
+# Promote experimental → stable (verifies current level matches --from)
+python3 tools/migrations/promote-stability.py --from experimental --to stable knowledge/foo.md knowledge/bar.md
+
+# Demote stable → deprecated when superseded (rare)
+python3 tools/migrations/promote-stability.py --from stable --to deprecated knowledge/old-pattern.md
+```
+
+Both tools support `--dry-run` and write atomically (temp + rename).
+
+### Step 4 — Document outcome
+
+Add a section to the next minor release in `CHANGELOG.md`:
+
+```markdown
+### Stability review (Q3 2026)
+- Promoted to stable: knowledge/foo.md, knowledge/bar.md
+- Demoted to deprecated: knowledge/old-pattern.md
+- Reviewed + bumped: 12 files
+```
+
+### Step 5 — Commit + close
+
+```bash
+git add knowledge/ docs/STABILITY-REVIEW.md CHANGELOG.md
+git commit -m "chore: quarterly stability review (Q3 2026)"
+```
+
+The `STABILITY-REVIEW.md` file is per-quarter — keep the latest one in `docs/` so contributors can see the most-recent decision history.
+
+### Slash command
+
+In Claude Code:
+
+```
+/stability-review
+```
+
+Runs the report-generation step + summarizes the candidates inline.
+
 ## Style
 
 - Markdown over prose.

@@ -51,6 +51,52 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 38 — Stability re-review automation (v4.6.0) ✓ shipped
+
+Operationalizes the quarterly stability review ritual. Until now, a manual step described in RELEASE-CHECKLIST. Now: report + 2 bulk tools + slash command + CONTRIBUTING walkthrough.
+
+### Added
+- `tools/audit/stability-review.py` — quarterly report generator. Sections: summary, promotion candidates (exp/beta → stable), stale stable files, deprecated review, missing-metadata files, ritual checklist.
+- `tools/migrations/promote-stability.py` — bulk `stability:` field promote/demote with `--from` enforcement + `--dry-run` + atomic write.
+- `tools/migrations/bump-last-updated.py` — bulk `last_updated:` refresh with `--dry-run`. Idempotent.
+- `commands/stability-review.md` — slash command `/stability-review`. Runs report, summarizes inline, suggests next bulk op with confirmation gate.
+- `docs/CONTRIBUTING.md` "Quarterly stability review" — full 5-step ritual.
+
+### Changed
+- `.claude-plugin/plugin.json` — registered 16th command.
+- Description strings across 3 manifests: "15 commands" → "16 commands".
+- Versions: 4.5.0 → 4.6.0.
+
+### Verified
+- All 6 audits pass.
+- Stability review: 90 stable, 0 beta/experimental/deprecated, 1 file without metadata (`knowledge/COVERAGE.md`, generated artifact — intentional).
+- Promote tool dry-run validates --from before mutating.
+- Bump tool dry-run idempotent.
+- Slash command file passes frontmatter + verification-phase checks.
+
+### Workflow (per quarter)
+1. `python3 tools/audit/stability-review.py --output docs/STABILITY-REVIEW.md`
+2. Walk the report; decide per file.
+3. Apply via `promote-stability.py` / `bump-last-updated.py`.
+4. Document outcome in CHANGELOG.
+5. Commit.
+
+Or `/stability-review` in Claude Code.
+
+### What this enables
+- Knowledge freshness becomes routine, not a vague aspiration.
+- Stability promotions happen on cadence; beta / experimental don't pile up.
+- Deprecated files are surfaced every quarter until removed.
+- Ritual discoverable in Claude Code via slash command.
+
+### What's still ahead (4.x)
+- Polish remaining 21 v4.5 drafts.
+- Coverage push 68.8% → 80% (transitions, table sub-components).
+- Semantic search index (Algolia / Typesense).
+- Dispatch / commands integration tests.
+- Component spec extractor v3 (cross-source intersection — flag prop names/types that conflict between Ant and MUI).
+- VS Code marketplace publish (when external launch happens).
+
 ## Phase 37 — Coverage push 55% → 68.8% (v4.5.0) ✓ shipped
 
 First coverage push using v2 extractor. Crosses 2/3 canonical coverage. Family-completion focus on the primitives Korean B2B / fintech UIs lean on most.
