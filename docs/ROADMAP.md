@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phases 40-42 — Three-surface dogfood (v4.8.0) ✓ shipped
+
+VS Code extension + npm distribution + mkdocs site build — three surfaces v4.7 explicitly didn't validate. All three exercised end-to-end; each surfaced real bugs that were fixed.
+
+### Phase 40 — VS Code extension dogfood
+- Findings: `docs/DOGFOOD-V4-VSCODE-FINDINGS.md`.
+- Extracted pure logic to `vscode-extension/src/lib.ts` (8 helpers, 230 LOC).
+- 25 unit tests against shipped JS — including a real bug: search preview lost the matched word past column 120. Fixed via `buildPreview()` that centers on the match.
+- Generated `media/icon.png` (was referenced but missing → vsce package failed).
+- Excluded `test/` from .vsix (was leaking into shipped package).
+- Verified: 10/10 commands match between manifest and impl. tsc clean. .vsix 19.65 KB, 13 files.
+
+### Phase 41 — npm fresh install dogfood
+- Findings: `docs/DOGFOOD-V4-NPM-FINDINGS.md`.
+- Full lifecycle: pack → install in mktemp → version/help/list/install/status/uninstall against fake CLAUDE_HOME.
+- Surfaced: `tools/migrations/` not in npm allowlist — `/stability-review` slash command pointed adopters to scripts that weren't shipped. Fixed.
+- Verified: 39 symlinks created (19 skills + 4 agents + 16 commands), all cleaned up on uninstall, sub-second install. PATH bin works.
+
+### Phase 42 — mkdocs site build dogfood
+- Findings: `docs/DOGFOOD-V4-MKDOCS-FINDINGS.md`.
+- **Found and fixed false-negative in `link-check.py`**: regex required ≥1 char of link text, but inline-code-strip pre-pass converted backtick-wrapped link patterns to empty-text links, masking ALL backtick-wrapped link references. Changed `+` → `*`.
+- 11 real broken links surfaced after the fix — all fixed.
+- **Two missing primitive specs surfaced** (`component-dialog.md`, `component-stack.md` — flagship MUI primitives that v4.5 family-completion claimed were shipped but weren't). Generated via v2 extractor.
+- Disabled `navigation.instant` in mkdocs.yml (incompatible with mkdocs-static-i18n contextual switcher).
+- Verified: 782 HTML pages, 15.84 s build, both languages render, all v4.x docs included.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.7.0 → 4.8.0.
+- `vscode-extension/package.json`: 0.2.0 → 0.3.0.
+
+### What this validates
+- VS Code extension code shape + shippability.
+- npm distribution + fresh-machine install lifecycle.
+- Doc site builds cleanly with bilingual routing.
+- Audit infrastructure (link-check now catches the previously-silent class of broken backtick links).
+
+### What's still ahead
+- VS Code extension under real IDE (`@vscode/test-electron` future).
+- npm publish flow (push to actual registry — deferred to launch).
+- GitHub Pages deployment of doc site.
+- Polish remaining drafts (now including dialog + stack from this dogfood).
+- Coverage push 68.8% → 80%.
+
 ## Phase 39 — Dogfood v4 + 5 fixes (v4.7.0) ✓ shipped
 
 End-to-end practical test on Korean B2B HR onboarding scenario. v4.0/4.5/4.6 capabilities exercised in a real flow; 5 actionable gaps surfaced and fixed in the same commit.

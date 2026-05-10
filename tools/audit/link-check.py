@@ -19,8 +19,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# Match markdown links: [text](url) — only relative URLs, not http(s)
-LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+?)(?:#[^)]+)?\)")
+# Match markdown links: [text](url) — only relative URLs, not http(s).
+# Use * (not +) for the text so links survive after we strip inline code spans
+# from `[`text`](url)` → `[](url)`. Surfaced in v4.7 mkdocs build dogfood:
+# the previous + quantifier silently skipped any link whose text was wrapped
+# in backticks, masking real broken links.
+LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+?)(?:#[^)]+)?\)")
 
 
 def is_external(url: str) -> bool:

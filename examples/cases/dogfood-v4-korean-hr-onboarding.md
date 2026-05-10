@@ -48,7 +48,7 @@ error:    #EF4444
 info:     #3B82F6
 ```
 
-### Semantic aliases (cite [`knowledge/colors/semantic-aliases.md`](../../knowledge/colors/semantic-aliases.md))
+### Semantic aliases (cite [`knowledge/colors/color-theory.md`](../../knowledge/colors/color-theory.md))
 
 ```yaml
 # light
@@ -80,7 +80,7 @@ Contrast verified per [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contra
 - `brand-fg` on `brand-bg`: 4.94:1 (AA large ✓; AA normal at -700: 6.96:1 ✓)
 - `error-fg` on `error-bg`: 4.83:1 (AA large ✓)
 
-### Typography (cite [`knowledge/typography/korean-typography.md`](../../knowledge/typography/korean-typography.md), [`knowledge/typography/pretendard-and-fallbacks.md`](../../knowledge/typography/pretendard-and-fallbacks.md))
+### Typography (cite [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md))
 
 ```css
 font-family-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
@@ -181,10 +181,10 @@ This exercises the v4.5 polished `form-control.md` spec end-to-end.
 </form>
 ```
 
-### Korean text density adjustments (cite [`knowledge/typography/korean-typography.md`](../../knowledge/typography/korean-typography.md))
+### Korean text density adjustments (cite [`knowledge/typography/korean-typography.md`](../../knowledge/i18n/korean-typography.md))
 
 - Field labels keep short (1-3 words). "이메일" not "이메일 주소를 입력해 주세요" — that goes in helper text.
-- Helper text uses 해요체 ("입력해 주세요"). For legal forms (e.g., contract page), switch to 합쇼체 ("입력하시기 바랍니다") per [`knowledge/conversational/korean-conversational-conventions.md`](../../knowledge/conversational/korean-conversational-conventions.md).
+- Helper text uses 해요체 ("입력해 주세요"). For legal forms (e.g., contract page), switch to 합쇼체 ("입력하시기 바랍니다") per [`knowledge/conversational/korean-voice-conventions.md`](../../knowledge/conversational/korean-voice-conventions.md).
 - Min-height on FormControl rows: 56px (vs 48px Latin default) — Hangul reads taller per the knowledge file.
 
 ### Tokens consumed (per [`examples/component-form-control.md`](../component-form-control.md))

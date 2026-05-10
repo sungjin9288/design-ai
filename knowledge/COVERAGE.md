@@ -14,7 +14,7 @@ generated_at: 2026-05-10
 | --- | --- | --- |
 | Knowledge files | 92 | 77 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 190 | |
+| Worked examples | 192 | |
 | Extractors | 9 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 137 | **68.8% spec coverage** |
@@ -49,7 +49,7 @@ generated_at: 2026-05-10
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 655 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 659 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -307,6 +307,7 @@ generated_at: 2026-05-10
 | [examples/component-dialog-content-text.md](../examples/component-dialog-content-text.md) | 92 | `DialogContentText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-dialog-content.md](../examples/component-dialog-content.md) | 105 | `DialogContent` — spec |
 | [examples/component-dialog-title.md](../examples/component-dialog-title.md) | 104 | `DialogTitle` — spec |
+| [examples/component-dialog.md](../examples/component-dialog.md) | 128 | `Dialog` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
 | [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
@@ -403,6 +404,7 @@ generated_at: 2026-05-10
 | [examples/component-spin.md](../examples/component-spin.md) | 173 | `Spin` (Spinner) — spec |
 | [examples/component-spinner.md](../examples/component-spinner.md) | 204 | `Spinner` — spec |
 | [examples/component-splitter.md](../examples/component-splitter.md) | 210 | `Splitter` (resizable panel) — spec |
+| [examples/component-stack.md](../examples/component-stack.md) | 96 | `Stack` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-statistic.md](../examples/component-statistic.md) | 282 | `Statistic` — spec |
 | [examples/component-step.md](../examples/component-step.md) | 84 | `Step` — spec |
 | [examples/component-steps.md](../examples/component-steps.md) | 264 | `Steps` (Stepper) — spec |
@@ -603,6 +605,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `category-picker`
 - `chat-interface`
 - `code`
+- `dialog`
 - `doc-page`
 - `email-layout`
 - `empty-state`
@@ -627,6 +630,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `scroll-reveal`
 - `spatial-locomotion`
 - `spatial-panel`
+- `stack`
 - `stock-chart`
 - `tag-badge`
 - `testimonial-carousel`

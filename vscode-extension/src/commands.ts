@@ -1,9 +1,22 @@
 // Command implementations.
+//
+// Pure-logic helpers (file traversal, search, manifest reading, language
+// pairing) live in ./lib.ts so they can be tested without VS Code APIs.
 
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { getLanguagePreference } from "./paths";
+import {
+  searchCorpus,
+  pairWalkthroughs,
+  chooseWalkthrough,
+  readManifest,
+  pickReadme,
+  walkMd,
+  globToRegex,
+  splitGlob,
+} from "./lib";
 
 export function registerCommands(
   context: vscode.ExtensionContext,
@@ -64,24 +77,6 @@ async function install(designAiPath: string | undefined): Promise<void> {
   });
   terminal.show();
   terminal.sendText("./install.sh", true);
-}
-
-interface PluginManifest {
-  version: string;
-  skills?: unknown[];
-  commands?: unknown[];
-  agents?: unknown[];
-}
-
-function readManifest(designAiPath: string): PluginManifest | undefined {
-  try {
-    const manifestPath = path.join(designAiPath, ".claude-plugin", "plugin.json");
-    const text = fs.readFileSync(manifestPath, "utf-8");
-    const parsed = JSON.parse(text) as PluginManifest;
-    return parsed;
-  } catch {
-    return undefined;
-  }
 }
 
 async function status(designAiPath: string | undefined): Promise<void> {
@@ -156,7 +151,6 @@ async function openFromGlob(
     return;
   }
 
-  // Manual glob without dependencies
   const [dir, pattern] = splitGlob(globPattern);
   const fullDir = path.join(designAiPath, dir);
 
@@ -165,7 +159,7 @@ async function openFromGlob(
     return;
   }
 
-  const re = new RegExp("^" + pattern.replace(/\*/g, "[^/]*") + "$");
+  const re = globToRegex(pattern);
   const files = fs
     .readdirSync(fullDir)
     .filter((name) => re.test(name))
@@ -233,7 +227,7 @@ async function openSkill(designAiPath: string | undefined): Promise<void> {
   }
 }
 
-// ----- new: walkthrough with language preference -----
+// ----- walkthrough with language preference -----
 
 async function openWalkthrough(designAiPath: string | undefined): Promise<void> {
   if (!designAiPath) {
@@ -243,39 +237,27 @@ async function openWalkthrough(designAiPath: string | undefined): Promise<void> 
 
   const lang = getLanguagePreference();
   const integrationsDir = path.join(designAiPath, "docs", "integrations");
+  const options = pairWalkthroughs(integrationsDir);
 
-  if (!fs.existsSync(integrationsDir)) {
-    vscode.window.showWarningMessage("docs/integrations/ not found");
+  if (options.length === 0) {
+    vscode.window.showWarningMessage("No walkthroughs found in docs/integrations/.");
     return;
   }
 
-  const allFiles = fs.readdirSync(integrationsDir).filter((n) => n.endsWith("-walkthrough.md") || n.endsWith("-walkthrough.ko.md"));
-  // Group: prefer .ko.md if KO selected, fall back to .md.
-  const stems = new Set<string>();
-  for (const name of allFiles) {
-    stems.add(name.replace(/\.ko\.md$|\.md$/, ""));
-  }
-
-  const items = Array.from(stems)
-    .map((stem) => {
-      const koFile = `${stem}.ko.md`;
-      const enFile = `${stem}.md`;
-      const preferKo = lang === "ko" && allFiles.includes(koFile);
-      const chosen = preferKo ? koFile : enFile;
-      const tag = preferKo ? "[KO]" : "[EN]";
+  const items = options
+    .map((opt) => {
+      const chosen = chooseWalkthrough(opt, lang);
+      if (!chosen) return null;
+      const tag = chosen.lang === "ko" ? "[KO]" : "[EN]";
+      const niceLabel = opt.stem.replace(/-walkthrough$/, "").replace(/-/g, " ");
       return {
-        label: `${tag} ${stem.replace(/-walkthrough$/, "").replace(/-/g, " ")}`,
-        description: chosen,
-        file: path.join(integrationsDir, chosen),
+        label: `${tag} ${niceLabel}`,
+        description: path.relative(designAiPath, chosen.file),
+        file: chosen.file,
       };
     })
-    .filter((entry) => fs.existsSync(entry.file))
+    .filter((x): x is { label: string; description: string; file: string } => x !== null)
     .sort((a, b) => a.label.localeCompare(b.label));
-
-  if (items.length === 0) {
-    vscode.window.showWarningMessage("No walkthroughs found.");
-    return;
-  }
 
   const pick = await vscode.window.showQuickPick(items, {
     placeHolder: lang === "ko" ? "통합 워크스루 열기" : "Open integration walkthrough",
@@ -288,7 +270,7 @@ async function openWalkthrough(designAiPath: string | undefined): Promise<void> 
   }
 }
 
-// ----- new: README opener with language preference -----
+// ----- README opener with language preference -----
 
 async function openReadme(designAiPath: string | undefined): Promise<void> {
   if (!designAiPath) {
@@ -296,24 +278,16 @@ async function openReadme(designAiPath: string | undefined): Promise<void> {
     return;
   }
 
-  const lang = getLanguagePreference();
-  const candidates = lang === "ko"
-    ? ["README.ko.md", "README.md"]
-    : ["README.md"];
-
-  for (const name of candidates) {
-    const full = path.join(designAiPath, name);
-    if (fs.existsSync(full)) {
-      const doc = await vscode.workspace.openTextDocument(full);
-      await vscode.window.showTextDocument(doc);
-      return;
-    }
+  const file = pickReadme(designAiPath, getLanguagePreference());
+  if (!file) {
+    vscode.window.showWarningMessage("README not found.");
+    return;
   }
-
-  vscode.window.showWarningMessage("README not found.");
+  const doc = await vscode.workspace.openTextDocument(file);
+  await vscode.window.showTextDocument(doc);
 }
 
-// ----- new: search across knowledge / examples / skills / docs -----
+// ----- search across knowledge / examples / skills / docs -----
 
 async function search(designAiPath: string | undefined): Promise<void> {
   if (!designAiPath) {
@@ -322,50 +296,16 @@ async function search(designAiPath: string | undefined): Promise<void> {
   }
 
   const lang = getLanguagePreference();
-  const placeholder = lang === "ko"
-    ? "검색어 (제목 또는 본문 내용)"
-    : "Search term (title or body content)";
-
   const query = await vscode.window.showInputBox({
-    placeHolder: placeholder,
-    prompt: lang === "ko"
-      ? "design-ai 코퍼스 전체에서 검색해요"
-      : "Search across the entire design-ai corpus",
+    placeHolder: lang === "ko" ? "검색어 (제목 또는 본문 내용)" : "Search term (title or body content)",
+    prompt: lang === "ko" ? "design-ai 코퍼스 전체에서 검색해요" : "Search across the entire design-ai corpus",
   });
 
   if (!query || query.trim().length < 2) {
     return;
   }
 
-  const needle = query.toLowerCase();
-  const dirs = ["knowledge", "examples", "skills", "docs", "agents", "commands"];
-  type Hit = { file: string; lineNumber: number; preview: string; relPath: string };
-  const hits: Hit[] = [];
-
-  for (const dir of dirs) {
-    const root = path.join(designAiPath, dir);
-    for (const file of walkMd(root)) {
-      try {
-        const content = fs.readFileSync(file, "utf-8");
-        const lines = content.split("\n");
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].toLowerCase().includes(needle)) {
-            hits.push({
-              file,
-              lineNumber: i + 1,
-              preview: lines[i].trim().slice(0, 120),
-              relPath: path.relative(designAiPath, file),
-            });
-            break; // first match per file is enough
-          }
-        }
-      } catch {
-        // skip unreadable files
-      }
-      if (hits.length >= 200) break; // cap
-    }
-    if (hits.length >= 200) break;
-  }
+  const hits = searchCorpus({ query, designAiPath });
 
   if (hits.length === 0) {
     vscode.window.showInformationMessage(
@@ -397,31 +337,4 @@ async function search(designAiPath: string | undefined): Promise<void> {
     editor.selection = new vscode.Selection(pos, pos);
     editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
   }
-}
-
-// ----- utilities -----
-
-function walkMd(dir: string): string[] {
-  if (!fs.existsSync(dir)) return [];
-  const files: string[] = [];
-  const stack = [dir];
-  while (stack.length) {
-    const current = stack.pop()!;
-    const entries = fs.readdirSync(current, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        stack.push(full);
-      } else if (entry.isFile() && entry.name.endsWith(".md")) {
-        files.push(full);
-      }
-    }
-  }
-  return files;
-}
-
-function splitGlob(pattern: string): [string, string] {
-  const idx = pattern.lastIndexOf("/");
-  if (idx === -1) return ["", pattern];
-  return [pattern.slice(0, idx), pattern.slice(idx + 1)];
 }

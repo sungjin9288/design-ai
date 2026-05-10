@@ -50,7 +50,10 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
   features:
-    - navigation.instant
+    # navigation.instant disabled: incompatible with mkdocs-static-i18n's
+    # contextual language switcher (the EN ↔ KO toggle would fail to navigate
+    # to the correct mirror page). Surfaced in v4.7 mkdocs build dogfood.
+    # - navigation.instant
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky

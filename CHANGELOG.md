@@ -2,6 +2,102 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.8.0 — Three-surface dogfood (VS Code + npm + mkdocs) (2026-05)
+
+Three more surfaces dogfooded end-to-end. Each surfaced real bugs that were fixed in this release. The audit infrastructure itself caught a false-negative bug (link-check regex skipping links with backtick-wrapped text).
+
+### Phase 40 — VS Code extension dogfood
+
+**Findings**: [`docs/DOGFOOD-V4-VSCODE-FINDINGS.md`](docs/DOGFOOD-V4-VSCODE-FINDINGS.md).
+
+#### Added
+- **`vscode-extension/src/lib.ts`** — pure-logic helpers (`searchCorpus`, `pairWalkthroughs`, `chooseWalkthrough`, `readManifest`, `pickReadme`, `walkMd`, `globToRegex`, `splitGlob`). Extracted so they're testable without a VS Code instance. 230 LOC.
+- **`vscode-extension/test/lib.test.mjs`** — 25 unit tests against compiled `out/lib.js`. Real corpus assertions (e.g., `searchCorpus("Pretendard")` should find 5+ hits and each preview should contain "pretendard").
+- **`vscode-extension/media/icon.png`** — 128×128 placeholder PNG (PIL-generated). Required by `vsce package`; designer should replace pre-marketplace.
+
+#### Changed
+- **`vscode-extension/src/commands.ts`** — refactored to import from `lib.ts`. 423 → 310 LOC.
+- **`vscode-extension/src/lib.ts`** — `searchCorpus` preview now centers on the match (was: line start + 120 char slice — would lose the matched word if it appeared past column 120). Real adopter-facing improvement; surfaced by the `searchCorpus("Pretendard")` test.
+- **`vscode-extension/.vscodeignore`** — exclude `test/`, `*.vsix`. .vsix size 21.96 KB → 19.65 KB.
+- **`vscode-extension/package.json`** — version 0.2.0 → 0.3.0.
+
+#### Verified
+- 25/25 unit tests pass against the shipped JS.
+- `tsc --noEmit` zero errors.
+- `vsce package` produces clean 19.65 KB .vsix (13 files).
+- Command-manifest ↔ implementation parity: 10/10 commands match.
+
+### Phase 41 — npm fresh install dogfood
+
+**Findings**: [`docs/DOGFOOD-V4-NPM-FINDINGS.md`](docs/DOGFOOD-V4-NPM-FINDINGS.md).
+
+#### Procedure
+- `npm pack` → 1.1 MB tarball, 436 files.
+- Install into `mktemp -d` fresh dir.
+- Run full lifecycle: `version` / `help` / `list skills` / `list commands` / `install` (against fake `CLAUDE_HOME`) / `status` / `uninstall`.
+- Verify symlinks created (39 total: 19 skills + 4 agents + 16 commands) + cleaned up.
+- Verify `design-ai` PATH bin works.
+
+#### Changed
+- **`package.json` `files` allowlist** — added `tools/migrations/`. Previously the `/stability-review` slash command (v4.6) instructed adopters to run `tools/migrations/promote-stability.py` and `bump-last-updated.py` — but those weren't in the npm package. Adopters who installed via npm couldn't run the documented ritual. Fixed.
+
+#### Verified
+- 19 skills + 4 agents + 16 commands enumerate from manifest.
+- Symlink farm against fake `CLAUDE_HOME` works correctly.
+- Sub-second install + uninstall.
+- Korean characters in `list` output render correctly.
+- No stowaways in tarball (`refs/`, `node_modules`, `.git/` all absent).
+
+### Phase 42 — mkdocs site build dogfood
+
+**Findings**: [`docs/DOGFOOD-V4-MKDOCS-FINDINGS.md`](docs/DOGFOOD-V4-MKDOCS-FINDINGS.md).
+
+#### Procedure
+- `pip install -r docs/requirements.txt`.
+- `./tools/build-docs.sh` (symlink farm).
+- `mkdocs build --clean`.
+- Verify Korean pages built at `/ko/...`.
+
+#### Bugs surfaced — fixed
+- **`tools/audit/link-check.py` regex bug** — required ≥ 1 char of link text, so backtick-wrapped link patterns (the most common style in this corpus) silently bypassed validation after the inline-code-strip pass. Changed `+` → `*`. **This was a false-negative across the entire audit history**: every backtick-wrapped link reference was unchecked.
+- **11 real broken links surfaced** (after fix):
+  - 2 in `docs/USING.ko.md` (wrong relative paths to QUICKSTART/DISTRIBUTION).
+  - 5 in `examples/cases/dogfood-v4-korean-hr-onboarding.md` (cited fictional knowledge file paths).
+  - 4 in dialog/flex specs referencing `component-dialog.md` and `component-stack.md` which **didn't exist** despite being flagship MUI primitives.
+- **Generated missing primitives** — `examples/component-dialog.md` (15 props from Ant + MUI) and `examples/component-stack.md` (1 prop from MUI) via v2 extractor.
+- **mkdocs.yml `navigation.instant` disabled** — incompatible with mkdocs-static-i18n's contextual language switcher. Disabled with inline comment explaining why.
+
+#### Verified
+- mkdocs build: 0 errors, 631 warnings (categorized as known-acceptable: refs/ links, hex anchor noise, .py/.yml utility links).
+- 782 HTML pages generated.
+- Korean i18n routing: all `*.ko.md` → `/ko/...` paths render.
+- Build time: 15.84 s (within RELEASE-CHECKLIST < 20s budget).
+- v4.x docs (MIGRATION-v4, USING.ko, CONTRIBUTING.ko, ARCHITECTURE.ko, dogfood findings) all rendered.
+
+### Combined verified
+- All 6 audits pass (with strengthened link-check now actually validating backtick-text links).
+- 25 VS Code lib tests pass.
+- 16 CLI lib tests pass.
+- npm fresh install lifecycle works end-to-end.
+- mkdocs builds cleanly to 782 pages.
+
+### What three surfaces validated
+- VS Code extension code shape correct; .vsix shippable; manifest consistent.
+- npm distribution path works on fresh machine.
+- Doc site renders both languages correctly.
+- Audit infrastructure now stronger (link-check no longer skips backtick-wrapped link texts).
+
+### What's still ahead (4.x)
+- VS Code extension under real IDE (Headless tests don't cover quick-pick UI / config-change handling).
+- npm publish flow (would push to actual registry — deferred to launch).
+- GitHub Pages deployment of doc site.
+- Polish remaining v4.5/v4.7 drafts (now including dialog + stack).
+- Coverage push 68.8% → 80%.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.7.0 → 4.8.0.
+- `vscode-extension/package.json`: 0.2.0 → 0.3.0.
+
 ## v4.7.0 — Dogfood v4 + 5 fixes (2026-05)
 
 End-to-end practical test of the v4.6 corpus on a real Korean B2B HR onboarding scenario. Surfaced 5 actionable gaps; all 5 fixed in this commit.
