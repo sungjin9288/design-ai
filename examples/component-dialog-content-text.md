@@ -1,92 +1,76 @@
-# `DialogContentText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `DialogContentText` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/DialogContentText/DialogContentText.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `DialogContentText`. The descriptive paragraph inside `DialogContent`. Provides the accessible *description* for the dialog via `aria-describedby` association.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Inside every Dialog whose body has explanatory text.
+- Pair with `aria-describedby` on the parent Dialog.
 
 ## API
 
 ```tsx
-<DialogContentText>
-  {children}
-</DialogContentText>
+<Dialog aria-labelledby="t" aria-describedby="d">
+  <DialogTitle id="t">정말 삭제할까요?</DialogTitle>
+  <DialogContent>
+    <DialogContentText id="d">
+      이 작업은 되돌릴 수 없어요.
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>...</DialogActions>
+</Dialog>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | — | Required for `aria-describedby` association on parent Dialog |
+| `children` | `ReactNode` | — | Description text |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+Extends `Typography` — all typography props work.
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--font-size-body
+--color-fg-muted          /* slightly less prominent than primary content */
+--line-height-body
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Without matching `aria-describedby` on the parent Dialog, the description is just visual — screen readers won't connect it.
+- For dialogs with multiple paragraphs, only one needs the `id` (the most informative). Or wrap multiple paragraphs in a `<div id="d">` and put `id` on that.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Long description** — wraps. For multi-paragraph, use multiple `<Typography>` children with one outer container holding the `id`.
+- **Markdown links inside** — inline links work; ensure they're keyboard-accessible (focus moves to them inside the trapped dialog).
+- **Korean honorific** — match the title's register. Confirmation: 합쇼체 ("되돌릴 수 없습니다"). Friendly: 해요체 ("되돌릴 수 없어요").
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<DialogContent>
+  <DialogContentText id="leave-desc">
+    저장하지 않은 변경사항이 있어요.{' '}
+    <Link href="/help/auto-save" target="_blank" onClick={(e) => e.stopPropagation()}>
+      자동 저장이 켜져 있나요?
+    </Link>
+  </DialogContentText>
+</DialogContent>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't omit `id` — defeats `aria-describedby`.
+- Don't use as a generic paragraph — for non-described body text, use `<Typography>`.
 
 ## References
 
-- Mui: [`DialogContentText.d.ts`](../refs/mui/packages/mui-material/src/DialogContentText/DialogContentText.d.ts)
+- MUI: [`DialogContentText`](../refs/mui/packages/mui-material/src/DialogContentText/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-dialog.md`](component-dialog.md)
+- [`component-dialog-title.md`](component-dialog-title.md)
+- [`component-dialog-content.md`](component-dialog-content.md)

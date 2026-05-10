@@ -1,92 +1,95 @@
-# `FormHelperText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `FormHelperText` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/FormHelperText/FormHelperText.d.ts` (4 interface(s), 0 component(s))
+> Synthesized from MUI `FormHelperText`. The helper / error text below an input. Inherits `error` and `disabled` state from the parent `FormControl` so consumers don't conditionally style.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Below every input that needs guidance ("회사 이메일을 입력해 주세요").
+- Below every input that can show validation errors.
+- Skip when an input is fully self-explanatory (rare for a sound design).
 
 ## API
 
 ```tsx
-<FormHelperText>
-  {children}
-</FormHelperText>
+<FormControl error={!!emailError} required>
+  <FormLabel htmlFor="email">이메일</FormLabel>
+  <OutlinedInput id="email" />
+  <FormHelperText id="email-help">
+    {emailError ?? "회사 도메인 이메일을 입력해 주세요"}
+  </FormHelperText>
+</FormControl>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | The helper / error text |
+| `disabled` | `boolean` | inherited | Mute when disabled |
+| `error` | `boolean` | inherited | Color as error |
+| `filled` | `boolean` | inherited | Match Filled variant spacing |
+| `focused` | `boolean` | inherited | Color when input focused |
+| `margin` | `'dense' \| 'normal' \| 'none'` | `'normal'` | Top spacing |
+| `required` | `boolean` | inherited | (Not visualized; from FormControl) |
 
 ## States
 
-| State | Visual |
+| State | Color |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | `fg-muted` |
+| Focused | `fg-primary` |
+| Error | `fg-error` |
+| Disabled | reduced opacity |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--font-size-caption   /* 12px */
+--color-fg-muted
+--color-fg-primary
+--color-fg-error
+--space-xs            /* margin-top */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Pair with input via `aria-describedby` matching this element's `id`.
+- For error states, also set `aria-invalid="true"` on the input.
+- Avoid putting links inside helper text — they're hard to spot at this size and easy to miss.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Switching between helper and error** — keep the same `id`; switch text content. Don't unmount/remount (the screen reader association breaks).
+- **Multi-line helper** — wraps; for long text, consider moving to a Tooltip or below-block info instead.
+- **Korean honorific** — match the form's overall register. Onboarding: 해요체 ("입력해 주세요"). Legal/contracts: 합쇼체 ("입력하시기 바랍니다").
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<FormControl error={!!errors.email} fullWidth>
+  <FormLabel htmlFor="email">이메일</FormLabel>
+  <OutlinedInput
+    id="email"
+    type="email"
+    aria-invalid={!!errors.email}
+    aria-describedby="email-help"
+  />
+  <FormHelperText id="email-help">
+    {errors.email ?? "회사 도메인 이메일을 입력해 주세요"}
+  </FormHelperText>
+</FormControl>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use raw `<p>` for helper text — `error` state won't auto-propagate.
+- Don't conditionally hide the helper element when there's no error and there used to be — the layout shifts and screen readers lose the association.
+- Don't pile multiple FormHelperText siblings — combine into one node.
 
 ## References
 
-- Mui: [`FormHelperText.d.ts`](../refs/mui/packages/mui-material/src/FormHelperText/FormHelperText.d.ts)
+- MUI: [`FormHelperText`](../refs/mui/packages/mui-material/src/FormHelperText/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-form-control.md`](component-form-control.md)
+- [`component-form-label.md`](component-form-label.md)
+- [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md)

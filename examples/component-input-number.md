@@ -1,111 +1,141 @@
-# `InputNumber` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `InputNumber` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **ant-design**: `refs/ant-design/components/input-number/index.tsx` (7 interface(s), 2 component(s))
+> Synthesized from Ant Design `InputNumber`. Numeric input with up/down stepper buttons, formatting, and min/max constraints. shadcn / MUI ship a generic `<TextField type="number">` instead — Ant's specialized component handles formatting (commas, decimals), parsing, and IME edge cases that the generic falls down on.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Quantities (수량, 인원, 횟수).
+- Prices / amounts where commas matter.
+- Bounded inputs (rating 1-5, percentage 0-100).
+
+## When NOT to use
+
+- Currency input with extensive formatting → use a specialized `AmountInput` per [`knowledge/patterns/money-and-amount.md`](../knowledge/patterns/money-and-amount.md).
+- Phone numbers → text input with masking, not numeric.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+┌────────────────┐
+│ 12,345    ▲▼  │   ← stepper buttons (up/down)
+└────────────────┘
 ```
 
 ## API
 
 ```tsx
-<InputNumber>
-  {children}
-</InputNumber>
+<InputNumber
+  min={0}
+  max={100}
+  step={1}
+  value={qty}
+  onChange={setQty}
+  formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+  parser={(v) => v.replace(/,/g, '')}
+  addonAfter="개"
+/>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `addonAfter` | `React.ReactNode` | — | — | ant-design | **[deprecated]** (fill in) |
-| `addonBefore` | `React.ReactNode` | — | — | ant-design | **[deprecated]** (fill in) |
-| `bordered` | `boolean` | — | — | ant-design | **[deprecated]** (fill in) |
-| `classNames` | `InputNumberClassNamesType` | — | — | ant-design | (fill in) |
-| `controls` | `\| boolean \| { upIcon?: React.ReactNode; downIcon?:` | — | — | ant-design | (fill in) |
-| `disabled` | `boolean` | — | — | ant-design | (fill in) |
-| `prefix` | `React.ReactNode` | — | — | ant-design | (fill in) |
-| `prefixCls` | `string` | — | — | ant-design | (fill in) |
-| `rootClassName` | `string` | — | — | ant-design | (fill in) |
-| `size` | `SizeType` | — | — | ant-design | (fill in) |
-| `status` | `InputStatus` | — | — | ant-design | (fill in) |
-| `styles` | `InputNumberStylesType` | — | — | ant-design | (fill in) |
-| `suffix` | `React.ReactNode` | — | — | ant-design | (fill in) |
-| `variant` | `Variant` | `"outlined"` | — | ant-design | (fill in) |
-
-### Deprecated props
-
-- `addonAfter` (ant-design) — review: rename, drop, or keep with a different surface?
-- `addonBefore` (ant-design) — review: rename, drop, or keep with a different surface?
-- `bordered` (ant-design) — review: rename, drop, or keep with a different surface?
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` / `defaultValue` | `number` | — | Controlled / uncontrolled value |
+| `onChange` | `(value) => void` | — | Fires on commit (blur, Enter, stepper) |
+| `min` / `max` | `number` | `-Infinity` / `Infinity` | Bounds |
+| `step` | `number` | `1` | Stepper increment |
+| `precision` | `number` | — | Decimal places |
+| `formatter` | `(value) => string` | — | Display transform (e.g., add commas) |
+| `parser` | `(displayValue) => number` | — | Reverse the formatter on input |
+| `controls` | `boolean \| { upIcon, downIcon }` | `true` | Show stepper buttons |
+| `prefix` / `addonBefore` | `ReactNode` | — | Leading content (icon / unit) |
+| `suffix` / `addonAfter` | `ReactNode` | — | Trailing content (unit / "원") |
+| `disabled` | `boolean` | `false` | |
+| `size` | `'small' \| 'middle' \| 'large'` | `'middle'` | |
+| `keyboard` | `boolean` | `true` | Enable arrow keys to step |
+| `stringMode` | `boolean` | `false` | Use string for big-int values (decimals beyond JS number precision) |
+| `status` | `'error' \| 'warning'` | — | Validation state |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | Border, fg-default |
+| Focus | Brand border + ring |
+| Hover | Stepper buttons reveal (or always visible per design system) |
+| Error | Red border + helper |
+| Disabled | Muted, stepper hidden |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--input-bg
+--input-border
+--input-border-focus
+--input-border-error
+--input-min-height-32
+--input-min-height-40
+--input-padding-x
+--font-family-mono     /* tabular numerals for clean alignment */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Renders as `<input type="text" inputmode="decimal">` (NOT `type="number"` — that breaks `formatter`).
+- Stepper buttons need `aria-label="증가"` / `aria-label="감소"`.
+- Arrow Up/Down keys step through values when focused.
+- For min/max bounds, surface invalid attempts via `aria-invalid` + helper text rather than silently clamping.
+- Cite [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Korean IME entering numbers** — IME shouldn't intercept; `inputmode="decimal"` brings up numeric keyboard on mobile. Test on a real device — desktop testing misses IME edge cases per [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md).
+- **Paste with formatting** — "12,345원" pasted should parse to 12345 via `parser`. Don't reject — clean it.
+- **Decimal precision overflow** — JS `0.1 + 0.2 = 0.30000000000000004`. Use `precision={2}` + display rounding, or `stringMode` for invoices/finance.
+- **Negative values** — explicit `min={0}` if not allowed; otherwise minus sign is accepted.
+- **Empty value** — `value=null` vs `value=undefined` vs `value=0` are distinct. Decide your convention; document it.
+- **Big numbers (> Number.MAX_SAFE_INTEGER)** — use `stringMode={true}` to keep precision.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+// Quantity picker
+<InputNumber
+  min={1}
+  max={99}
+  defaultValue={1}
+  onChange={(qty) => setQty(qty ?? 1)}
+  addonAfter="개"
+  size="middle"
+  aria-label="수량"
+/>
+
+// Price input with comma formatting
+<InputNumber
+  min={0}
+  step={100}
+  precision={0}
+  value={price}
+  onChange={setPrice}
+  addonBefore="₩"
+  formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+  parser={(v) => Number(v?.replace(/,/g, '') ?? 0)}
+  style={{ width: '100%' }}
+/>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use `<input type="number">` for prices — formatting/IME break.
+- Don't silently clamp to bounds without a message — user wonders why their input changed.
+- Don't omit unit suffix for ambiguous numbers (12 what?).
+- Don't use without `inputmode="decimal"` on mobile.
 
 ## References
 
-- Ant-Design: [`index.tsx`](../refs/ant-design/components/input-number/index.tsx)
+- Ant Design: [`InputNumber`](../refs/ant-design/components/input-number/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`knowledge/patterns/money-and-amount.md`](../knowledge/patterns/money-and-amount.md)
+- [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md)
+- [`component-input.md`](component-input.md)
+- [`component-amount-input.md`](component-amount-input.md)

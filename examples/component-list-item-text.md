@@ -1,102 +1,98 @@
-# `ListItemText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `ListItemText` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/ListItemText/ListItemText.d.ts` (4 interface(s), 1 component(s))
+> Synthesized from MUI `ListItemText`. The text block inside a `ListItem` — primary line plus optional secondary line. Handles typography, ellipsis, and screen-reader semantics so consumers don't reimplement.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Inside every `ListItem` that has text content (almost all of them).
+- For text-only rows (no icon, no secondary action), `ListItemText` is the entire body.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+[Primary text — 14px medium / fg-default]
+[Secondary text — 12px regular / fg-muted]
 ```
 
 ## API
 
 ```tsx
-<ListItemText>
-  {children}
-</ListItemText>
+<ListItemText
+  primary="홍길동"
+  secondary="개발팀 · 2026-05-01 입사"
+/>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | Alias for the `primary` prop. |
-| `classes` | `Partial<ListItemTextClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `disableTypography` | `boolean \| undefined` | `false` | — | mui | If `true`, the children won't be wrapped by a Typography component.
-This can be useful to render an alternative Typography variant by wrapping
-the `children` (or `primary`) text, and optional `secondary` text
-with the Typography component. |
-| `inset` | `boolean \| undefined` | `false` | — | mui | If `true`, the children are indented.
-This should be used if there is no left avatar or left icon. |
-| `primary` | `React.ReactNode` | — | — | mui | The main content element. |
-| `secondary` | `React.ReactNode` | — | — | mui | The secondary content element. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `primary` | `ReactNode` | — | Primary line (label) |
+| `secondary` | `ReactNode` | — | Secondary line (sub-label) |
+| `inset` | `boolean` | `false` | Indent left to align with rows that have a leading icon |
+| `disableTypography` | `boolean` | `false` | Skip wrapping in `<Typography>`; renders raw children |
+| `primaryTypographyProps` | `TypographyProps` | — | Override primary line typography |
+| `secondaryTypographyProps` | `TypographyProps` | — | Override secondary line typography |
 
 ## States
 
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+`ListItemText` is structural — no interactive states. Inherits color from parent (`ListItemButton`'s selected/disabled states cascade).
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--font-size-body         /* primary */
+--font-size-caption      /* secondary */
+--font-weight-medium     /* primary */
+--font-weight-regular    /* secondary */
+--color-fg-default       /* primary */
+--color-fg-muted         /* secondary */
+--line-height-body       /* KR-bumped 1.65 */
+--space-xs               /* gap between primary and secondary */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Semantic: primary renders as `<span>` (or override). Secondary renders as `<p>`.
+- For screen readers, both lines are announced together as "primary, secondary".
+- For LONG primary text that wraps, ensure `aria-label` provides a short summary if needed.
+- `inset={true}` keeps text alignment consistent with sibling rows that have icons — don't drop it.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Long primary text** — wraps; if multi-line wrap is undesired, set `primaryTypographyProps={{ noWrap: true }}` for ellipsis.
+- **Empty secondary** — omit the prop; don't pass empty string (creates extra spacing).
+- **React node as primary** — primary can be a `<Stack>` for inline badges next to the label. `disableTypography` lets you control the wrapper.
+- **Korean text density** — Hangul reads slightly taller; default line-height (1.65 KR-bumped) should not be reduced.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+// Settings row with switch
+<ListItem
+  secondaryAction={<Switch onChange={toggle} checked={pushEnabled} />}
+>
+  <ListItemText
+    primary="푸시 알림"
+    secondary="새 메시지가 오면 알림을 받아요"
+  />
+</ListItem>
+
+// Inset variant — aligns with rows that have icons
+<ListItemText inset primary="섹션 헤더 없음" secondary="아이콘 자리만큼 들여 써요" />
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't pass JSX trees as `secondary` that reimplement Typography — use `secondaryTypographyProps` overrides.
+- Don't omit `inset` selectively — once any sibling row uses `ListItemIcon`, all icon-less siblings should `inset` for visual rhythm.
+- Don't rely on `secondary` for critical info screen reader users need quickly — they hear it as continuation of primary.
 
 ## References
 
-- Mui: [`ListItemText.d.ts`](../refs/mui/packages/mui-material/src/ListItemText/ListItemText.d.ts)
+- MUI: [`ListItemText`](../refs/mui/packages/mui-material/src/ListItemText/)
 
 ## Cross-reference
 
 - [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-list-item.md`](component-list-item.md)
+- [`component-list-item-button.md`](component-list-item-button.md)
+- [`knowledge/typography/type-scale-fundamentals.md`](../knowledge/typography/type-scale-fundamentals.md)

@@ -1,95 +1,82 @@
-# `ListItemIcon` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `ListItemIcon` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/ListItemIcon/ListItemIcon.d.ts` (1 interface(s), 1 component(s))
+> Synthesized from MUI `ListItemIcon`. The leading-icon slot in a `ListItem` — handles consistent sizing, color, and spacing so icons align across rows.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Leading icons in nav lists (settings, drawer menu).
+- Status icons in compact lists (success / warning indicators).
+- For trailing icons (chevrons, badges), use `secondaryAction` on `ListItem` instead.
 
 ## API
 
 ```tsx
-<ListItemIcon>
-  {children}
-</ListItemIcon>
+<ListItem disablePadding>
+  <ListItemButton>
+    <ListItemIcon>
+      <PersonIcon />
+    </ListItemIcon>
+    <ListItemText primary="프로필" />
+  </ListItemButton>
+</ListItem>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | The icon component |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | The content of the component, normally `Icon`, `SvgIcon`,
-or a `@mui/icons-material` SVG icon element. |
-| `classes` | `Partial<ListItemIconClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+The icon's color and size are controlled by the parent — don't apply explicit `sx={{ color, fontSize }}` unless intentionally diverging.
 
 ## States
 
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+Inherits from parent button: hover, focus, selected, disabled all cascade. Selected rows get brand-colored icons.
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--icon-size-md            /* 24px default */
+--color-fg-muted          /* default icon color */
+--color-fg-on-selected    /* selected state */
+--list-icon-min-width     /* 40-56px reserved column */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Decorative icons get `aria-hidden="true"` (default behavior of MUI icons).
+- If the icon is the *only* indicator (no text label), wrap with `<span aria-label="..."/>`.
+- Touch target lives on the parent `ListItemButton`, not the icon itself.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Mixed: some rows have icons, some don't** — use `inset={true}` on `ListItemText` for icon-less rows so text columns align.
+- **Custom icon size** — overriding via `sx={{ minWidth: ... }}` lets compact lists fit more rows; don't go below 32px on touch.
+- **Status icons + text** — pair with `<Stack direction="row" gap={1}>` inside `ListItemText.primary` if both need to be at the text level.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+// Settings nav with status indicators
+<List component="nav">
+  <ListItem disablePadding>
+    <ListItemButton>
+      <ListItemIcon><BellIcon color="primary" /></ListItemIcon>
+      <ListItemText primary="알림" secondary="3개 안 읽음" />
+    </ListItemButton>
+  </ListItem>
+</List>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put text inside `ListItemIcon` — it's sized for icons only.
+- Don't skip `ListItemIcon` and put icons in `ListItemText.primary` for icon-led rows — alignment breaks.
 
 ## References
 
-- Mui: [`ListItemIcon.d.ts`](../refs/mui/packages/mui-material/src/ListItemIcon/ListItemIcon.d.ts)
+- MUI: [`ListItemIcon`](../refs/mui/packages/mui-material/src/ListItemIcon/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-list-item.md`](component-list-item.md)
+- [`component-list-item-text.md`](component-list-item-text.md)
+- [`knowledge/icons/curated-sets.md`](../knowledge/icons/curated-sets.md)

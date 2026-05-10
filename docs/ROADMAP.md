@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phases 43-44 — Polish + coverage 80.9% (v4.9.0) ✓ shipped
+
+Two phases combined: full polish on 18 of 21 DRAFT specs from v4.5/v4.7 (Phase 43) + coverage 68.8% → 80.9% with 24 new specs (Phase 44).
+
+### Phase 43 — DRAFT polish
+- 18 fully polished specs (Dialog parent, Stack, 5 List subs, 4 Form subs, 2 Card subs, MenuList, ToggleButton, MobileStepper, InputNumber, DialogContentText).
+- 3 intentionally left as DRAFT (accordion sub-components — rarely standalone).
+- Cross-ref corrections (broken paths from polished specs fixed).
+
+### Phase 44 — Coverage push
+- 24 new specs (5 polished, 19 v2 drafts).
+- Polished: Fade, Grow, Tab, OutlinedInput, TableRow.
+- Drafts: 19 across Transitions / Inputs / Tables / Steps / Misc families.
+- Filled coverage gaps surfaced during the polish (TableCell + InputAdornment generated mid-phase to satisfy cross-refs from polished specs).
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.8.0 → 4.9.0.
+
+### Verified
+- All 6 audits pass.
+- Coverage: 137 → 161 of 199 (68.8% → 80.9%) — exceeded 80% target.
+- 26 new fully-polished specs.
+- 3 accordion drafts retain honest DRAFT banner.
+
+### Coverage milestone
+
+80%+ canonical coverage. Every flagship MUI primitive is covered. Remaining 20% is mostly utility types (`use-lazy-ripple`, `class-name`, `direction`, `theme`) + edge primitives (`overridable-component`, `_registry`).
+
+### What's still ahead
+- Phase 45: VS Code real-instance tests (`@vscode/test-electron`).
+- Phase 46: SESSION-LOG v4 update (full v2 → v4.9 narrative).
+- Phase 47: Component spec extractor v3 (cross-source conflict detection).
+- Polish remaining ~24 drafts (incremental).
+- Coverage 80.9% → 90% (low-priority utility types).
+
 ## Phases 40-42 — Three-surface dogfood (v4.8.0) ✓ shipped
 
 VS Code extension + npm distribution + mkdocs site build — three surfaces v4.7 explicitly didn't validate. All three exercised end-to-end; each surfaced real bugs that were fixed.

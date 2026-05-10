@@ -1,92 +1,70 @@
-# `ListSubheader` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `ListSubheader` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/ListSubheader/ListSubheader.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `ListSubheader`. A section header inside a `List`. Use for grouping related rows under a label ("최근", "즐겨찾기", "전체").
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Grouped lists (categories of settings, sections of nav).
+- Date-grouped feeds ("오늘", "어제", "이번 주").
+- Avoid for short lists (<5 rows) — header overhead isn't worth it.
 
 ## API
 
 ```tsx
-<ListSubheader>
-  {children}
-</ListSubheader>
+<List subheader={<ListSubheader>최근 검색</ListSubheader>}>
+  <ListItemButton>...</ListItemButton>
+  <ListItemButton>...</ListItemButton>
+</List>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Header text |
+| `disableSticky` | `boolean` | `false` | Skip sticky-on-scroll behavior |
+| `inset` | `boolean` | `false` | Indent to align with icon-led rows |
+| `disableGutters` | `boolean` | `false` | Remove horizontal padding |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--font-size-caption       /* 12px */
+--font-weight-semibold
+--color-fg-muted          /* default */
+--space-md                /* horizontal padding */
+--list-subheader-height   /* 32px */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Renders as `<li>` by default. For semantic headers, override `component="h3"` or wrap content with appropriate heading.
+- Don't use as the *only* visual cue for grouping — pair with `Divider` or distinct background for low-vision users.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Sticky on scroll** — default behavior keeps the subheader visible while its rows scroll past. Disable for short lists.
+- **Korean labels** — short and noun-form ("최근", "즐겨찾기"). Avoid sentence-form labels here.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<List>
+  <ListSubheader>최근</ListSubheader>
+  {recent.map((it) => <ListItemButton key={it.id}>{it.title}</ListItemButton>)}
+  <ListSubheader>즐겨찾기</ListSubheader>
+  {favs.map((it) => <ListItemButton key={it.id}>{it.title}</ListItemButton>)}
+</List>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't nest subheaders.
+- Don't use for sublabels under a single row — that's `ListItemText.secondary`.
 
 ## References
 
-- Mui: [`ListSubheader.d.ts`](../refs/mui/packages/mui-material/src/ListSubheader/ListSubheader.d.ts)
+- MUI: [`ListSubheader`](../refs/mui/packages/mui-material/src/ListSubheader/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-list-item.md`](component-list-item.md)
+- [`component-list-item-button.md`](component-list-item-button.md)

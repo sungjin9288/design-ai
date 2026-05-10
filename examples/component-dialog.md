@@ -1,128 +1,176 @@
-# `Dialog` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `Dialog` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/Dialog/Dialog.d.ts` (9 interface(s), 1 component(s))
-> - **shadcn-ui**: `refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx` (0 interface(s), 10 component(s))
+> Synthesized from Ant Design `Modal` + MUI `Dialog`. The flagship modal primitive — focus-trapped, esc-closeable, scroll-locked overlay containing structured content (title, body, actions). Used for confirmations, focused tasks, and content too important to dismiss inline.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Confirmations with destructive consequences ("Delete?", "Leave without saving?").
+- Focused short tasks that pull the user out of context (invite, schedule, single-step config).
+- Critical disclosures the user must acknowledge.
+
+## When NOT to use
+
+- Long forms (5+ fields) → use a dedicated page.
+- Optional info → use a Tooltip / Popover / Sheet.
+- Errors that don't block flow → use Toast / Snackbar.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+┌─[scrim]─────────────────────────────────────┐
+│                                             │
+│   ┌──────────────────────────────────┐      │
+│   │ DialogTitle              [✕]     │      │
+│   ├──────────────────────────────────┤      │
+│   │ DialogContent                    │      │
+│   │   DialogContentText (optional)   │      │
+│   │   form fields / list / image     │      │
+│   ├──────────────────────────────────┤      │
+│   │           [Cancel] [Primary]     │      │
+│   └──────────────────────────────────┘      │
+│                                             │
+└─────────────────────────────────────────────┘
 ```
 
 ## API
 
 ```tsx
-<Dialog>
-  {children}
+<Dialog
+  open={open}
+  onClose={handleClose}
+  fullWidth
+  maxWidth="sm"
+  aria-labelledby="dialog-title"
+  aria-describedby="dialog-desc"
+>
+  <DialogTitle id="dialog-title">팀원 초대</DialogTitle>
+  <DialogContent>
+    <DialogContentText id="dialog-desc">
+      이메일로 초대 링크를 보내요.
+    </DialogContentText>
+    <TextField autoFocus fullWidth label="이메일" />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleClose}>취소</Button>
+    <Button onClick={handleSend} variant="contained">보내기</Button>
+  </DialogActions>
 </Dialog>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `open` | `ModalProps['open']` | — | ✓ | mui | If `true`, the component is shown. |
-| `'aria-describedby'` | `string \| undefined` | — | — | mui | The id(s) of the element(s) that describe the dialog. |
-| `'aria-labelledby'` | `string \| undefined` | — | — | mui | The id(s) of the element(s) that label the dialog. |
-| `'aria-modal'` | `boolean \| 'true' \| 'false' \| undefined` | `true` | — | mui | Informs assistive technologies that the element is modal.
-It's added on the element with role="dialog". |
-| `PaperComponent` | `React.JSXElementConstructor<PaperProps> \| undefine` | `Paper` | — | mui | The component used to render the body of the dialog. |
-| `children` | `React.ReactNode` | — | — | mui | Dialog children, usually the included sub-components. |
-| `classes` | `Partial<DialogClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `fullScreen` | `boolean \| undefined` | `false` | — | mui | If `true`, the dialog is full-screen. |
-| `fullWidth` | `boolean \| undefined` | `false` | — | mui | If `true`, the dialog stretches to `maxWidth`.
-
-Notice that the dialog width grow is limited by the default margin. |
-| `maxWidth` | `Breakpoint \| false \| undefined` | `'sm'` | — | mui | Determine the max-width of the dialog.
-The dialog width grows with the size of the screen.
-Set to `false` to disable `maxWidth`. |
-| `role` | `'dialog' \| 'alertdialog' \| undefined` | `'dialog'` | — | mui | The ARIA role for the dialog element.
-The main dialog role is `dialog`, but `alertdialog` can be used if the content of the dialog requires immediate attention.
-See https://www.w3.org/TR/wai-aria-1.2/#dialog and https://www.w3.org/TR/wai-ar |
-| `scroll` | `'body' \| 'paper' \| undefined` | `'paper'` | — | mui | Determine the container for scrolling the dialog. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-| `transitionDuration` | `TransitionProps['timeout'] \| undefined` | `{
-enter: theme.transitions.duration.enteringScreen,
-exit: theme.transitions.duration.leavingScreen,
-}` | — | mui | The duration for the transition, in milliseconds.
-You may specify a single timeout for all transitions, or individually with an object. |
-
-### Events
-
-| Event | Type | Source(s) | Description |
+| Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `onClose` | `ModalProps['onClose'] \| undefined` | mui | Callback fired when the component requests to be closed. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| `open` | `boolean` | required | Controlled open state |
+| `onClose` | `(e, reason) => void` | — | Called on backdrop click / Esc / close button |
+| `fullWidth` | `boolean` | `false` | Stretch to `maxWidth` |
+| `maxWidth` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| false` | `'sm'` | Width cap |
+| `fullScreen` | `boolean` | `false` | Full viewport (mobile) |
+| `scroll` | `'paper' \| 'body'` | `'paper'` | `paper`: content scrolls inside; `body`: page scrolls |
+| `disableEscapeKeyDown` | `boolean` | `false` | Block Esc — use sparingly |
+| `aria-labelledby` | `string` | — | Required; matches DialogTitle's `id` |
+| `aria-describedby` | `string` | — | Required when there's body description; matches DialogContentText's `id` |
+| `TransitionComponent` | `Component` | `Fade` | Custom enter/exit transition |
+| `keepMounted` | `boolean` | `false` | Keep DOM after close (state preservation) |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Closed | Not in DOM (or `display: none` if `keepMounted`) |
+| Opening | Scrim fades in (200ms); dialog scales/fades from 90% to 100% |
+| Open | Focus trapped inside; scroll locked on body; backdrop receives Esc |
+| Closing | Reverse of opening; restore focus to opener |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--scrim-bg              /* black/40 light, black/60 dark */
+--dialog-bg             /* surface elevated */
+--dialog-radius
+--dialog-shadow         /* elevation-md */
+--dialog-max-width-sm   /* 444 */
+--dialog-max-width-md   /* 600 */
+--dialog-max-width-lg   /* 900 */
+--space-md              /* internal padding */
+--motion-duration-200
+--motion-easing-out
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Focus trap: Tab cycles within dialog only. First focus goes to first interactive element (or `autoFocus` button).
+- Escape closes (unless `disableEscapeKeyDown`).
+- Scroll lock: body scroll disabled while dialog open.
+- `role="dialog"` + `aria-modal="true"` (MUI sets these).
+- `aria-labelledby` + `aria-describedby` MUST be set; otherwise screen readers announce just "dialog".
+- On close: focus returns to the element that opened the dialog.
+- Cite [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Backdrop click ambiguity** — `onClose` fires with `reason='backdropClick'`. For destructive flows (unsaved changes), confirm before actually closing.
+- **Nested dialogs** — possible but discouraged. If unavoidable: focus trap moves to the inner one, restores correctly on close.
+- **Mobile fullscreen** — set `fullScreen={isMobile}` (e.g., `useMediaQuery('(max-width:600px)')`) so dialogs fill the small viewport instead of cramping.
+- **Korean honorific** — title 합쇼체 for confirmations ("삭제하시겠습니까?"); 해요체 for friendly modals ("초대 보내볼까요?"). Cite [`knowledge/i18n/korean-product-conventions.md`](../knowledge/i18n/korean-product-conventions.md).
+- **Long content** — set `scroll="paper"` (default) and pair `dividers` on `DialogContent` to signal scrollability.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function DeleteConfirmDialog({ open, onClose, onConfirm, isPending }) {
+  return (
+    <Dialog
+      open={open}
+      onClose={(_, reason) => {
+        if (reason === 'backdropClick' && isPending) return; // block during pending
+        onClose();
+      }}
+      aria-labelledby="del-title"
+      aria-describedby="del-desc"
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle id="del-title">정말 삭제할까요?</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="del-desc">
+          이 작업은 되돌릴 수 없어요.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>취소</Button>
+        <LoadingButton
+          onClick={onConfirm}
+          loading={isPending}
+          color="error"
+          variant="contained"
+        >
+          삭제
+        </LoadingButton>
+      </DialogActions>
+    </Dialog>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't disable Esc unless the flow truly requires explicit confirmation.
+- Don't put 4+ buttons in DialogActions — overflow into a menu or split into steps.
+- Don't open a dialog from a dialog (nested) without strong reason.
+- Don't make the dialog dismissable during a destructive operation that's actually running.
+- Don't omit `aria-labelledby` — the dialog has no accessible name without it.
 
 ## References
 
-- Mui: [`Dialog.d.ts`](../refs/mui/packages/mui-material/src/Dialog/Dialog.d.ts)
-- Shadcn-Ui: [`dialog.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx)
+- Ant Design: [`Modal`](../refs/ant-design/components/modal/) — class API, mask
+- MUI: [`Dialog`](../refs/mui/packages/mui-material/src/Dialog/) — flagship reference
 
 ## Cross-reference
 
 - [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-dialog-title.md`](component-dialog-title.md)
+- [`component-dialog-content.md`](component-dialog-content.md)
+- [`component-dialog-actions.md`](component-dialog-actions.md)
+- [`component-dialog-content-text.md`](component-dialog-content-text.md)
+- [`component-modal.md`](component-modal.md) — Ant-flavor modal
+- [`knowledge/patterns/empty-states.md`](../knowledge/patterns/empty-states.md) — confirmation patterns
+- [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)

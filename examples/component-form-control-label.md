@@ -1,109 +1,134 @@
-# `FormControlLabel` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `FormControlLabel` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/FormControlLabel/FormControlLabel.d.ts` (3 interface(s), 1 component(s))
+> Synthesized from MUI `FormControlLabel`. The label-wraps-control pattern for `Checkbox` / `Radio` / `Switch` — the entire label area becomes the click target. Without it, users have to click the tiny check/radio circle directly (poor touch UX).
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Any standalone `Checkbox` / `Radio` / `Switch` with a visible label.
+- Inside `FormGroup` for grouped checkboxes.
+- Inside `RadioGroup` for radio sets (RadioGroup wires up `name` automatically).
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+[control]   Label text
+   └─────── click target spans both ────────┘
 ```
 
 ## API
 
 ```tsx
-<FormControlLabel>
-  {children}
-</FormControlLabel>
+<FormControlLabel
+  control={<Checkbox checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />}
+  label="개인정보 수집 및 이용에 동의해요"
+/>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `control` | `React.ReactElement<unknown, any>` | — | ✓ | mui | A control element. For instance, it can be a `Radio`, a `Switch` or a `Checkbox`. |
-| `label` | `React.ReactNode` | — | ✓ | mui | A text or an element to be used in an enclosing label element. |
-| `checked` | `boolean \| undefined` | — | — | mui | If `true`, the component appears selected. |
-| `classes` | `Partial<FormControlLabelClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `disableTypography` | `boolean \| undefined` | — | — | mui | If `true`, the label is rendered as it is passed without an additional typography node. |
-| `disabled` | `boolean \| undefined` | — | — | mui | If `true`, the control is disabled. |
-| `inputRef` | `React.Ref<any> \| undefined` | — | — | mui | Pass a ref to the `input` element. |
-| `labelPlacement` | `'end' \| 'start' \| 'top' \| 'bottom' \| undefined` | `'end'` | — | mui | The position of the label. |
-| `name` | `string \| undefined` | — | — | mui | (fill in) |
-| `required` | `boolean \| undefined` | — | — | mui | If `true`, the label will indicate that the `input` is required. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-| `value` | `unknown` | — | — | mui | The value of the component. |
-
-### Events
-
-| Event | Type | Source(s) | Description |
+| Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `onChange` | `((event: React.SyntheticEvent, checked: boolean) => void) \| ` | mui | Callback fired when the state is changed. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| `control` | `ReactElement` | required | The Checkbox/Radio/Switch |
+| `label` | `ReactNode` | — | Label text or component |
+| `labelPlacement` | `'start' \| 'end' \| 'top' \| 'bottom'` | `'end'` | Label position relative to control |
+| `disabled` | `boolean` | inherited | Disable the entire label+control |
+| `required` | `boolean` | `false` | Visual asterisk (label only) |
+| `value` | `any` | — | When inside RadioGroup |
+| `componentsProps` | `{ typography?: TypographyProps }` | — | Customize label typography |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | Control + label fg-default |
+| Hover | Subtle bg ripple from control |
+| Focus | Control's focus ring; label color unchanged |
+| Disabled | Both control + label muted |
+| Checked / unchecked | Driven by inner control |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
+--font-size-body
 --color-fg-default
---space-md
---radius-md
+--color-fg-muted          /* disabled */
+--space-sm                /* gap between control and label */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Label is implicitly associated via the wrapping `<label>` element — no explicit `htmlFor` needed when `control` is a child.
+- For long labels with HTML inside (links, **bold**), screen readers read the entire label as the control's name.
+- Don't put interactive elements (other buttons/links) inside the label — they conflict with the click target.
+- For consent checkboxes with required-acceptance, also set `aria-required="true"` on the inner Checkbox.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Long label wrapping** — wraps cleanly; the click target stays aligned with the control on the first line.
+- **Korean labels with embedded link** — "이용약관에 동의해요" with link on "이용약관". Use `<Link onClick={(e) => e.stopPropagation()}>` to prevent toggling the checkbox when the link is clicked.
+- **labelPlacement="start"** — useful for settings rows where the label is the question and the Switch is the answer.
+- **Inside Stack with multiple labels** — `Stack gap={0}` — don't add extra gap; FormControlLabel has its own.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function ConsentCheckboxes() {
+  const [consents, setConsents] = useState({
+    terms: false,
+    privacy: false,
+    marketing: false,
+  });
+
+  return (
+    <FormGroup>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={consents.terms}
+            onChange={(e) => setConsents({ ...consents, terms: e.target.checked })}
+          />
+        }
+        label={
+          <>
+            <Link
+              href="/terms"
+              target="_blank"
+              onClick={(e) => e.stopPropagation()}
+            >
+              이용약관
+            </Link>
+            에 동의해요 <span style={{ color: 'red' }}>*</span>
+          </>
+        }
+        required
+      />
+      <FormControlLabel
+        control={<Checkbox checked={consents.privacy} onChange={...} />}
+        label="개인정보 수집 동의"
+        required
+      />
+      <FormControlLabel
+        control={<Checkbox checked={consents.marketing} onChange={...} />}
+        label="마케팅 수신 동의 (선택)"
+      />
+    </FormGroup>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put a button inside `label` — clicking the button toggles the control, confusing users.
+- Don't use it without a visible label — for icon-only toggles, use `IconButton` with `aria-label`.
+- Don't place the control too far from the label visually (`labelPlacement="bottom"` with extra gap) — the connection becomes unclear.
 
 ## References
 
-- Mui: [`FormControlLabel.d.ts`](../refs/mui/packages/mui-material/src/FormControlLabel/FormControlLabel.d.ts)
+- MUI: [`FormControlLabel`](../refs/mui/packages/mui-material/src/FormControlLabel/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-form-control.md`](component-form-control.md)
+- [`component-form-group.md`](component-form-group.md)
+- [`component-checkbox.md`](component-checkbox.md)
+- [`component-radio.md`](component-radio.md)
+- [`component-switch.md`](component-switch.md)
+- [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md)

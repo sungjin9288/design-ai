@@ -1,92 +1,79 @@
-# `CardMedia` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `CardMedia` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/CardMedia/CardMedia.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `CardMedia`. The image/video region of a `Card`. Handles aspect ratio + responsive sizing + lazy loading defaults.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Top hero image of a Card.
+- Inline video/audio inside a Card.
+- For decorative background, prefer `Box` + `sx={{ backgroundImage }}`.
 
 ## API
 
 ```tsx
-<CardMedia>
-  {children}
-</CardMedia>
+<Card>
+  <CardMedia
+    component="img"
+    image={post.imageUrl}
+    alt={post.imageAlt ?? ''}
+    height={200}
+  />
+  <CardContent>...</CardContent>
+</Card>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
-
-## Tokens consumed
-
-(Fill in. List every token this component reads. Flag missing tokens.)
-
-```
---color-bg-default
---color-fg-default
---space-md
---radius-md
-```
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `component` | `'img' \| 'video' \| 'audio' \| 'div'` | `'div'` | Underlying element |
+| `image` | `string` | — | Image URL (required for `div`/`img`) |
+| `src` | `string` | — | Source URL (for `video` / `audio` — `image` prop is also accepted) |
+| `alt` | `string` | — | Alt text (`img` only) |
+| `height` | `number \| string` | — | Fixed height (image will object-fit cover) |
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- For decorative images: `alt=""` (not omitted).
+- For meaningful images: descriptive `alt`. Don't repeat the title.
+- Korean alt: avoid "이미지" — that's redundant; describe the content ("팀 회식 사진" not "이미지").
+- For video: provide captions track or transcript. Cite [`knowledge/video/in-product-video.md`](../knowledge/video/in-product-video.md).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Image fails to load** — show fallback. CardMedia doesn't have built-in fallback; wrap with custom error handling if critical.
+- **Aspect ratio control** — `height` is fixed; for ratio-based, use `sx={{ aspectRatio: '16 / 9' }}`.
+- **Lazy loading** — set `loading="lazy"` via `<CardMedia component="img" loading="lazy" />`.
+- **Korean image content** — avoid text in images (untranslatable, accessibility issues). Render text via HTML overlay instead.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<Card>
+  <CardMedia
+    component="img"
+    image={recipe.imageUrl}
+    alt={`${recipe.title} 완성 사진`}
+    sx={{ aspectRatio: '4 / 3', objectFit: 'cover' }}
+    loading="lazy"
+  />
+  <CardContent>
+    <Typography variant="h6">{recipe.title}</Typography>
+  </CardContent>
+</Card>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't omit `alt` for `img` — even decorative needs `alt=""` explicitly.
+- Don't use `CardMedia` for icons — wrong sizing model.
+- Don't apply `objectFit: 'contain'` for hero images — they leave letterbox bars; use `cover`.
 
 ## References
 
-- Mui: [`CardMedia.d.ts`](../refs/mui/packages/mui-material/src/CardMedia/CardMedia.d.ts)
+- MUI: [`CardMedia`](../refs/mui/packages/mui-material/src/CardMedia/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-card.md`](component-card.md)
+- [`component-card-header.md`](component-card-header.md)
+- [`component-card-content.md`](component-card-content.md)
+- [`knowledge/a11y/contrast.md`](../knowledge/a11y/contrast.md) — for any text-overlay

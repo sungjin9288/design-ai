@@ -1,94 +1,72 @@
-# `ListItemAvatar` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `ListItemAvatar` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/ListItemAvatar/ListItemAvatar.d.ts` (1 interface(s), 1 component(s))
+> Synthesized from MUI `ListItemAvatar`. The leading-avatar slot — like `ListItemIcon` but sized for `Avatar` (40px default vs 24px). Used in user/contact lists, message lists, and any row identified by a person/entity image.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- User lists (team members, followers).
+- Message threads (sender avatar).
+- Brand/entity rows with logos.
 
 ## API
 
 ```tsx
-<ListItemAvatar>
-  {children}
-</ListItemAvatar>
+<ListItem secondaryAction={<IconButton><CloseIcon /></IconButton>}>
+  <ListItemAvatar>
+    <Avatar src={user.avatarUrl} alt={user.name} />
+  </ListItemAvatar>
+  <ListItemText primary={user.name} secondary={user.role} />
+</ListItem>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | The content of the component, normally an `Avatar`. |
-| `classes` | `Partial<ListItemAvatarClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | An `Avatar` component |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--avatar-size-md            /* 40px default */
+--list-avatar-min-width     /* 56px reserved column */
+--space-md                  /* gap to text */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- `Avatar` should have meaningful `alt` (the person's name) — don't set `alt=""`.
+- For image-failed states, MUI's Avatar falls back to initials or generic icon; ensure both are readable.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Status badge** — wrap Avatar in `Badge` for online/unread indicators.
+- **Initials fallback** — Korean names use 2-3 character initials (성+이름 first char). Latin: 1-2.
+- **Compact lists** — set `Avatar size={32}` and override `ListItemAvatar` `minWidth`.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<Badge
+  overlap="circular"
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+  badgeContent={user.online ? <OnlineDot /> : null}
+>
+  <ListItemAvatar>
+    <Avatar src={user.avatarUrl}>{user.name[0]}</Avatar>
+  </ListItemAvatar>
+</Badge>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use for plain icons — use `ListItemIcon` (smaller column).
+- Don't omit `alt` on the inner Avatar — failed loads become anonymous gray circles.
 
 ## References
 
-- Mui: [`ListItemAvatar.d.ts`](../refs/mui/packages/mui-material/src/ListItemAvatar/ListItemAvatar.d.ts)
+- MUI: [`ListItemAvatar`](../refs/mui/packages/mui-material/src/ListItemAvatar/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-list-item.md`](component-list-item.md)
+- [`component-avatar.md`](component-avatar.md)
+- [`component-list-item-icon.md`](component-list-item-icon.md)

@@ -1,92 +1,98 @@
-# `FormLabel` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `FormLabel` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/FormLabel/FormLabel.d.ts` (6 interface(s), 0 component(s))
+> Synthesized from MUI `FormLabel`. The label of a form input — handles required-asterisk, focused color, error color via parent `FormControl`. Use this OR `<label htmlFor>` directly; FormLabel adds the design-system styling.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Label for any `OutlinedInput` / `Select` / custom input inside `FormControl`.
+- For `Checkbox` / `Radio` / `Switch`, prefer `FormControlLabel` (label-wraps-control pattern).
 
 ## API
 
 ```tsx
-<FormLabel>
-  {children}
-</FormLabel>
+<FormControl required error={!!emailError}>
+  <FormLabel htmlFor="email">이메일</FormLabel>
+  <OutlinedInput id="email" />
+  <FormHelperText>...</FormHelperText>
+</FormControl>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `htmlFor` | `string` | — | Match the input's `id` (REQUIRED for click-to-focus + screen-reader association) |
+| `children` | `ReactNode` | — | Label text |
+| `required` | `boolean` | inherited | Visual asterisk |
+| `error` | `boolean` | inherited | Color as error |
+| `focused` | `boolean` | inherited | Color when input focused |
+| `disabled` | `boolean` | inherited | Mute when disabled |
+| `component` | `ElementType` | `'label'` | Override (use `'legend'` inside `<fieldset>`) |
+| `filled` | `boolean` | inherited | Match Filled variant spacing |
 
 ## States
 
-| State | Visual |
+| State | Color |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | `fg-default` |
+| Focused | `fg-primary` |
+| Error | `fg-error` |
+| Disabled | `fg-muted` |
+| Required | Same color + `*` suffix |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
+--font-size-body
+--font-weight-medium
 --color-fg-default
---space-md
---radius-md
+--color-fg-primary       /* focused */
+--color-fg-error
+--color-fg-muted         /* disabled */
+--space-xs               /* margin-bottom to input */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- `htmlFor` MUST match the input's `id`. Without it, click-on-label-focuses-input doesn't work AND screen readers don't announce the label.
+- For groups (RadioGroup, FormGroup), use `component="legend"` inside a `<fieldset>` (FormControl handles fieldset for you when you set `component="fieldset"`).
+- Required asterisk: visual decoration; pair with `aria-required="true"` on the input for screen readers.
+- Korean labels: keep short (1-3 words). Avoid "을/를" particles in label form ("이메일" not "이메일을").
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Optional indicator** — for forms where most fields are optional, label *required* fields visually rather than the inverse. Per [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md).
+- **Long label** — wraps; check at narrow viewports.
+- **Tooltip on label** — wrap label content in a Tooltip for hint-on-hover; ensure focus-visible on label still triggers the tooltip.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<FormControl required error={!!errors.password} fullWidth>
+  <FormLabel htmlFor="password">비밀번호</FormLabel>
+  <OutlinedInput
+    id="password"
+    type="password"
+    aria-required="true"
+    aria-invalid={!!errors.password}
+    aria-describedby="password-help"
+  />
+  <FormHelperText id="password-help">
+    {errors.password ?? "8자 이상, 영문 + 숫자 + 특수문자"}
+  </FormHelperText>
+</FormControl>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't omit `htmlFor` — biggest a11y miss in real codebases.
+- Don't put placeholder text instead of a label — placeholders disappear on focus.
+- Don't use multiple `FormLabel` per input.
 
 ## References
 
-- Mui: [`FormLabel.d.ts`](../refs/mui/packages/mui-material/src/FormLabel/FormLabel.d.ts)
+- MUI: [`FormLabel`](../refs/mui/packages/mui-material/src/FormLabel/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-form-control.md`](component-form-control.md)
+- [`component-form-helper-text.md`](component-form-helper-text.md)
+- [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md)

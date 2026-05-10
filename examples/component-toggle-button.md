@@ -1,92 +1,129 @@
-# `ToggleButton` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST)
+# `ToggleButton` — spec
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/ToggleButton/ToggleButton.d.ts` (5 interface(s), 0 component(s))
+> Synthesized from MUI `ToggleButton`. A button that stays in a "pressed" state when activated, like the formatting buttons in a rich-text editor (B / I / U). Used inside `ToggleButtonGroup` for related options.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Single binary toggle (e.g., "show grid").
+- Set of mutually exclusive options (text alignment: left / center / right) — use inside `ToggleButtonGroup` with `exclusive`.
+- Set of multi-select options (text style: bold + italic) — `ToggleButtonGroup` without `exclusive`.
+
+## When NOT to use
+
+- For two states with text labels (filter chips), use `Chip` with `clickable`.
+- For toggling a setting on/off in a form, use `Switch` (more standard).
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+┌──────┬──────┬──────┐
+│  B   │  I   │  U   │   (pressed = filled bg)
+└──────┴──────┴──────┘
 ```
 
 ## API
 
 ```tsx
-<ToggleButton>
-  {children}
-</ToggleButton>
+<ToggleButtonGroup
+  value={align}
+  exclusive
+  onChange={(_, v) => v && setAlign(v)}
+  aria-label="text alignment"
+>
+  <ToggleButton value="left" aria-label="왼쪽 정렬">
+    <FormatAlignLeftIcon />
+  </ToggleButton>
+  <ToggleButton value="center" aria-label="가운데 정렬">
+    <FormatAlignCenterIcon />
+  </ToggleButton>
+  <ToggleButton value="right" aria-label="오른쪽 정렬">
+    <FormatAlignRightIcon />
+  </ToggleButton>
+</ToggleButtonGroup>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `any` | required | Identifies this button to the parent group |
+| `selected` | `boolean` | derived | Whether this button is pressed (auto when inside group) |
+| `disabled` | `boolean` | `false` | Non-interactive; greyed |
+| `onChange` | `(e, value) => void` | — | Standalone use; group manages otherwise |
+| `color` | `'standard' \| 'primary' \| 'secondary' \| ...` | `'standard'` | Pressed color |
+| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | |
+| `aria-label` | `string` | — | Required for icon-only buttons |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | transparent bg, fg-default border |
+| Hover | bg-subtle |
+| Focus-visible | 2px focus ring |
+| Pressed (selected) | bg-pressed (brand-tinted), fg-on-pressed |
+| Disabled | reduced opacity |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--toggle-bg-default
+--toggle-bg-hover
+--toggle-bg-pressed       /* brand-50 light, brand-900-30 dark */
+--toggle-fg-default
+--toggle-fg-on-pressed
+--toggle-border
+--toggle-min-height-32    /* small */
+--toggle-min-height-40    /* medium — touch-friendly */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- For icon-only: `aria-label` MUST be set ("왼쪽 정렬", not "Left").
+- `aria-pressed` on the button reflects selected state (MUI handles this).
+- Inside `ToggleButtonGroup` with `aria-label`, the group becomes a toolbar; arrow keys navigate between buttons.
+- For exclusive groups, `aria-pressed` shouldn't be all unset — at least one should be pressed (or set `value=null` explicitly).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Exclusive group with no selection** — possible if `value=null`; user can deselect by clicking the active button. Decide if that's intentional (alignment: probably no — always have one).
+- **Long labels** — switch to text labels with icons. Avoid mixing icon-only and text-only in the same group.
+- **Disabled subset** — possible per-button, but visually confusing if scattered. Prefer disabling the entire group.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function TextStyleToolbar({ formats, onChange }) {
+  return (
+    <ToggleButtonGroup
+      value={formats}
+      onChange={(_, next) => onChange(next)}
+      aria-label="텍스트 스타일"
+    >
+      <ToggleButton value="bold" aria-label="굵게">
+        <FormatBoldIcon />
+      </ToggleButton>
+      <ToggleButton value="italic" aria-label="기울임">
+        <FormatItalicIcon />
+      </ToggleButton>
+      <ToggleButton value="underline" aria-label="밑줄">
+        <FormatUnderlinedIcon />
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put 6+ ToggleButtons in a row — overflow into a menu.
+- Don't use as a primary CTA — it's a setting control, not an action.
+- Don't omit `aria-label` for icon-only.
 
 ## References
 
-- Mui: [`ToggleButton.d.ts`](../refs/mui/packages/mui-material/src/ToggleButton/ToggleButton.d.ts)
+- MUI: [`ToggleButton`](../refs/mui/packages/mui-material/src/ToggleButton/) + [`ToggleButtonGroup`](../refs/mui/packages/mui-material/src/ToggleButtonGroup/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-button.md`](component-button.md)
+- [`component-toggle.md`](component-toggle.md)
+- [`component-switch.md`](component-switch.md)

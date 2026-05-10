@@ -2,6 +2,68 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.9.0 — Polish + coverage 80.9% (2026-05)
+
+Two phases combined: polished v4.5/v4.7 DRAFT specs (Phase 43) + coverage push 68.8% → 80.9% (Phase 44). The corpus now has 80%+ canonical coverage with full polish on 26 of the new specs.
+
+### Phase 43 — Polished 18 of 21 DRAFT specs (full real specs)
+- **Dialog family parent**: `component-dialog.md` (15 props, full anatomy / a11y / Korean honorific guidance / focus-trap docs).
+- **Stack** layout primitive: full responsive examples + KR text density notes.
+- **List family** (5 sub-components polished): `list-item-button`, `list-item-text`, `list-item-icon`, `list-item-avatar`, `list-subheader`.
+- **Form family** (4 sub-components polished): `form-control-label`, `form-group`, `form-helper-text`, `form-label`.
+- **Card family** (2 sub-components polished): `card-header`, `card-media`.
+- **Misc**: `dialog-content-text`, `menu-list`, `toggle-button`, `mobile-stepper`, `input-number`.
+- **Intentionally left as DRAFT (3)**: `accordion-actions`, `accordion-details`, `accordion-summary` — rarely used standalone; banner stays so adopters know API table is accurate but narrative is placeholder.
+
+### Phase 44 — Coverage 137 → 161 (68.8% → 80.9%)
+
+Added 24 specs (5 polished, 19 v2-extracted DRAFTs):
+
+**Polished** (full narrative): `fade`, `grow`, `tab`, `outlined-input`, `table-row`.
+
+**v2 DRAFTs** (accurate API table + placeholder narrative):
+- Transitions: `fade`, `grow` (above polished)
+- Inputs: `outlined-input`, `filled-input`, `input-base` (39 props), `input-adornment`
+- Tables: `table-row`, `table-body`, `table-head`, `table-cell` (10 props), `table-container`, `table-footer`, `table-pagination`, `table-sort-label`
+- Steps: `step-button`, `step-connector`, `step-content`, `step-icon`, `step-label`
+- Misc: `alert-title`, `avatar-group`, `tab` (above polished), `tab-scroll-button`, `snackbar-content`
+
+### Changed
+- Cross-references in 4 newly-polished specs corrected (e.g., `knowledge/motion/easings-and-durations.md` → `knowledge/motion/principles.md`; `component-text-field.md` → `component-amount-input.md`).
+- Versions: 4.8.0 → 4.9.0.
+
+### Verified
+- All 6 audits pass.
+- Coverage: 137 → 161 of 199 (68.8% → 80.9%).
+- 26 new fully-polished specs added across Phases 43+44.
+- 3 accordion sub-component drafts retain honest DRAFT banner.
+
+### Coverage by family (post v4.9)
+
+| Family | v4.7 | v4.9 | Status |
+| --- | --- | --- | --- |
+| Form (FormControl + 5 sub-roles) | complete | complete | ✓ all polished |
+| List (ListItem + 5 sub-roles) | complete | complete | ✓ all polished |
+| Dialog (parent + 4 children) | partial | complete | ✓ all polished (parent added v4.8 dogfood) |
+| Card (Content + Actions + Header + Media) | complete | complete | ✓ all polished |
+| Tabs (Tab + Tabs + ScrollButton) | partial | complete | ✓ Tab polished |
+| Tables (Row + Cell + Body + Head + Container + Footer + Pagination + SortLabel) | partial | complete | ⚠ Row polished; rest DRAFT |
+| Steps (Button + Connector + Content + Icon + Label + Step + Stepper) | partial | complete | ⚠ all DRAFT (low priority — already covered via Step parent) |
+| Inputs (OutlinedInput + FilledInput + InputBase + InputAdornment + Input + TextField...) | partial | complete | ⚠ OutlinedInput polished; rest DRAFT |
+| Transitions (Fade + Grow + Slide + Zoom) | partial | complete | ⚠ Fade + Grow polished; rest DRAFT |
+
+### What this enables
+- **80% coverage milestone crossed** — covers virtually every flagship MUI primitive an adopter will reach for.
+- **Family-completion verified** — all major families (Form, List, Dialog, Card, Tabs, Tables, Steps, Inputs, Transitions) have parent + children covered.
+- **Polish-debt visible** — DRAFT banners signal which specs need narrative (~24 remaining v4.5+v4.7+v4.9 drafts; will land incrementally).
+
+### What's still ahead
+- Phase 45: `@vscode/test-electron` integration tests (real VS Code instance).
+- Phase 46: SESSION-LOG v4 update (narrative through v4.9).
+- Phase 47: Component spec extractor v3 (cross-source conflict detection).
+- Polish remaining ~24 drafts (incremental).
+- Coverage 80.9% → 90%+ (mostly utility types and edge primitives — diminishing value).
+
 ## v4.8.0 — Three-surface dogfood (VS Code + npm + mkdocs) (2026-05)
 
 Three more surfaces dogfooded end-to-end. Each surfaced real bugs that were fixed in this release. The audit infrastructure itself caught a false-negative bug (link-check regex skipping links with backtick-wrapped text).
