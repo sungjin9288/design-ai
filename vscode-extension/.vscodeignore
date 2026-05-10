@@ -3,6 +3,7 @@
 src/**
 test/**
 *.vsix
+**/.vscode-test-user-data/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md

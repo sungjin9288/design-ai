@@ -2,6 +2,115 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.10.0 — VS Code e2e infra + extractor v3 + SESSION-LOG update (2026-05)
+
+Three phases combined: real-VS-Code integration test infrastructure (Phase 45) + cross-source API conflict detection (Phase 47) + comprehensive SESSION-LOG update through v4.10 (Phase 46).
+
+### Phase 45 — VS Code `@vscode/test-electron` integration tests
+
+Phase 40 stopped at unit-testable pure logic. Phase 45 adds the missing layer: tests that run inside a real VS Code instance.
+
+#### Added
+- **`vscode-extension/test/integration/runTest.ts`** — boots a headless VS Code via `@vscode/test-electron`, loads the extension under development, runs the suite. Uses dedicated user-data dir so test runs don't pollute the developer's profile.
+- **`vscode-extension/test/integration/suite/index.ts`** — Mocha 10 suite loader (TDD UI, 30s timeout for cold-cache activation).
+- **`vscode-extension/test/integration/suite/extension.test.ts`** — 8 integration tests:
+  - Extension activates without errors.
+  - All 10 declared commands are registered.
+  - `design-ai.path` and `design-ai.language` settings are readable.
+  - `openSettings` / `status` / `refreshTree` commands resolve cleanly.
+  - Activity-bar view container is registered.
+- **`vscode-extension/test/integration/tsconfig.json`** — separate tsconfig (mocha + node + vscode types, CommonJS output).
+- **`vscode-extension/test/README.md`** — docs the unit + e2e test tiers, CI matrix recommendation.
+
+#### Changed
+- **`vscode-extension/package.json`** — added `@vscode/test-electron`, `mocha`, `@types/mocha` devDeps. New scripts: `test:unit`, `test:e2e`, `test`.
+- **`vscode-extension/.gitignore`** — exclude `test/integration/out/`, `.vscode-test-user-data/`.
+- **`vscode-extension/.vscodeignore`** — exclude `test/**`, `.vscode-test-user-data`.
+- **`vscode-extension/package.json`** — version 0.3.0 → 0.4.0.
+
+#### Status
+- TypeScript compiles cleanly (`tsc -p ./test/integration` → zero errors).
+- 25 unit tests still pass alongside e2e infrastructure.
+- Running `test:e2e` requires VS Code download (~300MB; cached after first run). Not exercised in this session — local dogfood only.
+
+### Phase 46 — SESSION-LOG comprehensive update
+
+`docs/SESSION-LOG.md` was last updated at v3.12. v4 phases (32-47) added but the narrative was missing.
+
+#### Changed
+- **`docs/SESSION-LOG.md`**:
+  - At-a-glance table now 3 columns (v2.0 / v3.12 / v4.10) with new rows for unit tests, e2e infra, dogfood findings.
+  - Phase log extended through v4.10 (v4.0 → v4.10 phases added).
+  - Patterns section restructured: separated "didn't work" patterns + added 2 new v4-discovered patterns:
+    - **"Dogfood drives next-pass quality"** — Phases 39-42 found more bugs than the previous 30 phases combined.
+    - **"Honest DRAFT banners > false completeness"** — v4.5/v4.7/v4.9 left ~24 specs intentionally banner-marked.
+  - Added "It's audited so it's correct" anti-pattern (link-check false-negative across hundreds of commits).
+  - "What's next" reframed for v4.10+ trajectory.
+
+### Phase 47 — Component spec extractor v3 (conflict detection)
+
+v2 extracted props from one source at a time. v3 compares the SAME canonical component across Ant + MUI + shadcn and surfaces drift.
+
+#### Added
+- **`tools/extractors/component_spec_conflict_check.py`** — cross-source conflict detection. Reuses v2's TS-AST parser. Output: severity-categorized conflict report.
+
+#### Severity model
+| Level | Meaning | Example |
+| --- | --- | --- |
+| **CRITICAL** | Same prop, incompatible types | `value: boolean` (Ant) vs `value: unknown` (MUI) |
+| **HIGH** | Deprecation drift | Prop deprecated in one source, active in another |
+| **MEDIUM** | Same prop, different types but compatible / default-value drift | `component: C` (Ant) vs `component: React.ElementType` (MUI) |
+| **LOW** | Prop exists in one source only | `autoInsertSpace` Ant-only (Korean spacing) |
+| **INFO** | Naming convention difference | (filtered out — none currently) |
+
+#### Smart filtering
+- Strips `T | undefined` and `T | null` from type comparison (optionality is captured separately by `optional` flag).
+- Skips standard HTML/React props (`children`, `className`, `style`, `id`, `tabIndex`, ARIA attrs, Ant's `prefixCls` / `rootClassName`) from "missing in source X" reports — they spread implicitly via element passthrough.
+
+#### First-pass scan results
+
+```bash
+python3 tools/extractors/component_spec_conflict_check.py --multi-source
+```
+
+Output across 33 multi-source canonicals:
+- **1 CRITICAL** — Switch's `value: boolean` (Ant) vs `value: unknown` (MUI) — design intent diverges.
+- **2 HIGH** — `closeText` deprecated in Ant Alert but active in MUI Alert; same pattern in another component.
+- **7 MEDIUM** — type/default drift on `component`, `disabled`, `open`, `indeterminate` (mostly compatible refinements).
+- **403 LOW** — props existing only in one source. The bulk are Ant-specific Korean conventions (`autoInsertSpace`), MUI's `slots` API, MUI's polymorphic `component`, etc. Adopters switching sources lose these.
+
+#### Usage
+
+```bash
+# Single component
+python3 tools/extractors/component_spec_conflict_check.py --name button
+
+# All multi-source canonicals
+python3 tools/extractors/component_spec_conflict_check.py --multi-source
+
+# JSON output for tooling
+python3 tools/extractors/component_spec_conflict_check.py --name button --json
+
+# CI gating: exit 1 on HIGH/CRITICAL
+python3 tools/extractors/component_spec_conflict_check.py --multi-source --strict
+```
+
+### Verified
+- All 6 audits pass.
+- 25 VS Code unit tests + 16 CLI unit tests pass.
+- VS Code .vsix builds cleanly (19.74 KB).
+- Conflict check run end-to-end on 33 components without errors.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.9.0 → 4.10.0.
+- `vscode-extension/package.json`: 0.3.0 → 0.4.0.
+
+### What this enables
+- **VS Code real-instance regression coverage** — future extension changes can run e2e tests in CI before shipping a new .vsix.
+- **API drift visibility** — `--multi-source --strict` can gate PRs that introduce new conflicts.
+- **Adopter-switching guidance** — the LOW conflict report tells adopters "if you switch from Ant to MUI, you lose `autoInsertSpace` (Korean spacing)".
+- **Documented narrative** — anyone reading SESSION-LOG.md can understand v2 → v4.10 trajectory in one sit.
+
 ## v4.9.0 — Polish + coverage 80.9% (2026-05)
 
 Two phases combined: polished v4.5/v4.7 DRAFT specs (Phase 43) + coverage push 68.8% → 80.9% (Phase 44). The corpus now has 80%+ canonical coverage with full polish on 26 of the new specs.

@@ -1,24 +1,27 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v3.12 (release-ready). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.9 (mature, dogfooded, 80% canonical coverage). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 (now) |
-|---|---|---|
-| Knowledge files | 55 | 91 |
-| Worked examples | 83 | 160 |
-| Skills | 12 | 19 |
-| Slash commands | 8 | 15 |
-| Review agents | 4 | 4 |
-| Component coverage | ~24% | 55.3% |
-| Distribution channels | 1 (manual) | 4 (npm / Homebrew / git clone / VS Code) |
-| Integration walkthroughs | 0 | 5 (each in EN + KO) |
-| Site languages | 0 (no site) | 2 (EN + KO) |
-| CI audits | 4 | 6 |
+| Surface | v2.0 (start) | v3.12 | v4.9 (now) |
+|---|---|---|---|
+| Knowledge files | 55 | 91 | 92 |
+| Worked examples | 83 | 160 | 216 |
+| Skills | 12 | 19 | 19 |
+| Slash commands | 8 | 15 | 16 |
+| Review agents | 4 | 4 | 4 |
+| Component coverage | ~24% | 55.3% | 80.9% |
+| Distribution channels | 1 (manual) | 4 | 4 (npm / Homebrew / git / VS Code) |
+| Integration walkthroughs | 0 | 5 (EN+KO) | 5 (EN+KO) |
+| Site languages | 0 | 2 | 2 (EN+KO) |
+| CI audits | 4 | 6 | 6 |
+| CLI / extension unit tests | 0 | 0 | 41 |
+| VS Code integration tests | 0 | 0 | 8 (e2e infra) |
+| Dogfood findings docs | 1 | 1 | 5 |
 
 ## The arc
 
@@ -74,55 +77,99 @@ Build the leverage tool, then push coverage further.
 - **v3.11 (Phase 30)** — Versioned knowledge frontmatter. Migration script added `version: 1.0.0` + `last_updated: 2026-05` + `stability: stable` to all 91 knowledge files. Foundation for v4.0 stability + adopter version pinning.
 - **v3.12 (Phase 31)** — Release readiness. `tools/audit/stale-check.py` operationalizes versioning (warn at 6mo, error at 12mo). `docs/RELEASE-CHECKLIST.md` codifies pre-release ritual. This SESSION-LOG.md.
 
-## Patterns that worked
+### v4.0 — Stable graduation
 
-### One concern per phase
+- **v4.0 (Phase 32)** — Graduation release. No code changes from v3.12; just promotes the corpus to API-stable across 8 surfaces (knowledge / skills / commands / agents / CLI / plugin manifest / VS Code config / doc URLs). `docs/MIGRATION-v4.md` documents the deprecation policy: deprecate in 4.x → maintain in 4.x → remove in 5.0.
 
-Each phase had a single, focused theme. Not "v2.1: motion + illustration + print" — separate phases. Easier to commit, easier to revert, easier to explain.
+### v4.1 → v4.2 — Localization + launch prep
 
-### Korean market depth
+- **v4.1 (Phase 33)** — Korean adopter / contributor docs. `USING.ko.md` / `CONTRIBUTING.ko.md` / `ARCHITECTURE.ko.md` round out the foundational doc set in Korean. KR adopters now have full sense-making path without English friction.
+- **v4.2 (Phase 34)** — Launch kit. Drafts ready for Show HN / dev.to / OKKY / hashnode KR / r/korea / r/programming / Twitter EN+KO threads. Per-channel tone matrix, posting cadence, FAQ, press kit. Posting is owner action (held until product-ready).
 
-The user stated Korean primary audience early. Every domain phase included Korean conventions (typography, voice, regulatory, conventions). The translations in v3.6 / v3.10 were natural extensions of investments already made.
+### v4.3 → v4.6 — Internal completeness
 
-### Audit-driven quality
+- **v4.3 (Phase 35)** — Internal completeness. Standardized 19/19 skill verification headings. Added `tools/audit/run-all.py` unified runner (~0.8s for all 6). 16 CLI unit tests. VS Code language toggle + corpus search command.
+- **v4.4 (Phase 36)** — Component spec extractor v2 (TS AST). Replaced regex with TypeScript Compiler API. Correctly handles generics, intersection types, destructured defaults, JSDoc tags. Per-prop provenance from Ant + MUI + shadcn. Foundation for v4.5's coverage push.
+- **v4.5 (Phase 37)** — Coverage 55.3% → 68.8%. 27 new specs (8 polished, 19 honest DRAFTs). Family-completion focus: Form / List / Dialog / Card / Accordion / Menu families all complete.
+- **v4.6 (Phase 38)** — Stability re-review automation. Quarterly ritual operationalized: `stability-review.py` report + `promote-stability.py` + `bump-last-updated.py` bulk tools. `/stability-review` slash command. `docs/CONTRIBUTING.md` 5-step ritual.
 
-Every phase that touched files passed all 5 audits before commit. The CI workflow caught regressions immediately. The audits themselves grew from 4 → 6 over the session (added Korean copy in v3.0, integration check in v3.4, stale check in v3.12).
+### v4.7 → v4.8 — Dogfood-driven hardening
 
-### Distribution before mass content
+- **v4.7 (Phase 39)** — Dogfood v4 (Korean B2B HR onboarding scenario). 5 corpus gaps surfaced and fixed inline: missing LoadingButton spec, stability-review false positive, b2b-onboarding knowledge file, KR B2B SaaS palette row, v2 banner accuracy claim. v3 vs v4 dogfood time: 3-5x faster on Form/Dialog/List work.
+- **v4.8 (Phases 40-42)** — Three-surface dogfood: VS Code extension + npm distribution + mkdocs site build. Each surface surfaced real bugs (search preview lost matches past column 120, missing icon.png, tools/migrations/ not in npm allowlist, **link-check.py false-negative across entire audit history**, two missing flagship primitives — Dialog parent and Stack — that v4.5 family-completion claimed were shipped). All fixed.
 
-v3.0-3.4 prioritized making the corpus *installable* before pushing more content. Coverage pushes happened only AFTER adopters could install the result. The trade-off was right: a 30% corpus that adopters can install beats a 70% corpus locked in a private repo.
+### v4.9 — Polish + 80% coverage
 
-### Versioning as foundation
+- **v4.9 (Phases 43-44)** — Polished 18 of 21 v4.5/v4.7 DRAFT specs (only 3 accordion subs intentionally remain). Coverage push 68.8% → 80.9%. 26 new fully-polished specs. Every flagship MUI primitive now covered with parent + family children.
 
-v3.11's versioned frontmatter looks small but enabled v3.12's stale-content audit and v4.0's stability story. Foundation work compounds.
+### v4.10+ — In progress
 
-### Integration walkthroughs as proof
-
-The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs for Codex / Cursor / Aider / SDK. Then it was demonstrated. v3.10 doubled down with Korean translations of those same walkthroughs.
+- **Phase 45** — `@vscode/test-electron` integration test infrastructure (8 e2e tests for activation / command registration / configuration / view container). Compiles cleanly; running requires VS Code download (~300MB).
+- **Phase 46** — This SESSION-LOG update.
+- **Phase 47** — Component spec extractor v3 (cross-source conflict detection — Ant vs MUI prop names/types).
 
 ## Patterns that didn't work
 
-### Speculative skills before reference content
-
-Early temptation was to ship more skills. But skills are thin — they're playbooks pointing at knowledge. Without the knowledge depth, skills produce generic output. The session prioritized knowledge depth (v2.x) before adding new skills (which is why no new skills shipped after v2.7).
-
 ### Generic English-first localization
 
-Korean translations done in v3.6 / v3.10 are full translations adapted to natural Korean — not literal English-to-Korean. Earlier attempts at machine-assisted translation produced awkward output that the korean-copy-check audit specifically catches.
+Korean translations done in v3.6 / v3.10 / v4.1 are full translations adapted to natural Korean — not literal English-to-Korean. Earlier attempts at machine-assisted translation produced awkward output that the `korean-copy-check.py` audit specifically catches.
 
-### Coverage push fatigue
+### Coverage push fatigue (v3.x phase)
 
-5 coverage pushes (v3.3, v3.5, v3.7, v3.9 each contributed). The sixth would have diminishing returns — most remaining canonicals are sub-components or transitions. v3.11's pivot to versioned frontmatter (instead of yet-another-coverage-push) was the right call.
+5 coverage pushes (v3.3, v3.5, v3.7, v3.9 each contributed). The sixth would have diminishing returns. v3.11's pivot to versioned frontmatter (instead of yet-another-coverage-push) was the right call. **Resolved later** in v4.4 — the TS AST extractor v2 made each subsequent spec significantly cheaper to scaffold (v4.5 added 27, v4.9 added 24 more).
 
-## What's next
+### Speculative skills before reference content (v2.x phase)
 
-v3.12 leaves design-ai in shippable shape. Logical v4.0 path:
+Early temptation was to ship more skills. But skills are thin — they're playbooks pointing at knowledge. Without the knowledge depth, skills produce generic output. The session prioritized knowledge depth (v2.x) before adding new skills. No new skills shipped after v2.7 — the only addition was the `/stability-review` command (v4.6, ritual-driven, not content-driven).
 
-1. Decide: is v3.12 the v4.0 release? (Likely yes — versioned, audited, distributed, localized.)
-2. Tag v4.0.0; run `RELEASE-CHECKLIST.md`.
-3. Submit announcement to KR tech communities (OKKY, hashnode.kr, dev.to/korea).
-4. VS Code marketplace publish.
-5. Continue iteration: more skills, more coverage, more translations.
+### "It's audited so it's correct" (v3.x → v4.8)
+
+The 6 audits passed for hundreds of commits while `link-check.py` had a false-negative regex that **silently skipped every backtick-wrapped link reference** — the most common style in this corpus. Surfaced only when v4.8's mkdocs build dogfood emitted warnings the audit missed. Fixed with one regex character (`+` → `*`). 11 real broken links surfaced immediately. Lesson: trust audits AND dogfood in parallel; passing audits ≠ no broken links.
+
+## Patterns that worked
+
+### Dogfood drives next-pass quality (v4.x discovery)
+
+Phases 39-42 (four dogfood passes — corpus / VS Code / npm / mkdocs) surfaced more real bugs in 4 commits than the previous 30 phases combined. Every dogfood found ≥3 actionable gaps. The ratio of "found-by-dogfood" to "found-by-audit" was high enough that future phases should plan dogfood as a first-class step, not afterthought.
+
+### Honest DRAFT banners > false completeness
+
+v2 extractor produces accurate API tables but placeholder narrative. v4.5 + v4.7 + v4.9 left ~24 DRAFT specs explicitly banner-marked. Adopters can use the API table immediately but know not to quote anatomy / tokens / a11y from a DRAFT. Better than silently shipping incomplete specs as "done".
+
+### One concern per phase (v2.0 onward)
+
+Each phase had a single, focused theme. Not "v2.1: motion + illustration + print" — separate phases. Easier to commit, easier to revert, easier to explain. Held through v4.x except where two phases were truly inseparable (43+44 = polish + coverage; 40-42 = three surfaces of one dogfood pass).
+
+### Korean market depth (v2.0 onward)
+
+The user stated Korean primary audience early. Every domain phase included Korean conventions (typography, voice, regulatory, conventions). The translations in v3.6 / v3.10 / v4.1 were natural extensions of investments already made.
+
+### Audit-driven quality (v2.0 onward)
+
+Every phase that touched files passed all 6 audits before commit. The audits themselves grew from 4 → 6 over the session (added Korean copy in v3.0, integration check in v3.4, stale check in v3.12). Each new audit prevented a regression class. v4.8 strengthened the existing link-check.
+
+### Distribution before mass content (v3.0 → v3.4)
+
+v3.0-3.4 prioritized making the corpus *installable* before pushing more content. Coverage pushes happened only AFTER adopters could install the result. The trade-off was right: a 30% corpus that adopters can install beats a 70% corpus locked in a private repo. v4.x validated this — the dogfood passes (npm, mkdocs) only worked because distribution was solid.
+
+### Versioning as foundation (v3.11 → v4.6)
+
+v3.11's versioned frontmatter looks small but enabled v3.12's stale-check, v4.0's stability story, and v4.6's quarterly review automation. Foundation work compounds across multiple later phases.
+
+### Integration walkthroughs as proof (v3.4 → v3.10)
+
+The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs for Codex / Cursor / Aider / SDK. Then it was demonstrated. v3.10 doubled down with Korean translations of those same walkthroughs.
+
+## What's next (v4.10+)
+
+v4.9 leaves design-ai with 80%+ canonical coverage, dogfooded across 4 surfaces, with 5 findings docs as institutional memory. Logical paths:
+
+1. **Phase 47 — Extractor v3** (cross-source conflict detection) — automate flagging of API drift between Ant / MUI / shadcn.
+2. **Polish remaining ~24 drafts** — incremental, as user feedback informs which need it.
+3. **Coverage 80.9% → 90%** — diminishing value (utility types like `class-name`, `direction`, `theme`); deferred indefinitely.
+4. **External launch** (the held step) — push v4.0 tag → publish to npm → run `docs/announcements/` cadence → KR tech community announcement.
+
+When the owner is ready to push externally, every input has been prepared: tag exists locally, RELEASE-CHECKLIST is ritualized, announcements are drafted, install paths are verified.
 
 ## Repo structure
 

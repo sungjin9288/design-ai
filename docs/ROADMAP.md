@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phases 45-47 — VS Code e2e + extractor v3 + SESSION-LOG (v4.10.0) ✓ shipped
+
+Three independent threads in one release.
+
+### Phase 45 — VS Code `@vscode/test-electron` integration
+- 8 e2e tests: activation, command registration (10/10), settings readability, view container, status/refresh/openSettings.
+- Runs inside a real VS Code instance (downloaded ~300MB on first run, cached).
+- Compiles cleanly; not exercised in this session due to download cost.
+
+### Phase 46 — SESSION-LOG comprehensive update
+- At-a-glance table extended to v4.10 (3 columns).
+- Phase log extended through v4.10 (v4.0 stable → v4.10 e2e).
+- Patterns refactored: 2 new v4-era patterns (Dogfood drives next-pass quality, Honest DRAFTs > false completeness) + 1 anti-pattern (audit false negatives).
+
+### Phase 47 — Component spec extractor v3 (conflict detection)
+- Cross-source conflict report: CRITICAL / HIGH / MEDIUM / LOW / INFO severity.
+- Smart filtering: strips `| undefined` from type comparison; skips standard HTML props.
+- First-pass scan of 33 multi-source canonicals: 1 CRITICAL (Switch.value), 2 HIGH (deprecation drift), 7 MEDIUM, 403 LOW (legitimate vendor specifics like Ant's `autoInsertSpace` for Korean).
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.9.0 → 4.10.0.
+- `vscode-extension/package.json`: 0.3.0 → 0.4.0.
+
+### Verified
+- All 6 audits pass.
+- 25 VS Code unit + 16 CLI unit tests pass.
+- VS Code .vsix builds cleanly.
+- Conflict check runs end-to-end on 33 components.
+
+### What this enables
+- VS Code regression coverage in CI (when set up).
+- API drift visibility — `--strict` can gate PRs.
+- Adopter switching guidance — the LOW conflict list tells adopters what they lose by switching libraries.
+
+### What's still ahead
+- Polish remaining ~24 v2-DRAFT specs (incremental).
+- Coverage 80.9% → 90%+ (mostly utility types — diminishing value).
+- Real-VS-Code test run + CI matrix wiring (xvfb-run on Linux).
+- v3 extractor "auto-suggest reconciliation" mode (for HIGH conflicts, propose unified API).
+- External launch (held).
+
 ## Phases 43-44 — Polish + coverage 80.9% (v4.9.0) ✓ shipped
 
 Two phases combined: full polish on 18 of 21 DRAFT specs from v4.5/v4.7 (Phase 43) + coverage 68.8% → 80.9% with 24 new specs (Phase 44).

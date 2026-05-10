@@ -2,7 +2,7 @@
   "name": "design-ai-vscode",
   "displayName": "design-ai",
   "description": "Senior product designer for any AI coding agent. Surfaces 19 skills, 16 commands, 142 worked examples. Korean market depth.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "sungjin",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -157,11 +157,17 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "test:unit": "node --test test/lib.test.mjs",
+    "test:e2e": "tsc -p ./test/integration && node ./test/integration/out/runTest.js",
+    "test": "npm run test:unit",
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.4.0",
+    "mocha": "^10.4.0",
     "typescript": "^5.3.0"
   }
 }

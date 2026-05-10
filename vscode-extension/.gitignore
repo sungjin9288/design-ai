@@ -2,3 +2,5 @@ node_modules/
 out/
 *.vsix
 .vscode-test/
+test/integration/out/
+test/integration/.vscode-test-user-data/
