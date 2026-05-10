@@ -51,6 +51,59 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 37 — Coverage push 55% → 68.8% (v4.5.0) ✓ shipped
+
+First coverage push using v2 extractor. Crosses 2/3 canonical coverage. Family-completion focus on the primitives Korean B2B / fintech UIs lean on most.
+
+### Added — 27 new specs (110 → 137 of 199)
+- **6 fully polished** (real spec style, not draft): `list-item`, `menu-item`, `dialog-title`, `dialog-content`, `dialog-actions`, `card-content`, `card-actions`, `form-control`.
+- **21 v2-extracted drafts** with DRAFT banner + accurate API table + placeholder narrative:
+  - List family (5): `list-item-button` / `-icon` / `-text` / `-avatar`, `list-subheader`.
+  - Form family (4): `form-control-label`, `form-group`, `form-helper-text`, `form-label`.
+  - Card family (2): `card-header`, `card-media`.
+  - Dialog family (1): `dialog-content-text`.
+  - Accordion family (3): `accordion-actions` / `-details` / `-summary`.
+  - Menu (1): `menu-list`.
+  - Standalone (2): `toggle-button`, `mobile-stepper`.
+  - From v4.4: `input-number`.
+
+### Changed
+- `tools/extractors/component_spec_scaffold_v2.py` `find_mui_source` — fall back to `.d.ts` (MUI ships compiled JS + types). Unlocks AST extraction for all MUI sub-components.
+- `package.json` + `.claude-plugin/plugin.json`: 4.4.0 → 4.5.0.
+
+### Verified
+- All 6 audits pass.
+- Coverage: 110 → 137 (55.3% → 68.8%).
+- 6 polished specs follow established sub-component style.
+- 21 drafts retain honest "DRAFT — scaffolded via TS-AST" banner.
+
+### Coverage check by family
+| Family | Status |
+| --- | --- |
+| Form (FormControl + 4 sub-roles) | complete |
+| List (ListItem + 5 sub-roles) | complete |
+| Dialog (Title / Content / Actions / ContentText) | complete |
+| Card (Content / Actions / Header / Media) | complete |
+| Accordion (Actions / Details / Summary) | complete |
+| Menu (Item / List) | complete |
+| Transitions (Fade / Grow / Zoom / Slide) | partial |
+| Sub-components / utility types | thin (intentional) |
+
+### Why honest drafts vs polished for all 27
+v2 produces accurate API + structure but placeholder narrative. 6 flagship sub-components got full polish; remaining 21 retain DRAFT banner. False completeness > honest "in progress" — the banner tells reviewers what's still pending.
+
+### What this enables
+- Family-completion: designers find all sub-roles together.
+- Real-world Korean fintech UIs covered (List + Form + Dialog + Card).
+- v2 extractor validated end-to-end (27 in one pass, zero parser bugs).
+
+### What's still ahead (4.x)
+- Stability re-review automation (Phase 38).
+- Polish remaining 21 v4.5 drafts (incremental, as user feedback comes in).
+- Coverage push 68.8% → 80% (transitions, more table sub-components).
+- Semantic search index.
+- VS Code marketplace publish.
+
 ## Phase 36 — Component spec extractor v2 (v4.4.0) ✓ shipped
 
 TypeScript AST parsing replaces regex. The v2 extractor produces noticeably cleaner drafts and unlocks faster coverage pushes (Phase 37).

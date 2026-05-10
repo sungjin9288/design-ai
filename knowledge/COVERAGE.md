@@ -14,10 +14,10 @@ generated_at: 2026-05-10
 | --- | --- | --- |
 | Knowledge files | 91 | 76 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 163 | |
+| Worked examples | 189 | |
 | Extractors | 9 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 111 | **55.8% spec coverage** |
+| Components with worked spec | 137 | **68.8% spec coverage** |
 
 ## Knowledge by category
 
@@ -49,7 +49,7 @@ generated_at: 2026-05-10
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 597 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 652 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -254,6 +254,9 @@ generated_at: 2026-05-10
 
 | File | Lines | Title |
 | --- | --- | --- |
+| [examples/component-accordion-actions.md](../examples/component-accordion-actions.md) | 95 | `AccordionActions` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-accordion-details.md](../examples/component-accordion-details.md) | 94 | `AccordionDetails` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-accordion-summary.md](../examples/component-accordion-summary.md) | 92 | `AccordionSummary` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-accordion.md](../examples/component-accordion.md) | 229 | `Accordion` (Collapse) — spec |
 | [examples/component-account-card.md](../examples/component-account-card.md) | 284 | `AccountCard` (custom — Korean banking / fintech) — spec |
 | [examples/component-address-input.md](../examples/component-address-input.md) | 260 | `AddressInput` (custom — Korean) — spec |
@@ -279,6 +282,10 @@ generated_at: 2026-05-10
 | [examples/component-button.md](../examples/component-button.md) | 213 | `Button` — spec |
 | [examples/component-calendar.md](../examples/component-calendar.md) | 280 | `Calendar` (full month view) — spec |
 | [examples/component-callout.md](../examples/component-callout.md) | 131 | `Callout` (info/warning/note in docs) — spec |
+| [examples/component-card-actions.md](../examples/component-card-actions.md) | 101 | `CardActions` — spec |
+| [examples/component-card-content.md](../examples/component-card-content.md) | 90 | `CardContent` — spec |
+| [examples/component-card-header.md](../examples/component-card-header.md) | 101 | `CardHeader` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-card-media.md](../examples/component-card-media.md) | 92 | `CardMedia` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-card.md](../examples/component-card.md) | 233 | `Card` — spec |
 | [examples/component-carousel.md](../examples/component-carousel.md) | 266 | `Carousel` — spec |
 | [examples/component-cascader.md](../examples/component-cascader.md) | 135 | `Cascader` — spec |
@@ -295,6 +302,10 @@ generated_at: 2026-05-10
 | [examples/component-context-menu.md](../examples/component-context-menu.md) | 179 | `ContextMenu` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
 | [examples/component-descriptions.md](../examples/component-descriptions.md) | 242 | `Descriptions` (key-value list) — spec |
+| [examples/component-dialog-actions.md](../examples/component-dialog-actions.md) | 111 | `DialogActions` — spec |
+| [examples/component-dialog-content-text.md](../examples/component-dialog-content-text.md) | 92 | `DialogContentText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-dialog-content.md](../examples/component-dialog-content.md) | 105 | `DialogContent` — spec |
+| [examples/component-dialog-title.md](../examples/component-dialog-title.md) | 104 | `DialogTitle` — spec |
 | [examples/component-divider.md](../examples/component-divider.md) | 182 | `Divider` (Separator) — spec |
 | [examples/component-doc-page.md](../examples/component-doc-page.md) | 217 | `DocPage` (full doc page layout) — spec |
 | [examples/component-drawer.md](../examples/component-drawer.md) | 257 | `Drawer` — spec |
@@ -306,7 +317,12 @@ generated_at: 2026-05-10
 | [examples/component-field.md](../examples/component-field.md) | 266 | `Field` — spec |
 | [examples/component-flex.md](../examples/component-flex.md) | 117 | `Flex` — spec |
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
+| [examples/component-form-control-label.md](../examples/component-form-control-label.md) | 109 | `FormControlLabel` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-form-control.md](../examples/component-form-control.md) | 113 | `FormControl` — spec |
 | [examples/component-form-controls.md](../examples/component-form-controls.md) | 251 | `Switch` / `Checkbox` / `Radio` — combined spec |
+| [examples/component-form-group.md](../examples/component-form-group.md) | 95 | `FormGroup` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-form-helper-text.md](../examples/component-form-helper-text.md) | 92 | `FormHelperText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-form-label.md](../examples/component-form-label.md) | 92 | `FormLabel` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-form.md](../examples/component-form.md) | 291 | `Form` — spec |
 | [examples/component-game-hud.md](../examples/component-game-hud.md) | 362 | `GameHUD` (custom — composable in-game heads-up display) — spec |
 | [examples/component-game-menu.md](../examples/component-game-menu.md) | 327 | `GameMenu` (custom — composable game menu shell with focus / input handling) — spec |
@@ -327,14 +343,23 @@ generated_at: 2026-05-10
 | [examples/component-label.md](../examples/component-label.md) | 118 | `Label` — spec |
 | [examples/component-layout.md](../examples/component-layout.md) | 217 | `Layout` (page chrome) — spec |
 | [examples/component-link.md](../examples/component-link.md) | 223 | `Link` — spec |
+| [examples/component-list-item-avatar.md](../examples/component-list-item-avatar.md) | 94 | `ListItemAvatar` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-list-item-button.md](../examples/component-list-item-button.md) | 92 | `ListItemButton` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-list-item-icon.md](../examples/component-list-item-icon.md) | 95 | `ListItemIcon` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-list-item-text.md](../examples/component-list-item-text.md) | 102 | `ListItemText` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
+| [examples/component-list-item.md](../examples/component-list-item.md) | 116 | `ListItem` — spec |
+| [examples/component-list-subheader.md](../examples/component-list-subheader.md) | 92 | `ListSubheader` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-list.md](../examples/component-list.md) | 198 | `List` — spec |
 | [examples/component-loading-sequence.md](../examples/component-loading-sequence.md) | 254 | `LoadingSequence` (custom — splash + first-screen coordination) — spec |
 | [examples/component-lottie-player.md](../examples/component-lottie-player.md) | 279 | `LottiePlayer` (custom — designer-led After Effects animation in product UI) — spec |
 | [examples/component-masonry.md](../examples/component-masonry.md) | 191 | `Masonry` — spec |
 | [examples/component-mentions.md](../examples/component-mentions.md) | 189 | `Mention` (@-trigger autocomplete) — spec |
+| [examples/component-menu-item.md](../examples/component-menu-item.md) | 102 | `MenuItem` — spec |
+| [examples/component-menu-list.md](../examples/component-menu-list.md) | 92 | `MenuList` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-menu.md](../examples/component-menu.md) | 139 | `Menu` — spec |
 | [examples/component-menubar.md](../examples/component-menubar.md) | 259 | `Menubar` — spec |
 | [examples/component-message.md](../examples/component-message.md) | 162 | `Message` — spec |
+| [examples/component-mobile-stepper.md](../examples/component-mobile-stepper.md) | 100 | `MobileStepper` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-modal.md](../examples/component-modal.md) | 220 | `Modal` (Dialog) — spec |
 | [examples/component-navigation-menu.md](../examples/component-navigation-menu.md) | 295 | `NavigationMenu` — spec |
 | [examples/component-notification.md](../examples/component-notification.md) | 166 | `Notification` — spec |
@@ -392,6 +417,7 @@ generated_at: 2026-05-10
 | [examples/component-time-picker.md](../examples/component-time-picker.md) | 205 | `TimePicker` — spec |
 | [examples/component-timeline.md](../examples/component-timeline.md) | 170 | `Timeline` — spec |
 | [examples/component-toast.md](../examples/component-toast.md) | 224 | `Toast` (Snackbar) — spec |
+| [examples/component-toggle-button.md](../examples/component-toggle-button.md) | 92 | `ToggleButton` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-toggle.md](../examples/component-toggle.md) | 220 | `Toggle` and `ToggleGroup` — spec |
 | [examples/component-toolbar.md](../examples/component-toolbar.md) | 104 | `Toolbar` — spec |
 | [examples/component-tooltip.md](../examples/component-tooltip.md) | 178 | `Tooltip` — spec |
@@ -420,11 +446,14 @@ generated_at: 2026-05-10
 
 ## Component spec coverage
 
-**111 / 199 canonical components have a worked spec (55.8%)**
+**137 / 199 canonical components have a worked spec (68.8%)**
 
 Specs that match canonical names:
 
 - `accordion` → [examples/component-accordion.md](../examples/component-accordion.md)
+- `accordion-actions` → [examples/component-accordion-actions.md](../examples/component-accordion-actions.md)
+- `accordion-details` → [examples/component-accordion-details.md](../examples/component-accordion-details.md)
+- `accordion-summary` → [examples/component-accordion-summary.md](../examples/component-accordion-summary.md)
 - `affix` → [examples/component-affix.md](../examples/component-affix.md)
 - `alert` → [examples/component-alert.md](../examples/component-alert.md)
 - `alert-dialog` → [examples/component-alert-dialog.md](../examples/component-alert-dialog.md)
@@ -442,6 +471,10 @@ Specs that match canonical names:
 - `button` → [examples/component-button.md](../examples/component-button.md)
 - `button-group` → [examples/component-button-group.md](../examples/component-button-group.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
+- `card-actions` → [examples/component-card-actions.md](../examples/component-card-actions.md)
+- `card-content` → [examples/component-card-content.md](../examples/component-card-content.md)
+- `card-header` → [examples/component-card-header.md](../examples/component-card-header.md)
+- `card-media` → [examples/component-card-media.md](../examples/component-card-media.md)
 - `carousel` → [examples/component-carousel.md](../examples/component-carousel.md)
 - `cascader` → [examples/component-cascader.md](../examples/component-cascader.md)
 - `chart` → [examples/component-chart.md](../examples/component-chart.md)
@@ -454,6 +487,10 @@ Specs that match canonical names:
 - `context-menu` → [examples/component-context-menu.md](../examples/component-context-menu.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
 - `descriptions` → [examples/component-descriptions.md](../examples/component-descriptions.md)
+- `dialog-actions` → [examples/component-dialog-actions.md](../examples/component-dialog-actions.md)
+- `dialog-content` → [examples/component-dialog-content.md](../examples/component-dialog-content.md)
+- `dialog-content-text` → [examples/component-dialog-content-text.md](../examples/component-dialog-content-text.md)
+- `dialog-title` → [examples/component-dialog-title.md](../examples/component-dialog-title.md)
 - `divider` → [examples/component-divider.md](../examples/component-divider.md)
 - `drawer` → [examples/component-drawer.md](../examples/component-drawer.md)
 - `dropdown` → [examples/component-dropdown.md](../examples/component-dropdown.md)
@@ -462,6 +499,11 @@ Specs that match canonical names:
 - `flex` → [examples/component-flex.md](../examples/component-flex.md)
 - `float-button` → [examples/component-float-button.md](../examples/component-float-button.md)
 - `form` → [examples/component-form.md](../examples/component-form.md)
+- `form-control` → [examples/component-form-control.md](../examples/component-form-control.md)
+- `form-control-label` → [examples/component-form-control-label.md](../examples/component-form-control-label.md)
+- `form-group` → [examples/component-form-group.md](../examples/component-form-group.md)
+- `form-helper-text` → [examples/component-form-helper-text.md](../examples/component-form-helper-text.md)
+- `form-label` → [examples/component-form-label.md](../examples/component-form-label.md)
 - `grid` → [examples/component-grid.md](../examples/component-grid.md)
 - `hover-card` → [examples/component-hover-card.md](../examples/component-hover-card.md)
 - `icon` → [examples/component-icon.md](../examples/component-icon.md)
@@ -477,11 +519,20 @@ Specs that match canonical names:
 - `layout` → [examples/component-layout.md](../examples/component-layout.md)
 - `link` → [examples/component-link.md](../examples/component-link.md)
 - `list` → [examples/component-list.md](../examples/component-list.md)
+- `list-item` → [examples/component-list-item.md](../examples/component-list-item.md)
+- `list-item-avatar` → [examples/component-list-item-avatar.md](../examples/component-list-item-avatar.md)
+- `list-item-button` → [examples/component-list-item-button.md](../examples/component-list-item-button.md)
+- `list-item-icon` → [examples/component-list-item-icon.md](../examples/component-list-item-icon.md)
+- `list-item-text` → [examples/component-list-item-text.md](../examples/component-list-item-text.md)
+- `list-subheader` → [examples/component-list-subheader.md](../examples/component-list-subheader.md)
 - `masonry` → [examples/component-masonry.md](../examples/component-masonry.md)
 - `mentions` → [examples/component-mentions.md](../examples/component-mentions.md)
 - `menu` → [examples/component-menu.md](../examples/component-menu.md)
+- `menu-item` → [examples/component-menu-item.md](../examples/component-menu-item.md)
+- `menu-list` → [examples/component-menu-list.md](../examples/component-menu-list.md)
 - `menubar` → [examples/component-menubar.md](../examples/component-menubar.md)
 - `message` → [examples/component-message.md](../examples/component-message.md)
+- `mobile-stepper` → [examples/component-mobile-stepper.md](../examples/component-mobile-stepper.md)
 - `modal` → [examples/component-modal.md](../examples/component-modal.md)
 - `notification` → [examples/component-notification.md](../examples/component-notification.md)
 - `pagination` → [examples/component-pagination.md](../examples/component-pagination.md)
@@ -525,6 +576,7 @@ Specs that match canonical names:
 - `time-picker` → [examples/component-time-picker.md](../examples/component-time-picker.md)
 - `timeline` → [examples/component-timeline.md](../examples/component-timeline.md)
 - `toggle` → [examples/component-toggle.md](../examples/component-toggle.md)
+- `toggle-button` → [examples/component-toggle-button.md](../examples/component-toggle-button.md)
 - `toolbar` → [examples/component-toolbar.md](../examples/component-toolbar.md)
 - `tooltip` → [examples/component-tooltip.md](../examples/component-tooltip.md)
 - `tour` → [examples/component-tour.md](../examples/component-tour.md)

@@ -81,6 +81,9 @@ def find_mui_source(name: str) -> Path | None:
         MUI_REPO / f"packages/mui-material/src/{pascal}/{pascal}.tsx",
         MUI_REPO / f"packages/mui-material/src/{pascal}/{pascal}.ts",
         MUI_REPO / f"packages/mui-material/src/{pascal}/index.tsx",
+        # Fall back to .d.ts — MUI ships compiled JS + types per component.
+        MUI_REPO / f"packages/mui-material/src/{pascal}/{pascal}.d.ts",
+        MUI_REPO / f"packages/mui-material/src/{pascal}/index.d.ts",
     ]
     for p in candidates:
         if p.exists():
