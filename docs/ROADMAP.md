@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 36 — Component spec extractor v2 (v4.4.0) ✓ shipped
+
+TypeScript AST parsing replaces regex. The v2 extractor produces noticeably cleaner drafts and unlocks faster coverage pushes (Phase 37).
+
+### Added
+- **`tools/extractors/ts-ast/parse-component.mjs`** — Node.js parser using TS Compiler API. AST walk covers interfaces, type aliases, components (function / arrow / forwardRef / memo), destructured defaults, JSDoc tags (`@deprecated`, `@default`, `@since`).
+- **`tools/extractors/ts-ast/package.json`** — local dev package (`typescript` dep). Not shipped via npm.
+- **`tools/extractors/component_spec_scaffold_v2.py`** — Python wrapper. Invokes parser, picks primary `*Props` interface, merges across Ant + MUI + shadcn with per-prop provenance, separates events, surfaces deprecated.
+
+### Changed
+- `package.json` + `.claude-plugin/plugin.json`: 4.3.0 → 4.4.0.
+
+### Verified
+- Parser correctly handles: Ant Button (deprecated `iconPosition` flagged), shadcn Button (intersection type + 3 destructured defaults), MUI components.
+- v2 produced clean draft for `input-number` (14 props, 3 auto-flagged deprecated).
+- 6 audits pass; 16 CLI unit tests pass.
+
+### v1 → v2 capability gain
+| Capability | v1 (regex) | v2 (AST) |
+| --- | --- | --- |
+| Generic `Props<T>` | ✗ | ✓ |
+| extends chains | ✗ | ✓ |
+| Intersection types | partial | ✓ |
+| Destructured defaults | ✗ | ✓ |
+| `@deprecated` JSDoc | ✗ | ✓ |
+| Event handler grouping | mixed | separate |
+| Per-prop provenance | first-source | all sources |
+
+### What this enables
+- Coverage push 55→70% (Phase 37) becomes practical — drafts require less cleanup.
+- Reviewer sees "prop X exists in Ant+MUI but not shadcn" at a glance.
+- Deprecated props auto-surface for review.
+
+### What's still ahead (4.x)
+- Coverage push 55% → 65% using v2 (Phase 37).
+- Stability re-review automation (Phase 38).
+- Semantic search index.
+- Dispatch / commands integration tests.
+- VS Code marketplace publish.
+
 ## Phase 35 — Internal completeness (v4.3.0) ✓ shipped
 
 Tightens internal quality. Pure dogfooding work — no new content, but the corpus and tooling are now more consistent and testable.

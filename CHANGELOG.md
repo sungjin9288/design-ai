@@ -2,6 +2,74 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.4.0 — Component spec extractor v2 (2026-05)
+
+Replaces regex-based component scaffolding with TypeScript AST parsing. Drafts are now produced from the same Compiler API that VS Code uses — no more missed generics, intersection types, or destructured defaults.
+
+### Added
+- **`tools/extractors/ts-ast/parse-component.mjs`** — Node.js parser using TypeScript Compiler API. Walks the AST to extract:
+  - Interface declarations + extends chains.
+  - Type aliases (object literals + intersections).
+  - Property signatures with `?:` optional flag.
+  - JSDoc tags: `@deprecated`, `@default` / `@defaultValue`, `@since`, prose comment.
+  - Component declarations (`function`, arrow, `forwardRef`, `memo`).
+  - Destructured defaults from function parameters.
+  - Event handler detection (`on*` props).
+- **`tools/extractors/ts-ast/package.json`** — local-only package with `typescript` dep. Not shipped via npm (`tools/extractors/` not in package allowlist).
+- **`tools/extractors/component_spec_scaffold_v2.py`** — Python wrapper:
+  - Invokes parser via subprocess; loads JSON.
+  - Picks primary `Props` interface using heuristics (`<Name>Props` → `Base<Name>Props` → largest `*Props`).
+  - **Merges props across Ant + MUI + shadcn** with provenance per prop.
+  - Surfaces deprecated props in dedicated section.
+  - Splits event handlers into separate "Events" table.
+  - Falls back cleanly when refs/ or node_modules/ missing.
+
+### Changed
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 4.3.0 → 4.4.0.
+
+### Verified
+- Parser round-trips real Ant Button (29+ props, multiple interfaces, deprecated `iconPosition` correctly flagged).
+- Parser round-trips shadcn Button (intersection type `React.ComponentProps<"button"> & VariantProps<...> & {...}` + 3 destructured defaults).
+- Parser round-trips MUI components.
+- v2 wrapper produces clean spec for missing canonical: `examples/component-input-number.md` (14 props, 3 auto-flagged deprecated, default `variant="outlined"` from destructured).
+- All 6 audits pass.
+- 16 CLI unit tests pass.
+
+### v1 vs v2 sample diff
+Same component, two extractors:
+
+| Capability | v1 (regex) | v2 (AST) |
+| --- | --- | --- |
+| Generic types `Props<T>` | ✗ misses | ✓ captured |
+| `extends` chains | ✗ misses | ✓ captured |
+| Intersection types | ✗ partial | ✓ full |
+| Destructured defaults | ✗ misses | ✓ captured |
+| `@deprecated` JSDoc | ✗ misses | ✓ flagged |
+| `@default` JSDoc | ✗ misses | ✓ used |
+| Event handler grouping | ✗ mixed in | ✓ separate section |
+| Source provenance per prop | ✗ first-source-wins | ✓ all sources |
+
+### What this enables
+- **Faster coverage push** — drafts now require less manual cleanup. 14 props extracted with correct types where v1 needed regex tuning per source.
+- **Safer multi-source merging** — provenance per prop means the human reviewer can see "this prop exists in Ant + MUI but not shadcn" at a glance.
+- **Deprecation visibility** — surfaces deprecated props upfront so reviewers don't accidentally promote them.
+
+### Setup (one-time)
+
+```bash
+cd tools/extractors/ts-ast
+npm install
+```
+
+After setup, use v2 like v1:
+
+```bash
+python3 tools/extractors/component_spec_scaffold_v2.py --name <component>
+python3 tools/extractors/component_spec_scaffold_v2.py --all-missing --limit 20
+```
+
+v1 (`component_spec_scaffold.py`) remains for backward compatibility but v2 is now preferred.
+
 ## v4.3.0 — Internal completeness (2026-05)
 
 Tightens internal quality. Standardizes skill verification headings, strengthens the audit that enforces them, adds 3 VS Code commands (language-aware walkthroughs / README opener / corpus search), introduces a unified audit runner, and adds the first CLI unit tests.

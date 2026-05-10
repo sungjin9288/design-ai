@@ -1,0 +1,14 @@
+{
+  "name": "design-ai-ts-ast",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TypeScript AST parser for design-ai's component spec extractor v2. Dev-only; not shipped with the CLI.",
+  "main": "parse-component.mjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "typescript": "^5.4.0"
+  }
+}
