@@ -2,6 +2,91 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.12.0 — Extractor v3 reconciliation mode (2026-05)
+
+v3 detected drift; v3.1 proposes resolution. Pairs with `component_spec_conflict_check.py` to give maintainers a structured upstream-review workflow.
+
+### Phase 49 — Reconciliation mode
+
+#### Added
+- **`tools/extractors/component_spec_reconcile.py`** — proposes unified API per component. Same TS-AST parser + source finder as v3 conflict checker, but the output is a *recommendation*, not just a *report*.
+
+#### Per-prop reconciliation
+
+For each cross-source prop, the proposal covers 3 axes:
+
+| Axis | Strategy |
+| --- | --- |
+| **Type** | Pick most-specific compatible (e.g., `boolean` over `unknown`). Truly incompatible → MANUAL. |
+| **Default** | Majority across sources; tie/split → MANUAL. |
+| **Deprecation** | If any source deprecates: lean toward deprecated; emit migration note covering both states. |
+
+Confidence rolls up as the worst of the 3 axes:
+- **HIGH** — all sources agree; safe to auto-adopt.
+- **MEDIUM** — compatible refinements / library-specific props (review before adopt).
+- **LOW** — minority signals (rarely produced).
+- **MANUAL** — incompatible types or no-majority default; human design call required.
+
+#### First-pass results across 33 multi-source canonicals
+
+```
+Total proposals: 415
+  HIGH:    3   (all sources fully aligned — safe auto-adopt)
+  MEDIUM: 411  (mostly library-specific props or compatible refinements)
+  MANUAL:  1   (Switch.value: Ant boolean vs MUI unknown — needs design call)
+```
+
+The 1 MANUAL is exactly the v3 conflict scan's CRITICAL — the tool routes consistent issues consistently.
+
+#### Migration notes
+
+For deprecation drift, the tool emits structured notes:
+
+```
+- `closeText`: Lean toward deprecated (Ant/MUI deprecate signals API maturity).
+  Note in spec: 'deprecated in [ant-design]; still supported in [mui] for compatibility.'
+```
+
+For library-specific props:
+
+```
+- `autoInsertSpace`: This prop is unique to ant-design. Adopt only if your
+  design system needs the same capability; otherwise document as a known omission.
+```
+
+#### `docs/CONTRIBUTING.md` — quarterly upstream review workflow
+
+New section documents the 6-step ritual:
+1. Pull latest `refs/`.
+2. Run conflict-check; capture report.
+3. For HIGH/CRITICAL, run reconcile per component.
+4. Review MANUAL items first (design calls).
+5. Apply changes; bump `last_updated`.
+6. Document in CHANGELOG.
+
+#### Usage
+
+```bash
+# Single component reconciliation
+python3 tools/extractors/component_spec_reconcile.py --name button
+
+# Bulk review session (every multi-source canonical)
+python3 tools/extractors/component_spec_reconcile.py --multi-source
+
+# JSON output for tooling integration
+python3 tools/extractors/component_spec_reconcile.py --name button --json
+```
+
+### Verified
+- Tool runs end-to-end on 33 components without errors.
+- Switch.value correctly identified as MANUAL (boolean vs unknown).
+- Alert.closeText / Alert.onClose correctly identified with deprecation drift + migration note.
+- Library-specific props (Ant `autoInsertSpace`, MUI `slots`) correctly classified as MEDIUM with adoption guidance.
+- All 6 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.11.0 → 4.12.0.
+
 ## v4.11.0 — CI wiring (2026-05)
 
 The infrastructure built across v4.3–v4.10 (unit tests, audit runner, e2e tests, conflict checker) wasn't actually being used by CI. v4.11 wires it all in. Every PR now exercises the full validation surface.

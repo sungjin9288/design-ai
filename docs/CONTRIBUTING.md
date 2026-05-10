@@ -147,6 +147,76 @@ In Claude Code:
 
 Runs the report-generation step + summarizes the candidates inline.
 
+## Cross-source API reconciliation (when adopting upstream changes)
+
+When upstream design systems (Ant / MUI / shadcn) ship new versions, our component specs may drift from the canonical APIs. Two tools surface and resolve the drift.
+
+### 1. Detect drift — `component_spec_conflict_check.py`
+
+```bash
+# All multi-source canonicals (33 components currently)
+python3 tools/extractors/component_spec_conflict_check.py --multi-source
+
+# Single component
+python3 tools/extractors/component_spec_conflict_check.py --name button
+
+# CI gating: exit 1 on HIGH/CRITICAL
+python3 tools/extractors/component_spec_conflict_check.py --multi-source --strict
+```
+
+Severity:
+- `CRITICAL` — same prop, incompatible types (e.g., `boolean` vs `unknown`)
+- `HIGH` — deprecation drift across sources
+- `MEDIUM` — type/default refinements
+- `LOW` — prop only in one source
+
+### 2. Propose unified API — `component_spec_reconcile.py`
+
+```bash
+# Generate reconciliation proposal
+python3 tools/extractors/component_spec_reconcile.py --name button
+
+# Bulk review session
+python3 tools/extractors/component_spec_reconcile.py --multi-source
+
+# JSON for tooling
+python3 tools/extractors/component_spec_reconcile.py --name button --json
+```
+
+Output groups proposals by confidence:
+- **HIGH** — all sources agree; safe to auto-adopt.
+- **MEDIUM** — review before adopt (e.g., library-specific prop, compatible refinement).
+- **MANUAL** — incompatible types or no majority on default; human design call required.
+
+For each prop, the proposal includes:
+- Recommended type (most-specific compatible across sources).
+- Recommended default (majority value).
+- Recommended deprecation status (lean toward deprecated if any source deprecates).
+- Migration note (when adoption requires care — deprecation timeline, library-specific exceptions).
+
+### Workflow — quarterly upstream review
+
+1. Pull latest `refs/`:
+   ```bash
+   bash tools/clone-refs.sh
+   ```
+
+2. Detect drift:
+   ```bash
+   python3 tools/extractors/component_spec_conflict_check.py --multi-source > /tmp/conflicts.md
+   ```
+
+3. For each component with HIGH/CRITICAL conflicts, generate proposal:
+   ```bash
+   python3 tools/extractors/component_spec_reconcile.py --name <component>
+   ```
+
+4. Review the MANUAL-confidence items first — they need design calls.
+
+5. Apply changes to `examples/component-<name>.md`. Update API table, add migration notes, bump `last_updated`.
+
+6. Document the upstream-review pass in CHANGELOG.
+
 ## Style
 
 - Markdown over prose.

@@ -15,7 +15,7 @@ generated_at: 2026-05-11
 | Knowledge files | 92 | 77 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
 | Worked examples | 216 | |
-| Extractors | 10 | |
+| Extractors | 11 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 161 | **80.9% spec coverage** |
 
@@ -694,6 +694,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `tools/extractors/awesome_design_mirror.py`
 - `tools/extractors/component_index.py`
 - `tools/extractors/component_spec_conflict_check.py`
+- `tools/extractors/component_spec_reconcile.py`
 - `tools/extractors/component_spec_scaffold.py`
 - `tools/extractors/component_spec_scaffold_v2.py`
 - `tools/extractors/mui_palette.py`

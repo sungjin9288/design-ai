@@ -51,6 +51,35 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 49 — Extractor v3 reconciliation mode (v4.12.0) ✓ shipped
+
+v3 detected drift; reconciliation mode now proposes unified-API resolutions. Closes the loop on cross-source maintenance.
+
+### Added
+- `tools/extractors/component_spec_reconcile.py` — proposes unified API per component. 3-axis reconciliation (type / default / deprecation). Confidence: HIGH / MEDIUM / LOW / MANUAL. Migration notes for deprecation drift + library-specific props.
+- `docs/CONTRIBUTING.md` — quarterly upstream-review 6-step workflow.
+
+### Verified
+- 33 multi-source canonicals: 3 HIGH, 411 MEDIUM, 1 MANUAL (Switch.value boolean vs unknown — same one v3 flagged CRITICAL).
+- Migration notes correctly route deprecation drift (Alert.closeText, Alert.onClose).
+- Library-specific props classified MEDIUM with explicit adoption guidance.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.11.0 → 4.12.0.
+
+### What this enables
+- Quarterly upstream review becomes a 6-step ritual instead of an open-ended task.
+- HIGH-confidence proposals can be auto-adopted by future tooling.
+- MANUAL items concentrate human attention on real design calls (1 currently).
+- Migration notes preserve adopter context across version transitions.
+
+### What's still ahead
+- Polish remaining ~24 v2-DRAFT specs (incremental).
+- Coverage 80.9% → 90% (utility types — diminishing value).
+- Real-CI verification.
+- v3 reconciliation auto-apply mode (HIGH-confidence proposals → spec edits).
+- External launch (held).
+
 ## Phase 48 — CI wiring (v4.11.0) ✓ shipped
 
 The infrastructure from v4.3–v4.10 (unit tests / audit runner / e2e tests / conflict checker) wasn't being used by CI. v4.11 wires it all in.
