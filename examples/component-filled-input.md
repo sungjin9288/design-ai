@@ -1,102 +1,114 @@
-# `FilledInput` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `FilledInput` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/FilledInput/FilledInput.d.ts` (1 interface(s), 0 component(s))
+> Synthesized from MUI `FilledInput`. Filled-background input variant — denser, less prominent than `OutlinedInput`. Useful inside cards or dense forms where 30+ borders would create visual noise.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Dense data-entry forms (10+ fields per screen).
+- Inputs inside cards with already-active borders (avoids "border on border").
+- Mobile-first layouts where the filled look reads as a touch target.
+
+## When NOT to use
+
+- General-purpose product UI — `OutlinedInput` has the cleanest "this is editable" affordance.
+- Forms with many error states — error styling is more legible against an outlined background.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+┌─ Label (floats up on focus) ─────────────┐
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│   ← filled bg
+│ ░Input value                            ░│
+│ ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔│   ← bottom rule (focus → brand)
+└─────────────────────────────────────────────┘
 ```
 
 ## API
 
 ```tsx
-<FilledInput>
-  {children}
-</FilledInput>
+<FormControl variant="filled" fullWidth>
+  <InputLabel htmlFor="name">이름</InputLabel>
+  <FilledInput
+    id="name"
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+  />
+</FormControl>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` / `defaultValue` | `string` | — | Controlled / uncontrolled |
+| `disableUnderline` | `boolean` | `false` | Hide the bottom rule |
+| `hiddenLabel` | `boolean` | `false` | Drop the label region (use placeholder only) |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `classes` | `Partial<FilledInputClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `disableUnderline` | `boolean \| undefined` | `false` | — | mui | If `true`, the input will not have an underline. |
-| `hiddenLabel` | `boolean \| undefined` | `false` | — | mui | If `true`, the label is hidden.
-This is used to increase density for a `FilledInput`.
-Be sure to add `aria-label` to the `input` element. |
-| `notched` | `boolean \| undefined` | — | — | mui | (fill in) |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+Inherits everything from `InputBase` — see [`component-input-base.md`](component-input-base.md).
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | bg-subtle fill, neutral underline |
+| Hover | bg-subtle (slightly darker) |
+| Focus | brand underline (animates from neutral) |
+| Error | error underline + label color |
+| Disabled | muted bg + fg |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--input-bg-filled         /* surface-subtle */
+--input-bg-filled-hover
+--input-underline
+--input-underline-focus   /* brand */
+--input-underline-error
+--input-min-height-48     /* taller than outlined to compensate for filled aesthetic */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+Same a11y contract as `OutlinedInput`:
+- `htmlFor` ↔ `id` association via `InputLabel`.
+- `aria-required`, `aria-invalid`, `aria-describedby` per state.
+- Touch target: ≥ 48px (default — `FilledInput` is taller than `OutlinedInput` by design).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Mixing variants on one screen** — pick one. Mixed outlined + filled looks haphazard.
+- **`hiddenLabel`** — only acceptable when context is unmistakable (e.g., a search field labeled by a magnifying-glass icon nearby with `aria-label`).
+- **Korean labels** — same density consideration as outlined; expect labels to need 10-15% more horizontal room than Latin.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<Stack direction="column" gap={1.5}>
+  <FormControl variant="filled" fullWidth>
+    <InputLabel htmlFor="name">이름</InputLabel>
+    <FilledInput id="name" />
+  </FormControl>
+  <FormControl variant="filled" fullWidth>
+    <InputLabel htmlFor="email">이메일</InputLabel>
+    <FilledInput id="email" type="email" />
+  </FormControl>
+  <FormControl variant="filled" fullWidth>
+    <InputLabel htmlFor="phone">전화번호</InputLabel>
+    <FilledInput id="phone" type="tel" />
+  </FormControl>
+</Stack>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't mix with `OutlinedInput` on the same form.
+- Don't use `disableUnderline=true` without an alternative focus indicator — accessibility break.
+- Don't use without `InputLabel` (or `inputProps.aria-label`) — silent accessibility miss.
 
 ## References
 
-- Mui: [`FilledInput.d.ts`](../refs/mui/packages/mui-material/src/FilledInput/FilledInput.d.ts)
+- MUI: [`FilledInput`](../refs/mui/packages/mui-material/src/FilledInput/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-input-base.md`](component-input-base.md)
+- [`component-outlined-input.md`](component-outlined-input.md)
+- [`component-form-control.md`](component-form-control.md)

@@ -1,96 +1,82 @@
-# `TableBody` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `TableBody` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/TableBody/TableBody.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `TableBody`. The container for data rows in a `Table`. Equivalent to `<tbody>` with consistent styling defaults.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Inside every `Table` that displays data rows.
+- For tables with no body (header-only summary), omit.
 
 ## API
 
 ```tsx
-<TableBody>
-  {children}
-</TableBody>
+<Table>
+  <TableHead>...</TableHead>
+  <TableBody>
+    {rows.map((row) => (
+      <TableRow key={row.id}>
+        <TableCell>{row.name}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
-
-## Tokens consumed
-
-(Fill in. List every token this component reads. Flag missing tokens.)
-
-```
---color-bg-default
---color-fg-default
---space-md
---radius-md
-```
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | `TableRow` children |
+| `component` | `ElementType` | `'tbody'` | Override |
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+Renders `<tbody>` — semantic role for table body comes for free. No additional ARIA needed.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Empty state** — when `rows.length === 0`, render a single `TableRow` with one `TableCell` spanning all columns containing the empty-state message. Cite [`knowledge/patterns/empty-states.md`](../knowledge/patterns/empty-states.md).
+- **Loading state** — show skeleton rows or a single overlay. Don't leave the body empty during fetch — users see a flash.
+- **Virtualization** — for 100+ rows, use a virtualized table library (TanStack Virtual + MUI Table). MUI's `TableBody` doesn't virtualize automatically.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+{isLoading ? (
+  <TableBody>
+    {Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={i}>
+        {columns.map((col) => (
+          <TableCell key={col.key}><Skeleton /></TableCell>
+        ))}
+      </TableRow>
+    ))}
+  </TableBody>
+) : rows.length === 0 ? (
+  <TableBody>
+    <TableRow>
+      <TableCell colSpan={columns.length} align="center" sx={{ py: 8 }}>
+        결과가 없어요
+      </TableCell>
+    </TableRow>
+  </TableBody>
+) : (
+  <TableBody>
+    {rows.map((row) => <TableRow key={row.id}>...</TableRow>)}
+  </TableBody>
+)}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't render rows outside `TableBody` (or `TableHead` / `TableFooter`).
+- Don't use for content that isn't tabular — Cards / Stacks fit better.
 
 ## References
 
-- Mui: [`TableBody.d.ts`](../refs/mui/packages/mui-material/src/TableBody/TableBody.d.ts)
+- MUI: [`TableBody`](../refs/mui/packages/mui-material/src/TableBody/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-table.md`](component-table.md)
+- [`component-table-row.md`](component-table-row.md)
+- [`component-table-cell.md`](component-table-cell.md)
+- [`knowledge/patterns/empty-states.md`](../knowledge/patterns/empty-states.md)

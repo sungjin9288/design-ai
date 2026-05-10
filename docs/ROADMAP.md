@@ -51,6 +51,35 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 50 — DRAFT polish round 2 (v4.13.0) ✓ shipped
+
+22 DRAFT → 7 DRAFT. 15 polished. 5 families now 100% polished (Form / List / Dialog / Card / Menu / Inputs).
+
+### Polished (15)
+- Input family: input-base (39 props), filled-input, input-adornment.
+- Table family: table-cell, -body, -head, -pagination, -container, -footer, -sort-label.
+- Step family: step-icon, -label, -content.
+- Misc: snackbar-content, alert-title.
+
+### Intentionally DRAFT (7)
+- 3 accordion subs (rarely standalone).
+- 4 thin sub-components (avatar-group, step-button, step-connector, tab-scroll-button — 1-8 props each, banner kept so adopters know narrative is intentional skeleton).
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
+
+### Verified
+- All 6 audits pass.
+- 15 new fully-polished specs follow established template.
+- 3 cross-ref corrections (`component-stepper.md` → `component-steps.md`).
+
+### What's still ahead (4.x — incremental only)
+- Polish remaining 7 thin DRAFT specs (low priority).
+- Coverage 80.9% → 90% (utility types — diminishing value).
+- Real-CI verification (push these workflows; observe green).
+- v3 reconciliation auto-apply mode (HIGH-confidence proposals → spec edits).
+- External launch (held).
+
 ## Phase 49 — Extractor v3 reconciliation mode (v4.12.0) ✓ shipped
 
 v3 detected drift; reconciliation mode now proposes unified-API resolutions. Closes the loop on cross-source maintenance.

@@ -2,6 +2,51 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.13.0 — Polish remaining DRAFT specs (2026-05)
+
+22 DRAFT → 7 DRAFT. 15 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
+
+### Phase 50 — DRAFT polish round 2
+
+#### Polished (15)
+- **Input family** (3): `input-base` (39 props — full surface), `filled-input`, `input-adornment`.
+- **Table family** (7): `table-cell` (10 props — alignment conventions, KR amount handling), `table-body` (empty/loading state patterns), `table-head` (sticky header, scope), `table-pagination` (KR-localized labels), `table-container`, `table-footer` (totals row patterns), `table-sort-label`.
+- **Step family** (3): `step-icon` (state visuals), `step-label` (KR honorific), `step-content` (vertical-orientation flows).
+- **Misc** (2): `snackbar-content`, `alert-title`.
+
+#### Intentionally remain DRAFT (7)
+- **Accordion subs** (3): `accordion-actions`, `accordion-details`, `accordion-summary` — rarely standalone.
+- **Thin sub-components** (4): `avatar-group`, `step-button`, `step-connector`, `tab-scroll-button` — 1-8 props each, rarely cited; banner stays so adopters know API table is accurate but narrative is intentional skeleton.
+
+### Cross-ref corrections
+- 3 step specs referenced `component-stepper.md` (doesn't exist; canonical is `component-steps.md`). Fixed.
+
+### Verified
+- All 6 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix).
+- 15 new fully-polished specs follow established sub-component spec template.
+- Korean conventions threaded through all polished specs (KR text density, 합쇼체 vs 해요체 usage, KR-localized label formatters for TablePagination).
+
+### Polish-debt inventory (post v4.13)
+
+| Family | Polished | DRAFT | % |
+| --- | --- | --- | --- |
+| Form (FormControl + 5 subs) | 6/6 | 0 | 100% |
+| List (ListItem + 5 subs) | 6/6 | 0 | 100% |
+| Dialog (parent + 4 children) | 5/5 | 0 | 100% |
+| Card (parent + 4 subs) | 5/5 | 0 | 100% |
+| Menu (parent + Item + List) | 3/3 | 0 | 100% |
+| Tabs (Tab + Tabs + ScrollButton) | 2/3 | 1 | 67% |
+| Tables (8 subs) | 7/8 | 1 (TableSortLabel polished but Table parent absent) | 88% |
+| Steps (Step + Stepper subs) | 5/7 | 2 (StepButton, StepConnector) | 71% |
+| Inputs (Outlined + Filled + Base + Adornment + Number) | 5/5 | 0 | 100% |
+| Transitions (Fade + Grow + Slide + Zoom) | 2/4 polished, 4/4 covered | — | covered |
+| Accordion (parent + 3 subs) | 1/4 | 3 | 25% (intentional) |
+
+5 families now fully polished (Form, List, Dialog, Card, Menu, Inputs).
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
+
 ## v4.12.0 — Extractor v3 reconciliation mode (2026-05)
 
 v3 detected drift; v3.1 proposes resolution. Pairs with `component_spec_conflict_check.py` to give maintainers a structured upstream-review workflow.

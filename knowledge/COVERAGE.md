@@ -49,7 +49,7 @@ generated_at: 2026-05-11
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 708 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 709 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -263,7 +263,7 @@ generated_at: 2026-05-11
 | [examples/component-address-input.md](../examples/component-address-input.md) | 260 | `AddressInput` (custom — Korean) — spec |
 | [examples/component-affix.md](../examples/component-affix.md) | 190 | `Affix` (sticky positioning) — spec |
 | [examples/component-alert-dialog.md](../examples/component-alert-dialog.md) | 210 | `AlertDialog` — spec |
-| [examples/component-alert-title.md](../examples/component-alert-title.md) | 98 | `AlertTitle` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-alert-title.md](../examples/component-alert-title.md) | 77 | `AlertTitle` — spec |
 | [examples/component-alert.md](../examples/component-alert.md) | 192 | `Alert` (Banner) — spec |
 | [examples/component-amount-input.md](../examples/component-amount-input.md) | 278 | `AmountInput` (custom) — spec |
 | [examples/component-anchor.md](../examples/component-anchor.md) | 198 | `Anchor` (scrollspy / TOC) — spec |
@@ -320,7 +320,7 @@ generated_at: 2026-05-11
 | [examples/component-fade.md](../examples/component-fade.md) | 87 | `Fade` — spec |
 | [examples/component-feature-grid.md](../examples/component-feature-grid.md) | 201 | `FeatureGrid` (3-up / 4-up feature display) — spec |
 | [examples/component-field.md](../examples/component-field.md) | 266 | `Field` — spec |
-| [examples/component-filled-input.md](../examples/component-filled-input.md) | 102 | `FilledInput` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-filled-input.md](../examples/component-filled-input.md) | 114 | `FilledInput` — spec |
 | [examples/component-flex.md](../examples/component-flex.md) | 117 | `Flex` — spec |
 | [examples/component-float-button.md](../examples/component-float-button.md) | 214 | `FloatButton` (FAB — Floating Action Button) — spec |
 | [examples/component-form-control-label.md](../examples/component-form-control-label.md) | 134 | `FormControlLabel` — spec |
@@ -341,8 +341,8 @@ generated_at: 2026-05-11
 | [examples/component-illustration.md](../examples/component-illustration.md) | 273 | `Illustration` (custom — themeable SVG illustration display) — spec |
 | [examples/component-image-list.md](../examples/component-image-list.md) | 107 | `ImageList` — spec |
 | [examples/component-image.md](../examples/component-image.md) | 282 | `Image` — spec |
-| [examples/component-input-adornment.md](../examples/component-input-adornment.md) | 96 | `InputAdornment` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-input-base.md](../examples/component-input-base.md) | 155 | `InputBase` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-input-adornment.md](../examples/component-input-adornment.md) | 101 | `InputAdornment` — spec |
+| [examples/component-input-base.md](../examples/component-input-base.md) | 134 | `InputBase` — spec |
 | [examples/component-input-number.md](../examples/component-input-number.md) | 141 | `InputNumber` — spec |
 | [examples/component-input-otp.md](../examples/component-input-otp.md) | 271 | `InputOTP` (one-time password input) — spec |
 | [examples/component-input.md](../examples/component-input.md) | 213 | `Input` — spec |
@@ -402,7 +402,7 @@ generated_at: 2026-05-11
 | [examples/component-skeleton.md](../examples/component-skeleton.md) | 178 | `Skeleton` — spec |
 | [examples/component-slide.md](../examples/component-slide.md) | 89 | `Slide` — spec |
 | [examples/component-slider.md](../examples/component-slider.md) | 208 | `Slider` — spec |
-| [examples/component-snackbar-content.md](../examples/component-snackbar-content.md) | 100 | `SnackbarContent` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-snackbar-content.md](../examples/component-snackbar-content.md) | 92 | `SnackbarContent` — spec |
 | [examples/component-snackbar.md](../examples/component-snackbar.md) | 121 | `Snackbar` — spec |
 | [examples/component-sonner.md](../examples/component-sonner.md) | 165 | `Sonner` — spec |
 | [examples/component-space.md](../examples/component-space.md) | 125 | `Space` — spec |
@@ -417,9 +417,9 @@ generated_at: 2026-05-11
 | [examples/component-statistic.md](../examples/component-statistic.md) | 282 | `Statistic` — spec |
 | [examples/component-step-button.md](../examples/component-step-button.md) | 96 | `StepButton` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
 | [examples/component-step-connector.md](../examples/component-step-connector.md) | 97 | `StepConnector` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-step-content.md](../examples/component-step-content.md) | 102 | `StepContent` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-step-icon.md](../examples/component-step-icon.md) | 101 | `StepIcon` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-step-label.md](../examples/component-step-label.md) | 101 | `StepLabel` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-step-content.md](../examples/component-step-content.md) | 121 | `StepContent` — spec |
+| [examples/component-step-icon.md](../examples/component-step-icon.md) | 115 | `StepIcon` — spec |
+| [examples/component-step-label.md](../examples/component-step-label.md) | 101 | `StepLabel` — spec |
 | [examples/component-step.md](../examples/component-step.md) | 84 | `Step` — spec |
 | [examples/component-steps.md](../examples/component-steps.md) | 264 | `Steps` (Stepper) — spec |
 | [examples/component-stock-chart.md](../examples/component-stock-chart.md) | 251 | `StockChart` (custom — Korean stock convention) — spec |
@@ -427,14 +427,14 @@ generated_at: 2026-05-11
 | [examples/component-switch.md](../examples/component-switch.md) | 99 | `Switch` — spec |
 | [examples/component-tab-scroll-button.md](../examples/component-tab-scroll-button.md) | 104 | `TabScrollButton` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
 | [examples/component-tab.md](../examples/component-tab.md) | 120 | `Tab` — spec |
-| [examples/component-table-body.md](../examples/component-table-body.md) | 96 | `TableBody` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-table-cell.md](../examples/component-table-cell.md) | 112 | `TableCell` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-table-container.md](../examples/component-table-container.md) | 96 | `TableContainer` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-table-footer.md](../examples/component-table-footer.md) | 96 | `TableFooter` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-table-head.md](../examples/component-table-head.md) | 96 | `TableHead` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
-| [examples/component-table-pagination.md](../examples/component-table-pagination.md) | 96 | `TablePagination` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-table-body.md](../examples/component-table-body.md) | 82 | `TableBody` — spec |
+| [examples/component-table-cell.md](../examples/component-table-cell.md) | 118 | `TableCell` — spec |
+| [examples/component-table-container.md](../examples/component-table-container.md) | 75 | `TableContainer` — spec |
+| [examples/component-table-footer.md](../examples/component-table-footer.md) | 72 | `TableFooter` — spec |
+| [examples/component-table-head.md](../examples/component-table-head.md) | 78 | `TableHead` — spec |
+| [examples/component-table-pagination.md](../examples/component-table-pagination.md) | 137 | `TablePagination` — spec |
 | [examples/component-table-row.md](../examples/component-table-row.md) | 113 | `TableRow` — spec |
-| [examples/component-table-sort-label.md](../examples/component-table-sort-label.md) | 96 | `TableSortLabel` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST) |
+| [examples/component-table-sort-label.md](../examples/component-table-sort-label.md) | 109 | `TableSortLabel` — spec |
 | [examples/component-table.md](../examples/component-table.md) | 202 | `Table` — spec |
 | [examples/component-tabs.md](../examples/component-tabs.md) | 184 | `Tabs` — spec |
 | [examples/component-tag-badge.md](../examples/component-tag-badge.md) | 309 | `Tag` + `Badge` — combined spec |

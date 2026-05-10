@@ -1,101 +1,101 @@
-# `StepLabel` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `StepLabel` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/StepLabel/StepLabel.d.ts` (5 interface(s), 0 component(s))
+> Synthesized from MUI `StepLabel`. The text label of a `Step` — primary text + optional caption. Combines `StepIcon` + label into the standard step appearance.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Inside every `Step` that has a visible label.
+- For step-only-by-position (rare), use `Step` without `StepLabel`.
 
 ## API
 
 ```tsx
-<StepLabel>
-  {children}
-</StepLabel>
+<Step>
+  <StepLabel
+    optional={<Typography variant="caption">선택</Typography>}
+    error={!!stepErrors[currentStep]}
+  >
+    배송지 정보
+  </StepLabel>
+</Step>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | In most cases will simply be a string containing a title for the label. |
-| `classes` | `Partial<StepLabelClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `error` | `boolean \| undefined` | `false` | — | mui | If `true`, the step is marked as failed. |
-| `icon` | `React.ReactNode` | — | — | mui | Override the default label of the step icon. |
-| `optional` | `React.ReactNode` | — | — | mui | The optional node to display. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Primary label |
+| `icon` | `ReactNode` | step number | Override icon |
+| `optional` | `ReactNode` | — | Caption beneath label (e.g., "Optional", "Required") |
+| `error` | `boolean` | `false` | Mark step as failed |
+| `StepIconComponent` | `ElementType` | `StepIcon` | Custom icon component |
+| `StepIconProps` | `StepIconProps` | — | Pass-through to icon |
 
 ## States
 
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+Inherited from parent `Step`:
+- Upcoming: muted text + outlined icon
+- Active: bold text + filled icon
+- Completed: regular text + checkmark icon
+- Error: error-colored text + error icon
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
+--font-size-body
+--font-weight-medium       /* active */
+--font-weight-regular
 --color-fg-default
---space-md
---radius-md
+--color-fg-muted
+--color-fg-error
+--space-sm                 /* gap between icon and label */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- The label is the accessible name of the step.
+- For `error={true}`, `aria-invalid="true"` propagates.
+- `optional` content is read after the primary label.
+- Korean step labels: keep concise (1-3 words). Long labels truncate.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Korean honorific** — step labels use noun form ("배송지 입력") not sentence form ("배송지를 입력하세요").
+- **Optional steps** — set `optional={<Typography variant="caption">선택</Typography>}`. Don't bake "(선택)" into the primary label.
+- **Long labels in horizontal stepper** — switch to `<Stepper alternativeLabel>` so labels render below icons (more horizontal room).
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<Stepper activeStep={step} orientation="vertical">
+  <Step>
+    <StepLabel>이메일 인증</StepLabel>
+  </Step>
+  <Step>
+    <StepLabel
+      optional={<Typography variant="caption" color="text.secondary">선택</Typography>}
+    >
+      프로필 사진
+    </StepLabel>
+  </Step>
+  <Step>
+    <StepLabel error={!!errors.payment}>
+      결제 정보
+    </StepLabel>
+  </Step>
+</Stepper>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put block-level content inside the label — break composition.
+- Don't omit error state when a step actually failed — silent failure is confusing.
 
 ## References
 
-- Mui: [`StepLabel.d.ts`](../refs/mui/packages/mui-material/src/StepLabel/StepLabel.d.ts)
+- MUI: [`StepLabel`](../refs/mui/packages/mui-material/src/StepLabel/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-step.md`](component-step.md)
+- [`component-step-icon.md`](component-step-icon.md)
+- [`component-steps.md`](component-steps.md)
+- [`knowledge/patterns/onboarding.md`](../knowledge/patterns/onboarding.md)

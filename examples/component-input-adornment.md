@@ -1,96 +1,101 @@
-# `InputAdornment` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `InputAdornment` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/InputAdornment/InputAdornment.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `InputAdornment`. Leading or trailing content slot for an input — icons (search, calendar, currency), text prefixes/suffixes (`₩`, `@`), or interactive controls (clear button, password toggle).
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Search input → leading magnifying glass.
+- Currency input → leading `₩` or `$`.
+- Password input → trailing show/hide toggle.
+- Email input → trailing domain hint.
 
 ## API
 
 ```tsx
-<InputAdornment>
-  {children}
-</InputAdornment>
+<OutlinedInput
+  startAdornment={
+    <InputAdornment position="start">
+      <SearchIcon />
+    </InputAdornment>
+  }
+  endAdornment={
+    <InputAdornment position="end">
+      <IconButton aria-label="지우기" size="small">
+        <CloseIcon />
+      </IconButton>
+    </InputAdornment>
+  }
+/>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `position` | `'start' \| 'end'` | required | Which side |
+| `children` | `ReactNode` | — | The content |
+| `disablePointerEvents` | `boolean` | `false` | When the adornment is decorative-only (icon, prefix text), this lets clicks pass through to the input |
+| `disableTypography` | `boolean` | `false` | Skip default Typography wrapping (for non-text adornments) |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--space-sm        /* gap between adornment and input value */
+--icon-size-md    /* default 24px */
+--color-fg-muted  /* default adornment color */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- **Decorative icons**: set `aria-hidden="true"` on the icon + `disablePointerEvents={true}` on the adornment.
+- **Interactive adornments** (clear button, password toggle): use `IconButton` inside with explicit `aria-label`. Set `edge="start"` or `edge="end"` on the IconButton for proper alignment.
+- **Text prefixes** like `₩` are decorative — wrap in `<Typography>` and `aria-hidden="true"`. The input's `inputMode="decimal"` + numeric value handle the actual semantics.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Adornment focus tab order** — interactive adornments are part of the tab order BEFORE/AFTER the input, depending on `position`. End-adornments tab AFTER the input — usually correct (clear button after typing).
+- **Korean prefix labels** — for "원" suffix, use `position="end"`. Don't put it inside the input as text — the input's value should stay numeric.
+- **Combining start + end** — fine, but watch for narrow widths; long text in both can squeeze the input.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function PriceInput({ value, onChange }) {
+  return (
+    <FormControl fullWidth>
+      <FormLabel htmlFor="price">가격</FormLabel>
+      <OutlinedInput
+        id="price"
+        type="number"
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        startAdornment={
+          <InputAdornment position="start" disablePointerEvents>
+            <Typography aria-hidden>₩</Typography>
+          </InputAdornment>
+        }
+        endAdornment={
+          <InputAdornment position="end" disablePointerEvents>
+            <Typography color="text.secondary" aria-hidden>원</Typography>
+          </InputAdornment>
+        }
+      />
+    </FormControl>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put non-trivial UI in adornments (whole forms, multi-line text) — they collapse oddly.
+- Don't omit `aria-label` on interactive adornments.
+- Don't set `disablePointerEvents` on interactive adornments — it breaks them.
 
 ## References
 
-- Mui: [`InputAdornment.d.ts`](../refs/mui/packages/mui-material/src/InputAdornment/InputAdornment.d.ts)
+- MUI: [`InputAdornment`](../refs/mui/packages/mui-material/src/InputAdornment/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-input-base.md`](component-input-base.md)
+- [`component-outlined-input.md`](component-outlined-input.md)
+- [`component-amount-input.md`](component-amount-input.md) — currency-specific composition

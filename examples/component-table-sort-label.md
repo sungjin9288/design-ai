@@ -1,96 +1,109 @@
-# `TableSortLabel` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `TableSortLabel` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/TableSortLabel/TableSortLabel.d.ts` (8 interface(s), 0 component(s))
+> Synthesized from MUI `TableSortLabel`. The clickable sort indicator inside a header `TableCell`. Shows the current sort direction (ascending / descending) + click handler to toggle.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Inside header `TableCell`s of sortable columns.
+- For non-sortable columns, render plain text in the TableCell.
 
 ## API
 
 ```tsx
-<TableSortLabel>
-  {children}
-</TableSortLabel>
+<TableCell sortDirection={orderBy === 'name' ? order : false}>
+  <TableSortLabel
+    active={orderBy === 'name'}
+    direction={orderBy === 'name' ? order : 'asc'}
+    onClick={() => handleSort('name')}
+  >
+    이름
+  </TableSortLabel>
+</TableCell>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `active` | `boolean` | `false` | This column is currently sorted |
+| `direction` | `'asc' \| 'desc'` | `'asc'` | Sort direction (ignored when not active) |
+| `hideSortIcon` | `boolean` | `false` | Hide arrow when not active (cleaner default; arrow appears on hover) |
+| `IconComponent` | `ElementType` | `ArrowDownwardIcon` | Custom sort icon |
+| `onClick` | `(e) => void` | — | Toggle handler |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default (not active) | Label only; no arrow (or arrow on hover if `hideSortIcon=false`) |
+| Active asc | Label + up arrow |
+| Active desc | Label + down arrow |
+| Hover (any) | Subtle bg + arrow visible |
+| Focus-visible | 2px focus ring |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
+--icon-size-sm           /* sort arrow */
 --color-fg-default
---space-md
---radius-md
+--color-fg-muted         /* inactive arrow */
+--motion-duration-100    /* arrow rotation */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Renders as `<button>` — keyboard activates with Enter/Space.
+- Pair with `TableCell sortDirection={...}` to set `aria-sort` correctly. MUI handles the cell side automatically.
+- Korean: arrow direction is universal; the label localizes naturally.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Tri-state sort** (asc → desc → unsorted → asc...) — implement in your `onClick`. MUI doesn't enforce tri-state by default; common is asc ↔ desc.
+- **Multi-column sort** — possible but UX-confusing for most adopters. Stick to single-column unless data work warrants it.
+- **Default sort** — set initial `orderBy` + `order` state on mount; first render shows the active arrow.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function SortableHeader({ orderBy, order, onSort }) {
+  const cell = (key, label, align = 'left') => (
+    <TableCell
+      align={align}
+      sortDirection={orderBy === key ? order : false}
+      scope="col"
+    >
+      <TableSortLabel
+        active={orderBy === key}
+        direction={orderBy === key ? order : 'asc'}
+        onClick={() => onSort(key)}
+      >
+        {label}
+      </TableSortLabel>
+    </TableCell>
+  );
+
+  return (
+    <TableHead>
+      <TableRow>
+        {cell('name', '이름')}
+        {cell('department', '부서')}
+        {cell('hireDate', '입사일', 'right')}
+        {cell('salary', '급여', 'right')}
+      </TableRow>
+    </TableHead>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't put `TableSortLabel` outside a `TableCell` — `aria-sort` won't propagate.
+- Don't use for non-sortable columns — confuses users when clicking does nothing.
+- Don't omit `aria-label` if the column header is icon-only (pair with `aria-label="정렬: 이름"` or similar).
 
 ## References
 
-- Mui: [`TableSortLabel.d.ts`](../refs/mui/packages/mui-material/src/TableSortLabel/TableSortLabel.d.ts)
+- MUI: [`TableSortLabel`](../refs/mui/packages/mui-material/src/TableSortLabel/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-table-cell.md`](component-table-cell.md)
+- [`component-table-head.md`](component-table-head.md)

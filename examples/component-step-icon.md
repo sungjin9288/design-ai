@@ -1,101 +1,115 @@
-# `StepIcon` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `StepIcon` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/StepIcon/StepIcon.d.ts` (2 interface(s), 1 component(s))
+> Synthesized from MUI `StepIcon`. The numbered/checked circle in a `Stepper` flow. Shows step number when upcoming/active, checkmark when complete, error icon when failed.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Inside `StepLabel` (auto-rendered by `Step` parent).
+- For custom step icons, override via `StepLabel.StepIconComponent`.
 
 ## API
 
 ```tsx
-<StepIcon>
-  {children}
-</StepIcon>
+<Step>
+  <StepLabel
+    StepIconComponent={CustomStepIcon}
+    error={hasError}
+  >
+    배송지 입력
+  </StepLabel>
+</Step>
 ```
 
-### Props
+`StepIcon` is rarely used directly — `Step` + `StepLabel` render it automatically. Override only when you need a custom icon set.
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `icon` | `React.ReactNode` | — | ✓ | mui | The label displayed in the step icon. |
-| `active` | `boolean \| undefined` | `false` | — | mui | Whether this step is active. |
-| `classes` | `Partial<StepIconClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `completed` | `boolean \| undefined` | `false` | — | mui | Mark the step as completed. Is passed to child components. |
-| `error` | `boolean \| undefined` | `false` | — | mui | If `true`, the step is marked as failed. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `icon` | `ReactNode` | step number | The icon content (number, custom component) |
+| `active` | `boolean` | `false` | Current step |
+| `completed` | `boolean` | `false` | Past step |
+| `error` | `boolean` | `false` | Step failed |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Upcoming | outlined circle, step number, fg-muted |
+| Active | filled brand circle, step number, fg-on-brand, slightly larger |
+| Completed | filled brand circle, checkmark icon, fg-on-brand |
+| Error | filled error circle, X icon, fg-on-error |
+| Disabled | reduced opacity |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--step-icon-size-24
+--step-icon-bg-active           /* brand */
+--step-icon-bg-completed        /* brand */
+--step-icon-bg-error            /* error */
+--step-icon-bg-upcoming         /* transparent */
+--step-icon-border-upcoming     /* fg-muted */
+--step-icon-fg-on-brand
+--step-icon-fg-on-error
+--step-icon-fg-upcoming
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Decorative (the `StepLabel` text is the accessible name).
+- For error states, screen readers announce via `StepLabel.error` setting `aria-invalid` on the step.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Long stepper (8+ steps)** — number-in-circle becomes hard to read; switch to `MobileStepper` (dots/progress) for mobile.
+- **Custom icons per step** (e.g., shopping cart → payment → confirmation) — override `StepIconComponent` per `StepLabel`. Different icons signal step *type*, not just step *number*.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function CartStepper({ activeStep }) {
+  const steps = [
+    { label: '장바구니', icon: <CartIcon /> },
+    { label: '결제 정보', icon: <CardIcon /> },
+    { label: '주문 확인', icon: <CheckIcon /> },
+  ];
+
+  return (
+    <Stepper activeStep={activeStep} alternativeLabel>
+      {steps.map((step, idx) => (
+        <Step key={step.label}>
+          <StepLabel
+            StepIconComponent={({ active, completed }) => (
+              <Avatar
+                sx={{
+                  bgcolor: completed ? 'success.main' : active ? 'primary.main' : 'grey.300',
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                {step.icon}
+              </Avatar>
+            )}
+          >
+            {step.label}
+          </StepLabel>
+        </Step>
+      ))}
+    </Stepper>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't render directly outside `StepLabel`.
+- Don't use icons that don't communicate progress (e.g., decorative-only flowers).
 
 ## References
 
-- Mui: [`StepIcon.d.ts`](../refs/mui/packages/mui-material/src/StepIcon/StepIcon.d.ts)
+- MUI: [`StepIcon`](../refs/mui/packages/mui-material/src/StepIcon/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-step.md`](component-step.md)
+- [`component-step-label.md`](component-step-label.md)
+- [`component-steps.md`](component-steps.md)

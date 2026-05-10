@@ -1,96 +1,78 @@
-# `TableHead` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `TableHead` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/TableHead/TableHead.d.ts` (3 interface(s), 0 component(s))
+> Synthesized from MUI `TableHead`. The container for header rows in a `Table`. Renders `<thead>` with semibold cell text and `<th>` semantics on inner `TableCell`s.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Every `Table` with column labels (almost all of them).
+- For tables with sortable columns, header cells contain `TableSortLabel`.
 
 ## API
 
 ```tsx
-<TableHead>
-  {children}
-</TableHead>
+<Table>
+  <TableHead>
+    <TableRow>
+      <TableCell scope="col">이름</TableCell>
+      <TableCell scope="col" align="right">금액</TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>...</TableBody>
+</Table>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
-
-## Tokens consumed
-
-(Fill in. List every token this component reads. Flag missing tokens.)
-
-```
---color-bg-default
---color-fg-default
---space-md
---radius-md
-```
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | `TableRow` (typically one) |
+| `component` | `ElementType` | `'thead'` | Override |
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- `TableCell` children inside `TableHead` automatically render as `<th>`.
+- Add `scope="col"` to each header cell — required for screen readers to associate columns with body cells.
+- For multi-row headers, use `<TableRow>` siblings inside `TableHead` and `colspan` / `rowspan` on cells.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Sticky header** — set `<TableContainer sx={{ maxHeight: 400 }}>` + `<Table stickyHeader>` to keep headers visible during scroll.
+- **Mobile narrow viewport** — Tables don't scale well; switch to card-list layout. Cite [`knowledge/patterns/list-and-feed.md`](../knowledge/patterns/list-and-feed.md).
+- **Korean column labels** — keep short (1-3 words). Long labels wrap or truncate; truncated headers are confusing.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<TableContainer component={Paper} sx={{ maxHeight: 480 }}>
+  <Table stickyHeader>
+    <TableHead>
+      <TableRow>
+        <TableCell scope="col">이름</TableCell>
+        <TableCell scope="col">부서</TableCell>
+        <TableCell scope="col" align="right">
+          <TableSortLabel active direction="asc" onClick={onSort}>
+            입사일
+          </TableSortLabel>
+        </TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {employees.map((emp) => <EmployeeRow key={emp.id} {...emp} />)}
+    </TableBody>
+  </Table>
+</TableContainer>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't omit `scope="col"` — accessibility miss.
+- Don't put body rows inside `TableHead`.
+- Don't style header cells with body-cell typography — keep semibold semantic distinction.
 
 ## References
 
-- Mui: [`TableHead.d.ts`](../refs/mui/packages/mui-material/src/TableHead/TableHead.d.ts)
+- MUI: [`TableHead`](../refs/mui/packages/mui-material/src/TableHead/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-table.md`](component-table.md)
+- [`component-table-cell.md`](component-table-cell.md)
+- [`component-table-sort-label.md`](component-table-sort-label.md)

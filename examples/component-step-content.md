@@ -1,102 +1,121 @@
-# `StepContent` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `StepContent` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/StepContent/StepContent.d.ts` (5 interface(s), 1 component(s))
+> Synthesized from MUI `StepContent`. The body region under a vertical-orientation `Step`. Renders the step's actual form / instruction / control panel. Only used with `<Stepper orientation="vertical">`.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
-
-## Anatomy
-
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- Vertical-orientation steppers (each step has expanded body content).
+- Mobile onboarding flows where steps stack vertically.
+- For horizontal steppers, render content separately below the stepper.
 
 ## API
 
 ```tsx
-<StepContent>
-  {children}
-</StepContent>
+<Stepper activeStep={step} orientation="vertical">
+  <Step>
+    <StepLabel>이메일 입력</StepLabel>
+    <StepContent>
+      <TextField fullWidth label="이메일" />
+      <Stack direction="row" gap={1} sx={{ mt: 2 }}>
+        <Button onClick={handleNext} variant="contained">다음</Button>
+      </Stack>
+    </StepContent>
+  </Step>
+</Stepper>
 ```
 
-### Props
-
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | The content of the component. |
-| `classes` | `Partial<StepContentClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-| `transitionDuration` | `TransitionProps['timeout'] \| 'auto' \| undefined` | `'auto'` | — | mui | Adjust the duration of the content expand transition.
-Passed as a prop to the transition component.
-
-Set to 'auto' to automatically calculate transition time based on height. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Step body content |
+| `transitionDuration` | `number \| 'auto'` | `'auto'` | Collapse animation |
+| `TransitionComponent` | `Component` | `Collapse` | Custom transition |
+| `TransitionProps` | `TransitionProps` | — | Pass-through |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Active step | Content expanded |
+| Inactive step | Content collapsed (animated) |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--space-md                  /* horizontal padding */
+--space-md-y                /* vertical padding */
+--motion-duration-auto
+--step-connector-line       /* left vertical rule */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Hidden content is `aria-hidden` when collapsed.
+- Focus moves into the active step's content automatically when activeStep changes.
+- For long step content with internal scrolling, the parent step should handle scroll-into-view.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Form validation per step** — show errors inline AND prevent progression to next step. Keep current `StepContent` expanded until valid.
+- **Long content (10+ form fields)** — that's a multi-screen flow, not a vertical stepper. Switch to a separate page per step.
+- **Mobile narrow viewport** — vertical orientation works well; ensure step labels and content fit at 320px.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function VerticalOnboarding() {
+  const [step, setStep] = useState(0);
+  const totalSteps = 3;
+
+  return (
+    <Stepper activeStep={step} orientation="vertical">
+      <Step>
+        <StepLabel>기본 정보</StepLabel>
+        <StepContent>
+          <Stack gap={2}>
+            <TextField label="이름" />
+            <TextField label="이메일" />
+            <Stack direction="row" gap={1}>
+              <Button onClick={() => setStep(1)} variant="contained">
+                다음
+              </Button>
+            </Stack>
+          </Stack>
+        </StepContent>
+      </Step>
+      <Step>
+        <StepLabel>비밀번호</StepLabel>
+        <StepContent>
+          <TextField fullWidth label="비밀번호" type="password" />
+          <Stack direction="row" gap={1} sx={{ mt: 2 }}>
+            <Button onClick={() => setStep(0)}>이전</Button>
+            <Button onClick={() => setStep(2)} variant="contained">다음</Button>
+          </Stack>
+        </StepContent>
+      </Step>
+      <Step>
+        <StepLabel>완료</StepLabel>
+        <StepContent>
+          <Typography>가입이 완료됐어요.</Typography>
+          <Button variant="contained" sx={{ mt: 2 }}>시작하기</Button>
+        </StepContent>
+      </Step>
+    </Stepper>
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use with horizontal stepper — content won't render.
+- Don't omit Back/Next buttons — users need explicit progression controls.
 
 ## References
 
-- Mui: [`StepContent.d.ts`](../refs/mui/packages/mui-material/src/StepContent/StepContent.d.ts)
+- MUI: [`StepContent`](../refs/mui/packages/mui-material/src/StepContent/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-steps.md`](component-steps.md)
+- [`component-step.md`](component-step.md)
+- [`component-step-label.md`](component-step-label.md)
+- [`knowledge/patterns/b2b-onboarding-flows.md`](../knowledge/patterns/b2b-onboarding-flows.md)

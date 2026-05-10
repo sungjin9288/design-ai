@@ -1,98 +1,77 @@
-# `AlertTitle` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `AlertTitle` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/AlertTitle/AlertTitle.d.ts` (1 interface(s), 1 component(s))
+> Synthesized from MUI `AlertTitle`. The header line inside an `Alert`. Use for alerts with both a short title and a longer body — without it, the alert just shows a one-line message.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Multi-line alerts where the first line is a summary and the rest is detail.
+- Alerts that need a strong visual hierarchy ("Something went wrong" + paragraph of detail).
 
-## Anatomy
+## When NOT to use
 
-(Fill in: ASCII diagram of the component's parts.)
-
-```
-[diagram here]
-```
+- One-line alerts → just use `<Alert>` with text content.
 
 ## API
 
 ```tsx
-<AlertTitle>
-  {children}
-</AlertTitle>
+<Alert severity="error">
+  <AlertTitle>저장에 실패했어요</AlertTitle>
+  네트워크 연결을 확인하고 다시 시도해 주세요. 문제가 계속되면{' '}
+  <Link href="/help">도움말</Link>을 참고하세요.
+</Alert>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Title text |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `children` | `React.ReactNode` | — | — | mui | The content of the component. |
-| `classes` | `Partial<AlertTitleClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
-
-## States
-
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+Extends `Typography` — typography props work.
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
---color-bg-default
---color-fg-default
---space-md
---radius-md
+--font-size-heading-sm     /* 16px */
+--font-weight-semibold
+--space-xs                 /* margin-bottom to body */
 ```
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- Renders inside the Alert's accessible region.
+- For severity changes, the title color follows (error red, warning amber, etc.).
+- Don't omit the title for severity-error multi-paragraph alerts — title gives quick scan.
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Korean honorific** — match the alert severity. Error: 합쇼체 ("저장에 실패하셨습니다"). Info: 해요체 ("저장됐어요").
+- **Long titles** — wrap; for ellipsis, use `noWrap` on Typography.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<Alert
+  severity="warning"
+  action={
+    <Button color="inherit" size="small" onClick={handleDismiss}>
+      닫기
+    </Button>
+  }
+>
+  <AlertTitle>저장하지 않은 변경사항이 있어요</AlertTitle>
+  페이지를 떠나면 변경사항이 사라져요. 저장하시겠어요?
+</Alert>
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use for one-liner alerts.
+- Don't put interactive elements inside the title — they belong in `action`.
 
 ## References
 
-- Mui: [`AlertTitle.d.ts`](../refs/mui/packages/mui-material/src/AlertTitle/AlertTitle.d.ts)
+- MUI: [`AlertTitle`](../refs/mui/packages/mui-material/src/AlertTitle/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-alert.md`](component-alert.md)
+- [`component-snackbar.md`](component-snackbar.md)

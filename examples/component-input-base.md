@@ -1,155 +1,134 @@
-# `InputBase` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `InputBase` — spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/InputBase/InputBase.d.ts` (5 interface(s), 1 component(s))
+> Synthesized from MUI `InputBase`. The unstyled foundation of every MUI input variant (`OutlinedInput`, `FilledInput`, `Input`, `TextField`'s internals). Use directly when you need a fully custom-styled input that still gets MUI's accessibility + IME + adornment behavior.
 
 ## When to use
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+- Building a custom-styled input that doesn't fit `OutlinedInput`/`FilledInput`.
+- Composition primitive for design-system-specific input variants.
+- For 99% of cases, prefer `OutlinedInput` (default styling + label notch).
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
-
 ```
-[diagram here]
+┌─[start adornment]─[input element]─[end adornment]─┐
+│                                                    │
+└────────────────────────────────────────────────────┘
 ```
 
 ## API
 
 ```tsx
-<InputBase>
-  {children}
-</InputBase>
+<InputBase
+  inputProps={{ "aria-label": "search" }}
+  startAdornment={<SearchIcon />}
+  placeholder="검색..."
+  sx={{ /* full custom styling */ }}
+/>
 ```
 
-### Props
+39 props (full surface). Most-used:
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `'aria-describedby'` | `string \| undefined` | — | — | mui | (fill in) |
-| `'aria-label'` | `string \| undefined` | — | — | mui | (fill in) |
-| `autoComplete` | `string \| undefined` | — | — | mui | This prop helps users to fill forms faster, especially on mobile devices.
-The name can be confusing, as it's more like an autofill.
-You can learn more about it [following the specification](https://html.spec.whatwg.org/multipage/form-contro |
-| `autoFocus` | `boolean \| undefined` | — | — | mui | If `true`, the `input` element is focused during the first mount. |
-| `classes` | `Partial<InputBaseClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `color` | `\| OverridableStringUnion< 'primary' \| 'secondary' ` | — | — | mui | The color of the component.
-It supports both default and custom theme colors, which can be added as shown in the
-[palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors).
-The prop defaults to the value |
-| `defaultValue` | `unknown` | — | — | mui | The default value. Use when the component is not controlled. |
-| `disableInjectingGlobalStyles` | `boolean \| undefined` | `false` | — | mui | If `true`, GlobalStyles for the auto-fill keyframes will not be injected/removed on mount/unmount. Make sure to inject them at the top of your application.
-This option is intended to help with boosting the initial rendering performance if y |
-| `disabled` | `boolean \| undefined` | — | — | mui | If `true`, the component is disabled.
-The prop defaults to the value (`false`) inherited from the parent FormControl component. |
-| `endAdornment` | `React.ReactNode` | — | — | mui | End `InputAdornment` for this component. |
-| `error` | `boolean \| undefined` | — | — | mui | If `true`, the `input` will indicate an error.
-The prop defaults to the value (`false`) inherited from the parent FormControl component. |
-| `fullWidth` | `boolean \| undefined` | `false` | — | mui | If `true`, the `input` will take up the full width of its container. |
-| `id` | `string \| undefined` | — | — | mui | The id of the `input` element. |
-| `inputComponent` | `React.ElementType<InputBaseComponentProps> \| undef` | `'input'` | — | mui | The component used for the `input` element.
-Either a string to use a HTML element or a component. |
-| `inputProps` | `InputBaseComponentProps \| undefined` | `{}` | — | mui | [Attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input#attributes) applied to the `input` element. |
-| `inputRef` | `React.Ref<any> \| undefined` | — | — | mui | Pass a ref to the `input` element. |
-| `margin` | `'dense' \| 'none' \| undefined` | — | — | mui | If `dense`, will adjust vertical spacing. This is normally obtained via context from
-FormControl.
-The prop defaults to the value (`'none'`) inherited from the parent FormControl component. |
-| `maxRows` | `string \| number \| undefined` | — | — | mui | Maximum number of rows to display when multiline option is set to true. |
-| `minRows` | `string \| number \| undefined` | — | — | mui | Minimum number of rows to display when multiline option is set to true. |
-| `multiline` | `boolean \| undefined` | `false` | — | mui | If `true`, a [TextareaAutosize](https://mui.com/material-ui/react-textarea-autosize/) element is rendered. |
-| `name` | `string \| undefined` | — | — | mui | Name attribute of the `input` element. |
-| `placeholder` | `string \| undefined` | — | — | mui | The short hint displayed in the `input` before the user enters a value. |
-| `readOnly` | `boolean \| undefined` | — | — | mui | It prevents the user from changing the value of the field
-(not from interacting with the field). |
-| `renderSuffix` | `\| ((state: { disabled?: boolean \| undefined; error` | — | — | mui | (fill in) |
-| `required` | `boolean \| undefined` | — | — | mui | If `true`, the `input` element is required.
-The prop defaults to the value (`false`) inherited from the parent FormControl component. |
-| `rows` | `string \| number \| undefined` | — | — | mui | Number of rows to display when multiline option is set to true. |
-| `size` | `OverridableStringUnion<'small' \| 'medium', InputBa` | — | — | mui | The size of the component. |
-| `slotProps` | `\| { root?: \| (React.HTMLAttributes<HTMLDivElement>` | `{}` | — | mui | The extra props for the slot components.
-You can override the existing props or add new ones. |
-| `slots` | `\| { root?: React.ElementType \| undefined; input?: ` | `{}` | — | mui | The components used for each slot inside. |
-| `startAdornment` | `React.ReactNode` | — | — | mui | Start `InputAdornment` for this component. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
-| `type` | `string \| undefined` | `'text'` | — | mui | Type of the `input` element. It should be [a valid HTML5 input type](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input#input_types). |
-| `value` | `unknown` | — | — | mui | The value of the `input` element, required for a controlled component. |
-
-### Events
-
-| Event | Type | Source(s) | Description |
+| Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `onBlur` | `React.FocusEventHandler<HTMLInputElement \| HTMLTextAreaEleme` | mui | Callback fired when the `input` is blurred.
-
-Notice that the first argument (event) might be undefined. |
-| `onChange` | `React.ChangeEventHandler<HTMLTextAreaElement \| HTMLInputElem` | mui | Callback fired when the value is changed. |
-| `onFocus` | `React.FocusEventHandler<HTMLInputElement \| HTMLTextAreaEleme` | mui | (fill in) |
-| `onInvalid` | `React.FormEventHandler<HTMLInputElement \| HTMLTextAreaElemen` | mui | Callback fired when the `input` doesn't satisfy its constraints. |
-| `onKeyDown` | `React.KeyboardEventHandler<HTMLTextAreaElement \| HTMLInputEl` | mui | (fill in) |
-| `onKeyUp` | `React.KeyboardEventHandler<HTMLTextAreaElement \| HTMLInputEl` | mui | (fill in) |
-
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+| `value` / `defaultValue` | `unknown` | — | Controlled / uncontrolled value |
+| `onChange` | `(e) => void` | — | Change handler |
+| `type` | `string` | `'text'` | HTML input type |
+| `multiline` | `boolean` | `false` | Render as `<textarea>` |
+| `rows` / `minRows` / `maxRows` | `number` | — | Multi-line height |
+| `placeholder` | `string` | — | Placeholder text |
+| `startAdornment` / `endAdornment` | `ReactNode` | — | Leading/trailing content |
+| `disabled` | `boolean` | `false` | |
+| `readOnly` | `boolean` | `false` | Caret disabled, no editing |
+| `error` | `boolean` | `false` | Error state |
+| `fullWidth` | `boolean` | `false` | |
+| `autoFocus` | `boolean` | `false` | Focus on mount |
+| `inputProps` | `InputHTMLAttributes` | — | Pass-through to native input (autoComplete, inputMode, pattern, maxLength, etc.) |
+| `inputRef` | `Ref` | — | Ref to native input |
+| `inputComponent` | `ElementType` | `'input'` | Override the inner element (e.g., for masked input libraries) |
+| `name` | `string` | — | Form name |
+| `required` | `boolean` | `false` | |
+| `slots` / `slotProps` | `object` | — | MUI v5+ component override pattern |
+| `sx` | `SxProps` | — | Style override |
 
 ## States
 
 | State | Visual |
 | --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| Default | inherits parent FormControl styling |
+| Focus | inherits FormControl focus styling |
+| Disabled | reduced opacity, no caret |
+| Error | inherits FormControl error styling |
+| Read-only | no caret, but still focusable + selectable |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
-```
---color-bg-default
---color-fg-default
---space-md
---radius-md
-```
+InputBase has no built-in tokens — it inherits from the parent FormControl + your custom `sx` styles. Token cascade comes from the variant wrapper (`OutlinedInput`, `FilledInput`).
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- `inputProps` is the right place for native semantics: `autoComplete`, `inputMode`, `pattern`, `maxLength`, `aria-*`.
+- For required: pair `required` with `aria-required="true"` (for older AT compatibility).
+- `inputComponent` is the seam for masked-input libraries (react-imask, react-text-mask) — they need to forward refs correctly; check the library docs.
+- Cite [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md).
 
 ## Edge cases
 
-(Fill in 3+ edge cases.)
+- **Korean IME composition** — `onChange` fires per keystroke including IME composition. For "search-as-you-type" patterns, use `onCompositionEnd` instead. Cite [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md).
+- **`inputComponent` swap** — when using a masked-input lib, the component must implement `forwardRef` correctly. Common gotcha: cursor jumps on every keystroke if the implementation doesn't preserve selection.
+- **`multiline=true` + `maxRows`** — the textarea grows up to `maxRows` then becomes scrollable. Don't set both `rows` and `maxRows` — pick auto-grow or fixed.
+- **`type="search"`** — adds an "X" clear button in some browsers (Safari, Chrome on macOS). For consistent UX, render your own end-adornment with a clear icon.
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+// Custom search field with clear + icon
+function SearchField({ value, onChange, onClear }) {
+  return (
+    <InputBase
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="검색..."
+      sx={{
+        bgcolor: 'background.paper',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        px: 2,
+        py: 1,
+        '&:focus-within': { borderColor: 'primary.main' },
+      }}
+      startAdornment={
+        <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} aria-hidden />
+      }
+      endAdornment={
+        value && (
+          <IconButton size="small" onClick={onClear} aria-label="검색어 지우기">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        )
+      }
+      inputProps={{ "aria-label": "검색", autoComplete: "off" }}
+    />
+  );
+}
 ```
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use directly when an existing variant (`OutlinedInput`, `FilledInput`, `TextField`) fits — you'll re-implement focus styling, label association, and helper-text wiring.
+- Don't omit `inputProps={{ "aria-label": ... }}` if there's no associated `<label>` — the input has no accessible name otherwise.
+- Don't pass styling via `style` prop — use `sx` for theme integration.
 
 ## References
 
-- Mui: [`InputBase.d.ts`](../refs/mui/packages/mui-material/src/InputBase/InputBase.d.ts)
+- MUI: [`InputBase`](../refs/mui/packages/mui-material/src/InputBase/)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [`component-outlined-input.md`](component-outlined-input.md) — outlined variant (default)
+- [`component-filled-input.md`](component-filled-input.md) — filled variant
+- [`component-input.md`](component-input.md) — standard variant
+- [`component-input-adornment.md`](component-input-adornment.md)
+- [`component-form-control.md`](component-form-control.md)
+- [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md) — IME notes
