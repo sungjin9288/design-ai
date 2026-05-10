@@ -178,6 +178,7 @@ The token names map directly to **shadcn-ui / Tailwind CSS v4** conventions.
 | 159 | Wallpaper & Theme App | `#7C3AED` | `#2563EB` | `#FAF5FF` | Aesthetic purple + trending pink |
 | 160 | White Noise & Ambient Sound | `#475569` | `#4338CA` | `#0F172A` | Ambient grey + deep indigo on dark |
 | 161 | Home Decoration & Interior Design | `#78716C` | `#D97706` | `#FAF5F2` | Interior warm grey + gold accent |
+| 162 | Korean B2B SaaS — Sensitive Data (HR / Payroll / Legal) | `#0D9488` | `#0369A1` | `#F0FDFA` | Trust-driven muted teal + professional blue accent. Cooler than fintech, less corporate than navy. Pair with neutral cool-greys. Pretendard mandatory. Surfaced in v4.7 dogfood (Korean HR onboarding). |
 
 ## Full token specs
 

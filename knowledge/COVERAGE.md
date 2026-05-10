@@ -12,9 +12,9 @@ generated_at: 2026-05-10
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 91 | 76 hand-written + 15 generated |
+| Knowledge files | 92 | 77 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 189 | |
+| Worked examples | 190 | |
 | Extractors | 9 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 137 | **68.8% spec coverage** |
@@ -35,7 +35,7 @@ generated_at: 2026-05-10
 | `illustration` | 5 | 5 | 0 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 6 | 6 | 0 |
-| `patterns` | 29 | 23 | 6 |
+| `patterns` | 30 | 24 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `print` | 6 | 6 | 0 |
 | `spatial` | 5 | 5 | 0 |
@@ -49,7 +49,7 @@ generated_at: 2026-05-10
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 652 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 655 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -65,7 +65,7 @@ generated_at: 2026-05-10
 | --- | --- | --- | --- |
 | [knowledge/colors/color-theory.md](../knowledge/colors/color-theory.md) | 90 | hand-written | Color theory for product UI |
 | [knowledge/colors/mui-palette-structure.md](../knowledge/colors/mui-palette-structure.md) | 105 | generated | MUI palette structure |
-| [knowledge/colors/palettes-by-product-type.md](../knowledge/colors/palettes-by-product-type.md) | 875 | generated | Curated palettes by product type |
+| [knowledge/colors/palettes-by-product-type.md](../knowledge/colors/palettes-by-product-type.md) | 876 | generated | Curated palettes by product type |
 
 #### components
 
@@ -152,6 +152,7 @@ generated_at: 2026-05-10
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/patterns/auth-flow-design.md](../knowledge/patterns/auth-flow-design.md) | 316 | hand-written | Authentication flow design |
+| [knowledge/patterns/b2b-onboarding-flows.md](../knowledge/patterns/b2b-onboarding-flows.md) | 182 | hand-written | B2B onboarding flows |
 | [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 238 | hand-written | Brand identity |
 | [knowledge/patterns/brand-references.md](../knowledge/patterns/brand-references.md) | 96 | generated | Brand reference index |
 | [knowledge/patterns/chart-color-encoding.md](../knowledge/patterns/chart-color-encoding.md) | 269 | hand-written | Chart color encoding |
@@ -350,6 +351,7 @@ generated_at: 2026-05-10
 | [examples/component-list-item.md](../examples/component-list-item.md) | 116 | `ListItem` — spec |
 | [examples/component-list-subheader.md](../examples/component-list-subheader.md) | 92 | `ListSubheader` — spec (DRAFT — scaffolded 2026-05-10 via TS-AST) |
 | [examples/component-list.md](../examples/component-list.md) | 198 | `List` — spec |
+| [examples/component-loading-button.md](../examples/component-loading-button.md) | 125 | `LoadingButton` (pattern) — spec |
 | [examples/component-loading-sequence.md](../examples/component-loading-sequence.md) | 254 | `LoadingSequence` (custom — splash + first-screen coordination) — spec |
 | [examples/component-lottie-player.md](../examples/component-lottie-player.md) | 279 | `LottiePlayer` (custom — designer-led After Effects animation in product UI) — spec |
 | [examples/component-masonry.md](../examples/component-masonry.md) | 191 | `Masonry` — spec |
@@ -611,6 +613,7 @@ Specs that don't match the canonical index (probably aliases — investigate):
 - `hero-block`
 - `illustration`
 - `krw-amount`
+- `loading-button`
 - `loading-sequence`
 - `lottie-player`
 - `navigation-menu`

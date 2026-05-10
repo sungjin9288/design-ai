@@ -249,11 +249,15 @@ def merge_props_across_sources(
 
 SPEC_TEMPLATE = """# `{title}` — spec (DRAFT — scaffolded {today} via TS-AST)
 
-> **Draft scaffold** generated from upstream sources via TypeScript AST.
-> A maintainer should review the narrative sections (when to use, anatomy,
-> edge cases), verify the API table (especially defaults and event
-> handlers), fill in tokens consumed, and remove this banner before
-> shipping.
+> **Draft scaffold** generated from upstream sources via the TypeScript
+> Compiler API. The **API table below is parsed directly from the source's
+> typed declarations** — props / types / defaults / `@deprecated` markers
+> are accurate and trustworthy.
+>
+> The **narrative sections** (when to use, anatomy, tokens, accessibility,
+> edge cases, code example) are placeholders. A maintainer should fill
+> them in based on actual usage and remove this banner before declaring
+> the spec polished.
 >
 > Sources analyzed:
 {sources_block}

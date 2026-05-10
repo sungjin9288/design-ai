@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
+## Phase 39 — Dogfood v4 + 5 fixes (v4.7.0) ✓ shipped
+
+End-to-end practical test on Korean B2B HR onboarding scenario. v4.0/4.5/4.6 capabilities exercised in a real flow; 5 actionable gaps surfaced and fixed in the same commit.
+
+### Added
+- `examples/cases/dogfood-v4-korean-hr-onboarding.md` — real deliverable: tokens → EmployeeInfoForm → Card + Dialog upload flow → UX audit → stability review.
+- `docs/DOGFOOD-V4-FINDINGS.md` — self-critique. v3-vs-v4 time comparison: 3-5x faster on form/dialog/list-heavy work.
+- `examples/component-loading-button.md` (Fix 1) — polished pattern spec.
+- `knowledge/patterns/b2b-onboarding-flows.md` (Fix 3) — B2B onboarding-specific knowledge.
+- Palette row 162 (Fix 4) — Korean B2B SaaS sensitive-data palette.
+
+### Changed
+- `tools/audit/stability-review.py` (Fix 2) — skip generated artifacts (`COVERAGE.md`).
+- `tools/extractors/component_spec_scaffold_v2.py` (Fix 5) — banner clarifies API table is AST-extracted and trustworthy.
+- Versions: 4.6.0 → 4.7.0.
+
+### Verified
+- All 6 audits pass.
+- Dogfood deliverable + findings cite real specs and knowledge.
+- v3 vs v4 time comparison: 3-5x faster on form/dialog/list work.
+
+### What v4 validated
+- v4.0 graduation correct — 8 stable surfaces held up.
+- v4.5 family completion right call — form/dialog/list specs paid off.
+- v4.6 stability automation works — false positive surfaced and fixed.
+
+### What v4 did NOT validate (future)
+- VS Code extension under real adopter load.
+- npm install on fresh machine.
+- Multi-language doc site rendering since v3.12.
+
+These belong in a separate install / e2e test pass.
+
+### What's still ahead (4.x)
+- VS Code extension dogfood test.
+- npm fresh-install test.
+- Doc site mkdocs build verification.
+- Coverage push 68.8% → 80% (transitions, table sub-components).
+- Polish remaining 21 v4.5 drafts.
+
 ## Phase 38 — Stability re-review automation (v4.6.0) ✓ shipped
 
 Operationalizes the quarterly stability review ritual. Until now, a manual step described in RELEASE-CHECKLIST. Now: report + 2 bulk tools + slash command + CONTRIBUTING walkthrough.

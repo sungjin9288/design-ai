@@ -2,6 +2,49 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.7.0 — Dogfood v4 + 5 fixes (2026-05)
+
+End-to-end practical test of the v4.6 corpus on a real Korean B2B HR onboarding scenario. Surfaced 5 actionable gaps; all 5 fixed in this commit.
+
+### Added
+- **`examples/cases/dogfood-v4-korean-hr-onboarding.md`** — real deliverable: tokens (palette + typography + spacing) → EmployeeInfoForm composition → document upload Card + confirmation Dialog → UX audit → stability review run. Cites every knowledge file + spec used.
+- **`docs/DOGFOOD-V4-FINDINGS.md`** — self-critique. What worked since v3 (family-completed specs paid off; KR knowledge composes naturally; /stability-review dogfooded itself; single audit runner saved time). What broke (5 gaps surfaced + fixed). Time comparison v3 vs v4 (~3-5x faster on form/dialog/list-heavy work).
+- **`examples/component-loading-button.md`** (Fix 1) — polished pattern spec for the loading-button pattern. MUI v6+ merged it into Button (`<Button loading>`); shadcn / Ant don't ship a separate one. Spec documents the **pattern** to apply to any Button.
+- **`knowledge/patterns/b2b-onboarding-flows.md`** (Fix 3) — new knowledge file. B2B vs B2C differences, 5-9 step pacing, auto-save strategy, sensitive-data handling (주민등록번호, 통장 사본, 주소), bilingual KR+EN flows, state recovery, HR-vs-hire dual views.
+- **Korean B2B SaaS palette row** (Fix 4) — added row 162 to `knowledge/colors/palettes-by-product-type.md`. Muted teal (`#0D9488`) + professional blue accent for HR / Payroll / Legal sensitive-data products.
+
+### Changed
+- **`tools/audit/stability-review.py`** (Fix 2) — added `GENERATED_ARTIFACTS` skip-list. `knowledge/COVERAGE.md` no longer reported as "missing stability metadata" (false positive — generated artifact, by design).
+- **`tools/extractors/component_spec_scaffold_v2.py`** (Fix 5) — DRAFT banner now explicitly states "API table below is parsed directly from typed declarations — accurate and trustworthy". Distinguishes the trustworthy AST-extracted parts from the placeholder narrative parts. Reduces adopter ambiguity.
+- **`package.json` + `.claude-plugin/plugin.json`** versions: 4.6.0 → 4.7.0.
+
+### Verified
+- All 6 audits pass.
+- Dogfood findings doc cites real knowledge files and specs throughout.
+- Loading-button pattern spec follows established polished-spec style (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't).
+- B2B onboarding knowledge file: 9-step flow documented, sensitive-data rules explicit, KR-specific (주민번호 masking / 도로명 주소 API / 4대보험).
+
+### What this validates
+- **v4.0 graduation was correct** — the 8 stable surfaces all held up under real use.
+- **v4.5 family completion was the right call** — Form / Dialog / List polished specs returned 3-5x productivity vs deriving from primitives.
+- **v4.6 stability automation works** — one false positive surfaced and got fixed.
+
+### What this does NOT validate
+- VS Code extension under real adopter load (didn't exercise during this dogfood).
+- npm install path on a fresh machine (would need clean-clone test).
+- Multi-language doc site rendering (last verified at v3.12 release).
+
+These belong in a separate **install / e2e test** — future work.
+
+### v3 vs v4 dogfood time comparison
+| Phase | v3 dogfood | v4 dogfood |
+| --- | --- | --- |
+| Brief → palette + tokens | ~12 min | ~6 min |
+| First component spec | ~15 min (had to invent FormControl composition) | ~5 min (cited 5 family-completed specs) |
+| Confirmation dialog | ~10 min | ~3 min |
+| UX audit | ~8 min | ~5 min |
+| Stability review | (didn't exist) | <1 min |
+
 ## v4.6.0 — Stability re-review automation (2026-05)
 
 Operationalizes the quarterly stability review ritual described in `RELEASE-CHECKLIST.md` and `ARCHITECTURE.ko.md`. Until v4.6 this was a manual step; now it's a script + two bulk-mutation tools + a slash command.

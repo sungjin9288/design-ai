@@ -35,6 +35,13 @@ KNOWLEDGE = ROOT / "knowledge"
 DATE_RE = re.compile(r"^(\d{4})-(\d{2})(?:-(\d{2}))?$")
 STABILITY_VALUES = {"stable", "beta", "experimental", "deprecated"}
 
+# Generated artifacts that are auto-regenerated and don't need manual review.
+# These are excluded from the "files without stability metadata" section.
+# (Surfaced as a v4.7 dogfood fix — COVERAGE.md was a false positive.)
+GENERATED_ARTIFACTS = {
+    "knowledge/COVERAGE.md",
+}
+
 
 @dataclass(frozen=True)
 class FileInfo:
@@ -97,6 +104,10 @@ def months_diff(target: date, today: date) -> int:
 def collect(today: date) -> list[FileInfo]:
     out: list[FileInfo] = []
     for path in sorted(KNOWLEDGE.rglob("*.md")):
+        rel = path.relative_to(ROOT)
+        # Skip generated artifacts — they don't carry stability by design.
+        if str(rel).replace("\\", "/") in GENERATED_ARTIFACTS:
+            continue
         text = path.read_text(encoding="utf-8")
         stability = extract_frontmatter_value(text, "stability")
         last_updated = extract_frontmatter_value(text, "last_updated")
@@ -105,7 +116,7 @@ def collect(today: date) -> list[FileInfo]:
         out.append(
             FileInfo(
                 path=path,
-                rel=path.relative_to(ROOT),
+                rel=rel,
                 stability=stability,
                 last_updated=last_updated,
                 last_updated_date=d,
