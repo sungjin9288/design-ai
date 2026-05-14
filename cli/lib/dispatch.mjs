@@ -16,6 +16,7 @@ import { runPrompt } from "../commands/prompt.mjs";
 import { runPack } from "../commands/pack.mjs";
 import { runVersion } from "../commands/version.mjs";
 import { runHelp } from "../commands/help.mjs";
+import { hasHelpFlag } from "./help-flags.mjs";
 import { suggestNearest } from "./suggest.mjs";
 
 const commands = {
@@ -45,7 +46,7 @@ const commands = {
   show: runShow,
   cat: runShow,
   route: runRoute,
-  routes: (args) => runRoute(["--list", ...args]),
+  routes: (args) => hasHelpFlag(args) ? runHelp(["routes"]) : runRoute(["--list", ...args]),
   recommend: runRoute,
   prompt: runPrompt,
   pack: runPack,
