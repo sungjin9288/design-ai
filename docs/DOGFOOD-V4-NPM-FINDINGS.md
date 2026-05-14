@@ -15,7 +15,7 @@ npm run package:smoke
 - reuses `tools/audit/smoke_assertions.py` for doctor JSON parsing, ANSI detection, and required-check assertions
 - installs the packed `.tgz` into a fresh temp npm project
 - verifies `node_modules/.bin/design-ai` exists
-- runs `version`, top-level `help`, `help --json`, every discovered `design-ai help <command>` topic, `list skills`, `install`, `doctor --json`, `doctor --strict`, `status`, and `uninstall`
+- runs `version`, top-level `help`, `help --json`, every expected public `design-ai help <command>` topic, `list skills`, `install`, `doctor --json`, `doctor --strict`, `status`, and `uninstall`
 - asserts every required `doctor --json` package/release/install check reports `PASS`
 - uses a fake `CLAUDE_HOME` and `DESIGN_AI_PREFIX=smoke-design-`
 - sets `NO_COLOR=1` and fails if wrapped commands emit ANSI escape sequences
@@ -118,7 +118,7 @@ The package intentionally excludes test files. Adopter health is covered by `too
 This dogfood approximates what a clean adopter sees:
 
 1. Install the packed CLI package.
-2. Run `design-ai version`, top-level `help`, `help --json`, every command-specific help topic discovered from the catalog, and `list skills`.
+2. Run `design-ai version`, top-level `help`, `help --json`, every expected command-specific help topic from the catalog, and `list skills`.
 3. Run `design-ai install` against an empty Claude Code home.
 4. Run `design-ai doctor --strict` and `design-ai status`.
 5. Run `design-ai uninstall` and confirm the symlink farm is removed.

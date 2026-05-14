@@ -93,9 +93,9 @@ The workflow:
 - Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
-- Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, smoke-tests every `design-ai help <command>` topic, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
+- Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, verifies the expected public topic set, smoke-tests every `design-ai help <command>` topic, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
-- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including the `design-ai help --json` catalog and discovered help topics.
+- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including the expected `design-ai help --json` catalog and discovered help topics.
 
 ## NPM package contents
 

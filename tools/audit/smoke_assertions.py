@@ -11,6 +11,25 @@ from typing import Callable
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+EXPECTED_HELP_TOPICS = (
+    "install",
+    "update",
+    "uninstall",
+    "status",
+    "list",
+    "search",
+    "show",
+    "route",
+    "routes",
+    "prompt",
+    "pack",
+    "check",
+    "audit",
+    "doctor",
+    "examples",
+    "version",
+    "help",
+)
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -67,10 +86,10 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     if len(set(topics)) != len(topics):
         raise SystemExit(f"help JSON after {context} contains duplicate topics")
 
-    missing_required = sorted({"help", "install", "route"} - set(topics))
-    if missing_required:
+    missing_expected = [topic for topic in EXPECTED_HELP_TOPICS if topic not in topics]
+    if missing_expected:
         raise SystemExit(
-            f"help JSON after {context} is missing required topic(s): {', '.join(missing_required)}"
+            f"help JSON after {context} is missing expected topic(s): {', '.join(missing_expected)}"
         )
 
     return topics
@@ -158,14 +177,13 @@ def run_self_test() -> None:
     assert parse_help_topics(
         json.dumps({
             "topics": [
-                {"topic": "install"},
-                {"topic": "route"},
-                {"topic": "help"},
+                {"topic": topic}
+                for topic in EXPECTED_HELP_TOPICS
             ],
         }),
         context=context,
         cmd=help_cmd,
-    ) == ["install", "route", "help"]
+    ) == list(EXPECTED_HELP_TOPICS)
     expect_self_test_failure(
         lambda: parse_help_topics("{", context=context, cmd=help_cmd),
         expected="failed to parse help JSON",
@@ -178,20 +196,27 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: parse_help_topics(
-            json.dumps({"topics": [{"topic": "install"}]}),
+            json.dumps({
+                "topics": [
+                    {"topic": topic}
+                    for topic in EXPECTED_HELP_TOPICS
+                    if topic != "pack"
+                ],
+            }),
             context=context,
             cmd=help_cmd,
         ),
-        expected="missing required topic",
+        expected="missing expected topic",
         scope="smoke assertions",
     )
     expect_self_test_failure(
         lambda: parse_help_topics(
             json.dumps({
                 "topics": [
-                    {"topic": "install"},
-                    {"topic": "route"},
-                    {"topic": "help"},
+                    *[
+                        {"topic": topic}
+                        for topic in EXPECTED_HELP_TOPICS
+                    ],
                     {"topic": "help"},
                 ],
             }),
