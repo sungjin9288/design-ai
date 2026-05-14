@@ -19,7 +19,7 @@ import { runUninstall } from "./uninstall.mjs";
 import { runUpdate } from "./update.mjs";
 import { runVersion } from "./version.mjs";
 
-const HELP_TOPICS = [
+export const HELP_TOPICS = [
   "install",
   "update",
   "uninstall",

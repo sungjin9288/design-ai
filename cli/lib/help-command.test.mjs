@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { runHelp } from "../commands/help.mjs";
+import { HELP_TOPICS, runHelp } from "../commands/help.mjs";
 
 async function captureStdout(fn) {
   const lines = [];
@@ -52,6 +52,14 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const installOutput = await captureStdout(() => runHelp(["install"]));
   assert.match(installOutput, /Usage:\s+design-ai install/);
   assert.match(installOutput, /Symlinks design-ai skills/);
+});
+
+test("runHelp exposes usage output for every supported help topic", async () => {
+  for (const topic of HELP_TOPICS) {
+    const output = await captureStdout(() => runHelp([topic]));
+    assert.match(output, /Usage:\s+design-ai/, `expected usage output for help topic ${topic}`);
+    assert.doesNotMatch(output, /Unknown help topic/, `expected known help topic ${topic}`);
+  }
 });
 
 test("runHelp supports aliases and suggestions for help topics", async () => {

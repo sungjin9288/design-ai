@@ -30,6 +30,26 @@ from smoke_assertions import (
     passing_doctor_report_json,
 )
 
+SMOKE_HELP_TOPICS = [
+    "install",
+    "update",
+    "uninstall",
+    "status",
+    "list",
+    "search",
+    "show",
+    "route",
+    "routes",
+    "prompt",
+    "pack",
+    "check",
+    "audit",
+    "doctor",
+    "examples",
+    "version",
+    "help",
+]
+
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
     return [
@@ -128,6 +148,10 @@ def assert_doctor_report_file(report_path: Path, *, context: str) -> None:
         cmd=["design-ai", "doctor", "--json"],
         parse_error_message=f"failed to parse doctor JSON after {context}",
     )
+
+
+def help_topic_script() -> str:
+    return " && ".join(f"design-ai help {topic}" for topic in SMOKE_HELP_TOPICS)
 
 
 def run_self_test() -> None:
@@ -233,9 +257,8 @@ def smoke_tarball(tarball: Path) -> None:
 
         run_plain([str(bin_path), "version"], env=smoke_env)
         run_plain([str(bin_path), "help"], env=smoke_env)
-        run_plain([str(bin_path), "help", "route"], env=smoke_env)
-        run_plain([str(bin_path), "help", "prompt"], env=smoke_env)
-        run_plain([str(bin_path), "help", "pack"], env=smoke_env)
+        for topic in SMOKE_HELP_TOPICS:
+            run_plain([str(bin_path), "help", topic], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
         run_plain([str(bin_path), "list", "skills"], env=smoke_env)
@@ -255,9 +278,7 @@ def smoke_tarball(tarball: Path) -> None:
         run_plain(
             npm_exec_shell_cmd(
                 tarball,
-                "design-ai help route && "
-                "design-ai help prompt && "
-                "design-ai help pack && "
+                help_topic_script() + " && "
                 "design-ai routes --help && "
                 "design-ai install --help && "
                 "design-ai install && "

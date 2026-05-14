@@ -94,7 +94,7 @@ design-ai help [cmd]  전체 또는 command별 도움말
 - 7개 검사 모두 실행 (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
 - publish 또는 release asset 첨부 전에 CLI unit test 실행.
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
-- 패킹된 tarball을 임시 프로젝트에 설치하고 fake `CLAUDE_HOME`에서 `design-ai install` smoke test 실행.
+- 패킹된 tarball을 임시 프로젝트에 설치하고 모든 `design-ai help <command>` topic과 fake `CLAUDE_HOME` 기반 `design-ai install` smoke test 실행.
 - `--provenance`로 publish (npm provenance attestation).
 - publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test.
 - GitHub Release에는 같은 `npm pack` allowlist로 만든 tarball을 첨부.
