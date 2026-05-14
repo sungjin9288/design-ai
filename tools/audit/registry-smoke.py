@@ -32,6 +32,7 @@ from smoke_assertions import (
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
+    help_alias_script,
     help_topic_script,
     parse_help_topics,
     passing_doctor_report_json,
@@ -176,6 +177,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             npm_exec_shell_cmd(
                 package_spec,
                 help_topic_script(help_topics) + " && "
+                + help_alias_script() + " && "
                 "design-ai install && "
                 "design-ai doctor --json > doctor.json && "
                 "design-ai doctor --strict && "

@@ -173,6 +173,10 @@ def help_topic_script(topics: list[str]) -> str:
     return " && ".join(f"design-ai help {shlex.quote(topic)}" for topic in topics)
 
 
+def help_alias_script() -> str:
+    return help_topic_script(list(EXPECTED_HELP_ALIASES))
+
+
 def assert_doctor_json_clean(
     raw: str,
     *,
@@ -364,6 +368,24 @@ def run_self_test() -> None:
         lambda: help_topic_script([]),
         expected="requires at least one topic",
         scope="smoke assertions",
+    )
+    assert help_alias_script() == (
+        "design-ai help i && "
+        "design-ai help upgrade && "
+        "design-ai help u && "
+        "design-ai help remove && "
+        "design-ai help rm && "
+        "design-ai help s && "
+        "design-ai help ls && "
+        "design-ai help find && "
+        "design-ai help cat && "
+        "design-ai help recommend && "
+        "design-ai help lint && "
+        "design-ai help a && "
+        "design-ai help diag && "
+        "design-ai help example && "
+        "design-ai help ex && "
+        "design-ai help v"
     )
 
     print("Smoke assertions self-test passed")
