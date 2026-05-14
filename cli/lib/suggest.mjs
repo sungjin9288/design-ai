@@ -56,3 +56,11 @@ export function unknownOptionMessage(commandName, option, candidates) {
   if (suggestion) lines.push(`Did you mean \`${suggestion}\`?`);
   return lines.join("\n");
 }
+
+export function expectedValueMessage(label, value, candidates) {
+  const suggestion = suggestNearest(value, candidates);
+  const lines = [`${label} expects one of: ${candidates.join(", ")}`];
+  if (value) lines.push(`Received: ${value}`);
+  if (suggestion) lines.push(`Did you mean \`${suggestion}\`?`);
+  return lines.join("\n");
+}

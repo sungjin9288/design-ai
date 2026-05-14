@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-import { unknownOptionMessage } from "./suggest.mjs";
+import { expectedValueMessage, unknownOptionMessage } from "./suggest.mjs";
 
 export const DEFAULT_SEARCH_DIRS = [
   "knowledge",
@@ -135,7 +135,7 @@ export function parseSearchArgs(args) {
     } else if (arg === "--dir") {
       const next = args[i + 1];
       if (!DEFAULT_SEARCH_DIRS.includes(next)) {
-        throw new Error(`--dir expects one of: ${DEFAULT_SEARCH_DIRS.join(", ")}`);
+        throw new Error(expectedValueMessage("--dir", next, DEFAULT_SEARCH_DIRS));
       }
       out.dirs.push(next);
       i += 1;

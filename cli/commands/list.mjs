@@ -3,8 +3,9 @@
 import { readFileSync } from "node:fs";
 import { header, info, dim } from "../lib/log.mjs";
 import { PLUGIN_MANIFEST, pathExists } from "../lib/paths.mjs";
+import { expectedValueMessage } from "../lib/suggest.mjs";
 
-const KINDS = ["skills", "commands", "agents"];
+export const LIST_KINDS = ["skills", "commands", "agents"];
 
 function loadManifest() {
   if (!pathExists(PLUGIN_MANIFEST)) {
@@ -30,21 +31,24 @@ function printList(kind, items) {
 
 export async function runList(args) {
   const filter = args[0]?.toLowerCase();
-  header("design-ai catalog");
+  const target = filter && LIST_KINDS.find(k => k.startsWith(filter));
 
+  if (filter && !target) {
+    throw new Error(
+      `Unknown domain: ${filter}\n` +
+        expectedValueMessage("domain", filter, LIST_KINDS),
+    );
+  }
+
+  header("design-ai catalog");
   const manifest = loadManifest();
   info(`Plugin: ${manifest.name} v${manifest.version}`);
   console.log();
 
-  const target = filter && KINDS.find(k => k.startsWith(filter));
-
   if (target) {
     printList(target, manifest[target] || []);
-  } else if (filter) {
-    console.error(`Unknown domain: ${filter}. Use one of: ${KINDS.join(", ")}`);
-    process.exit(1);
   } else {
-    for (const k of KINDS) {
+    for (const k of LIST_KINDS) {
       printList(k, manifest[k] || []);
     }
   }

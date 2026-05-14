@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  expectedValueMessage,
   suggestNearest,
   unknownOptionMessage,
 } from "./suggest.mjs";
@@ -26,5 +27,16 @@ test("unknownOptionMessage includes suggestions only for close options", () => {
   assert.equal(
     unknownOptionMessage("check", "--bad", ["--route", "--json"]),
     "Unknown check option: --bad",
+  );
+});
+
+test("expectedValueMessage includes allowed values and close suggestions", () => {
+  assert.equal(
+    expectedValueMessage("--dir", "knowlege", ["knowledge", "examples"]),
+    "--dir expects one of: knowledge, examples\nReceived: knowlege\nDid you mean `knowledge`?",
+  );
+  assert.equal(
+    expectedValueMessage("domain", "unknown", ["skills", "commands"]),
+    "domain expects one of: skills, commands\nReceived: unknown",
   );
 });

@@ -105,6 +105,7 @@ test("parseSearchArgs supports query, limit, dirs, and json", () => {
 test("parseSearchArgs rejects invalid options", () => {
   assert.throws(() => parseSearchArgs(["x", "--limit", "0"]), /--limit/);
   assert.throws(() => parseSearchArgs(["x", "--dir", "bad"]), /--dir/);
+  assert.throws(() => parseSearchArgs(["x", "--dir", "knowlege"]), /Did you mean `knowledge`\?/);
   assert.throws(() => parseSearchArgs(["x", "--bad"]), /Unknown search option/);
   assert.throws(() => parseSearchArgs(["x", "--jsno"]), /Did you mean `--json`\?/);
 });
