@@ -19,7 +19,7 @@ npm run package:smoke
 - asserts every required `doctor --json` package/release/install check reports `PASS`
 - uses a fake `CLAUDE_HOME` and `DESIGN_AI_PREFIX=smoke-design-`
 - sets `NO_COLOR=1` and fails if wrapped commands emit ANSI escape sequences
-- runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`
+- runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own `help --json` catalog read
 - asserts the `doctor --json` required PASS set for both direct install and one-shot `npm exec` install
 
 The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the doctor, shared smoke, package smoke, and registry smoke assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
@@ -30,8 +30,8 @@ Latest local tarball smoke:
 
 ```text
 @design-ai/cli@4.13.0
-package size: 1.3 MB
-unpacked size: 3.9 MB
+package size: 1.2 MB
+unpacked size: 3.8 MB
 total files: 492
 Smoke assertions self-test passed
 Package smoke passed
@@ -122,7 +122,7 @@ This dogfood approximates what a clean adopter sees:
 3. Run `design-ai install` against an empty Claude Code home.
 4. Run `design-ai doctor --strict` and `design-ai status`.
 5. Run `design-ai uninstall` and confirm the symlink farm is removed.
-6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including the same `doctor --json` PASS assertions.
+6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including an independent `help --json` catalog read and the same `doctor --json` PASS assertions.
 
 The path confirms package contents, bin shim creation, one-shot npm execution, version alignment, machine-readable help-topic discoverability, symlink creation, symlink cleanup, Korean character handling in catalog output, and no-color smoke logs.
 

@@ -132,9 +132,15 @@ def assert_doctor_report_file(report_path: Path, *, context: str) -> None:
     )
 
 
-def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None) -> list[str]:
+def read_help_topics(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str = "package smoke help catalog",
+) -> list[str]:
     result = run_plain(cmd, cwd=cwd, env=env)
-    return parse_help_topics(result.stdout, context="package smoke help catalog", cmd=cmd)
+    return parse_help_topics(result.stdout, context=context, cmd=cmd)
 
 
 def run_self_test() -> None:
@@ -259,10 +265,18 @@ def smoke_tarball(tarball: Path) -> None:
             "NO_COLOR": "1",
         })
         run_plain(npm_exec_cmd(tarball, "version"), cwd=npx_root, env=npx_env)
+        npx_help_topics = read_help_topics(
+            npm_exec_cmd(tarball, "help", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec help catalog",
+        )
+        if npx_help_topics != help_topics:
+            raise SystemExit("package smoke npm exec help catalog differs from installed bin catalog")
         run_plain(
             npm_exec_shell_cmd(
                 tarball,
-                help_topic_script(help_topics) + " && "
+                help_topic_script(npx_help_topics) + " && "
                 "design-ai routes --help && "
                 "design-ai install --help && "
                 "design-ai install && "
