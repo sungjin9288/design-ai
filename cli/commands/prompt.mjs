@@ -7,9 +7,9 @@ import { buildPromptPlan, parsePromptArgs } from "../lib/prompt.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai prompt <brief> [--json] [--out file] [--force]");
-  console.log("        design-ai prompt --from-file brief.md [--route id] [--out file]");
-  console.log("        cat brief.md | design-ai prompt --stdin\n");
+  console.log("Usage:  design-ai prompt <brief> [--route id] [--json] [--out file] [--force]");
+  console.log("        design-ai prompt --from-file brief.md [--route id] [--json] [--out file] [--force]");
+  console.log("        cat brief.md | design-ai prompt --stdin [--route id] [--json]\n");
   console.log("Builds a ready-to-use prompt from route recommendations and required design-ai files.\n");
   console.log("Options:");
   console.log("  --from-file file  Read the task brief from a markdown/text file");

@@ -26,7 +26,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /design-ai help \[command\]/);
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
-  assert.match(output, /route <brief\|--from-file file\|--stdin\|--list>/);
+  assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
   assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--out file\]/);
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
@@ -37,7 +37,17 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const routeOutput = await captureStdout(() => runHelp(["route"]));
   assert.match(routeOutput, /Usage:\s+design-ai route <brief>/);
   assert.match(routeOutput, /design-ai route --list \[--json\]/);
+  assert.match(routeOutput, /design-ai route --from-file brief\.md \[--limit N\] \[--explain\] \[--json\]/);
+  assert.match(routeOutput, /cat brief\.md \| design-ai route --stdin \[--limit N\] \[--explain\] \[--json\]/);
   assert.doesNotMatch(routeOutput, /Environment overrides:/);
+
+  const promptOutput = await captureStdout(() => runHelp(["prompt"]));
+  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--json\]/);
+
+  const packOutput = await captureStdout(() => runHelp(["pack"]));
+  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--max-bytes N\] \[--json\]/);
 
   const installOutput = await captureStdout(() => runHelp(["install"]));
   assert.match(installOutput, /Usage:\s+design-ai install/);

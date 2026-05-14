@@ -46,7 +46,7 @@ design-ai update      Pull latest source + reinstall
 design-ai uninstall   Remove symlinks (keeps source)
 design-ai status      Show what's installed
 design-ai list [kind] List catalog (skills | commands | agents)
-design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--explain/--json
+design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--limit N/--explain/--json
 design-ai routes      List available route ids for prompt/pack --route
 design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, --stdin, --json, or --route id
 design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, --stdin, --max-bytes N, --json, or --route id

@@ -7,10 +7,18 @@ import { parseRouteArgs, readRouteManifestVersion, routeBrief, routeCatalog } fr
 
 function printHelp() {
   console.log("Usage:  design-ai route <brief> [--limit N] [--explain] [--json]");
-  console.log("        design-ai route --from-file brief.md [--json]");
+  console.log("        design-ai route --from-file brief.md [--limit N] [--explain] [--json]");
   console.log("        design-ai route --list [--json]");
-  console.log("        cat brief.md | design-ai route --stdin\n");
+  console.log("        cat brief.md | design-ai route --stdin [--limit N] [--explain] [--json]\n");
   console.log("Recommends the best design-ai command, skill, and knowledge files for a task brief.\n");
+  console.log("Options:");
+  console.log("  --from-file file  Read the task brief from a markdown/text file");
+  console.log("  --stdin           Read the task brief from standard input");
+  console.log("  --list            List route ids without scoring a brief");
+  console.log("  --limit N         Maximum route recommendations to return, 1-10. Default: 3");
+  console.log("  --explain         Include route scoring and reference coverage details");
+  console.log("  --json            Emit machine-readable route results");
+  console.log("");
   console.log("Examples:");
   console.log("  design-ai route \"audit a Figma signup flow for Korean fintech\"");
   console.log("  design-ai route \"spec a Button component\" --explain");

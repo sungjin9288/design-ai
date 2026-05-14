@@ -124,7 +124,7 @@ function printMainHelp() {
     ["list [skills|commands|agents]", "List catalog from the plugin manifest"],
     ["search <query> [--dir kind] [--limit N] [--json]", "Search the local markdown corpus"],
     ["show <file[:line]> [--lines N:M] [--context N] [--json]", "Print a corpus file or line range"],
-    ["route <brief|--from-file file|--stdin|--list>", "Recommend commands, skills, and knowledge; add --explain"],
+    ["route <brief|--from-file file|--stdin|--list> [--limit N]", "Recommend commands, skills, and knowledge; add --explain"],
     ["routes [--json]", "List available route ids"],
     ["prompt <brief|--from-file file|--stdin> [--route id] [--out file]", "Generate a ready-to-use agent prompt"],
     ["pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", "Generate prompt plus bounded context with summary"],

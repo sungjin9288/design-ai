@@ -47,7 +47,7 @@ design-ai update      최신 소스 가져오기 + 재설치
 design-ai uninstall   심볼릭 링크 제거 (소스는 유지)
 design-ai status      설치된 항목 보기
 design-ai list [kind] 카탈로그 보기 (skills | commands | agents)
-design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--explain/--json 지원
+design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--limit N/--explain/--json 지원
 design-ai routes      prompt/pack --route에 사용할 route id 목록 보기
 design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out file/--from-file/--stdin/--json/--route id 지원
 design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--stdin/--max-bytes N/--json/--route id 지원

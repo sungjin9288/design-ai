@@ -234,6 +234,8 @@ def smoke_tarball(tarball: Path) -> None:
         run_plain([str(bin_path), "version"], env=smoke_env)
         run_plain([str(bin_path), "help"], env=smoke_env)
         run_plain([str(bin_path), "help", "route"], env=smoke_env)
+        run_plain([str(bin_path), "help", "prompt"], env=smoke_env)
+        run_plain([str(bin_path), "help", "pack"], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
         run_plain([str(bin_path), "list", "skills"], env=smoke_env)
@@ -254,6 +256,8 @@ def smoke_tarball(tarball: Path) -> None:
             npm_exec_shell_cmd(
                 tarball,
                 "design-ai help route && "
+                "design-ai help prompt && "
+                "design-ai help pack && "
                 "design-ai routes --help && "
                 "design-ai install --help && "
                 "design-ai install && "
