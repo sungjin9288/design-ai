@@ -165,6 +165,12 @@ Before approving the press proof:
 
 Sign-off in writing only after all of the above.
 
+## Accessibility note for digital proofing
+
+The printed card itself has no keyboard focus behavior, but the approval workflow still does. The PDF proof review page must keep the approve / request changes controls keyboard reachable, show a visible 2px focus ring with at least 3:1 contrast, and preserve logical tab order from front preview → back preview → approval actions.
+
+Digital proof preview should be responsive across mobile and desktop review contexts, because founders often approve proofs from phones while printers inspect them on desktop. Screen reader labels must identify "front side", "back side", and "request changes" actions so non-visual approval is not blocked.
+
 ## What can go wrong
 
 - **Pantone mismatch** — spot color prints duller than expected. Solution: press proof before bulk; brand QC sign-off.

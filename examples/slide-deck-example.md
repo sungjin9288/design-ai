@@ -182,6 +182,14 @@
 
 Average ~70 seconds per slide. Tight pace, but talk decks should be tight.
 
+## Keyboard and focus notes
+
+- Presenters can advance with keyboard arrows, Space, or a clicker; every embedded demo link keeps a visible focus state.
+- If exported to an interactive web deck, tab order follows slide order first, then links inside the active slide; hidden slides are removed from focus order.
+- Screen reader users get slide number, title, and speaker-note availability through `aria-label` / `aria-describedby` on the active slide container.
+- Responsive checks cover the projector viewport, laptop presenter view, and mobile PDF preview.
+- Speaker notes are not keyboard-focusable during audience presentation, so they do not interrupt the talk flow.
+
 ## Render-ready (reveal.js / Slidev format)
 
 Optional output if user wants the actual deck file:

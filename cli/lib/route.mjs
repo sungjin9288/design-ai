@@ -1,0 +1,455 @@
+// Deterministic task routing for `design-ai route`.
+
+import {
+  existsSync,
+  readFileSync,
+} from "node:fs";
+import path from "node:path";
+
+import { parseBriefSourceFlag } from "./brief.mjs";
+
+function exists(p) {
+  try {
+    return existsSync(p);
+  } catch {
+    return false;
+  }
+}
+
+const COMMON_KNOWLEDGE = [
+  "knowledge/PRINCIPLES.md",
+];
+
+export const ROUTES = [
+  {
+    id: "design-review",
+    label: "Design review",
+    command: "commands/design-review.md",
+    skills: ["skills/ux-audit/SKILL.md", "skills/design-critique/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md", "agents/design-critic.md"],
+    knowledge: [
+      "knowledge/patterns/ux-guidelines.md",
+      "knowledge/a11y/contrast.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+    ],
+    keywords: ["audit", "review", "critique", "figma", "screenshot", "ux", "a11y", "accessibility", "리뷰", "감사", "평가", "비평", "접근성", "스크린샷"],
+  },
+  {
+    id: "design-from-brief",
+    label: "Design system from brief",
+    command: "commands/design-from-brief.md",
+    skills: ["skills/color-palette/SKILL.md", "skills/design-system-builder/SKILL.md", "skills/handoff-spec/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/ui-reasoning.md",
+      "knowledge/patterns/styles-catalog.md",
+      "knowledge/layout/spacing-and-grid.md",
+      "knowledge/typography/type-scale-fundamentals.md",
+    ],
+    keywords: ["brief", "design system", "brand", "tokens", "foundation", "app", "product", "startup", "서비스", "브랜드", "디자인 시스템", "토큰", "앱", "프로덕트"],
+  },
+  {
+    id: "component-spec",
+    label: "Component spec",
+    command: "commands/component-spec.md",
+    skills: ["skills/component-spec-writer/SKILL.md"],
+    agents: ["agents/component-architect.md", "agents/a11y-reviewer.md"],
+    knowledge: [
+      "knowledge/components/INDEX.md",
+      "knowledge/components/shadcn-registry.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+    ],
+    keywords: ["component", "button", "input", "modal", "dialog", "table", "form", "dropdown", "select", "spec", "api", "props", "컴포넌트", "버튼", "입력", "모달", "폼", "테이블", "스펙"],
+  },
+  {
+    id: "palette-from-brand",
+    label: "Palette from brand",
+    command: "commands/palette-from-brand.md",
+    skills: ["skills/color-palette/SKILL.md"],
+    knowledge: [
+      "knowledge/colors/color-theory.md",
+      "knowledge/a11y/contrast.md",
+      "knowledge/design-tokens/tailwind-v4.md",
+    ],
+    keywords: ["color", "palette", "theme", "dark mode", "hex", "oklch", "색", "색상", "컬러", "팔레트", "다크모드"],
+  },
+  {
+    id: "motion-design",
+    label: "Motion design",
+    command: "commands/motion-design.md",
+    skills: ["skills/motion-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/motion/principles.md",
+      "knowledge/motion/micro-interactions.md",
+      "knowledge/motion/choreography-depth.md",
+    ],
+    keywords: ["motion", "animation", "transition", "framer", "gsap", "lottie", "모션", "애니메이션", "전환", "인터랙션"],
+  },
+  {
+    id: "illustration",
+    label: "Illustration",
+    command: "commands/illustration.md",
+    skills: ["skills/illustration-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/illustration/illustration-systems.md",
+      "knowledge/illustration/spot-illustrations.md",
+      "knowledge/illustration/mascot-design.md",
+    ],
+    keywords: ["illustration", "mascot", "svg", "empty state", "hero art", "일러스트", "마스코트", "캐릭터", "빈 상태"],
+  },
+  {
+    id: "print",
+    label: "Print design",
+    command: "commands/print.md",
+    skills: ["skills/print-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/print/print-fundamentals.md",
+      "knowledge/print/stationery.md",
+      "knowledge/print/packaging.md",
+    ],
+    keywords: ["print", "business card", "brochure", "packaging", "poster", "cmyk", "bleed", "인쇄", "명함", "브로셔", "패키지", "포스터"],
+  },
+  {
+    id: "video",
+    label: "Video design",
+    command: "commands/video.md",
+    skills: ["skills/video-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/video/video-fundamentals.md",
+      "knowledge/video/marketing-video.md",
+      "knowledge/video/social-and-short-form.md",
+    ],
+    keywords: ["video", "reels", "shorts", "tiktok", "caption", "subtitles", "영상", "비디오", "릴스", "쇼츠", "자막"],
+  },
+  {
+    id: "game-ui",
+    label: "Game UI",
+    command: "commands/game-ui.md",
+    skills: ["skills/game-ui-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/game-ui/game-ui-fundamentals.md",
+      "knowledge/game-ui/hud-design.md",
+      "knowledge/game-ui/menu-systems.md",
+    ],
+    keywords: ["game", "hud", "inventory", "gacha", "cooldown", "게임", "인벤토리", "확률", "뽑기"],
+  },
+  {
+    id: "conversational",
+    label: "Conversational UI",
+    command: "commands/conversational.md",
+    skills: ["skills/conversational-ui-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/conversational/ai-chat-interfaces.md",
+      "knowledge/conversational/chatbot-design.md",
+      "knowledge/conversational/korean-voice-conventions.md",
+    ],
+    keywords: ["chatbot", "voice", "assistant", "ai chat", "conversation", "챗봇", "대화", "음성", "어시스턴트"],
+  },
+  {
+    id: "spatial",
+    label: "Spatial design",
+    command: "commands/spatial.md",
+    skills: ["skills/spatial-designer/SKILL.md"],
+    knowledge: [
+      "knowledge/spatial/spatial-design-fundamentals.md",
+      "knowledge/spatial/vr-patterns.md",
+      "knowledge/spatial/ar-patterns.md",
+    ],
+    keywords: ["spatial", "vr", "ar", "xr", "vision pro", "webxr", "immersive", "공간", "증강현실", "가상현실"],
+  },
+  {
+    id: "document-from-brief",
+    label: "Documentation",
+    command: "commands/document-from-brief.md",
+    skills: ["skills/document-author/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/information-architecture.md",
+      "knowledge/patterns/technical-writing.md",
+      "knowledge/patterns/document-typography.md",
+    ],
+    keywords: ["documentation", "docs", "guide", "manual", "readme", "diataxis", "문서", "가이드", "매뉴얼", "기술문서"],
+  },
+  {
+    id: "slide-deck",
+    label: "Slide deck",
+    command: "commands/slide-deck.md",
+    skills: ["skills/slide-deck-author/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/slide-deck-design.md",
+      "knowledge/patterns/report-design.md",
+    ],
+    keywords: ["slide", "deck", "presentation", "pitch", "ppt", "슬라이드", "발표", "제안서", "피치덱"],
+  },
+  {
+    id: "handoff-spec",
+    label: "Design handoff",
+    command: null,
+    skills: ["skills/handoff-spec/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/technical-writing.md",
+      "knowledge/design-tokens/ant-design.md",
+    ],
+    keywords: ["handoff", "engineering", "developer", "implementation spec", "dev spec", "핸드오프", "개발 전달", "개발자"],
+  },
+  {
+    id: "design-system-qa",
+    label: "Design system QA",
+    command: null,
+    skills: ["skills/design-system-qa/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/design-system-qa.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+    ],
+    keywords: ["qa", "test", "regression", "visual regression", "storybook", "contract", "테스트", "회귀", "품질"],
+  },
+  {
+    id: "figma-token-sync",
+    label: "Figma token sync",
+    command: null,
+    skills: ["skills/figma-token-sync/SKILL.md"],
+    knowledge: [
+      "knowledge/design-tokens/ant-design.md",
+      "knowledge/design-tokens/tailwind-v4.md",
+    ],
+    keywords: ["figma token", "token sync", "variables", "figma variables", "피그마 토큰", "토큰 동기화", "변수"],
+  },
+  {
+    id: "design-pr-review",
+    label: "Design PR review",
+    command: null,
+    skills: ["skills/design-pr-review/SKILL.md"],
+    knowledge: [
+      "knowledge/patterns/design-system-qa.md",
+      "knowledge/a11y/contrast.md",
+    ],
+    keywords: ["pull request", "pr", "github", "diff", "code review", "깃허브", "코드 리뷰", "PR"],
+  },
+  {
+    id: "stability-review",
+    label: "Stability review",
+    command: "commands/stability-review.md",
+    skills: [],
+    knowledge: [
+      "docs/RELEASE-CHECKLIST.md",
+      "docs/CONTRIBUTING.md",
+    ],
+    keywords: ["release", "stability", "stale", "quarterly", "launch", "릴리스", "안정화", "오래된", "출시"],
+  },
+];
+
+export function parseRouteArgs(args) {
+  const out = {
+    briefParts: [],
+    fromFile: "",
+    stdin: false,
+    list: false,
+    explain: false,
+    limit: 3,
+    json: false,
+    help: false,
+  };
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    out.index = i;
+    if (arg === "-h" || arg === "--help") {
+      out.help = true;
+    } else if (arg === "--json") {
+      out.json = true;
+    } else if (arg === "--list") {
+      out.list = true;
+    } else if (arg === "--explain") {
+      out.explain = true;
+    } else if (parseBriefSourceFlag(args, out)) {
+      i = out.index;
+    } else if (arg === "--limit") {
+      const limit = Number(args[i + 1]);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 10) {
+        throw new Error("--limit expects an integer from 1 to 10");
+      }
+      out.limit = limit;
+      i += 1;
+    } else if (arg.startsWith("--")) {
+      throw new Error(`Unknown route option: ${arg}`);
+    } else {
+      out.briefParts.push(arg);
+    }
+  }
+
+  return {
+    ...out,
+    index: undefined,
+    brief: out.briefParts.join(" ").trim(),
+  };
+}
+
+function keywordHits(text, keywords) {
+  const lower = text.toLowerCase();
+  return keywords.filter((keyword) => keywordMatches(lower, keyword));
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function keywordMatches(lowerText, keyword) {
+  const lowerKeyword = keyword.toLowerCase();
+  const isSimpleLatin = /^[a-z0-9+#.]+$/.test(lowerKeyword);
+
+  if (isSimpleLatin) {
+    const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegExp(lowerKeyword)}($|[^a-z0-9])`);
+    return pattern.test(lowerText);
+  }
+
+  return lowerText.includes(lowerKeyword);
+}
+
+function confidence(score) {
+  if (score >= 4) return "high";
+  if (score >= 2) return "medium";
+  return "low";
+}
+
+function pathStatus(sourceRoot, paths) {
+  return paths.map((relPath) => ({
+    path: relPath,
+    exists: exists(path.join(sourceRoot, relPath)),
+  }));
+}
+
+function countAvailable(entries) {
+  return entries.filter((entry) => entry.exists).length;
+}
+
+function referenceCoverage({ command, skills, agents, knowledge }) {
+  const commandTotal = command ? 1 : 0;
+  const commandAvailable = command?.exists ? 1 : 0;
+  const sections = {
+    command: { available: commandAvailable, total: commandTotal },
+    skills: { available: countAvailable(skills), total: skills.length },
+    agents: { available: countAvailable(agents), total: agents.length },
+    knowledge: { available: countAvailable(knowledge), total: knowledge.length },
+  };
+  const total = Object.values(sections).reduce(
+    (acc, section) => ({
+      available: acc.available + section.available,
+      total: acc.total + section.total,
+    }),
+    { available: 0, total: 0 },
+  );
+
+  return {
+    ...sections,
+    total,
+  };
+}
+
+function missingReferences({ command, skills, agents, knowledge }) {
+  return [
+    ...(command ? [command] : []),
+    ...skills,
+    ...agents,
+    ...knowledge,
+  ].filter((entry) => !entry.exists).map((entry) => entry.path);
+}
+
+function explanationSummary({ hits, forced, fallback, catalog }) {
+  if (forced) return "Route selected explicitly with --route.";
+  if (fallback) return "No route keywords matched; using the default design-from-brief workflow.";
+  if (catalog) return "Catalog listing; no task brief was scored.";
+  return `Matched ${hits.length} keyword${hits.length === 1 ? "" : "s"}: ${hits.join(", ")}.`;
+}
+
+function routeExplanation({ hits, command, skills, agents, knowledge, forced = false, fallback = false, catalog = false }) {
+  const coverage = referenceCoverage({ command, skills, agents, knowledge });
+  return {
+    summary: explanationSummary({ hits, forced, fallback, catalog }),
+    scoreBreakdown: [
+      { label: "keyword matches", value: hits.length },
+    ],
+    referenceCoverage: coverage,
+    missingReferences: missingReferences({ command, skills, agents, knowledge }),
+  };
+}
+
+function routeToResult(route, sourceRoot, hits, options = {}) {
+  const command = route.command
+    ? { path: route.command, exists: exists(path.join(sourceRoot, route.command)) }
+    : null;
+  const skills = pathStatus(sourceRoot, route.skills || []);
+  const agents = pathStatus(sourceRoot, route.agents || []);
+  const knowledge = pathStatus(sourceRoot, [...COMMON_KNOWLEDGE, ...(route.knowledge || [])]);
+  const forced = Boolean(options.forced);
+  const fallback = Boolean(options.fallback);
+  const catalog = Boolean(options.catalog);
+
+  return {
+    id: route.id,
+    label: route.label,
+    score: hits.length,
+    confidence: confidence(hits.length),
+    matchedKeywords: hits,
+    command,
+    skills,
+    agents,
+    knowledge,
+    keywords: route.keywords,
+    explanation: routeExplanation({ hits, command, skills, agents, knowledge, forced, fallback, catalog }),
+    ...(forced ? { forced: true } : {}),
+    ...(fallback ? { fallback: true } : {}),
+  };
+}
+
+export function routeCatalog({ sourceRoot }) {
+  return ROUTES.map((route) => ({
+    ...routeToResult(route, sourceRoot, [], { catalog: true }),
+    confidence: "catalog",
+  }));
+}
+
+export function routeById({ routeId, sourceRoot }) {
+  const route = ROUTES.find((item) => item.id === routeId);
+  if (!route) {
+    const available = ROUTES.map((item) => item.id).join(", ");
+    throw new Error(`Unknown route id: ${routeId}. Available routes: ${available}`);
+  }
+
+  return {
+    ...routeToResult(route, sourceRoot, [], { forced: true }),
+    confidence: "forced",
+  };
+}
+
+function fallbackResult(sourceRoot) {
+  const route = ROUTES.find((item) => item.id === "design-from-brief");
+  return {
+    ...routeToResult(route, sourceRoot, [], { fallback: true }),
+    confidence: "low",
+  };
+}
+
+export function routeBrief({ brief, sourceRoot, limit = 3 }) {
+  const normalized = brief.trim();
+  if (!normalized) return [];
+
+  const scored = ROUTES
+    .map((route) => ({ route, hits: keywordHits(normalized, route.keywords) }))
+    .filter((item) => item.hits.length > 0)
+    .sort((a, b) => {
+      if (b.hits.length !== a.hits.length) return b.hits.length - a.hits.length;
+      return a.route.label.localeCompare(b.route.label);
+    })
+    .slice(0, limit)
+    .map((item) => routeToResult(item.route, sourceRoot, item.hits));
+
+  if (scored.length > 0) return scored;
+  return [fallbackResult(sourceRoot)];
+}
+
+export function readRouteManifestVersion(sourceRoot) {
+  try {
+    const manifest = JSON.parse(readFileSync(path.join(sourceRoot, ".claude-plugin", "plugin.json"), "utf8"));
+    return manifest.version || "unknown";
+  } catch {
+    return "unknown";
+  }
+}

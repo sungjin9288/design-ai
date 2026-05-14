@@ -18,7 +18,7 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 | Distribution channels | 1 (manual) | 4 | 4 (npm / Homebrew / git / VS Code) |
 | Integration walkthroughs | 0 | 5 (EN+KO) | 5 (EN+KO) |
 | Site languages | 0 | 2 | 2 (EN+KO) |
-| CI audits | 4 | 6 | 6 |
+| CI audits | 4 | 6 | 7 |
 | CLI / extension unit tests | 0 | 0 | 41 |
 | VS Code integration tests | 0 | 0 | 8 (e2e infra) |
 | Dogfood findings docs | 1 | 1 | 5 |
@@ -146,7 +146,7 @@ The user stated Korean primary audience early. Every domain phase included Korea
 
 ### Audit-driven quality (v2.0 onward)
 
-Every phase that touched files passed all 6 audits before commit. The audits themselves grew from 4 → 6 over the session (added Korean copy in v3.0, integration check in v3.4, stale check in v3.12). Each new audit prevented a regression class. v4.8 strengthened the existing link-check.
+Every phase that touched files passed the active audit gate before commit. The audits themselves grew from 4 → 7 over the session (added Korean copy in v3.0, integration check in v3.4, stale check in v3.12, example QA in v4.13). Each new audit prevented a regression class. v4.8 strengthened the existing link-check.
 
 ### Distribution before mass content (v3.0 → v3.4)
 
@@ -190,11 +190,11 @@ design-ai/
 ├── examples/   (160 files)
 ├── skills/     (19, all with verification phase)
 ├── agents/     (4)
-├── commands/   (15)
+├── commands/   (16)
 ├── docs/                              Architecture + integrations
 ├── tools/
 │   ├── extractors/                   Source → knowledge pipeline
-│   ├── audit/                        6 audit scripts
+│   ├── audit/                        7 audit scripts
 │   ├── migrations/                   One-shot migration scripts
 │   └── preview/                      HTML preview generator
 ├── cli/                               NPM CLI source

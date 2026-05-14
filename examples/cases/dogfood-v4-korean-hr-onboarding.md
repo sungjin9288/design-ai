@@ -118,6 +118,8 @@ This exercises the v4.5 polished `form-control.md` spec end-to-end.
 ### EmployeeInfoForm — composition spec
 
 ```tsx
+const actionRowSx = { mt: 3 };
+
 <form onSubmit={handleSubmit}>
   <FormControl error={!!errors.name} required disabled={isSubmitting} fullWidth>
     <FormLabel htmlFor="name">이름</FormLabel>
@@ -172,7 +174,7 @@ This exercises the v4.5 polished `form-control.md` spec end-to-end.
     <FormHelperText>{errors.email ?? "회사 도메인 이메일을 입력해 주세요"}</FormHelperText>
   </FormControl>
 
-  <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ mt: 3 }}>
+  <Stack direction="row" justifyContent="flex-end" gap={1} sx={actionRowSx}>
     <Button variant="outlined" onClick={handleCancel}>취소</Button>
     <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
       다음 단계
@@ -209,14 +211,18 @@ This exercises the v4.5 polished `form-control.md` spec end-to-end.
 Document collection screen needs a confirmation dialog before upload. Exercises v4.5's polished `dialog-title.md` / `dialog-content.md` / `dialog-actions.md`:
 
 ```tsx
-<Card sx={{ maxWidth: 480 }}>
+const documentCardSx = { maxWidth: 480 };
+const secondaryCopySx = { mt: 1 };
+const documentListSx = { mt: 2 };
+
+<Card sx={documentCardSx}>
   <CardContent>
     <Typography variant="h6">필수 서류 업로드</Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+    <Typography variant="body2" color="text.secondary" sx={secondaryCopySx}>
       계약서 · 신분증 · 통장 사본
     </Typography>
 
-    <List sx={{ mt: 2 }}>
+    <List sx={documentListSx}>
       {documents.map((doc) => (
         <ListItem
           key={doc.id}
@@ -292,6 +298,21 @@ Quick audit of the bootstrap output:
 | `LoadingButton` not in our spec'd components | HIGH | Need spec for it OR reference MUI directly. Action: add to roadmap |
 | Department `Select` with 4 options — should be radio? | LOW | 4 is borderline. Select OK on mobile (saves vertical space). Radio better on desktop. Acceptable |
 | No "save draft" before "다음 단계" — risky if user navigates away | HIGH | Add auto-save on blur per [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md) |
+
+### Don't / avoid
+
+- Don't use placeholder text as the only field instruction; it disappears on focus and weakens screen-reader support.
+- Avoid hiding document-upload errors behind a generic toast. Inline status plus `aria-describedby` keeps the HR manager's recovery path visible.
+
+### Conversational support notes
+
+This screen can hand off to an HR assistant chat without changing the form contract. Primary intent examples: `upload_document`, `change_hire_date`, and `ask_required_documents`. Example utterance: "신분증은 어떤 파일 형식으로 올려야 하나요?" Turn-taking rule: answer the current question first, then offer one next action such as "파일 선택" or "인사팀에 문의". Fallback repair: when the assistant cannot identify the document type, ask one clarifying question and keep the user in the current step.
+
+### QA and PR review notes
+
+- Design-system QA: token checks cover color/spacing/type names, accessibility checks cover `aria-invalid` and focus order, and visual regression should snapshot light/dark EmployeeInfoForm plus mobile document upload in Storybook.
+- Figma token sync: Figma variables should map to the semantic token aliases above, with `--color-brand-bg` and typography tokens treated as the source of truth for export/import reviews.
+- Design PR review: changed files would include the form composition, document upload card, and dialog wiring. Impact is highest on HR manager onboarding completion and secondary on new-hire document submission. Validation should include keyboard-only flow, screen-reader labels, and responsive viewport checks.
 
 ## Step 5 — Stability review dogfood
 

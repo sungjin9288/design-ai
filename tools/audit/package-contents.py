@@ -1,0 +1,371 @@
+#!/usr/bin/env python3
+"""
+Verify the npm package dry-run contents before publishing.
+
+This turns the human "scan npm pack output" release step into a deterministic
+gate. It checks that required runtime files, every plugin manifest path, and
+skill sidecar docs are included, while test/build/cache-only files stay out of
+the tarball.
+
+Usage:
+  python3 tools/audit/package-contents.py
+  python3 tools/audit/package-contents.py --json
+  python3 tools/audit/package-contents.py --self-test
+  npm pack --dry-run --json | python3 tools/audit/package-contents.py --pack-json -
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+PACKAGE_JSON = ROOT / "package.json"
+PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
+
+MAX_PACKAGE_SIZE_MB = 15
+MAX_PACKAGE_SIZE_BYTES = MAX_PACKAGE_SIZE_MB * 1024 * 1024
+
+REQUIRED_PATHS = {
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "install.sh",
+    ".claude-plugin/plugin.json",
+    "cli/bin/design-ai.mjs",
+    "cli/lib/dispatch.mjs",
+    "knowledge/PRINCIPLES.md",
+    "examples/README.md",
+    "skills/component-spec-writer/PLAYBOOK.md",
+    "commands/design-from-brief.md",
+    "docs/DISTRIBUTION.md",
+    "tools/audit/run-all.py",
+    "tools/audit/doctor_assertions.py",
+    "tools/audit/smoke_assertions.py",
+    "tools/audit/example-qa.py",
+    "tools/audit/package-contents.py",
+    "tools/audit/package-smoke.py",
+    "tools/audit/registry-smoke.py",
+}
+
+FORBIDDEN_PREFIXES = (
+    "refs/",
+    ".git/",
+    ".github/",
+    "node_modules/",
+    "tools/extractors/",
+)
+
+FORBIDDEN_SUFFIXES = (
+    ".pyc",
+    ".tgz",
+    ".test.mjs",
+    ".test.js",
+    ".spec.mjs",
+    ".spec.js",
+)
+
+FORBIDDEN_SEGMENTS = (
+    "/__pycache__/",
+    "/node_modules/",
+)
+
+
+def parse_pack_payload(raw: str, *, source: str) -> dict:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        print(raw, file=sys.stderr)
+        raise SystemExit(f"failed to parse npm pack JSON from {source}: {error}") from error
+
+    if isinstance(payload, list):
+        if len(payload) != 1:
+            raise SystemExit(f"expected exactly one npm pack result from {source}, got {len(payload)}")
+        return payload[0]
+
+    if isinstance(payload, dict):
+        return payload
+
+    raise SystemExit(f"expected npm pack JSON object or single-item array from {source}")
+
+
+def run_npm_pack_dry_run() -> dict:
+    result = subprocess.run(
+        ["npm", "pack", "--dry-run", "--json"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+
+    if result.returncode != 0:
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+        raise SystemExit(f"npm pack --dry-run --json failed with exit code {result.returncode}")
+
+    return parse_pack_payload(result.stdout, source="npm pack --dry-run --json")
+
+
+def load_pack_json(pack_json: str) -> dict:
+    if pack_json == "-":
+        return parse_pack_payload(sys.stdin.read(), source="stdin")
+
+    pack_json_path = Path(pack_json).resolve()
+    try:
+        raw = pack_json_path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read npm pack JSON fixture: {pack_json_path}") from error
+
+    return parse_pack_payload(raw, source=str(pack_json_path))
+
+
+def load_manifest_paths() -> set[str]:
+    manifest = load_plugin_json()
+    required: set[str] = set()
+
+    for section in ("skills", "commands", "agents"):
+        entries = manifest.get(section, [])
+        if not isinstance(entries, list):
+            raise SystemExit(f"plugin manifest section is not a list: {section}")
+        for entry in entries:
+            path = entry.get("path") if isinstance(entry, dict) else None
+            if not path:
+                raise SystemExit(f"plugin manifest entry in {section} is missing path")
+            required.add(path)
+
+    return required
+
+
+def load_skill_sidecar_paths() -> set[str]:
+    required: set[str] = set()
+    skills_root = ROOT / "skills"
+    for file_path in skills_root.glob("*/*.md"):
+        if file_path.name in {"SKILL.md", "PLAYBOOK.md", "TEMPLATE.md"}:
+            required.add(file_path.relative_to(ROOT).as_posix())
+    return required
+
+
+def load_required_paths() -> set[str]:
+    return REQUIRED_PATHS | load_manifest_paths() | load_skill_sidecar_paths()
+
+
+def load_package_json() -> dict:
+    return json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))
+
+
+def load_plugin_json() -> dict:
+    return json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
+
+
+def is_forbidden(path: str) -> bool:
+    if path.startswith(FORBIDDEN_PREFIXES):
+        return True
+    if path.endswith(FORBIDDEN_SUFFIXES):
+        return True
+    normalized = f"/{path}"
+    return any(segment in normalized for segment in FORBIDDEN_SEGMENTS)
+
+
+def format_bytes(size: int) -> str:
+    if size >= 1024 * 1024:
+        return f"{size / 1024 / 1024:.1f} MB"
+    if size >= 1024:
+        return f"{size / 1024:.1f} KB"
+    return f"{size} B"
+
+
+def verify_package_contents(
+    pack: dict,
+    *,
+    package_json: dict | None = None,
+    plugin_json: dict | None = None,
+    required_paths: set[str] | None = None,
+) -> dict:
+    files = pack.get("files", [])
+    if not isinstance(files, list):
+        raise SystemExit("npm pack JSON did not include a files array")
+
+    file_paths = {entry.get("path") for entry in files if isinstance(entry, dict)}
+    file_paths.discard(None)
+
+    package_json = package_json or load_package_json()
+    plugin_json = plugin_json or load_plugin_json()
+    required_paths = required_paths or load_required_paths()
+
+    errors: list[str] = []
+    missing = sorted(path for path in required_paths if path not in file_paths)
+    forbidden = sorted(path for path in file_paths if is_forbidden(path))
+
+    package_size = int(pack.get("size") or 0)
+    if package_size > MAX_PACKAGE_SIZE_BYTES:
+        errors.append(
+            f"package size {format_bytes(package_size)} exceeds {MAX_PACKAGE_SIZE_MB} MB limit"
+        )
+
+    if pack.get("name") != package_json.get("name"):
+        errors.append(f"package name mismatch: {pack.get('name')} != {package_json.get('name')}")
+    if pack.get("version") != package_json.get("version"):
+        errors.append(
+            f"package version mismatch: {pack.get('version')} != {package_json.get('version')}"
+        )
+    if plugin_json.get("version") != package_json.get("version"):
+        errors.append(
+            "plugin manifest version mismatch: "
+            f"{plugin_json.get('version')} != {package_json.get('version')}"
+        )
+
+    if missing:
+        errors.append("missing required package path(s): " + ", ".join(missing))
+    if forbidden:
+        errors.append("forbidden package path(s): " + ", ".join(forbidden))
+
+    return {
+        "name": pack.get("name"),
+        "version": pack.get("version"),
+        "plugin_version": plugin_json.get("version"),
+        "filename": pack.get("filename"),
+        "file_count": len(file_paths),
+        "package_size": package_size,
+        "unpacked_size": int(pack.get("unpackedSize") or 0),
+        "missing": missing,
+        "forbidden": forbidden,
+        "errors": errors,
+    }
+
+
+def assert_condition(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(f"self-test failed: {message}")
+
+
+def run_self_test() -> int:
+    package_json = load_package_json()
+    plugin_json = load_plugin_json()
+    required_paths = sorted(load_required_paths())
+    assert_condition(
+        any(path.endswith("/PLAYBOOK.md") for path in required_paths),
+        "skill playbook paths should be part of required package contents",
+    )
+    assert_condition(
+        any(path.endswith("/TEMPLATE.md") for path in required_paths),
+        "skill template paths should be part of required package contents when present",
+    )
+    assert_condition(
+        "tools/audit/smoke_assertions.py" in required_paths,
+        "shared smoke assertion helper should be required package contents",
+    )
+
+    passing_pack = {
+        "name": package_json["name"],
+        "version": package_json["version"],
+        "filename": "fixture.tgz",
+        "size": 1024,
+        "unpackedSize": 4096,
+        "files": [{"path": path} for path in required_paths],
+    }
+    passing_summary = verify_package_contents(
+        passing_pack,
+        package_json=package_json,
+        plugin_json=plugin_json,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        passing_summary["errors"] == [],
+        "complete fixture should pass without errors",
+    )
+
+    failing_pack = {
+        "name": package_json["name"],
+        "version": "0.0.0",
+        "filename": "bad-fixture.tgz",
+        "size": MAX_PACKAGE_SIZE_BYTES + 1,
+        "unpackedSize": 0,
+        "files": [
+            {"path": "package.json"},
+            {"path": "refs/source.md"},
+            {"path": "cli/lib/check.test.mjs"},
+        ],
+    }
+    mismatched_plugin_json = {**plugin_json, "version": "0.0.0"}
+    failing_summary = verify_package_contents(
+        failing_pack,
+        package_json=package_json,
+        plugin_json=mismatched_plugin_json,
+        required_paths=set(required_paths),
+    )
+    joined_errors = "\n".join(failing_summary["errors"])
+
+    assert_condition(
+        any(path.endswith("plugin.json") for path in failing_summary["missing"]),
+        "incomplete fixture should report missing manifest/runtime paths",
+    )
+    assert_condition(
+        "refs/source.md" in failing_summary["forbidden"],
+        "forbidden refs/ path should be detected",
+    )
+    assert_condition(
+        "cli/lib/check.test.mjs" in failing_summary["forbidden"],
+        "forbidden CLI test file should be detected",
+    )
+    assert_condition(
+        "package size" in joined_errors,
+        "oversized package should be reported",
+    )
+    assert_condition(
+        "package version mismatch" in joined_errors,
+        "version mismatch should be reported",
+    )
+    assert_condition(
+        "plugin manifest version mismatch" in joined_errors,
+        "plugin manifest version mismatch should be reported",
+    )
+
+    print("Package contents self-test passed")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--json", action="store_true", help="Print machine-readable summary")
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run built-in success and failure fixture checks without invoking npm pack",
+    )
+    parser.add_argument(
+        "--pack-json",
+        metavar="FILE",
+        help="Read npm pack --json output from a fixture file instead of running npm pack; use - for stdin",
+    )
+    args = parser.parse_args()
+
+    if args.self_test:
+        return run_self_test()
+
+    pack = load_pack_json(args.pack_json) if args.pack_json else run_npm_pack_dry_run()
+    summary = verify_package_contents(pack)
+    if args.json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+    elif summary["errors"]:
+        print("Package contents check failed:")
+        for error in summary["errors"]:
+            print(f"- {error}")
+    else:
+        print(
+            "Package contents check passed: "
+            f"{summary['name']}@{summary['version']}, "
+            f"{summary['file_count']} files, "
+            f"packed {format_bytes(summary['package_size'])}, "
+            f"unpacked {format_bytes(summary['unpacked_size'])}"
+        )
+
+    return 1 if summary["errors"] else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -40,7 +40,8 @@ When you want to drop a system illustration into a screen — feature explainer,
   label="결제가 완료되었습니다"   // makes meaningful (not decorative)
 />
 
-<Illustration name="hero-money-flow" size={{ desktop: 480, mobile: 240 }} />
+const heroMoneyFlowSize = { desktop: 480, mobile: 240 };
+<Illustration name="hero-money-flow" size={heroMoneyFlowSize} />
 ```
 
 | Prop | Type | Default | Description |
@@ -82,6 +83,12 @@ For responsive: pass `{ desktop, mobile }` object. The component renders both vi
 ```
 
 The illustration's SVG must use `currentColor` for the themable element. Multi-color illustrations also use CSS variables (`var(--color-bg-illo)`).
+
+Contrast contract: each tone token must clear at least **3:1** against `--color-bg-default` for non-text graphic strokes/fills, and any nearby explanatory text must keep the normal **4.5:1** body-text contrast target from [`knowledge/a11y/contrast.md`](../knowledge/a11y/contrast.md).
+
+## Usage context
+
+Use `Illustration` as a reusable visual-language primitive when the layout is owned by another surface: onboarding panels, fintech confirmation screens, feature explainers, or Korean payment-success moments where the surrounding copy already carries the meaning. Use `label` only when the image itself adds information not repeated in text; otherwise keep it decorative so screen-reader output stays concise.
 
 ## Registry
 
@@ -240,7 +247,7 @@ export function Illustration({
 },
 ```
 
-Wrap consumers in `<Suspense fallback={<div style={{ width, height }} />}>`.
+Wrap consumers in `<Suspense fallback={<IllustrationSkeleton width={width} height={height} />}>`.
 
 ## Edge cases
 

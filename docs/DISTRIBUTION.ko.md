@@ -47,6 +47,16 @@ design-ai update      최신 소스 가져오기 + 재설치
 design-ai uninstall   심볼릭 링크 제거 (소스는 유지)
 design-ai status      설치된 항목 보기
 design-ai list [kind] 카탈로그 보기 (skills | commands | agents)
+design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--explain 지원
+design-ai routes      prompt/pack --route에 사용할 route id 목록 보기
+design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out file/--from-file/--route id 지원
+design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--route id 지원
+design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--route id/--all-routes/--issues-only/--stdin/--strict/--json 지원
+design-ai examples q worked example 검색; --route id/--limit N/--json 지원
+design-ai search q    로컬 코퍼스 Markdown 검색
+design-ai show file   코퍼스 파일 또는 line range 출력
+design-ai audit       7개 repository audit 실행
+design-ai doctor      설치 및 runtime 상태 진단; --fix로 symlink 갱신
 design-ai version     CLI + 플러그인 버전
 design-ai help        도움말
 ```
@@ -70,20 +80,38 @@ design-ai help        도움말
 | **CLI** (`package.json`) | npm CLI 도구 |
 | **Plugin / corpus** (`.claude-plugin/plugin.json`) | 지식 + 스킬 코퍼스 |
 
-릴리스에서는 두 버전이 일치해야 해요. publish 워크플로가 강제해요:
+릴리스에서는 두 버전이 일치해야 해요. publish / release 워크플로가 강제해요:
 
 1. `package.json` 버전 올리기.
 2. `.claude-plugin/plugin.json` 버전을 일치시키기.
 3. `CHANGELOG.md` 업데이트.
 4. 커밋 + 태그: `git tag v3.6.0 && git push --tags`.
-5. GitHub Actions가 publish 워크플로 실행.
+5. GitHub Actions가 publish 및 release 워크플로 실행.
 
 워크플로:
 - 태그가 `package.json` 버전과 일치하는지 검증.
 - `package.json`과 `plugin.json` 버전이 일치하는지 검증.
-- 5개 검사 모두 실행 (frontmatter / link / Korean copy / coverage / integration-check).
-- `npm pack --dry-run`으로 tarball 잘 만들어졌는지 확인.
+- 7개 검사 모두 실행 (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
+- publish 또는 release asset 첨부 전에 CLI unit test 실행.
+- `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
+- 패킹된 tarball을 임시 프로젝트에 설치하고 fake `CLAUDE_HOME`에서 `design-ai install` smoke test 실행.
 - `--provenance`로 publish (npm provenance attestation).
+- publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test.
+- GitHub Release에는 같은 `npm pack` allowlist로 만든 tarball을 첨부.
+
+로컬에서 태그를 만들기 전에는 먼저 다음 core gate를 실행하세요:
+
+```bash
+npm run release:check
+```
+
+이 명령은 CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요.
+
+publish 워크플로가 끝난 뒤에는 공개 설치 경로도 확인하세요:
+
+```bash
+npm run registry:smoke
+```
 
 ## 한국어 어댑터 가이드
 

@@ -187,6 +187,8 @@ cite [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.
   - iOS 17.4 Safari (iPhone 14)
   - Android 14 Chrome (Galaxy S24)
   - 데스크톱 Chrome 124
+- **Responsive scope**: mobile 360px / 390px, tablet 768px, and desktop 1440px viewports. Findings must state whether the issue is mobile-only, desktop-only, or cross-breakpoint.
+- **Assistive technology scope**: screen reader pass covers field labels, error announcements, `aria-describedby`, and route-change focus restoration.
 - **Tools**: axe-core, manual review, A/B 테스트 데이터 (Mixpanel)
 - **Sample**: production 데이터 2026-04-01 ~ 2026-05-01, n=4,521 신규 가입 시도
 
@@ -214,6 +216,7 @@ cite [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.
 - **Knowledge file 인용** — 이유 + 참고로.
 - **"잘 작동하는 부분"** — 균형 잡힌 보고서.
 - **Methodology가 마지막** — 신뢰도 검증 가능하지만 본질은 위에 있음.
+- **Don't bury the decision** — avoid putting methodology before TL;DR in audit reports.
 
 Cite [`knowledge/patterns/report-design.md`](../knowledge/patterns/report-design.md) for the canonical structure.
 

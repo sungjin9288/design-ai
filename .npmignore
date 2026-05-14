@@ -21,6 +21,10 @@ node_modules/
 *.log
 .npm/
 .cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
 
 # Test fixtures (if added later)
 test/

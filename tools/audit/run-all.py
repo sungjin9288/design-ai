@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Run all 6 audits and produce a unified summary.
+"""Run all repository audits and produce a unified summary.
 
 Each individual audit can still be run standalone. This wrapper is for:
 - Local pre-commit runs.
-- A single CI step instead of six.
+- A single CI step instead of many separate commands.
 - Dogfooding the RELEASE-CHECKLIST step 1.
 
 Usage:
@@ -68,6 +68,11 @@ AUDITS: tuple[AuditSpec, ...] = (
         name="coverage",
         script="check-coverage.py",
         description="Component / skill / example coverage report",
+    ),
+    AuditSpec(
+        name="example-qa",
+        script="example-qa.py",
+        description="Top worked example quality for every route",
     ),
 )
 

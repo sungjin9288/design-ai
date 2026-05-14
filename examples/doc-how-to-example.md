@@ -137,6 +137,8 @@ Bump body line-height to 1.6 (Korean +10% adjustment) per [`knowledge/i18n/korea
 body { line-height: 1.6; }
 ```
 
+Contrast check: translated Korean body text must keep at least **4.5:1** against the page background, and focus indicators on locale switchers or copy controls must keep **3:1** per [`knowledge/a11y/contrast.md`](../knowledge/a11y/contrast.md). Screen reader output must announce the active locale and any language switcher state via `aria-current` or equivalent text.
+
 ### 8. Add Korean-specific patterns
 
 If your app has:

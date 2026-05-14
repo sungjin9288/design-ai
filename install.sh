@@ -7,7 +7,7 @@
 #   ./install.sh --uninstall    # remove symlinks
 #   ./install.sh --status       # show what's installed
 #
-# After install, all 19 skills, 15 commands, and 4 agents are available
+# After install, all 19 skills, 16 commands, and 4 agents are available
 # in any Claude Code session, prefixed with "design-".
 
 set -euo pipefail
@@ -21,11 +21,19 @@ AGENTS_DIR="$CLAUDE_HOME/agents"
 COMMANDS_DIR="$CLAUDE_HOME/commands"
 
 # Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
+  GREEN=''
+  YELLOW=''
+  RED=''
+  BLUE=''
+  NC=''
+else
+  GREEN='\033[0;32m'
+  YELLOW='\033[1;33m'
+  RED='\033[0;31m'
+  BLUE='\033[0;34m'
+  NC='\033[0m'
+fi
 
 log_info()    { printf "${BLUE}ℹ${NC}  %s\n" "$1"; }
 log_success() { printf "${GREEN}✓${NC}  %s\n" "$1"; }

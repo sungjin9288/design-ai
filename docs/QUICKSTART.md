@@ -10,7 +10,7 @@ cd ~/dev/design-ai
 ./install.sh
 ```
 
-That symlinks 19 skills, 15 commands, and 4 review agents under `~/.claude/`. Restart Claude Code (or open a new session) to pick them up.
+That symlinks 19 skills, 16 commands, and 4 review agents under `~/.claude/`. Restart Claude Code (or open a new session) to pick them up.
 
 Verify:
 
@@ -18,7 +18,32 @@ Verify:
 ./install.sh --status
 ```
 
-Should show 19 skills, 4 agents, 15 commands installed.
+Should show 19 skills, 4 agents, 16 commands installed.
+
+```bash
+design-ai doctor
+```
+
+Use this when install state, runtime prerequisites, or symlink targets look wrong.
+If the only warnings are missing design-ai symlinks, run `design-ai doctor --fix`.
+
+```bash
+design-ai route "audit a Figma signup flow for Korean fintech" --explain
+design-ai routes
+design-ai prompt "audit a Figma signup flow for Korean fintech"
+design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
+design-ai prompt --from-file product-brief.md --route design-review --out prompt.md
+cat product-brief.md | design-ai pack --stdin --out prompt-pack.md
+design-ai pack "audit a Figma signup flow for Korean fintech" --out audit-pack.md
+design-ai check output.md --route component-spec --strict
+design-ai check --examples --route design-from-brief --limit 1
+design-ai check --examples --all-routes --issues-only
+design-ai examples --route component-spec --limit 5
+design-ai search Pretendard --dir knowledge --limit 5
+design-ai show knowledge/PRINCIPLES.md:29
+```
+
+Use CLI route + prompt + pack + check + examples + search + show when you need the right command, reusable agent prompt, portable context bundle, artifact QA, known-good references, and exact knowledge file. `design-ai route --explain` shows why a route matched and how many referenced files are available. Generated prompts include the selected route id, routing reason, reference examples, files to read, execution rules, a suggested `design-ai check output.md --route <id> --strict` command, and a route-aware verification checklist. Generated packs add a context summary and warnings for truncated or unavailable files, and include the selected reference example files when available, so you can judge whether the bundle is complete before sending it to another agent. `design-ai check` audits generated Markdown for grounding, unresolved markers, accessibility, responsive, screen-reader, misuse guidance, and route-specific evidence when `--route <id>` is provided. Use `design-ai check --examples --route <id>` to run the same QA rules against worked examples for that workflow, or `design-ai check --examples --all-routes --issues-only` for a maintainer-wide example QA summary focused on gaps. `design-ai examples --route <id>` finds worked outputs for the workflow you selected. Use `--from-file` or `--stdin` for real product/design briefs that are too long for a shell line. Use `--route <id>` when automatic routing is close but you want a specific workflow; get ids from `design-ai routes`, `design-ai route --list`, or `design-ai route "..." --json`.
 
 ## 2. Three first tasks
 
@@ -118,16 +143,13 @@ Override via skill input: "international primary, English copy".
 ./tools/extractors/run-all.sh
 
 # Run audits manually
-python3 tools/audit/frontmatter-check.py
-python3 tools/audit/link-check.py
-python3 tools/audit/korean-copy-check.py
-python3 tools/audit/check-coverage.py
+design-ai audit --strict
 
 # Render HTML token preview
 python3 tools/preview/render-tokens.py
 ```
 
-CI runs the four audits on every PR.
+CI runs the seven audits on every PR.
 
 ## Next
 

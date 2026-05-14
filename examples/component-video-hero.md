@@ -171,6 +171,7 @@ Don't rely on `loop` attribute alone; bad edits show a flash on loop.
 | --- | --- |
 | Hero loop file size | < 3MB (5-15s, 1080p, ~1.5 Mbps) |
 | Mobile variant | < 1.5MB (5-15s, 720p) |
+| Framerate | 24-30 fps; prefer 24 fps for cinematic loops and 30 fps for product motion |
 | LCP | < 2.5s (poster, not video) |
 | Video start playing | < 3s on 4G |
 | First frame match poster | Critical (otherwise visible flash) |
@@ -180,6 +181,7 @@ Don't rely on `loop` attribute alone; bad edits show a flash on loop.
 - **Source**: 4K master, edit in 16:9 desktop + 4:5 / 9:16 mobile.
 - **Trim**: 5-15 seconds; loop-friendly cuts.
 - **Audio**: stripped (autoplay = muted).
+- **Framerate**: export at 24 fps or 30 fps; avoid 60 fps hero loops because file size rises faster than perceived polish.
 - **Compression**: ffmpeg with H.264 + faststart:
 
 ```bash
@@ -365,6 +367,8 @@ function VideoHero({
   .video-hero__pause { display: none; }
 }
 ```
+
+Contrast contract: text on `--color-bg-overlay-dark` must clear at least **4.5:1** against `--color-fg-on-overlay`; the pause control icon on the `rgba(0,0,0,0.5)` background must clear at least **3:1** for UI graphics. If the source video has bright regions behind text, increase `overlayOpacity` before shipping instead of relying on the average frame.
 
 ## Edge cases
 

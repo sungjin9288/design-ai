@@ -13,6 +13,15 @@
     "test": "node --test cli/lib/*.test.mjs",
     "audit": "python3 tools/audit/run-all.py",
     "audit:strict": "python3 tools/audit/run-all.py --strict",
+    "doctor:assertions:self-test": "python3 tools/audit/doctor_assertions.py --self-test",
+    "smoke:assertions:self-test": "python3 tools/audit/smoke_assertions.py --self-test",
+    "package:check": "python3 tools/audit/package-contents.py --self-test && python3 tools/audit/package-contents.py",
+    "package:smoke:self-test": "python3 tools/audit/package-smoke.py --self-test",
+    "package:smoke": "python3 tools/audit/package-smoke.py --pack",
+    "registry:smoke": "python3 tools/audit/registry-smoke.py",
+    "registry:smoke:self-test": "python3 tools/audit/registry-smoke.py --self-test",
+    "release:self-test": "npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test",
+    "release:check": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:self-test && npm run package:smoke",
     "preview": "python3 tools/preview/render-tokens.py"
   },
   "keywords": [
@@ -62,6 +71,12 @@
     "docs/",
     "tools/audit/",
     "tools/migrations/",
-    "tools/preview/"
+    "tools/preview/",
+    "!**/__pycache__/**",
+    "!**/*.pyc",
+    "!cli/**/*.test.mjs",
+    "!cli/**/*.test.js",
+    "!cli/**/*.spec.mjs",
+    "!cli/**/*.spec.js"
   ]
 }

@@ -46,6 +46,16 @@ design-ai update      Pull latest source + reinstall
 design-ai uninstall   Remove symlinks (keeps source)
 design-ai status      Show what's installed
 design-ai list [kind] List catalog (skills | commands | agents)
+design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--explain
+design-ai routes      List available route ids for prompt/pack --route
+design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, or --route id
+design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, or --route id
+design-ai check file  Check generated Markdown artifact quality; add --examples, --route id, --all-routes, --issues-only, --stdin, --strict, or --json
+design-ai examples q Find worked examples; add --route id, --limit N, or --json
+design-ai search q    Search local corpus markdown
+design-ai show file   Print a corpus file or line range
+design-ai audit       Run all seven repository audits
+design-ai doctor      Diagnose install and runtime health; add --fix to refresh symlinks
 design-ai version     CLI + plugin versions
 design-ai help        Show help
 ```
@@ -75,14 +85,17 @@ For releases, both must match. The publish workflow enforces this:
 2. Bump `.claude-plugin/plugin.json` version to match.
 3. Update `CHANGELOG.md`.
 4. Commit + tag: `git tag v3.1.0 && git push --tags`.
-5. GitHub Actions runs the publish workflow.
+5. GitHub Actions runs the publish and release workflows.
 
 The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
-- Runs all 4 audits (frontmatter / link / Korean copy / coverage).
-- Runs `npm pack --dry-run` to confirm the tarball is well-formed.
+- Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
+- Runs CLI unit tests before publishing or attaching release assets.
+- Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
+- Installs the packed tarball into a temporary project and smoke-tests `design-ai install` against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
+- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`.
 
 ## NPM package contents
 
@@ -102,10 +115,10 @@ The `files` field in `package.json` is the allowlist (preferred over `.npmignore
 ├── examples/            # 99 worked examples (~3MB)
 ├── skills/              # 19 skill PLAYBOOKs + SKILL.md manifests
 ├── agents/              # 4 sub-agent definitions
-├── commands/            # 15 slash command files
+├── commands/            # 16 slash command files
 ├── docs/                # Architecture + integration guides
 └── tools/
-    ├── audit/           # 5 audit scripts (Python)
+    ├── audit/           # audit, release, and smoke scripts (Python)
     └── preview/         # HTML preview generator (Python)
 ```
 
@@ -115,17 +128,19 @@ Excluded (in `.npmignore` + not in `files`):
 - `node_modules/` — local dependencies
 - `tools/extractors/` — only needed for refreshing knowledge from refs/
 
-Tarball target: < 15MB. Run `npm pack --dry-run` to verify.
+Tarball target: < 15MB. Run `npm run package:check` to verify package contents.
 
 ## Publishing checklist (maintainers)
 
 Before tagging a release:
 
-- [ ] All audits pass: `python3 tools/audit/{frontmatter,link,korean-copy,check-coverage}.py`
+- [ ] Core automated gate passes: `npm run release:check`
+- [ ] Release assertion self-tests pass: `npm run release:self-test`
+- [ ] All audits pass: `design-ai audit --strict`
 - [ ] `package.json` and `.claude-plugin/plugin.json` versions match
 - [ ] `CHANGELOG.md` has an entry for the new version
 - [ ] CLI smoke-tested: `node cli/bin/design-ai.mjs help`, `version`, `list skills`
-- [ ] `npm pack --dry-run` shows expected files
+- [ ] Package contents check passes: `npm run package:check`
 - [ ] Tarball size reasonable (< 15MB)
 - [ ] README + relevant docs reference current version
 
@@ -138,17 +153,25 @@ git push origin v3.1.0
 
 GitHub Actions takes over from there.
 
-## Alternative: GitHub Release artifacts
-
-For users who don't want npm, provide the tarball as a GitHub Release asset:
+After the npm publish workflow completes, verify the public install path:
 
 ```bash
-# After publishing
-TARBALL=$(npm pack 2>/dev/null | tail -1)
-gh release create v3.1.0 "$TARBALL" --title "v3.1.0" --notes-from-tag
+npm run registry:smoke
 ```
 
-Adopters can `wget` the tarball, extract, and run `./install.sh` directly.
+## Alternative: GitHub Release artifacts
+
+For users who don't want npm, the tag workflow attaches the same npm-packed tarball to the GitHub Release. This keeps the release asset aligned with the `package.json` `files` allowlist instead of maintaining a separate hand-written tar command.
+
+```bash
+# After a v* tag release
+curl -LO https://github.com/sungjin/design-ai/releases/download/v3.1.0/design-ai-cli-3.1.0.tgz
+tar xzf design-ai-cli-3.1.0.tgz
+cd package
+./install.sh
+```
+
+Adopters can download the tarball, extract it, and run `./install.sh` directly.
 
 ## Future distribution channels
 

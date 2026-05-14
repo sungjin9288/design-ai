@@ -5,6 +5,15 @@ import { runUpdate } from "../commands/update.mjs";
 import { runUninstall } from "../commands/uninstall.mjs";
 import { runStatus } from "../commands/status.mjs";
 import { runList } from "../commands/list.mjs";
+import { runAudit } from "../commands/audit.mjs";
+import { runCheck } from "../commands/check.mjs";
+import { runDoctor } from "../commands/doctor.mjs";
+import { runExamples } from "../commands/examples.mjs";
+import { runSearch } from "../commands/search.mjs";
+import { runShow } from "../commands/show.mjs";
+import { runRoute } from "../commands/route.mjs";
+import { runPrompt } from "../commands/prompt.mjs";
+import { runPack } from "../commands/pack.mjs";
 import { runVersion } from "../commands/version.mjs";
 import { runHelp } from "../commands/help.mjs";
 
@@ -21,6 +30,24 @@ const commands = {
   s: runStatus,
   list: runList,
   ls: runList,
+  audit: runAudit,
+  a: runAudit,
+  check: runCheck,
+  lint: runCheck,
+  doctor: runDoctor,
+  diag: runDoctor,
+  examples: runExamples,
+  example: runExamples,
+  ex: runExamples,
+  search: runSearch,
+  find: runSearch,
+  show: runShow,
+  cat: runShow,
+  route: runRoute,
+  routes: (args) => runRoute(["--list", ...args]),
+  recommend: runRoute,
+  prompt: runPrompt,
+  pack: runPack,
   version: runVersion,
   v: runVersion,
   "--version": runVersion,

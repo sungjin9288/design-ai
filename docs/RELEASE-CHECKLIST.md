@@ -4,18 +4,21 @@ Pre-flight steps for every design-ai release. Stamped at v3.12 — usable from v
 
 ## Before tagging any release
 
+### 0. Core automated gate
+
+```bash
+npm run release:check
+```
+
+This runs CLI unit tests, all seven repository audits, whitespace checks, automated package contents checks, `npm run release:self-test`, and the packed-tarball smoke test. Continue with the manual release checks below after this gate passes.
+
 ### 1. Audits
 
 ```bash
-python3 tools/audit/frontmatter-check.py
-python3 tools/audit/link-check.py
-python3 tools/audit/korean-copy-check.py
-python3 tools/audit/integration-check.py
-python3 tools/audit/stale-check.py
-python3 tools/audit/check-coverage.py
+node cli/bin/design-ai.mjs audit --strict
 ```
 
-All five must pass. The CI workflow runs them all on PR; verify locally before tagging.
+All seven audits must pass: frontmatter, link, Korean copy, integration, stale, coverage, and example QA. The CI workflow runs them on PR; verify locally before tagging.
 
 ### 2. Version alignment
 
@@ -62,13 +65,18 @@ All four must respond cleanly.
 ### 6. NPM package preview
 
 ```bash
-npm pack --dry-run
+npm run package:check
 ```
 
 Verify:
 - Tarball size < 15MB (warn at 10MB).
 - `files` allowlist matches expectations.
 - No `refs/`, `.git/`, `node_modules/`, `*.tgz` slipping in.
+- Packed tarball installs cleanly:
+
+```bash
+npm run package:smoke
+```
 
 ### 7. Doc site build
 
@@ -111,8 +119,10 @@ git push origin vX.Y.Z
 ```
 
 GitHub Actions takes over:
-- `audit.yml` re-runs all five audits.
-- `publish.yml` runs on `v*` tags — verifies versions, runs audits, packs, publishes to npm with provenance.
+- `audit.yml` re-runs all seven audits and unit tests.
+- `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, and publishes to npm with provenance.
+- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>` is verified from the public registry.
+- `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
 - `docs.yml` re-builds and deploys the doc site.
 
 ### 11. Post-tag
@@ -120,6 +130,7 @@ GitHub Actions takes over:
 After the tag is live:
 
 - [ ] Verify npm publication: `npm view @design-ai/cli version`
+- [ ] Verify public install path: `npm run registry:smoke`
 - [ ] Verify doc site updated: visit deployed URL
 - [ ] If breaking change in major version: update Homebrew formula sha256 + version.
 - [ ] Optional: GitHub release notes (auto-generated from CHANGELOG.md section).
@@ -172,12 +183,12 @@ Publisher account setup: <https://code.visualstudio.com/api/working-with-extensi
 ## For Homebrew formula updates
 
 ```bash
-# After GitHub release tarball available:
+# After GitHub release tarball is available:
 TAG=v3.12.0
-SHA=$(curl -sL "https://github.com/sungjin/design-ai/archive/refs/tags/$TAG.tar.gz" | shasum -a 256 | cut -d' ' -f1)
+SHA=$(curl -sL "https://github.com/sungjin/design-ai/releases/download/$TAG/design-ai-cli-${TAG#v}.tgz" | shasum -a 256 | cut -d' ' -f1)
 
 # Update Formula/design-ai.rb:
-# - url: tag URL
+# - url: GitHub Release asset URL
 # - sha256: $SHA above
 # - version: matching the tag
 

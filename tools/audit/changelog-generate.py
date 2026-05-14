@@ -159,8 +159,13 @@ def main() -> None:
             if section:
                 sections.append(section)
 
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(s for s in sections if s) + "\n", encoding="utf-8")
-    print(f"Wrote {output_path.relative_to(ROOT)}")
+    try:
+        display_path = output_path.relative_to(ROOT)
+    except ValueError:
+        display_path = output_path
+    print(f"Wrote {display_path}")
 
 
 if __name__ == "__main__":

@@ -7,6 +7,16 @@
 //   uninstall            Remove design-ai from Claude Code
 //   status               Show what's installed
 //   list [domain]        List skills / commands / knowledge (optionally filtered)
+//   search               Search the local design-ai markdown corpus
+//   show                 Print a corpus file or line range
+//   route                Recommend and explain commands, skills, and knowledge for a brief
+//   routes               List available route ids
+//   prompt               Generate a ready-to-use agent prompt from a brief
+//   pack                 Generate a prompt plus bounded context file contents
+//   audit                Run repository quality checks
+//   check                Check generated Markdown artifact quality
+//   doctor               Diagnose source, runtime, and install state
+//   examples             Find worked examples by query or route
 //   version              Show CLI + plugin versions
 //   help                 Show help
 

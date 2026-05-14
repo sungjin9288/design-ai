@@ -8,19 +8,28 @@ on:
       - "skills/**"
       - "agents/**"
       - "commands/**"
+      - "cli/**"
+      - "vscode-extension/**"
       - "tools/**"
       - "docs/**"
+      - ".claude-plugin/**"
+      - ".npmignore"
       - "AGENTS.md"
       - "CLAUDE.md"
       - "README.md"
-      - ".github/workflows/audit.yml"
+      - "README.ko.md"
+      - "CHANGELOG.md"
+      - "install.sh"
+      - "package.json"
+      - "mkdocs.yml"
+      - ".github/workflows/*.yml"
   push:
     branches: [main]
 
 jobs:
   audit:
     runs-on: ubuntu-latest
-    name: 6 audits + size budget
+    name: 7 audits + size budget
     steps:
       - uses: actions/checkout@v4
 
@@ -29,10 +38,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Use the unified audit runner instead of 6 separate steps.
+      # Use the unified audit runner instead of many separate steps.
       # On PR: warn-only (matches local dev experience).
       # On push to main: --strict (CI fails on stale content >12 months).
-      - name: Run all 6 audits
+      - name: Run all 7 audits
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             python3 tools/audit/run-all.py --strict
@@ -99,6 +108,28 @@ jobs:
       - name: VS Code lib unit tests
         working-directory: vscode-extension
         run: npm run test:unit
+
+  package-integrity:
+    runs-on: ubuntu-latest
+    name: Package integrity
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run release assertion self-tests
+        run: npm run release:self-test
+
+      - name: Check npm package contents
+        run: npm run package:check
 
   vscode-e2e:
     runs-on: ubuntu-latest

@@ -60,7 +60,7 @@ cd design-ai
 ./install.sh
 ```
 
-Any of the three: you get all 19 skills, 15 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+Any of the three: you get all 19 skills, 16 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -69,7 +69,7 @@ Any of the three: you get all 19 skills, 15 commands, and 4 agents under `~/.cla
 /design-from-brief Korean fintech for freelancers
 ```
 
-CLI commands: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `version`, `help`.
+CLI commands: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `route <brief|--from-file file|--list> [--explain]`, `routes [--json]`, `prompt <brief|--from-file file> [--out file] [--route id]`, `pack <brief|--from-file file> [--out file] [--route id]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict]`, `examples [query|--route id]`, `search <query>`, `show <file[:line]>`, `audit [--strict] [--quiet]`, `doctor [--strict] [--json] [--fix]`, `version`, `help`.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 
@@ -136,7 +136,7 @@ design-ai/
 │   ├── design-critic.md         a11y-reviewer.md
 │   ├── component-architect.md   token-extractor.md
 │
-├── commands/                # 15 slash commands
+├── commands/                # 16 slash commands
 │   ├── design-from-brief.md     motion-design.md
 │   ├── component-spec.md        illustration.md
 │   ├── design-review.md         print.md
@@ -144,11 +144,12 @@ design-ai/
 │   ├── document-from-brief.md   game-ui.md
 │   ├── slide-deck.md            conversational.md
 │   ├── iterate.md               spatial.md
-│   └── extract-tokens.md
+│   ├── extract-tokens.md
+│   └── stability-review.md
 │
 ├── tools/                   # Maintenance pipeline
 │   ├── extractors/          # 7 source-extractors (token / component / pattern)
-│   ├── audit/               # 5 audit tools (frontmatter / link / KR / coverage / changelog)
+│   ├── audit/               # 7 audit tools (frontmatter / link / KR / integration / stale / coverage / example QA)
 │   └── preview/             # HTML token swatches + contrast matrix
 │
 └── docs/                    # Architecture + integration guides
@@ -203,19 +204,24 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v3.0** (stabilization).
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v4.13.0** (DRAFT polish round 2).
 
-The corpus has been audited under 4 CI checks since v1.7:
+The corpus has been audited under CI checks since v1.7. It currently runs 7 audits:
 - Frontmatter validity
 - Internal link resolution
 - Korean copy quality
+- Integration walkthrough completeness
+- Stale-content freshness
 - Component coverage report freshness
+- Top worked example QA for every routed workflow
 
-All 4 pass on every commit to `main`.
+All 7 pass on every commit to `main`.
 
 ## Contributing
 
 See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
+- Run `npm run release:check` before release PRs or tags. It covers CLI unit tests, 7 audits, whitespace checks, package contents checks, `npm run release:self-test`, and packed-tarball smoke.
+- After npm publish completes, run `npm run registry:smoke` to verify the public `npm exec --package` install path.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.
 - Skill PLAYBOOKs include a verification phase checklist.
 - Korean strings spelled out in Korean (no machine translation passing through).

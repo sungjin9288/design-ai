@@ -217,6 +217,16 @@ Recomputed, not inverted. Increased chroma on accents (low-light eye is less sat
 - **Do not**: use `accent-600` and `primary-600` as adjacent buttons — they fight. If both are needed, make one ghost (transparent bg + colored text).
 - **Do not**: use `text-disabled` for live content. Disabled means "not interactable now"; if it's readable info, use `text-tertiary`.
 
+## Responsive usage
+
+- Mobile surfaces use `--color-bg-default` plus one primary action; avoid stacking primary and accent CTAs inside the same 360px viewport.
+- Desktop dashboards may use `--color-bg-elevated` cards on `--color-bg-subtle`, but chart/category color usage still caps at the same palette rules.
+- Breakpoint changes must not change semantic token meaning: `--color-primary-default` stays the primary action color on mobile, tablet, and desktop.
+
+## Figma variable sync
+
+Figma variables mirror the semantic token layer, not the raw Tailwind ramp. Use `color.primary.default`, `color.text.primary`, and `color.bg.default` as the source of truth, then export/import through the token sync workflow so code and Figma stay aligned.
+
 ## Cited sources
 
 - [knowledge/colors/color-theory.md](../knowledge/colors/color-theory.md) — OKLCH rationale, ramp construction
