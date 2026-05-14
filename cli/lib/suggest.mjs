@@ -30,9 +30,16 @@ export function suggestNearest(name, candidates, { minLength = 2, maxDistance } 
     .filter(Boolean)
     .map((candidate) => ({
       candidate,
+      candidateLower: candidate.toLowerCase(),
       distance: levenshteinDistance(input, candidate.toLowerCase()),
     }))
-    .sort((a, b) => a.distance - b.distance || a.candidate.localeCompare(b.candidate));
+    .sort((a, b) => {
+      if (a.distance !== b.distance) return a.distance - b.distance;
+      const aPrefix = a.candidateLower.startsWith(input) ? 0 : 1;
+      const bPrefix = b.candidateLower.startsWith(input) ? 0 : 1;
+      if (aPrefix !== bPrefix) return aPrefix - bPrefix;
+      return a.candidate.localeCompare(b.candidate);
+    });
 
   const best = ranked[0];
   if (!best) return "";
@@ -41,4 +48,11 @@ export function suggestNearest(name, candidates, { minLength = 2, maxDistance } 
     ? maxDistance
     : input.length <= 4 ? 1 : 2;
   return best.distance <= threshold ? best.candidate : "";
+}
+
+export function unknownOptionMessage(commandName, option, candidates) {
+  const suggestion = suggestNearest(option, candidates, { minLength: 3 });
+  const lines = [`Unknown ${commandName} option: ${option}`];
+  if (suggestion) lines.push(`Did you mean \`${suggestion}\`?`);
+  return lines.join("\n");
 }

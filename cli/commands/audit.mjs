@@ -5,8 +5,10 @@ import path from "node:path";
 import { run } from "../lib/exec.mjs";
 import { header, info } from "../lib/log.mjs";
 import { DESIGN_AI_HOME, pathExists } from "../lib/paths.mjs";
+import { unknownOptionMessage } from "../lib/suggest.mjs";
 
 const AUDIT_RUNNER = path.join(DESIGN_AI_HOME, "tools", "audit", "run-all.py");
+const AUDIT_OPTIONS = ["-h", "--help", "--strict", "--quiet"];
 const ALLOWED_ARGS = new Set(["--strict", "--quiet"]);
 
 function normalizeArgs(args) {
@@ -17,7 +19,7 @@ function normalizeArgs(args) {
     }
     if (!ALLOWED_ARGS.has(arg)) {
       throw new Error(
-        `Unknown audit option: ${arg}\n` +
+        `${unknownOptionMessage("audit", arg, AUDIT_OPTIONS)}\n` +
           "Usage: design-ai audit [--strict] [--quiet]"
       );
     }

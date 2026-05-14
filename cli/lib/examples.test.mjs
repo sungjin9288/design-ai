@@ -53,6 +53,7 @@ test("parseExamplesArgs rejects invalid options", () => {
   assert.throws(() => parseExamplesArgs(["--route"]), /--route expects a route id/);
   assert.throws(() => parseExamplesArgs(["--limit", "0"]), /--limit/);
   assert.throws(() => parseExamplesArgs(["--bad"]), /Unknown examples option/);
+  assert.throws(() => parseExamplesArgs(["--rouet", "component-spec"]), /Did you mean `--route`\?/);
 });
 
 test("listExamples searches examples and excludes README", () => {

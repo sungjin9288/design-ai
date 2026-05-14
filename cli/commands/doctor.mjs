@@ -9,7 +9,9 @@ import {
   SYMLINK_PREFIX,
   INSTALL_SCRIPT,
 } from "../lib/paths.mjs";
+import { unknownOptionMessage } from "../lib/suggest.mjs";
 
+const DOCTOR_OPTIONS = ["-h", "--help", "--strict", "--json", "--fix"];
 const ALLOWED_ARGS = new Set(["--strict", "--json", "--fix"]);
 
 function normalizeArgs(args) {
@@ -27,7 +29,7 @@ function normalizeArgs(args) {
     }
     if (!ALLOWED_ARGS.has(arg)) {
       throw new Error(
-        `Unknown doctor option: ${arg}\n` +
+        `${unknownOptionMessage("doctor", arg, DOCTOR_OPTIONS)}\n` +
           "Usage: design-ai doctor [--strict] [--json] [--fix]",
       );
     }

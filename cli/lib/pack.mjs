@@ -7,8 +7,20 @@ import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { resolveShowFile } from "./show.mjs";
+import { unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_MAX_BYTES = 120_000;
+const PACK_OPTIONS = [
+  "-h",
+  "--help",
+  "--json",
+  "--from-file",
+  "--stdin",
+  "--out",
+  "--force",
+  "--max-bytes",
+  "--route",
+];
 
 export function parsePackArgs(args) {
   const out = {
@@ -49,7 +61,7 @@ export function parsePackArgs(args) {
         out.routeId = routeId;
         i += 1;
       } else if (arg.startsWith("--")) {
-        throw new Error(`Unknown pack option: ${arg}`);
+        throw new Error(unknownOptionMessage("pack", arg, PACK_OPTIONS));
       } else {
         out.briefParts.push(arg);
       }

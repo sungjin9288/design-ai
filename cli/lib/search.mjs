@@ -7,6 +7,8 @@ import {
 } from "node:fs";
 import path from "node:path";
 
+import { unknownOptionMessage } from "./suggest.mjs";
+
 export const DEFAULT_SEARCH_DIRS = [
   "knowledge",
   "examples",
@@ -18,6 +20,7 @@ export const DEFAULT_SEARCH_DIRS = [
 
 const PREVIEW_LEN = 120;
 const PREVIEW_BEFORE = 50;
+const SEARCH_OPTIONS = ["-h", "--help", "--json", "--limit", "--dir"];
 
 function exists(p) {
   try {
@@ -137,7 +140,7 @@ export function parseSearchArgs(args) {
       out.dirs.push(next);
       i += 1;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown search option: ${arg}`);
+      throw new Error(unknownOptionMessage("search", arg, SEARCH_OPTIONS));
     } else {
       out.queryParts.push(arg);
     }

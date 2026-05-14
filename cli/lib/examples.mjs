@@ -7,8 +7,10 @@ import path from "node:path";
 
 import { assertKnownRouteId } from "./route.mjs";
 import { buildPreview, walkMarkdown } from "./search.mjs";
+import { unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_LIMIT = 12;
+const EXAMPLES_OPTIONS = ["-h", "--help", "--json", "--route", "--limit"];
 
 const ROUTE_EXAMPLE_QUERIES = {
   "design-review": "dogfood review audit",
@@ -81,7 +83,7 @@ export function parseExamplesArgs(args) {
       out.limit = limit;
       i += 1;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown examples option: ${arg}`);
+      throw new Error(unknownOptionMessage("examples", arg, EXAMPLES_OPTIONS));
     } else {
       out.queryParts.push(arg);
     }

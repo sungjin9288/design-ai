@@ -7,7 +7,7 @@ import {
 import path from "node:path";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
-import { suggestNearest } from "./suggest.mjs";
+import { suggestNearest, unknownOptionMessage } from "./suggest.mjs";
 
 function exists(p) {
   try {
@@ -19,6 +19,16 @@ function exists(p) {
 
 const COMMON_KNOWLEDGE = [
   "knowledge/PRINCIPLES.md",
+];
+const ROUTE_OPTIONS = [
+  "-h",
+  "--help",
+  "--json",
+  "--list",
+  "--explain",
+  "--from-file",
+  "--stdin",
+  "--limit",
 ];
 
 export const ROUTES = [
@@ -292,7 +302,7 @@ export function parseRouteArgs(args) {
       out.limit = limit;
       i += 1;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown route option: ${arg}`);
+      throw new Error(unknownOptionMessage("route", arg, ROUTE_OPTIONS));
     } else {
       out.briefParts.push(arg);
     }

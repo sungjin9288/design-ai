@@ -95,6 +95,7 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
 
 test("parsePromptArgs rejects unknown options", () => {
   assert.throws(() => parsePromptArgs(["spec", "--bad"]), /Unknown prompt option/);
+  assert.throws(() => parsePromptArgs(["spec", "--rout", "component-spec"]), /Did you mean `--route`\?/);
   assert.throws(() => parsePromptArgs(["spec", "--route"]), /--route expects a route id/);
 });
 

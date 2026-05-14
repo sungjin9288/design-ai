@@ -8,6 +8,18 @@ import { listExamples } from "./examples.mjs";
 import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { readRouteManifestVersion, routeBrief, routeById } from "./route.mjs";
+import { unknownOptionMessage } from "./suggest.mjs";
+
+const PROMPT_OPTIONS = [
+  "-h",
+  "--help",
+  "--json",
+  "--route",
+  "--from-file",
+  "--stdin",
+  "--out",
+  "--force",
+];
 
 export function parsePromptArgs(args) {
   const out = {
@@ -38,7 +50,7 @@ export function parsePromptArgs(args) {
     } else if (parseOutputFlags(args, out)) {
       i = out.index;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown prompt option: ${arg}`);
+      throw new Error(unknownOptionMessage("prompt", arg, PROMPT_OPTIONS));
     } else {
       out.briefParts.push(arg);
     }

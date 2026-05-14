@@ -7,6 +7,10 @@ import {
 } from "node:fs";
 import path from "node:path";
 
+import { unknownOptionMessage } from "./suggest.mjs";
+
+const SHOW_OPTIONS = ["-h", "--help", "--json", "--lines", "--context"];
+
 function exists(p) {
   try {
     return existsSync(p);
@@ -74,7 +78,7 @@ export function parseShowArgs(args) {
       out.context = context;
       i += 1;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown show option: ${arg}`);
+      throw new Error(unknownOptionMessage("show", arg, SHOW_OPTIONS));
     } else if (!out.target) {
       out.target = arg;
     } else {

@@ -119,6 +119,7 @@ test("parseRouteArgs supports route catalog listing", () => {
 test("parseRouteArgs rejects invalid options", () => {
   assert.throws(() => parseRouteArgs(["x", "--limit", "0"]), /--limit/);
   assert.throws(() => parseRouteArgs(["x", "--bad"]), /Unknown route option/);
+  assert.throws(() => parseRouteArgs(["x", "--limt", "2"]), /Did you mean `--limit`\?/);
 });
 
 test("routeCatalog returns discoverable route ids", () => {

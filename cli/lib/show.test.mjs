@@ -56,6 +56,7 @@ test("parseShowArgs supports target, lines, context, and json", () => {
 test("parseShowArgs rejects invalid arguments", () => {
   assert.throws(() => parseShowArgs(["a.md", "--lines", "4:2"]), /Line range/);
   assert.throws(() => parseShowArgs(["a.md", "--context", "101"]), /--context/);
+  assert.throws(() => parseShowArgs(["a.md", "--line", "1"]), /Did you mean `--lines`\?/);
   assert.throws(() => parseShowArgs(["a.md", "extra"]), /Unexpected/);
 });
 

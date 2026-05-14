@@ -7,8 +7,21 @@ import path from "node:path";
 
 import { listExamples } from "./examples.mjs";
 import { assertKnownRouteId, ROUTES } from "./route.mjs";
+import { unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_EXAMPLE_LIMIT = 3;
+const CHECK_OPTIONS = [
+  "-h",
+  "--help",
+  "--stdin",
+  "--examples",
+  "--all-routes",
+  "--issues-only",
+  "--strict",
+  "--route",
+  "--limit",
+  "--json",
+];
 
 export function parseCheckArgs(args) {
   const out = {
@@ -53,7 +66,7 @@ export function parseCheckArgs(args) {
     } else if (arg === "--json") {
       out.json = true;
     } else if (arg.startsWith("--")) {
-      throw new Error(`Unknown check option: ${arg}`);
+      throw new Error(unknownOptionMessage("check", arg, CHECK_OPTIONS));
     } else if (!out.target) {
       out.target = arg;
     } else {

@@ -101,6 +101,7 @@ test("parsePackArgs rejects invalid options", () => {
   assert.throws(() => parsePackArgs(["spec", "--max-bytes", "999"]), /--max-bytes/);
   assert.throws(() => parsePackArgs(["spec", "--route"]), /--route expects a route id/);
   assert.throws(() => parsePackArgs(["spec", "--bad"]), /Unknown pack option/);
+  assert.throws(() => parsePackArgs(["spec", "--max-byets", "2000"]), /Did you mean `--max-bytes`\?/);
 });
 
 test("buildPromptPack includes prompt and context files", () => {

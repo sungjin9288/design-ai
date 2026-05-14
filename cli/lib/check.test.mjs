@@ -75,6 +75,7 @@ test("parseCheckArgs rejects invalid argument combinations", () => {
   assert.throws(() => parseCheckArgs(["artifact.md", "--limit", "2"]), /--limit is only supported with --examples/);
   assert.throws(() => parseCheckArgs(["--examples", "--route", "component-spec", "--limit", "26"]), /--limit expects/);
   assert.throws(() => parseCheckArgs(["--bad"]), /Unknown check option/);
+  assert.throws(() => parseCheckArgs(["--examples", "--rout", "component-spec"]), /Did you mean `--route`\?/);
 });
 
 test("checkArtifactContent passes a grounded accessible artifact", () => {
