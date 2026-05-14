@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -33,6 +32,7 @@ from smoke_assertions import (
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
+    help_topic_script,
     parse_help_topics,
     passing_doctor_report_json,
 )
@@ -112,10 +112,6 @@ def read_doctor_report(report_path: Path) -> dict:
 def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None) -> list[str]:
     result = run_plain(cmd, cwd=cwd, env=env)
     return parse_help_topics(result.stdout, context="registry smoke help catalog", cmd=cmd)
-
-
-def help_topic_script(topics: list[str]) -> str:
-    return " && ".join(f"design-ai help {shlex.quote(topic)}" for topic in topics)
 
 
 def wait_for_registry_package(

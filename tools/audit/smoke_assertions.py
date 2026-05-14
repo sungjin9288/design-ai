@@ -76,6 +76,12 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     return topics
 
 
+def help_topic_script(topics: list[str]) -> str:
+    if not topics:
+        raise SystemExit("help topic script requires at least one topic")
+    return " && ".join(f"design-ai help {shlex.quote(topic)}" for topic in topics)
+
+
 def assert_doctor_json_clean(
     raw: str,
     *,
@@ -193,6 +199,15 @@ def run_self_test() -> None:
             cmd=help_cmd,
         ),
         expected="duplicate topics",
+        scope="smoke assertions",
+    )
+    assert help_topic_script(["install", "route"]) == (
+        "design-ai help install && design-ai help route"
+    )
+    assert help_topic_script(["route topic"]) == "design-ai help 'route topic'"
+    expect_self_test_failure(
+        lambda: help_topic_script([]),
+        expected="requires at least one topic",
         scope="smoke assertions",
     )
 
