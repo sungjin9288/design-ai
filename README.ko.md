@@ -69,7 +69,7 @@ cd design-ai
 /design-from-brief 프리랜서를 위한 한국 핀테크
 ```
 
-CLI 명령어: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `route <brief|--from-file file|--stdin|--list> [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--max-bytes N] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet]`, `doctor [--strict] [--json] [--fix]`, `version`, `help`.
+CLI 명령어: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `route <brief|--from-file file|--stdin|--list> [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--max-bytes N] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet]`, `doctor [--strict] [--json] [--fix]`, `version`, `help [command]`.
 
 자세한 내용은 [`docs/DISTRIBUTION.ko.md`](docs/DISTRIBUTION.ko.md)를 확인하세요.
 

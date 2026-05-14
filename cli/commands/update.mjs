@@ -2,6 +2,7 @@
 
 import { run, runSync } from "../lib/exec.mjs";
 import { header, info, success, warn } from "../lib/log.mjs";
+import { hasHelpFlag } from "../lib/help-flags.mjs";
 import {
   DESIGN_AI_HOME,
   CLAUDE_HOME,
@@ -11,7 +12,22 @@ import {
 } from "../lib/paths.mjs";
 import path from "node:path";
 
+function printHelp() {
+  console.log("Usage:  design-ai update\n");
+  console.log("Pulls the latest git source when DESIGN_AI_HOME is a clone, then re-runs install.sh.");
+  console.log("For npm installs, update the package with npm and then run install again.\n");
+  console.log("Environment:");
+  console.log("  DESIGN_AI_HOME=/path/to/source  Source repository or package root");
+  console.log("  CLAUDE_HOME=/path/to/.claude    Target Claude Code home directory");
+  console.log("  DESIGN_AI_PREFIX=mydesign-     Prefix for installed skill and command names");
+}
+
 export async function runUpdate(args) {
+  if (hasHelpFlag(args)) {
+    printHelp();
+    return;
+  }
+
   header("design-ai update");
   info(`Source: ${DESIGN_AI_HOME}`);
 

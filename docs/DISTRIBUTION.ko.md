@@ -58,7 +58,7 @@ design-ai show file   코퍼스 파일 또는 line range 출력; --lines N:M/--c
 design-ai audit       7개 repository audit 실행; --strict/--quiet 지원
 design-ai doctor      설치 및 runtime 상태 진단; --strict/--json/--fix 지원
 design-ai version     CLI + 플러그인 버전
-design-ai help        도움말
+design-ai help [cmd]  전체 또는 command별 도움말
 ```
 
 환경 변수로 오버라이드:

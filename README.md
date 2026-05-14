@@ -69,7 +69,7 @@ Any of the three: you get all 19 skills, 16 commands, and 4 agents under `~/.cla
 /design-from-brief Korean fintech for freelancers
 ```
 
-CLI commands: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `route <brief|--from-file file|--stdin|--list> [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--max-bytes N] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet]`, `doctor [--strict] [--json] [--fix]`, `version`, `help`.
+CLI commands: `design-ai install`, `update`, `uninstall`, `status`, `list [skills|commands|agents]`, `route <brief|--from-file file|--stdin|--list> [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--max-bytes N] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet]`, `doctor [--strict] [--json] [--fix]`, `version`, `help [command]`.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 

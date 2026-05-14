@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 import { run } from "../lib/exec.mjs";
 import { header, info, success } from "../lib/log.mjs";
+import { hasHelpFlag } from "../lib/help-flags.mjs";
 import {
   DESIGN_AI_HOME,
   CLAUDE_HOME,
@@ -24,7 +25,21 @@ function installerSubtitle() {
   }
 }
 
+function printHelp() {
+  console.log("Usage:  design-ai install\n");
+  console.log("Symlinks design-ai skills, slash commands, and agents into Claude Code.");
+  console.log("Uses CLAUDE_HOME and DESIGN_AI_PREFIX when provided.\n");
+  console.log("Environment:");
+  console.log("  CLAUDE_HOME=/path/to/.claude    Target Claude Code home directory");
+  console.log("  DESIGN_AI_PREFIX=mydesign-     Prefix for installed skill and command names");
+}
+
 export async function runInstall(args) {
+  if (hasHelpFlag(args)) {
+    printHelp();
+    return;
+  }
+
   header("design-ai installer", installerSubtitle());
 
   checkSourceLayout();

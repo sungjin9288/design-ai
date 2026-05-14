@@ -57,7 +57,7 @@ design-ai show file   Print a corpus file or line range; add --lines N:M, --cont
 design-ai audit       Run all seven repository audits; add --strict or --quiet
 design-ai doctor      Diagnose install and runtime health; add --strict, --json, or --fix
 design-ai version     CLI + plugin versions
-design-ai help        Show help
+design-ai help [cmd]  Show top-level or command-specific help
 ```
 
 Environment overrides:

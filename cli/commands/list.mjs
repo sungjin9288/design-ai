@@ -1,6 +1,7 @@
 // `design-ai list [domain]` — list skills / commands / agents from the plugin manifest.
 
 import { readFileSync } from "node:fs";
+import { hasHelpFlag } from "../lib/help-flags.mjs";
 import { header, info, dim } from "../lib/log.mjs";
 import { PLUGIN_MANIFEST, pathExists } from "../lib/paths.mjs";
 import { expectedValueMessage } from "../lib/suggest.mjs";
@@ -29,7 +30,22 @@ function printList(kind, items) {
   }
 }
 
+function printHelp() {
+  console.log("Usage:  design-ai list [skills|commands|agents]\n");
+  console.log("Lists catalog entries from the plugin manifest.");
+  console.log("Omit the kind to print all catalog sections.\n");
+  console.log("Arguments:");
+  console.log("  skills     List installed skill playbooks");
+  console.log("  commands   List slash command templates");
+  console.log("  agents     List bundled agent personas");
+}
+
 export async function runList(args) {
+  if (hasHelpFlag(args)) {
+    printHelp();
+    return;
+  }
+
   const filter = args[0]?.toLowerCase();
   const target = filter && LIST_KINDS.find(k => k.startsWith(filter));
 

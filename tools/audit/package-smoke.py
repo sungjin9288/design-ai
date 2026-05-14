@@ -233,6 +233,8 @@ def smoke_tarball(tarball: Path) -> None:
 
         run_plain([str(bin_path), "version"], env=smoke_env)
         run_plain([str(bin_path), "help"], env=smoke_env)
+        run_plain([str(bin_path), "help", "route"], env=smoke_env)
+        run_plain([str(bin_path), "install", "--help"], env=smoke_env)
         run_plain([str(bin_path), "list", "skills"], env=smoke_env)
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
@@ -250,6 +252,8 @@ def smoke_tarball(tarball: Path) -> None:
         run_plain(
             npm_exec_shell_cmd(
                 tarball,
+                "design-ai help route && "
+                "design-ai install --help && "
                 "design-ai install && "
                 "design-ai doctor --json > npx-doctor.json && "
                 "design-ai doctor --strict && "
