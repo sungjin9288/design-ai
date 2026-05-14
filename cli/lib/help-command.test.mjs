@@ -76,6 +76,17 @@ test("runHelp exposes usage output for every supported help topic", async () => 
   }
 });
 
+test("runHelp aliases match their canonical help topics", async () => {
+  for (const [alias, topic] of Object.entries(HELP_ALIASES)) {
+    assert.equal(HELP_TOPICS.includes(topic), true, `${topic} should be a help topic`);
+    assert.equal(HELP_TOPICS.includes(alias), false, `${alias} should stay an alias`);
+
+    const aliasOutput = await captureStdout(() => runHelp([alias]));
+    const topicOutput = await captureStdout(() => runHelp([topic]));
+    assert.equal(aliasOutput, topicOutput, `${alias} should resolve to help topic ${topic}`);
+  }
+});
+
 test("runHelp supports aliases and suggestions for help topics", async () => {
   const aliasOutput = await captureStdout(() => runHelp(["find"]));
   assert.match(aliasOutput, /Usage:\s+design-ai search <query>/);
