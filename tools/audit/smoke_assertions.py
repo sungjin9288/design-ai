@@ -92,6 +92,12 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
             f"help JSON after {context} is missing expected topic(s): {', '.join(missing_expected)}"
         )
 
+    unexpected_topics = [topic for topic in topics if topic not in EXPECTED_HELP_TOPICS]
+    if unexpected_topics:
+        raise SystemExit(
+            f"help JSON after {context} contains unexpected topic(s): {', '.join(unexpected_topics)}"
+        )
+
     return topics
 
 
@@ -207,6 +213,23 @@ def run_self_test() -> None:
             cmd=help_cmd,
         ),
         expected="missing expected topic",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps({
+                "topics": [
+                    *[
+                        {"topic": topic}
+                        for topic in EXPECTED_HELP_TOPICS
+                    ],
+                    {"topic": "new-topic"},
+                ],
+            }),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="unexpected topic",
         scope="smoke assertions",
     )
     expect_self_test_failure(
