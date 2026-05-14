@@ -19,27 +19,29 @@ import { runUninstall } from "./uninstall.mjs";
 import { runUpdate } from "./update.mjs";
 import { runVersion } from "./version.mjs";
 
-export const HELP_TOPICS = [
-  "install",
-  "update",
-  "uninstall",
-  "status",
-  "list",
-  "search",
-  "show",
-  "route",
-  "routes",
-  "prompt",
-  "pack",
-  "check",
-  "audit",
-  "doctor",
-  "examples",
-  "version",
-  "help",
+export const HELP_COMMANDS = [
+  { topic: "install", usage: "install", description: "Symlink design-ai into Claude Code (~/.claude)" },
+  { topic: "update", usage: "update", description: "Pull latest source + reinstall" },
+  { topic: "uninstall", usage: "uninstall", description: "Remove symlinks (keeps source files)" },
+  { topic: "status", usage: "status", description: "Show what's installed (use VERBOSE=1 for full list)" },
+  { topic: "list", usage: "list [skills|commands|agents]", description: "List catalog from the plugin manifest" },
+  { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--json]", description: "Search the local markdown corpus" },
+  { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
+  { topic: "route", usage: "route <brief|--from-file file|--stdin|--list> [--limit N]", description: "Recommend commands, skills, and knowledge; add --explain" },
+  { topic: "routes", usage: "routes [--json]", description: "List available route ids" },
+  { topic: "prompt", usage: "prompt <brief|--from-file file|--stdin> [--route id] [--out file]", description: "Generate a ready-to-use agent prompt" },
+  { topic: "pack", usage: "pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", description: "Generate prompt plus bounded context with summary" },
+  { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes]", description: "Check generated Markdown artifact quality; add --issues-only" },
+  { topic: "audit", usage: "audit [--strict] [--quiet]", description: "Run repository quality checks" },
+  { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
+  { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
+  { topic: "version", usage: "version", description: "Show CLI + plugin versions" },
+  { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];
 
-const HELP_ALIASES = {
+export const HELP_TOPICS = HELP_COMMANDS.map((command) => command.topic);
+
+export const HELP_ALIASES = {
   i: "install",
   upgrade: "update",
   u: "update",
@@ -101,43 +103,50 @@ function printRoutesHelp() {
 }
 
 function printHelpHelp() {
-  console.log("Usage:  design-ai help [command]\n");
+  console.log("Usage:  design-ai help [command]");
+  console.log("        design-ai help --json\n");
   console.log("Shows top-level CLI help, or command-specific help when a command is provided.\n");
+  console.log("Options:");
+  console.log("  --json  Emit machine-readable help topic catalog\n");
   console.log("Examples:");
   console.log("  design-ai help");
+  console.log("  design-ai help --json");
   console.log("  design-ai help route");
   console.log("  design-ai help prompt");
   console.log("  design-ai help doctor");
+}
+
+function aliasesForTopic(topic) {
+  return Object.entries(HELP_ALIASES)
+    .filter(([, target]) => target === topic)
+    .map(([alias]) => alias);
+}
+
+export function buildHelpCatalog() {
+  return {
+    usage: "design-ai help [command|--json]",
+    topics: HELP_COMMANDS.map(({ topic, usage, description }) => ({
+      topic,
+      usage: `design-ai ${usage}`,
+      description,
+      aliases: aliasesForTopic(topic),
+    })),
+    aliases: HELP_ALIASES,
+  };
+}
+
+function printHelpJson() {
+  console.log(JSON.stringify(buildHelpCatalog(), null, 2));
 }
 
 function printMainHelp() {
   header("design-ai", "Senior product designer for Claude Code");
 
   console.log(`Usage:  design-ai <command> [args]`);
-  console.log(`        design-ai help [command]\n`);
+  console.log(`        design-ai help [command|--json]\n`);
 
-  const cmds = [
-    ["install", "Symlink design-ai into Claude Code (~/.claude)"],
-    ["update", "Pull latest source + reinstall"],
-    ["uninstall", "Remove symlinks (keeps source files)"],
-    ["status", "Show what's installed (use VERBOSE=1 for full list)"],
-    ["list [skills|commands|agents]", "List catalog from the plugin manifest"],
-    ["search <query> [--dir kind] [--limit N] [--json]", "Search the local markdown corpus"],
-    ["show <file[:line]> [--lines N:M] [--context N] [--json]", "Print a corpus file or line range"],
-    ["route <brief|--from-file file|--stdin|--list> [--limit N]", "Recommend commands, skills, and knowledge; add --explain"],
-    ["routes [--json]", "List available route ids"],
-    ["prompt <brief|--from-file file|--stdin> [--route id] [--out file]", "Generate a ready-to-use agent prompt"],
-    ["pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", "Generate prompt plus bounded context with summary"],
-    ["check <artifact.md|--stdin|--examples> [--route id|--all-routes]", "Check generated Markdown artifact quality; add --issues-only"],
-    ["audit [--strict] [--quiet]", "Run repository quality checks"],
-    ["doctor [--strict] [--json] [--fix]", "Diagnose source, runtime, and install state"],
-    ["examples [query] [--route id] [--limit N] [--json]", "Find worked examples for a route or query"],
-    ["version", "Show CLI + plugin versions"],
-    ["help [command]", "Show top-level or command-specific help"],
-  ];
-
-  for (const [name, desc] of cmds) {
-    console.log(`  ${name.padEnd(70)} ${dim(desc)}`);
+  for (const { usage, description } of HELP_COMMANDS) {
+    console.log(`  ${usage.padEnd(70)} ${dim(description)}`);
   }
 
   console.log(`\nEnvironment overrides:`);
@@ -177,8 +186,13 @@ export async function runHelp(args) {
     return;
   }
 
+  if (args.length === 1 && args[0] === "--json") {
+    printHelpJson();
+    return;
+  }
+
   if (args.length > 1) {
-    throw new Error("Usage: design-ai help [command]");
+    throw new Error("Usage: design-ai help [command|--json]");
   }
 
   const topic = resolveHelpTopic(args[0]);

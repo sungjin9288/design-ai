@@ -15,7 +15,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -29,26 +31,6 @@ from smoke_assertions import (
     format_cmd,
     passing_doctor_report_json,
 )
-
-SMOKE_HELP_TOPICS = [
-    "install",
-    "update",
-    "uninstall",
-    "status",
-    "list",
-    "search",
-    "show",
-    "route",
-    "routes",
-    "prompt",
-    "pack",
-    "check",
-    "audit",
-    "doctor",
-    "examples",
-    "version",
-    "help",
-]
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -150,13 +132,52 @@ def assert_doctor_report_file(report_path: Path, *, context: str) -> None:
     )
 
 
-def help_topic_script() -> str:
-    return " && ".join(f"design-ai help {topic}" for topic in SMOKE_HELP_TOPICS)
+def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
+    assert_no_ansi(raw, cmd)
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse help JSON after {context}") from error
+
+    if not isinstance(catalog, dict):
+        raise SystemExit(f"help JSON after {context} is not an object")
+
+    raw_topics = catalog.get("topics")
+    if not isinstance(raw_topics, list):
+        raise SystemExit(f"help JSON after {context} does not contain a topics array")
+
+    topics: list[str] = []
+    for item in raw_topics:
+        topic = item.get("topic") if isinstance(item, dict) else None
+        if not isinstance(topic, str) or not topic:
+            raise SystemExit(f"help JSON after {context} contains an invalid topic entry")
+        topics.append(topic)
+
+    if len(set(topics)) != len(topics):
+        raise SystemExit(f"help JSON after {context} contains duplicate topics")
+
+    missing_required = sorted({"help", "install", "route"} - set(topics))
+    if missing_required:
+        raise SystemExit(
+            f"help JSON after {context} is missing required topic(s): {', '.join(missing_required)}"
+        )
+
+    return topics
+
+
+def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None) -> list[str]:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    return parse_help_topics(result.stdout, context="package smoke help catalog", cmd=cmd)
+
+
+def help_topic_script(topics: list[str]) -> str:
+    return " && ".join(f"design-ai help {shlex.quote(topic)}" for topic in topics)
 
 
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
+    help_cmd = ["design-ai", "help", "--json"]
     assert_doctor_json_clean(
         passing_doctor_report_json(),
         context=context,
@@ -206,6 +227,32 @@ def run_self_test() -> None:
             expected="failed to read doctor JSON",
             scope="package smoke",
         )
+
+    assert parse_help_topics(
+        json.dumps({
+            "topics": [
+                {"topic": "install"},
+                {"topic": "route"},
+                {"topic": "help"},
+            ],
+        }),
+        context=context,
+        cmd=help_cmd,
+    ) == ["install", "route", "help"]
+    expect_self_test_failure(
+        lambda: parse_help_topics("{", context=context, cmd=help_cmd),
+        expected="failed to parse help JSON",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps({"topics": [{"topic": "install"}]}),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="missing required topic",
+        scope="package smoke",
+    )
 
     print("Package smoke self-test passed")
 
@@ -257,7 +304,8 @@ def smoke_tarball(tarball: Path) -> None:
 
         run_plain([str(bin_path), "version"], env=smoke_env)
         run_plain([str(bin_path), "help"], env=smoke_env)
-        for topic in SMOKE_HELP_TOPICS:
+        help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
+        for topic in help_topics:
             run_plain([str(bin_path), "help", topic], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
@@ -278,7 +326,7 @@ def smoke_tarball(tarball: Path) -> None:
         run_plain(
             npm_exec_shell_cmd(
                 tarball,
-                help_topic_script() + " && "
+                help_topic_script(help_topics) + " && "
                 "design-ai routes --help && "
                 "design-ai install --help && "
                 "design-ai install && "

@@ -57,7 +57,7 @@ design-ai show file   Print a corpus file or line range; add --lines N:M, --cont
 design-ai audit       Run all seven repository audits; add --strict or --quiet
 design-ai doctor      Diagnose install and runtime health; add --strict, --json, or --fix
 design-ai version     CLI + plugin versions
-design-ai help [cmd]  Show top-level or command-specific help
+design-ai help [cmd|--json] Show top-level or command-specific help; --json emits a topic catalog
 ```
 
 Environment overrides:
@@ -93,7 +93,7 @@ The workflow:
 - Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
-- Installs the packed tarball into a temporary project, smoke-tests every `design-ai help <command>` topic, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
+- Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, smoke-tests every `design-ai help <command>` topic, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
 - After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`.
 
