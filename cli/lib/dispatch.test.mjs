@@ -3,6 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { HELP_ALIASES } from "../commands/help.mjs";
 import {
   CANONICAL_COMMANDS,
   runCommand,
@@ -35,6 +36,27 @@ test("suggestCommand ignores aliases and distant input", () => {
   assert.equal(suggestCommand("diag"), "");
   assert.equal(suggestCommand("xx"), "");
   assert.equal(suggestCommand("completely-unknown"), "");
+});
+
+test("help catalog aliases dispatch to their canonical commands", async () => {
+  for (const [alias, command] of Object.entries(HELP_ALIASES)) {
+    assert.equal(CANONICAL_COMMANDS.includes(command), true, `${command} should be canonical`);
+    assert.equal(CANONICAL_COMMANDS.includes(alias), false, `${alias} should stay an alias`);
+
+    const aliasOutput = await captureStdout(() => runCommand(alias, ["--help"]));
+    const canonicalOutput = await captureStdout(() => runCommand(command, ["--help"]));
+    assert.equal(aliasOutput, canonicalOutput, `${alias} should dispatch to ${command}`);
+  }
+});
+
+test("top-level flag aliases dispatch to version and help", async () => {
+  const versionOutput = await captureStdout(() => runCommand("version", []));
+  assert.equal(await captureStdout(() => runCommand("--version", [])), versionOutput);
+  assert.equal(await captureStdout(() => runCommand("-v", [])), versionOutput);
+
+  const helpOutput = await captureStdout(() => runCommand("help", []));
+  assert.equal(await captureStdout(() => runCommand("--help", [])), helpOutput);
+  assert.equal(await captureStdout(() => runCommand("-h", [])), helpOutput);
 });
 
 test("routes alias help uses routes-specific usage", async () => {
