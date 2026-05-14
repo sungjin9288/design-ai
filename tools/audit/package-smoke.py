@@ -22,9 +22,11 @@ import tempfile
 from pathlib import Path
 
 from smoke_assertions import (
+    EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_HELP_ALIASES,
     assert_doctor_json_clean,
     assert_no_ansi,
+    command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
@@ -253,6 +255,8 @@ def smoke_tarball(tarball: Path) -> None:
             run_plain([str(bin_path), "help", topic], env=smoke_env)
         for alias in EXPECTED_HELP_ALIASES:
             run_plain([str(bin_path), "help", alias], env=smoke_env)
+        for command in EXPECTED_COMMAND_ALIAS_COMMANDS:
+            run_plain([str(bin_path), *command], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
         run_plain([str(bin_path), "list", "skills"], env=smoke_env)
@@ -282,6 +286,7 @@ def smoke_tarball(tarball: Path) -> None:
                 tarball,
                 help_topic_script(npx_help_topics) + " && "
                 + help_alias_script() + " && "
+                + command_alias_script() + " && "
                 "design-ai routes --help && "
                 "design-ai install --help && "
                 "design-ai install && "

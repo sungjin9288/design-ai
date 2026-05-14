@@ -48,6 +48,28 @@ EXPECTED_HELP_ALIASES = {
     "ex": "examples",
     "v": "version",
 }
+EXPECTED_COMMAND_ALIAS_COMMANDS = (
+    ("i", "--help"),
+    ("upgrade", "--help"),
+    ("u", "--help"),
+    ("remove", "--help"),
+    ("rm", "--help"),
+    ("s", "--help"),
+    ("ls", "--help"),
+    ("find", "--help"),
+    ("cat", "--help"),
+    ("recommend", "--help"),
+    ("lint", "--help"),
+    ("a", "--help"),
+    ("diag", "--help"),
+    ("example", "--help"),
+    ("ex", "--help"),
+    ("v", "--help"),
+    ("--version",),
+    ("-v",),
+    ("--help",),
+    ("-h",),
+)
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -175,6 +197,21 @@ def help_topic_script(topics: list[str]) -> str:
 
 def help_alias_script() -> str:
     return help_topic_script(list(EXPECTED_HELP_ALIASES))
+
+
+def design_ai_command_script(commands: list[tuple[str, ...]] | tuple[tuple[str, ...], ...]) -> str:
+    if not commands:
+        raise SystemExit("design-ai command script requires at least one command")
+    rendered = []
+    for command in commands:
+        if not command or not all(isinstance(part, str) and part for part in command):
+            raise SystemExit("design-ai command script contains an invalid command")
+        rendered.append(" ".join(shlex.quote(part) for part in ("design-ai", *command)))
+    return " && ".join(rendered)
+
+
+def command_alias_script() -> str:
+    return design_ai_command_script(EXPECTED_COMMAND_ALIAS_COMMANDS)
 
 
 def assert_doctor_json_clean(
@@ -386,6 +423,41 @@ def run_self_test() -> None:
         "design-ai help example && "
         "design-ai help ex && "
         "design-ai help v"
+    )
+    assert design_ai_command_script([("find", "route topic"), ("cat", "knowledge/PRINCIPLES.md:1")]) == (
+        "design-ai find 'route topic' && design-ai cat knowledge/PRINCIPLES.md:1"
+    )
+    expect_self_test_failure(
+        lambda: design_ai_command_script([]),
+        expected="requires at least one command",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: design_ai_command_script([("",)]),
+        expected="invalid command",
+        scope="smoke assertions",
+    )
+    assert command_alias_script() == (
+        "design-ai i --help && "
+        "design-ai upgrade --help && "
+        "design-ai u --help && "
+        "design-ai remove --help && "
+        "design-ai rm --help && "
+        "design-ai s --help && "
+        "design-ai ls --help && "
+        "design-ai find --help && "
+        "design-ai cat --help && "
+        "design-ai recommend --help && "
+        "design-ai lint --help && "
+        "design-ai a --help && "
+        "design-ai diag --help && "
+        "design-ai example --help && "
+        "design-ai ex --help && "
+        "design-ai v --help && "
+        "design-ai --version && "
+        "design-ai -v && "
+        "design-ai --help && "
+        "design-ai -h"
     )
 
     print("Smoke assertions self-test passed")

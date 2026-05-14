@@ -29,6 +29,7 @@ from doctor_assertions import (
 )
 from smoke_assertions import (
     assert_no_ansi,
+    command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
@@ -178,6 +179,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 package_spec,
                 help_topic_script(help_topics) + " && "
                 + help_alias_script() + " && "
+                + command_alias_script() + " && "
                 "design-ai install && "
                 "design-ai doctor --json > doctor.json && "
                 "design-ai doctor --strict && "
