@@ -6,7 +6,7 @@ import {
 import path from "node:path";
 
 import { listExamples } from "./examples.mjs";
-import { ROUTES } from "./route.mjs";
+import { assertKnownRouteId, ROUTES } from "./route.mjs";
 
 const DEFAULT_EXAMPLE_LIMIT = 3;
 
@@ -322,12 +322,7 @@ function routeRequirementResult(routeId, requirement, text) {
 
 function routeRequirements(routeId) {
   if (!routeId) return [];
-
-  const route = ROUTES.find((item) => item.id === routeId);
-  if (!route) {
-    const available = ROUTES.map((item) => item.id).join(", ");
-    throw new Error(`Unknown route id: ${routeId}. Available routes: ${available}`);
-  }
+  assertKnownRouteId(routeId);
 
   return ROUTE_REQUIREMENTS[routeId] || [];
 }

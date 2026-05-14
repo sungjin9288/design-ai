@@ -7,6 +7,7 @@ import {
 import path from "node:path";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
+import { suggestNearest } from "./suggest.mjs";
 
 function exists(p) {
   try {
@@ -236,6 +237,28 @@ export const ROUTES = [
   },
 ];
 
+export function routeIds() {
+  return ROUTES.map((route) => route.id);
+}
+
+export function suggestRouteId(routeId, ids = routeIds()) {
+  return suggestNearest(routeId, ids);
+}
+
+export function unknownRouteIdMessage(routeId, ids = routeIds()) {
+  const suggestion = suggestRouteId(routeId, ids);
+  const lines = [`Unknown route id: ${routeId}.`];
+  if (suggestion) lines.push(`Did you mean \`${suggestion}\`?`);
+  lines.push(`Available routes: ${ids.join(", ")}`);
+  return lines.join("\n");
+}
+
+export function assertKnownRouteId(routeId, { allowEmpty = true } = {}) {
+  if (!routeId && allowEmpty) return;
+  if (ROUTES.some((route) => route.id === routeId)) return;
+  throw new Error(unknownRouteIdMessage(routeId));
+}
+
 export function parseRouteArgs(args) {
   const out = {
     briefParts: [],
@@ -407,11 +430,8 @@ export function routeCatalog({ sourceRoot }) {
 }
 
 export function routeById({ routeId, sourceRoot }) {
+  assertKnownRouteId(routeId, { allowEmpty: false });
   const route = ROUTES.find((item) => item.id === routeId);
-  if (!route) {
-    const available = ROUTES.map((item) => item.id).join(", ");
-    throw new Error(`Unknown route id: ${routeId}. Available routes: ${available}`);
-  }
 
   return {
     ...routeToResult(route, sourceRoot, [], { forced: true }),

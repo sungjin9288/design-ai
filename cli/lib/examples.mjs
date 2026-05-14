@@ -5,7 +5,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-import { ROUTES } from "./route.mjs";
+import { assertKnownRouteId } from "./route.mjs";
 import { buildPreview, walkMarkdown } from "./search.mjs";
 
 const DEFAULT_LIMIT = 12;
@@ -91,13 +91,6 @@ export function parseExamplesArgs(args) {
     ...out,
     query: out.queryParts.join(" ").trim(),
   };
-}
-
-function assertKnownRoute(routeId) {
-  if (!routeId) return;
-  if (ROUTES.some((route) => route.id === routeId)) return;
-  const available = ROUTES.map((route) => route.id).join(", ");
-  throw new Error(`Unknown route id: ${routeId}. Available routes: ${available}`);
 }
 
 function firstHeading(content, fallback) {
@@ -207,7 +200,7 @@ function isDraftExample(content) {
 }
 
 export function listExamples({ designAiPath, query = "", routeId = "", limit = DEFAULT_LIMIT }) {
-  assertKnownRoute(routeId);
+  assertKnownRouteId(routeId);
 
   const routeQuery = routeId ? ROUTE_EXAMPLE_QUERIES[routeId] || routeId : "";
   const effectiveQuery = [query, routeQuery].filter(Boolean).join(" ").trim();

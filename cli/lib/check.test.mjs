@@ -155,8 +155,8 @@ test("checkArtifactContent warns about missing route-specific evidence", () => {
 
 test("checkArtifactContent rejects unknown route ids", () => {
   assert.throws(
-    () => checkArtifactContent({ content: GOOD_ARTIFACT, routeId: "missing-route" }),
-    /Unknown route id: missing-route/,
+    () => checkArtifactContent({ content: GOOD_ARTIFACT, routeId: "component-spce" }),
+    /Did you mean `component-spec`\?/,
   );
 });
 

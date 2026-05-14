@@ -182,8 +182,8 @@ test("listExamples rejects unknown route ids", () => {
   const root = makeFixture();
   try {
     assert.throws(
-      () => listExamples({ designAiPath: root, routeId: "missing-route" }),
-      /Unknown route id/,
+      () => listExamples({ designAiPath: root, routeId: "component-spce" }),
+      /Did you mean `component-spec`\?/,
     );
   } finally {
     rmSync(root, { recursive: true, force: true });

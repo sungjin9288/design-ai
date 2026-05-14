@@ -16,6 +16,7 @@ import {
   routeCatalog,
   routeById,
   routeBrief,
+  suggestRouteId,
 } from "./route.mjs";
 
 function makeFixture() {
@@ -172,9 +173,20 @@ test("routeById returns a forced route and rejects unknown ids", () => {
       () => routeById({ routeId: "missing-route", sourceRoot: root }),
       /Unknown route id/,
     );
+    assert.throws(
+      () => routeById({ routeId: "component-spce", sourceRoot: root }),
+      /Did you mean `component-spec`\?/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("suggestRouteId suggests close route id typos", () => {
+  assert.equal(suggestRouteId("component-spce"), "component-spec");
+  assert.equal(suggestRouteId("desgin-review"), "design-review");
+  assert.equal(suggestRouteId("palette-from-brnad"), "palette-from-brand");
+  assert.equal(suggestRouteId("missing-route"), "");
 });
 
 test("routeBrief recommends component spec for component briefs", () => {
