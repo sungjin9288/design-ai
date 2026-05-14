@@ -95,7 +95,7 @@ The workflow:
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
 - Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, smoke-tests every `design-ai help <command>` topic, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
-- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`.
+- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including the `design-ai help --json` catalog and discovered help topics.
 
 ## NPM package contents
 

@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -32,6 +33,7 @@ from smoke_assertions import (
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
+    parse_help_topics,
     passing_doctor_report_json,
 )
 
@@ -107,6 +109,15 @@ def read_doctor_report(report_path: Path) -> dict:
         raise SystemExit(f"failed to parse registry smoke doctor JSON: {report_path}") from error
 
 
+def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None) -> list[str]:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    return parse_help_topics(result.stdout, context="registry smoke help catalog", cmd=cmd)
+
+
+def help_topic_script(topics: list[str]) -> str:
+    return " && ".join(f"design-ai help {shlex.quote(topic)}" for topic in topics)
+
+
 def wait_for_registry_package(
     package_spec: str,
     *,
@@ -163,10 +174,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         wait_for_registry_package(package_spec, retries=retries, delay=delay, env=env)
         run_plain(npm_exec_cmd(package_spec, "version"), cwd=npx_root, env=env)
         run_plain(npm_exec_cmd(package_spec, "help"), cwd=npx_root, env=env)
+        help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         doctor_json = npx_root / "doctor.json"
         run_plain(
             npm_exec_shell_cmd(
                 package_spec,
+                help_topic_script(help_topics) + " && "
                 "design-ai install && "
                 "design-ai doctor --json > doctor.json && "
                 "design-ai doctor --strict && "

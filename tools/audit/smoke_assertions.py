@@ -43,6 +43,39 @@ def doctor_report_json_missing(label_to_remove: str) -> str:
     })
 
 
+def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
+    assert_no_ansi(raw, cmd)
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse help JSON after {context}") from error
+
+    if not isinstance(catalog, dict):
+        raise SystemExit(f"help JSON after {context} is not an object")
+
+    raw_topics = catalog.get("topics")
+    if not isinstance(raw_topics, list):
+        raise SystemExit(f"help JSON after {context} does not contain a topics array")
+
+    topics: list[str] = []
+    for item in raw_topics:
+        topic = item.get("topic") if isinstance(item, dict) else None
+        if not isinstance(topic, str) or not topic:
+            raise SystemExit(f"help JSON after {context} contains an invalid topic entry")
+        topics.append(topic)
+
+    if len(set(topics)) != len(topics):
+        raise SystemExit(f"help JSON after {context} contains duplicate topics")
+
+    missing_required = sorted({"help", "install", "route"} - set(topics))
+    if missing_required:
+        raise SystemExit(
+            f"help JSON after {context} is missing required topic(s): {', '.join(missing_required)}"
+        )
+
+    return topics
+
+
 def assert_doctor_json_clean(
     raw: str,
     *,
@@ -78,6 +111,7 @@ def expect_self_test_failure(action: Callable[[], object], *, expected: str, sco
 def run_self_test() -> None:
     context = "smoke assertion self-test"
     cmd = ["design-ai", "doctor", "--json"]
+    help_cmd = ["design-ai", "help", "--json"]
     parse_error_message = f"failed to parse doctor JSON after {context}"
 
     assert_no_ansi("plain output", cmd)
@@ -112,6 +146,53 @@ def run_self_test() -> None:
             print_raw_on_failure=False,
         ),
         expected="Smoke assertions helper=missing",
+        scope="smoke assertions",
+    )
+
+    assert parse_help_topics(
+        json.dumps({
+            "topics": [
+                {"topic": "install"},
+                {"topic": "route"},
+                {"topic": "help"},
+            ],
+        }),
+        context=context,
+        cmd=help_cmd,
+    ) == ["install", "route", "help"]
+    expect_self_test_failure(
+        lambda: parse_help_topics("{", context=context, cmd=help_cmd),
+        expected="failed to parse help JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps([]), context=context, cmd=help_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps({"topics": [{"topic": "install"}]}),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="missing required topic",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps({
+                "topics": [
+                    {"topic": "install"},
+                    {"topic": "route"},
+                    {"topic": "help"},
+                    {"topic": "help"},
+                ],
+            }),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="duplicate topics",
         scope="smoke assertions",
     )
 

@@ -96,7 +96,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
 - 패킹된 tarball을 임시 프로젝트에 설치하고 `design-ai help --json` topic catalog를 읽은 뒤 모든 `design-ai help <command>` topic과 fake `CLAUDE_HOME` 기반 `design-ai install` smoke test 실행.
 - `--provenance`로 publish (npm provenance attestation).
-- publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test.
+- publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test하고, `design-ai help --json` catalog와 발견된 help topic도 함께 검증.
 - GitHub Release에는 같은 `npm pack` allowlist로 만든 tarball을 첨부.
 
 로컬에서 태그를 만들기 전에는 먼저 다음 core gate를 실행하세요:

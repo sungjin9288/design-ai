@@ -121,7 +121,7 @@ git push origin vX.Y.Z
 GitHub Actions takes over:
 - `audit.yml` re-runs all seven audits and unit tests.
 - `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, and publishes to npm with provenance.
-- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>` is verified from the public registry.
+- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, `design-ai help --json`, and discovered help topics are verified from the public registry.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
 - `docs.yml` re-builds and deploys the doc site.
 
