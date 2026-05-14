@@ -13,22 +13,22 @@ export async function runHelp(args) {
     ["uninstall", "Remove symlinks (keeps source files)"],
     ["status", "Show what's installed (use VERBOSE=1 for full list)"],
     ["list [skills|commands|agents]", "List catalog from the plugin manifest"],
-    ["search <query> [--limit N] [--json]", "Search the local markdown corpus"],
-    ["show <file[:line]> [--lines N:M]", "Print a corpus file or line range"],
-    ["route <brief|--from-file file|--list>", "Recommend commands, skills, and knowledge; add --explain"],
+    ["search <query> [--dir kind] [--limit N] [--json]", "Search the local markdown corpus"],
+    ["show <file[:line]> [--lines N:M] [--context N] [--json]", "Print a corpus file or line range"],
+    ["route <brief|--from-file file|--stdin|--list>", "Recommend commands, skills, and knowledge; add --explain"],
     ["routes [--json]", "List available route ids"],
-    ["prompt <brief|--from-file file> [--route id]", "Generate a ready-to-use agent prompt"],
-    ["pack <brief|--from-file file> [--route id]", "Generate prompt plus bounded context with summary"],
-    ["check <artifact.md|--examples> [--route id]", "Check generated Markdown artifact quality; add --issues-only"],
+    ["prompt <brief|--from-file file|--stdin> [--route id] [--out file]", "Generate a ready-to-use agent prompt"],
+    ["pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", "Generate prompt plus bounded context with summary"],
+    ["check <artifact.md|--stdin|--examples> [--route id|--all-routes]", "Check generated Markdown artifact quality; add --issues-only"],
     ["audit [--strict] [--quiet]", "Run repository quality checks"],
     ["doctor [--strict] [--json] [--fix]", "Diagnose source, runtime, and install state"],
-    ["examples [query] [--route id]", "Find worked examples for a route or query"],
+    ["examples [query] [--route id] [--limit N] [--json]", "Find worked examples for a route or query"],
     ["version", "Show CLI + plugin versions"],
     ["help", "Show this help"],
   ];
 
   for (const [name, desc] of cmds) {
-    console.log(`  ${name.padEnd(52)} ${dim(desc)}`);
+    console.log(`  ${name.padEnd(70)} ${dim(desc)}`);
   }
 
   console.log(`\nEnvironment overrides:`);

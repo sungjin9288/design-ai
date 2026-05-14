@@ -47,16 +47,16 @@ design-ai update      최신 소스 가져오기 + 재설치
 design-ai uninstall   심볼릭 링크 제거 (소스는 유지)
 design-ai status      설치된 항목 보기
 design-ai list [kind] 카탈로그 보기 (skills | commands | agents)
-design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--explain 지원
+design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--explain/--json 지원
 design-ai routes      prompt/pack --route에 사용할 route id 목록 보기
-design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out file/--from-file/--route id 지원
-design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--route id 지원
+design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out file/--from-file/--stdin/--json/--route id 지원
+design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--stdin/--max-bytes N/--json/--route id 지원
 design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--route id/--all-routes/--issues-only/--stdin/--strict/--json 지원
 design-ai examples q worked example 검색; --route id/--limit N/--json 지원
-design-ai search q    로컬 코퍼스 Markdown 검색
-design-ai show file   코퍼스 파일 또는 line range 출력
-design-ai audit       7개 repository audit 실행
-design-ai doctor      설치 및 runtime 상태 진단; --fix로 symlink 갱신
+design-ai search q    로컬 코퍼스 Markdown 검색; --dir kind/--limit N/--json 지원
+design-ai show file   코퍼스 파일 또는 line range 출력; --lines N:M/--context N/--json 지원
+design-ai audit       7개 repository audit 실행; --strict/--quiet 지원
+design-ai doctor      설치 및 runtime 상태 진단; --strict/--json/--fix 지원
 design-ai version     CLI + 플러그인 버전
 design-ai help        도움말
 ```

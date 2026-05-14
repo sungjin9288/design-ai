@@ -46,16 +46,16 @@ design-ai update      Pull latest source + reinstall
 design-ai uninstall   Remove symlinks (keeps source)
 design-ai status      Show what's installed
 design-ai list [kind] List catalog (skills | commands | agents)
-design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--explain
+design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--explain/--json
 design-ai routes      List available route ids for prompt/pack --route
-design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, or --route id
-design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, or --route id
+design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, --stdin, --json, or --route id
+design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, --stdin, --max-bytes N, --json, or --route id
 design-ai check file  Check generated Markdown artifact quality; add --examples, --route id, --all-routes, --issues-only, --stdin, --strict, or --json
 design-ai examples q Find worked examples; add --route id, --limit N, or --json
-design-ai search q    Search local corpus markdown
-design-ai show file   Print a corpus file or line range
-design-ai audit       Run all seven repository audits
-design-ai doctor      Diagnose install and runtime health; add --fix to refresh symlinks
+design-ai search q    Search local corpus markdown; add --dir kind, --limit N, or --json
+design-ai show file   Print a corpus file or line range; add --lines N:M, --context N, or --json
+design-ai audit       Run all seven repository audits; add --strict or --quiet
+design-ai doctor      Diagnose install and runtime health; add --strict, --json, or --fix
 design-ai version     CLI + plugin versions
 design-ai help        Show help
 ```
