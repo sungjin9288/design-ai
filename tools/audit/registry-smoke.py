@@ -41,6 +41,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_check_artifact_json_component_spec,
     assert_check_examples_json_component_spec,
+    assert_check_stdin_json_component_spec,
     assert_examples_json_route_hit,
     assert_no_ansi,
     assert_pack_json_component_spec,
@@ -105,6 +106,35 @@ def run_plain(
         cmd,
         cwd=cwd,
         env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    if result.returncode != 0:
+        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
+
+    assert_no_ansi(f"{result.stdout}\n{result.stderr}", cmd)
+    return result
+
+
+def run_plain_with_input(
+    cmd: list[str],
+    *,
+    input_text: str,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    print(f"$ {format_cmd(cmd)} < stdin", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        input=input_text,
         text=True,
         capture_output=True,
     )
@@ -215,6 +245,22 @@ def assert_check_artifact_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_artifact_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_stdin_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=passing_check_artifact_content(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_check_stdin_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def read_json_output_file(output_path: Path, *, context: str) -> str:
@@ -418,6 +464,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec check artifact",
+        )
+        assert_check_stdin_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "check",
+                "--stdin",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec check stdin",
         )
         doctor_json = npx_root / "doctor.json"
         run_plain(

@@ -37,6 +37,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_check_artifact_json_component_spec,
     assert_check_examples_json_component_spec,
+    assert_check_stdin_json_component_spec,
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
     assert_no_ansi,
@@ -116,6 +117,37 @@ def run_plain(
         cmd,
         cwd=cwd,
         env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    if result.returncode != 0:
+        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
+
+    output = f"{result.stdout}\n{result.stderr}"
+    assert_no_ansi(output, cmd)
+
+    return result
+
+
+def run_plain_with_input(
+    cmd: list[str],
+    *,
+    input_text: str,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    print(f"$ {format_cmd(cmd)} < stdin", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        input=input_text,
         text=True,
         capture_output=True,
     )
@@ -246,6 +278,22 @@ def assert_check_artifact_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_artifact_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_stdin_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=passing_check_artifact_content(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_check_stdin_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def read_json_output_file(output_path: Path, *, context: str) -> str:
@@ -495,6 +543,19 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin check artifact",
         )
+        assert_check_stdin_smoke(
+            [
+                str(bin_path),
+                "check",
+                "--stdin",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin check stdin",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -629,6 +690,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec check artifact",
+        )
+        assert_check_stdin_smoke(
+            npm_exec_cmd(
+                tarball,
+                "check",
+                "--stdin",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec check stdin",
         )
         run_plain(
             npm_exec_shell_cmd(

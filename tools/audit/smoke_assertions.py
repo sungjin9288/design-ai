@@ -1006,6 +1006,24 @@ def assert_check_artifact_json_component_spec(raw: str, *, context: str, cmd: li
     )
 
 
+def assert_check_stdin_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse check stdin JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"check stdin JSON after {context} is not an object")
+
+    assert_component_spec_check_report(
+        payload,
+        context=context,
+        label="check stdin JSON",
+        expected_file_suffix="stdin",
+    )
+
+
 def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -1788,6 +1806,50 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_check_artifact_json_component_spec("\x1b[31m{}", context=context, cmd=check_artifact_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    check_stdin_cmd = [
+        "design-ai",
+        "check",
+        "--stdin",
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--strict",
+        "--json",
+    ]
+    assert_check_stdin_json_component_spec(
+        passing_check_artifact_json(file_path="stdin"),
+        context=context,
+        cmd=check_stdin_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_check_stdin_json_component_spec("{", context=context, cmd=check_stdin_cmd),
+        expected="failed to parse check stdin JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_stdin_json_component_spec(json.dumps([]), context=context, cmd=check_stdin_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    stdin_wrong_file = json.loads(passing_check_artifact_json(file_path="stdin"))
+    stdin_wrong_file["filePath"] = EXPECTED_CHECK_ARTIFACT_NAME
+    expect_self_test_failure(
+        lambda: assert_check_stdin_json_component_spec(json.dumps(stdin_wrong_file), context=context, cmd=check_stdin_cmd),
+        expected="file path differs",
+        scope="smoke assertions",
+    )
+    stdin_failed_result = json.loads(passing_check_artifact_json(file_path="stdin"))
+    stdin_failed_result["results"][0]["level"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_check_stdin_json_component_spec(json.dumps(stdin_failed_result), context=context, cmd=check_stdin_cmd),
+        expected="result is not pass",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_stdin_json_component_spec("\x1b[31m{}", context=context, cmd=check_stdin_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
