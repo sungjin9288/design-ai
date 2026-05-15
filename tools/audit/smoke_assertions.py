@@ -71,6 +71,8 @@ EXPECTED_COMMAND_ALIAS_COMMANDS = (
     ("--help",),
     ("-h",),
 )
+EXPECTED_UNKNOWN_COMMAND = "docter"
+EXPECTED_UNKNOWN_COMMAND_SUGGESTION = "doctor"
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -80,6 +82,35 @@ def format_cmd(cmd: list[str]) -> str:
 def assert_no_ansi(output: str, cmd: list[str]) -> None:
     if ANSI_ESCAPE_RE.search(output):
         raise SystemExit(f"NO_COLOR command emitted ANSI escape sequence: {format_cmd(cmd)}")
+
+
+def passing_unknown_command_output() -> str:
+    return "\n".join([
+        f"Unknown command: {EXPECTED_UNKNOWN_COMMAND}",
+        f"Did you mean `design-ai {EXPECTED_UNKNOWN_COMMAND_SUGGESTION}`?",
+        "Run `design-ai help` for usage.",
+    ])
+
+
+def assert_unknown_command_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"unknown command after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_unknown_command_output().splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"unknown command after {context} missing expected output: {' | '.join(missing)}"
+        )
 
 
 def passing_doctor_report_json() -> str:
@@ -263,6 +294,42 @@ def run_self_test() -> None:
     assert_no_ansi("plain output", cmd)
     expect_self_test_failure(
         lambda: assert_no_ansi("\x1b[31mred", cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_unknown_command_failure(
+        passing_unknown_command_output(),
+        returncode=1,
+        context=context,
+        cmd=["design-ai", EXPECTED_UNKNOWN_COMMAND],
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_command_failure(
+            passing_unknown_command_output(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", EXPECTED_UNKNOWN_COMMAND],
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_command_failure(
+            f"Unknown command: {EXPECTED_UNKNOWN_COMMAND}",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", EXPECTED_UNKNOWN_COMMAND],
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_command_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", EXPECTED_UNKNOWN_COMMAND],
+        ),
         expected="ANSI escape",
         scope="smoke assertions",
     )

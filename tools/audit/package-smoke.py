@@ -24,8 +24,10 @@ from pathlib import Path
 from smoke_assertions import (
     EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_HELP_ALIASES,
+    EXPECTED_UNKNOWN_COMMAND,
     assert_doctor_json_clean,
     assert_no_ansi,
+    assert_unknown_command_failure,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -107,6 +109,37 @@ def run_plain(
 
     output = f"{result.stdout}\n{result.stderr}"
     assert_no_ansi(output, cmd)
+
+    return result
+
+
+def run_expected_failure(
+    cmd: list[str],
+    *,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+    context: str,
+) -> subprocess.CompletedProcess[str]:
+    print(f"$ {format_cmd(cmd)}", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    assert_unknown_command_failure(
+        f"{result.stdout}\n{result.stderr}",
+        returncode=result.returncode,
+        context=context,
+        cmd=cmd,
+    )
 
     return result
 
@@ -250,6 +283,11 @@ def smoke_tarball(tarball: Path) -> None:
 
         run_plain([str(bin_path), "version"], env=smoke_env)
         run_plain([str(bin_path), "help"], env=smoke_env)
+        run_expected_failure(
+            [str(bin_path), EXPECTED_UNKNOWN_COMMAND],
+            env=smoke_env,
+            context="package smoke installed bin unknown command",
+        )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
             run_plain([str(bin_path), "help", topic], env=smoke_env)
@@ -273,6 +311,12 @@ def smoke_tarball(tarball: Path) -> None:
             "NO_COLOR": "1",
         })
         run_plain(npm_exec_cmd(tarball, "version"), cwd=npx_root, env=npx_env)
+        run_expected_failure(
+            npm_exec_cmd(tarball, EXPECTED_UNKNOWN_COMMAND),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec unknown command",
+        )
         npx_help_topics = read_help_topics(
             npm_exec_cmd(tarball, "help", "--json"),
             cwd=npx_root,
