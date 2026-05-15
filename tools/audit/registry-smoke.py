@@ -50,7 +50,7 @@ from smoke_assertions import (
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_help_topic_output,
-    assert_install_lifecycle_output,
+    assert_install_doctor_lifecycle_output,
     assert_list_catalog_output,
     assert_main_help_output,
     assert_no_ansi,
@@ -262,7 +262,7 @@ def assert_install_lifecycle_smoke(
     context: str,
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_install_lifecycle_output(result.stdout, context=context, cmd=cmd)
+    assert_install_doctor_lifecycle_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:

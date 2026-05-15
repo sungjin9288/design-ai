@@ -113,6 +113,29 @@ EXPECTED_STATUS_OUTPUT_FRAGMENTS = (
     "Agents: 4 installed",
     "Slash commands: 16 installed",
 )
+EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
+    "design-ai doctor",
+    "Diagnose install and runtime health",
+    "Source:",
+    "Target:",
+    "Prefix:",
+    "Source layout: complete",
+    "Version alignment: 4.13.0",
+    "Manifest paths: 39 referenced artifact(s) exist",
+    "Node runtime:",
+    "Python runtime:",
+    "Audit runner: tools/audit/run-all.py found",
+    "Doctor assertions helper: tools/audit/doctor_assertions.py found",
+    "Smoke assertions helper: tools/audit/smoke_assertions.py found",
+    "Example QA audit: tools/audit/example-qa.py found",
+    "Package contents check: tools/audit/package-contents.py found",
+    "Package smoke check: tools/audit/package-smoke.py found",
+    "Registry smoke check: tools/audit/registry-smoke.py found",
+    "Installed skills: 19/19 installed",
+    "Installed agents: 4/4 installed",
+    "Installed slash commands: 16/16 installed",
+    f"Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
+)
 EXPECTED_UNINSTALL_OUTPUT_FRAGMENTS = (
     "design-ai uninstaller",
     "Uninstalling design-ai from",
@@ -1867,6 +1890,37 @@ def passing_version_output() -> str:
     ])
 
 
+def passing_doctor_strict_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai doctor",
+        "  Diagnose install and runtime health",
+        "",
+        "ℹ  Source: /tmp/design-ai",
+        "ℹ  Target: /tmp/claude-home",
+        "ℹ  Prefix: smoke-design-",
+        "",
+        "✓  Source layout: complete at /tmp/design-ai",
+        "✓  Version alignment: 4.13.0",
+        "✓  Manifest paths: 39 referenced artifact(s) exist",
+        "✓  Node runtime: v24.13.1",
+        "✓  Python runtime: Python 3.12.12",
+        "✓  Audit runner: tools/audit/run-all.py found",
+        "✓  Doctor assertions helper: tools/audit/doctor_assertions.py found",
+        "✓  Smoke assertions helper: tools/audit/smoke_assertions.py found",
+        "✓  Example QA audit: tools/audit/example-qa.py found",
+        "✓  Package contents check: tools/audit/package-contents.py found",
+        "✓  Package smoke check: tools/audit/package-smoke.py found",
+        "✓  Registry smoke check: tools/audit/registry-smoke.py found",
+        "✓  Installed skills: 19/19 installed",
+        "✓  Installed agents: 4/4 installed",
+        "✓  Installed slash commands: 16/16 installed",
+        "",
+        "ℹ  Summary: 15 pass, 0 warning(s), 0 failure(s)",
+        "",
+    ])
+
+
 def passing_install_output() -> str:
     return "\n".join([
         "",
@@ -1926,6 +1980,15 @@ def passing_uninstall_output() -> str:
 def passing_install_lifecycle_output() -> str:
     return "\n".join([
         passing_install_output(),
+        passing_status_output(),
+        passing_uninstall_output(),
+    ])
+
+
+def passing_install_doctor_lifecycle_output() -> str:
+    return "\n".join([
+        passing_install_output(),
+        passing_doctor_strict_output(),
         passing_status_output(),
         passing_uninstall_output(),
     ])
@@ -2053,6 +2116,19 @@ def assert_version_output(raw: str, *, context: str, cmd: list[str]) -> None:
     )
 
 
+def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"doctor strict output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS,
+        context=context,
+        label="doctor strict output",
+    )
+
+
 def assert_install_output(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if "Skipping " in raw or "non-symlink already exists" in raw:
@@ -2092,6 +2168,13 @@ def assert_uninstall_output(raw: str, *, context: str, cmd: list[str]) -> None:
 
 def assert_install_lifecycle_output(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_install_output(raw, context=context, cmd=cmd)
+    assert_status_output(raw, context=context, cmd=cmd)
+    assert_uninstall_output(raw, context=context, cmd=cmd)
+
+
+def assert_install_doctor_lifecycle_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_install_output(raw, context=context, cmd=cmd)
+    assert_doctor_strict_output(raw, context=context, cmd=cmd)
     assert_status_output(raw, context=context, cmd=cmd)
     assert_uninstall_output(raw, context=context, cmd=cmd)
 
@@ -3522,6 +3605,50 @@ def run_self_test() -> None:
         expected="unsupported command",
         scope="smoke assertions",
     )
+    doctor_strict_cmd = ["design-ai", "doctor", "--strict"]
+    assert_doctor_strict_output(
+        passing_doctor_strict_output(),
+        context=context,
+        cmd=doctor_strict_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_doctor_strict_output(
+            passing_doctor_report_json(),
+            context=context,
+            cmd=doctor_strict_cmd,
+        ),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_doctor_strict_output(
+            passing_doctor_strict_output().replace(
+                "Installed slash commands: 16/16 installed",
+                "Installed slash commands: 15/16 installed; 1 missing",
+            ),
+            context=context,
+            cmd=doctor_strict_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_doctor_strict_output(
+            passing_doctor_strict_output().replace(
+                "Summary: 15 pass, 0 warning(s), 0 failure(s)",
+                "Summary: 14 pass, 1 warning(s), 0 failure(s)",
+            ),
+            context=context,
+            cmd=doctor_strict_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_doctor_strict_output("\x1b[31mred", context=context, cmd=doctor_strict_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
     install_cmd = ["design-ai", "install"]
     assert_install_output(passing_install_output(), context=context, cmd=install_cmd)
     expect_self_test_failure(
@@ -3590,6 +3717,24 @@ def run_self_test() -> None:
             cmd=["sh", "-c", "design-ai install && design-ai status"],
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    assert_install_doctor_lifecycle_output(
+        passing_install_doctor_lifecycle_output(),
+        context=context,
+        cmd=[
+            "sh",
+            "-c",
+            "design-ai install && design-ai doctor --strict && design-ai status && design-ai uninstall",
+        ],
+    )
+    expect_self_test_failure(
+        lambda: assert_install_doctor_lifecycle_output(
+            passing_install_lifecycle_output(),
+            context=context,
+            cmd=["sh", "-c", "design-ai install && design-ai status && design-ai uninstall"],
+        ),
+        expected="doctor strict output",
         scope="smoke assertions",
     )
     assert help_topic_script(["install", "route"]) == (

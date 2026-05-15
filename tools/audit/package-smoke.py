@@ -42,10 +42,11 @@ from smoke_assertions import (
     assert_check_stdin_json_component_spec,
     assert_command_alias_output,
     assert_doctor_json_clean,
+    assert_doctor_strict_output,
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_help_topic_output,
-    assert_install_lifecycle_output,
+    assert_install_doctor_lifecycle_output,
     assert_install_output,
     assert_list_catalog_output,
     assert_main_help_output,
@@ -229,6 +230,17 @@ def assert_doctor_clean(bin_path: Path, env: dict[str, str]) -> None:
     )
 
 
+def assert_doctor_strict_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_doctor_strict_output(result.stdout, context=context, cmd=cmd)
+
+
 def assert_doctor_report_file(report_path: Path, *, context: str) -> None:
     try:
         raw = report_path.read_text(encoding="utf-8")
@@ -311,7 +323,7 @@ def assert_install_lifecycle_smoke(
     context: str,
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_install_lifecycle_output(result.stdout, context=context, cmd=cmd)
+    assert_install_doctor_lifecycle_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1133,7 +1145,11 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin install",
         )
         assert_doctor_clean(bin_path, smoke_env)
-        run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
+        assert_doctor_strict_smoke(
+            [str(bin_path), "doctor", "--strict"],
+            env=smoke_env,
+            context="package smoke installed bin doctor strict",
+        )
         assert_status_smoke(
             [str(bin_path), "status"],
             env=smoke_env,
