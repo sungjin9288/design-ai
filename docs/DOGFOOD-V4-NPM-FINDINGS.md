@@ -15,11 +15,11 @@ npm run package:smoke
 - reuses `tools/audit/smoke_assertions.py` for doctor JSON parsing, ANSI detection, and required-check assertions
 - installs the packed `.tgz` into a fresh temp npm project
 - verifies `node_modules/.bin/design-ai` exists
-- runs `version`, top-level `help`, `help --json`, every expected public `design-ai help <command>` topic, every documented help alias, every documented command alias, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, `install`, `doctor --json`, `doctor --strict`, `status`, and `uninstall`
+- runs `version`, top-level `help`, `help --json`, every expected public `design-ai help <command>` topic with usage assertions, every documented help alias, every documented command alias, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, `install`, `doctor --json`, `doctor --strict`, `status`, and `uninstall`
 - asserts every required `doctor --json` package/release/install check reports `PASS`
 - uses a fake `CLAUDE_HOME` and `DESIGN_AI_PREFIX=smoke-design-`
 - sets `NO_COLOR=1` and fails if wrapped commands emit ANSI escape sequences
-- runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own `help --json` catalog read plus help, command alias, list catalog, and corpus discovery smoke
+- runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own `help --json` catalog read plus help topic usage, help alias, list catalog, and corpus discovery smoke
 - asserts the `doctor --json` required PASS set for both direct install and one-shot `npm exec` install
 
 The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the doctor, shared smoke, package smoke, and registry smoke assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
@@ -118,11 +118,11 @@ The package intentionally excludes test files. Adopter health is covered by `too
 This dogfood approximates what a clean adopter sees:
 
 1. Install the packed CLI package.
-2. Run `design-ai version`, top-level `help`, `help --json`, every expected command-specific help topic from the catalog, every documented help alias, every documented command alias, all three `list` catalog domains, and human / JSON `search`, `show`, and `examples`.
+2. Run `design-ai version`, top-level `help`, `help --json`, every expected command-specific help topic from the catalog with usage assertions, every documented help alias, every documented command alias, all three `list` catalog domains, and human / JSON `search`, `show`, and `examples`.
 3. Run `design-ai install` against an empty Claude Code home.
 4. Run `design-ai doctor --strict` and `design-ai status`.
 5. Run `design-ai uninstall` and confirm the symlink farm is removed.
-6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including an independent `help --json` catalog read, documented help and command alias smoke, list catalog smoke, corpus discovery smoke, and the same `doctor --json` PASS assertions.
+6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including an independent `help --json` catalog read, documented help topic usage and alias smoke, list catalog smoke, corpus discovery smoke, and the same `doctor --json` PASS assertions.
 
 The path confirms package contents, bin shim creation, one-shot npm execution, version alignment, machine-readable help-topic discoverability, manifest catalog enumeration, human-readable corpus discovery, symlink creation, symlink cleanup, Korean character handling in catalog output, and no-color smoke logs.
 

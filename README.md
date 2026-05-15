@@ -220,7 +220,7 @@ All 7 pass on every commit to `main`.
 ## Contributing
 
 See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
-- Run `npm run release:check` before release PRs or tags. It covers CLI unit tests, 7 audits, whitespace checks, package contents checks, `npm run release:self-test`, and packed-tarball smoke including command-specific help topics.
+- Run `npm run release:check` before release PRs or tags. It covers CLI unit tests, 7 audits, whitespace checks, package contents checks, `npm run release:self-test`, and packed-tarball smoke including command-specific help topic output.
 - After npm publish completes, run `npm run registry:smoke` to verify the public `npm exec --package` install path, including the help topic catalog, all three `list` catalog domains, and human / JSON corpus discovery output.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.
 - Skill PLAYBOOKs include a verification phase checklist.

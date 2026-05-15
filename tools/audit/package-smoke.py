@@ -43,6 +43,7 @@ from smoke_assertions import (
     assert_doctor_json_clean,
     assert_examples_human_output,
     assert_examples_json_route_hit,
+    assert_help_topic_output,
     assert_list_catalog_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
@@ -244,6 +245,18 @@ def read_help_topics(
 ) -> list[str]:
     result = run_plain(cmd, cwd=cwd, env=env)
     return parse_help_topics(result.stdout, context=context, cmd=cmd)
+
+
+def assert_help_topic_smoke(
+    cmd: list[str],
+    *,
+    topic: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_help_topic_output(result.stdout, topic=topic, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -670,9 +683,19 @@ def smoke_tarball(tarball: Path) -> None:
         )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
-            run_plain([str(bin_path), "help", topic], env=smoke_env)
+            assert_help_topic_smoke(
+                [str(bin_path), "help", topic],
+                topic=topic,
+                env=smoke_env,
+                context=f"package smoke installed bin help topic {topic}",
+            )
         for alias in EXPECTED_HELP_ALIASES:
-            run_plain([str(bin_path), "help", alias], env=smoke_env)
+            assert_help_topic_smoke(
+                [str(bin_path), "help", alias],
+                topic=alias,
+                env=smoke_env,
+                context=f"package smoke installed bin help alias {alias}",
+            )
         for command in EXPECTED_COMMAND_ALIAS_COMMANDS:
             run_plain([str(bin_path), *command], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
@@ -1067,6 +1090,22 @@ def smoke_tarball(tarball: Path) -> None:
         )
         if npx_help_topics != help_topics:
             raise SystemExit("package smoke npm exec help catalog differs from installed bin catalog")
+        for topic in npx_help_topics:
+            assert_help_topic_smoke(
+                npm_exec_cmd(tarball, "help", topic),
+                topic=topic,
+                cwd=npx_root,
+                env=npx_env,
+                context=f"package smoke npm exec help topic {topic}",
+            )
+        for alias in EXPECTED_HELP_ALIASES:
+            assert_help_topic_smoke(
+                npm_exec_cmd(tarball, "help", alias),
+                topic=alias,
+                cwd=npx_root,
+                env=npx_env,
+                context=f"package smoke npm exec help alias {alias}",
+            )
         for kind in ("skills", "commands", "agents"):
             assert_list_smoke(
                 npm_exec_cmd(tarball, "list", kind),

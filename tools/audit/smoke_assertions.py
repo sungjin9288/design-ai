@@ -49,6 +49,25 @@ EXPECTED_HELP_ALIASES = {
     "ex": "examples",
     "v": "version",
 }
+EXPECTED_HELP_TOPIC_FRAGMENTS = {
+    "install": ("Usage:", "design-ai install"),
+    "update": ("Usage:", "design-ai update"),
+    "uninstall": ("Usage:", "design-ai uninstall"),
+    "status": ("Usage:", "design-ai status"),
+    "list": ("Usage:", "design-ai list [skills|commands|agents]"),
+    "search": ("Usage:", "design-ai search <query> [--limit N] [--dir kind] [--json]"),
+    "show": ("Usage:", "design-ai show <file[:line|start-end]> [--lines N:M] [--context N] [--json]"),
+    "route": ("Usage:", "design-ai route <brief>", "design-ai route --list [--json]"),
+    "routes": ("Usage:", "design-ai routes [--json]", "Equivalent to: design-ai route --list"),
+    "prompt": ("Usage:", "design-ai prompt <brief> [--route id] [--json] [--out file] [--force]"),
+    "pack": ("Usage:", "design-ai pack <brief> [--route id] [--max-bytes N] [--json] [--out file] [--force]"),
+    "check": ("Usage:", "design-ai check <artifact.md>", "design-ai check --examples --all-routes"),
+    "audit": ("Usage:", "design-ai audit [--strict] [--quiet]"),
+    "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
+    "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
+    "version": ("Usage:", "design-ai version"),
+    "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
+}
 EXPECTED_COMMAND_ALIAS_COMMANDS = (
     ("i", "--help"),
     ("upgrade", "--help"),
@@ -1751,6 +1770,17 @@ def passing_help_catalog_json() -> str:
     })
 
 
+def passing_help_topic_output(topic: str = "search") -> str:
+    canonical_topic = EXPECTED_HELP_ALIASES.get(topic, topic)
+    fragments = EXPECTED_HELP_TOPIC_FRAGMENTS[canonical_topic]
+    return "\n".join([
+        " ".join(fragments[:2]),
+        "",
+        *(fragments[2:] or ("Options:",)),
+        "",
+    ])
+
+
 def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     assert_no_ansi(raw, cmd)
     try:
@@ -1823,6 +1853,26 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
         raise SystemExit(f"help JSON after {context} topic aliases differ from expected aliases")
 
     return topics
+
+
+def assert_help_topic_output(raw: str, *, topic: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"help topic output for {topic} after {context} looks like JSON output")
+    if "Unknown help topic" in raw:
+        raise SystemExit(f"help topic output for {topic} after {context} reported an unknown topic")
+
+    canonical_topic = EXPECTED_HELP_ALIASES.get(topic, topic)
+    fragments = EXPECTED_HELP_TOPIC_FRAGMENTS.get(canonical_topic)
+    if fragments is None:
+        raise SystemExit(f"help topic output after {context} cannot validate unsupported topic: {topic}")
+
+    assert_contains_fragments(
+        raw,
+        fragments,
+        context=context,
+        label=f"help topic output for {topic}",
+    )
 
 
 def help_topic_script(topics: list[str]) -> str:
@@ -3100,6 +3150,64 @@ def run_self_test() -> None:
             cmd=help_cmd,
         ),
         expected="duplicate topics",
+        scope="smoke assertions",
+    )
+    help_topic_cmd = ["design-ai", "help", "search"]
+    assert_help_topic_output(
+        passing_help_topic_output("search"),
+        topic="search",
+        context=context,
+        cmd=help_topic_cmd,
+    )
+    assert_help_topic_output(
+        passing_help_topic_output("find"),
+        topic="find",
+        context=context,
+        cmd=["design-ai", "help", "find"],
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_catalog_json(),
+            topic="search",
+            context=context,
+            cmd=help_topic_cmd,
+        ),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            "Unknown help topic: search",
+            topic="search",
+            context=context,
+            cmd=help_topic_cmd,
+        ),
+        expected="reported an unknown topic",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("search").replace("design-ai search <query>", "design-ai search"),
+            topic="search",
+            context=context,
+            cmd=help_topic_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output("\x1b[31mred", topic="search", context=context, cmd=help_topic_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("search"),
+            topic="unknown",
+            context=context,
+            cmd=["design-ai", "help", "unknown"],
+        ),
+        expected="unsupported topic",
         scope="smoke assertions",
     )
     assert help_topic_script(["install", "route"]) == (

@@ -33,6 +33,7 @@ from smoke_assertions import (
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
+    EXPECTED_HELP_ALIASES,
     EXPECTED_PACK_MAX_BYTES,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
@@ -46,6 +47,7 @@ from smoke_assertions import (
     assert_check_stdin_json_component_spec,
     assert_examples_human_output,
     assert_examples_json_route_hit,
+    assert_help_topic_output,
     assert_list_catalog_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
@@ -211,6 +213,18 @@ def read_doctor_report(report_path: Path) -> dict:
 def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None) -> list[str]:
     result = run_plain(cmd, cwd=cwd, env=env)
     return parse_help_topics(result.stdout, context="registry smoke help catalog", cmd=cmd)
+
+
+def assert_help_topic_smoke(
+    cmd: list[str],
+    *,
+    topic: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_help_topic_output(result.stdout, topic=topic, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -592,6 +606,22 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             assertion=assert_unknown_list_domain_failure,
         )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
+        for topic in help_topics:
+            assert_help_topic_smoke(
+                npm_exec_cmd(package_spec, "help", topic),
+                topic=topic,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec help topic {topic}",
+            )
+        for alias in EXPECTED_HELP_ALIASES:
+            assert_help_topic_smoke(
+                npm_exec_cmd(package_spec, "help", alias),
+                topic=alias,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec help alias {alias}",
+            )
         for kind in ("skills", "commands", "agents"):
             assert_list_smoke(
                 npm_exec_cmd(package_spec, "list", kind),
