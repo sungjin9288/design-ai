@@ -6,11 +6,14 @@ import json
 import re
 import shlex
 import sys
+import tempfile
+from pathlib import Path
 from typing import Callable
 
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+OUTPUT_FORCE_OVERWRITE_SENTINEL = "__design-ai-smoke-force-overwrite-sentinel__"
 EXPECTED_HELP_TOPICS = (
     "install",
     "update",
@@ -468,6 +471,24 @@ def assert_output_write_success(raw: str, *, context: str, cmd: list[str], expec
         context=context,
         label="output write success",
     )
+
+
+def seed_force_overwrite_target(output_path: Path, *, context: str, cmd: list[str]) -> None:
+    if "--force" not in cmd:
+        raise SystemExit(f"forced output overwrite after {context} requires --force: {format_cmd(cmd)}")
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(f"{OUTPUT_FORCE_OVERWRITE_SENTINEL}\n", encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to seed forced output overwrite target after {context}: {output_path}") from error
+
+
+def assert_force_overwrite_replaced(raw: str, *, context: str, cmd: list[str], expected_path: str) -> None:
+    if OUTPUT_FORCE_OVERWRITE_SENTINEL in raw:
+        raise SystemExit(
+            "forced output overwrite after "
+            f"{context} did not replace sentinel at {expected_path}: {format_cmd(cmd)}"
+        )
 
 
 def passing_doctor_report_json() -> str:
@@ -2537,6 +2558,44 @@ def run_self_test() -> None:
             expected_path="/tmp/output.json",
         ),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    force_cmd = [
+        "design-ai",
+        "prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "--out",
+        "/tmp/output.json",
+        "--force",
+    ]
+    with tempfile.TemporaryDirectory(prefix="design-ai-smoke-force-overwrite-self-test-") as tmp:
+        force_output_path = Path(tmp) / "nested" / "output.json"
+        seed_force_overwrite_target(force_output_path, context=context, cmd=force_cmd)
+        if force_output_path.read_text(encoding="utf-8") != f"{OUTPUT_FORCE_OVERWRITE_SENTINEL}\n":
+            raise SystemExit("smoke assertions self-test failed to seed forced overwrite sentinel")
+    assert_force_overwrite_replaced(
+        passing_prompt_json(),
+        context=context,
+        cmd=force_cmd,
+        expected_path="/tmp/output.json",
+    )
+    expect_self_test_failure(
+        lambda: seed_force_overwrite_target(
+            Path("/tmp/output.json"),
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+        ),
+        expected="requires --force",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_force_overwrite_replaced(
+            f"{OUTPUT_FORCE_OVERWRITE_SENTINEL}\n",
+            context=context,
+            cmd=force_cmd,
+            expected_path="/tmp/output.json",
+        ),
+        expected="did not replace sentinel",
         scope="smoke assertions",
     )
 
