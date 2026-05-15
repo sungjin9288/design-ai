@@ -113,6 +113,7 @@ EXPECTED_PROMPT_FILES = (
     EXPECTED_EXAMPLES_HIT,
 )
 EXPECTED_PACK_MAX_BYTES = 1000
+EXPECTED_AUDIT_COUNT = 7
 EXPECTED_CHECK_ARTIFACT_NAME = "component-artifact.md"
 EXPECTED_CHECK_EXAMPLES_LIMIT = 1
 EXPECTED_CHECK_RESULT_IDS = (
@@ -422,6 +423,24 @@ def passing_pack_json() -> str:
             f"### {EXPECTED_EXAMPLES_HIT}",
         ]),
     })
+
+
+def passing_audit_strict_quiet_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai audit",
+        "  Run repository quality checks",
+        "",
+        "ℹ  Source: /tmp/design-ai",
+        "ℹ  Runner: tools/audit/run-all.py",
+        "",
+        "",
+        f"Running {EXPECTED_AUDIT_COUNT} audits from tools/audit/",
+        "",
+        "",
+        "────────────────────────────────────────────────────────────",
+        f"✓ All {EXPECTED_AUDIT_COUNT} audits passed in 2.00s",
+    ])
 
 
 def passing_check_artifact_content() -> str:
@@ -933,6 +952,29 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
     for fragment in expected_markdown_fragments:
         if fragment not in markdown:
             raise SystemExit(f"pack JSON after {context} markdown is missing expected content: {fragment}")
+
+
+def assert_audit_strict_quiet_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    required_fragments = (
+        "design-ai audit",
+        "Run repository quality checks",
+        "Runner: tools/audit/run-all.py",
+        f"Running {EXPECTED_AUDIT_COUNT} audits from tools/audit/",
+        f"All {EXPECTED_AUDIT_COUNT} audits passed",
+    )
+    missing = [fragment for fragment in required_fragments if fragment not in raw]
+    if missing:
+        raise SystemExit(
+            f"audit output after {context} missing expected content: {' | '.join(missing)}"
+        )
+
+    if not re.search(rf"All {EXPECTED_AUDIT_COUNT} audits passed in \d+(?:\.\d+)?s", raw):
+        raise SystemExit(f"audit output after {context} success summary differs from expected format")
+
+    if re.search(r"\bfailed\b|audit\(s\) failed|✗", raw, flags=re.IGNORECASE):
+        raise SystemExit(f"audit output after {context} reports failures")
 
 
 def assert_component_spec_check_report(
@@ -1660,6 +1702,44 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_pack_json_component_spec("\x1b[31m{}", context=context, cmd=pack_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    audit_cmd = ["design-ai", "audit", "--strict", "--quiet"]
+    assert_audit_strict_quiet_output(passing_audit_strict_quiet_output(), context=context, cmd=audit_cmd)
+    expect_self_test_failure(
+        lambda: assert_audit_strict_quiet_output(
+            passing_audit_strict_quiet_output().replace("Runner: tools/audit/run-all.py", "Runner: missing.py"),
+            context=context,
+            cmd=audit_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_strict_quiet_output(
+            passing_audit_strict_quiet_output().replace(
+                f"✓ All {EXPECTED_AUDIT_COUNT} audits passed in 2.00s",
+                f"✗ 1/{EXPECTED_AUDIT_COUNT} audit(s) failed in 2.00s",
+            ),
+            context=context,
+            cmd=audit_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_strict_quiet_output(
+            passing_audit_strict_quiet_output().replace("2.00s", "eventually"),
+            context=context,
+            cmd=audit_cmd,
+        ),
+        expected="success summary differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_strict_quiet_output("\x1b[31m{}", context=context, cmd=audit_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

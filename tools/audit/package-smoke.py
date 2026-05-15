@@ -35,6 +35,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
@@ -252,6 +253,11 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_check_examples_smoke(
@@ -556,6 +562,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin check stdin",
         )
+        assert_audit_smoke(
+            [str(bin_path), "audit", "--strict", "--quiet"],
+            env=smoke_env,
+            context="package smoke installed bin audit strict",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -704,6 +715,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec check stdin",
+        )
+        assert_audit_smoke(
+            npm_exec_cmd(tarball, "audit", "--strict", "--quiet"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec audit strict",
         )
         run_plain(
             npm_exec_shell_cmd(
