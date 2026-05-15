@@ -176,6 +176,17 @@ EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
 EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
 EXPECTED_UNKNOWN_ROUTE_ID = "component-spce"
 EXPECTED_UNKNOWN_ROUTE_ID_SUGGESTION = "component-spec"
+EXPECTED_UNKNOWN_OPTION_SMOKES = (
+    ("route", "--limt", "--limit"),
+    ("prompt", "--rout", "--route"),
+    ("pack", "--max-byte", "--max-bytes"),
+    ("check", "--rout", "--route"),
+    ("examples", "--rouet", "--route"),
+    ("search", "--dr", "--dir"),
+    ("show", "--line", "--lines"),
+    ("audit", "--strct", "--strict"),
+    ("doctor", "--jsn", "--json"),
+)
 EXPECTED_LIST_CATALOG = {
     "skills": (
         "design-system-builder",
@@ -346,6 +357,35 @@ def passing_unknown_route_id_output() -> str:
     ])
 
 
+def passing_unknown_option_output(command_name: str, option: str, suggestion: str) -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} Unknown {command_name} option: {option}",
+        f"Did you mean `{suggestion}`?",
+    ])
+
+
+def unknown_option_args(command_name: str, option: str) -> list[str]:
+    if command_name == "route":
+        return ["route", EXPECTED_ROUTE_BRIEF, option, "1", "--json"]
+    if command_name == "prompt":
+        return ["prompt", EXPECTED_ROUTE_BRIEF, option, EXPECTED_ROUTE_ID]
+    if command_name == "pack":
+        return ["pack", EXPECTED_ROUTE_BRIEF, option, str(EXPECTED_PACK_MAX_BYTES)]
+    if command_name == "check":
+        return ["check", "--examples", option, EXPECTED_ROUTE_ID]
+    if command_name == "examples":
+        return ["examples", option, EXPECTED_EXAMPLES_ROUTE]
+    if command_name == "search":
+        return ["search", EXPECTED_CORPUS_SEARCH_QUERY, option, "knowledge"]
+    if command_name == "show":
+        return ["show", EXPECTED_CORPUS_SHOW_TARGET, option, "1:2"]
+    if command_name == "audit":
+        return ["audit", option]
+    if command_name == "doctor":
+        return ["doctor", option]
+    raise SystemExit(f"unsupported unknown option smoke command: {command_name}")
+
+
 def passing_list_catalog_output(kind: str = "skills") -> str:
     items = EXPECTED_LIST_CATALOG[kind]
     return "\n".join([
@@ -457,6 +497,30 @@ def assert_unknown_route_id_failure(
     if missing:
         raise SystemExit(
             f"unknown route id after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_unknown_option_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+    command_name: str,
+    option: str,
+    suggestion: str,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"unknown {command_name} option after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_unknown_option_output(command_name, option, suggestion).splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"unknown {command_name} option after {context} missing expected output: {' | '.join(missing)}"
         )
 
 
@@ -2480,6 +2544,61 @@ def run_self_test() -> None:
             cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID],
         ),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    for command_name, option, suggestion in EXPECTED_UNKNOWN_OPTION_SMOKES:
+        option_cmd = ["design-ai", *unknown_option_args(command_name, option)]
+        assert_unknown_option_failure(
+            passing_unknown_option_output(command_name, option, suggestion),
+            returncode=1,
+            context=context,
+            cmd=option_cmd,
+            command_name=command_name,
+            option=option,
+            suggestion=suggestion,
+        )
+    expect_self_test_failure(
+        lambda: assert_unknown_option_failure(
+            passing_unknown_option_output("route", "--limt", "--limit"),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", *unknown_option_args("route", "--limt")],
+            command_name="route",
+            option="--limt",
+            suggestion="--limit",
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_option_failure(
+            f"{EXPECTED_ERROR_PREFIX} Unknown route option: --limt",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", *unknown_option_args("route", "--limt")],
+            command_name="route",
+            option="--limt",
+            suggestion="--limit",
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_option_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", *unknown_option_args("route", "--limt")],
+            command_name="route",
+            option="--limt",
+            suggestion="--limit",
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: unknown_option_args("missing", "--bad"),
+        expected="unsupported unknown option smoke command",
         scope="smoke assertions",
     )
 

@@ -41,6 +41,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    EXPECTED_UNKNOWN_OPTION_SMOKES,
     EXPECTED_UNKNOWN_ROUTE_ID,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
@@ -73,6 +74,7 @@ from smoke_assertions import (
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
+    assert_unknown_option_failure,
     assert_unknown_route_id_failure,
     assert_version_output,
     command_alias_script,
@@ -85,6 +87,7 @@ from smoke_assertions import (
     passing_doctor_report_json,
     passing_check_artifact_content,
     seed_force_overwrite_target,
+    unknown_option_args,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -205,6 +208,33 @@ def run_expected_failure(
     )
 
     return result
+
+
+def assert_unknown_option_smoke(
+    cmd: list[str],
+    *,
+    command_name: str,
+    option: str,
+    suggestion: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=lambda raw, *, returncode, context, cmd: assert_unknown_option_failure(
+            raw,
+            returncode=returncode,
+            context=context,
+            cmd=cmd,
+            command_name=command_name,
+            option=option,
+            suggestion=suggestion,
+        ),
+    )
 
 
 def read_doctor_report(report_path: Path) -> dict:
@@ -713,6 +743,16 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 env=env,
                 context=f"registry smoke npm exec unknown route id {label}",
                 assertion=assert_unknown_route_id_failure,
+            )
+        for command_name, option, suggestion in EXPECTED_UNKNOWN_OPTION_SMOKES:
+            assert_unknown_option_smoke(
+                npm_exec_cmd(package_spec, *unknown_option_args(command_name, option)),
+                command_name=command_name,
+                option=option,
+                suggestion=suggestion,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec unknown {command_name} option",
             )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         for topic in help_topics:
