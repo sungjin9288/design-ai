@@ -341,6 +341,17 @@ def assert_prompt_smoke(
     assert_prompt_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
+def assert_prompt_stdout_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_prompt_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
 def assert_prompt_stdin_smoke(
     cmd: list[str],
     output_path: Path,
@@ -368,6 +379,17 @@ def assert_pack_smoke(
 ) -> None:
     run_plain(cmd, cwd=cwd, env=env)
     assert_pack_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
+
+
+def assert_pack_stdout_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_pack_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def assert_pack_stdin_smoke(
@@ -561,6 +583,18 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin prompt plan",
         )
+        assert_prompt_stdout_smoke(
+            [
+                str(bin_path),
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin prompt stdout",
+        )
         installed_prompt_file_json = tmp_root / "installed-prompt-from-file.json"
         assert_prompt_smoke(
             [
@@ -614,6 +648,20 @@ def smoke_tarball(tarball: Path) -> None:
             installed_pack_json,
             env=smoke_env,
             context="package smoke installed bin prompt pack",
+        )
+        assert_pack_stdout_smoke(
+            [
+                str(bin_path),
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin pack stdout",
         )
         installed_pack_file_json = tmp_root / "installed-pack-from-file.json"
         assert_pack_smoke(
@@ -798,6 +846,19 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec prompt plan",
         )
+        assert_prompt_stdout_smoke(
+            npm_exec_cmd(
+                tarball,
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec prompt stdout",
+        )
         npx_prompt_file_json = npx_root / "npx-prompt-from-file.json"
         assert_prompt_smoke(
             npm_exec_cmd(
@@ -854,6 +915,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec prompt pack",
+        )
+        assert_pack_stdout_smoke(
+            npm_exec_cmd(
+                tarball,
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pack stdout",
         )
         npx_pack_file_json = npx_root / "npx-pack-from-file.json"
         assert_pack_smoke(
