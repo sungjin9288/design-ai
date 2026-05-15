@@ -28,6 +28,7 @@ from doctor_assertions import (
     run_self_test as run_doctor_assertions_self_test,
 )
 from smoke_assertions import (
+    EXPECTED_CHECK_ARTIFACT_NAME,
     EXPECTED_CHECK_EXAMPLES_LIMIT,
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
@@ -38,6 +39,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    assert_check_artifact_json_component_spec,
     assert_check_examples_json_component_spec,
     assert_examples_json_route_hit,
     assert_no_ansi,
@@ -57,6 +59,7 @@ from smoke_assertions import (
     help_topic_script,
     parse_help_topics,
     passing_doctor_report_json,
+    passing_check_artifact_content,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -197,6 +200,21 @@ def assert_check_examples_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_examples_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def write_check_artifact(artifact_path: Path) -> None:
+    artifact_path.write_text(passing_check_artifact_content(), encoding="utf-8")
+
+
+def assert_check_artifact_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_artifact_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def read_json_output_file(output_path: Path, *, context: str) -> str:
@@ -384,6 +402,22 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec check examples",
+        )
+        check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
+        write_check_artifact(check_artifact)
+        assert_check_artifact_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "check",
+                str(check_artifact),
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec check artifact",
         )
         doctor_json = npx_root / "doctor.json"
         run_plain(

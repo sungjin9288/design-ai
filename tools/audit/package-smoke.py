@@ -22,6 +22,7 @@ import tempfile
 from pathlib import Path
 
 from smoke_assertions import (
+    EXPECTED_CHECK_ARTIFACT_NAME,
     EXPECTED_CHECK_EXAMPLES_LIMIT,
     EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_CORPUS_SEARCH_QUERY,
@@ -34,6 +35,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    assert_check_artifact_json_component_spec,
     assert_check_examples_json_component_spec,
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
@@ -53,6 +55,7 @@ from smoke_assertions import (
     help_alias_script,
     help_topic_script,
     passing_doctor_report_json,
+    passing_check_artifact_content,
     parse_help_topics,
 )
 
@@ -228,6 +231,21 @@ def assert_check_examples_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_examples_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def write_check_artifact(artifact_path: Path) -> None:
+    artifact_path.write_text(passing_check_artifact_content(), encoding="utf-8")
+
+
+def assert_check_artifact_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_artifact_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def read_json_output_file(output_path: Path, *, context: str) -> str:
@@ -462,6 +480,21 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin check examples",
         )
+        installed_check_artifact = tmp_root / EXPECTED_CHECK_ARTIFACT_NAME
+        write_check_artifact(installed_check_artifact)
+        assert_check_artifact_smoke(
+            [
+                str(bin_path),
+                "check",
+                str(installed_check_artifact),
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin check artifact",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -580,6 +613,22 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec check examples",
+        )
+        npx_check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
+        write_check_artifact(npx_check_artifact)
+        assert_check_artifact_smoke(
+            npm_exec_cmd(
+                tarball,
+                "check",
+                str(npx_check_artifact),
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec check artifact",
         )
         run_plain(
             npm_exec_shell_cmd(

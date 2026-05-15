@@ -113,6 +113,7 @@ EXPECTED_PROMPT_FILES = (
     EXPECTED_EXAMPLES_HIT,
 )
 EXPECTED_PACK_MAX_BYTES = 1000
+EXPECTED_CHECK_ARTIFACT_NAME = "component-artifact.md"
 EXPECTED_CHECK_EXAMPLES_LIMIT = 1
 EXPECTED_CHECK_RESULT_IDS = (
     "content-depth",
@@ -423,6 +424,62 @@ def passing_pack_json() -> str:
     })
 
 
+def passing_check_artifact_content() -> str:
+    return "\n".join([
+        "# Button component spec",
+        "",
+        (
+            "This component spec cites knowledge/components/INDEX.md and "
+            "knowledge/a11y/keyboard-and-focus.md before making API decisions. "
+            "The anatomy includes root, label, icon, and loading slots."
+        ),
+        "",
+        (
+            "Variants cover primary, secondary, destructive, and ghost. States cover "
+            "hover, active, focus, disabled, and loading. The API uses props for "
+            "variant, size, disabled, loading, and aria-label."
+        ),
+        "",
+        (
+            "The foreground/background pair is --color-primary-foreground on "
+            "--color-primary-default with a measured 4.8:1 contrast ratio. "
+            "Keyboard behavior supports Tab, Enter, and Space with focus-visible "
+            "styling. Screen reader behavior uses aria-disabled and an accessible name."
+        ),
+        "",
+        (
+            "Responsive behavior covers mobile and desktop breakpoints. Do not use "
+            "this component for destructive confirmation flows; use AlertDialog instead."
+        ),
+    ])
+
+
+def passing_check_report_payload(*, file_path: str) -> dict:
+    return {
+        "filePath": file_path,
+        "routeId": EXPECTED_ROUTE_ID,
+        "status": "pass",
+        "passes": len(EXPECTED_CHECK_RESULT_IDS),
+        "warnings": 0,
+        "failures": 0,
+        "total": len(EXPECTED_CHECK_RESULT_IDS),
+        "score": f"{len(EXPECTED_CHECK_RESULT_IDS)}/{len(EXPECTED_CHECK_RESULT_IDS)}",
+        "results": [
+            {
+                "id": result_id,
+                "level": "pass",
+                "passed": True,
+                "message": "fixture pass",
+            }
+            for result_id in EXPECTED_CHECK_RESULT_IDS
+        ],
+    }
+
+
+def passing_check_artifact_json(file_path: str = EXPECTED_CHECK_ARTIFACT_NAME) -> str:
+    return json.dumps(passing_check_report_payload(file_path=file_path))
+
+
 def passing_check_examples_json() -> str:
     return json.dumps({
         "mode": "examples",
@@ -443,25 +500,7 @@ def passing_check_examples_json() -> str:
                     "score": 57,
                     "preview": "Status: example artifact for component-spec-writer skill",
                 },
-                "report": {
-                    "filePath": f"/tmp/design-ai/{EXPECTED_EXAMPLES_HIT}",
-                    "routeId": EXPECTED_ROUTE_ID,
-                    "status": "pass",
-                    "passes": len(EXPECTED_CHECK_RESULT_IDS),
-                    "warnings": 0,
-                    "failures": 0,
-                    "total": len(EXPECTED_CHECK_RESULT_IDS),
-                    "score": f"{len(EXPECTED_CHECK_RESULT_IDS)}/{len(EXPECTED_CHECK_RESULT_IDS)}",
-                    "results": [
-                        {
-                            "id": result_id,
-                            "level": "pass",
-                            "passed": True,
-                            "message": "fixture pass",
-                        }
-                        for result_id in EXPECTED_CHECK_RESULT_IDS
-                    ],
-                },
+                "report": passing_check_report_payload(file_path=f"/tmp/design-ai/{EXPECTED_EXAMPLES_HIT}"),
             }
         ],
     })
@@ -896,6 +935,77 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
             raise SystemExit(f"pack JSON after {context} markdown is missing expected content: {fragment}")
 
 
+def assert_component_spec_check_report(
+    report: object,
+    *,
+    context: str,
+    label: str,
+    expected_file_suffix: str,
+) -> None:
+    if not isinstance(report, dict):
+        raise SystemExit(f"{label} after {context} report is not an object")
+
+    if report.get("routeId") != EXPECTED_ROUTE_ID:
+        raise SystemExit(f"{label} after {context} report routeId differs from expected route")
+
+    if report.get("status") != "pass":
+        raise SystemExit(f"{label} after {context} report status is not pass")
+
+    if report.get("warnings") != 0 or report.get("failures") != 0:
+        raise SystemExit(f"{label} after {context} report contains warnings or failures")
+
+    passes = report.get("passes")
+    total = report.get("total")
+    if not isinstance(passes, int) or not isinstance(total, int) or passes != total or total < len(EXPECTED_CHECK_RESULT_IDS):
+        raise SystemExit(f"{label} after {context} report pass count differs from expected total")
+
+    score = report.get("score")
+    if not isinstance(score, str) or score != f"{passes}/{total}":
+        raise SystemExit(f"{label} after {context} report score differs from expected score")
+
+    file_path = report.get("filePath")
+    if not isinstance(file_path, str) or not file_path.endswith(expected_file_suffix):
+        raise SystemExit(f"{label} after {context} report file path differs from expected artifact")
+
+    results = report.get("results")
+    if not isinstance(results, list):
+        raise SystemExit(f"{label} after {context} report results is not a list")
+
+    result_by_id = {
+        result.get("id"): result
+        for result in results
+        if isinstance(result, dict) and isinstance(result.get("id"), str)
+    }
+    missing_results = [result_id for result_id in EXPECTED_CHECK_RESULT_IDS if result_id not in result_by_id]
+    if missing_results:
+        raise SystemExit(
+            f"{label} after {context} is missing expected result(s): {', '.join(missing_results)}"
+        )
+
+    for result_id in EXPECTED_CHECK_RESULT_IDS:
+        result = result_by_id[result_id]
+        if result.get("level") != "pass" or result.get("passed") is not True:
+            raise SystemExit(f"{label} after {context} result is not pass: {result_id}")
+
+
+def assert_check_artifact_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse check artifact JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"check artifact JSON after {context} is not an object")
+
+    assert_component_spec_check_report(
+        payload,
+        context=context,
+        label="check artifact JSON",
+        expected_file_suffix=EXPECTED_CHECK_ARTIFACT_NAME,
+    )
+
+
 def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -953,51 +1063,12 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
     if not isinstance(title, str) or EXPECTED_EXAMPLES_TITLE_FRAGMENT not in title:
         raise SystemExit(f"check examples JSON after {context} example title differs from expected title")
 
-    report = item.get("report")
-    if not isinstance(report, dict):
-        raise SystemExit(f"check examples JSON after {context} report is not an object")
-
-    if report.get("routeId") != EXPECTED_ROUTE_ID:
-        raise SystemExit(f"check examples JSON after {context} report routeId differs from expected route")
-
-    if report.get("status") != "pass":
-        raise SystemExit(f"check examples JSON after {context} report status is not pass")
-
-    if report.get("warnings") != 0 or report.get("failures") != 0:
-        raise SystemExit(f"check examples JSON after {context} report contains warnings or failures")
-
-    passes = report.get("passes")
-    total = report.get("total")
-    if not isinstance(passes, int) or not isinstance(total, int) or passes != total or total < len(EXPECTED_CHECK_RESULT_IDS):
-        raise SystemExit(f"check examples JSON after {context} report pass count differs from expected total")
-
-    score = report.get("score")
-    if not isinstance(score, str) or score != f"{passes}/{total}":
-        raise SystemExit(f"check examples JSON after {context} report score differs from expected score")
-
-    file_path = report.get("filePath")
-    if not isinstance(file_path, str) or not file_path.endswith(EXPECTED_EXAMPLES_HIT):
-        raise SystemExit(f"check examples JSON after {context} report file path differs from expected example")
-
-    results = report.get("results")
-    if not isinstance(results, list):
-        raise SystemExit(f"check examples JSON after {context} report results is not a list")
-
-    result_by_id = {
-        result.get("id"): result
-        for result in results
-        if isinstance(result, dict) and isinstance(result.get("id"), str)
-    }
-    missing_results = [result_id for result_id in EXPECTED_CHECK_RESULT_IDS if result_id not in result_by_id]
-    if missing_results:
-        raise SystemExit(
-            f"check examples JSON after {context} is missing expected result(s): {', '.join(missing_results)}"
-        )
-
-    for result_id in EXPECTED_CHECK_RESULT_IDS:
-        result = result_by_id[result_id]
-        if result.get("level") != "pass" or result.get("passed") is not True:
-            raise SystemExit(f"check examples JSON after {context} result is not pass: {result_id}")
+    assert_component_spec_check_report(
+        item.get("report"),
+        context=context,
+        label="check examples JSON",
+        expected_file_suffix=EXPECTED_EXAMPLES_HIT,
+    )
 
 
 def passing_help_catalog_json() -> str:
@@ -1645,6 +1716,78 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_check_examples_json_component_spec("\x1b[31m{}", context=context, cmd=check_examples_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    check_artifact_cmd = [
+        "design-ai",
+        "check",
+        EXPECTED_CHECK_ARTIFACT_NAME,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--strict",
+        "--json",
+    ]
+    assert_check_artifact_json_component_spec(passing_check_artifact_json(), context=context, cmd=check_artifact_cmd)
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec("{", context=context, cmd=check_artifact_cmd),
+        expected="failed to parse check artifact JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps([]), context=context, cmd=check_artifact_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    artifact_wrong_route = json.loads(passing_check_artifact_json())
+    artifact_wrong_route["routeId"] = "design-review"
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_wrong_route), context=context, cmd=check_artifact_cmd),
+        expected="routeId differs",
+        scope="smoke assertions",
+    )
+    artifact_warn_status = json.loads(passing_check_artifact_json())
+    artifact_warn_status["status"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_warn_status), context=context, cmd=check_artifact_cmd),
+        expected="status is not pass",
+        scope="smoke assertions",
+    )
+    artifact_report_warning = json.loads(passing_check_artifact_json())
+    artifact_report_warning["warnings"] = 1
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_report_warning), context=context, cmd=check_artifact_cmd),
+        expected="warnings or failures",
+        scope="smoke assertions",
+    )
+    artifact_wrong_file = json.loads(passing_check_artifact_json())
+    artifact_wrong_file["filePath"] = "component-other.md"
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_wrong_file), context=context, cmd=check_artifact_cmd),
+        expected="file path differs",
+        scope="smoke assertions",
+    )
+    artifact_missing_result = json.loads(passing_check_artifact_json())
+    artifact_missing_result["results"] = [
+        result
+        for result in artifact_missing_result["results"]
+        if result["id"] != "contrast"
+    ]
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_missing_result), context=context, cmd=check_artifact_cmd),
+        expected="missing expected result",
+        scope="smoke assertions",
+    )
+    artifact_failed_result = json.loads(passing_check_artifact_json())
+    artifact_failed_result["results"][0]["passed"] = False
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_failed_result), context=context, cmd=check_artifact_cmd),
+        expected="result is not pass",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec("\x1b[31m{}", context=context, cmd=check_artifact_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
