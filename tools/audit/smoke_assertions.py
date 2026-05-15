@@ -303,6 +303,14 @@ EXPECTED_PACK_MAX_BYTES = 1000
 EXPECTED_AUDIT_COUNT = 7
 EXPECTED_CHECK_ARTIFACT_NAME = "component-artifact.md"
 EXPECTED_CHECK_EXAMPLES_LIMIT = 1
+EXPECTED_NUMERIC_VALUE_SMOKES = (
+    ("route limit", ("route", EXPECTED_ROUTE_BRIEF, "--limit", "0", "--json"), "--limit expects an integer from 1 to 10"),
+    ("search limit", ("search", EXPECTED_CORPUS_SEARCH_QUERY, "--limit", "0"), "--limit expects an integer from 1 to 500"),
+    ("examples limit", ("examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "0"), "--limit expects an integer from 1 to 100"),
+    ("check limit", ("check", "--examples", "--route", EXPECTED_ROUTE_ID, "--limit", "26"), "--limit expects an integer from 1 to 25"),
+    ("pack max bytes", ("pack", EXPECTED_ROUTE_BRIEF, "--max-bytes", "999"), "--max-bytes expects an integer from 1000 to 1000000"),
+    ("show context", ("show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "101"), "--context expects an integer from 0 to 100"),
+)
 EXPECTED_CHECK_RESULT_IDS = (
     "content-depth",
     "unresolved-markers",
@@ -380,6 +388,10 @@ def passing_unknown_option_output(command_name: str, option: str, suggestion: st
         f"{EXPECTED_ERROR_PREFIX} Unknown {command_name} option: {option}",
         f"Did you mean `{suggestion}`?",
     ])
+
+
+def passing_numeric_value_output(expected_message: str) -> str:
+    return f"{EXPECTED_ERROR_PREFIX} {expected_message}"
 
 
 def unknown_option_args(command_name: str, option: str) -> list[str]:
@@ -560,6 +572,27 @@ def assert_search_dir_value_failure(
     if missing:
         raise SystemExit(
             f"search dir value after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_numeric_value_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+    expected_message: str,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"numeric value after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_line = passing_numeric_value_output(expected_message)
+    if expected_line not in raw:
+        raise SystemExit(
+            f"numeric value after {context} missing expected output: {expected_line}"
         )
 
 
@@ -2679,6 +2712,48 @@ def run_self_test() -> None:
             returncode=1,
             context=context,
             cmd=search_dir_cmd,
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
+        numeric_cmd = ["design-ai", *args]
+        assert_numeric_value_failure(
+            passing_numeric_value_output(expected_message),
+            returncode=1,
+            context=context,
+            cmd=numeric_cmd,
+            expected_message=expected_message,
+        )
+    expect_self_test_failure(
+        lambda: assert_numeric_value_failure(
+            passing_numeric_value_output(EXPECTED_NUMERIC_VALUE_SMOKES[0][2]),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", *EXPECTED_NUMERIC_VALUE_SMOKES[0][1]],
+            expected_message=EXPECTED_NUMERIC_VALUE_SMOKES[0][2],
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_numeric_value_failure(
+            f"{EXPECTED_ERROR_PREFIX} wrong range",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", *EXPECTED_NUMERIC_VALUE_SMOKES[0][1]],
+            expected_message=EXPECTED_NUMERIC_VALUE_SMOKES[0][2],
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_numeric_value_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", *EXPECTED_NUMERIC_VALUE_SMOKES[0][1]],
+            expected_message=EXPECTED_NUMERIC_VALUE_SMOKES[0][2],
         ),
         expected="ANSI escape",
         scope="smoke assertions",

@@ -29,6 +29,7 @@ from smoke_assertions import (
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
     EXPECTED_HELP_ALIASES,
+    EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
@@ -55,6 +56,7 @@ from smoke_assertions import (
     assert_list_catalog_output,
     assert_main_help_output,
     assert_no_ansi,
+    assert_numeric_value_failure,
     assert_output_overwrite_failure,
     assert_output_write_success,
     assert_pack_json_component_spec,
@@ -252,6 +254,29 @@ def assert_unknown_option_smoke(
             command_name=command_name,
             option=option,
             suggestion=suggestion,
+        ),
+    )
+
+
+def assert_numeric_value_smoke(
+    cmd: list[str],
+    *,
+    expected_message: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=lambda raw, *, returncode, context, cmd: assert_numeric_value_failure(
+            raw,
+            returncode=returncode,
+            context=context,
+            cmd=cmd,
+            expected_message=expected_message,
         ),
     )
 
@@ -863,6 +888,13 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin unknown search dir value",
             assertion=assert_search_dir_value_failure,
         )
+        for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
+            assert_numeric_value_smoke(
+                [str(bin_path), *args],
+                expected_message=expected_message,
+                env=smoke_env,
+                context=f"package smoke installed bin invalid numeric value {label}",
+            )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
             assert_help_topic_smoke(
@@ -1337,6 +1369,14 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec unknown search dir value",
             assertion=assert_search_dir_value_failure,
         )
+        for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
+            assert_numeric_value_smoke(
+                npm_exec_cmd(tarball, *args),
+                expected_message=expected_message,
+                cwd=npx_root,
+                env=npx_env,
+                context=f"package smoke npm exec invalid numeric value {label}",
+            )
         npx_help_topics = read_help_topics(
             npm_exec_cmd(tarball, "help", "--json"),
             cwd=npx_root,

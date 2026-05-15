@@ -35,6 +35,7 @@ from smoke_assertions import (
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
     EXPECTED_HELP_ALIASES,
+    EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
@@ -58,6 +59,7 @@ from smoke_assertions import (
     assert_list_catalog_output,
     assert_main_help_output,
     assert_no_ansi,
+    assert_numeric_value_failure,
     assert_output_overwrite_failure,
     assert_output_write_success,
     assert_pack_json_component_spec,
@@ -235,6 +237,29 @@ def assert_unknown_option_smoke(
             command_name=command_name,
             option=option,
             suggestion=suggestion,
+        ),
+    )
+
+
+def assert_numeric_value_smoke(
+    cmd: list[str],
+    *,
+    expected_message: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=lambda raw, *, returncode, context, cmd: assert_numeric_value_failure(
+            raw,
+            returncode=returncode,
+            context=context,
+            cmd=cmd,
+            expected_message=expected_message,
         ),
     )
 
@@ -763,6 +788,14 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             context="registry smoke npm exec unknown search dir value",
             assertion=assert_search_dir_value_failure,
         )
+        for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
+            assert_numeric_value_smoke(
+                npm_exec_cmd(package_spec, *args),
+                expected_message=expected_message,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec invalid numeric value {label}",
+            )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         for topic in help_topics:
             assert_help_topic_smoke(
