@@ -120,8 +120,8 @@ git push origin vX.Y.Z
 
 GitHub Actions takes over:
 - `audit.yml` re-runs all seven audits and unit tests.
-- `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced `--out` overwrite confirmation, and publishes to npm with provenance.
-- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, help topics, documented help/command aliases, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced `--out` overwrite confirmation are verified from the public registry.
+- `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including functional aliases, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced `--out` overwrite confirmation, and publishes to npm with provenance.
+- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, help topics, documented help/command aliases, functional aliases, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced `--out` overwrite confirmation are verified from the public registry.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
 - `docs.yml` re-builds and deploys the doc site.
 

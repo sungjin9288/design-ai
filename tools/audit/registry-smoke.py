@@ -22,6 +22,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+from typing import Callable
 
 from doctor_assertions import (
     assert_doctor_report_clean,
@@ -319,6 +320,58 @@ def assert_command_alias_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_command_alias_output(result.stdout, command=command, context=context, cmd=cmd)
+
+
+def assert_functional_alias_smokes(
+    command_factory: Callable[..., list[str]],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    assert_list_smoke(
+        command_factory("ls", "skills"),
+        kind="skills",
+        cwd=cwd,
+        env=env,
+        context=f"{context} ls skills",
+    )
+    assert_search_smoke(
+        command_factory("find", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} find corpus",
+    )
+    assert_show_smoke(
+        command_factory("cat", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} cat corpus",
+    )
+    assert_route_smoke(
+        command_factory("recommend", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} recommend route",
+    )
+    assert_examples_smoke(
+        command_factory("example", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} example route",
+    )
+    assert_examples_human_smoke(
+        command_factory("ex", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} ex route",
+    )
+    assert_check_examples_smoke(
+        command_factory("lint", "--examples", "--route", EXPECTED_ROUTE_ID, "--limit", "1", "--strict", "--json"),
+        cwd=cwd,
+        env=env,
+        context=f"{context} lint examples",
+    )
 
 
 def assert_install_lifecycle_smoke(
@@ -853,6 +906,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 env=env,
                 context=f"registry smoke npm exec command alias {' '.join(command)}",
             )
+        assert_functional_alias_smokes(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec functional alias",
+        )
         for kind in ("skills", "commands", "agents"):
             assert_list_smoke(
                 npm_exec_cmd(package_spec, "list", kind),
