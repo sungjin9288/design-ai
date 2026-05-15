@@ -30,6 +30,7 @@ EXPECTED_HELP_TOPICS = (
     "version",
     "help",
 )
+EXPECTED_HELP_USAGE = "design-ai help [command|--json]"
 EXPECTED_HELP_ALIASES = {
     "i": "install",
     "upgrade": "update",
@@ -104,7 +105,7 @@ def doctor_report_json_missing(label_to_remove: str) -> str:
 
 def passing_help_catalog_json() -> str:
     return json.dumps({
-        "usage": "design-ai help [command|--json]",
+        "usage": EXPECTED_HELP_USAGE,
         "topics": [
             {
                 "topic": topic,
@@ -139,6 +140,10 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     raw_aliases = catalog.get("aliases")
     if not isinstance(raw_aliases, dict):
         raise SystemExit(f"help JSON after {context} does not contain an aliases object")
+
+    raw_usage = catalog.get("usage")
+    if raw_usage != EXPECTED_HELP_USAGE:
+        raise SystemExit(f"help JSON after {context} usage differs from expected usage")
 
     if raw_aliases != EXPECTED_HELP_ALIASES:
         raise SystemExit(f"help JSON after {context} aliases differ from expected aliases")
@@ -182,6 +187,9 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
         raise SystemExit(
             f"help JSON after {context} contains unexpected topic(s): {', '.join(unexpected_topics)}"
         )
+
+    if topics != list(EXPECTED_HELP_TOPICS):
+        raise SystemExit(f"help JSON after {context} topic order differs from expected order")
 
     if topic_aliases != EXPECTED_HELP_ALIASES:
         raise SystemExit(f"help JSON after {context} topic aliases differ from expected aliases")
@@ -311,6 +319,17 @@ def run_self_test() -> None:
         expected="aliases object",
         scope="smoke assertions",
     )
+    invalid_root_usage_catalog = json.loads(passing_help_catalog_json())
+    invalid_root_usage_catalog["usage"] = "design-ai help"
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(invalid_root_usage_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="usage differs",
+        scope="smoke assertions",
+    )
     invalid_usage_catalog = json.loads(passing_help_catalog_json())
     invalid_usage_catalog["topics"][0]["usage"] = ""
     expect_self_test_failure(
@@ -384,6 +403,20 @@ def run_self_test() -> None:
             cmd=help_cmd,
         ),
         expected="unexpected topic",
+        scope="smoke assertions",
+    )
+    reordered_topic_catalog = json.loads(passing_help_catalog_json())
+    reordered_topic_catalog["topics"][0], reordered_topic_catalog["topics"][1] = (
+        reordered_topic_catalog["topics"][1],
+        reordered_topic_catalog["topics"][0],
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(reordered_topic_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="topic order differs",
         scope="smoke assertions",
     )
     duplicate_topic_catalog = json.loads(passing_help_catalog_json())
