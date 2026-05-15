@@ -87,6 +87,65 @@ test("help catalog aliases dispatch to their canonical commands", async () => {
   }
 });
 
+test("functional command aliases dispatch to canonical command behavior", async () => {
+  const cases = [
+    {
+      alias: "ls",
+      command: "list",
+      args: ["skills"],
+      expected: [/design-ai catalog/, /skills \(19\)/],
+    },
+    {
+      alias: "find",
+      command: "search",
+      args: ["Pretendard", "--dir", "knowledge", "--limit", "1", "--json"],
+      expected: [/"query": "Pretendard"/, /"relPath": "knowledge\/PRINCIPLES\.md"/],
+    },
+    {
+      alias: "cat",
+      command: "show",
+      args: ["knowledge/PRINCIPLES.md:1", "--context", "0", "--json"],
+      expected: [/"relPath": "knowledge\/PRINCIPLES\.md"/, /"start": 1/],
+    },
+    {
+      alias: "recommend",
+      command: "route",
+      args: ["Spec a Button component API with keyboard accessibility", "--limit", "1", "--json"],
+      expected: [/"brief": "Spec a Button component API with keyboard accessibility"/, /"id": "component-spec"/],
+    },
+    {
+      alias: "example",
+      command: "examples",
+      args: ["--route", "component-spec", "--limit", "1", "--json"],
+      expected: [/"routeId": "component-spec"/, /"relPath": "examples\/component-button\.md"/],
+    },
+    {
+      alias: "ex",
+      command: "examples",
+      args: ["--route", "component-spec", "--limit", "1"],
+      expected: [/design-ai examples/, /examples\/component-button\.md/],
+    },
+    {
+      alias: "lint",
+      command: "check",
+      args: ["--examples", "--route", "component-spec", "--limit", "1", "--strict", "--json"],
+      expected: [/"routeId": "component-spec"/, /"status": "pass"/],
+    },
+  ];
+
+  for (const item of cases) {
+    assert.equal(HELP_ALIASES[item.alias], item.command, `${item.alias} should map to ${item.command}`);
+
+    const aliasOutput = await captureStdout(() => runCommand(item.alias, item.args));
+    const canonicalOutput = await captureStdout(() => runCommand(item.command, item.args));
+
+    assert.equal(aliasOutput, canonicalOutput, `${item.alias} should match ${item.command} output`);
+    for (const pattern of item.expected) {
+      assert.match(aliasOutput, pattern, `${item.alias} should include ${pattern}`);
+    }
+  }
+});
+
 test("top-level flag aliases dispatch to version and help", async () => {
   const versionOutput = await captureStdout(() => runCommand("version", []));
   assert.equal(await captureStdout(() => runCommand("--version", [])), versionOutput);
