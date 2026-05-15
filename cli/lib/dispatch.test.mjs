@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { HELP_ALIASES } from "../commands/help.mjs";
+import { HELP_ALIASES, HELP_TOPICS } from "../commands/help.mjs";
 import {
   CANONICAL_COMMANDS,
   runCommand,
@@ -36,6 +36,10 @@ test("suggestCommand ignores aliases and distant input", () => {
   assert.equal(suggestCommand("diag"), "");
   assert.equal(suggestCommand("xx"), "");
   assert.equal(suggestCommand("completely-unknown"), "");
+});
+
+test("canonical command list matches the help catalog topics", () => {
+  assert.deepEqual(CANONICAL_COMMANDS, HELP_TOPICS);
 });
 
 test("help catalog aliases dispatch to their canonical commands", async () => {
