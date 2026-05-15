@@ -50,6 +50,7 @@ from smoke_assertions import (
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_help_topic_output,
+    assert_install_lifecycle_output,
     assert_list_catalog_output,
     assert_main_help_output,
     assert_no_ansi,
@@ -251,6 +252,17 @@ def assert_command_alias_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_command_alias_output(result.stdout, command=command, context=context, cmd=cmd)
+
+
+def assert_install_lifecycle_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_install_lifecycle_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1047,7 +1059,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             context="registry smoke npm exec audit strict",
         )
         doctor_json = npx_root / "doctor.json"
-        run_plain(
+        assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(
                 package_spec,
                 help_topic_script(help_topics) + " && "
@@ -1061,6 +1073,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             ),
             cwd=npx_root,
             env=env,
+            context="registry smoke install lifecycle",
         )
         assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
 

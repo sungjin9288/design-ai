@@ -45,6 +45,8 @@ from smoke_assertions import (
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_help_topic_output,
+    assert_install_lifecycle_output,
+    assert_install_output,
     assert_list_catalog_output,
     assert_main_help_output,
     assert_no_ansi,
@@ -61,9 +63,11 @@ from smoke_assertions import (
     assert_search_json_contains_hit,
     assert_show_human_output,
     assert_show_json_line,
+    assert_status_output,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
+    assert_uninstall_output,
     assert_version_output,
     command_alias_script,
     doctor_report_json_missing,
@@ -282,6 +286,32 @@ def assert_command_alias_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_command_alias_output(result.stdout, command=command, context=context, cmd=cmd)
+
+
+def assert_install_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_install_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_status_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_status_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_uninstall_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_uninstall_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_install_lifecycle_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_install_lifecycle_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1097,11 +1127,23 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin audit strict",
         )
-        run_plain([str(bin_path), "install"], env=smoke_env)
+        assert_install_smoke(
+            [str(bin_path), "install"],
+            env=smoke_env,
+            context="package smoke installed bin install",
+        )
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
-        run_plain([str(bin_path), "status"], env=smoke_env)
-        run_plain([str(bin_path), "uninstall"], env=smoke_env)
+        assert_status_smoke(
+            [str(bin_path), "status"],
+            env=smoke_env,
+            context="package smoke installed bin status",
+        )
+        assert_uninstall_smoke(
+            [str(bin_path), "uninstall"],
+            env=smoke_env,
+            context="package smoke installed bin uninstall",
+        )
 
         npx_env = base_env.copy()
         npx_env.update({
@@ -1553,7 +1595,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec audit strict",
         )
-        run_plain(
+        assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(
                 tarball,
                 help_topic_script(npx_help_topics) + " && "
@@ -1569,6 +1611,7 @@ def smoke_tarball(tarball: Path) -> None:
             ),
             cwd=npx_root,
             env=npx_env,
+            context="package smoke npm exec install lifecycle",
         )
         assert_doctor_report_file(npx_root / "npx-doctor.json", context="package smoke npm exec install")
 

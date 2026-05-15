@@ -93,9 +93,9 @@ The workflow:
 - Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
-- Installs the packed tarball into a temporary project, validates `design-ai version` and top-level help output, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, validates every `design-ai help <command>` topic-specific usage output, smoke-tests documented help and command aliases with output assertions, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
+- Installs the packed tarball into a temporary project, validates `design-ai version` and top-level help output, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, validates every `design-ai help <command>` topic-specific usage output, smoke-tests documented help and command aliases with output assertions, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, and verifies `design-ai install`, `status`, and `uninstall` lifecycle output against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
-- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including version and top-level help output, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help and command aliases, all three `list` catalog domains, and human / JSON corpus discovery output.
+- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including version and top-level help output, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help and command aliases, all three `list` catalog domains, human / JSON corpus discovery output, and install/status/uninstall lifecycle output.
 
 ## NPM package contents
 

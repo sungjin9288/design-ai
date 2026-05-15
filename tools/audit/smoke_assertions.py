@@ -92,6 +92,34 @@ EXPECTED_VERSION_FRAGMENTS = (
     "4.13.0",
     "Source:",
 )
+EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
+    "design-ai installer",
+    "Source:",
+    "Target:",
+    "Prefix:",
+    "Installing from:",
+    "Installed 19 skills",
+    "Installed 4 agents",
+    "Installed 16 slash commands",
+    "Installed. Restart Claude Code",
+    "design-ai status",
+)
+EXPECTED_STATUS_OUTPUT_FRAGMENTS = (
+    "design-ai status",
+    "Source:",
+    "Target:",
+    "Prefix:",
+    "Skills: 19 installed",
+    "Agents: 4 installed",
+    "Slash commands: 16 installed",
+)
+EXPECTED_UNINSTALL_OUTPUT_FRAGMENTS = (
+    "design-ai uninstaller",
+    "Uninstalling design-ai from",
+    "Removed 39 design-ai symlinks",
+    "Done. To remove the design-ai source",
+    "Source location:",
+)
 EXPECTED_COMMAND_ALIAS_COMMANDS = (
     ("i", "--help"),
     ("upgrade", "--help"),
@@ -1839,6 +1867,70 @@ def passing_version_output() -> str:
     ])
 
 
+def passing_install_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai installer",
+        "  v4.13.0",
+        "",
+        "Source: /tmp/design-ai",
+        "Target: /tmp/claude-home",
+        "Prefix: smoke-design-",
+        "",
+        "design-ai installer",
+        "Senior product designer for Claude Code",
+        "Installing from: /tmp/design-ai",
+        "Target:          /tmp/claude-home",
+        "Symlink prefix:  smoke-design-",
+        "Installed 19 skills (prefix: smoke-design-)",
+        "Installed 4 agents (prefix: smoke-design-)",
+        "Installed 16 slash commands (prefix: /smoke-design-)",
+        "Done. Restart Claude Code (or open a new session) to pick up changes.",
+        "Installed. Restart Claude Code (or open a new session) to pick up changes.",
+        "Or: design-ai status",
+        "",
+    ])
+
+
+def passing_status_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai status",
+        "",
+        "Source: /tmp/design-ai",
+        "Target: /tmp/claude-home",
+        "Prefix: smoke-design-",
+        "",
+        "Skills: 19 installed",
+        "Agents: 4 installed",
+        "Slash commands: 16 installed",
+        "",
+    ])
+
+
+def passing_uninstall_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai uninstaller",
+        "",
+        "design-ai installer",
+        "Senior product designer for Claude Code",
+        "Uninstalling design-ai from /tmp/claude-home",
+        "Removed 39 design-ai symlinks",
+        "Done. To remove the design-ai source, delete its directory manually.",
+        "Source location: /tmp/design-ai",
+        "",
+    ])
+
+
+def passing_install_lifecycle_output() -> str:
+    return "\n".join([
+        passing_install_output(),
+        passing_status_output(),
+        passing_uninstall_output(),
+    ])
+
+
 def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     assert_no_ansi(raw, cmd)
     try:
@@ -1959,6 +2051,49 @@ def assert_version_output(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         label="version output",
     )
+
+
+def assert_install_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if "Skipping " in raw or "non-symlink already exists" in raw:
+        raise SystemExit(f"install output after {context} reported skipped symlink creation")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_INSTALL_OUTPUT_FRAGMENTS,
+        context=context,
+        label="install output",
+    )
+
+
+def assert_status_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if "0 installed" in raw or "target dir does not exist" in raw:
+        raise SystemExit(f"status output after {context} reported missing installed symlinks")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_STATUS_OUTPUT_FRAGMENTS,
+        context=context,
+        label="status output",
+    )
+
+
+def assert_uninstall_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_UNINSTALL_OUTPUT_FRAGMENTS,
+        context=context,
+        label="uninstall output",
+    )
+
+
+def assert_install_lifecycle_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_install_output(raw, context=context, cmd=cmd)
+    assert_status_output(raw, context=context, cmd=cmd)
+    assert_uninstall_output(raw, context=context, cmd=cmd)
 
 
 def assert_command_alias_output(raw: str, *, command: tuple[str, ...], context: str, cmd: list[str]) -> None:
@@ -3385,6 +3520,76 @@ def run_self_test() -> None:
             cmd=["design-ai", "bad"],
         ),
         expected="unsupported command",
+        scope="smoke assertions",
+    )
+    install_cmd = ["design-ai", "install"]
+    assert_install_output(passing_install_output(), context=context, cmd=install_cmd)
+    expect_self_test_failure(
+        lambda: assert_install_output(
+            passing_install_output().replace("Installed 19 skills", "Installed 18 skills"),
+            context=context,
+            cmd=install_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_install_output(
+            passing_install_output() + "\nSkipping smoke-design-foo: a non-symlink already exists",
+            context=context,
+            cmd=install_cmd,
+        ),
+        expected="skipped symlink",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_install_output("\x1b[31mred", context=context, cmd=install_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    status_cmd = ["design-ai", "status"]
+    assert_status_output(passing_status_output(), context=context, cmd=status_cmd)
+    expect_self_test_failure(
+        lambda: assert_status_output(
+            passing_status_output().replace("Skills: 19 installed", "Skills: 0 installed"),
+            context=context,
+            cmd=status_cmd,
+        ),
+        expected="missing installed symlinks",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_status_output(
+            passing_status_output().replace("Slash commands: 16 installed", "Slash commands: 15 installed"),
+            context=context,
+            cmd=status_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    uninstall_cmd = ["design-ai", "uninstall"]
+    assert_uninstall_output(passing_uninstall_output(), context=context, cmd=uninstall_cmd)
+    expect_self_test_failure(
+        lambda: assert_uninstall_output(
+            passing_uninstall_output().replace("Removed 39 design-ai symlinks", "Removed 38 design-ai symlinks"),
+            context=context,
+            cmd=uninstall_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    assert_install_lifecycle_output(
+        passing_install_lifecycle_output(),
+        context=context,
+        cmd=["sh", "-c", "design-ai install && design-ai status && design-ai uninstall"],
+    )
+    expect_self_test_failure(
+        lambda: assert_install_lifecycle_output(
+            passing_install_output() + passing_status_output(),
+            context=context,
+            cmd=["sh", "-c", "design-ai install && design-ai status"],
+        ),
+        expected="missing expected content",
         scope="smoke assertions",
     )
     assert help_topic_script(["install", "route"]) == (
