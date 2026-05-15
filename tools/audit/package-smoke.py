@@ -50,6 +50,7 @@ from smoke_assertions import (
     assert_prompt_json_component_spec,
     assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
+    assert_route_catalog_json,
     assert_route_json_component_spec,
     assert_search_json_contains_hit,
     assert_show_json_line,
@@ -263,6 +264,11 @@ def write_smoke_brief(brief_path: Path) -> None:
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_route_catalog_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_catalog_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_route_stdin_smoke(
@@ -651,6 +657,16 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin show corpus",
         )
+        assert_route_catalog_smoke(
+            [str(bin_path), "routes", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin routes catalog",
+        )
+        assert_route_catalog_smoke(
+            [str(bin_path), "route", "--list", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin route list catalog",
+        )
         assert_route_smoke(
             [str(bin_path), "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"],
             env=smoke_env,
@@ -1010,6 +1026,18 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec show corpus",
+        )
+        assert_route_catalog_smoke(
+            npm_exec_cmd(tarball, "routes", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec routes catalog",
+        )
+        assert_route_catalog_smoke(
+            npm_exec_cmd(tarball, "route", "--list", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route list catalog",
         )
         assert_route_smoke(
             npm_exec_cmd(tarball, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),

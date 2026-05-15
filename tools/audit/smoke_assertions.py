@@ -97,6 +97,26 @@ EXPECTED_ROUTE_SKILL = "skills/component-spec-writer/SKILL.md"
 EXPECTED_ROUTE_AGENT = "agents/component-architect.md"
 EXPECTED_ROUTE_KNOWLEDGE = "knowledge/a11y/keyboard-and-focus.md"
 EXPECTED_ROUTE_MATCHED_KEYWORDS = ("component", "button", "spec", "api")
+EXPECTED_ROUTE_CATALOG_IDS = (
+    "design-review",
+    "design-from-brief",
+    "component-spec",
+    "palette-from-brand",
+    "motion-design",
+    "illustration",
+    "print",
+    "video",
+    "game-ui",
+    "conversational",
+    "spatial",
+    "document-from-brief",
+    "slide-deck",
+    "handoff-spec",
+    "design-system-qa",
+    "figma-token-sync",
+    "design-pr-review",
+    "stability-review",
+)
 EXPECTED_PROMPT_SLASH_COMMAND = "/design-component-spec"
 EXPECTED_PROMPT_QUALITY_COMMAND = "design-ai check output.md --route component-spec --strict"
 EXPECTED_PROMPT_PLAYBOOK = "skills/component-spec-writer/PLAYBOOK.md"
@@ -361,6 +381,55 @@ def passing_route_json() -> str:
                 },
             }
         ],
+    })
+
+
+def passing_route_catalog_json() -> str:
+    routes = []
+    for route_id in EXPECTED_ROUTE_CATALOG_IDS:
+        route = {
+            "id": route_id,
+            "label": route_id.replace("-", " ").title(),
+            "score": 0,
+            "confidence": "catalog",
+            "matchedKeywords": [],
+            "command": None,
+            "skills": [],
+            "agents": [],
+            "knowledge": [{"path": "knowledge/PRINCIPLES.md", "exists": True}],
+            "keywords": [route_id],
+            "explanation": {
+                "summary": "Catalog listing; no task brief was scored.",
+                "referenceCoverage": {
+                    "total": {"available": 1, "total": 1},
+                },
+                "missingReferences": [],
+            },
+        }
+        if route_id == EXPECTED_ROUTE_ID:
+            route.update({
+                "label": EXPECTED_ROUTE_LABEL,
+                "command": {"path": EXPECTED_ROUTE_COMMAND, "exists": True},
+                "skills": [{"path": EXPECTED_ROUTE_SKILL, "exists": True}],
+                "agents": [{"path": EXPECTED_ROUTE_AGENT, "exists": True}],
+                "knowledge": [
+                    {"path": "knowledge/PRINCIPLES.md", "exists": True},
+                    {"path": EXPECTED_ROUTE_KNOWLEDGE, "exists": True},
+                ],
+                "keywords": ["component", "button", "spec", "api"],
+                "explanation": {
+                    "summary": "Catalog listing; no task brief was scored.",
+                    "referenceCoverage": {
+                        "total": {"available": 5, "total": 5},
+                    },
+                    "missingReferences": [],
+                },
+            })
+        routes.append(route)
+
+    return json.dumps({
+        "version": "4.13.0",
+        "routes": routes,
     })
 
 
@@ -845,6 +914,87 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
     total = coverage.get("total") if isinstance(coverage, dict) else None
     if not isinstance(total, dict) or total.get("available") != total.get("total") or total.get("total", 0) < 1:
         raise SystemExit(f"route JSON after {context} does not report full reference coverage")
+
+
+def assert_route_catalog_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse route catalog JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"route catalog JSON after {context} is not an object")
+
+    version = payload.get("version")
+    if not isinstance(version, str) or not version or version == "unknown":
+        raise SystemExit(f"route catalog JSON after {context} version is missing")
+
+    routes = payload.get("routes")
+    if not isinstance(routes, list) or not routes:
+        raise SystemExit(f"route catalog JSON after {context} does not contain route entries")
+    if not all(isinstance(route, dict) for route in routes):
+        raise SystemExit(f"route catalog JSON after {context} contains a non-object route entry")
+
+    route_ids = [
+        route.get("id")
+        for route in routes
+    ]
+    if route_ids != list(EXPECTED_ROUTE_CATALOG_IDS):
+        raise SystemExit(f"route catalog JSON after {context} route ids differ from expected catalog order")
+
+    if len(set(route_ids)) != len(route_ids):
+        raise SystemExit(f"route catalog JSON after {context} contains duplicate route ids")
+
+    route_by_id = {route.get("id"): route for route in routes if isinstance(route, dict)}
+    for route_id in EXPECTED_ROUTE_CATALOG_IDS:
+        route = route_by_id.get(route_id)
+        if not isinstance(route, dict):
+            raise SystemExit(f"route catalog JSON after {context} is missing expected route: {route_id}")
+
+        if route.get("confidence") != "catalog":
+            raise SystemExit(f"route catalog JSON after {context} route is not marked as catalog: {route_id}")
+        if route.get("matchedKeywords") != []:
+            raise SystemExit(f"route catalog JSON after {context} route has matched keywords in catalog mode: {route_id}")
+
+        label = route.get("label")
+        if not isinstance(label, str) or not label:
+            raise SystemExit(f"route catalog JSON after {context} route label is missing: {route_id}")
+
+        explanation = route.get("explanation")
+        if not isinstance(explanation, dict):
+            raise SystemExit(f"route catalog JSON after {context} route explanation is not an object: {route_id}")
+        summary = explanation.get("summary")
+        if not isinstance(summary, str) or "Catalog listing" not in summary:
+            raise SystemExit(f"route catalog JSON after {context} route explanation summary differs from expected catalog mode: {route_id}")
+        if explanation.get("missingReferences") != []:
+            raise SystemExit(f"route catalog JSON after {context} route contains missing references: {route_id}")
+        coverage = explanation.get("referenceCoverage")
+        total = coverage.get("total") if isinstance(coverage, dict) else None
+        available_count = total.get("available") if isinstance(total, dict) else None
+        total_count = total.get("total") if isinstance(total, dict) else None
+        if (
+            not isinstance(available_count, int)
+            or not isinstance(total_count, int)
+            or total_count <= 0
+            or available_count != total_count
+        ):
+            raise SystemExit(f"route catalog JSON after {context} route does not report full reference coverage: {route_id}")
+
+    component_route = route_by_id[EXPECTED_ROUTE_ID]
+    if component_route.get("label") != EXPECTED_ROUTE_LABEL:
+        raise SystemExit(f"route catalog JSON after {context} component route label differs from expected label")
+    command = component_route.get("command")
+    if not isinstance(command, dict) or command.get("path") != EXPECTED_ROUTE_COMMAND or command.get("exists") is not True:
+        raise SystemExit(f"route catalog JSON after {context} component route command differs from expected available command")
+
+    find_existing_path(component_route.get("skills"), EXPECTED_ROUTE_SKILL, context=context, label="component route skills")
+    find_existing_path(component_route.get("agents"), EXPECTED_ROUTE_AGENT, context=context, label="component route agents")
+    find_existing_path(component_route.get("knowledge"), EXPECTED_ROUTE_KNOWLEDGE, context=context, label="component route knowledge")
+
+    keywords = component_route.get("keywords")
+    if not isinstance(keywords, list) or not all(keyword in keywords for keyword in ("component", "button", "spec")):
+        raise SystemExit(f"route catalog JSON after {context} component route keywords differ from expected discovery terms")
 
 
 def find_payload_path(entries: object, path: str, *, context: str, payload_name: str, label: str) -> None:
@@ -1909,6 +2059,78 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_route_json_component_spec("\x1b[31m{}", context=context, cmd=route_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    route_catalog_cmd = ["design-ai", "routes", "--json"]
+    assert_route_catalog_json(passing_route_catalog_json(), context=context, cmd=route_catalog_cmd)
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json("{", context=context, cmd=route_catalog_cmd),
+        expected="failed to parse route catalog JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps([]), context=context, cmd=route_catalog_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    route_catalog_non_object_entry = json.loads(passing_route_catalog_json())
+    route_catalog_non_object_entry["routes"].append("invalid")
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_non_object_entry), context=context, cmd=route_catalog_cmd),
+        expected="non-object route entry",
+        scope="smoke assertions",
+    )
+    route_catalog_unknown_version = json.loads(passing_route_catalog_json())
+    route_catalog_unknown_version["version"] = "unknown"
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_unknown_version), context=context, cmd=route_catalog_cmd),
+        expected="version is missing",
+        scope="smoke assertions",
+    )
+    route_catalog_missing_route = json.loads(passing_route_catalog_json())
+    route_catalog_missing_route["routes"] = [
+        route
+        for route in route_catalog_missing_route["routes"]
+        if route["id"] != EXPECTED_ROUTE_ID
+    ]
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_missing_route), context=context, cmd=route_catalog_cmd),
+        expected="route ids differ",
+        scope="smoke assertions",
+    )
+    route_catalog_wrong_confidence = json.loads(passing_route_catalog_json())
+    route_catalog_wrong_confidence["routes"][0]["confidence"] = "high"
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_wrong_confidence), context=context, cmd=route_catalog_cmd),
+        expected="not marked as catalog",
+        scope="smoke assertions",
+    )
+    route_catalog_missing_reference = json.loads(passing_route_catalog_json())
+    route_catalog_missing_reference["routes"][0]["explanation"]["missingReferences"] = ["commands/missing.md"]
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_missing_reference), context=context, cmd=route_catalog_cmd),
+        expected="contains missing references",
+        scope="smoke assertions",
+    )
+    route_catalog_missing_coverage = json.loads(passing_route_catalog_json())
+    route_catalog_missing_coverage["routes"][0]["explanation"]["referenceCoverage"]["total"] = {}
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_missing_coverage), context=context, cmd=route_catalog_cmd),
+        expected="full reference coverage",
+        scope="smoke assertions",
+    )
+    route_catalog_wrong_component_path = json.loads(passing_route_catalog_json())
+    component_route = next(route for route in route_catalog_wrong_component_path["routes"] if route["id"] == EXPECTED_ROUTE_ID)
+    component_route["command"]["exists"] = False
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_wrong_component_path), context=context, cmd=route_catalog_cmd),
+        expected="component route command differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json("\x1b[31m{}", context=context, cmd=route_catalog_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

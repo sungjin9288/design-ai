@@ -53,6 +53,7 @@ from smoke_assertions import (
     assert_prompt_json_component_spec,
     assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
+    assert_route_catalog_json,
     assert_route_json_component_spec,
     assert_search_json_contains_hit,
     assert_show_json_line,
@@ -230,6 +231,11 @@ def write_smoke_brief(brief_path: Path) -> None:
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_route_catalog_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_catalog_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_route_stdin_smoke(
@@ -566,6 +572,18 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec show corpus",
+        )
+        assert_route_catalog_smoke(
+            npm_exec_cmd(package_spec, "routes", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec routes catalog",
+        )
+        assert_route_catalog_smoke(
+            npm_exec_cmd(package_spec, "route", "--list", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec route list catalog",
         )
         assert_route_smoke(
             npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
