@@ -42,6 +42,7 @@ from smoke_assertions import (
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
     assert_no_ansi,
+    assert_output_overwrite_failure,
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
@@ -339,6 +340,29 @@ def read_json_output_file(output_path: Path, *, context: str) -> str:
 
 def read_markdown_output_file(output_path: Path, *, context: str) -> str:
     return read_output_file(output_path, context=context, label="Markdown")
+
+
+def assert_output_overwrite_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=lambda raw, *, returncode, context, cmd: assert_output_overwrite_failure(
+            raw,
+            returncode=returncode,
+            context=context,
+            cmd=cmd,
+            expected_path=str(output_path),
+        ),
+    )
 
 
 def assert_prompt_smoke(
@@ -688,6 +712,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin prompt markdown file",
         )
+        assert_output_overwrite_smoke(
+            [
+                str(bin_path),
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--out",
+                str(installed_prompt_markdown),
+            ],
+            installed_prompt_markdown,
+            env=smoke_env,
+            context="package smoke installed bin prompt output overwrite",
+        )
         installed_prompt_file_json = tmp_root / "installed-prompt-from-file.json"
         assert_prompt_smoke(
             [
@@ -786,6 +824,22 @@ def smoke_tarball(tarball: Path) -> None:
             installed_pack_markdown,
             env=smoke_env,
             context="package smoke installed bin pack markdown file",
+        )
+        assert_output_overwrite_smoke(
+            [
+                str(bin_path),
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--out",
+                str(installed_pack_markdown),
+            ],
+            installed_pack_markdown,
+            env=smoke_env,
+            context="package smoke installed bin pack output overwrite",
         )
         installed_pack_file_json = tmp_root / "installed-pack-from-file.json"
         assert_pack_smoke(
@@ -1012,6 +1066,21 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec prompt markdown file",
         )
+        assert_output_overwrite_smoke(
+            npm_exec_cmd(
+                tarball,
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--out",
+                str(npx_prompt_markdown),
+            ),
+            npx_prompt_markdown,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec prompt output overwrite",
+        )
         npx_prompt_file_json = npx_root / "npx-prompt-from-file.json"
         assert_prompt_smoke(
             npm_exec_cmd(
@@ -1116,6 +1185,23 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec pack markdown file",
+        )
+        assert_output_overwrite_smoke(
+            npm_exec_cmd(
+                tarball,
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--out",
+                str(npx_pack_markdown),
+            ),
+            npx_pack_markdown,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pack output overwrite",
         )
         npx_pack_file_json = npx_root / "npx-pack-from-file.json"
         assert_pack_smoke(

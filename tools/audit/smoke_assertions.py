@@ -172,6 +172,13 @@ def passing_unknown_list_domain_output() -> str:
     ])
 
 
+def passing_output_overwrite_failure_output(path: str = "/tmp/existing.md") -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} Output file already exists: {path}. Use --force to overwrite.",
+        "",
+    ])
+
+
 def assert_unknown_command_failure(
     raw: str,
     *,
@@ -233,6 +240,35 @@ def assert_unknown_list_domain_failure(
         raise SystemExit(
             f"unknown list domain after {context} missing expected output: {' | '.join(missing)}"
         )
+
+
+def assert_output_overwrite_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+    expected_path: str | None = None,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"output overwrite after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    required_fragments = (
+        EXPECTED_ERROR_PREFIX,
+        "Output file already exists:",
+        "Use --force to overwrite.",
+    )
+    if expected_path is not None:
+        required_fragments = (*required_fragments, expected_path)
+    assert_contains_fragments(
+        raw,
+        required_fragments,
+        context=context,
+        label="output overwrite failure",
+    )
 
 
 def passing_doctor_report_json() -> str:
@@ -1570,6 +1606,67 @@ def run_self_test() -> None:
             returncode=1,
             context=context,
             cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    overwrite_cmd = [
+        "design-ai",
+        "prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--out",
+        "/tmp/existing.md",
+    ]
+    assert_output_overwrite_failure(
+        passing_output_overwrite_failure_output(),
+        returncode=1,
+        context=context,
+        cmd=overwrite_cmd,
+        expected_path="/tmp/existing.md",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_overwrite_failure(
+            passing_output_overwrite_failure_output(),
+            returncode=0,
+            context=context,
+            cmd=overwrite_cmd,
+            expected_path="/tmp/existing.md",
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_overwrite_failure(
+            f"{EXPECTED_ERROR_PREFIX} Output file already exists: /tmp/existing.md.",
+            returncode=1,
+            context=context,
+            cmd=overwrite_cmd,
+            expected_path="/tmp/existing.md",
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_overwrite_failure(
+            passing_output_overwrite_failure_output(),
+            returncode=1,
+            context=context,
+            cmd=overwrite_cmd,
+            expected_path="/tmp/other.md",
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_overwrite_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=overwrite_cmd,
+            expected_path="/tmp/existing.md",
         ),
         expected="ANSI escape",
         scope="smoke assertions",
