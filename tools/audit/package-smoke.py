@@ -43,8 +43,10 @@ from smoke_assertions import (
     assert_examples_json_route_hit,
     assert_no_ansi,
     assert_pack_json_component_spec,
+    assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
     assert_prompt_json_component_spec,
+    assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
     assert_route_json_component_spec,
     assert_search_json_contains_hit,
@@ -324,11 +326,19 @@ def assert_check_stdin_smoke(
     assert_check_stdin_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
-def read_json_output_file(output_path: Path, *, context: str) -> str:
+def read_output_file(output_path: Path, *, context: str, label: str) -> str:
     try:
         return output_path.read_text(encoding="utf-8")
     except OSError as error:
-        raise SystemExit(f"failed to read JSON output after {context}: {output_path}") from error
+        raise SystemExit(f"failed to read {label} output after {context}: {output_path}") from error
+
+
+def read_json_output_file(output_path: Path, *, context: str) -> str:
+    return read_output_file(output_path, context=context, label="JSON")
+
+
+def read_markdown_output_file(output_path: Path, *, context: str) -> str:
+    return read_output_file(output_path, context=context, label="Markdown")
 
 
 def assert_prompt_smoke(
@@ -363,6 +373,22 @@ def assert_prompt_markdown_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_prompt_markdown_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_prompt_markdown_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_plain(cmd, cwd=cwd, env=env)
+    assert_prompt_markdown_body_component_spec(
+        read_markdown_output_file(output_path, context=context),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_prompt_stdin_smoke(
@@ -414,6 +440,22 @@ def assert_pack_markdown_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_pack_markdown_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_pack_markdown_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_plain(cmd, cwd=cwd, env=env)
+    assert_pack_markdown_body_component_spec(
+        read_markdown_output_file(output_path, context=context),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_pack_stdin_smoke(
@@ -630,6 +672,22 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin prompt markdown stdout",
         )
+        installed_prompt_markdown = tmp_root / "installed-prompt.md"
+        assert_prompt_markdown_file_smoke(
+            [
+                str(bin_path),
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--out",
+                str(installed_prompt_markdown),
+                "--force",
+            ],
+            installed_prompt_markdown,
+            env=smoke_env,
+            context="package smoke installed bin prompt markdown file",
+        )
         installed_prompt_file_json = tmp_root / "installed-prompt-from-file.json"
         assert_prompt_smoke(
             [
@@ -710,6 +768,24 @@ def smoke_tarball(tarball: Path) -> None:
             ],
             env=smoke_env,
             context="package smoke installed bin pack markdown stdout",
+        )
+        installed_pack_markdown = tmp_root / "installed-pack.md"
+        assert_pack_markdown_file_smoke(
+            [
+                str(bin_path),
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--out",
+                str(installed_pack_markdown),
+                "--force",
+            ],
+            installed_pack_markdown,
+            env=smoke_env,
+            context="package smoke installed bin pack markdown file",
         )
         installed_pack_file_json = tmp_root / "installed-pack-from-file.json"
         assert_pack_smoke(
@@ -919,6 +995,23 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec prompt markdown stdout",
         )
+        npx_prompt_markdown = npx_root / "npx-prompt.md"
+        assert_prompt_markdown_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "prompt",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--out",
+                str(npx_prompt_markdown),
+                "--force",
+            ),
+            npx_prompt_markdown,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec prompt markdown file",
+        )
         npx_prompt_file_json = npx_root / "npx-prompt-from-file.json"
         assert_prompt_smoke(
             npm_exec_cmd(
@@ -1004,6 +1097,25 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec pack markdown stdout",
+        )
+        npx_pack_markdown = npx_root / "npx-pack.md"
+        assert_pack_markdown_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "pack",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--out",
+                str(npx_pack_markdown),
+                "--force",
+            ),
+            npx_pack_markdown,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pack markdown file",
         )
         npx_pack_file_json = npx_root / "npx-pack-from-file.json"
         assert_pack_smoke(

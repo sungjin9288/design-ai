@@ -948,6 +948,17 @@ def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[s
         "design-ai prompt",
         EXPECTED_ROUTE_BRIEF,
         "Corpus version:",
+    )
+    assert_contains_fragments(raw, required_fragments, context=context, label="prompt markdown")
+    assert_prompt_markdown_body_component_spec(raw, context=context, cmd=cmd)
+
+
+def assert_prompt_markdown_body_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"prompt markdown body after {context} looks like JSON output")
+
+    required_fragments = (
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
         f"Selected route: {EXPECTED_ROUTE_LABEL} (forced)",
@@ -966,11 +977,11 @@ def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[s
         "Cover anatomy, variants, states",
         "Cite Ant Design, MUI, and shadcn-ui references",
     )
-    assert_contains_fragments(raw, required_fragments, context=context, label="prompt markdown")
+    assert_contains_fragments(raw, required_fragments, context=context, label="prompt markdown body")
 
     command_pattern = rf"/[A-Za-z0-9_-]*{re.escape(EXPECTED_ROUTE_ID)}\s+{re.escape(EXPECTED_ROUTE_BRIEF)}"
     if not re.search(command_pattern, raw):
-        raise SystemExit(f"prompt markdown after {context} preferred command differs from expected route command")
+        raise SystemExit(f"prompt markdown body after {context} preferred command differs from expected route command")
 
 
 def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -1075,6 +1086,17 @@ def assert_pack_markdown_component_spec(raw: str, *, context: str, cmd: list[str
     required_fragments = (
         "design-ai pack",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes",
+    )
+    assert_contains_fragments(raw, required_fragments, context=context, label="pack markdown")
+    assert_pack_markdown_body_component_spec(raw, context=context, cmd=cmd)
+
+
+def assert_pack_markdown_body_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"pack markdown body after {context} looks like JSON output")
+
+    required_fragments = (
         "# design-ai prompt pack",
         f"Brief: {EXPECTED_ROUTE_BRIEF}",
         f"Route: {EXPECTED_ROUTE_LABEL} (forced)",
@@ -1097,11 +1119,11 @@ def assert_pack_markdown_component_spec(raw: str, *, context: str, cmd: list[str
         f"### {EXPECTED_EXAMPLES_HIT}",
         *EXPECTED_PROMPT_FILES,
     )
-    assert_contains_fragments(raw, required_fragments, context=context, label="pack markdown")
+    assert_contains_fragments(raw, required_fragments, context=context, label="pack markdown body")
 
     command_pattern = rf"/[A-Za-z0-9_-]*{re.escape(EXPECTED_ROUTE_ID)}\s+{re.escape(EXPECTED_ROUTE_BRIEF)}"
     if not re.search(command_pattern, raw):
-        raise SystemExit(f"pack markdown after {context} preferred command differs from expected route command")
+        raise SystemExit(f"pack markdown body after {context} preferred command differs from expected route command")
 
 
 def assert_audit_strict_quiet_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -1835,6 +1857,33 @@ def run_self_test() -> None:
         expected="ANSI escape",
         scope="smoke assertions",
     )
+    prompt_markdown_body = "# design-ai task prompt" + passing_prompt_markdown_output().split(
+        "# design-ai task prompt",
+        1,
+    )[1]
+    assert_prompt_markdown_body_component_spec(
+        prompt_markdown_body,
+        context=context,
+        cmd=prompt_markdown_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_body_component_spec(
+            "{",
+            context=context,
+            cmd=prompt_markdown_cmd,
+        ),
+        expected="looks like JSON output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_body_component_spec(
+            prompt_markdown_body.replace(EXPECTED_PROMPT_QUALITY_COMMAND, "design-ai check output.md --strict"),
+            context=context,
+            cmd=prompt_markdown_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
 
     pack_cmd = [
         "design-ai",
@@ -1939,6 +1988,33 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_pack_markdown_component_spec("\x1b[31m{}", context=context, cmd=pack_markdown_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    pack_markdown_body = "# design-ai prompt pack" + passing_pack_markdown_output().split(
+        "# design-ai prompt pack",
+        1,
+    )[1]
+    assert_pack_markdown_body_component_spec(
+        pack_markdown_body,
+        context=context,
+        cmd=pack_markdown_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_body_component_spec(
+            "{",
+            context=context,
+            cmd=pack_markdown_cmd,
+        ),
+        expected="looks like JSON output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_body_component_spec(
+            pack_markdown_body.replace("Context status: partial", "Context status: complete"),
+            context=context,
+            cmd=pack_markdown_cmd,
+        ),
+        expected="missing expected content",
         scope="smoke assertions",
     )
 
