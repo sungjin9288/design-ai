@@ -27,12 +27,14 @@ from smoke_assertions import (
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
     EXPECTED_HELP_ALIASES,
+    EXPECTED_ROUTE_BRIEF,
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
     assert_no_ansi,
+    assert_route_json_component_spec,
     assert_search_json_contains_hit,
     assert_show_json_line,
     assert_unknown_command_failure,
@@ -206,6 +208,11 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
 
 
+def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
@@ -346,6 +353,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin show corpus",
         )
+        assert_route_smoke(
+            [str(bin_path), "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin route recommendation",
+        )
         assert_examples_smoke(
             [str(bin_path), "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"],
             env=smoke_env,
@@ -403,6 +415,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec show corpus",
+        )
+        assert_route_smoke(
+            npm_exec_cmd(tarball, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route recommendation",
         )
         assert_examples_smoke(
             npm_exec_cmd(tarball, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),

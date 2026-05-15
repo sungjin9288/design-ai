@@ -89,6 +89,14 @@ EXPECTED_EXAMPLES_EFFECTIVE_QUERY = "component"
 EXPECTED_EXAMPLES_HIT = "examples/component-button.md"
 EXPECTED_EXAMPLES_CATEGORY = "component"
 EXPECTED_EXAMPLES_TITLE_FRAGMENT = "Button"
+EXPECTED_ROUTE_BRIEF = "Spec a Button component API with keyboard accessibility"
+EXPECTED_ROUTE_ID = "component-spec"
+EXPECTED_ROUTE_LABEL = "Component spec"
+EXPECTED_ROUTE_COMMAND = "commands/component-spec.md"
+EXPECTED_ROUTE_SKILL = "skills/component-spec-writer/SKILL.md"
+EXPECTED_ROUTE_AGENT = "agents/component-architect.md"
+EXPECTED_ROUTE_KNOWLEDGE = "knowledge/a11y/keyboard-and-focus.md"
+EXPECTED_ROUTE_MATCHED_KEYWORDS = ("component", "button", "spec", "api")
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -251,6 +259,36 @@ def passing_examples_json() -> str:
     })
 
 
+def passing_route_json() -> str:
+    return json.dumps({
+        "brief": EXPECTED_ROUTE_BRIEF,
+        "version": "4.13.0",
+        "routes": [
+            {
+                "id": EXPECTED_ROUTE_ID,
+                "label": EXPECTED_ROUTE_LABEL,
+                "score": len(EXPECTED_ROUTE_MATCHED_KEYWORDS),
+                "confidence": "high",
+                "matchedKeywords": list(EXPECTED_ROUTE_MATCHED_KEYWORDS),
+                "command": {"path": EXPECTED_ROUTE_COMMAND, "exists": True},
+                "skills": [{"path": EXPECTED_ROUTE_SKILL, "exists": True}],
+                "agents": [{"path": EXPECTED_ROUTE_AGENT, "exists": True}],
+                "knowledge": [
+                    {"path": "knowledge/PRINCIPLES.md", "exists": True},
+                    {"path": EXPECTED_ROUTE_KNOWLEDGE, "exists": True},
+                ],
+                "explanation": {
+                    "summary": "Matched 4 keywords: component, button, spec, api.",
+                    "referenceCoverage": {
+                        "total": {"available": 5, "total": 5},
+                    },
+                    "missingReferences": [],
+                },
+            }
+        ],
+    })
+
+
 def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -352,6 +390,96 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
     score = first.get("score")
     if not isinstance(score, int) or score <= 0:
         raise SystemExit(f"examples JSON after {context} score is not a positive integer")
+
+
+def find_existing_path(entries: object, path: str, *, context: str, label: str) -> None:
+    if not isinstance(entries, list):
+        raise SystemExit(f"route JSON after {context} {label} is not a list")
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("path") == path:
+            if entry.get("exists") is not True:
+                raise SystemExit(f"route JSON after {context} {label} path is not available: {path}")
+            return
+
+    raise SystemExit(f"route JSON after {context} is missing expected {label} path: {path}")
+
+
+def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse route JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"route JSON after {context} is not an object")
+
+    if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
+        raise SystemExit(f"route JSON after {context} brief differs from expected brief")
+
+    version = payload.get("version")
+    if not isinstance(version, str) or not version or version == "unknown":
+        raise SystemExit(f"route JSON after {context} version is missing")
+
+    routes = payload.get("routes")
+    if not isinstance(routes, list) or len(routes) != 1:
+        raise SystemExit(f"route JSON after {context} does not contain exactly one route")
+
+    route = routes[0]
+    if not isinstance(route, dict):
+        raise SystemExit(f"route JSON after {context} contains an invalid route entry")
+
+    if route.get("id") != EXPECTED_ROUTE_ID:
+        raise SystemExit(f"route JSON after {context} first route differs from expected route")
+
+    if route.get("label") != EXPECTED_ROUTE_LABEL:
+        raise SystemExit(f"route JSON after {context} label differs from expected label")
+
+    if route.get("confidence") != "high":
+        raise SystemExit(f"route JSON after {context} confidence differs from expected confidence")
+
+    matched = route.get("matchedKeywords")
+    if not isinstance(matched, list):
+        raise SystemExit(f"route JSON after {context} matchedKeywords is not a list")
+    missing_keywords = [keyword for keyword in EXPECTED_ROUTE_MATCHED_KEYWORDS if keyword not in matched]
+    if missing_keywords:
+        raise SystemExit(
+            f"route JSON after {context} is missing expected matched keyword(s): {', '.join(missing_keywords)}"
+        )
+
+    score = route.get("score")
+    if not isinstance(score, int) or score < len(EXPECTED_ROUTE_MATCHED_KEYWORDS):
+        raise SystemExit(f"route JSON after {context} score is lower than expected keyword coverage")
+
+    command = route.get("command")
+    if not isinstance(command, dict):
+        raise SystemExit(f"route JSON after {context} command is not an object")
+    if command.get("path") != EXPECTED_ROUTE_COMMAND or command.get("exists") is not True:
+        raise SystemExit(f"route JSON after {context} command differs from expected available command")
+
+    find_existing_path(route.get("skills"), EXPECTED_ROUTE_SKILL, context=context, label="skills")
+    find_existing_path(route.get("agents"), EXPECTED_ROUTE_AGENT, context=context, label="agents")
+    find_existing_path(route.get("knowledge"), EXPECTED_ROUTE_KNOWLEDGE, context=context, label="knowledge")
+
+    explanation = route.get("explanation")
+    if not isinstance(explanation, dict):
+        raise SystemExit(f"route JSON after {context} explanation is not an object")
+
+    summary = explanation.get("summary")
+    if not isinstance(summary, str) or "Matched" not in summary:
+        raise SystemExit(f"route JSON after {context} explanation summary differs from expected match summary")
+
+    missing_references = explanation.get("missingReferences")
+    if missing_references != []:
+        raise SystemExit(f"route JSON after {context} contains missing references")
+
+    coverage = explanation.get("referenceCoverage")
+    total = coverage.get("total") if isinstance(coverage, dict) else None
+    if not isinstance(total, dict) or total.get("available") != total.get("total") or total.get("total", 0) < 1:
+        raise SystemExit(f"route JSON after {context} does not report full reference coverage")
 
 
 def passing_help_catalog_json() -> str:
@@ -767,6 +895,59 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_examples_json_route_hit("\x1b[31m{}", context=context, cmd=examples_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    route_cmd = ["design-ai", "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"]
+    assert_route_json_component_spec(passing_route_json(), context=context, cmd=route_cmd)
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec("{", context=context, cmd=route_cmd),
+        expected="failed to parse route JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps([]), context=context, cmd=route_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    route_unknown_version = json.loads(passing_route_json())
+    route_unknown_version["version"] = "unknown"
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_unknown_version), context=context, cmd=route_cmd),
+        expected="version is missing",
+        scope="smoke assertions",
+    )
+    route_wrong_id = json.loads(passing_route_json())
+    route_wrong_id["routes"][0]["id"] = "design-review"
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_wrong_id), context=context, cmd=route_cmd),
+        expected="first route differs",
+        scope="smoke assertions",
+    )
+    route_missing_keyword = json.loads(passing_route_json())
+    route_missing_keyword["routes"][0]["matchedKeywords"] = ["component", "button"]
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_missing_keyword), context=context, cmd=route_cmd),
+        expected="missing expected matched keyword",
+        scope="smoke assertions",
+    )
+    route_missing_command = json.loads(passing_route_json())
+    route_missing_command["routes"][0]["command"]["exists"] = False
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_missing_command), context=context, cmd=route_cmd),
+        expected="command differs",
+        scope="smoke assertions",
+    )
+    route_missing_references = json.loads(passing_route_json())
+    route_missing_references["routes"][0]["explanation"]["missingReferences"] = [EXPECTED_ROUTE_SKILL]
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_missing_references), context=context, cmd=route_cmd),
+        expected="contains missing references",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec("\x1b[31m{}", context=context, cmd=route_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

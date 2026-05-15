@@ -31,11 +31,13 @@ from smoke_assertions import (
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
+    EXPECTED_ROUTE_BRIEF,
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_examples_json_route_hit,
     assert_no_ansi,
+    assert_route_json_component_spec,
     assert_search_json_contains_hit,
     assert_show_json_line,
     assert_unknown_command_failure,
@@ -175,6 +177,11 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
 
 
+def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
 def wait_for_registry_package(
     package_spec: str,
     *,
@@ -263,6 +270,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec show corpus",
+        )
+        assert_route_smoke(
+            npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec route recommendation",
         )
         assert_examples_smoke(
             npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
