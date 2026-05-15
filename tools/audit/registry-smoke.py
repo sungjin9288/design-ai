@@ -217,7 +217,7 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
 
 
-def write_route_brief(brief_path: Path) -> None:
+def write_smoke_brief(brief_path: Path) -> None:
     brief_path.write_text(f"{EXPECTED_ROUTE_BRIEF}\n", encoding="utf-8")
 
 
@@ -308,6 +308,23 @@ def assert_prompt_smoke(
     assert_prompt_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
+def assert_prompt_stdin_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_plain_with_input(
+        cmd,
+        input_text=f"{EXPECTED_ROUTE_BRIEF}\n",
+        cwd=cwd,
+        env=env,
+    )
+    assert_prompt_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
+
+
 def assert_pack_smoke(
     cmd: list[str],
     output_path: Path,
@@ -317,6 +334,23 @@ def assert_pack_smoke(
     context: str,
 ) -> None:
     run_plain(cmd, cwd=cwd, env=env)
+    assert_pack_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
+
+
+def assert_pack_stdin_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_plain_with_input(
+        cmd,
+        input_text=f"{EXPECTED_ROUTE_BRIEF}\n",
+        cwd=cwd,
+        env=env,
+    )
     assert_pack_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
@@ -416,7 +450,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             context="registry smoke npm exec route recommendation",
         )
         route_brief = npx_root / "route-brief.md"
-        write_route_brief(route_brief)
+        write_smoke_brief(route_brief)
         assert_route_smoke(
             npm_exec_cmd(package_spec, "route", "--from-file", str(route_brief), "--limit", "1", "--json"),
             cwd=npx_root,
@@ -447,6 +481,43 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec prompt plan",
         )
+        prompt_file_json = npx_root / "prompt-from-file.json"
+        assert_prompt_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "prompt",
+                "--from-file",
+                str(route_brief),
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(prompt_file_json),
+                "--force",
+            ),
+            prompt_file_json,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec prompt from file",
+        )
+        prompt_stdin_json = npx_root / "prompt-stdin.json"
+        assert_prompt_stdin_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "prompt",
+                "--stdin",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(prompt_stdin_json),
+                "--force",
+            ),
+            prompt_stdin_json,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec prompt stdin",
+        )
         pack_json = npx_root / "pack.json"
         assert_pack_smoke(
             npm_exec_cmd(
@@ -466,6 +537,47 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec prompt pack",
+        )
+        pack_file_json = npx_root / "pack-from-file.json"
+        assert_pack_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "pack",
+                "--from-file",
+                str(route_brief),
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--json",
+                "--out",
+                str(pack_file_json),
+                "--force",
+            ),
+            pack_file_json,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec pack from file",
+        )
+        pack_stdin_json = npx_root / "pack-stdin.json"
+        assert_pack_stdin_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "pack",
+                "--stdin",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--max-bytes",
+                str(EXPECTED_PACK_MAX_BYTES),
+                "--json",
+                "--out",
+                str(pack_stdin_json),
+                "--force",
+            ),
+            pack_stdin_json,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec pack stdin",
         )
         assert_examples_smoke(
             npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
