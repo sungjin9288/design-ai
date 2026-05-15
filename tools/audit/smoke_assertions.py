@@ -78,6 +78,12 @@ EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION = "search"
 EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
 EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
 EXPECTED_ERROR_PREFIX = "\u2717"
+EXPECTED_CORPUS_SEARCH_QUERY = "Pretendard"
+EXPECTED_CORPUS_SEARCH_HIT = "knowledge/PRINCIPLES.md"
+EXPECTED_CORPUS_SEARCH_PREVIEW = "Pretendard for Korean primary"
+EXPECTED_CORPUS_SHOW_TARGET = "knowledge/PRINCIPLES.md:1"
+EXPECTED_CORPUS_SHOW_REL_PATH = "knowledge/PRINCIPLES.md"
+EXPECTED_CORPUS_SHOW_TEXT = "<!-- hand-written -->"
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -196,6 +202,94 @@ def doctor_report_json_missing(label_to_remove: str) -> str:
             if label != label_to_remove
         ],
     })
+
+
+def passing_search_json() -> str:
+    return json.dumps({
+        "query": EXPECTED_CORPUS_SEARCH_QUERY,
+        "hits": [
+            {
+                "relPath": EXPECTED_CORPUS_SEARCH_HIT,
+                "lineNumber": 29,
+                "preview": EXPECTED_CORPUS_SEARCH_PREVIEW,
+            }
+        ],
+    })
+
+
+def passing_show_json() -> str:
+    return json.dumps({
+        "relPath": EXPECTED_CORPUS_SHOW_REL_PATH,
+        "start": 1,
+        "end": 1,
+        "totalLines": 109,
+        "lines": [
+            {"number": 1, "text": EXPECTED_CORPUS_SHOW_TEXT},
+        ],
+    })
+
+
+def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse search JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"search JSON after {context} is not an object")
+
+    if payload.get("query") != EXPECTED_CORPUS_SEARCH_QUERY:
+        raise SystemExit(f"search JSON after {context} query differs from expected query")
+
+    hits = payload.get("hits")
+    if not isinstance(hits, list) or not hits:
+        raise SystemExit(f"search JSON after {context} does not contain any hits")
+
+    for hit in hits:
+        if not isinstance(hit, dict):
+            continue
+        if hit.get("relPath") != EXPECTED_CORPUS_SEARCH_HIT:
+            continue
+        preview = hit.get("preview")
+        line_number = hit.get("lineNumber")
+        if not isinstance(line_number, int) or line_number < 1:
+            raise SystemExit(f"search JSON after {context} has invalid line number for expected hit")
+        if not isinstance(preview, str) or EXPECTED_CORPUS_SEARCH_PREVIEW not in preview:
+            raise SystemExit(f"search JSON after {context} has invalid preview for expected hit")
+        return
+
+    raise SystemExit(
+        f"search JSON after {context} is missing expected hit: {EXPECTED_CORPUS_SEARCH_HIT}"
+    )
+
+
+def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse show JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"show JSON after {context} is not an object")
+
+    if payload.get("relPath") != EXPECTED_CORPUS_SHOW_REL_PATH:
+        raise SystemExit(f"show JSON after {context} relPath differs from expected path")
+
+    if payload.get("start") != 1 or payload.get("end") != 1:
+        raise SystemExit(f"show JSON after {context} range differs from expected line")
+
+    lines = payload.get("lines")
+    if not isinstance(lines, list) or len(lines) != 1:
+        raise SystemExit(f"show JSON after {context} does not contain exactly one line")
+
+    line = lines[0]
+    if not isinstance(line, dict):
+        raise SystemExit(f"show JSON after {context} contains an invalid line entry")
+
+    if line.get("number") != 1 or line.get("text") != EXPECTED_CORPUS_SHOW_TEXT:
+        raise SystemExit(f"show JSON after {context} line content differs from expected content")
 
 
 def passing_help_catalog_json() -> str:
@@ -495,6 +589,77 @@ def run_self_test() -> None:
             print_raw_on_failure=False,
         ),
         expected="Smoke assertions helper=missing",
+        scope="smoke assertions",
+    )
+
+    search_cmd = ["design-ai", "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"]
+    assert_search_json_contains_hit(passing_search_json(), context=context, cmd=search_cmd)
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit("{", context=context, cmd=search_cmd),
+        expected="failed to parse search JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps([]), context=context, cmd=search_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    search_wrong_query = json.loads(passing_search_json())
+    search_wrong_query["query"] = "Inter"
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_wrong_query), context=context, cmd=search_cmd),
+        expected="query differs",
+        scope="smoke assertions",
+    )
+    search_missing_hit = json.loads(passing_search_json())
+    search_missing_hit["hits"] = []
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_missing_hit), context=context, cmd=search_cmd),
+        expected="does not contain any hits",
+        scope="smoke assertions",
+    )
+    search_invalid_preview = json.loads(passing_search_json())
+    search_invalid_preview["hits"][0]["preview"] = "Korean font"
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_invalid_preview), context=context, cmd=search_cmd),
+        expected="invalid preview",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit("\x1b[31m{}", context=context, cmd=search_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    show_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"]
+    assert_show_json_line(passing_show_json(), context=context, cmd=show_cmd)
+    expect_self_test_failure(
+        lambda: assert_show_json_line("{", context=context, cmd=show_cmd),
+        expected="failed to parse show JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps([]), context=context, cmd=show_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    show_wrong_path = json.loads(passing_show_json())
+    show_wrong_path["relPath"] = "knowledge/WRONG.md"
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps(show_wrong_path), context=context, cmd=show_cmd),
+        expected="relPath differs",
+        scope="smoke assertions",
+    )
+    show_wrong_line = json.loads(passing_show_json())
+    show_wrong_line["lines"][0]["text"] = "# Design-AI principles"
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps(show_wrong_line), context=context, cmd=show_cmd),
+        expected="line content differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_json_line("\x1b[31m{}", context=context, cmd=show_cmd),
+        expected="ANSI escape",
         scope="smoke assertions",
     )
 

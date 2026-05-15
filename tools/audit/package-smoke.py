@@ -23,12 +23,16 @@ from pathlib import Path
 
 from smoke_assertions import (
     EXPECTED_COMMAND_ALIAS_COMMANDS,
+    EXPECTED_CORPUS_SEARCH_QUERY,
+    EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_HELP_ALIASES,
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_doctor_json_clean,
     assert_no_ansi,
+    assert_search_json_contains_hit,
+    assert_show_json_line,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
@@ -185,6 +189,16 @@ def read_help_topics(
     return parse_help_topics(result.stdout, context=context, cmd=cmd)
 
 
+def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_search_json_contains_hit(result.stdout, context=context, cmd=cmd)
+
+
+def assert_show_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_show_json_line(result.stdout, context=context, cmd=cmd)
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
@@ -315,6 +329,16 @@ def smoke_tarball(tarball: Path) -> None:
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
         run_plain([str(bin_path), "list", "skills"], env=smoke_env)
+        assert_search_smoke(
+            [str(bin_path), "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin search corpus",
+        )
+        assert_show_smoke(
+            [str(bin_path), "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin show corpus",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -356,6 +380,18 @@ def smoke_tarball(tarball: Path) -> None:
         )
         if npx_help_topics != help_topics:
             raise SystemExit("package smoke npm exec help catalog differs from installed bin catalog")
+        assert_search_smoke(
+            npm_exec_cmd(tarball, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec search corpus",
+        )
+        assert_show_smoke(
+            npm_exec_cmd(tarball, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec show corpus",
+        )
         run_plain(
             npm_exec_shell_cmd(
                 tarball,
