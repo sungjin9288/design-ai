@@ -63,6 +63,14 @@ test("top-level flag aliases dispatch to version and help", async () => {
   assert.equal(await captureStdout(() => runCommand("-h", [])), helpOutput);
 });
 
+test("routes shorthand dispatches to route catalog listing", async () => {
+  const routeListOutput = await captureStdout(() => runCommand("route", ["--list"]));
+  assert.equal(await captureStdout(() => runCommand("routes", [])), routeListOutput);
+
+  const routeListJsonOutput = await captureStdout(() => runCommand("route", ["--list", "--json"]));
+  assert.equal(await captureStdout(() => runCommand("routes", ["--json"])), routeListJsonOutput);
+});
+
 test("routes alias help uses routes-specific usage", async () => {
   const output = await captureStdout(() => runCommand("routes", ["--help"]));
 
