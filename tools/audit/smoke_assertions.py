@@ -84,6 +84,11 @@ EXPECTED_CORPUS_SEARCH_PREVIEW = "Pretendard for Korean primary"
 EXPECTED_CORPUS_SHOW_TARGET = "knowledge/PRINCIPLES.md:1"
 EXPECTED_CORPUS_SHOW_REL_PATH = "knowledge/PRINCIPLES.md"
 EXPECTED_CORPUS_SHOW_TEXT = "<!-- hand-written -->"
+EXPECTED_EXAMPLES_ROUTE = "component-spec"
+EXPECTED_EXAMPLES_EFFECTIVE_QUERY = "component"
+EXPECTED_EXAMPLES_HIT = "examples/component-button.md"
+EXPECTED_EXAMPLES_CATEGORY = "component"
+EXPECTED_EXAMPLES_TITLE_FRAGMENT = "Button"
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -229,6 +234,23 @@ def passing_show_json() -> str:
     })
 
 
+def passing_examples_json() -> str:
+    return json.dumps({
+        "query": "",
+        "routeId": EXPECTED_EXAMPLES_ROUTE,
+        "effectiveQuery": EXPECTED_EXAMPLES_EFFECTIVE_QUERY,
+        "examples": [
+            {
+                "relPath": EXPECTED_EXAMPLES_HIT,
+                "title": "`Button` - spec",
+                "category": EXPECTED_EXAMPLES_CATEGORY,
+                "score": 57,
+                "preview": "Status: example artifact for component-spec-writer skill",
+            }
+        ],
+    })
+
+
 def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -290,6 +312,46 @@ def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
 
     if line.get("number") != 1 or line.get("text") != EXPECTED_CORPUS_SHOW_TEXT:
         raise SystemExit(f"show JSON after {context} line content differs from expected content")
+
+
+def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse examples JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"examples JSON after {context} is not an object")
+
+    if payload.get("routeId") != EXPECTED_EXAMPLES_ROUTE:
+        raise SystemExit(f"examples JSON after {context} routeId differs from expected route")
+
+    effective_query = payload.get("effectiveQuery")
+    if not isinstance(effective_query, str) or EXPECTED_EXAMPLES_EFFECTIVE_QUERY not in effective_query:
+        raise SystemExit(f"examples JSON after {context} effectiveQuery differs from expected query")
+
+    examples = payload.get("examples")
+    if not isinstance(examples, list) or not examples:
+        raise SystemExit(f"examples JSON after {context} does not contain any examples")
+
+    first = examples[0]
+    if not isinstance(first, dict):
+        raise SystemExit(f"examples JSON after {context} contains an invalid example entry")
+
+    if first.get("relPath") != EXPECTED_EXAMPLES_HIT:
+        raise SystemExit(f"examples JSON after {context} first example differs from expected hit")
+
+    if first.get("category") != EXPECTED_EXAMPLES_CATEGORY:
+        raise SystemExit(f"examples JSON after {context} category differs from expected category")
+
+    title = first.get("title")
+    if not isinstance(title, str) or EXPECTED_EXAMPLES_TITLE_FRAGMENT not in title:
+        raise SystemExit(f"examples JSON after {context} title differs from expected title")
+
+    score = first.get("score")
+    if not isinstance(score, int) or score <= 0:
+        raise SystemExit(f"examples JSON after {context} score is not a positive integer")
 
 
 def passing_help_catalog_json() -> str:
@@ -659,6 +721,52 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_show_json_line("\x1b[31m{}", context=context, cmd=show_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    examples_cmd = ["design-ai", "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"]
+    assert_examples_json_route_hit(passing_examples_json(), context=context, cmd=examples_cmd)
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit("{", context=context, cmd=examples_cmd),
+        expected="failed to parse examples JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps([]), context=context, cmd=examples_cmd),
+        expected="not an object",
+        scope="smoke assertions",
+    )
+    examples_wrong_route = json.loads(passing_examples_json())
+    examples_wrong_route["routeId"] = "design-review"
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_wrong_route), context=context, cmd=examples_cmd),
+        expected="routeId differs",
+        scope="smoke assertions",
+    )
+    examples_empty = json.loads(passing_examples_json())
+    examples_empty["examples"] = []
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_empty), context=context, cmd=examples_cmd),
+        expected="does not contain any examples",
+        scope="smoke assertions",
+    )
+    examples_wrong_hit = json.loads(passing_examples_json())
+    examples_wrong_hit["examples"][0]["relPath"] = "examples/component-accordion.md"
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_wrong_hit), context=context, cmd=examples_cmd),
+        expected="first example differs",
+        scope="smoke assertions",
+    )
+    examples_bad_score = json.loads(passing_examples_json())
+    examples_bad_score["examples"][0]["score"] = 0
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_bad_score), context=context, cmd=examples_cmd),
+        expected="score is not a positive integer",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit("\x1b[31m{}", context=context, cmd=examples_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

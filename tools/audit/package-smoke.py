@@ -25,11 +25,13 @@ from smoke_assertions import (
     EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
+    EXPECTED_EXAMPLES_ROUTE,
     EXPECTED_HELP_ALIASES,
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_doctor_json_clean,
+    assert_examples_json_route_hit,
     assert_no_ansi,
     assert_search_json_contains_hit,
     assert_show_json_line,
@@ -199,6 +201,11 @@ def assert_show_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None =
     assert_show_json_line(result.stdout, context=context, cmd=cmd)
 
 
+def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
@@ -339,6 +346,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin show corpus",
         )
+        assert_examples_smoke(
+            [str(bin_path), "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin examples corpus",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -391,6 +403,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec show corpus",
+        )
+        assert_examples_smoke(
+            npm_exec_cmd(tarball, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec examples corpus",
         )
         run_plain(
             npm_exec_shell_cmd(
