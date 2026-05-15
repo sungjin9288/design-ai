@@ -52,6 +52,7 @@ from smoke_assertions import (
     assert_main_help_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
+    assert_output_write_success,
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
@@ -502,7 +503,8 @@ def assert_prompt_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain(cmd, cwd=cwd, env=env)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_prompt_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
@@ -536,7 +538,8 @@ def assert_prompt_markdown_file_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain(cmd, cwd=cwd, env=env)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_prompt_markdown_body_component_spec(
         read_markdown_output_file(output_path, context=context),
         context=context,
@@ -552,12 +555,13 @@ def assert_prompt_stdin_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain_with_input(
+    result = run_plain_with_input(
         cmd,
         input_text=f"{EXPECTED_ROUTE_BRIEF}\n",
         cwd=cwd,
         env=env,
     )
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_prompt_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
@@ -569,7 +573,8 @@ def assert_pack_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain(cmd, cwd=cwd, env=env)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_pack_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 
@@ -603,7 +608,8 @@ def assert_pack_markdown_file_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain(cmd, cwd=cwd, env=env)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_pack_markdown_body_component_spec(
         read_markdown_output_file(output_path, context=context),
         context=context,
@@ -619,12 +625,13 @@ def assert_pack_stdin_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    run_plain_with_input(
+    result = run_plain_with_input(
         cmd,
         input_text=f"{EXPECTED_ROUTE_BRIEF}\n",
         cwd=cwd,
         env=env,
     )
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_pack_json_component_spec(read_json_output_file(output_path, context=context), context=context, cmd=cmd)
 
 

@@ -356,6 +356,13 @@ def passing_output_overwrite_failure_output(path: str = "/tmp/existing.md") -> s
     ])
 
 
+def passing_output_write_success_output(path: str = "/tmp/output.json") -> str:
+    return "\n".join([
+        f"✓  Wrote {path}",
+        "",
+    ])
+
+
 def assert_unknown_command_failure(
     raw: str,
     *,
@@ -445,6 +452,21 @@ def assert_output_overwrite_failure(
         required_fragments,
         context=context,
         label="output overwrite failure",
+    )
+
+
+def assert_output_write_success(raw: str, *, context: str, cmd: list[str], expected_path: str) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{") or raw.lstrip().startswith("#"):
+        raise SystemExit(f"output write success after {context} looks like artifact content")
+    if "Output file already exists:" in raw or "Use --force to overwrite." in raw:
+        raise SystemExit(f"output write success after {context} reported overwrite failure")
+
+    assert_contains_fragments(
+        raw,
+        ("Wrote", expected_path),
+        context=context,
+        label="output write success",
     )
 
 
@@ -2467,6 +2489,52 @@ def run_self_test() -> None:
             context=context,
             cmd=overwrite_cmd,
             expected_path="/tmp/existing.md",
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_output_write_success(
+        passing_output_write_success_output("/tmp/output.json"),
+        context=context,
+        cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+        expected_path="/tmp/output.json",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            passing_output_write_success_output("/tmp/output.json"),
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+            expected_path="/tmp/other.json",
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            passing_output_overwrite_failure_output("/tmp/output.json"),
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+            expected_path="/tmp/output.json",
+        ),
+        expected="overwrite failure",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            passing_prompt_json(),
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+            expected_path="/tmp/output.json",
+        ),
+        expected="artifact content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "\x1b[31mred",
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--out", "/tmp/output.json"],
+            expected_path="/tmp/output.json",
         ),
         expected="ANSI escape",
         scope="smoke assertions",
