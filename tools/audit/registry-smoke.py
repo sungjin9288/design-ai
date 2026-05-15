@@ -30,9 +30,11 @@ from doctor_assertions import (
 from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
+    EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_no_ansi,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
+    assert_unknown_list_domain_failure,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -220,6 +222,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec unknown help topic",
             assertion=assert_unknown_help_topic_failure,
+        )
+        run_expected_failure(
+            npm_exec_cmd(package_spec, "list", EXPECTED_UNKNOWN_LIST_DOMAIN),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec unknown list domain",
+            assertion=assert_unknown_list_domain_failure,
         )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         doctor_json = npx_root / "doctor.json"

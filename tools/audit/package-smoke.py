@@ -26,10 +26,12 @@ from smoke_assertions import (
     EXPECTED_HELP_ALIASES,
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
+    EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_doctor_json_clean,
     assert_no_ansi,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
+    assert_unknown_list_domain_failure,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -297,6 +299,12 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin unknown help topic",
             assertion=assert_unknown_help_topic_failure,
         )
+        run_expected_failure(
+            [str(bin_path), "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+            env=smoke_env,
+            context="package smoke installed bin unknown list domain",
+            assertion=assert_unknown_list_domain_failure,
+        )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
             run_plain([str(bin_path), "help", topic], env=smoke_env)
@@ -332,6 +340,13 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec unknown help topic",
             assertion=assert_unknown_help_topic_failure,
+        )
+        run_expected_failure(
+            npm_exec_cmd(tarball, "list", EXPECTED_UNKNOWN_LIST_DOMAIN),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec unknown list domain",
+            assertion=assert_unknown_list_domain_failure,
         )
         npx_help_topics = read_help_topics(
             npm_exec_cmd(tarball, "help", "--json"),

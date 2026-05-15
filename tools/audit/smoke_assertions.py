@@ -75,6 +75,8 @@ EXPECTED_UNKNOWN_COMMAND = "docter"
 EXPECTED_UNKNOWN_COMMAND_SUGGESTION = "doctor"
 EXPECTED_UNKNOWN_HELP_TOPIC = "serach"
 EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION = "search"
+EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
+EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
 EXPECTED_ERROR_PREFIX = "\u2717"
 
 
@@ -100,6 +102,15 @@ def passing_unknown_help_topic_output() -> str:
         f"{EXPECTED_ERROR_PREFIX} Unknown help topic: {EXPECTED_UNKNOWN_HELP_TOPIC}",
         f"Did you mean `design-ai help {EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION}`?",
         "Run `design-ai help` to list available commands.",
+    ])
+
+
+def passing_unknown_list_domain_output() -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} Unknown domain: {EXPECTED_UNKNOWN_LIST_DOMAIN}",
+        "domain expects one of: skills, commands, agents",
+        f"Received: {EXPECTED_UNKNOWN_LIST_DOMAIN}",
+        f"Did you mean `{EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION}`?",
     ])
 
 
@@ -142,6 +153,27 @@ def assert_unknown_help_topic_failure(
     if missing:
         raise SystemExit(
             f"unknown help topic after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_unknown_list_domain_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"unknown list domain after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_unknown_list_domain_output().splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"unknown list domain after {context} missing expected output: {' | '.join(missing)}"
         )
 
 
@@ -397,6 +429,42 @@ def run_self_test() -> None:
             returncode=1,
             context=context,
             cmd=["design-ai", "help", EXPECTED_UNKNOWN_HELP_TOPIC],
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_unknown_list_domain_failure(
+        passing_unknown_list_domain_output(),
+        returncode=1,
+        context=context,
+        cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_list_domain_failure(
+            passing_unknown_list_domain_output(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_list_domain_failure(
+            f"{EXPECTED_ERROR_PREFIX} Unknown domain: {EXPECTED_UNKNOWN_LIST_DOMAIN}",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_list_domain_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
         ),
         expected="ANSI escape",
         scope="smoke assertions",
