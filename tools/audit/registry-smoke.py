@@ -41,6 +41,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
+    assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
     assert_examples_json_route_hit,
@@ -261,6 +262,17 @@ def assert_check_examples_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_examples_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_all_routes_issues_only_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_all_routes_issues_only_output(result.stdout, context=context, cmd=cmd)
 
 
 def write_check_artifact(artifact_path: Path) -> None:
@@ -834,6 +846,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec check examples",
+        )
+        assert_check_all_routes_issues_only_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "check",
+                "--examples",
+                "--all-routes",
+                "--limit",
+                "1",
+                "--issues-only",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec check all routes issues only",
         )
         check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
         write_check_artifact(check_artifact)

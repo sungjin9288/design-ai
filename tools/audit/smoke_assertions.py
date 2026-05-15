@@ -640,6 +640,20 @@ def passing_check_examples_json() -> str:
     })
 
 
+def passing_check_all_routes_issues_only_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai check examples",
+        "  all routes",
+        "",
+        "Source: /tmp/design-ai",
+        "Status: pass",
+        "Routes: 18 (0 fail, 0 warn, 18 pass)",
+        "Examples: 18 (0 fail, 0 warn, 18 pass)",
+        "",
+    ])
+
+
 def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -1337,6 +1351,35 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
         label="check examples JSON",
         expected_file_suffix=EXPECTED_EXAMPLES_HIT,
     )
+
+
+def assert_check_all_routes_issues_only_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"check all-routes issues-only output after {context} looks like JSON output")
+
+    required_fragments = (
+        "design-ai check examples",
+        "all routes",
+        "Status: pass",
+        "Routes:",
+        "Examples:",
+    )
+    assert_contains_fragments(
+        raw,
+        required_fragments,
+        context=context,
+        label="check all-routes issues-only output",
+    )
+
+    if not re.search(r"Routes:\s+\d+ \(0 fail, 0 warn, \d+ pass\)", raw):
+        raise SystemExit(f"check all-routes issues-only output after {context} route summary differs from expected pass format")
+
+    if not re.search(r"Examples:\s+\d+ \(0 fail, 0 warn, \d+ pass\)", raw):
+        raise SystemExit(f"check all-routes issues-only output after {context} example summary differs from expected pass format")
+
+    if re.search(r"^\s*[✓!]?\s+[a-z0-9-]+:\s+(?:pass|warn|fail)\b", raw, flags=re.MULTILINE):
+        raise SystemExit(f"check all-routes issues-only output after {context} printed per-route rows despite no issues")
 
 
 def passing_help_catalog_json() -> str:
@@ -2223,6 +2266,65 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_check_examples_json_component_spec("\x1b[31m{}", context=context, cmd=check_examples_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    check_all_routes_issues_cmd = [
+        "design-ai",
+        "check",
+        "--examples",
+        "--all-routes",
+        "--limit",
+        "1",
+        "--issues-only",
+    ]
+    assert_check_all_routes_issues_only_output(
+        passing_check_all_routes_issues_only_output(),
+        context=context,
+        cmd=check_all_routes_issues_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_check_all_routes_issues_only_output(
+            "{",
+            context=context,
+            cmd=check_all_routes_issues_cmd,
+        ),
+        expected="looks like JSON output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_all_routes_issues_only_output(
+            passing_check_all_routes_issues_only_output().replace("Status: pass", "Status: warn"),
+            context=context,
+            cmd=check_all_routes_issues_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_all_routes_issues_only_output(
+            passing_check_all_routes_issues_only_output().replace(
+                "Routes: 18 (0 fail, 0 warn, 18 pass)",
+                "Routes: 18 (0 fail, 1 warn, 17 pass)",
+            ),
+            context=context,
+            cmd=check_all_routes_issues_cmd,
+        ),
+        expected="route summary differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_all_routes_issues_only_output(
+            passing_check_all_routes_issues_only_output() + "✓ component-spec: pass (0 fail, 0 warn, 1 pass)\n",
+            context=context,
+            cmd=check_all_routes_issues_cmd,
+        ),
+        expected="printed per-route rows",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_all_routes_issues_only_output("\x1b[31m{}", context=context, cmd=check_all_routes_issues_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

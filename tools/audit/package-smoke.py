@@ -37,6 +37,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
+    assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
     assert_doctor_json_clean,
@@ -294,6 +295,17 @@ def assert_check_examples_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_check_examples_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_all_routes_issues_only_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_all_routes_issues_only_output(result.stdout, context=context, cmd=cmd)
 
 
 def write_check_artifact(artifact_path: Path) -> None:
@@ -900,6 +912,19 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin check examples",
         )
+        assert_check_all_routes_issues_only_smoke(
+            [
+                str(bin_path),
+                "check",
+                "--examples",
+                "--all-routes",
+                "--limit",
+                "1",
+                "--issues-only",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin check all routes issues only",
+        )
         installed_check_artifact = tmp_root / EXPECTED_CHECK_ARTIFACT_NAME
         write_check_artifact(installed_check_artifact)
         assert_check_artifact_smoke(
@@ -1265,6 +1290,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec check examples",
+        )
+        assert_check_all_routes_issues_only_smoke(
+            npm_exec_cmd(
+                tarball,
+                "check",
+                "--examples",
+                "--all-routes",
+                "--limit",
+                "1",
+                "--issues-only",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec check all routes issues only",
         )
         npx_check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
         write_check_artifact(npx_check_artifact)
