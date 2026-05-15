@@ -24,6 +24,31 @@ async function captureStdout(fn) {
   return lines.join("\n");
 }
 
+async function captureStderrAndExit(fn) {
+  const lines = [];
+  const originalError = console.error;
+  const originalExit = process.exit;
+  let exitCode;
+  console.error = (...args) => {
+    lines.push(args.join(" "));
+  };
+  process.exit = (code = 0) => {
+    exitCode = code;
+    throw new Error(`process.exit:${code}`);
+  };
+  try {
+    await fn();
+  } catch (err) {
+    if (!String(err?.message || err).startsWith("process.exit:")) {
+      throw err;
+    }
+  } finally {
+    console.error = originalError;
+    process.exit = originalExit;
+  }
+  return { stderr: lines.join("\n"), exitCode };
+}
+
 test("suggestCommand suggests close canonical command names", () => {
   assert.equal(suggestCommand("docter"), "doctor");
   assert.equal(suggestCommand("serach"), "search");
@@ -40,6 +65,15 @@ test("suggestCommand ignores aliases and distant input", () => {
 
 test("canonical command list matches the help catalog topics", () => {
   assert.deepEqual(CANONICAL_COMMANDS, HELP_TOPICS);
+});
+
+test("unknown commands print canonical suggestions and exit with code 1", async () => {
+  const { stderr, exitCode } = await captureStderrAndExit(() => runCommand("docter", []));
+
+  assert.equal(exitCode, 1);
+  assert.match(stderr, /Unknown command: docter/);
+  assert.match(stderr, /Did you mean `design-ai doctor`\?/);
+  assert.match(stderr, /Run `design-ai help` for usage\./);
 });
 
 test("help catalog aliases dispatch to their canonical commands", async () => {
