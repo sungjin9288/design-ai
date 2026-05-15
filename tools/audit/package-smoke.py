@@ -35,6 +35,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    EXPECTED_UNKNOWN_ROUTE_ID,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
@@ -70,6 +71,7 @@ from smoke_assertions import (
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
+    assert_unknown_route_id_failure,
     assert_uninstall_output,
     assert_version_output,
     command_alias_script,
@@ -801,6 +803,19 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin unknown list domain",
             assertion=assert_unknown_list_domain_failure,
         )
+        unknown_route_smokes = (
+            ("prompt", [str(bin_path), "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID]),
+            ("pack", [str(bin_path), "pack", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID]),
+            ("examples", [str(bin_path), "examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID]),
+            ("check", [str(bin_path), "check", "--examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID]),
+        )
+        for label, command in unknown_route_smokes:
+            run_expected_failure(
+                command,
+                env=smoke_env,
+                context=f"package smoke installed bin unknown route id {label}",
+                assertion=assert_unknown_route_id_failure,
+            )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
             assert_help_topic_smoke(
@@ -1244,6 +1259,20 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec unknown list domain",
             assertion=assert_unknown_list_domain_failure,
         )
+        npx_unknown_route_smokes = (
+            ("prompt", npm_exec_cmd(tarball, "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+            ("pack", npm_exec_cmd(tarball, "pack", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+            ("examples", npm_exec_cmd(tarball, "examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+            ("check", npm_exec_cmd(tarball, "check", "--examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+        )
+        for label, command in npx_unknown_route_smokes:
+            run_expected_failure(
+                command,
+                cwd=npx_root,
+                env=npx_env,
+                context=f"package smoke npm exec unknown route id {label}",
+                assertion=assert_unknown_route_id_failure,
+            )
         npx_help_topics = read_help_topics(
             npm_exec_cmd(tarball, "help", "--json"),
             cwd=npx_root,

@@ -180,8 +180,8 @@ main 브랜치의 모든 커밋에서 7개 모두 통과해요.
 ## 기여하기
 
 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)를 참고하세요. 기준:
-- 릴리스 PR 또는 태그 전에는 `npm run release:check`를 실행해요. CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, version/top-level help/command alias help/command-specific help topic 출력 검증, prompt/pack 강제 `--out` overwrite 및 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력 검증을 포함한 packed-tarball smoke를 한 번에 확인해요.
-- npm publish가 끝난 뒤에는 `npm run registry:smoke`로 공개 `npm exec --package` 설치 경로, help topic catalog, 세 가지 `list` catalog domain, human / JSON corpus discovery 출력, prompt/pack 강제 `--out` overwrite 및 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력을 확인해요.
+- 릴리스 PR 또는 태그 전에는 `npm run release:check`를 실행해요. CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, version/top-level help/command alias help/command-specific help topic 출력 검증, unknown route-id suggestion failure 검증, prompt/pack 강제 `--out` overwrite 및 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력 검증을 포함한 packed-tarball smoke를 한 번에 확인해요.
+- npm publish가 끝난 뒤에는 `npm run registry:smoke`로 공개 `npm exec --package` 설치 경로, help topic catalog, 세 가지 `list` catalog domain, human / JSON corpus discovery 출력, unknown route-id suggestion failure 검증, prompt/pack 강제 `--out` overwrite 및 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력을 확인해요.
 - 손으로 쓴 지식 파일은 `<!-- hand-written -->` 마커 사용.
 - 스킬 PLAYBOOK은 verification phase 체크리스트 포함.
 - 한국어 문자열은 한국어로 직접 작성 (기계 번역 금지).

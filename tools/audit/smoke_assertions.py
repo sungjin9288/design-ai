@@ -174,6 +174,8 @@ EXPECTED_UNKNOWN_HELP_TOPIC = "serach"
 EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION = "search"
 EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
 EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
+EXPECTED_UNKNOWN_ROUTE_ID = "component-spce"
+EXPECTED_UNKNOWN_ROUTE_ID_SUGGESTION = "component-spec"
 EXPECTED_LIST_CATALOG = {
     "skills": (
         "design-system-builder",
@@ -336,6 +338,14 @@ def passing_unknown_list_domain_output() -> str:
     ])
 
 
+def passing_unknown_route_id_output() -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} Unknown route id: {EXPECTED_UNKNOWN_ROUTE_ID}.",
+        f"Did you mean `{EXPECTED_UNKNOWN_ROUTE_ID_SUGGESTION}`?",
+        f"Available routes: {', '.join(EXPECTED_ROUTE_CATALOG_IDS)}",
+    ])
+
+
 def passing_list_catalog_output(kind: str = "skills") -> str:
     items = EXPECTED_LIST_CATALOG[kind]
     return "\n".join([
@@ -426,6 +436,27 @@ def assert_unknown_list_domain_failure(
     if missing:
         raise SystemExit(
             f"unknown list domain after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_unknown_route_id_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"unknown route id after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_unknown_route_id_output().splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"unknown route id after {context} missing expected output: {' | '.join(missing)}"
         )
 
 
@@ -2411,6 +2442,42 @@ def run_self_test() -> None:
             returncode=1,
             context=context,
             cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_unknown_route_id_failure(
+        passing_unknown_route_id_output(),
+        returncode=1,
+        context=context,
+        cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID],
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_route_id_failure(
+            passing_unknown_route_id_output(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID],
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_route_id_failure(
+            f"{EXPECTED_ERROR_PREFIX} Unknown route id: {EXPECTED_UNKNOWN_ROUTE_ID}.",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID],
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_route_id_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID],
         ),
         expected="ANSI escape",
         scope="smoke assertions",
