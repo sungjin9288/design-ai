@@ -37,6 +37,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     EXPECTED_UNKNOWN_OPTION_SMOKES,
     EXPECTED_UNKNOWN_ROUTE_ID,
+    EXPECTED_UNKNOWN_SEARCH_DIR,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
@@ -69,6 +70,7 @@ from smoke_assertions import (
     assert_show_human_output,
     assert_show_json_line,
     assert_status_output,
+    assert_search_dir_value_failure,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
@@ -855,6 +857,12 @@ def smoke_tarball(tarball: Path) -> None:
                 env=smoke_env,
                 context=f"package smoke installed bin unknown {command_name} option",
             )
+        run_expected_failure(
+            [str(bin_path), "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", EXPECTED_UNKNOWN_SEARCH_DIR],
+            env=smoke_env,
+            context="package smoke installed bin unknown search dir value",
+            assertion=assert_search_dir_value_failure,
+        )
         help_topics = read_help_topics([str(bin_path), "help", "--json"], env=smoke_env)
         for topic in help_topics:
             assert_help_topic_smoke(
@@ -1322,6 +1330,13 @@ def smoke_tarball(tarball: Path) -> None:
                 env=npx_env,
                 context=f"package smoke npm exec unknown {command_name} option",
             )
+        run_expected_failure(
+            npm_exec_cmd(tarball, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", EXPECTED_UNKNOWN_SEARCH_DIR),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec unknown search dir value",
+            assertion=assert_search_dir_value_failure,
+        )
         npx_help_topics = read_help_topics(
             npm_exec_cmd(tarball, "help", "--json"),
             cwd=npx_root,

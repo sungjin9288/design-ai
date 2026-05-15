@@ -176,6 +176,16 @@ EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
 EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
 EXPECTED_UNKNOWN_ROUTE_ID = "component-spce"
 EXPECTED_UNKNOWN_ROUTE_ID_SUGGESTION = "component-spec"
+EXPECTED_SEARCH_DIRS = (
+    "knowledge",
+    "examples",
+    "skills",
+    "docs",
+    "agents",
+    "commands",
+)
+EXPECTED_UNKNOWN_SEARCH_DIR = "knowlege"
+EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("route", "--limt", "--limit"),
     ("prompt", "--rout", "--route"),
@@ -357,6 +367,14 @@ def passing_unknown_route_id_output() -> str:
     ])
 
 
+def passing_search_dir_value_output() -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} --dir expects one of: {', '.join(EXPECTED_SEARCH_DIRS)}",
+        f"Received: {EXPECTED_UNKNOWN_SEARCH_DIR}",
+        f"Did you mean `{EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION}`?",
+    ])
+
+
 def passing_unknown_option_output(command_name: str, option: str, suggestion: str) -> str:
     return "\n".join([
         f"{EXPECTED_ERROR_PREFIX} Unknown {command_name} option: {option}",
@@ -521,6 +539,27 @@ def assert_unknown_option_failure(
     if missing:
         raise SystemExit(
             f"unknown {command_name} option after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_search_dir_value_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"search dir value after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_search_dir_value_output().splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"search dir value after {context} missing expected output: {' | '.join(missing)}"
         )
 
 
@@ -2599,6 +2638,49 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: unknown_option_args("missing", "--bad"),
         expected="unsupported unknown option smoke command",
+        scope="smoke assertions",
+    )
+    search_dir_cmd = [
+        "design-ai",
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        EXPECTED_UNKNOWN_SEARCH_DIR,
+    ]
+    assert_search_dir_value_failure(
+        passing_search_dir_value_output(),
+        returncode=1,
+        context=context,
+        cmd=search_dir_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_search_dir_value_failure(
+            passing_search_dir_value_output(),
+            returncode=0,
+            context=context,
+            cmd=search_dir_cmd,
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_dir_value_failure(
+            f"{EXPECTED_ERROR_PREFIX} --dir expects one of: {', '.join(EXPECTED_SEARCH_DIRS)}",
+            returncode=1,
+            context=context,
+            cmd=search_dir_cmd,
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_dir_value_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=search_dir_cmd,
+        ),
+        expected="ANSI escape",
         scope="smoke assertions",
     )
 

@@ -43,6 +43,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_LIST_DOMAIN,
     EXPECTED_UNKNOWN_OPTION_SMOKES,
     EXPECTED_UNKNOWN_ROUTE_ID,
+    EXPECTED_UNKNOWN_SEARCH_DIR,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
@@ -71,6 +72,7 @@ from smoke_assertions import (
     assert_search_json_contains_hit,
     assert_show_human_output,
     assert_show_json_line,
+    assert_search_dir_value_failure,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
@@ -754,6 +756,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 env=env,
                 context=f"registry smoke npm exec unknown {command_name} option",
             )
+        run_expected_failure(
+            npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", EXPECTED_UNKNOWN_SEARCH_DIR),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec unknown search dir value",
+            assertion=assert_search_dir_value_failure,
+        )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         for topic in help_topics:
             assert_help_topic_smoke(
