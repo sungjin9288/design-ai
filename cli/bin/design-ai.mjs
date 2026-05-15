@@ -21,6 +21,7 @@
 //   help                 Show help
 
 import { runCommand } from "../lib/dispatch.mjs";
+import { red } from "../lib/log.mjs";
 
 const args = process.argv.slice(2);
 const command = args[0] || "help";
@@ -29,7 +30,7 @@ const restArgs = args.slice(1);
 try {
   await runCommand(command, restArgs);
 } catch (err) {
-  console.error(`\x1b[31m✗\x1b[0m ${err.message}`);
+  console.error(`${red("✗")} ${err.message}`);
   if (process.env.DEBUG) console.error(err.stack);
   process.exit(1);
 }

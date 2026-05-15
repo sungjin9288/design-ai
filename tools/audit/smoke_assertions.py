@@ -73,6 +73,9 @@ EXPECTED_COMMAND_ALIAS_COMMANDS = (
 )
 EXPECTED_UNKNOWN_COMMAND = "docter"
 EXPECTED_UNKNOWN_COMMAND_SUGGESTION = "doctor"
+EXPECTED_UNKNOWN_HELP_TOPIC = "serach"
+EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION = "search"
+EXPECTED_ERROR_PREFIX = "\u2717"
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -89,6 +92,14 @@ def passing_unknown_command_output() -> str:
         f"Unknown command: {EXPECTED_UNKNOWN_COMMAND}",
         f"Did you mean `design-ai {EXPECTED_UNKNOWN_COMMAND_SUGGESTION}`?",
         "Run `design-ai help` for usage.",
+    ])
+
+
+def passing_unknown_help_topic_output() -> str:
+    return "\n".join([
+        f"{EXPECTED_ERROR_PREFIX} Unknown help topic: {EXPECTED_UNKNOWN_HELP_TOPIC}",
+        f"Did you mean `design-ai help {EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION}`?",
+        "Run `design-ai help` to list available commands.",
     ])
 
 
@@ -110,6 +121,27 @@ def assert_unknown_command_failure(
     if missing:
         raise SystemExit(
             f"unknown command after {context} missing expected output: {' | '.join(missing)}"
+        )
+
+
+def assert_unknown_help_topic_failure(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode != 1:
+        raise SystemExit(
+            f"unknown help topic after {context} exited with {returncode}, expected 1: {format_cmd(cmd)}"
+        )
+
+    expected_lines = passing_unknown_help_topic_output().splitlines()
+    missing = [line for line in expected_lines if line not in raw]
+    if missing:
+        raise SystemExit(
+            f"unknown help topic after {context} missing expected output: {' | '.join(missing)}"
         )
 
 
@@ -329,6 +361,42 @@ def run_self_test() -> None:
             returncode=1,
             context=context,
             cmd=["design-ai", EXPECTED_UNKNOWN_COMMAND],
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_unknown_help_topic_failure(
+        passing_unknown_help_topic_output(),
+        returncode=1,
+        context=context,
+        cmd=["design-ai", "help", EXPECTED_UNKNOWN_HELP_TOPIC],
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_help_topic_failure(
+            passing_unknown_help_topic_output(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", "help", EXPECTED_UNKNOWN_HELP_TOPIC],
+        ),
+        expected="expected 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_help_topic_failure(
+            f"{EXPECTED_ERROR_PREFIX} Unknown help topic: {EXPECTED_UNKNOWN_HELP_TOPIC}",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "help", EXPECTED_UNKNOWN_HELP_TOPIC],
+        ),
+        expected="missing expected output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_unknown_help_topic_failure(
+            "\x1b[31mred",
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "help", EXPECTED_UNKNOWN_HELP_TOPIC],
         ),
         expected="ANSI escape",
         scope="smoke assertions",

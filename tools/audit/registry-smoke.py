@@ -29,8 +29,10 @@ from doctor_assertions import (
 )
 from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
+    EXPECTED_UNKNOWN_HELP_TOPIC,
     assert_no_ansi,
     assert_unknown_command_failure,
+    assert_unknown_help_topic_failure,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -106,6 +108,7 @@ def run_expected_failure(
     cwd: Path | None = None,
     env: dict[str, str] | None = None,
     context: str,
+    assertion=assert_unknown_command_failure,
 ) -> subprocess.CompletedProcess[str]:
     print(f"$ {format_cmd(cmd)}", flush=True)
     result = subprocess.run(
@@ -121,7 +124,7 @@ def run_expected_failure(
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
 
-    assert_unknown_command_failure(
+    assertion(
         f"{result.stdout}\n{result.stderr}",
         returncode=result.returncode,
         context=context,
@@ -210,6 +213,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec unknown command",
+        )
+        run_expected_failure(
+            npm_exec_cmd(package_spec, "help", EXPECTED_UNKNOWN_HELP_TOPIC),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec unknown help topic",
+            assertion=assert_unknown_help_topic_failure,
         )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         doctor_json = npx_root / "doctor.json"
