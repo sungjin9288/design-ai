@@ -22,6 +22,7 @@ import tempfile
 from pathlib import Path
 
 from smoke_assertions import (
+    EXPECTED_CHECK_EXAMPLES_LIMIT,
     EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
@@ -33,6 +34,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_COMMAND,
     EXPECTED_UNKNOWN_HELP_TOPIC,
     EXPECTED_UNKNOWN_LIST_DOMAIN,
+    assert_check_examples_json_component_spec,
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
     assert_no_ansi,
@@ -215,6 +217,17 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_examples_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_examples_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
 def read_json_output_file(output_path: Path, *, context: str) -> str:
@@ -434,6 +447,21 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin examples corpus",
         )
+        assert_check_examples_smoke(
+            [
+                str(bin_path),
+                "check",
+                "--examples",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--limit",
+                str(EXPECTED_CHECK_EXAMPLES_LIMIT),
+                "--strict",
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin check examples",
+        )
         run_plain([str(bin_path), "install"], env=smoke_env)
         assert_doctor_clean(bin_path, smoke_env)
         run_plain([str(bin_path), "doctor", "--strict"], env=smoke_env)
@@ -536,6 +564,22 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec examples corpus",
+        )
+        assert_check_examples_smoke(
+            npm_exec_cmd(
+                tarball,
+                "check",
+                "--examples",
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--limit",
+                str(EXPECTED_CHECK_EXAMPLES_LIMIT),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec check examples",
         )
         run_plain(
             npm_exec_shell_cmd(
