@@ -32,6 +32,8 @@ from smoke_assertions import (
     EXPECTED_CHECK_EXAMPLES_LIMIT,
     EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_CORPUS_SEARCH_QUERY,
+    EXPECTED_CORPUS_SHOW_RANGE,
+    EXPECTED_CORPUS_SHOW_REL_PATH,
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
     EXPECTED_HELP_ALIASES,
@@ -69,10 +71,13 @@ from smoke_assertions import (
     assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
     assert_route_catalog_json,
+    assert_route_explain_human_output,
     assert_route_json_component_spec,
     assert_search_human_output,
     assert_search_json_contains_hit,
     assert_show_human_output,
+    assert_show_human_range_output,
+    assert_show_json_range,
     assert_show_json_line,
     assert_search_dir_value_failure,
     assert_unknown_command_failure,
@@ -347,6 +352,22 @@ def assert_show_human_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | 
     assert_show_human_output(result.stdout, context=context, cmd=cmd)
 
 
+def assert_show_range_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_show_json_range(result.stdout, context=context, cmd=cmd)
+
+
+def assert_show_human_range_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_show_human_range_output(result.stdout, context=context, cmd=cmd)
+
+
 def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
@@ -376,6 +397,17 @@ def write_smoke_brief(brief_path: Path) -> None:
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_route_explain_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_explain_human_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_route_catalog_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -853,6 +885,25 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec show human corpus",
         )
+        assert_show_range_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "show",
+                EXPECTED_CORPUS_SHOW_REL_PATH,
+                "--lines",
+                EXPECTED_CORPUS_SHOW_RANGE,
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec show line range",
+        )
+        assert_show_human_range_smoke(
+            npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_REL_PATH, "--lines", EXPECTED_CORPUS_SHOW_RANGE),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec show human line range",
+        )
         assert_route_catalog_smoke(
             npm_exec_cmd(package_spec, "routes", "--json"),
             cwd=npx_root,
@@ -870,6 +921,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec route recommendation",
+        )
+        assert_route_explain_smoke(
+            npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--explain"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec route explanation",
         )
         route_brief = npx_root / "route-brief.md"
         write_smoke_brief(route_brief)

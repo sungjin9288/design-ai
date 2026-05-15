@@ -251,6 +251,8 @@ EXPECTED_CORPUS_SEARCH_PREVIEW = "Pretendard for Korean primary"
 EXPECTED_CORPUS_SHOW_TARGET = "knowledge/PRINCIPLES.md:1"
 EXPECTED_CORPUS_SHOW_REL_PATH = "knowledge/PRINCIPLES.md"
 EXPECTED_CORPUS_SHOW_TEXT = "<!-- hand-written -->"
+EXPECTED_CORPUS_SHOW_RANGE = "1:2"
+EXPECTED_CORPUS_SHOW_RANGE_END_TEXT = "---"
 EXPECTED_EXAMPLES_ROUTE = "component-spec"
 EXPECTED_EXAMPLES_EFFECTIVE_QUERY = "component"
 EXPECTED_EXAMPLES_HIT = "examples/component-button.md"
@@ -719,6 +721,19 @@ def passing_show_json() -> str:
     })
 
 
+def passing_show_range_json() -> str:
+    return json.dumps({
+        "relPath": EXPECTED_CORPUS_SHOW_REL_PATH,
+        "start": 1,
+        "end": 2,
+        "totalLines": 109,
+        "lines": [
+            {"number": 1, "text": EXPECTED_CORPUS_SHOW_TEXT},
+            {"number": 2, "text": EXPECTED_CORPUS_SHOW_RANGE_END_TEXT},
+        ],
+    })
+
+
 def passing_show_human_output() -> str:
     return "\n".join([
         "",
@@ -728,6 +743,20 @@ def passing_show_human_output() -> str:
         "Lines: 1-1 of 109",
         "",
         f"1 | {EXPECTED_CORPUS_SHOW_TEXT}",
+        "",
+    ])
+
+
+def passing_show_range_human_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai show",
+        f"  {EXPECTED_CORPUS_SHOW_REL_PATH}",
+        "",
+        "Lines: 1-2 of 109",
+        "",
+        f"1 | {EXPECTED_CORPUS_SHOW_TEXT}",
+        f"2 | {EXPECTED_CORPUS_SHOW_RANGE_END_TEXT}",
         "",
     ])
 
@@ -793,6 +822,29 @@ def passing_route_json() -> str:
             }
         ],
     })
+
+
+def passing_route_explain_human_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai route",
+        f"  {EXPECTED_ROUTE_BRIEF}",
+        "",
+        "Source: /tmp/design-ai",
+        "Corpus version: 4.13.0",
+        "",
+        f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
+        f"   id:      {EXPECTED_ROUTE_ID}",
+        f"   matched: {', '.join(EXPECTED_ROUTE_MATCHED_KEYWORDS)}",
+        f"   why:     Matched {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)} keywords: {', '.join(EXPECTED_ROUTE_MATCHED_KEYWORDS)}.",
+        "   refs:    8/8 available",
+        f"   command: ✓ {EXPECTED_ROUTE_COMMAND}",
+        f"   skill:   ✓ {EXPECTED_ROUTE_SKILL}",
+        f"   agent:   ✓ {EXPECTED_ROUTE_AGENT}",
+        "   read:    ✓ knowledge/PRINCIPLES.md",
+        f"   read:    ✓ {EXPECTED_ROUTE_KNOWLEDGE}",
+        "",
+    ])
 
 
 def passing_route_catalog_json() -> str:
@@ -1216,6 +1268,37 @@ def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"show JSON after {context} line content differs from expected content")
 
 
+def assert_show_json_range(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse show range JSON after {context}") from error
+
+    if not isinstance(payload, dict):
+        raise SystemExit(f"show range JSON after {context} is not an object")
+
+    if payload.get("relPath") != EXPECTED_CORPUS_SHOW_REL_PATH:
+        raise SystemExit(f"show range JSON after {context} relPath differs from expected path")
+
+    if payload.get("start") != 1 or payload.get("end") != 2:
+        raise SystemExit(f"show range JSON after {context} range differs from expected lines")
+
+    lines = payload.get("lines")
+    if not isinstance(lines, list) or len(lines) != 2:
+        raise SystemExit(f"show range JSON after {context} does not contain exactly two lines")
+
+    expected = (
+        (1, EXPECTED_CORPUS_SHOW_TEXT),
+        (2, EXPECTED_CORPUS_SHOW_RANGE_END_TEXT),
+    )
+    for line, (number, text) in zip(lines, expected, strict=True):
+        if not isinstance(line, dict):
+            raise SystemExit(f"show range JSON after {context} contains an invalid line entry")
+        if line.get("number") != number or line.get("text") != text:
+            raise SystemExit(f"show range JSON after {context} line content differs from expected content")
+
+
 def assert_show_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
@@ -1231,6 +1314,25 @@ def assert_show_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
         ),
         context=context,
         label="show human output",
+    )
+
+
+def assert_show_human_range_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"show range human output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai show",
+            EXPECTED_CORPUS_SHOW_REL_PATH,
+            "Lines: 1-2 of",
+            f"1 | {EXPECTED_CORPUS_SHOW_TEXT}",
+            f"2 | {EXPECTED_CORPUS_SHOW_RANGE_END_TEXT}",
+        ),
+        context=context,
+        label="show range human output",
     )
 
 
@@ -1417,6 +1519,32 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
     total = coverage.get("total") if isinstance(coverage, dict) else None
     if not isinstance(total, dict) or total.get("available") != total.get("total") or total.get("total", 0) < 1:
         raise SystemExit(f"route JSON after {context} does not report full reference coverage")
+
+
+def assert_route_explain_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"route explain human output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai route",
+            EXPECTED_ROUTE_BRIEF,
+            EXPECTED_ROUTE_LABEL,
+            f"id:      {EXPECTED_ROUTE_ID}",
+            f"matched: {', '.join(EXPECTED_ROUTE_MATCHED_KEYWORDS)}",
+            f"why:     Matched {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)} keywords: {', '.join(EXPECTED_ROUTE_MATCHED_KEYWORDS)}.",
+            "refs:",
+            f"command: ✓ {EXPECTED_ROUTE_COMMAND}",
+            f"skill:   ✓ {EXPECTED_ROUTE_SKILL}",
+            f"agent:   ✓ {EXPECTED_ROUTE_AGENT}",
+            "read:    ✓ knowledge/PRINCIPLES.md",
+            f"read:    ✓ {EXPECTED_ROUTE_KNOWLEDGE}",
+        ),
+        context=context,
+        label="route explain human output",
+    )
 
 
 def assert_route_catalog_json(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -3061,6 +3189,48 @@ def run_self_test() -> None:
         expected="ANSI escape",
         scope="smoke assertions",
     )
+
+    show_range_cmd = [
+        "design-ai",
+        "show",
+        EXPECTED_CORPUS_SHOW_REL_PATH,
+        "--lines",
+        EXPECTED_CORPUS_SHOW_RANGE,
+        "--json",
+    ]
+    assert_show_json_range(passing_show_range_json(), context=context, cmd=show_range_cmd)
+    expect_self_test_failure(
+        lambda: assert_show_json_range("{", context=context, cmd=show_range_cmd),
+        expected="failed to parse show range JSON",
+        scope="smoke assertions",
+    )
+    show_range_wrong_end = json.loads(passing_show_range_json())
+    show_range_wrong_end["end"] = 1
+    expect_self_test_failure(
+        lambda: assert_show_json_range(json.dumps(show_range_wrong_end), context=context, cmd=show_range_cmd),
+        expected="range differs",
+        scope="smoke assertions",
+    )
+    show_range_missing_line = json.loads(passing_show_range_json())
+    show_range_missing_line["lines"] = show_range_missing_line["lines"][:1]
+    expect_self_test_failure(
+        lambda: assert_show_json_range(json.dumps(show_range_missing_line), context=context, cmd=show_range_cmd),
+        expected="exactly two lines",
+        scope="smoke assertions",
+    )
+    show_range_wrong_text = json.loads(passing_show_range_json())
+    show_range_wrong_text["lines"][1]["text"] = "missing"
+    expect_self_test_failure(
+        lambda: assert_show_json_range(json.dumps(show_range_wrong_text), context=context, cmd=show_range_cmd),
+        expected="line content differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_json_range("\x1b[31m{}", context=context, cmd=show_range_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
     show_human_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0"]
     assert_show_human_output(passing_show_human_output(), context=context, cmd=show_human_cmd)
     expect_self_test_failure(
@@ -3079,6 +3249,34 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_show_human_output("\x1b[31mred", context=context, cmd=show_human_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    show_range_human_cmd = [
+        "design-ai",
+        "show",
+        EXPECTED_CORPUS_SHOW_REL_PATH,
+        "--lines",
+        EXPECTED_CORPUS_SHOW_RANGE,
+    ]
+    assert_show_human_range_output(passing_show_range_human_output(), context=context, cmd=show_range_human_cmd)
+    expect_self_test_failure(
+        lambda: assert_show_human_range_output(passing_show_range_json(), context=context, cmd=show_range_human_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_human_range_output(
+            passing_show_range_human_output().replace(EXPECTED_CORPUS_SHOW_RANGE_END_TEXT, "missing"),
+            context=context,
+            cmd=show_range_human_cmd,
+        ),
+        expected="show range human output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_human_range_output("\x1b[31mred", context=context, cmd=show_range_human_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -3199,6 +3397,28 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_route_json_component_spec("\x1b[31m{}", context=context, cmd=route_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    route_explain_cmd = ["design-ai", "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--explain"]
+    assert_route_explain_human_output(passing_route_explain_human_output(), context=context, cmd=route_explain_cmd)
+    expect_self_test_failure(
+        lambda: assert_route_explain_human_output(passing_route_json(), context=context, cmd=route_explain_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_explain_human_output(
+            passing_route_explain_human_output().replace("refs:", "coverage:"),
+            context=context,
+            cmd=route_explain_cmd,
+        ),
+        expected="route explain human output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_route_explain_human_output("\x1b[31mred", context=context, cmd=route_explain_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
