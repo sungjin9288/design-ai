@@ -93,9 +93,9 @@ The workflow:
 - Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
-- Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, smoke-tests every `design-ai help <command>` topic plus documented help and command aliases, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
+- Installs the packed tarball into a temporary project, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, smoke-tests every `design-ai help <command>` topic, documented help and command aliases, `list skills`, `list commands`, `list agents`, and verifies `design-ai install` against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
-- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including the expected `design-ai help --json` catalog, discovered help topics, and documented help and command aliases.
+- After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including the expected `design-ai help --json` catalog, discovered help topics, documented help and command aliases, and all three `list` catalog domains.
 
 ## NPM package contents
 
@@ -139,7 +139,7 @@ Before tagging a release:
 - [ ] All audits pass: `design-ai audit --strict`
 - [ ] `package.json` and `.claude-plugin/plugin.json` versions match
 - [ ] `CHANGELOG.md` has an entry for the new version
-- [ ] CLI smoke-tested: `node cli/bin/design-ai.mjs help`, `version`, `list skills`
+- [ ] CLI smoke-tested: `node cli/bin/design-ai.mjs help`, `version`, `list skills`, `list commands`, `list agents`
 - [ ] Package contents check passes: `npm run package:check`
 - [ ] Tarball size reasonable (< 15MB)
 - [ ] README + relevant docs reference current version

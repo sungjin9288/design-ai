@@ -42,6 +42,7 @@ from smoke_assertions import (
     assert_check_stdin_json_component_spec,
     assert_doctor_json_clean,
     assert_examples_json_route_hit,
+    assert_list_catalog_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
     assert_pack_json_component_spec,
@@ -255,6 +256,18 @@ def assert_show_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None =
 def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
+
+
+def assert_list_smoke(
+    cmd: list[str],
+    *,
+    kind: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_list_catalog_output(result.stdout, kind=kind, context=context, cmd=cmd)
 
 
 def write_smoke_brief(brief_path: Path) -> None:
@@ -646,7 +659,13 @@ def smoke_tarball(tarball: Path) -> None:
             run_plain([str(bin_path), *command], env=smoke_env)
         run_plain([str(bin_path), "routes", "--help"], env=smoke_env)
         run_plain([str(bin_path), "install", "--help"], env=smoke_env)
-        run_plain([str(bin_path), "list", "skills"], env=smoke_env)
+        for kind in ("skills", "commands", "agents"):
+            assert_list_smoke(
+                [str(bin_path), "list", kind],
+                kind=kind,
+                env=smoke_env,
+                context=f"package smoke installed bin list {kind}",
+            )
         assert_search_smoke(
             [str(bin_path), "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"],
             env=smoke_env,
@@ -1015,6 +1034,14 @@ def smoke_tarball(tarball: Path) -> None:
         )
         if npx_help_topics != help_topics:
             raise SystemExit("package smoke npm exec help catalog differs from installed bin catalog")
+        for kind in ("skills", "commands", "agents"):
+            assert_list_smoke(
+                npm_exec_cmd(tarball, "list", kind),
+                kind=kind,
+                cwd=npx_root,
+                env=npx_env,
+                context=f"package smoke npm exec list {kind}",
+            )
         assert_search_smoke(
             npm_exec_cmd(tarball, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
             cwd=npx_root,

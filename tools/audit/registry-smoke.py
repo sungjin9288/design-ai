@@ -45,6 +45,7 @@ from smoke_assertions import (
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
     assert_examples_json_route_hit,
+    assert_list_catalog_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
     assert_pack_json_component_spec,
@@ -222,6 +223,18 @@ def assert_show_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None =
 def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
+
+
+def assert_list_smoke(
+    cmd: list[str],
+    *,
+    kind: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_list_catalog_output(result.stdout, kind=kind, context=context, cmd=cmd)
 
 
 def write_smoke_brief(brief_path: Path) -> None:
@@ -561,6 +574,14 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             assertion=assert_unknown_list_domain_failure,
         )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
+        for kind in ("skills", "commands", "agents"):
+            assert_list_smoke(
+                npm_exec_cmd(package_spec, "list", kind),
+                kind=kind,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec list {kind}",
+            )
         assert_search_smoke(
             npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
             cwd=npx_root,

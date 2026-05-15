@@ -77,6 +77,53 @@ EXPECTED_UNKNOWN_HELP_TOPIC = "serach"
 EXPECTED_UNKNOWN_HELP_TOPIC_SUGGESTION = "search"
 EXPECTED_UNKNOWN_LIST_DOMAIN = "skillz"
 EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION = "skills"
+EXPECTED_LIST_CATALOG = {
+    "skills": (
+        "design-system-builder",
+        "component-spec-writer",
+        "color-palette",
+        "ux-audit",
+        "design-critique",
+        "handoff-spec",
+        "design-system-qa",
+        "design-pr-review",
+        "figma-token-sync",
+        "design-broadcast",
+        "document-author",
+        "slide-deck-author",
+        "motion-designer",
+        "illustration-designer",
+        "print-designer",
+        "video-designer",
+        "game-ui-designer",
+        "conversational-ui-designer",
+        "spatial-designer",
+    ),
+    "commands": (
+        "design-from-brief",
+        "iterate",
+        "document-from-brief",
+        "slide-deck",
+        "design-review",
+        "palette-from-brand",
+        "component-spec",
+        "extract-tokens",
+        "motion-design",
+        "illustration",
+        "print",
+        "video",
+        "game-ui",
+        "conversational",
+        "spatial",
+        "stability-review",
+    ),
+    "agents": (
+        "design-critic",
+        "a11y-reviewer",
+        "component-architect",
+        "token-extractor",
+    ),
+}
 EXPECTED_ERROR_PREFIX = "\u2717"
 EXPECTED_CORPUS_SEARCH_QUERY = "Pretendard"
 EXPECTED_CORPUS_SEARCH_HIT = "knowledge/PRINCIPLES.md"
@@ -189,6 +236,22 @@ def passing_unknown_list_domain_output() -> str:
         "domain expects one of: skills, commands, agents",
         f"Received: {EXPECTED_UNKNOWN_LIST_DOMAIN}",
         f"Did you mean `{EXPECTED_UNKNOWN_LIST_DOMAIN_SUGGESTION}`?",
+    ])
+
+
+def passing_list_catalog_output(kind: str = "skills") -> str:
+    items = EXPECTED_LIST_CATALOG[kind]
+    return "\n".join([
+        "",
+        "  design-ai catalog",
+        "",
+        "Plugin: design-ai v4.13.0",
+        "",
+        "",
+        f"{kind} ({len(items)})",
+        "────────────────────────────────────────",
+        *(f"  {item}" for item in items),
+        "",
     ])
 
 
@@ -824,6 +887,39 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
     score = first.get("score")
     if not isinstance(score, int) or score <= 0:
         raise SystemExit(f"examples JSON after {context} score is not a positive integer")
+
+
+def assert_list_catalog_output(raw: str, *, kind: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    expected_items = EXPECTED_LIST_CATALOG.get(kind)
+    if expected_items is None:
+        raise SystemExit(f"unsupported list catalog kind for smoke assertion: {kind}")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai catalog",
+            f"{kind} ({len(expected_items)})",
+        ),
+        context=context,
+        label="list catalog output",
+    )
+
+    if not re.search(r"Plugin:\s+design-ai v\d+\.\d+\.\d+", raw):
+        raise SystemExit(f"list catalog output after {context} plugin version line differs from expected format")
+
+    for item in expected_items:
+        if not re.search(rf"^\s+{re.escape(item)}\s*$", raw, flags=re.MULTILINE):
+            raise SystemExit(f"list catalog output after {context} is missing expected {kind} item: {item}")
+
+    for other_kind in EXPECTED_LIST_CATALOG:
+        if other_kind == kind:
+            continue
+        if re.search(rf"^{re.escape(other_kind)} \(\d+\)", raw, flags=re.MULTILINE):
+            raise SystemExit(
+                f"list catalog output after {context} included unexpected {other_kind} section for {kind} filter"
+            )
 
 
 def find_existing_path(entries: object, path: str, *, context: str, label: str) -> None:
@@ -1801,6 +1897,44 @@ def run_self_test() -> None:
             cmd=["design-ai", "list", EXPECTED_UNKNOWN_LIST_DOMAIN],
         ),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    list_cmd = ["design-ai", "list", "skills"]
+    assert_list_catalog_output(passing_list_catalog_output("skills"), kind="skills", context=context, cmd=list_cmd)
+    expect_self_test_failure(
+        lambda: assert_list_catalog_output("\x1b[31mred", kind="skills", context=context, cmd=list_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_output(
+            passing_list_catalog_output("skills").replace("skills (19)", "skills (18)"),
+            kind="skills",
+            context=context,
+            cmd=list_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_output(
+            passing_list_catalog_output("skills").replace("  component-spec-writer", "  component-spec"),
+            kind="skills",
+            context=context,
+            cmd=list_cmd,
+        ),
+        expected="missing expected skills item",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_output(
+            passing_list_catalog_output("skills") + "\n" + passing_list_catalog_output("commands"),
+            kind="skills",
+            context=context,
+            cmd=list_cmd,
+        ),
+        expected="unexpected commands section",
         scope="smoke assertions",
     )
 
