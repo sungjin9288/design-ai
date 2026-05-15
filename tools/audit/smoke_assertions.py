@@ -139,6 +139,14 @@ def assert_no_ansi(output: str, cmd: list[str]) -> None:
         raise SystemExit(f"NO_COLOR command emitted ANSI escape sequence: {format_cmd(cmd)}")
 
 
+def assert_contains_fragments(raw: str, fragments: tuple[str, ...], *, context: str, label: str) -> None:
+    missing = [fragment for fragment in fragments if fragment not in raw]
+    if missing:
+        raise SystemExit(
+            f"{label} after {context} missing expected content: {' | '.join(missing)}"
+        )
+
+
 def passing_unknown_command_output() -> str:
     return "\n".join([
         f"Unknown command: {EXPECTED_UNKNOWN_COMMAND}",
@@ -381,6 +389,36 @@ def passing_prompt_json() -> str:
     return json.dumps(passing_prompt_payload())
 
 
+def passing_prompt_markdown_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai prompt",
+        f"  {EXPECTED_ROUTE_BRIEF}",
+        "",
+        "Source: /tmp/design",
+        "Corpus version: 4.13.0",
+        "",
+        "# design-ai task prompt",
+        f"Task: {EXPECTED_ROUTE_BRIEF}",
+        f"Selected route: {EXPECTED_ROUTE_LABEL} (forced)",
+        f"Route id: {EXPECTED_ROUTE_ID}",
+        "Routing reason: Route selected explicitly with --route.",
+        "Matched keywords: route selected via --route",
+        "Preferred command:",
+        f"{EXPECTED_PROMPT_SLASH_COMMAND} {EXPECTED_ROUTE_BRIEF}",
+        "Reference examples:",
+        f"- {EXPECTED_EXAMPLES_HIT} - `Button` - spec",
+        "Before producing the artifact, read these files in order:",
+        *(f"- {path}" for path in EXPECTED_PROMPT_FILES),
+        "Execution rules:",
+        "Suggested artifact QA command:",
+        EXPECTED_PROMPT_QUALITY_COMMAND,
+        "Verification checklist:",
+        "- [ ] Cover anatomy, variants, states, API, tokens, ARIA, keyboard behavior, and edge cases.",
+        "- [ ] Cite Ant Design, MUI, and shadcn-ui references when available.",
+    ])
+
+
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
@@ -423,6 +461,47 @@ def passing_pack_json() -> str:
             f"### {EXPECTED_EXAMPLES_HIT}",
         ]),
     })
+
+
+def passing_pack_markdown_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai pack",
+        f"  {EXPECTED_ROUTE_BRIEF}",
+        "",
+        "Source: /tmp/design",
+        "Corpus version: 4.13.0",
+        f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
+        "",
+        "# design-ai prompt pack",
+        f"Brief: {EXPECTED_ROUTE_BRIEF}",
+        f"Route: {EXPECTED_ROUTE_LABEL} (forced)",
+        "Context status: partial",
+        f"Context budget: {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes (100% used)",
+        "## Context Summary",
+        "- Files: 9/9 included",
+        "- Truncated files: 1",
+        "- Missing files: 0",
+        "- Remaining budget: 0 bytes",
+        "Warnings:",
+        "Truncated context file: AGENTS.md",
+        f"Context budget exhausted at {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes",
+        "## Prompt",
+        "# design-ai task prompt",
+        f"Task: {EXPECTED_ROUTE_BRIEF}",
+        f"Selected route: {EXPECTED_ROUTE_LABEL} (forced)",
+        "Preferred command:",
+        f"{EXPECTED_PROMPT_SLASH_COMMAND} {EXPECTED_ROUTE_BRIEF}",
+        "Reference examples:",
+        f"- {EXPECTED_EXAMPLES_HIT} - `Button` - spec",
+        "Before producing the artifact, read these files in order:",
+        *(f"- {path}" for path in EXPECTED_PROMPT_FILES),
+        "Suggested artifact QA command:",
+        EXPECTED_PROMPT_QUALITY_COMMAND,
+        "## Context Files",
+        "### AGENTS.md",
+        f"### {EXPECTED_EXAMPLES_HIT}",
+    ])
 
 
 def passing_audit_strict_quiet_output() -> str:
@@ -860,6 +939,40 @@ def assert_prompt_json_component_spec(raw: str, *, context: str, cmd: list[str])
     assert_prompt_payload_component_spec(payload, context=context, payload_name="prompt JSON")
 
 
+def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"prompt markdown after {context} looks like JSON output")
+
+    required_fragments = (
+        "design-ai prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "Corpus version:",
+        "# design-ai task prompt",
+        f"Task: {EXPECTED_ROUTE_BRIEF}",
+        f"Selected route: {EXPECTED_ROUTE_LABEL} (forced)",
+        f"Route id: {EXPECTED_ROUTE_ID}",
+        "Routing reason: Route selected explicitly with --route.",
+        "Matched keywords: route selected via --route",
+        "Preferred command:",
+        "Reference examples:",
+        EXPECTED_EXAMPLES_HIT,
+        "Before producing the artifact, read these files in order:",
+        *EXPECTED_PROMPT_FILES,
+        "Execution rules:",
+        "Suggested artifact QA command:",
+        EXPECTED_PROMPT_QUALITY_COMMAND,
+        "Verification checklist:",
+        "Cover anatomy, variants, states",
+        "Cite Ant Design, MUI, and shadcn-ui references",
+    )
+    assert_contains_fragments(raw, required_fragments, context=context, label="prompt markdown")
+
+    command_pattern = rf"/[A-Za-z0-9_-]*{re.escape(EXPECTED_ROUTE_ID)}\s+{re.escape(EXPECTED_ROUTE_BRIEF)}"
+    if not re.search(command_pattern, raw):
+        raise SystemExit(f"prompt markdown after {context} preferred command differs from expected route command")
+
+
 def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -952,6 +1065,43 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
     for fragment in expected_markdown_fragments:
         if fragment not in markdown:
             raise SystemExit(f"pack JSON after {context} markdown is missing expected content: {fragment}")
+
+
+def assert_pack_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"pack markdown after {context} looks like JSON output")
+
+    required_fragments = (
+        "design-ai pack",
+        f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes",
+        "# design-ai prompt pack",
+        f"Brief: {EXPECTED_ROUTE_BRIEF}",
+        f"Route: {EXPECTED_ROUTE_LABEL} (forced)",
+        "Context status: partial",
+        f"Context budget: {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes",
+        "## Context Summary",
+        "- Missing files: 0",
+        "Warnings:",
+        "Truncated context file:",
+        f"Context budget exhausted at {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes",
+        "## Prompt",
+        "# design-ai task prompt",
+        f"Task: {EXPECTED_ROUTE_BRIEF}",
+        f"Selected route: {EXPECTED_ROUTE_LABEL} (forced)",
+        "Reference examples:",
+        EXPECTED_EXAMPLES_HIT,
+        EXPECTED_PROMPT_QUALITY_COMMAND,
+        "## Context Files",
+        "### AGENTS.md",
+        f"### {EXPECTED_EXAMPLES_HIT}",
+        *EXPECTED_PROMPT_FILES,
+    )
+    assert_contains_fragments(raw, required_fragments, context=context, label="pack markdown")
+
+    command_pattern = rf"/[A-Za-z0-9_-]*{re.escape(EXPECTED_ROUTE_ID)}\s+{re.escape(EXPECTED_ROUTE_BRIEF)}"
+    if not re.search(command_pattern, raw):
+        raise SystemExit(f"pack markdown after {context} preferred command differs from expected route command")
 
 
 def assert_audit_strict_quiet_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -1647,6 +1797,45 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
 
+    prompt_markdown_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_ROUTE_ID]
+    assert_prompt_markdown_component_spec(
+        passing_prompt_markdown_output(),
+        context=context,
+        cmd=prompt_markdown_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_component_spec(
+            "{",
+            context=context,
+            cmd=prompt_markdown_cmd,
+        ),
+        expected="looks like JSON output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_component_spec(
+            passing_prompt_markdown_output().replace(EXPECTED_PROMPT_QUALITY_COMMAND, "design-ai check output.md --strict"),
+            context=context,
+            cmd=prompt_markdown_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_component_spec(
+            passing_prompt_markdown_output().replace(EXPECTED_PROMPT_SLASH_COMMAND, "/design-review"),
+            context=context,
+            cmd=prompt_markdown_cmd,
+        ),
+        expected="preferred command differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_prompt_markdown_component_spec("\x1b[31m{}", context=context, cmd=prompt_markdown_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
     pack_cmd = [
         "design-ai",
         "pack",
@@ -1702,6 +1891,53 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_pack_json_component_spec("\x1b[31m{}", context=context, cmd=pack_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    pack_markdown_cmd = [
+        "design-ai",
+        "pack",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--max-bytes",
+        str(EXPECTED_PACK_MAX_BYTES),
+    ]
+    assert_pack_markdown_component_spec(
+        passing_pack_markdown_output(),
+        context=context,
+        cmd=pack_markdown_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_component_spec(
+            "{",
+            context=context,
+            cmd=pack_markdown_cmd,
+        ),
+        expected="looks like JSON output",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_component_spec(
+            passing_pack_markdown_output().replace("Context status: partial", "Context status: complete"),
+            context=context,
+            cmd=pack_markdown_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_component_spec(
+            passing_pack_markdown_output().replace(EXPECTED_PROMPT_SLASH_COMMAND, "/design-review"),
+            context=context,
+            cmd=pack_markdown_cmd,
+        ),
+        expected="preferred command differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_pack_markdown_component_spec("\x1b[31m{}", context=context, cmd=pack_markdown_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
