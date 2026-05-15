@@ -388,6 +388,21 @@ def passing_search_json() -> str:
     })
 
 
+def passing_search_human_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai search",
+        f"  {EXPECTED_CORPUS_SEARCH_QUERY}",
+        "",
+        "Source: /tmp/design-ai",
+        "Hits: 1",
+        "",
+        f"{EXPECTED_CORPUS_SEARCH_HIT}:29",
+        f"  10. **{EXPECTED_CORPUS_SEARCH_PREVIEW}.** Pairs Hangul + Latin in matched proportions.",
+        "",
+    ])
+
+
 def passing_show_json() -> str:
     return json.dumps({
         "relPath": EXPECTED_CORPUS_SHOW_REL_PATH,
@@ -398,6 +413,19 @@ def passing_show_json() -> str:
             {"number": 1, "text": EXPECTED_CORPUS_SHOW_TEXT},
         ],
     })
+
+
+def passing_show_human_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai show",
+        f"  {EXPECTED_CORPUS_SHOW_REL_PATH}",
+        "",
+        "Lines: 1-1 of 109",
+        "",
+        f"1 | {EXPECTED_CORPUS_SHOW_TEXT}",
+        "",
+    ])
 
 
 def passing_examples_json() -> str:
@@ -415,6 +443,22 @@ def passing_examples_json() -> str:
             }
         ],
     })
+
+
+def passing_examples_human_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai examples",
+        f"  {EXPECTED_EXAMPLES_ROUTE}",
+        "",
+        f"Effective query: {EXPECTED_EXAMPLES_EFFECTIVE_QUERY}",
+        "Examples: 1",
+        "",
+        f"1. `{EXPECTED_EXAMPLES_TITLE_FRAGMENT}` - spec ({EXPECTED_EXAMPLES_CATEGORY}, score 57)",
+        f"   {EXPECTED_EXAMPLES_HIT}",
+        "   > Status: example artifact for `component-spec-writer` skill",
+        "",
+    ])
 
 
 def passing_route_json() -> str:
@@ -821,6 +865,25 @@ def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -
     )
 
 
+def assert_search_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"search human output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai search",
+            EXPECTED_CORPUS_SEARCH_QUERY,
+            "Hits: 1",
+            f"{EXPECTED_CORPUS_SEARCH_HIT}:29",
+            EXPECTED_CORPUS_SEARCH_PREVIEW,
+        ),
+        context=context,
+        label="search human output",
+    )
+
+
 def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -847,6 +910,24 @@ def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
 
     if line.get("number") != 1 or line.get("text") != EXPECTED_CORPUS_SHOW_TEXT:
         raise SystemExit(f"show JSON after {context} line content differs from expected content")
+
+
+def assert_show_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"show human output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai show",
+            EXPECTED_CORPUS_SHOW_REL_PATH,
+            "Lines: 1-1 of",
+            f"1 | {EXPECTED_CORPUS_SHOW_TEXT}",
+        ),
+        context=context,
+        label="show human output",
+    )
 
 
 def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -887,6 +968,28 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
     score = first.get("score")
     if not isinstance(score, int) or score <= 0:
         raise SystemExit(f"examples JSON after {context} score is not a positive integer")
+
+
+def assert_examples_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"examples human output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        (
+            "design-ai examples",
+            EXPECTED_EXAMPLES_ROUTE,
+            f"Effective query: {EXPECTED_EXAMPLES_EFFECTIVE_QUERY}",
+            "Examples: 1",
+            EXPECTED_EXAMPLES_HIT,
+            EXPECTED_EXAMPLES_TITLE_FRAGMENT,
+            EXPECTED_EXAMPLES_CATEGORY,
+            "Status: example artifact",
+        ),
+        context=context,
+        label="examples human output",
+    )
 
 
 def assert_list_catalog_output(raw: str, *, kind: str, context: str, cmd: list[str]) -> None:
@@ -2065,6 +2168,27 @@ def run_self_test() -> None:
         expected="ANSI escape",
         scope="smoke assertions",
     )
+    search_human_cmd = ["design-ai", "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1"]
+    assert_search_human_output(passing_search_human_output(), context=context, cmd=search_human_cmd)
+    expect_self_test_failure(
+        lambda: assert_search_human_output(passing_search_json(), context=context, cmd=search_human_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_human_output(
+            passing_search_human_output().replace(f"{EXPECTED_CORPUS_SEARCH_HIT}:29", "knowledge/missing.md:1"),
+            context=context,
+            cmd=search_human_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_search_human_output("\x1b[31mred", context=context, cmd=search_human_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
 
     show_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"]
     assert_show_json_line(passing_show_json(), context=context, cmd=show_cmd)
@@ -2094,6 +2218,27 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_show_json_line("\x1b[31m{}", context=context, cmd=show_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    show_human_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0"]
+    assert_show_human_output(passing_show_human_output(), context=context, cmd=show_human_cmd)
+    expect_self_test_failure(
+        lambda: assert_show_human_output(passing_show_json(), context=context, cmd=show_human_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_human_output(
+            passing_show_human_output().replace(EXPECTED_CORPUS_SHOW_TEXT, "# Missing"),
+            context=context,
+            cmd=show_human_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_show_human_output("\x1b[31mred", context=context, cmd=show_human_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -2140,6 +2285,27 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_examples_json_route_hit("\x1b[31m{}", context=context, cmd=examples_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    examples_human_cmd = ["design-ai", "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"]
+    assert_examples_human_output(passing_examples_human_output(), context=context, cmd=examples_human_cmd)
+    expect_self_test_failure(
+        lambda: assert_examples_human_output(passing_examples_json(), context=context, cmd=examples_human_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_examples_human_output(
+            passing_examples_human_output().replace(EXPECTED_EXAMPLES_HIT, "examples/component-accordion.md"),
+            context=context,
+            cmd=examples_human_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_examples_human_output("\x1b[31mred", context=context, cmd=examples_human_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )

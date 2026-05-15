@@ -44,6 +44,7 @@ from smoke_assertions import (
     assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
+    assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_list_catalog_output,
     assert_no_ansi,
@@ -56,7 +57,9 @@ from smoke_assertions import (
     assert_prompt_markdown_component_spec,
     assert_route_catalog_json,
     assert_route_json_component_spec,
+    assert_search_human_output,
     assert_search_json_contains_hit,
+    assert_show_human_output,
     assert_show_json_line,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
@@ -215,14 +218,29 @@ def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None
     assert_search_json_contains_hit(result.stdout, context=context, cmd=cmd)
 
 
+def assert_search_human_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_search_human_output(result.stdout, context=context, cmd=cmd)
+
+
 def assert_show_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_show_json_line(result.stdout, context=context, cmd=cmd)
 
 
+def assert_show_human_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_show_human_output(result.stdout, context=context, cmd=cmd)
+
+
 def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
+
+
+def assert_examples_human_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_examples_human_output(result.stdout, context=context, cmd=cmd)
 
 
 def assert_list_smoke(
@@ -588,11 +606,23 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec search corpus",
         )
+        assert_search_human_smoke(
+            npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec search human corpus",
+        )
         assert_show_smoke(
             npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec show corpus",
+        )
+        assert_show_human_smoke(
+            npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec show human corpus",
         )
         assert_route_catalog_smoke(
             npm_exec_cmd(package_spec, "routes", "--json"),
@@ -869,6 +899,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec examples corpus",
+        )
+        assert_examples_human_smoke(
+            npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec examples human corpus",
         )
         assert_check_examples_smoke(
             npm_exec_cmd(
