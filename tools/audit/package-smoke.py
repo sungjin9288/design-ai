@@ -250,8 +250,28 @@ def assert_examples_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | No
     assert_examples_json_route_hit(result.stdout, context=context, cmd=cmd)
 
 
+def write_route_brief(brief_path: Path) -> None:
+    brief_path.write_text(f"{EXPECTED_ROUTE_BRIEF}\n", encoding="utf-8")
+
+
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
+    assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_route_stdin_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=f"{EXPECTED_ROUTE_BRIEF}\n",
+        cwd=cwd,
+        env=env,
+    )
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
@@ -478,6 +498,18 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin route recommendation",
         )
+        installed_route_brief = tmp_root / "installed-route-brief.md"
+        write_route_brief(installed_route_brief)
+        assert_route_smoke(
+            [str(bin_path), "route", "--from-file", str(installed_route_brief), "--limit", "1", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin route from file",
+        )
+        assert_route_stdin_smoke(
+            [str(bin_path), "route", "--stdin", "--limit", "1", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin route stdin",
+        )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         assert_prompt_smoke(
             [
@@ -625,6 +657,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec route recommendation",
+        )
+        npx_route_brief = npx_root / "npx-route-brief.md"
+        write_route_brief(npx_route_brief)
+        assert_route_smoke(
+            npm_exec_cmd(tarball, "route", "--from-file", str(npx_route_brief), "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route from file",
+        )
+        assert_route_stdin_smoke(
+            npm_exec_cmd(tarball, "route", "--stdin", "--limit", "1", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route stdin",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
         assert_prompt_smoke(
