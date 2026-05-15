@@ -28,7 +28,9 @@ from doctor_assertions import (
     run_self_test as run_doctor_assertions_self_test,
 )
 from smoke_assertions import (
+    EXPECTED_UNKNOWN_COMMAND,
     assert_no_ansi,
+    assert_unknown_command_failure,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -95,6 +97,37 @@ def run_plain(
         raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
 
     assert_no_ansi(f"{result.stdout}\n{result.stderr}", cmd)
+    return result
+
+
+def run_expected_failure(
+    cmd: list[str],
+    *,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+    context: str,
+) -> subprocess.CompletedProcess[str]:
+    print(f"$ {format_cmd(cmd)}", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    assert_unknown_command_failure(
+        f"{result.stdout}\n{result.stderr}",
+        returncode=result.returncode,
+        context=context,
+        cmd=cmd,
+    )
+
     return result
 
 
@@ -172,6 +205,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         wait_for_registry_package(package_spec, retries=retries, delay=delay, env=env)
         run_plain(npm_exec_cmd(package_spec, "version"), cwd=npx_root, env=env)
         run_plain(npm_exec_cmd(package_spec, "help"), cwd=npx_root, env=env)
+        run_expected_failure(
+            npm_exec_cmd(package_spec, EXPECTED_UNKNOWN_COMMAND),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec unknown command",
+        )
         help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
         doctor_json = npx_root / "doctor.json"
         run_plain(
