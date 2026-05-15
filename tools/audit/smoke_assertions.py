@@ -68,6 +68,30 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "version": ("Usage:", "design-ai version"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
+EXPECTED_MAIN_HELP_FRAGMENTS = (
+    "design-ai",
+    "Senior product designer for Claude Code",
+    "Usage:  design-ai <command> [args]",
+    "design-ai help [command|--json]",
+    "install",
+    "search <query>",
+    "show <file[:line]>",
+    "route <brief|--from-file file|--stdin|--list>",
+    "prompt <brief|--from-file file|--stdin>",
+    "pack <brief|--from-file file|--stdin>",
+    "check <artifact.md|--stdin|--examples>",
+    "examples [query]",
+    "Environment overrides:",
+    "Quickstart:",
+    "Docs:",
+    "Plugin:  19 skills, 16 commands, 4 agents",
+)
+EXPECTED_VERSION_FRAGMENTS = (
+    "design-ai CLI:",
+    "Plugin / corpus:",
+    "4.13.0",
+    "Source:",
+)
 EXPECTED_COMMAND_ALIAS_COMMANDS = (
     ("i", "--help"),
     ("upgrade", "--help"),
@@ -1781,6 +1805,40 @@ def passing_help_topic_output(topic: str = "search") -> str:
     ])
 
 
+def passing_main_help_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai",
+        "  Senior product designer for Claude Code",
+        "",
+        "Usage:  design-ai <command> [args]",
+        "        design-ai help [command|--json]",
+        "",
+        "  install                                                                Symlink design-ai into Claude Code (~/.claude)",
+        "  search <query> [--dir kind] [--limit N] [--json]                       Search the local markdown corpus",
+        "  show <file[:line]> [--lines N:M] [--context N] [--json]                Print a corpus file or line range",
+        "  route <brief|--from-file file|--stdin|--list> [--limit N]              Recommend commands, skills, and knowledge; add --explain",
+        "  prompt <brief|--from-file file|--stdin> [--route id] [--out file]      Generate a ready-to-use agent prompt",
+        "  pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]     Generate prompt plus bounded context with summary",
+        "  check <artifact.md|--stdin|--examples> [--route id|--all-routes]       Check generated Markdown artifact quality; add --issues-only",
+        "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
+        "",
+        "Environment overrides:",
+        "Quickstart:",
+        "Docs:    https://github.com/sungjin/design-ai",
+        "Plugin:  19 skills, 16 commands, 4 agents (UI/UX, motion,",
+    ])
+
+
+def passing_version_output() -> str:
+    return "\n".join([
+        "design-ai CLI:    4.13.0",
+        "Plugin / corpus:  4.13.0",
+        "Source:           /tmp/design-ai",
+        "",
+    ])
+
+
 def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     assert_no_ansi(raw, cmd)
     try:
@@ -1873,6 +1931,50 @@ def assert_help_topic_output(raw: str, *, topic: str, context: str, cmd: list[st
         context=context,
         label=f"help topic output for {topic}",
     )
+
+
+def assert_main_help_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"main help output after {context} looks like JSON output")
+    if "Unknown command" in raw or "Unknown help topic" in raw:
+        raise SystemExit(f"main help output after {context} reported an unknown command/topic")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_MAIN_HELP_FRAGMENTS,
+        context=context,
+        label="main help output",
+    )
+
+
+def assert_version_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"version output after {context} looks like JSON output")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_VERSION_FRAGMENTS,
+        context=context,
+        label="version output",
+    )
+
+
+def assert_command_alias_output(raw: str, *, command: tuple[str, ...], context: str, cmd: list[str]) -> None:
+    if command in (("--version",), ("-v",)):
+        assert_version_output(raw, context=context, cmd=cmd)
+        return
+
+    if command in (("--help",), ("-h",)):
+        assert_main_help_output(raw, context=context, cmd=cmd)
+        return
+
+    if len(command) == 2 and command[1] == "--help":
+        assert_help_topic_output(raw, topic=command[0], context=context, cmd=cmd)
+        return
+
+    raise SystemExit(f"command alias output after {context} cannot validate unsupported command: {command}")
 
 
 def help_topic_script(topics: list[str]) -> str:
@@ -3208,6 +3310,81 @@ def run_self_test() -> None:
             cmd=["design-ai", "help", "unknown"],
         ),
         expected="unsupported topic",
+        scope="smoke assertions",
+    )
+    main_help_cmd = ["design-ai", "help"]
+    assert_main_help_output(passing_main_help_output(), context=context, cmd=main_help_cmd)
+    expect_self_test_failure(
+        lambda: assert_main_help_output(passing_help_catalog_json(), context=context, cmd=main_help_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_main_help_output("Unknown command: help", context=context, cmd=main_help_cmd),
+        expected="reported an unknown",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_main_help_output(
+            passing_main_help_output().replace("Quickstart:", "Getting started:"),
+            context=context,
+            cmd=main_help_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_main_help_output("\x1b[31mred", context=context, cmd=main_help_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    version_cmd = ["design-ai", "version"]
+    assert_version_output(passing_version_output(), context=context, cmd=version_cmd)
+    expect_self_test_failure(
+        lambda: assert_version_output(passing_help_catalog_json(), context=context, cmd=version_cmd),
+        expected="looks like JSON",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_output(
+            passing_version_output().replace("Plugin / corpus:", "Plugin:"),
+            context=context,
+            cmd=version_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_output("\x1b[31mred", context=context, cmd=version_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_command_alias_output(
+        passing_help_topic_output("find"),
+        command=("find", "--help"),
+        context=context,
+        cmd=["design-ai", "find", "--help"],
+    )
+    assert_command_alias_output(
+        passing_version_output(),
+        command=("--version",),
+        context=context,
+        cmd=["design-ai", "--version"],
+    )
+    assert_command_alias_output(
+        passing_main_help_output(),
+        command=("--help",),
+        context=context,
+        cmd=["design-ai", "--help"],
+    )
+    expect_self_test_failure(
+        lambda: assert_command_alias_output(
+            passing_main_help_output(),
+            command=("bad",),
+            context=context,
+            cmd=["design-ai", "bad"],
+        ),
+        expected="unsupported command",
         scope="smoke assertions",
     )
     assert help_topic_script(["install", "route"]) == (

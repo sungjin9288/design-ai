@@ -30,6 +30,7 @@ from doctor_assertions import (
 from smoke_assertions import (
     EXPECTED_CHECK_ARTIFACT_NAME,
     EXPECTED_CHECK_EXAMPLES_LIMIT,
+    EXPECTED_COMMAND_ALIAS_COMMANDS,
     EXPECTED_CORPUS_SEARCH_QUERY,
     EXPECTED_CORPUS_SHOW_TARGET,
     EXPECTED_EXAMPLES_ROUTE,
@@ -45,10 +46,12 @@ from smoke_assertions import (
     assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
+    assert_command_alias_output,
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_help_topic_output,
     assert_list_catalog_output,
+    assert_main_help_output,
     assert_no_ansi,
     assert_output_overwrite_failure,
     assert_pack_json_component_spec,
@@ -66,6 +69,7 @@ from smoke_assertions import (
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
+    assert_version_output,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -225,6 +229,28 @@ def assert_help_topic_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_help_topic_output(result.stdout, topic=topic, context=context, cmd=cmd)
+
+
+def assert_main_help_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_main_help_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_version_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_version_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_command_alias_smoke(
+    cmd: list[str],
+    *,
+    command: tuple[str, ...],
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_command_alias_output(result.stdout, command=command, context=context, cmd=cmd)
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -583,8 +609,18 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         })
 
         wait_for_registry_package(package_spec, retries=retries, delay=delay, env=env)
-        run_plain(npm_exec_cmd(package_spec, "version"), cwd=npx_root, env=env)
-        run_plain(npm_exec_cmd(package_spec, "help"), cwd=npx_root, env=env)
+        assert_version_smoke(
+            npm_exec_cmd(package_spec, "version"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec version",
+        )
+        assert_main_help_smoke(
+            npm_exec_cmd(package_spec, "help"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec main help",
+        )
         run_expected_failure(
             npm_exec_cmd(package_spec, EXPECTED_UNKNOWN_COMMAND),
             cwd=npx_root,
@@ -621,6 +657,14 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 cwd=npx_root,
                 env=env,
                 context=f"registry smoke npm exec help alias {alias}",
+            )
+        for command in EXPECTED_COMMAND_ALIAS_COMMANDS:
+            assert_command_alias_smoke(
+                npm_exec_cmd(package_spec, *command),
+                command=command,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec command alias {' '.join(command)}",
             )
         for kind in ("skills", "commands", "agents"):
             assert_list_smoke(
