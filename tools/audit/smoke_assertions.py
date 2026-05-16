@@ -266,6 +266,19 @@ EXPECTED_ROUTE_SKILL = "skills/component-spec-writer/SKILL.md"
 EXPECTED_ROUTE_AGENT = "agents/component-architect.md"
 EXPECTED_ROUTE_KNOWLEDGE = "knowledge/a11y/keyboard-and-focus.md"
 EXPECTED_ROUTE_MATCHED_KEYWORDS = ("component", "button", "spec", "api")
+EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
+    ("ls skills", ("ls", "skills"), "list-skills"),
+    ("find corpus", ("find", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"), "search-json"),
+    ("cat corpus", ("cat", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"), "show-json-line"),
+    ("recommend route", ("recommend", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"), "route-json"),
+    ("example route", ("example", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"), "examples-json"),
+    ("ex route", ("ex", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"), "examples-human"),
+    (
+        "lint examples",
+        ("lint", "--examples", "--route", EXPECTED_ROUTE_ID, "--limit", "1", "--strict", "--json"),
+        "check-examples-json",
+    ),
+)
 EXPECTED_ROUTE_CATALOG_IDS = (
     "design-review",
     "design-from-brief",
@@ -2558,6 +2571,46 @@ def command_alias_script() -> str:
     return design_ai_command_script(EXPECTED_COMMAND_ALIAS_COMMANDS)
 
 
+def functional_alias_script() -> str:
+    return design_ai_command_script(tuple(command for _, command, _ in EXPECTED_FUNCTIONAL_ALIAS_SMOKES))
+
+
+def assert_functional_alias_smokes(
+    command_factory: Callable[..., list[str]],
+    *,
+    run_command: Callable[..., object],
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    for label, alias_command, assertion_name in EXPECTED_FUNCTIONAL_ALIAS_SMOKES:
+        cmd = command_factory(*alias_command)
+        result = run_command(cmd, cwd=cwd, env=env)
+        stdout = getattr(result, "stdout", None)
+        if not isinstance(stdout, str):
+            raise SystemExit(f"functional alias smoke after {context} {label} did not return stdout text")
+
+        case_context = f"{context} {label}"
+        if assertion_name == "list-skills":
+            assert_list_catalog_output(stdout, kind="skills", context=case_context, cmd=cmd)
+        elif assertion_name == "search-json":
+            assert_search_json_contains_hit(stdout, context=case_context, cmd=cmd)
+        elif assertion_name == "show-json-line":
+            assert_show_json_line(stdout, context=case_context, cmd=cmd)
+        elif assertion_name == "route-json":
+            assert_route_json_component_spec(stdout, context=case_context, cmd=cmd)
+        elif assertion_name == "examples-json":
+            assert_examples_json_route_hit(stdout, context=case_context, cmd=cmd)
+        elif assertion_name == "examples-human":
+            assert_examples_human_output(stdout, context=case_context, cmd=cmd)
+        elif assertion_name == "check-examples-json":
+            assert_check_examples_json_component_spec(stdout, context=case_context, cmd=cmd)
+        else:
+            raise SystemExit(
+                f"functional alias smoke after {context} {label} has unsupported assertion: {assertion_name}"
+            )
+
+
 def assert_doctor_json_clean(
     raw: str,
     *,
@@ -4488,6 +4541,15 @@ def run_self_test() -> None:
         "design-ai -v && "
         "design-ai --help && "
         "design-ai -h"
+    )
+    assert functional_alias_script() == (
+        "design-ai ls skills && "
+        "design-ai find Pretendard --dir knowledge --limit 1 --json && "
+        "design-ai cat knowledge/PRINCIPLES.md:1 --context 0 --json && "
+        "design-ai recommend 'Spec a Button component API with keyboard accessibility' --limit 1 --json && "
+        "design-ai example --route component-spec --limit 1 --json && "
+        "design-ai ex --route component-spec --limit 1 && "
+        "design-ai lint --examples --route component-spec --limit 1 --strict --json"
     )
 
     print("Smoke assertions self-test passed")
