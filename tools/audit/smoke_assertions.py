@@ -266,6 +266,24 @@ EXPECTED_ROUTE_SKILL = "skills/component-spec-writer/SKILL.md"
 EXPECTED_ROUTE_AGENT = "agents/component-architect.md"
 EXPECTED_ROUTE_KNOWLEDGE = "knowledge/a11y/keyboard-and-focus.md"
 EXPECTED_ROUTE_MATCHED_KEYWORDS = ("component", "button", "spec", "api")
+EXPECTED_FUNCTIONAL_ALIAS_TARGETS = {
+    "ls": "list",
+    "find": "search",
+    "cat": "show",
+    "recommend": "route",
+    "example": "examples",
+    "ex": "examples",
+    "lint": "check",
+}
+EXPECTED_FUNCTIONAL_ALIAS_ASSERTIONS = frozenset((
+    "list-skills",
+    "search-json",
+    "show-json-line",
+    "route-json",
+    "examples-json",
+    "examples-human",
+    "check-examples-json",
+))
 EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
     ("ls skills", ("ls", "skills"), "list-skills"),
     ("find corpus", ("find", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"), "search-json"),
@@ -2571,7 +2589,36 @@ def command_alias_script() -> str:
     return design_ai_command_script(EXPECTED_COMMAND_ALIAS_COMMANDS)
 
 
+def validate_functional_alias_smoke_cases(
+    cases: tuple[tuple[str, tuple[str, ...], str], ...] = EXPECTED_FUNCTIONAL_ALIAS_SMOKES,
+) -> dict[str, str]:
+    observed: dict[str, str] = {}
+    for label, alias_command, assertion_name in cases:
+        if not isinstance(label, str) or not label:
+            raise SystemExit("functional alias smoke contains an invalid label")
+        if not alias_command or not all(isinstance(part, str) and part for part in alias_command):
+            raise SystemExit(f"functional alias smoke {label} contains an invalid command")
+        if assertion_name not in EXPECTED_FUNCTIONAL_ALIAS_ASSERTIONS:
+            raise SystemExit(
+                f"functional alias smoke {label} has unsupported assertion: {assertion_name}"
+            )
+
+        alias = alias_command[0]
+        target = EXPECTED_HELP_ALIASES.get(alias)
+        if target is None:
+            raise SystemExit(f"functional alias smoke {label} does not use a documented help alias: {alias}")
+        if alias in observed:
+            raise SystemExit(f"functional alias smoke duplicates alias: {alias}")
+        observed[alias] = target
+
+    if observed != EXPECTED_FUNCTIONAL_ALIAS_TARGETS:
+        raise SystemExit("functional alias smoke cases differ from expected alias target coverage")
+
+    return observed
+
+
 def functional_alias_script() -> str:
+    validate_functional_alias_smoke_cases()
     return design_ai_command_script(tuple(command for _, command, _ in EXPECTED_FUNCTIONAL_ALIAS_SMOKES))
 
 
@@ -2583,6 +2630,7 @@ def assert_functional_alias_smokes(
     cwd: Path | None = None,
     context: str,
 ) -> None:
+    validate_functional_alias_smoke_cases()
     for label, alias_command, assertion_name in EXPECTED_FUNCTIONAL_ALIAS_SMOKES:
         cmd = command_factory(*alias_command)
         result = run_command(cmd, cwd=cwd, env=env)
@@ -4550,6 +4598,26 @@ def run_self_test() -> None:
         "design-ai example --route component-spec --limit 1 --json && "
         "design-ai ex --route component-spec --limit 1 && "
         "design-ai lint --examples --route component-spec --limit 1 --strict --json"
+    )
+    assert validate_functional_alias_smoke_cases() == EXPECTED_FUNCTIONAL_ALIAS_TARGETS
+    expect_self_test_failure(
+        lambda: validate_functional_alias_smoke_cases((
+            ("canonical search", ("search", EXPECTED_CORPUS_SEARCH_QUERY), "search-json"),
+        )),
+        expected="does not use a documented help alias",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: validate_functional_alias_smoke_cases((
+            ("find with unsupported assertion", ("find", EXPECTED_CORPUS_SEARCH_QUERY), "missing-assertion"),
+        )),
+        expected="unsupported assertion",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: validate_functional_alias_smoke_cases(EXPECTED_FUNCTIONAL_ALIAS_SMOKES[:-1]),
+        expected="differ from expected alias target coverage",
+        scope="smoke assertions",
     )
     functional_alias_outputs = {
         ("design-ai", "ls", "skills"): passing_list_catalog_output("skills"),
