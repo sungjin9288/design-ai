@@ -10,7 +10,7 @@ Pre-flight steps for every design-ai release. Stamped at v3.12 — usable from v
 npm run release:check
 ```
 
-This runs CLI unit tests, all seven repository audits, whitespace checks, automated package contents checks, `npm run release:self-test`, and the packed-tarball smoke test, including explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced `--out` overwrite confirmation. Continue with the manual release checks below after this gate passes.
+This runs CLI unit tests, all seven repository audits, whitespace checks, automated package contents checks, `npm run release:self-test`, and the packed-tarball smoke test. The tarball smoke covers version and top-level help output, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite confirmation, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output. Continue with the manual release checks below after this gate passes.
 
 ### 1. Audits
 
