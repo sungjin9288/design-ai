@@ -143,6 +143,11 @@ test("functional command aliases dispatch to canonical command behavior", async 
     },
   ];
 
+  assert.equal(
+    new Set(cases.map((item) => item.alias)).size,
+    cases.length,
+    "functional alias test cases should not contain duplicate aliases",
+  );
   assert.deepEqual(
     Object.fromEntries(cases.map((item) => [item.alias, item.command])),
     FUNCTIONAL_ALIAS_TARGETS,
