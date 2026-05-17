@@ -4551,6 +4551,115 @@ def run_self_test() -> None:
         "design-ai ex --route component-spec --limit 1 && "
         "design-ai lint --examples --route component-spec --limit 1 --strict --json"
     )
+    functional_alias_outputs = {
+        ("design-ai", "ls", "skills"): passing_list_catalog_output("skills"),
+        (
+            "design-ai",
+            "find",
+            EXPECTED_CORPUS_SEARCH_QUERY,
+            "--dir",
+            "knowledge",
+            "--limit",
+            "1",
+            "--json",
+        ): passing_search_json(),
+        (
+            "design-ai",
+            "cat",
+            EXPECTED_CORPUS_SHOW_TARGET,
+            "--context",
+            "0",
+            "--json",
+        ): passing_show_json(),
+        (
+            "design-ai",
+            "recommend",
+            EXPECTED_ROUTE_BRIEF,
+            "--limit",
+            "1",
+            "--json",
+        ): passing_route_json(),
+        (
+            "design-ai",
+            "example",
+            "--route",
+            EXPECTED_EXAMPLES_ROUTE,
+            "--limit",
+            "1",
+            "--json",
+        ): passing_examples_json(),
+        (
+            "design-ai",
+            "ex",
+            "--route",
+            EXPECTED_EXAMPLES_ROUTE,
+            "--limit",
+            "1",
+        ): passing_examples_human_output(),
+        (
+            "design-ai",
+            "lint",
+            "--examples",
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--limit",
+            "1",
+            "--strict",
+            "--json",
+        ): passing_check_examples_json(),
+    }
+    functional_alias_calls = []
+    functional_alias_cwd = Path("/tmp/design-ai-functional-alias-self-test")
+    functional_alias_env = {"NO_COLOR": "1"}
+
+    def fake_functional_alias_runner(
+        cmd: list[str],
+        *,
+        cwd: Path | None = None,
+        env: dict[str, str],
+    ) -> object:
+        if cwd != functional_alias_cwd:
+            raise SystemExit("functional alias self-test cwd was not forwarded")
+        if env != functional_alias_env:
+            raise SystemExit("functional alias self-test env was not forwarded")
+        functional_alias_calls.append(tuple(cmd))
+        try:
+            stdout = functional_alias_outputs[tuple(cmd)]
+        except KeyError as error:
+            raise SystemExit(f"functional alias self-test received unexpected command: {cmd}") from error
+        return type("FunctionalAliasResult", (), {"stdout": stdout})()
+
+    assert_functional_alias_smokes(
+        lambda *args: ["design-ai", *args],
+        run_command=fake_functional_alias_runner,
+        cwd=functional_alias_cwd,
+        env=functional_alias_env,
+        context=context,
+    )
+    if functional_alias_calls != list(functional_alias_outputs):
+        raise SystemExit("functional alias self-test command order differs from expected order")
+
+    def fake_broken_functional_alias_runner(
+        cmd: list[str],
+        *,
+        cwd: Path | None = None,
+        env: dict[str, str],
+    ) -> object:
+        if tuple(cmd) == ("design-ai", "ls", "skills"):
+            return type("FunctionalAliasResult", (), {"stdout": passing_list_catalog_output("commands")})()
+        return fake_functional_alias_runner(cmd, cwd=cwd, env=env)
+
+    expect_self_test_failure(
+        lambda: assert_functional_alias_smokes(
+            lambda *args: ["design-ai", *args],
+            run_command=fake_broken_functional_alias_runner,
+            cwd=functional_alias_cwd,
+            env=functional_alias_env,
+            context=context,
+        ),
+        expected="list catalog output",
+        scope="smoke assertions",
+    )
 
     print("Smoke assertions self-test passed")
 
