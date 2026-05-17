@@ -49,6 +49,16 @@ async function captureStderrAndExit(fn) {
   return { stderr: lines.join("\n"), exitCode };
 }
 
+const FUNCTIONAL_ALIAS_TARGETS = {
+  ls: "list",
+  find: "search",
+  cat: "show",
+  recommend: "route",
+  example: "examples",
+  ex: "examples",
+  lint: "check",
+};
+
 test("suggestCommand suggests close canonical command names", () => {
   assert.equal(suggestCommand("docter"), "doctor");
   assert.equal(suggestCommand("serach"), "search");
@@ -132,6 +142,11 @@ test("functional command aliases dispatch to canonical command behavior", async 
       expected: [/"routeId": "component-spec"/, /"status": "pass"/],
     },
   ];
+
+  assert.deepEqual(
+    Object.fromEntries(cases.map((item) => [item.alias, item.command])),
+    FUNCTIONAL_ALIAS_TARGETS,
+  );
 
   for (const item of cases) {
     assert.equal(HELP_ALIASES[item.alias], item.command, `${item.alias} should map to ${item.command}`);
