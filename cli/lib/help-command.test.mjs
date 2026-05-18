@@ -3,7 +3,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { auditScriptLabel } from "../commands/audit.mjs";
 import { HELP_ALIASES, HELP_TOPICS, runHelp } from "../commands/help.mjs";
+import { REPOSITORY_AUDIT_SCRIPTS } from "./doctor.mjs";
 
 async function captureStdout(fn) {
   const lines = [];
@@ -66,6 +68,19 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const installOutput = await captureStdout(() => runHelp(["install"]));
   assert.match(installOutput, /Usage:\s+design-ai install/);
   assert.match(installOutput, /Symlinks design-ai skills/);
+
+  const auditOutput = await captureStdout(() => runHelp(["audit"]));
+  const auditLabels = REPOSITORY_AUDIT_SCRIPTS.map(auditScriptLabel).join(", ");
+  assert.match(auditOutput, /Usage:\s+design-ai audit \[--strict\] \[--quiet\]/);
+  assert.ok(
+    auditOutput.includes(`Runs the same ${REPOSITORY_AUDIT_SCRIPTS.length} repository audits used by CI:`),
+    "audit help should describe the repository audit count from the shared script list",
+  );
+  assert.ok(
+    auditOutput.includes(`  ${auditLabels}`),
+    "audit help should list labels derived from the shared repository audit scripts",
+  );
+  assert.doesNotMatch(auditOutput, /same seven repository audits/);
 });
 
 test("runHelp exposes usage output for every supported help topic", async () => {
