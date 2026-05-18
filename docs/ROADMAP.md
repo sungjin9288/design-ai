@@ -49,7 +49,7 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 ### Tooling
 
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
-- [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
+- [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
 ## Phase 50 — DRAFT polish round 2 + reconciliation auto-apply (v4.13.0) ✓ shipped
 
@@ -69,19 +69,22 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - `component_spec_reconcile.py --apply-high` updates existing API table rows for HIGH-confidence proposals only.
 - `--dry-run` previews changes; `--multi-source --apply-high` requires `--force` before writing broadly.
 - Auto-apply skips missing prop rows and leaves MEDIUM/MANUAL proposals for human review.
+- `raw-hex-check.py` blocks new non-allowlisted `examples/` raw hex colors so component specs stay token-alias-first.
 
 ### Versions
 - `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
 
 ### Verified
-- All 7 audits pass.
+- All 8 audits pass.
 - Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
+- Raw hex audit self-test covers token violations, allowlisted fixtures, line-level exceptions, CSS anchors, and order-number false positives.
 - 15 new fully-polished specs follow established template.
 - 3 cross-ref corrections (`component-stepper.md` → `component-steps.md`).
 
 ### What this enables
 - Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
 - HIGH-confidence upstream reconciliation can be applied mechanically without rewriting component narratives.
+- New component examples now fail CI if they hardcode raw hex colors instead of semantic token aliases.
 - Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
 
 ### What's still ahead (4.x — incremental only)

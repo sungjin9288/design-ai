@@ -29,7 +29,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    name: 7 audits + size budget
+    name: 8 audits + size budget
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
       # Use the unified audit runner instead of many separate steps.
       # On PR: warn-only (matches local dev experience).
       # On push to main: --strict (CI fails on stale content >12 months).
-      - name: Run all 7 audits
+      - name: Run all 8 audits
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             python3 tools/audit/run-all.py --strict

@@ -76,6 +76,7 @@ REQUIRED_PATHS = {
     "tools/audit/frontmatter-check.py",
     "tools/audit/link-check.py",
     "tools/audit/korean-copy-check.py",
+    "tools/audit/raw-hex-check.py",
     "tools/audit/integration-check.py",
     "tools/audit/stale-check.py",
     "tools/audit/check-coverage.py",
@@ -529,8 +530,8 @@ def run_self_test() -> int:
         path for path in run_all_audit_paths if path not in required_paths
     )
     assert_condition(
-        len(run_all_audit_paths) == 7,
-        "run-all.py should still enumerate seven repository audits",
+        len(run_all_audit_paths) == 8,
+        "run-all.py should still enumerate eight repository audits",
     )
     assert_condition(
         not missing_run_all_audit_paths,

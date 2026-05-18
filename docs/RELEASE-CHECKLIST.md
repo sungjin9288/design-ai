@@ -10,7 +10,7 @@ Pre-flight steps for every design-ai release. Stamped at v3.12 — usable from v
 npm run release:check
 ```
 
-This runs CLI unit tests, all seven repository audits, whitespace checks, automated package contents checks, release metadata checks, `npm run release:self-test`, and the packed-tarball smoke test. The release metadata check verifies package/plugin version alignment plus current CHANGELOG and ROADMAP entries. The tarball smoke covers version and top-level help output, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output. Continue with the manual release checks below after this gate passes.
+This runs CLI unit tests, all eight repository audits, whitespace checks, automated package contents checks, release metadata checks, `npm run release:self-test`, and the packed-tarball smoke test. The release metadata check verifies package/plugin version alignment plus current CHANGELOG and ROADMAP entries. The tarball smoke covers version and top-level help output, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output. Continue with the manual release checks below after this gate passes.
 
 ### 1. Audits
 
@@ -18,7 +18,7 @@ This runs CLI unit tests, all seven repository audits, whitespace checks, automa
 node cli/bin/design-ai.mjs audit --strict
 ```
 
-All seven audits must pass: frontmatter, link, Korean copy, integration, stale, coverage, and example QA. The CI workflow runs them on PR; verify locally before tagging.
+All eight audits must pass: frontmatter, link, Korean copy, raw hex color hygiene, integration, stale, coverage, and example QA. The CI workflow runs them on PR; verify locally before tagging.
 
 ### 2. Version alignment
 
@@ -127,7 +127,7 @@ git push origin vX.Y.Z
 ```
 
 GitHub Actions takes over:
-- `audit.yml` re-runs all seven audits and unit tests.
+- `audit.yml` re-runs all eight audits and unit tests.
 - `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including version and top-level help output, command alias help and functional alias output, command-specific help topic output, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output, then publishes to npm with provenance.
 - After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help/command aliases, functional aliases, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, and install/`doctor --strict`/status/uninstall lifecycle output are verified from the public registry.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.

@@ -26,9 +26,14 @@ User-facing release notes for design-ai. Versions follow semver.
 - `--dry-run` previews changes, while `--multi-source --apply-high` requires `--force` before writing across many specs.
 - The auto-apply path preserves narrative content, skips missing prop rows, and keeps MEDIUM/MANUAL proposals review-only.
 
+### Example token hygiene
+- `raw-hex-check.py` now fails non-allowlisted `examples/` raw hex colors so component specs prefer semantic token aliases.
+- Existing palette, brand, email, chart, QR, color-picker, slide, and dogfood fixtures are explicitly allowlisted because they intentionally teach primitive color values or literal brand colors.
+
 ### Verified
-- All 7 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix).
+- All 8 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix, plus raw hex hygiene for examples).
 - Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
+- Raw hex audit self-test covers token violations, allowlisted fixtures, line-level exceptions, CSS anchors, and order-number false positives.
 - 15 new fully-polished specs follow established sub-component spec template.
 - Korean conventions threaded through all polished specs (KR text density, 합쇼체 vs 해요체 usage, KR-localized label formatters for TablePagination).
 

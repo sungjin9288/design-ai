@@ -33,7 +33,7 @@ Latest local tarball smoke:
 @design-ai/cli@4.13.0
 package size: 1.3 MB
 unpacked size: 4.3 MB
-total files: 494
+total files: 495
 Smoke assertions self-test passed
 Release metadata self-test passed
 Package smoke passed
@@ -43,7 +43,7 @@ The installed-package doctor reported:
 
 ```text
 Summary: 16 pass, 0 warning(s), 0 failure(s)
-Audit scripts: 7 repository audit script(s) found
+Audit scripts: 8 repository audit script(s) found
 Doctor assertions helper: tools/audit/doctor_assertions.py found
 Smoke assertions helper: tools/audit/smoke_assertions.py found
 Package contents check: tools/audit/package-contents.py found
@@ -96,11 +96,11 @@ The smoke path sets `NO_COLOR=1` and checks captured CLI output for ANSI escape 
 
 ### 8. Audit runner exit-code behavior is covered
 
-`npm run release:self-test` now includes `npm run audit:runner:self-test`, which exercises `run-all.py` without invoking the repository audits. It proves strict mode exits non-zero on failures, warn-only mode keeps exit code 0 while naming failed audits, and the seven-audit release gate count stays explicit.
+`npm run release:self-test` now includes `npm run audit:runner:self-test`, which exercises `run-all.py` without invoking the repository audits. It proves strict mode exits non-zero on failures, warn-only mode keeps exit code 0 while naming failed audits, and the eight-audit release gate count stays explicit.
 
 ### 9. Release metadata drift is covered
 
-`npm run release:metadata` now verifies package/plugin version alignment, the top CHANGELOG entry, the current ROADMAP phase, required release sections, and the documented seven-audit count. This prevents a release from passing when the implementation version and release narrative drift apart.
+`npm run release:metadata` now verifies package/plugin version alignment, the top CHANGELOG entry, the current ROADMAP phase, required release sections, and the documented eight-audit count. This prevents a release from passing when the implementation version and release narrative drift apart.
 
 ## Issues surfaced
 

@@ -54,7 +54,7 @@ design-ai check file  Check generated Markdown artifact quality; add --examples,
 design-ai examples q Find worked examples; add --route id, --limit N, or --json
 design-ai search q    Search local corpus markdown; add --dir kind, --limit N, or --json
 design-ai show file   Print a corpus file or line range; add --lines N:M, --context N, or --json
-design-ai audit       Run all seven repository audits; add --strict or --quiet
+design-ai audit       Run all eight repository audits; add --strict or --quiet
 design-ai doctor      Diagnose install and runtime health; add --strict, --json, or --fix
 design-ai version     CLI + plugin versions
 design-ai help [cmd|--json] Show top-level or command-specific help; --json emits a topic catalog
@@ -90,7 +90,7 @@ For releases, both must match. The publish workflow enforces this:
 The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
-- Runs all 7 audits (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
+- Runs all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
 - Installs the packed tarball into a temporary project, validates `design-ai version` and top-level help output, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, validates every `design-ai help <command>` topic-specific usage output, smoke-tests documented help and command aliases with output assertions, verifies functional aliases such as `find`, `cat`, `recommend`, `example`, `ex`, `ls`, and `lint`, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, explicit `show --lines` ranges and `route --explain` output, verifies unknown route-id/option/value suggestion and numeric range failures, verifies prompt/pack forced `--out` overwrites plus their `Wrote <path>` confirmations, and verifies `design-ai install`, `doctor --strict`, `status`, and `uninstall` lifecycle output against a fake `CLAUDE_HOME`.

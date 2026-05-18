@@ -149,7 +149,7 @@ design-ai audit --strict
 python3 tools/preview/render-tokens.py
 ```
 
-CI runs the seven audits on every PR.
+CI runs the eight audits on every PR.
 
 ## Next
 

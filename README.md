@@ -206,21 +206,22 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v4.13.0** (DRAFT polish round 2).
 
-The corpus has been audited under CI checks since v1.7. It currently runs 7 audits:
+The corpus has been audited under CI checks since v1.7. It currently runs 8 audits:
 - Frontmatter validity
 - Internal link resolution
 - Korean copy quality
+- Raw hex color hygiene in examples
 - Integration walkthrough completeness
 - Stale-content freshness
 - Component coverage report freshness
 - Top worked example QA for every routed workflow
 
-All 7 pass on every commit to `main`.
+All 8 pass on every commit to `main`.
 
 ## Contributing
 
 See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
-- Run `npm run release:check` before release PRs or tags. It covers CLI unit tests, 7 audits, whitespace checks, package contents checks, `npm run release:self-test` (including audit runner exit-code and coverage timestamp preservation fixtures), and packed-tarball smoke including version, top-level help, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output.
+- Run `npm run release:check` before release PRs or tags. It covers CLI unit tests, 8 audits, whitespace checks, package contents checks, `npm run release:self-test` (including audit runner exit-code and coverage timestamp preservation fixtures), and packed-tarball smoke including version, top-level help, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output.
 - After npm publish completes, run `npm run registry:smoke` to verify the public `npm exec --package` install path, including the help topic catalog, functional aliases, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.
 - Skill PLAYBOOKs include a verification phase checklist.

@@ -55,7 +55,7 @@ design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--ro
 design-ai examples q worked example 검색; --route id/--limit N/--json 지원
 design-ai search q    로컬 코퍼스 Markdown 검색; --dir kind/--limit N/--json 지원
 design-ai show file   코퍼스 파일 또는 line range 출력; --lines N:M/--context N/--json 지원
-design-ai audit       7개 repository audit 실행; --strict/--quiet 지원
+design-ai audit       8개 repository audit 실행; --strict/--quiet 지원
 design-ai doctor      설치 및 runtime 상태 진단; --strict/--json/--fix 지원
 design-ai version     CLI + 플러그인 버전
 design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 topic catalog 출력

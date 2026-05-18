@@ -47,7 +47,7 @@ jobs:
           fi
           echo "Plugin manifest version: $PLUGIN_VERSION"
 
-      - name: Run all 7 audits before release
+      - name: Run all 8 audits before release
         run: python3 tools/audit/run-all.py --strict
 
       - name: Run CLI unit tests before release

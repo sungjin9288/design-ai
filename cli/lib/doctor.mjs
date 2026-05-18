@@ -26,6 +26,7 @@ export const REPOSITORY_AUDIT_SCRIPTS = [
   "frontmatter-check.py",
   "link-check.py",
   "korean-copy-check.py",
+  "raw-hex-check.py",
   "integration-check.py",
   "stale-check.py",
   "check-coverage.py",

@@ -55,6 +55,11 @@ AUDITS: tuple[AuditSpec, ...] = (
         description="Korean voice / register / typography",
     ),
     AuditSpec(
+        name="raw-hex",
+        script="raw-hex-check.py",
+        description="Example raw hex colors use token aliases unless explicitly allowlisted",
+    ),
+    AuditSpec(
         name="integration",
         script="integration-check.py",
         description="Integration walkthrough completeness",
@@ -173,7 +178,7 @@ def run_self_test() -> int:
     assert_self_test(strict_code == 1, "strict mode should exit 1 when any audit fails")
     assert_self_test("Use --strict to fail with non-zero exit code." not in strict_lines, "strict failures should not print warn-only hint")
 
-    assert_self_test(len(AUDITS) == 7, "release gate should still enumerate seven repository audits")
+    assert_self_test(len(AUDITS) == 8, "release gate should still enumerate eight repository audits")
     assert_self_test(
         any(spec.name == "stale" and "--strict" in spec.strict_args for spec in AUDITS),
         "stale audit should still receive strict args in strict mode",

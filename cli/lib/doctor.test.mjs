@@ -189,7 +189,7 @@ test("collectDoctorReport fails when a run-all dependency audit script is missin
 
     assert.equal(checkByLabel(report, "Source layout").status, STATUS.FAIL);
     assert.equal(auditScriptsCheck.status, STATUS.FAIL);
-    assert.match(auditScriptsCheck.detail, /1\/7 missing: link-check\.py/);
+    assert.match(auditScriptsCheck.detail, /1\/8 missing: link-check\.py/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

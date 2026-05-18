@@ -181,7 +181,7 @@ def run_self_test() -> int:
 ## v1.2.3 — Fixture release (2026-05)
 
 ### Verified
-- All 7 audits pass.
+- All 8 audits pass.
 
 ### Versions
 - `package.json` + `.claude-plugin/plugin.json`: 1.2.2 → 1.2.3.
@@ -199,7 +199,7 @@ def run_self_test() -> int:
 - `package.json` + `.claude-plugin/plugin.json`: 1.2.2 → 1.2.3.
 
 ### Verified
-- All 7 audits pass.
+- All 8 audits pass.
 
 ### What this enables
 - Fixture roadmap metadata can be verified.
@@ -212,16 +212,16 @@ def run_self_test() -> int:
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
-        audit_count=7,
+        audit_count=8,
     )
     assert_condition(passing["errors"] == [], "complete fixture should pass without errors")
 
     failing = release_metadata_summary(
         package_json=package_json,
         plugin_json={"version": "1.2.2"},
-        changelog_text=changelog.replace("All 7 audits pass.", "All 6 audits pass."),
+        changelog_text=changelog.replace("All 8 audits pass.", "All 7 audits pass."),
         roadmap_text=roadmap.replace("(v1.2.3)", "(v1.2.2)"),
-        audit_count=7,
+        audit_count=8,
     )
     joined_errors = "\n".join(failing["errors"])
     assert_condition("plugin manifest version mismatch" in joined_errors, "plugin mismatch should fail")
