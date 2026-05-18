@@ -85,7 +85,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 1. `package.json` 버전 올리기.
 2. `.claude-plugin/plugin.json` 버전을 일치시키기.
 3. `CHANGELOG.md` 업데이트.
-4. 커밋 + 태그: `git tag v3.6.0 && git push --tags`.
+4. 커밋 + 태그: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 5. GitHub Actions가 publish 및 release 워크플로 실행.
 
 워크플로:

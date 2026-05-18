@@ -84,7 +84,7 @@ For releases, both must match. The publish workflow enforces this:
 1. Bump `package.json` version.
 2. Bump `.claude-plugin/plugin.json` version to match.
 3. Update `CHANGELOG.md`.
-4. Commit + tag: `git tag v3.1.0 && git push --tags`.
+4. Commit + tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 5. GitHub Actions runs the publish and release workflows.
 
 The workflow:
@@ -147,8 +147,8 @@ Before tagging a release:
 Tag and push:
 
 ```bash
-git tag v3.1.0
-git push origin v3.1.0
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
 GitHub Actions takes over from there.
@@ -165,8 +165,8 @@ For users who don't want npm, the tag workflow attaches the same npm-packed tarb
 
 ```bash
 # After a v* tag release
-curl -LO https://github.com/sungjin/design-ai/releases/download/v3.1.0/design-ai-cli-3.1.0.tgz
-tar xzf design-ai-cli-3.1.0.tgz
+curl -LO https://github.com/sungjin/design-ai/releases/download/vX.Y.Z/design-ai-cli-X.Y.Z.tgz
+tar xzf design-ai-cli-X.Y.Z.tgz
 cd package
 ./install.sh
 ```
