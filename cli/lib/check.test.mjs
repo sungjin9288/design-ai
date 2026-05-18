@@ -263,6 +263,24 @@ test("runCheck all-routes issues-only output hides passing route summaries", asy
   assert.equal(exitCode, undefined);
 });
 
+test("runCheck prints help successfully for explicit help", async () => {
+  const { stdout, stderr, exitCode } = await captureConsole(() => runCheck(["--help"]));
+
+  assert.match(stdout, /Usage:\s+design-ai check <artifact\.md>/);
+  assert.match(stdout, /design-ai check --examples --all-routes/);
+  assert.equal(stderr, "");
+  assert.equal(exitCode, undefined);
+});
+
+test("runCheck requires an artifact source when help is not requested", async () => {
+  const { stdout, stderr, exitCode } = await captureConsole(() => runCheck([]));
+
+  assert.match(stdout, /Usage:\s+design-ai check <artifact\.md>/);
+  assert.match(stdout, /--stdin/);
+  assert.equal(stderr, "");
+  assert.equal(exitCode, 1);
+});
+
 test("checkArtifactContent adds route-specific checks when routeId is provided", () => {
   const report = checkArtifactContent({
     content: `
