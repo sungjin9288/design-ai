@@ -42,10 +42,10 @@ Given a path under `refs/<source>/`:
 
 ## Pattern reference
 
-Look at existing extractors for style:
-- [`tools/extractors/ant_design_tokens.py`](../tools/extractors/ant_design_tokens.py) — TypeScript object-literal parsing with regex.
-- [`tools/extractors/mui_palette.py`](../tools/extractors/mui_palette.py) — JS function parsing + hand-curated body.
-- [`tools/extractors/ui_ux_pro_max.py`](../tools/extractors/ui_ux_pro_max.py) — CSV-based extraction.
+In a source checkout, look at existing extractors for style:
+- `tools/extractors/ant_design_tokens.py` — TypeScript object-literal parsing with regex.
+- `tools/extractors/mui_palette.py` — JS function parsing + hand-curated body.
+- `tools/extractors/ui_ux_pro_max.py` — CSV-based extraction.
 
 ## Don'ts
 

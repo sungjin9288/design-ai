@@ -45,6 +45,9 @@ CATALOG_COUNT_RE = re.compile(
     r"\b(?P<count>\d+)\s+(?:(?:review|slash)\s+)?"
     r"(?P<section>skills?|commands?|agents?)\b"
 )
+MARKDOWN_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+?)(?:#[^)]+)?\)")
+INLINE_CODE_RE = re.compile(r"`[^`]*`")
+EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:", "ftp://", "tel:")
 
 REQUIRED_PATHS = {
     "package.json",
@@ -206,6 +209,50 @@ def load_plugin_json() -> dict:
     return json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
 
 
+def matches_package_files_exclusion(path: str, pattern: str) -> bool:
+    if pattern == "**/__pycache__/**":
+        return "/__pycache__/" in f"/{path}"
+    if pattern == "**/*.pyc":
+        return path.endswith(".pyc")
+    if pattern.startswith("cli/**/*."):
+        return path.startswith("cli/") and path.endswith(pattern.removeprefix("cli/**/*"))
+    return False
+
+
+def load_package_file_fixture_paths(package_json: dict) -> set[str]:
+    package_files = package_json.get("files")
+    if not isinstance(package_files, list):
+        raise SystemExit("package.json files field is not a list")
+
+    included: set[str] = set()
+    exclusions: list[str] = []
+    for entry in package_files:
+        if not isinstance(entry, str) or not entry:
+            raise SystemExit("package.json files field contains a non-string entry")
+        if entry.startswith("!"):
+            exclusions.append(entry[1:])
+            continue
+
+        path = entry.rstrip("/")
+        absolute_path = ROOT / path
+        if absolute_path.is_file():
+            included.add(path)
+        elif absolute_path.is_dir():
+            for file_path in absolute_path.rglob("*"):
+                if file_path.is_file():
+                    included.add(file_path.relative_to(ROOT).as_posix())
+
+    for exclusion in exclusions:
+        included = {
+            path
+            for path in included
+            if not matches_package_files_exclusion(path, exclusion)
+        }
+
+    included.add("package.json")
+    return included
+
+
 def format_catalog_count(count: int, singular: str) -> str:
     return f"{count} {singular}{'' if count == 1 else 's'}"
 
@@ -287,6 +334,84 @@ def is_forbidden(path: str) -> bool:
     return any(segment in normalized for segment in FORBIDDEN_SEGMENTS)
 
 
+def is_external_link(url: str) -> bool:
+    return url.startswith(EXTERNAL_LINK_PREFIXES)
+
+
+def is_anchor_only_link(url: str) -> bool:
+    return url.startswith("#")
+
+
+def is_refs_link(url: str) -> bool:
+    """refs/ links are intentionally excluded from package/runtime closure checks."""
+    return "refs/" in url
+
+
+def normalize_package_link_target(source_path: Path, link: str) -> tuple[str | None, str | None]:
+    """Resolve a markdown link target to a repo-relative package path.
+
+    Returns (target_path, error). Links that are intentionally skipped return
+    (None, None). Only concrete files are checked against the package file list;
+    directory links remain valid because npm pack reports files, not directories.
+    """
+    if is_external_link(link) or is_anchor_only_link(link) or is_refs_link(link):
+        return None, None
+
+    normalized_link = link.split("?", 1)[0].split("#", 1)[0]
+    if not normalized_link:
+        return None, None
+
+    resolved = (source_path.parent / normalized_link).resolve()
+    try:
+        relative = resolved.relative_to(ROOT)
+    except ValueError:
+        return None, (
+            f"packaged markdown link points outside repository: "
+            f"{source_path.relative_to(ROOT).as_posix()} -> {link}"
+        )
+
+    if not resolved.exists() or not resolved.is_file():
+        return None, None
+
+    return relative.as_posix(), None
+
+
+def packaged_markdown_link_errors(file_paths: set[str]) -> list[str]:
+    errors: list[str] = []
+    markdown_paths = sorted(path for path in file_paths if path.endswith(".md"))
+
+    for markdown_path in markdown_paths:
+        source_path = ROOT / markdown_path
+        if not source_path.is_file():
+            continue
+
+        in_code_block = False
+        text = source_path.read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if line.strip().startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            if in_code_block:
+                continue
+
+            line_without_code = INLINE_CODE_RE.sub("", line)
+            for match in MARKDOWN_LINK_RE.finditer(line_without_code):
+                _, link = match.groups()
+                target_path, target_error = normalize_package_link_target(source_path, link)
+                if target_error:
+                    errors.append(target_error)
+                    continue
+                if target_path is None:
+                    continue
+                if target_path not in file_paths:
+                    errors.append(
+                        "packaged markdown link target is not included: "
+                        f"{markdown_path} -> {link} ({target_path})"
+                    )
+
+    return errors
+
+
 def format_bytes(size: int) -> str:
     if size >= 1024 * 1024:
         return f"{size / 1024 / 1024:.1f} MB"
@@ -316,6 +441,7 @@ def verify_package_contents(
     errors: list[str] = []
     missing = sorted(path for path in required_paths if path not in file_paths)
     forbidden = sorted(path for path in file_paths if is_forbidden(path))
+    markdown_link_errors = packaged_markdown_link_errors(file_paths)
 
     package_size = int(pack.get("size") or 0)
     if package_size > MAX_PACKAGE_SIZE_BYTES:
@@ -340,6 +466,7 @@ def verify_package_contents(
         errors.append("missing required package path(s): " + ", ".join(missing))
     if forbidden:
         errors.append("forbidden package path(s): " + ", ".join(forbidden))
+    errors.extend(markdown_link_errors)
 
     return {
         "name": pack.get("name"),
@@ -351,6 +478,7 @@ def verify_package_contents(
         "unpacked_size": int(pack.get("unpackedSize") or 0),
         "missing": missing,
         "forbidden": forbidden,
+        "markdown_link_errors": markdown_link_errors,
         "errors": errors,
     }
 
@@ -364,6 +492,7 @@ def run_self_test() -> int:
     package_json = load_package_json()
     plugin_json = load_plugin_json()
     required_paths = sorted(load_required_paths())
+    package_file_paths = sorted(load_package_file_fixture_paths(package_json))
     assert_condition(
         any(path.endswith("/PLAYBOOK.md") for path in required_paths),
         "skill playbook paths should be part of required package contents",
@@ -407,6 +536,14 @@ def run_self_test() -> int:
         "run-all.py audit scripts should be required package contents: "
         + ", ".join(missing_run_all_audit_paths),
     )
+    missing_fixture_paths = sorted(
+        path for path in required_paths if path not in package_file_paths
+    )
+    assert_condition(
+        not missing_fixture_paths,
+        "package.json files fixture should include all required package contents: "
+        + ", ".join(missing_fixture_paths),
+    )
 
     passing_pack = {
         "name": package_json["name"],
@@ -414,7 +551,7 @@ def run_self_test() -> int:
         "filename": "fixture.tgz",
         "size": 1024,
         "unpackedSize": 4096,
-        "files": [{"path": path} for path in required_paths],
+        "files": [{"path": path} for path in package_file_paths],
     }
     passing_summary = verify_package_contents(
         passing_pack,
@@ -425,6 +562,25 @@ def run_self_test() -> int:
     assert_condition(
         passing_summary["errors"] == [],
         "complete fixture should pass without errors",
+    )
+
+    missing_markdown_target_paths = set(package_file_paths)
+    missing_markdown_target_paths.remove("AGENTS.ko.md")
+    missing_markdown_required_paths = set(required_paths)
+    missing_markdown_required_paths.remove("AGENTS.ko.md")
+    missing_markdown_target_summary = verify_package_contents(
+        {
+            **passing_pack,
+            "files": [{"path": path} for path in sorted(missing_markdown_target_paths)],
+        },
+        package_json=package_json,
+        plugin_json=plugin_json,
+        required_paths=missing_markdown_required_paths,
+    )
+    assert_condition(
+        "docs/USING.ko.md -> ../AGENTS.ko.md"
+        in "\n".join(missing_markdown_target_summary["markdown_link_errors"]),
+        "packaged markdown links should fail when their existing target is not packaged",
     )
 
     failing_pack = {
