@@ -1,11 +1,18 @@
 // Tests for cli/commands/help.mjs top-level command discovery output.
 
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { auditScriptLabel } from "../commands/audit.mjs";
-import { HELP_ALIASES, HELP_TOPICS, runHelp } from "../commands/help.mjs";
+import {
+  HELP_ALIASES,
+  HELP_TOPICS,
+  buildPluginInventorySummary,
+  runHelp,
+} from "../commands/help.mjs";
 import { REPOSITORY_AUDIT_SCRIPTS } from "./doctor.mjs";
+import { PLUGIN_MANIFEST } from "./paths.mjs";
 
 async function captureStdout(fn) {
   const lines = [];
@@ -23,6 +30,8 @@ async function captureStdout(fn) {
 
 test("runHelp lists advanced options supported by command parsers", async () => {
   const output = await captureStdout(() => runHelp([]));
+  const pluginManifest = JSON.parse(readFileSync(PLUGIN_MANIFEST, "utf8"));
+  const pluginInventory = buildPluginInventorySummary(pluginManifest);
 
   assert.match(output, /Usage:\s+design-ai <command> \[args\]/);
   assert.match(output, /design-ai help \[command\|--json\]/);
@@ -33,6 +42,21 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
+  assert.ok(
+    output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
+    "top-level help should summarize plugin inventory from .claude-plugin/plugin.json",
+  );
+});
+
+test("buildPluginInventorySummary formats manifest section counts", () => {
+  assert.equal(
+    buildPluginInventorySummary({
+      skills: [{ name: "a" }, { name: "b" }],
+      commands: [{ name: "c" }],
+      agents: [],
+    }),
+    "2 skills, 1 command, 0 agents",
+  );
 });
 
 test("runHelp emits a machine-readable help topic catalog", async () => {

@@ -1,6 +1,9 @@
 // `design-ai help`
 
+import { readFileSync } from "node:fs";
+
 import { header, dim } from "../lib/log.mjs";
+import { PLUGIN_MANIFEST, pathExists } from "../lib/paths.mjs";
 import { suggestNearest } from "../lib/suggest.mjs";
 
 import { runAudit } from "./audit.mjs";
@@ -139,8 +142,38 @@ function printHelpJson() {
   console.log(JSON.stringify(buildHelpCatalog(), null, 2));
 }
 
+function countManifestSection(manifest, section) {
+  const items = manifest?.[section];
+  return Array.isArray(items) ? items.length : 0;
+}
+
+function formatInventoryCount(count, singular) {
+  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+export function buildPluginInventorySummary(manifest) {
+  return [
+    formatInventoryCount(countManifestSection(manifest, "skills"), "skill"),
+    formatInventoryCount(countManifestSection(manifest, "commands"), "command"),
+    formatInventoryCount(countManifestSection(manifest, "agents"), "agent"),
+  ].join(", ");
+}
+
+function loadPluginInventorySummary() {
+  if (!pathExists(PLUGIN_MANIFEST)) {
+    return "plugin manifest unavailable";
+  }
+
+  try {
+    return buildPluginInventorySummary(JSON.parse(readFileSync(PLUGIN_MANIFEST, "utf8")));
+  } catch {
+    return "plugin manifest unavailable";
+  }
+}
+
 function printMainHelp() {
   header("design-ai", "Senior product designer for Claude Code");
+  const pluginInventory = loadPluginInventorySummary();
 
   console.log(`Usage:  design-ai <command> [args]`);
   console.log(`        design-ai help [command|--json]\n`);
@@ -176,7 +209,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai list skills`);
 
   console.log(`\nDocs:    https://github.com/sungjin/design-ai`);
-  console.log(`Plugin:  19 skills, 16 commands, 4 agents (UI/UX, motion,`);
+  console.log(`Plugin:  ${pluginInventory} (UI/UX, motion,`);
   console.log(`         illustration, print, video, game UI, conversational, spatial)`);
 }
 
