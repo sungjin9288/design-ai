@@ -28,6 +28,23 @@ PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 
 MAX_PACKAGE_SIZE_MB = 15
 MAX_PACKAGE_SIZE_BYTES = MAX_PACKAGE_SIZE_MB * 1024 * 1024
+CATALOG_COUNT_LABELS = {
+    "skills": "skill",
+    "commands": "command",
+    "agents": "agent",
+}
+CATALOG_COUNT_SECTIONS = {
+    "skill": "skills",
+    "skills": "skills",
+    "command": "commands",
+    "commands": "commands",
+    "agent": "agents",
+    "agents": "agents",
+}
+CATALOG_COUNT_RE = re.compile(
+    r"\b(?P<count>\d+)\s+(?:(?:review|slash)\s+)?"
+    r"(?P<section>skills?|commands?|agents?)\b"
+)
 
 REQUIRED_PATHS = {
     "package.json",
@@ -181,6 +198,78 @@ def load_plugin_json() -> dict:
     return json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))
 
 
+def format_catalog_count(count: int, singular: str) -> str:
+    return f"{count} {singular}{'' if count == 1 else 's'}"
+
+
+def catalog_counts_from_manifest(plugin_json: dict) -> tuple[dict[str, int], list[str]]:
+    counts: dict[str, int] = {}
+    errors: list[str] = []
+    for section in CATALOG_COUNT_LABELS:
+        entries = plugin_json.get(section)
+        if not isinstance(entries, list):
+            errors.append(f"plugin manifest section is not a list: {section}")
+            continue
+        counts[section] = len(entries)
+    return counts, errors
+
+
+def catalog_count_mentions(description: str) -> dict[str, list[tuple[int, str]]]:
+    mentions: dict[str, list[tuple[int, str]]] = {}
+    for match in CATALOG_COUNT_RE.finditer(description):
+        section = CATALOG_COUNT_SECTIONS[match.group("section")]
+        mentions.setdefault(section, []).append((int(match.group("count")), match.group(0)))
+    return mentions
+
+
+def replace_first_catalog_count(description: str, section: str, count: int) -> str:
+    replaced = False
+
+    def replace(match: re.Match[str]) -> str:
+        nonlocal replaced
+        if replaced or CATALOG_COUNT_SECTIONS[match.group("section")] != section:
+            return match.group(0)
+
+        replaced = True
+        return match.group(0).replace(match.group("count"), str(count), 1)
+
+    updated = CATALOG_COUNT_RE.sub(replace, description)
+    if not replaced:
+        raise SystemExit(f"self-test failed: fixture description is missing {section} count")
+    return updated
+
+
+def metadata_inventory_errors(package_json: dict, plugin_json: dict) -> list[str]:
+    expected_counts, errors = catalog_counts_from_manifest(plugin_json)
+    if errors:
+        return errors
+
+    descriptions = {
+        "package.json description": package_json.get("description"),
+        ".claude-plugin/plugin.json description": plugin_json.get("description"),
+    }
+    for label, description in descriptions.items():
+        if not isinstance(description, str) or not description.strip():
+            errors.append(f"{label} is missing")
+            continue
+
+        mentions = catalog_count_mentions(description)
+        for section, expected_count in expected_counts.items():
+            expected_label = format_catalog_count(expected_count, CATALOG_COUNT_LABELS[section])
+            section_mentions = mentions.get(section, [])
+            if not section_mentions:
+                errors.append(f"{label} missing catalog count: {expected_label}")
+                continue
+
+            for count, phrase in section_mentions:
+                if count != expected_count:
+                    errors.append(
+                        f"{label} catalog count mismatch: {phrase} != {expected_label}"
+                    )
+
+    return errors
+
+
 def is_forbidden(path: str) -> bool:
     if path.startswith(FORBIDDEN_PREFIXES):
         return True
@@ -237,6 +326,7 @@ def verify_package_contents(
             "plugin manifest version mismatch: "
             f"{plugin_json.get('version')} != {package_json.get('version')}"
         )
+    errors.extend(metadata_inventory_errors(package_json, plugin_json))
 
     if missing:
         errors.append("missing required package path(s): " + ", ".join(missing))
@@ -362,6 +452,46 @@ def run_self_test() -> int:
     assert_condition(
         "plugin manifest version mismatch" in joined_errors,
         "plugin manifest version mismatch should be reported",
+    )
+
+    stale_package_json = {
+        **package_json,
+        "description": replace_first_catalog_count(
+            package_json["description"],
+            "skills",
+            len(plugin_json["skills"]) - 1,
+        ),
+    }
+    stale_package_summary = verify_package_contents(
+        passing_pack,
+        package_json=stale_package_json,
+        plugin_json=plugin_json,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        "package.json description catalog count mismatch"
+        in "\n".join(stale_package_summary["errors"]),
+        "stale package.json inventory count should be reported",
+    )
+
+    stale_plugin_json = {
+        **plugin_json,
+        "description": replace_first_catalog_count(
+            plugin_json["description"],
+            "agents",
+            len(plugin_json["agents"]) - 1,
+        ),
+    }
+    stale_plugin_summary = verify_package_contents(
+        passing_pack,
+        package_json=package_json,
+        plugin_json=stale_plugin_json,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        ".claude-plugin/plugin.json description catalog count mismatch"
+        in "\n".join(stale_plugin_summary["errors"]),
+        "stale plugin manifest inventory count should be reported",
     )
 
     print("Package contents self-test passed")
