@@ -22,8 +22,10 @@
     "package:smoke": "python3 -B tools/audit/package-smoke.py --pack",
     "registry:smoke": "python3 -B tools/audit/registry-smoke.py",
     "registry:smoke:self-test": "python3 -B tools/audit/registry-smoke.py --self-test",
-    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test",
-    "release:check": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:self-test && npm run package:smoke",
+    "release:metadata": "python3 -B tools/audit/release-metadata.py",
+    "release:metadata:self-test": "python3 -B tools/audit/release-metadata.py --self-test",
+    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test && npm run release:metadata:self-test",
+    "release:check": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:metadata && npm run release:self-test && npm run package:smoke",
     "preview": "python3 -B tools/preview/render-tokens.py"
   },
   "keywords": [

@@ -69,9 +69,13 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
 
 ### Verified
-- All 6 audits pass.
+- All 7 audits pass.
 - 15 new fully-polished specs follow established template.
 - 3 cross-ref corrections (`component-stepper.md` → `component-steps.md`).
+
+### What this enables
+- Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
+- Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
 
 ### What's still ahead (4.x — incremental only)
 - Polish remaining 7 thin DRAFT specs (low priority).

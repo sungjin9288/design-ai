@@ -22,7 +22,7 @@ User-facing release notes for design-ai. Versions follow semver.
 - 3 step specs referenced `component-stepper.md` (doesn't exist; canonical is `component-steps.md`). Fixed.
 
 ### Verified
-- All 6 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix).
+- All 7 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix).
 - 15 new fully-polished specs follow established sub-component spec template.
 - Korean conventions threaded through all polished specs (KR text density, 합쇼체 vs 해요체 usage, KR-localized label formatters for TablePagination).
 
@@ -46,6 +46,10 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Versions
 - `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
+
+### What this enables
+- Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
+- Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
 
 ## v4.12.0 — Extractor v3 reconciliation mode (2026-05)
 

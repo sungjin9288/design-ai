@@ -23,7 +23,7 @@ npm run package:smoke
 - runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own version/top-level help checks, `help --json` catalog read, help topic usage, help alias, command alias, functional alias output, list catalog, corpus discovery smoke, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced file-write confirmation smoke, and install/`doctor --strict`/status/uninstall lifecycle output assertions
 - asserts the `doctor --json` required PASS set for both direct install and one-shot `npm exec` install
 
-The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the audit runner, coverage timestamp preservation, doctor, shared smoke, package smoke, and registry smoke assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
+The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the audit runner, coverage timestamp preservation, doctor, shared smoke, package smoke, registry smoke, and release metadata assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
 
 ## Current result
 
@@ -32,9 +32,10 @@ Latest local tarball smoke:
 ```text
 @design-ai/cli@4.13.0
 package size: 1.3 MB
-unpacked size: 4.2 MB
-total files: 492
+unpacked size: 4.3 MB
+total files: 494
 Smoke assertions self-test passed
+Release metadata self-test passed
 Package smoke passed
 ```
 
@@ -96,6 +97,10 @@ The smoke path sets `NO_COLOR=1` and checks captured CLI output for ANSI escape 
 ### 8. Audit runner exit-code behavior is covered
 
 `npm run release:self-test` now includes `npm run audit:runner:self-test`, which exercises `run-all.py` without invoking the repository audits. It proves strict mode exits non-zero on failures, warn-only mode keeps exit code 0 while naming failed audits, and the seven-audit release gate count stays explicit.
+
+### 9. Release metadata drift is covered
+
+`npm run release:metadata` now verifies package/plugin version alignment, the top CHANGELOG entry, the current ROADMAP phase, required release sections, and the documented seven-audit count. This prevents a release from passing when the implementation version and release narrative drift apart.
 
 ## Issues surfaced
 

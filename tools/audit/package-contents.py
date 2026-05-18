@@ -85,6 +85,7 @@ REQUIRED_PATHS = {
     "tools/audit/package-contents.py",
     "tools/audit/package-smoke.py",
     "tools/audit/registry-smoke.py",
+    "tools/audit/release-metadata.py",
 }
 
 FORBIDDEN_PREFIXES = (
