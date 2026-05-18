@@ -10,6 +10,33 @@ Three additional foundational specs (`button-base`, `css-baseline`, `config-prov
 The cross-source conflict checker now supports summary-only drift triage and a local self-test for severity classification.
 Korean maintenance docs now describe the same 8-audit gate and drift review workflow as the English contributor docs.
 Push-readiness now has a local CI parity command and GitHub Actions cache paths are aligned with the actual VS Code extension lockfile.
+The local CI parity gate now has a lightweight self-test wired into the release self-test chain.
+
+### Phase 57 — Local CI parity self-test coverage
+
+#### Added
+- Added `tools/audit/local-ci.py --self-test` to validate Python compile file discovery, markdown line budget counting, warning threshold behavior, and hard-cap failure handling without running the expensive CI parity workflow.
+- Added `npm run ci:local:self-test` and wired it into `npm run release:self-test`.
+
+#### Changed
+- `local-ci.py` now separates compile-file discovery, markdown line counting, and size-budget validation into reusable functions that can be tested without invoking npm, VS Code, or mkdocs.
+
+#### Impact
+- The release self-test chain now catches regressions in the local CI parity helper itself before a full `ci:local` run or external CI push.
+- Maintainers can quickly validate the helper logic when editing workflow-only local checks.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Future changes to the local CI parity gate can be verified through the existing lightweight release self-test path instead of depending only on the full, slower `npm run ci:local`.
 
 ### Phase 56 — CI cache hardening and local parity gate
 

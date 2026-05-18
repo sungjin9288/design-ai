@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 57 — Local CI parity self-test coverage (v4.13.0) ✓ shipped
+
+The new local CI parity gate now has its own lightweight self-test and participates in the existing release self-test chain.
+
+### Added
+- `tools/audit/local-ci.py --self-test` validates compile-file discovery, markdown line counting, warning threshold behavior, and hard-cap failure handling with temporary fixtures.
+- `npm run ci:local:self-test` exposes the helper self-test directly.
+- `npm run release:self-test` now includes the local CI self-test.
+
+### Changed
+- `local-ci.py` now factors Python compile file discovery, markdown line counting, and size budget validation into reusable testable functions.
+
+### Impact
+- Regressions in the pre-push local parity helper are caught by the fast release self-test path.
+- Maintainers can edit `ci:local` behavior without having to run the full package smoke, VS Code compile, and mkdocs build for every small logic change.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local CI parity remains useful as it grows because its cheap logic checks run inside the standard release self-test command.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Continue targeted coverage only when upstream adds product-relevant primitives.
+
 ## Phase 56 — CI cache hardening + local parity gate (v4.13.0) ✓ shipped
 
 The branch is now better prepared for Real-CI verification: GitHub Actions npm caching points at the actual lockfile, and maintainers have a single local command that exercises workflow-only surfaces before pushing.

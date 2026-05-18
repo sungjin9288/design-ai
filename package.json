@@ -24,7 +24,8 @@
     "registry:smoke:self-test": "python3 -B tools/audit/registry-smoke.py --self-test",
     "release:metadata": "python3 -B tools/audit/release-metadata.py",
     "release:metadata:self-test": "python3 -B tools/audit/release-metadata.py --self-test",
-    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test && npm run release:metadata:self-test",
+    "ci:local:self-test": "python3 -B tools/audit/local-ci.py --self-test",
+    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test && npm run release:metadata:self-test && npm run ci:local:self-test",
     "release:check": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:metadata && npm run release:self-test && npm run package:smoke",
     "ci:local": "python3 -B tools/audit/local-ci.py",
     "preview": "python3 -B tools/preview/render-tokens.py"
