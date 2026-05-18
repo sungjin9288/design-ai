@@ -7,8 +7,9 @@ PROPOSES resolution. For each prop with disagreement across Ant / MUI /
 shadcn, output a recommended unified type, default, deprecation status,
 and (where applicable) a migration note.
 
-This is a maintainer aid — the output is NEVER auto-applied to specs.
-A human reviews + decides.
+This is a maintainer aid. By default it only reports proposals.
+With --apply-high, it can update existing API table rows for HIGH-confidence
+proposals only; it does not add missing props or apply MEDIUM/MANUAL items.
 
 Usage:
   # Single component
@@ -19,6 +20,10 @@ Usage:
 
   # JSON for tooling
   python3 tools/extractors/component_spec_reconcile.py --name button --json
+
+  # Preview or apply safe HIGH-confidence updates to existing spec rows
+  python3 tools/extractors/component_spec_reconcile.py --name button --apply-high --dry-run
+  python3 tools/extractors/component_spec_reconcile.py --name button --apply-high
 
 Strategy:
 - Type drift: prefer most-specific compatible type (boolean over unknown).
@@ -74,6 +79,22 @@ class PropProposal:
     confidence: str  # HIGH / MEDIUM / LOW / MANUAL
     rationale: str
     migration_note: str = ""
+
+
+@dataclass(frozen=True)
+class ApplyChange:
+    prop: str
+    field: str
+    before: str
+    after: str
+
+
+@dataclass(frozen=True)
+class ApplyResult:
+    path: Path
+    changed: tuple[ApplyChange, ...] = ()
+    skipped: tuple[str, ...] = ()
+    missing_table: bool = False
 
 
 # ----- type reconciliation -----
@@ -383,6 +404,185 @@ def render_text(name: str, sources: list[tuple[str, ParsedFile]], proposals: lis
     return "\n".join(lines)
 
 
+# ----- safe API-table auto-apply -----
+
+
+def split_markdown_row(line: str) -> list[str]:
+    """Split a pipe table row while respecting escaped pipes."""
+    stripped = line.strip()
+    if not stripped.startswith("|"):
+        return []
+
+    body = stripped[1:]
+    if body.endswith("|"):
+        body = body[:-1]
+
+    cells: list[str] = []
+    current: list[str] = []
+    escaped = False
+    for char in body:
+        if char == "|" and not escaped:
+            cells.append("".join(current).strip())
+            current = []
+            continue
+
+        current.append(char)
+        escaped = char == "\\" and not escaped
+        if char != "\\":
+            escaped = False
+
+    cells.append("".join(current).strip())
+    return cells
+
+
+def join_markdown_row(cells: list[str]) -> str:
+    return "| " + " | ".join(cells) + " |"
+
+
+def normalize_cell(cell: str) -> str:
+    value = cell.strip()
+    if value in {"", "—", "-"}:
+        return ""
+    if value.startswith("`") and value.endswith("`") and len(value) >= 2:
+        value = value[1:-1]
+    return value.replace("\\|", "|").strip()
+
+
+def normalize_prop_cell(cell: str) -> str:
+    return normalize_cell(cell).strip("`")
+
+
+def format_code_cell(value: str) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        return "—"
+    return "`" + cleaned.replace("|", "\\|") + "`"
+
+
+def find_api_table(lines: list[str]) -> tuple[int, int] | None:
+    """Return (header_index, end_index_exclusive) for a supported API table."""
+    for index, line in enumerate(lines):
+        cells = split_markdown_row(line)
+        lower = [cell.strip().lower() for cell in cells]
+        if not lower:
+            continue
+        if lower[0] != "prop" or "type" not in lower or "default" not in lower:
+            continue
+        if index + 1 >= len(lines):
+            continue
+        separator = split_markdown_row(lines[index + 1])
+        if len(separator) < len(cells) or not all(set(cell) <= {"-", ":", " "} for cell in separator):
+            continue
+
+        end = index + 2
+        while end < len(lines):
+            row = split_markdown_row(lines[end])
+            if not row or len(row) < len(cells):
+                break
+            end += 1
+        return index, end
+    return None
+
+
+def apply_high_confidence_to_text(
+    text: str,
+    proposals: list[PropProposal],
+) -> tuple[str, tuple[ApplyChange, ...], tuple[str, ...], bool]:
+    high = {proposal.name: proposal for proposal in proposals if proposal.confidence == "HIGH"}
+    if not high:
+        return text, (), (), False
+
+    lines = text.splitlines()
+    trailing_newline = text.endswith("\n")
+    table = find_api_table(lines)
+    if table is None:
+        return text, (), tuple(sorted(high)), True
+
+    header_index, end_index = table
+    headers = [cell.strip().lower() for cell in split_markdown_row(lines[header_index])]
+    field_indexes = {name: headers.index(name) for name in headers}
+    prop_index = field_indexes["prop"]
+    type_index = field_indexes["type"]
+    default_index = field_indexes["default"]
+    description_index = field_indexes.get("description")
+    source_index = field_indexes.get("source(s)")
+
+    changes: list[ApplyChange] = []
+    applied_props: set[str] = set()
+
+    for row_index in range(header_index + 2, end_index):
+        cells = split_markdown_row(lines[row_index])
+        prop_name = normalize_prop_cell(cells[prop_index])
+        proposal = high.get(prop_name)
+        if proposal is None:
+            continue
+
+        applied_props.add(prop_name)
+
+        next_type = format_code_cell(proposal.proposed_type)
+        if normalize_cell(cells[type_index]) != normalize_cell(next_type):
+            changes.append(ApplyChange(prop_name, "type", cells[type_index], next_type))
+            cells[type_index] = next_type
+
+        if proposal.proposed_default:
+            next_default = format_code_cell(proposal.proposed_default)
+            if normalize_cell(cells[default_index]) != normalize_cell(next_default):
+                changes.append(ApplyChange(prop_name, "default", cells[default_index], next_default))
+                cells[default_index] = next_default
+
+        if source_index is not None:
+            next_sources = ", ".join(proposal.sources_present)
+            if cells[source_index].strip() != next_sources:
+                changes.append(ApplyChange(prop_name, "source(s)", cells[source_index], next_sources))
+                cells[source_index] = next_sources
+
+        if proposal.proposed_deprecated and description_index is not None:
+            description = cells[description_index]
+            if "[deprecated]" not in description.lower():
+                next_description = f"**[deprecated]** {description}"
+                changes.append(ApplyChange(prop_name, "description", description, next_description))
+                cells[description_index] = next_description
+
+        lines[row_index] = join_markdown_row(cells)
+
+    skipped = tuple(sorted(set(high) - applied_props))
+    updated = "\n".join(lines)
+    if trailing_newline:
+        updated += "\n"
+    return updated, tuple(changes), skipped, False
+
+
+def apply_high_confidence_to_spec(name: str, proposals: list[PropProposal], *, write: bool) -> ApplyResult:
+    path = ROOT / "examples" / f"component-{name}.md"
+    if not path.exists():
+        high_names = tuple(sorted(p.name for p in proposals if p.confidence == "HIGH"))
+        return ApplyResult(path=path, skipped=high_names, missing_table=True)
+
+    original = path.read_text(encoding="utf-8")
+    updated, changes, skipped, missing_table = apply_high_confidence_to_text(original, proposals)
+    if write and changes and updated != original:
+        path.write_text(updated, encoding="utf-8")
+
+    return ApplyResult(path=path, changed=changes, skipped=skipped, missing_table=missing_table)
+
+
+def render_apply_result(result: ApplyResult, *, dry_run: bool) -> str:
+    rel = result.path.relative_to(ROOT)
+    action = "Would update" if dry_run else "Updated"
+    if result.missing_table:
+        return f"{rel}: skipped (supported API table not found)"
+    if not result.changed:
+        skipped = f", skipped {len(result.skipped)} missing HIGH prop(s)" if result.skipped else ""
+        return f"{rel}: no existing API rows changed{skipped}"
+
+    lines = [f"{rel}: {action} {len(result.changed)} field(s)"]
+    for change in result.changed:
+        lines.append(f"  - `{change.prop}` {change.field}: {change.before} -> {change.after}")
+    if result.skipped:
+        lines.append(f"  - skipped missing HIGH prop rows: {', '.join(result.skipped)}")
+    return "\n".join(lines)
+
+
 def find_multi_source_components(canonical_index: dict) -> list[str]:
     out: list[str] = []
     for name in canonical_index:
@@ -398,6 +598,119 @@ def find_multi_source_components(canonical_index: dict) -> list[str]:
     return sorted(out)
 
 
+def assert_self_test(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(f"self-test failed: {message}")
+
+
+def run_self_test() -> None:
+    proposals = [
+        PropProposal(
+            name="action",
+            sources_present=("ant-design", "mui"),
+            proposed_type="React.ReactNode",
+            proposed_default="",
+            proposed_deprecated=False,
+            confidence="HIGH",
+            rationale="all axes agree",
+        ),
+        PropProposal(
+            name="tone",
+            sources_present=("ant-design", "mui"),
+            proposed_type="'success' | 'warning'",
+            proposed_default="'success'",
+            proposed_deprecated=True,
+            confidence="HIGH",
+            rationale="all axes agree",
+        ),
+        PropProposal(
+            name="mediumOnly",
+            sources_present=("mui",),
+            proposed_type="boolean",
+            proposed_default="false",
+            proposed_deprecated=False,
+            confidence="MEDIUM",
+            rationale="library-specific",
+        ),
+        PropProposal(
+            name="missing",
+            sources_present=("mui", "shadcn-ui"),
+            proposed_type="boolean",
+            proposed_default="false",
+            proposed_deprecated=False,
+            confidence="HIGH",
+            rationale="all axes agree",
+        ),
+        PropProposal(
+            name="preserveDefault",
+            sources_present=("ant-design", "mui"),
+            proposed_type="boolean",
+            proposed_default="",
+            proposed_deprecated=False,
+            confidence="HIGH",
+            rationale="all axes agree",
+        ),
+    ]
+
+    polished = """# Fixture
+
+## API
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `action` | `ReactNode` | — | Action slot. |
+| `tone` | `'success' \\| 'warning'` | — | Visual tone. |
+| `mediumOnly` | `boolean` | `false` | Should not change. |
+| `preserveDefault` | `boolean` | `false` | Curated default should stay. |
+"""
+    updated, changes, skipped, missing_table = apply_high_confidence_to_text(polished, proposals)
+    assert_self_test(not missing_table, "polished fixture table should be found")
+    assert_self_test("`React.ReactNode`" in updated, "HIGH type should update")
+    assert_self_test("`'success'`" in updated, "HIGH default should update")
+    assert_self_test("**[deprecated]** Visual tone." in updated, "deprecated HIGH should mark description")
+    assert_self_test("mediumOnly` | `boolean` | `false` | Should not change." in updated, "MEDIUM should not change")
+    assert_self_test(
+        "preserveDefault` | `boolean` | `false` | Curated default should stay." in updated,
+        "empty proposed default should not erase existing curated defaults",
+    )
+    assert_self_test("missing" in skipped, "missing HIGH rows should be skipped")
+    assert_self_test(len(changes) == 3, "fixture should record three changed fields")
+
+    scaffold = """# Fixture
+
+## API
+
+### Props
+
+| Prop | Type | Default | Required | Source(s) | Description |
+| --- | --- | --- | --- | --- | --- |
+| `action` | `ReactNode` | — | — | ant-design | Action slot. |
+"""
+    updated_scaffold, changes_scaffold, _, missing_table_scaffold = apply_high_confidence_to_text(
+        scaffold,
+        proposals,
+    )
+    assert_self_test(not missing_table_scaffold, "scaffold fixture table should be found")
+    assert_self_test(
+        "| `action` | `React.ReactNode` | — | — | ant-design, mui | Action slot. |" in updated_scaffold,
+        "scaffold source column should update",
+    )
+    assert_self_test(
+        any(change.field == "source(s)" for change in changes_scaffold),
+        "scaffold fixture should record source-column change",
+    )
+
+    no_table = "# Fixture\n\nNo API table here.\n"
+    _, _, skipped_no_table, missing = apply_high_confidence_to_text(no_table, proposals)
+    assert_self_test(missing, "missing table should be reported")
+    assert_self_test(
+        set(skipped_no_table) == {"action", "missing", "preserveDefault", "tone"},
+        "missing table should skip only HIGH proposals",
+    )
+
+    print("Reconciliation auto-apply self-test passed")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--name", help="Single canonical component to reconcile")
@@ -407,7 +720,34 @@ def main() -> None:
         help="Reconcile every canonical with ≥2 sources in refs/",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
+    parser.add_argument(
+        "--apply-high",
+        action="store_true",
+        help="Update existing API table rows with HIGH-confidence proposals only",
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Preview --apply-high changes without writing")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow writing --apply-high changes across --multi-source",
+    )
+    parser.add_argument("--self-test", action="store_true", help="Run local auto-apply fixtures")
     args = parser.parse_args()
+
+    if args.self_test:
+        run_self_test()
+        return
+
+    if args.dry_run and not args.apply_high:
+        print("error: --dry-run is only supported with --apply-high", file=sys.stderr)
+        sys.exit(2)
+
+    if args.apply_high and args.multi_source and not args.dry_run and not args.force:
+        print(
+            "error: --multi-source --apply-high writes many specs; run --dry-run first or add --force",
+            file=sys.stderr,
+        )
+        sys.exit(2)
 
     if not check_node_available():
         print("error: 'node' not found in PATH.", file=sys.stderr)
@@ -462,8 +802,36 @@ def main() -> None:
             }
         )
 
+        apply_result: ApplyResult | None = None
+        if args.apply_high:
+            apply_result = apply_high_confidence_to_spec(
+                name,
+                proposals,
+                write=not args.dry_run,
+            )
+            all_results[-1]["apply"] = {
+                "path": str(apply_result.path.relative_to(ROOT)),
+                "changed": [
+                    {
+                        "prop": change.prop,
+                        "field": change.field,
+                        "before": change.before,
+                        "after": change.after,
+                    }
+                    for change in apply_result.changed
+                ],
+                "skipped": list(apply_result.skipped),
+                "missing_table": apply_result.missing_table,
+                "dry_run": args.dry_run,
+            }
+
         if not args.json:
             print(render_text(name, sources, proposals))
+            if apply_result is not None:
+                print("## Apply HIGH-confidence rows")
+                print("")
+                print(render_apply_result(apply_result, dry_run=args.dry_run))
+                print()
             print()
 
     if args.json:

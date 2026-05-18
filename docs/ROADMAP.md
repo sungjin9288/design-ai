@@ -51,7 +51,7 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [ ] CI lint that fails PRs introducing raw hex in `examples/` (must be a token alias). _(Phase 3)_
 
-## Phase 50 — DRAFT polish round 2 (v4.13.0) ✓ shipped
+## Phase 50 — DRAFT polish round 2 + reconciliation auto-apply (v4.13.0) ✓ shipped
 
 22 DRAFT → 7 DRAFT. 15 polished. 5 families now 100% polished (Form / List / Dialog / Card / Menu / Inputs).
 
@@ -65,23 +65,29 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - 3 accordion subs (rarely standalone).
 - 4 thin sub-components (avatar-group, step-button, step-connector, tab-scroll-button — 1-8 props each, banner kept so adopters know narrative is intentional skeleton).
 
+### Added
+- `component_spec_reconcile.py --apply-high` updates existing API table rows for HIGH-confidence proposals only.
+- `--dry-run` previews changes; `--multi-source --apply-high` requires `--force` before writing broadly.
+- Auto-apply skips missing prop rows and leaves MEDIUM/MANUAL proposals for human review.
+
 ### Versions
 - `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
 
 ### Verified
 - All 7 audits pass.
+- Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
 - 15 new fully-polished specs follow established template.
 - 3 cross-ref corrections (`component-stepper.md` → `component-steps.md`).
 
 ### What this enables
 - Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
+- HIGH-confidence upstream reconciliation can be applied mechanically without rewriting component narratives.
 - Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
 
 ### What's still ahead (4.x — incremental only)
 - Polish remaining 7 thin DRAFT specs (low priority).
 - Coverage 80.9% → 90% (utility types — diminishing value).
 - Real-CI verification (push these workflows; observe green).
-- v3 reconciliation auto-apply mode (HIGH-confidence proposals → spec edits).
 - External launch (held).
 
 ## Phase 49 — Extractor v3 reconciliation mode (v4.12.0) ✓ shipped

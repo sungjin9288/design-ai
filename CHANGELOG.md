@@ -2,7 +2,7 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## v4.13.0 — Polish remaining DRAFT specs (2026-05)
+## v4.13.0 — Polish remaining DRAFT specs and reconciliation auto-apply (2026-05)
 
 22 DRAFT → 7 DRAFT. 15 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
 
@@ -21,8 +21,14 @@ User-facing release notes for design-ai. Versions follow semver.
 ### Cross-ref corrections
 - 3 step specs referenced `component-stepper.md` (doesn't exist; canonical is `component-steps.md`). Fixed.
 
+### Reconciliation automation
+- `component_spec_reconcile.py --apply-high` can now update existing API table rows for HIGH-confidence proposals only.
+- `--dry-run` previews changes, while `--multi-source --apply-high` requires `--force` before writing across many specs.
+- The auto-apply path preserves narrative content, skips missing prop rows, and keeps MEDIUM/MANUAL proposals review-only.
+
 ### Verified
 - All 7 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix).
+- Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
 - 15 new fully-polished specs follow established sub-component spec template.
 - Korean conventions threaded through all polished specs (KR text density, 합쇼체 vs 해요체 usage, KR-localized label formatters for TablePagination).
 
@@ -49,6 +55,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### What this enables
 - Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
+- HIGH-confidence upstream reconciliation can be applied mechanically without rewriting component narratives.
 - Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
 
 ## v4.12.0 — Extractor v3 reconciliation mode (2026-05)

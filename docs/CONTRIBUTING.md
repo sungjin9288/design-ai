@@ -181,12 +181,24 @@ python3 tools/extractors/component_spec_reconcile.py --multi-source
 
 # JSON for tooling
 python3 tools/extractors/component_spec_reconcile.py --name button --json
+
+# Preview HIGH-confidence row updates without writing
+python3 tools/extractors/component_spec_reconcile.py --name button --apply-high --dry-run
+
+# Apply HIGH-confidence row updates for one component
+python3 tools/extractors/component_spec_reconcile.py --name button --apply-high
+
+# Bulk preview; add --force only after reviewing the dry-run output
+python3 tools/extractors/component_spec_reconcile.py --multi-source --apply-high --dry-run
+python3 tools/extractors/component_spec_reconcile.py --multi-source --apply-high --force
 ```
 
 Output groups proposals by confidence:
 - **HIGH** — all sources agree; safe to auto-adopt.
 - **MEDIUM** — review before adopt (e.g., library-specific prop, compatible refinement).
 - **MANUAL** — incompatible types or no majority on default; human design call required.
+
+`--apply-high` is deliberately narrow: it updates only existing rows in the spec's API table, preserving descriptions and narrative sections. It does not add missing props, does not apply MEDIUM/MANUAL proposals, and requires `--force` for multi-source writes.
 
 For each prop, the proposal includes:
 - Recommended type (most-specific compatible across sources).
@@ -213,7 +225,7 @@ For each prop, the proposal includes:
 
 4. Review the MANUAL-confidence items first — they need design calls.
 
-5. Apply changes to `examples/component-<name>.md`. Update API table, add migration notes, bump `last_updated`.
+5. Apply safe HIGH-confidence rows with `--apply-high --dry-run`, then `--apply-high` for the reviewed component. Apply MEDIUM/MANUAL rows by hand: update API table, add migration notes, bump `last_updated`.
 
 6. Document the upstream-review pass in CHANGELOG.
 
