@@ -226,6 +226,43 @@ test("runCheck issues-only human output hides passing checks", async () => {
   }
 });
 
+test("runCheck examples JSON passes strict component-spec example checks", async () => {
+  const { stdout, stderr, exitCode } = await captureConsole(() => runCheck([
+    "--examples",
+    "--route",
+    "component-spec",
+    "--limit",
+    "1",
+    "--strict",
+    "--json",
+  ]));
+  const report = JSON.parse(stdout);
+
+  assert.equal(report.mode, "examples");
+  assert.equal(report.routeId, "component-spec");
+  assert.equal(report.status, "pass");
+  assert.equal(report.total, 1);
+  assert.equal(report.examples[0].example.relPath, "examples/component-button.md");
+  assert.equal(stderr, "");
+  assert.equal(exitCode, undefined);
+});
+
+test("runCheck all-routes issues-only output hides passing route summaries", async () => {
+  const { stdout, exitCode } = await captureConsole(() => runCheck([
+    "--examples",
+    "--all-routes",
+    "--limit",
+    "1",
+    "--issues-only",
+  ]));
+
+  assert.match(stdout, /design-ai check examples/);
+  assert.match(stdout, /Status: pass/);
+  assert.match(stdout, /Routes: \d+ \(0 fail, 0 warn, \d+ pass\)/);
+  assert.doesNotMatch(stdout, /component-spec: pass/);
+  assert.equal(exitCode, undefined);
+});
+
 test("checkArtifactContent adds route-specific checks when routeId is provided", () => {
   const report = checkArtifactContent({
     content: `
