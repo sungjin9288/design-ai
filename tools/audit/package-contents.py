@@ -44,6 +44,12 @@ REQUIRED_PATHS = {
     "commands/design-from-brief.md",
     "docs/DISTRIBUTION.md",
     "tools/audit/run-all.py",
+    "tools/audit/frontmatter-check.py",
+    "tools/audit/link-check.py",
+    "tools/audit/korean-copy-check.py",
+    "tools/audit/integration-check.py",
+    "tools/audit/stale-check.py",
+    "tools/audit/check-coverage.py",
     "tools/audit/doctor_assertions.py",
     "tools/audit/smoke_assertions.py",
     "tools/audit/example-qa.py",
@@ -258,6 +264,10 @@ def run_self_test() -> int:
     assert_condition(
         "tools/audit/smoke_assertions.py" in required_paths,
         "shared smoke assertion helper should be required package contents",
+    )
+    assert_condition(
+        "tools/audit/check-coverage.py" in required_paths,
+        "coverage audit script should be required package contents",
     )
 
     passing_pack = {

@@ -10,8 +10,11 @@ Run after any addition to the system to keep COVERAGE.md fresh.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
+import tempfile
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
@@ -289,9 +292,129 @@ Wrote: knowledge/COVERAGE.md
 """
 
 
+def write_report(report: dict, out_path: Path) -> str:
+    existing = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
+    preserved = existing_generated_at(existing) if existing else None
+    rendered = render(report, generated_at=preserved)
+    if rendered != existing:
+        rendered = render(report)
+    out_path.write_text(rendered, encoding="utf-8")
+    return rendered
+
+
+def self_test_report(*, example_title: str = "Button") -> dict:
+    return {
+        "knowledge": {
+            "by_category": {
+                "a11y": [
+                    {
+                        "path": "knowledge/a11y/keyboard-and-focus.md",
+                        "title": "Keyboard and focus",
+                        "lines": 12,
+                        "hand_written": True,
+                    },
+                ],
+            },
+            "total": 1,
+            "hand_written": 1,
+            "generated": 0,
+        },
+        "components": {
+            "total_canonical": 1,
+            "with_spec": 1,
+            "coverage_pct": 100.0,
+            "specs": ["button"],
+            "matched": ["button"],
+            "unmatched_specs": [],
+        },
+        "skills": {
+            "skills": [
+                {
+                    "name": "component-spec-writer",
+                    "has_playbook": True,
+                    "has_skill_md": True,
+                    "has_template": True,
+                    "has_verification": True,
+                    "loose_only": False,
+                    "playbook_lines": 42,
+                },
+            ],
+            "total": 1,
+        },
+        "examples": {
+            "examples": [
+                {
+                    "path": "examples/component-button.md",
+                    "title": example_title,
+                    "lines": 24,
+                },
+            ],
+            "total": 1,
+        },
+        "extractors": {
+            "total": 1,
+            "scripts": ["component_index.py"],
+        },
+    }
+
+
+def assert_self_test(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(f"coverage self-test failed: {message}")
+
+
+def run_self_test() -> int:
+    preserved_date = "1999-01-01"
+    report = self_test_report()
+
+    assert_self_test(
+        existing_generated_at(render(report, generated_at=preserved_date)) == preserved_date,
+        "existing_generated_at should read generated_at from coverage frontmatter",
+    )
+    assert_self_test(
+        existing_generated_at("title: no coverage frontmatter\n") is None,
+        "existing_generated_at should return None when generated_at is absent",
+    )
+
+    with tempfile.TemporaryDirectory(prefix="design-ai-coverage-self-test-") as tmp:
+        out_path = Path(tmp) / "COVERAGE.md"
+        existing = render(report, generated_at=preserved_date)
+        out_path.write_text(existing, encoding="utf-8")
+
+        rendered = write_report(report, out_path)
+        assert_self_test(
+            rendered == existing and out_path.read_text(encoding="utf-8") == existing,
+            "write_report should preserve an unchanged report without timestamp-only churn",
+        )
+
+        changed = write_report(self_test_report(example_title="Updated Button"), out_path)
+        assert_self_test(
+            existing_generated_at(changed) == date.today().isoformat(),
+            "write_report should refresh generated_at when report content changes",
+        )
+        assert_self_test(
+            "Updated Button" in changed,
+            "write_report should persist changed report content",
+        )
+
+    print("Coverage self-test passed")
+    return 0
+
+
 # --- main -------------------------------------------------------------------
 
-def main() -> None:
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run built-in timestamp preservation fixtures without touching knowledge/COVERAGE.md",
+    )
+    args = parser.parse_args()
+
+    if args.self_test:
+        return run_self_test()
+
     report = {
         "knowledge": knowledge_coverage(),
         "components": component_coverage(),
@@ -301,14 +424,10 @@ def main() -> None:
     }
 
     out_path = ROOT / "knowledge/COVERAGE.md"
-    existing = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
-    preserved = existing_generated_at(existing) if existing else None
-    rendered = render(report, generated_at=preserved)
-    if rendered != existing:
-        rendered = render(report)
-    out_path.write_text(rendered, encoding="utf-8")
+    write_report(report, out_path)
     print(render_console(report))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
