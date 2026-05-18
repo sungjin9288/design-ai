@@ -2,9 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## v4.13.0 — Close DRAFT spec debt and reconciliation auto-apply (2026-05)
+## v4.13.0 — Close DRAFT spec debt, coverage alias accounting, and reconciliation auto-apply (2026-05)
 
 22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
+Coverage accounting now recognizes parent/alias specs, moving canonical component coverage from 161/199 (80.9%) to 177/199 (88.9%) without duplicating already-covered sub-component docs.
+
+### Phase 51 — Coverage alias accounting
+
+#### Added
+- `check-coverage.py` now has an explicit `COVERAGE_ALIASES` map for canonical components that are already covered by parent specs or established aliases.
+- `knowledge/COVERAGE.md` separates direct canonical spec matches from parent/alias coverage so the metric stays auditable instead of silently inflating.
+
+#### Parent/alias coverage recognized (16)
+- **Navigation / actions**: `bottom-navigation-action` → `bottom-navigation`, `card-action-area` → `card`, `speed-dial-icon` → `speed-dial`.
+- **Layout / media**: `row` and `col` → `grid`, `image-list-item` and `image-list-item-bar` → `image-list`.
+- **Forms / lists**: `input-label` and `input-group` → `input`, `native-select` → `select`, `list-item-secondary-action` → `list-item`.
+- **Data / controls**: `pagination-item` → `pagination`, `table-pagination-actions` → `table-pagination`, `toggle-group` → `toggle`.
+- **Aliases / primitives**: `qrcode` → `qr-code`, `svg-icon` → `icon`.
+
+#### Impact
+- Component spec coverage: 161/199 (80.9%) → 177/199 (88.9%).
+- Remaining gap is now mostly true utility/provider primitives (`theme`, `locale`, `css-baseline`, `no-ssr`, `utils`, etc.) rather than already-documented sub-components.
+
+#### Verified
+- `check-coverage.py --self-test` covers timestamp preservation with the expanded coverage payload.
+- Full audit suite validates the regenerated coverage report.
 
 ### Phase 50 — DRAFT polish round 2
 

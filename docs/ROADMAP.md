@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 51 — Coverage alias accounting (v4.13.0) ✓ shipped
+
+Coverage accounting now recognizes canonical components already covered by parent/alias specs. This moves component spec coverage from 161/199 (80.9%) to 177/199 (88.9%) without creating duplicate thin docs.
+
+### Added
+- `tools/audit/check-coverage.py` has an explicit `COVERAGE_ALIASES` map for parent-covered subcomponents and naming aliases.
+- `knowledge/COVERAGE.md` now separates direct canonical spec matches from parent/alias coverage.
+
+### Alias coverage recognized (16)
+- Navigation/actions: bottom-navigation-action, card-action-area, speed-dial-icon.
+- Layout/media: row, col, image-list-item, image-list-item-bar.
+- Forms/lists: input-label, input-group, native-select, list-item-secondary-action.
+- Data/controls: pagination-item, table-pagination-actions, toggle-group.
+- Aliases/primitives: qrcode, svg-icon.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/check-coverage.py --self-test`
+- `python3 -B tools/audit/check-coverage.py`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Coverage reports now distinguish missing specs from canonical entries already covered by parent component docs.
+- The remaining path to 90% is narrowed to true utility/provider primitives instead of duplicate sub-component files.
+
+### What's still ahead (4.x — incremental only)
+- Coverage 88.9% → 90% (only 3 additional canonical entries needed; remaining gap is mostly utility/provider primitives).
+- Quarterly upstream drift review for polished thin specs.
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+
 ## Phase 50 — DRAFT closure + reconciliation auto-apply (v4.13.0) ✓ shipped
 
 22 DRAFT → 0 DRAFT. 22 polished. 9 families now 100% polished (Form / List / Dialog / Card / Menu / Inputs / Tabs / Steps / Accordion).
@@ -88,7 +121,7 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - New component examples now fail CI if they hardcode raw hex colors instead of semantic token aliases.
 - Component examples no longer contain v2 scaffold DRAFT banners.
 
-### What's still ahead (4.x — incremental only)
+### What's still ahead at Phase 50 close
 - Quarterly upstream drift review for polished thin specs.
 - Coverage 80.9% → 90% (utility types — diminishing value).
 - Real-CI verification (push these workflows; observe green).

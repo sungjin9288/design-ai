@@ -17,7 +17,7 @@ generated_at: 2026-05-18
 | Worked examples | 216 | |
 | Extractors | 11 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 161 | **80.9% spec coverage** |
+| Components with worked spec | 177 | **88.9% spec coverage** (16 via parent/alias specs) |
 
 ## Knowledge by category
 
@@ -49,7 +49,7 @@ generated_at: 2026-05-18
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 709 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 730 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -474,9 +474,9 @@ generated_at: 2026-05-18
 
 ## Component spec coverage
 
-**161 / 199 canonical components have a worked spec (80.9%)**
+**177 / 199 canonical components have a worked spec (88.9%)** — 16 are covered by parent/alias specs.
 
-Specs that match canonical names:
+Specs that match canonical names directly:
 
 - `accordion` → [examples/component-accordion.md](../examples/component-accordion.md)
 - `accordion-actions` → [examples/component-accordion-actions.md](../examples/component-accordion-actions.md)
@@ -640,7 +640,28 @@ Specs that match canonical names:
 - `watermark` → [examples/component-watermark.md](../examples/component-watermark.md)
 - `zoom` → [examples/component-zoom.md](../examples/component-zoom.md)
 
-Specs that don't match the canonical index (probably aliases — investigate):
+Canonical components covered by parent/alias specs:
+
+| Canonical component | Covering spec |
+| --- | --- |
+| `bottom-navigation-action` | [examples/component-bottom-navigation.md](../examples/component-bottom-navigation.md) |
+| `card-action-area` | [examples/component-card.md](../examples/component-card.md) |
+| `col` | [examples/component-grid.md](../examples/component-grid.md) |
+| `image-list-item` | [examples/component-image-list.md](../examples/component-image-list.md) |
+| `image-list-item-bar` | [examples/component-image-list.md](../examples/component-image-list.md) |
+| `input-group` | [examples/component-input.md](../examples/component-input.md) |
+| `input-label` | [examples/component-input.md](../examples/component-input.md) |
+| `list-item-secondary-action` | [examples/component-list-item.md](../examples/component-list-item.md) |
+| `native-select` | [examples/component-select.md](../examples/component-select.md) |
+| `pagination-item` | [examples/component-pagination.md](../examples/component-pagination.md) |
+| `qrcode` | [examples/component-qr-code.md](../examples/component-qr-code.md) |
+| `row` | [examples/component-grid.md](../examples/component-grid.md) |
+| `speed-dial-icon` | [examples/component-speed-dial.md](../examples/component-speed-dial.md) |
+| `svg-icon` | [examples/component-icon.md](../examples/component-icon.md) |
+| `table-pagination-actions` | [examples/component-table-pagination.md](../examples/component-table-pagination.md) |
+| `toggle-group` | [examples/component-toggle.md](../examples/component-toggle.md) |
+
+Specs that don't match the canonical index and are not used as coverage aliases:
 
 - `account-card`
 - `address-input`

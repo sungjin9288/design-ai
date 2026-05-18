@@ -21,6 +21,29 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# Some canonical index entries are not standalone public specs in practice.
+# They are subcomponents, aliases, or rendering primitives already covered by a
+# parent worked example. Count those only when the covering spec actually exists,
+# and keep the mapping explicit so coverage remains auditable.
+COVERAGE_ALIASES: dict[str, str] = {
+    "bottom-navigation-action": "bottom-navigation",
+    "card-action-area": "card",
+    "col": "grid",
+    "image-list-item": "image-list",
+    "image-list-item-bar": "image-list",
+    "input-group": "input",
+    "input-label": "input",
+    "list-item-secondary-action": "list-item",
+    "native-select": "select",
+    "pagination-item": "pagination",
+    "qrcode": "qr-code",
+    "row": "grid",
+    "speed-dial-icon": "speed-dial",
+    "svg-icon": "icon",
+    "table-pagination-actions": "table-pagination",
+    "toggle-group": "toggle",
+}
+
 
 # --- helpers -----------------------------------------------------------------
 
@@ -100,15 +123,29 @@ def component_coverage() -> dict:
     examples = list(ROOT.glob("examples/component-*.md"))
     spec_components = {p.stem.replace("component-", "") for p in examples}
 
-    matched = []
+    direct_matched = []
     unmatched_specs = []
     for spec in spec_components:
         if spec in index:
-            matched.append(spec)
+            direct_matched.append(spec)
         else:
             # Spec exists but isn't a canonical component name (alias?)
             unmatched_specs.append(spec)
 
+    alias_covered = {
+        canonical: covering_spec
+        for canonical, covering_spec in COVERAGE_ALIASES.items()
+        if canonical in index
+        and canonical not in direct_matched
+        and covering_spec in spec_components
+    }
+    alias_targets = set(alias_covered.values())
+    unmatched_specs = [
+        spec for spec in unmatched_specs
+        if spec not in alias_targets
+    ]
+
+    matched = sorted(set(direct_matched) | set(alias_covered))
     coverage_pct = round(len(matched) / max(len(index), 1) * 100, 1)
 
     return {
@@ -116,7 +153,9 @@ def component_coverage() -> dict:
         "with_spec": len(matched),
         "coverage_pct": coverage_pct,
         "specs": sorted(spec_components),
-        "matched": sorted(matched),
+        "matched": matched,
+        "direct_matched": sorted(direct_matched),
+        "alias_covered": dict(sorted(alias_covered.items())),
         "unmatched_specs": sorted(unmatched_specs),
     }
 
@@ -207,7 +246,7 @@ generated_at: {generated_at}
 | Worked examples | {examples['total']} | |
 | Extractors | {extractors['total']} | |
 | Canonical components | {components['total_canonical']} | indexed across Ant / MUI / shadcn |
-| Components with worked spec | {components['with_spec']} | **{components['coverage_pct']}% spec coverage** |
+| Components with worked spec | {components['with_spec']} | **{components['coverage_pct']}% spec coverage** ({len(components.get('alias_covered', {}))} via parent/alias specs) |
 
 ## Knowledge by category
 
@@ -247,12 +286,21 @@ generated_at: {generated_at}
         out.append(f"| [{e['path']}](../{e['path']}) | {e['lines']} | {e['title']} |\n")
 
     out.append(f"\n## Component spec coverage\n\n")
-    out.append(f"**{components['with_spec']} / {components['total_canonical']} canonical components have a worked spec ({components['coverage_pct']}%)**\n\n")
-    out.append("Specs that match canonical names:\n\n")
-    for spec in components["matched"]:
+    out.append(f"**{components['with_spec']} / {components['total_canonical']} canonical components have a worked spec ({components['coverage_pct']}%)**")
+    if components.get("alias_covered"):
+        out.append(f" — {len(components['alias_covered'])} are covered by parent/alias specs.")
+    out.append("\n\n")
+    out.append("Specs that match canonical names directly:\n\n")
+    for spec in components.get("direct_matched", components["matched"]):
         out.append(f"- `{spec}` → [examples/component-{spec}.md](../examples/component-{spec}.md)\n")
+    if components.get("alias_covered"):
+        out.append("\nCanonical components covered by parent/alias specs:\n\n")
+        out.append("| Canonical component | Covering spec |\n")
+        out.append("| --- | --- |\n")
+        for canonical, covering_spec in components["alias_covered"].items():
+            out.append(f"| `{canonical}` | [examples/component-{covering_spec}.md](../examples/component-{covering_spec}.md) |\n")
     if components["unmatched_specs"]:
-        out.append("\nSpecs that don't match the canonical index (probably aliases — investigate):\n\n")
+        out.append("\nSpecs that don't match the canonical index and are not used as coverage aliases:\n\n")
         for spec in components["unmatched_specs"]:
             out.append(f"- `{spec}`\n")
 
@@ -280,7 +328,7 @@ Knowledge:    {knowledge['total']} files ({knowledge['hand_written']} hand-writt
 Skills:       {skills['total']} ({sum(1 for s in skills['skills'] if s['has_verification'])} with verification phase)
 Examples:     {examples['total']}
 Extractors:   {extractors['total']}
-Components:   {components['with_spec']} / {components['total_canonical']} have worked specs ({components['coverage_pct']}%)
+Components:   {components['with_spec']} / {components['total_canonical']} have worked specs ({components['coverage_pct']}%, {len(components.get('alias_covered', {}))} via parent/alias specs)
 
 Skills missing verification phase (no canonical "## Verification phase" heading):
 {chr(10).join('  - ' + s['name'] for s in skills['skills'] if not s['has_verification']) or '  (none)'}
@@ -325,6 +373,8 @@ def self_test_report(*, example_title: str = "Button") -> dict:
             "coverage_pct": 100.0,
             "specs": ["button"],
             "matched": ["button"],
+            "direct_matched": ["button"],
+            "alias_covered": {},
             "unmatched_specs": [],
         },
         "skills": {
