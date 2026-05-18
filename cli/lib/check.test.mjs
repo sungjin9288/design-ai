@@ -17,6 +17,7 @@ import {
   checkExampleArtifacts,
   parseCheckArgs,
 } from "./check.mjs";
+import { runCheck } from "../commands/check.mjs";
 
 const GOOD_ARTIFACT = `
 # Button component spec
@@ -29,6 +30,41 @@ Responsive behavior covers mobile and desktop breakpoints. The mobile layout kee
 
 Don't use this component for destructive confirmation flows; use an AlertDialog pattern instead. Avoid icon-only labels unless an accessible name is provided.
 `;
+
+const WARNING_ARTIFACT = `
+# Design note
+
+This output cites knowledge/PRINCIPLES.md and gives a concise recommendation with enough detail to review. It includes a contrast note but does not describe interaction details. Contrast is considered for the main foreground and background pair.
+`;
+
+async function captureConsole(fn) {
+  const stdout = [];
+  const stderr = [];
+  const originalLog = console.log;
+  const originalError = console.error;
+  const originalExitCode = process.exitCode;
+
+  console.log = (...args) => {
+    stdout.push(args.join(" "));
+  };
+  console.error = (...args) => {
+    stderr.push(args.join(" "));
+  };
+  process.exitCode = undefined;
+
+  try {
+    await fn();
+    return {
+      stdout: stdout.join("\n"),
+      stderr: stderr.join("\n"),
+      exitCode: process.exitCode,
+    };
+  } finally {
+    console.log = originalLog;
+    console.error = originalError;
+    process.exitCode = originalExitCode;
+  }
+}
 
 test("parseCheckArgs supports file, stdin, strict, and json", () => {
   assert.deepEqual(parseCheckArgs(["artifact.md", "--strict", "--json"]), {
@@ -109,11 +145,7 @@ Use #3366ff for the main action and #ffffff for text.
 
 test("checkArtifactContent warns when accessibility notes are missing", () => {
   const report = checkArtifactContent({
-    content: `
-# Design note
-
-This output cites knowledge/PRINCIPLES.md and gives a concise recommendation with enough detail to review. It includes a contrast note but does not describe interaction details. Contrast is considered for the main foreground and background pair.
-    `,
+    content: WARNING_ARTIFACT,
     filePath: "warn.md",
   });
 
@@ -121,6 +153,41 @@ This output cites knowledge/PRINCIPLES.md and gives a concise recommendation wit
   assert.equal(report.failures, 0);
   assert.ok(report.results.some((item) => item.id === "keyboard-focus" && item.level === "warn"));
   assert.ok(report.results.some((item) => item.id === "responsive" && item.level === "warn"));
+});
+
+test("runCheck does not fail warning reports unless strict is enabled", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-command-"));
+  try {
+    const artifactPath = path.join(root, "warn.md");
+    writeFileSync(artifactPath, WARNING_ARTIFACT);
+
+    const { stdout, stderr, exitCode } = await captureConsole(() => runCheck([artifactPath, "--json"]));
+    const report = JSON.parse(stdout);
+
+    assert.equal(report.status, "warn");
+    assert.equal(report.failures, 0);
+    assert.equal(stderr, "");
+    assert.equal(exitCode, undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("runCheck strict treats warning reports as a failing exit code", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-command-strict-"));
+  try {
+    const artifactPath = path.join(root, "warn.md");
+    writeFileSync(artifactPath, WARNING_ARTIFACT);
+
+    const { stdout, exitCode } = await captureConsole(() => runCheck([artifactPath, "--strict", "--json"]));
+    const report = JSON.parse(stdout);
+
+    assert.equal(report.status, "warn");
+    assert.equal(report.failures, 0);
+    assert.equal(exitCode, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("checkArtifactContent adds route-specific checks when routeId is provided", () => {
