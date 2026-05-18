@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 55 — Upstream refs refresh + BorderBeam coverage (v4.13.0) ✓ shipped
+
+Fresh upstream refs were pulled, generated knowledge was regenerated, and the newly surfaced Ant Design `border-beam` canonical received a full worked spec so the corpus stays above the 90% coverage threshold.
+
+### Added
+- `examples/component-border-beam.md` documents Ant Design `BorderBeam` as a decorative emphasis layer with host DOM requirements, portal behavior, `aria-hidden`, reduced-motion handling, gradient stops, and semantic-state boundaries.
+- `examples/README.md` now lists `BorderBeam` in the component catalog.
+- `knowledge/COVERAGE.md` now reports 181/200 canonical components with worked specs (90.5%).
+
+### Changed
+- `tools/clone-refs.sh` now uses sparse-checkout `--skip-checks` so the `nerd-fonts` file path `glyphnames.json` does not abort refs refresh.
+- Generated extractor outputs now preserve `version`, `last_updated`, and `stability` frontmatter when `bash tools/extractors/run-all.sh` rewrites knowledge files.
+- `tools/extractors/ui_ux_pro_max.py` preserves the local Korean B2B SaaS sensitive-data palette overlay across upstream CSV refreshes.
+- `knowledge/components/INDEX.md` now indexes 200 canonical components, including Ant Design `border-beam`.
+- `knowledge/patterns/brand-references.md` now indexes 71 brands after upstream added Slack.
+
+### Impact
+- Coverage remains 90.5% even after the canonical component denominator increases from 199 to 200.
+- The quarterly drift baseline is refreshed: 33 components analyzed, 408 total conflicts, 1 CRITICAL, 2 HIGH, 8 MEDIUM, 397 LOW, 0 INFO.
+- Re-running the extractor pipeline no longer silently strips versioning metadata from generated knowledge files.
+
+### Verified
+- All 8 audits pass.
+- `bash tools/clone-refs.sh`
+- `bash tools/extractors/run-all.sh`
+- `python3 -B tools/extractors/component_spec_conflict_check.py --self-test`
+- `python3 -B tools/extractors/component_spec_conflict_check.py --multi-source --summary-only`
+- `python3 -B tools/audit/check-coverage.py`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Upstream component additions can be absorbed without losing the public 90%+ coverage claim.
+- Future refs refreshes are safer because sparse checkout, generated metadata, and local Korean-market overlays are now repeatable.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Continue targeted coverage only when upstream adds product-relevant primitives.
+
 ## Phase 54 — Korean maintenance docs audit-count sync (v4.13.0) ✓ shipped
 
 Current Korean contributor and distribution docs now match the actual 8-audit release gate and the summary-first upstream drift workflow added in Phase 53.

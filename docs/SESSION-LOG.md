@@ -1,25 +1,25 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.9 (mature, dogfooded, 80% canonical coverage). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.13 (mature, dogfooded, 90%+ canonical coverage). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.9 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.13 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
-| Worked examples | 83 | 160 | 216 |
+| Worked examples | 83 | 160 | 220 |
 | Skills | 12 | 19 | 19 |
 | Slash commands | 8 | 15 | 16 |
 | Review agents | 4 | 4 | 4 |
-| Component coverage | ~24% | 55.3% | 80.9% |
+| Component coverage | ~24% | 55.3% | 90.5% |
 | Distribution channels | 1 (manual) | 4 | 4 (npm / Homebrew / git / VS Code) |
 | Integration walkthroughs | 0 | 5 (EN+KO) | 5 (EN+KO) |
 | Site languages | 0 | 2 | 2 (EN+KO) |
-| CI audits | 4 | 6 | 7 |
-| CLI / extension unit tests | 0 | 0 | 41 |
+| CI audits | 4 | 6 | 8 |
+| CLI / extension unit tests | 0 | 0 | 125 |
 | VS Code integration tests | 0 | 0 | 8 (e2e infra) |
 | Dogfood findings docs | 1 | 1 | 5 |
 
@@ -102,11 +102,12 @@ Build the leverage tool, then push coverage further.
 
 - **v4.9 (Phases 43-44)** — Polished 18 of 21 v4.5/v4.7 DRAFT specs (only 3 accordion subs intentionally remain). Coverage push 68.8% → 80.9%. 26 new fully-polished specs. Every flagship MUI primitive now covered with parent + family children.
 
-### v4.10+ — In progress
+### v4.10 → v4.13 — Release hardening, drift tooling, and 90% coverage
 
-- **Phase 45** — `@vscode/test-electron` integration test infrastructure (8 e2e tests for activation / command registration / configuration / view container). Compiles cleanly; running requires VS Code download (~300MB).
-- **Phase 46** — This SESSION-LOG update.
-- **Phase 47** — Component spec extractor v3 (cross-source conflict detection — Ant vs MUI prop names/types).
+- **v4.10 (Phases 45-47)** — VS Code real-instance e2e infrastructure, SESSION-LOG refresh, and component extractor v3 cross-source conflict detection.
+- **v4.11 (Phase 48)** — CI wiring. Audit, unit tests, VS Code e2e, and informational conflict-check moved into GitHub workflows.
+- **v4.12 (Phase 49)** — Reconciliation mode. `component_spec_reconcile.py` proposes unified API rows and can safely apply HIGH-confidence updates.
+- **v4.13 (Phases 50-55)** — Closed all DRAFT spec debt, added raw-hex example hygiene, reached 90%+ canonical coverage, documented summary-first drift review, synced Korean maintenance docs, refreshed upstream refs, and added `BorderBeam` coverage after Ant Design expanded the canonical index to 200.
 
 ## Patterns that didn't work
 
@@ -134,7 +135,7 @@ Phases 39-42 (four dogfood passes — corpus / VS Code / npm / mkdocs) surfaced 
 
 ### Honest DRAFT banners > false completeness
 
-v2 extractor produces accurate API tables but placeholder narrative. v4.5 + v4.7 + v4.9 left ~24 DRAFT specs explicitly banner-marked. Adopters can use the API table immediately but know not to quote anatomy / tokens / a11y from a DRAFT. Better than silently shipping incomplete specs as "done".
+v2 extractor produced accurate API tables but placeholder narrative. v4.5 + v4.7 + v4.9 left ~24 DRAFT specs explicitly banner-marked, which was better than silently shipping incomplete specs as "done". v4.13 then closed the public DRAFT debt once the specs were polished enough to stand behind.
 
 ### One concern per phase (v2.0 onward)
 
@@ -146,7 +147,7 @@ The user stated Korean primary audience early. Every domain phase included Korea
 
 ### Audit-driven quality (v2.0 onward)
 
-Every phase that touched files passed the active audit gate before commit. The audits themselves grew from 4 → 7 over the session (added Korean copy in v3.0, integration check in v3.4, stale check in v3.12, example QA in v4.13). Each new audit prevented a regression class. v4.8 strengthened the existing link-check.
+Every phase that touched files passed the active audit gate before commit. The audits themselves grew from 4 → 8 over the session (added Korean copy, integration, stale, coverage, raw-hex hygiene, and example QA). Each new audit prevented a regression class. v4.8 strengthened the existing link-check.
 
 ### Distribution before mass content (v3.0 → v3.4)
 
@@ -160,16 +161,15 @@ v3.11's versioned frontmatter looks small but enabled v3.12's stale-check, v4.0'
 
 The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs for Codex / Cursor / Aider / SDK. Then it was demonstrated. v3.10 doubled down with Korean translations of those same walkthroughs.
 
-## What's next (v4.10+)
+## What's next (v4.13+)
 
-v4.9 leaves design-ai with 80%+ canonical coverage, dogfooded across 4 surfaces, with 5 findings docs as institutional memory. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, and full local release verification. Logical paths:
 
-1. **Phase 47 — Extractor v3** (cross-source conflict detection) — automate flagging of API drift between Ant / MUI / shadcn.
-2. **Polish remaining ~24 drafts** — incremental, as user feedback informs which need it.
-3. **Coverage 80.9% → 90%** — diminishing value (utility types like `class-name`, `direction`, `theme`); deferred indefinitely.
-4. **External launch** (the held step) — push v4.0 tag → publish to npm → run `docs/announcements/` cadence → KR tech community announcement.
+1. **Real-CI verification** — push the branch, observe audit / unit / package / docs workflows green.
+2. **External launch** — publish only after CI and owner review; announcement drafts already exist under `docs/announcements/`.
+3. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.
 
-When the owner is ready to push externally, every input has been prepared: tag exists locally, RELEASE-CHECKLIST is ritualized, announcements are drafted, install paths are verified.
+When the owner is ready to push externally, the local release gate is green, RELEASE-CHECKLIST is ritualized, announcements are drafted, and install paths are verified.
 
 ## Repo structure
 
@@ -186,8 +186,8 @@ design-ai/
 ├── .claude-plugin/plugin.json         Plugin manifest
 ├── .github/workflows/                 CI (audit / publish / docs)
 ├── refs/                              Upstream sources (gitignored)
-├── knowledge/  (92 files, all versioned 1.0.0)
-├── examples/   (219 files)
+├── knowledge/  (92 files; generated coverage report + versioned corpus)
+├── examples/   (220 files)
 ├── skills/     (19, all with verification phase)
 ├── agents/     (4)
 ├── commands/   (16)

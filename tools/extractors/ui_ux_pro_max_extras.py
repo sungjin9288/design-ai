@@ -49,6 +49,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/charts.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [data-visualization, dashboard, web]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Chart type selection guide
@@ -106,6 +109,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/icons.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [icons, react, all-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Curated icon sets
@@ -184,6 +190,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/ui-reasoning.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [art-direction, ui-design]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # UI category decision rules
@@ -234,6 +243,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/landing.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [marketing, landing-page, conversion]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Landing page patterns

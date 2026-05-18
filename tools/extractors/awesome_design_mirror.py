@@ -37,6 +37,9 @@ source: refs/awesome-design-md/design-md/
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [art-direction, brand-research]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Brand reference index

@@ -40,6 +40,9 @@ source: refs/shadcn-ui/apps/v4/registry/new-york-v4/
 upstream: https://github.com/shadcn-ui/ui/tree/main/apps/v4/registry/new-york-v4
 extracted_at: {today}
 applies_to: [react, tailwindcss, radix-ui]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # shadcn-ui registry catalog (new-york-v4)

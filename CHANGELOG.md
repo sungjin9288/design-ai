@@ -6,9 +6,43 @@ User-facing release notes for design-ai. Versions follow semver.
 
 22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
 Coverage accounting now recognizes parent/alias specs, moving canonical component coverage from 161/199 (80.9%) to 177/199 (88.9%) without duplicating already-covered sub-component docs.
-Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) move canonical component coverage to 180/199 (90.5%).
+Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) moved canonical component coverage to 180/199 (90.5%); a later refs refresh added Ant Design `border-beam`, and the matching worked spec keeps current coverage at 181/200 (90.5%).
 The cross-source conflict checker now supports summary-only drift triage and a local self-test for severity classification.
 Korean maintenance docs now describe the same 8-audit gate and drift review workflow as the English contributor docs.
+
+### Phase 55 — Upstream refs refresh and BorderBeam coverage
+
+#### Added
+- Refreshed local `refs/` sources and regenerated generated knowledge artifacts with `extracted_at: 2026-05-19`.
+- Added `examples/component-border-beam.md` for Ant Design `BorderBeam`, covering host DOM constraints, `aria-hidden` decorative behavior, focus-ring boundaries, reduced-motion handling, gradient stops, and Korean sensitive-data usage limits.
+- Added `BorderBeam` to `examples/README.md` and regenerated `knowledge/COVERAGE.md`.
+
+#### Changed
+- `knowledge/components/INDEX.md` now indexes 200 canonical components after Ant Design added `border-beam`.
+- `knowledge/patterns/brand-references.md` now indexes 71 brands after the upstream brand corpus added Slack.
+- `tools/clone-refs.sh` now passes `--skip-checks` to sparse-checkout so `nerd-fonts` file paths such as `glyphnames.json` do not break refs refresh.
+- Generated extractor outputs now preserve `version`, `last_updated`, and `stability` frontmatter instead of dropping the v3.11 metadata contract on regeneration.
+- `ui_ux_pro_max.py` preserves the local Korean B2B SaaS sensitive-data palette overlay across upstream CSV refreshes.
+
+#### Impact
+- Component spec coverage remains above the release threshold at 181/200 (90.5%) instead of dropping when the canonical index expands.
+- Quarterly drift review has a fresh baseline: 33 components analyzed, 408 total conflicts, 1 CRITICAL, 2 HIGH, 8 MEDIUM, 397 LOW, 0 INFO.
+- Future refs refreshes are less likely to regress knowledge metadata or local Korean-market additions.
+
+#### Verified
+- All 8 audits pass.
+- `bash tools/clone-refs.sh`
+- `bash tools/extractors/run-all.sh`
+- `python3 -B tools/extractors/component_spec_conflict_check.py --self-test`
+- `python3 -B tools/extractors/component_spec_conflict_check.py --multi-source --summary-only`
+- `python3 -B tools/audit/check-coverage.py`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The corpus can absorb upstream component-index growth without slipping below 90% worked-spec coverage.
+- The refs refresh workflow is now repeatable on current Git sparse-checkout behavior.
 
 ### Phase 54 — Korean maintenance docs audit-count sync
 

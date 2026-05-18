@@ -25,6 +25,20 @@ DATA = ROOT / "refs/ui-ux-pro-max/src/ui-ux-pro-max/data"
 
 UPSTREAM = "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill"
 
+LOCAL_COLOR_ROWS = [
+    {
+        "Product Type": "Korean B2B SaaS — Sensitive Data (HR / Payroll / Legal)",
+        "Primary": "#0D9488",
+        "Accent": "#0369A1",
+        "Background": "#F0FDFA",
+        "Notes": (
+            "Trust-driven muted teal + professional blue accent. Cooler than fintech, less "
+            "corporate than navy. Pair with neutral cool-greys. Pretendard mandatory. "
+            "Surfaced in v4.7 dogfood (Korean HR onboarding)."
+        ),
+    }
+]
+
 
 def read_csv(name: str) -> list[dict[str, str]]:
     path = DATA / name
@@ -41,6 +55,21 @@ def write_md(rel_path: str, body: str) -> None:
     print(f"  wrote {out.relative_to(ROOT)}")
 
 
+def with_local_color_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Preserve design-ai dogfood palette rows across upstream CSV refreshes."""
+    merged = [dict(row) for row in rows]
+    product_types = {row.get("Product Type", "") for row in merged}
+    next_no = len(merged) + 1
+    for overlay in LOCAL_COLOR_ROWS:
+        if overlay["Product Type"] in product_types:
+            continue
+        row = dict(overlay)
+        row["No"] = str(next_no)
+        merged.append(row)
+        next_no += 1
+    return merged
+
+
 def render_colors(rows: list[dict[str, str]]) -> str:
     today = date.today().isoformat()
     head = f"""---
@@ -49,6 +78,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/colors.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [tailwindcss, shadcn-ui, design-system]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Curated palettes by product type
@@ -98,6 +130,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/typography.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [google-fonts, web-typography]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Curated font pairings
@@ -142,6 +177,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/styles.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [visual-design, art-direction]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Visual style catalog
@@ -201,6 +239,9 @@ source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/ux-guidelines.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [web, mobile, accessibility]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # UX guidelines
@@ -251,7 +292,7 @@ def main() -> None:
 
     colors = read_csv("colors.csv")
     if colors:
-        write_md("knowledge/colors/palettes-by-product-type.md", render_colors(colors))
+        write_md("knowledge/colors/palettes-by-product-type.md", render_colors(with_local_color_rows(colors)))
 
     fonts = read_csv("typography.csv")
     if fonts:

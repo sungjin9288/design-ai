@@ -202,6 +202,9 @@ sources:
   - refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/
 extracted_at: {today}
 applies_to: [react, design-system]
+version: 1.0.0
+last_updated: 2026-05
+stability: stable
 ---
 
 # Component index

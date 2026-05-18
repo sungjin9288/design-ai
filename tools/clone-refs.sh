@@ -25,7 +25,7 @@ clone_or_pull() {
 apply_sparse() {
     local name="$1"; shift
     git -C "refs/$name" sparse-checkout init --cone
-    git -C "refs/$name" sparse-checkout set "$@"
+    git -C "refs/$name" sparse-checkout set --skip-checks "$@"
 }
 
 # Small, full clones

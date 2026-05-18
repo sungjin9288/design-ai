@@ -2,7 +2,7 @@
 title: MUI palette structure
 source: refs/mui/packages/mui-material/src/styles/createPalette.js
 upstream: https://github.com/mui/material-ui/blob/master/packages/mui-material/src/styles/createPalette.js
-extracted_at: 2026-05-07
+extracted_at: 2026-05-19
 applies_to: [react, mui, material-design]
 version: 1.0.0
 last_updated: 2026-05

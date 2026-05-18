@@ -153,6 +153,12 @@
       "path": "refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx"
     }
   },
+  "border-beam": {
+    "ant": {
+      "name": "border-beam",
+      "path": "refs/ant-design/components/border-beam"
+    }
+  },
   "bottom-navigation": {
     "mui": {
       "name": "BottomNavigation",

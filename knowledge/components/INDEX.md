@@ -4,7 +4,7 @@ sources:
   - refs/ant-design/components/
   - refs/mui/packages/mui-material/src/
   - refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/
-extracted_at: 2026-05-07
+extracted_at: 2026-05-19
 applies_to: [react, design-system]
 version: 1.0.0
 last_updated: 2026-05
@@ -15,7 +15,7 @@ stability: stable
 
 Cross-reference of components across Ant Design, MUI, and shadcn-ui. Use this when picking a reference implementation for a new component, comparing API patterns, or filling gaps.
 
-**Coverage**: Ant Design 78, MUI 132, shadcn-ui 56, 199 canonical components.
+**Coverage**: Ant Design 79, MUI 132, shadcn-ui 56, 200 canonical components.
 
 | Component | Ant Design | MUI | shadcn-ui |
 | --- | --- | --- | --- |
@@ -38,6 +38,7 @@ Cross-reference of components across Ant Design, MUI, and shadcn-ui. Use this wh
 | **back-top** | [`back-top`](refs/ant-design/components/back-top) | [`Fab`](refs/mui/packages/mui-material/src/Fab) | — |
 | **backdrop** | — | [`Backdrop`](refs/mui/packages/mui-material/src/Backdrop) | — |
 | **badge** | [`badge`](refs/ant-design/components/badge) | [`Badge`](refs/mui/packages/mui-material/src/Badge) | [`badge`](refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx) |
+| **border-beam** | [`border-beam`](refs/ant-design/components/border-beam) | — | — |
 | **bottom-navigation** | — | [`BottomNavigation`](refs/mui/packages/mui-material/src/BottomNavigation) | — |
 | **bottom-navigation-action** | — | [`BottomNavigationAction`](refs/mui/packages/mui-material/src/BottomNavigationAction) | — |
 | **box** | — | [`Box`](refs/mui/packages/mui-material/src/Box) | — |

@@ -14,6 +14,7 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | --- | --- | --- |
 | [component-button.md](component-button.md) | Button | The most-used control. Variants, intent, sizes, loading state, asChild pattern. |
 | [component-button-base.md](component-button-base.md) | ButtonBase | Low-level interactive primitive for building design-system controls. Semantics, focus-visible, ripple, disabled, and polymorphic root rules. |
+| [component-border-beam.md](component-border-beam.md) | BorderBeam | Decorative moving border emphasis layer. Host DOM constraints, reduced motion, aria-hidden, and semantic-state boundaries. |
 | [component-input.md](component-input.md) | Input (text field) | Label/help/error, validation timing, autocomplete, IME (Korean) handling, password/clearable affordances. |
 | [component-modal.md](component-modal.md) | Modal / Dialog / Sheet | Focus trap, scroll lock, keyboard contract, three variants in one spec (dialog/alert-dialog/sheet). |
 | [component-toast.md](component-toast.md) | Toast / Snackbar | Imperative API (`toast.success(...)`), promise wrapper, intent + duration matrix, persistent errors. |

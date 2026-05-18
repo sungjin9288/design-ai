@@ -2,7 +2,7 @@
 title: Brand reference index
 source: refs/awesome-design-md/design-md/
 upstream: https://github.com/VoltAgent/awesome-design-md
-extracted_at: 2026-05-07
+extracted_at: 2026-05-19
 applies_to: [art-direction, brand-research]
 version: 1.0.0
 last_updated: 2026-05
@@ -11,7 +11,7 @@ stability: stable
 
 # Brand reference index
 
-Curated design notes on 70 brands. When designing for a comparable category, open the brand's notes for token references, voice, and visual cues.
+Curated design notes on 71 brands. When designing for a comparable category, open the brand's notes for token references, voice, and visual cues.
 
 | Brand | Files |
 | --- | --- |
@@ -67,6 +67,7 @@ Curated design notes on 70 brands. When designing for a comparable category, ope
 | **[sanity](../../refs/awesome-design-md/design-md/sanity/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/sanity/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/sanity/README.md) |
 | **[sentry](../../refs/awesome-design-md/design-md/sentry/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/sentry/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/sentry/README.md) |
 | **[shopify](../../refs/awesome-design-md/design-md/shopify/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/shopify/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/shopify/README.md) |
+| **[slack](../../refs/awesome-design-md/design-md/slack/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/slack/DESIGN.md) |
 | **[spacex](../../refs/awesome-design-md/design-md/spacex/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/spacex/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/spacex/README.md) |
 | **[spotify](../../refs/awesome-design-md/design-md/spotify/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/spotify/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/spotify/README.md) |
 | **[starbucks](../../refs/awesome-design-md/design-md/starbucks/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/starbucks/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/starbucks/README.md) |

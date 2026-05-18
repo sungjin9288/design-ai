@@ -2,7 +2,7 @@
 title: Curated palettes by product type
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/colors.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-07
+extracted_at: 2026-05-19
 applies_to: [tailwindcss, shadcn-ui, design-system]
 version: 1.0.0
 last_updated: 2026-05
@@ -873,4 +873,4 @@ _Trust blue + achievement gold [Accent adjusted from #CA8A04 for WCAG 3:1]_
 _Neutral grey + link blue_
 
 
-_(131 more palettes available — see source CSV.)_
+_(132 more palettes available — see source CSV.)_
