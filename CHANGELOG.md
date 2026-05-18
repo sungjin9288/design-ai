@@ -7,6 +7,22 @@ User-facing release notes for design-ai. Versions follow semver.
 22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
 Coverage accounting now recognizes parent/alias specs, moving canonical component coverage from 161/199 (80.9%) to 177/199 (88.9%) without duplicating already-covered sub-component docs.
 Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) move canonical component coverage to 180/199 (90.5%).
+The cross-source conflict checker now supports summary-only drift triage and a local self-test for severity classification.
+
+### Phase 53 — Upstream drift review ergonomics
+
+#### Added
+- `component_spec_conflict_check.py --summary-only` prints only aggregate severity counts for the quarterly upstream review first pass.
+- `component_spec_conflict_check.py --self-test` validates CRITICAL / HIGH / MEDIUM / LOW classification and summary rendering without parsing local refs.
+- `docs/CONTRIBUTING.md` now documents the summary-first drift review flow before capturing the full conflict report.
+
+#### Impact
+- Current multi-source drift baseline is explicit: 33 components analyzed, 413 total conflicts, 1 CRITICAL, 2 HIGH, 7 MEDIUM, 403 LOW, 0 INFO.
+- Maintainers can spot new HIGH/CRITICAL drift after a refs refresh without reading hundreds of LOW library-specific differences first.
+
+#### Verified
+- Conflict-check self-test passes.
+- `--multi-source --summary-only` produces the current aggregate baseline.
 
 ### Phase 52 — Coverage 90% utility specs
 

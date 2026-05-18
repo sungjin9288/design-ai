@@ -157,6 +157,9 @@ When upstream design systems (Ant / MUI / shadcn) ship new versions, our compone
 # All multi-source canonicals (33 components currently)
 python3 tools/extractors/component_spec_conflict_check.py --multi-source
 
+# Fast quarterly-review summary
+python3 tools/extractors/component_spec_conflict_check.py --multi-source --summary-only
+
 # Single component
 python3 tools/extractors/component_spec_conflict_check.py --name button
 
@@ -215,6 +218,7 @@ For each prop, the proposal includes:
 
 2. Detect drift:
    ```bash
+   python3 tools/extractors/component_spec_conflict_check.py --multi-source --summary-only
    python3 tools/extractors/component_spec_conflict_check.py --multi-source > /tmp/conflicts.md
    ```
 

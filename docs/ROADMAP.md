@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 53 — Upstream drift review ergonomics (v4.13.0) ✓ shipped
+
+Quarterly upstream review now starts with a short risk summary before maintainers open the full cross-source conflict report. This keeps the drift workflow usable after crossing 90% component coverage.
+
+### Added
+- `tools/extractors/component_spec_conflict_check.py --summary-only` suppresses per-component details and prints aggregate severity counts.
+- `tools/extractors/component_spec_conflict_check.py --self-test` validates CRITICAL / HIGH / MEDIUM / LOW classification and summary rendering without requiring refs parsing.
+- `docs/CONTRIBUTING.md` now documents the summary-first quarterly review flow.
+
+### Impact
+- Current multi-source drift baseline remains explicit: 33 components analyzed, 413 total conflicts, 1 CRITICAL, 2 HIGH, 7 MEDIUM, 403 LOW, 0 INFO.
+- Maintainers can quickly decide whether a refs refresh introduced new HIGH/CRITICAL risk before reading the full report.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/extractors/component_spec_conflict_check.py --self-test`
+- `python3 -B tools/extractors/component_spec_conflict_check.py --multi-source --summary-only`
+- Full verification suite at close-out:
+  - `python3 -B tools/audit/run-all.py --strict`
+  - `npm test`
+  - `npm run package:check`
+  - `npm run release:metadata`
+  - `npm run release:self-test`
+  - `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Drift review becomes a fast triage gate first, then a detailed reconciliation task only when severity counts justify deeper work.
+- Future provider/utility specs can be kept aligned with upstream without asking maintainers to parse hundreds of LOW library-specific differences every time.
+
+### What's still ahead (4.x — incremental only)
+- Run the quarterly upstream drift review after the next `refs/` refresh and document the result.
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+
 ## Phase 52 — Coverage 90% utility specs (v4.13.0) ✓ shipped
 
 The corpus crossed the 90% canonical component coverage milestone by documenting three foundational utility/provider primitives that are useful to real design-system authors.

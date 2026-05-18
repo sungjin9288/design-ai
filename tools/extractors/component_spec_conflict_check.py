@@ -22,8 +22,14 @@ Usage:
   # All canonical with multi-source coverage
   python3 tools/extractors/component_spec_conflict_check.py --multi-source
 
+  # Fast quarterly-review summary
+  python3 tools/extractors/component_spec_conflict_check.py --multi-source --summary-only
+
   # JSON output for tooling
   python3 tools/extractors/component_spec_conflict_check.py --name button --json
+
+  # Local fixtures
+  python3 tools/extractors/component_spec_conflict_check.py --self-test
 
 Exit codes:
   0 = no conflicts (or only INFO-level differences)
@@ -74,6 +80,7 @@ class Conflict:
 
 
 SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}
+SEVERITIES = ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
 
 
 # ----- normalization helpers -----
@@ -304,7 +311,7 @@ def render_text(name: str, sources: list[tuple[str, ParsedFile]], conflicts: lis
     for c in conflicts:
         by_sev.setdefault(c.severity, []).append(c)
 
-    for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"):
+    for sev in SEVERITIES:
         items = by_sev.get(sev, [])
         if not items:
             continue
@@ -314,6 +321,25 @@ def render_text(name: str, sources: list[tuple[str, ParsedFile]], conflicts: lis
             lines.append(f"- `{c.prop}` — {c.description}")
         lines.append("")
 
+    return "\n".join(lines)
+
+
+def severity_counts(results: list[dict]) -> dict[str, int]:
+    return {
+        sev: sum(1 for r in results for c in r["conflicts"] if c["severity"] == sev)
+        for sev in SEVERITIES
+    }
+
+
+def render_summary(results: list[dict]) -> str:
+    total = sum(len(r["conflicts"]) for r in results)
+    counts = severity_counts(results)
+
+    lines = ["", "=== Summary ==="]
+    lines.append(f"Components analyzed: {len(results)}")
+    lines.append(f"Total conflicts: {total}")
+    for sev in SEVERITIES:
+        lines.append(f"  {sev}: {counts[sev]}")
     return "\n".join(lines)
 
 
@@ -333,6 +359,79 @@ def find_multi_source_components(canonical_index: dict) -> list[str]:
     return sorted(out)
 
 
+def assert_self_test(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(f"conflict-check self-test failed: {message}")
+
+
+def run_self_test() -> int:
+    ant = ParsedFile(
+        file=ROOT / "refs/ant-design/components/button/Button.tsx",
+        interfaces=[
+            {
+                "name": "ButtonProps",
+                "props": [
+                    {"name": "value", "type": "string", "default": ""},
+                    {"name": "disabled", "type": "boolean", "default": "false"},
+                    {"name": "legacy", "type": "boolean", "default": "", "deprecated": True},
+                    {"name": "antOnly", "type": "boolean", "default": ""},
+                ],
+            }
+        ],
+    )
+    mui = ParsedFile(
+        file=ROOT / "refs/mui/packages/mui-material/src/Button/Button.d.ts",
+        interfaces=[
+            {
+                "name": "ButtonProps",
+                "props": [
+                    {"name": "value", "type": "number", "default": ""},
+                    {"name": "disabled", "type": "boolean", "default": "true"},
+                    {"name": "legacy", "type": "boolean", "default": ""},
+                ],
+            }
+        ],
+    )
+
+    conflicts = detect_conflicts([("ant-design", ant), ("mui", mui)], "button")
+    severities = {c.severity for c in conflicts}
+    assert_self_test("CRITICAL" in severities, "incompatible prop type should be CRITICAL")
+    assert_self_test("HIGH" in severities, "partial deprecation should be HIGH")
+    assert_self_test("MEDIUM" in severities, "default-value drift should be MEDIUM")
+    assert_self_test("LOW" in severities, "single-source prop should be LOW")
+
+    results = [
+        {
+            "name": "button",
+            "sources": ["ant-design", "mui"],
+            "conflicts": [
+                {
+                    "severity": c.severity,
+                    "prop": c.prop,
+                    "description": c.description,
+                    "sources": list(c.sources),
+                }
+                for c in conflicts
+            ],
+        }
+    ]
+    counts = severity_counts(results)
+    assert_self_test(counts["CRITICAL"] == 1, "summary should count one CRITICAL")
+    assert_self_test(counts["HIGH"] == 1, "summary should count one HIGH")
+    assert_self_test(counts["MEDIUM"] == 1, "summary should count one MEDIUM")
+    assert_self_test(counts["LOW"] == 1, "summary should count one LOW")
+    summary = render_summary(results)
+    assert_self_test("Components analyzed: 1" in summary, "summary should include component count")
+    assert_self_test("  CRITICAL: 1" in summary, "summary should include severity rows")
+    assert_self_test("  INFO: 0" in summary, "summary should include zero-count severities")
+
+    no_conflict_text = render_text("empty", [("mui", mui)], [])
+    assert_self_test("✓ No conflicts detected." in no_conflict_text, "empty reports should show no-conflict marker")
+
+    print("Conflict-check self-test passed")
+    return 0
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--name", help="Single canonical component to check")
@@ -342,8 +441,24 @@ def main() -> None:
         help="Check every canonical that has ≥2 sources in refs/",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="Suppress per-component reports and print only aggregate counts.",
+    )
     parser.add_argument("--strict", action="store_true", help="Exit 1 on HIGH or CRITICAL conflicts")
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run local conflict classification and summary fixtures.",
+    )
     args = parser.parse_args()
+
+    if args.self_test:
+        sys.exit(run_self_test())
+
+    if args.json and args.summary_only:
+        parser.error("--summary-only cannot be combined with --json")
 
     if not check_node_available():
         print("error: 'node' not found in PATH.", file=sys.stderr)
@@ -398,7 +513,7 @@ def main() -> None:
             if SEVERITY_ORDER[c.severity] < severity_max:
                 severity_max = SEVERITY_ORDER[c.severity]
 
-        if not args.json:
+        if not args.json and not args.summary_only:
             print(render_text(name, sources, conflicts))
             print()
 
@@ -408,13 +523,7 @@ def main() -> None:
 
     # Summary
     if not args.json:
-        total = sum(len(r["conflicts"]) for r in all_results)
-        print(f"\n=== Summary ===")
-        print(f"Components analyzed: {len(all_results)}")
-        print(f"Total conflicts: {total}")
-        for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"):
-            count = sum(1 for r in all_results for c in r["conflicts"] if c["severity"] == sev)
-            print(f"  {sev}: {count}")
+        print(render_summary(all_results))
 
     # Exit code
     if args.strict and severity_max <= SEVERITY_ORDER["HIGH"]:
