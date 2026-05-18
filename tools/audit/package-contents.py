@@ -49,9 +49,12 @@ CATALOG_COUNT_RE = re.compile(
 REQUIRED_PATHS = {
     "package.json",
     "README.md",
+    "README.ko.md",
     "LICENSE",
     "AGENTS.md",
+    "AGENTS.ko.md",
     "CLAUDE.md",
+    "CHANGELOG.md",
     "install.sh",
     ".claude-plugin/plugin.json",
     "cli/bin/design-ai.mjs",
@@ -61,6 +64,11 @@ REQUIRED_PATHS = {
     "skills/component-spec-writer/PLAYBOOK.md",
     "commands/design-from-brief.md",
     "docs/DISTRIBUTION.md",
+    "docs/DISTRIBUTION.ko.md",
+    "docs/QUICKSTART.md",
+    "docs/QUICKSTART.ko.md",
+    "docs/USING.md",
+    "docs/USING.ko.md",
     "tools/audit/run-all.py",
     "tools/audit/frontmatter-check.py",
     "tools/audit/link-check.py",
@@ -372,6 +380,17 @@ def run_self_test() -> int:
         "tools/audit/check-coverage.py" in required_paths,
         "coverage audit script should be required package contents",
     )
+    for localized_entrypoint in (
+        "README.ko.md",
+        "AGENTS.ko.md",
+        "docs/QUICKSTART.ko.md",
+        "docs/USING.ko.md",
+        "docs/DISTRIBUTION.ko.md",
+    ):
+        assert_condition(
+            localized_entrypoint in required_paths,
+            f"{localized_entrypoint} should be required package contents",
+        )
     run_all_audit_paths = {
         f"tools/audit/{script}"
         for script in load_run_all_audit_scripts()
