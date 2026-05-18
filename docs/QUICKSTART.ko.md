@@ -149,7 +149,7 @@ design-ai audit --strict
 python3 tools/preview/render-tokens.py
 ```
 
-CI는 모든 PR에서 7개 검사를 실행해요.
+CI는 모든 PR에서 8개 검사를 실행해요.
 
 ## 다음 단계
 

@@ -8,6 +8,21 @@ User-facing release notes for design-ai. Versions follow semver.
 Coverage accounting now recognizes parent/alias specs, moving canonical component coverage from 161/199 (80.9%) to 177/199 (88.9%) without duplicating already-covered sub-component docs.
 Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) move canonical component coverage to 180/199 (90.5%).
 The cross-source conflict checker now supports summary-only drift triage and a local self-test for severity classification.
+Korean maintenance docs now describe the same 8-audit gate and drift review workflow as the English contributor docs.
+
+### Phase 54 — Korean maintenance docs audit-count sync
+
+#### Added
+- `docs/CONTRIBUTING.ko.md` now lists all 8 active audits and points contributors to `npm run audit:strict`.
+- Korean contributor docs now include the summary-first cross-source API reconciliation flow using `component_spec_conflict_check.py --summary-only`.
+- `docs/ARCHITECTURE.ko.md`, `docs/DISTRIBUTION.ko.md`, `docs/QUICKSTART.ko.md`, `README.md`, and `docs/SESSION-LOG.md` no longer use stale 6/7-audit wording for current maintenance guidance.
+
+#### Impact
+- Korean contributors now see raw hex hygiene and example QA as part of the current required gate.
+- Distribution docs align with `npm run release:check`, which already runs all 8 audits.
+
+#### Verified
+- Full 8-audit suite, CLI tests, package checks, and release metadata checks validate the docs after the sync.
 
 ### Phase 53 — Upstream drift review ergonomics
 

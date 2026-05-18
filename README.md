@@ -148,8 +148,8 @@ design-ai/
 │   └── stability-review.md
 │
 ├── tools/                   # Maintenance pipeline
-│   ├── extractors/          # 7 source-extractors (token / component / pattern)
-│   ├── audit/               # 7 audit tools (frontmatter / link / KR / integration / stale / coverage / example QA)
+│   ├── extractors/          # 11 source extractors + component drift tooling
+│   ├── audit/               # 8 active audits + package/release smoke helpers
 │   └── preview/             # HTML token swatches + contrast matrix
 │
 └── docs/                    # Architecture + integration guides

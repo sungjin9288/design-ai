@@ -146,16 +146,18 @@ design-ai는 4개 채널로 배포돼요:
 
 자세한 비교는 [`docs/DISTRIBUTION.ko.md`](DISTRIBUTION.ko.md) 참고.
 
-## 6개 감사 (CI 게이팅)
+## 8개 감사 (CI 게이팅)
 
 | # | 스크립트 | 목적 |
 | --- | --- | --- |
 | 1 | `frontmatter-check.py` | YAML frontmatter 유효성 + 버전 필드 형식 |
 | 2 | `link-check.py` | 내부 링크 해석 |
 | 3 | `korean-copy-check.py` | 한국어 voice / register / typography |
-| 4 | `check-coverage.py` | 컴포넌트 커버리지 리포트 |
+| 4 | `raw-hex-check.py` | 예제 raw hex 색상 위생 |
 | 5 | `integration-check.py` | 통합 워크스루 완전성 |
-| 6 | `stale-check.py` | 지식 신선도 (last_updated 임계값) |
+| 6 | `stale-check.py` | 지식 신선도 (`last_updated` 임계값) |
+| 7 | `check-coverage.py` | 컴포넌트 / 스킬 / 예제 커버리지 리포트 |
+| 8 | `example-qa.py` | 라우트별 대표 worked example 품질 |
 
 PR마다 모두 실행돼요. 로컬에서 미리 돌리려면 [`docs/CONTRIBUTING.ko.md`](CONTRIBUTING.ko.md) 참고.
 

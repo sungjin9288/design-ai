@@ -91,7 +91,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 워크플로:
 - 태그가 `package.json` 버전과 일치하는지 검증.
 - `package.json`과 `plugin.json` 버전이 일치하는지 검증.
-- 7개 검사 모두 실행 (frontmatter / link / Korean copy / integration / stale / coverage / example QA).
+- 8개 검사 모두 실행 (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - publish 또는 release asset 첨부 전에 CLI unit test 실행.
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
 - 패킹된 tarball을 임시 프로젝트에 설치하고 `design-ai version`과 top-level help 출력을 검증한 뒤 `design-ai help --json` topic catalog를 읽어 expected public topic/alias set을 확인하고, 모든 `design-ai help <command>` topic-specific usage 출력, 문서화된 help/command alias 출력, `find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint` functional alias 출력, 세 가지 `list` catalog domain, human/JSON `search` / `show` / `examples` 출력, 명시적 `show --lines` range와 `route --explain` 출력, unknown route-id/option/value suggestion 및 numeric range failure 검증, prompt/pack 강제 `--out` overwrite와 `Wrote <path>` confirmation, fake `CLAUDE_HOME` 기반 `design-ai install` / `doctor --strict` / `status` / `uninstall` lifecycle 출력까지 검증.
@@ -105,7 +105,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 npm run release:check
 ```
 
-이 명령은 CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력까지 포함해요.
+이 명령은 CLI unit test, 8개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력까지 포함해요.
 
 publish 워크플로가 끝난 뒤에는 공개 설치 경로도 확인하세요:
 

@@ -186,15 +186,15 @@ design-ai/
 ├── .claude-plugin/plugin.json         Plugin manifest
 ├── .github/workflows/                 CI (audit / publish / docs)
 ├── refs/                              Upstream sources (gitignored)
-├── knowledge/  (91 files, all versioned 1.0.0)
-├── examples/   (160 files)
+├── knowledge/  (92 files, all versioned 1.0.0)
+├── examples/   (219 files)
 ├── skills/     (19, all with verification phase)
 ├── agents/     (4)
 ├── commands/   (16)
 ├── docs/                              Architecture + integrations
 ├── tools/
 │   ├── extractors/                   Source → knowledge pipeline
-│   ├── audit/                        7 audit scripts
+│   ├── audit/                        8 active audits + release helpers
 │   ├── migrations/                   One-shot migration scripts
 │   └── preview/                      HTML preview generator
 ├── cli/                               NPM CLI source

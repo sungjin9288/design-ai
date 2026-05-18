@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 54 — Korean maintenance docs audit-count sync (v4.13.0) ✓ shipped
+
+Current Korean contributor and distribution docs now match the actual 8-audit release gate and the summary-first upstream drift workflow added in Phase 53.
+
+### Added
+- `docs/CONTRIBUTING.ko.md` now documents `npm run audit:strict`, all 8 active audits, and the summary-first cross-source API reconciliation flow.
+- `docs/ARCHITECTURE.ko.md`, `docs/DISTRIBUTION.ko.md`, and `docs/QUICKSTART.ko.md` now describe the current 8-audit CI/release gate.
+- `README.md` and `docs/SESSION-LOG.md` now describe the current extractor/audit inventory without stale 7-audit wording.
+
+### Impact
+- Korean contributors see the same quality gate as English contributors: frontmatter, link, Korean copy, raw hex, integration, stale, coverage, and example QA.
+- Release/distribution guidance no longer understates the gate by omitting raw hex hygiene.
+
+### Verified
+- All 8 audits pass.
+- Full verification suite at close-out:
+  - `python3 -B tools/audit/run-all.py --strict`
+  - `npm test`
+  - `npm run package:check`
+  - `npm run release:metadata`
+  - `npm run release:self-test`
+  - `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Korean-language maintenance docs can be used as the source of truth for PR prep instead of sending contributors back to English docs for current audit details.
+- Future audit additions have a clearer set of current docs to update in one pass.
+
+### What's still ahead (4.x — incremental only)
+- Run the quarterly upstream drift review after the next `refs/` refresh and document the result.
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+
 ## Phase 53 — Upstream drift review ergonomics (v4.13.0) ✓ shipped
 
 Quarterly upstream review now starts with a short risk summary before maintainers open the full cross-source conflict report. This keeps the drift workflow usable after crossing 90% component coverage.
