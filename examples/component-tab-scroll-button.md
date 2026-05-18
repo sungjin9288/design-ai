@@ -1,104 +1,180 @@
-# `TabScrollButton` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `TabScrollButton` - spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts` (4 interface(s), 1 component(s))
+> Direct upstream component: MUI `TabScrollButton`. Parent pattern references: Ant Design `Tabs`, MUI `Tabs`, shadcn-ui `tabs`.
 
-## When to use
+## Purpose
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+`TabScrollButton` is the overflow affordance used by scrollable tab lists. It moves the tab strip left/right or up/down when there are more tabs than fit in the available space.
+
+It is a supporting control for `Tabs`, not a tab and not page navigation.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
+```
+Tabs
+├── Start TabScrollButton    optional; appears when content can scroll backward
+├── TabList
+│   ├── Tab
+│   ├── Tab
+│   └── Tab
+└── End TabScrollButton      optional; appears when content can scroll forward
+```
 
-```
-[diagram here]
-```
+| Part | Required | Purpose |
+| --- | --- | --- |
+| Root | yes | Scroll command container. |
+| Direction icon | yes | Communicates scroll direction. |
+| Start/end slot | optional | Allows custom icons while preserving behavior. |
 
 ## API
 
 ```tsx
-<TabScrollButton>
-  {children}
-</TabScrollButton>
+<TabScrollButton
+  direction="right"
+  orientation="horizontal"
+  disabled={!canScrollForward}
+  aria-label="다음 탭 보기"
+/>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | - | Optional custom content. Usually omit and use icon slots. |
+| `classes` | `Partial<TabScrollButtonClasses>` | - | Style override hooks for MUI-style implementations. |
+| `direction` | `"left" \| "right"` | required | Visual/behavioral scroll direction. |
+| `disabled` | `boolean` | `false` | Disabled when the tab strip cannot scroll further in that direction. |
+| `orientation` | `"horizontal" \| "vertical"` | required | Tab list orientation. |
+| `slots` | `{ StartScrollButtonIcon?, EndScrollButtonIcon? }` | `{}` | Custom start/end icon components. |
+| `slotProps` | `{ startScrollButtonIcon?, endScrollButtonIcon? }` | `{}` | Props forwarded to icon slots. |
+| `sx` | `SxProps<Theme>` | - | MUI system override. Prefer tokens for shared design-system code. |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `direction` | `'left' \| 'right'` | — | ✓ | mui | The direction the button should indicate. |
-| `orientation` | `'horizontal' \| 'vertical'` | — | ✓ | mui | The component orientation (layout flow direction). |
-| `children` | `React.ReactNode` | — | — | mui | The content of the component. |
-| `classes` | `Partial<TabScrollButtonClasses> \| undefined` | — | — | mui | Override or extend the styles applied to the component. |
-| `disabled` | `boolean \| undefined` | `false` | — | mui | If `true`, the component is disabled. |
-| `slotProps` | `\| { startScrollButtonIcon?: \| SlotComponentProps< ` | `{}` | — | mui | The extra props for the slot components.
-You can override the existing props or add new ones. |
-| `slots` | `\| { StartScrollButtonIcon?: React.ElementType \| un` | `{}` | — | mui | The components used for each slot inside. |
-| `sx` | `SxProps<Theme> \| undefined` | — | — | mui | The system prop that allows defining system overrides as well as additional CSS styles. |
+Inherits most `ButtonBase` props in MUI, except native button behavior is intentionally customized.
 
-## Variants
+## API choices made
 
-(Fill in: visual variants — size / color / shape / etc.)
+- Keep `direction` and `orientation` required because icon rotation and scroll behavior depend on both.
+- Keep `disabled` explicit so first/last scroll limits are represented in DOM and visuals.
+- Do not expose `onScrollTabs` in this spec; the parent `Tabs` component should own scroll position and click handlers.
+- Do not treat `TabScrollButton` as a `Tabs.Trigger`. It must stay outside the tab roving-focus model.
 
 ## States
 
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| State | Trigger | Visual rule |
+| --- | --- | --- |
+| Hidden | No overflow in that direction | Do not render, or render with zero interaction and no layout jump depending on parent Tabs strategy. |
+| Default | Overflow available | Icon uses secondary text color; fixed control width/height. |
+| Hover | Pointer over enabled control | Subtle background. |
+| Focus-visible | Keyboard focus if implemented as a real button | 2px focus ring with at least 3:1 contrast. |
+| Active | Press | Pressed background; scroll distance remains deterministic. |
+| Disabled | At scroll limit | Muted or transparent; no activation. |
+| Vertical | `orientation="vertical"` | Icon rotates to indicate up/down movement. |
+| RTL | Directional context | Horizontal start/end behavior mirrors with text direction. |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
 --color-bg-default
---color-fg-default
---space-md
---radius-md
+--color-bg-subtle
+--color-text-secondary
+--color-text-disabled
+--color-focus-ring
+--space-xs
+--space-sm
+--tabs-scroll-button-size
+--icon-size-sm
+--radius-sm
+--motion-fast
 ```
+
+If `--tabs-scroll-button-size` does not exist, map it to the tab trigger height for the current size.
 
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- The control must not be part of the `role="tablist"` roving focus sequence.
+- If your implementation makes it user-clickable, render a real `<button type="button">` with labels such as `aria-label="이전 탭 보기"` and `aria-label="다음 탭 보기"`.
+- If matching MUI's internal presentational pattern, ensure the same scroll action is available through pointer drag/trackpad scroll and tab-list arrow-key navigation.
+- Disabled controls need native `disabled` or `aria-disabled="true"` plus suppressed activation.
+- Touch target must be at least 44x44 on mobile.
+- Icons are decorative when the button has an accessible label; set icon `aria-hidden="true"`.
 
-## Edge cases
+### Keyboard
 
-(Fill in 3+ edge cases.)
+| Key | Behavior |
+| --- | --- |
+| `Tab` | Enters active tab, not every tab and not hidden scroll controls, unless scroll controls are implemented as visible buttons. |
+| `Enter` / `Space` | Activates the scroll button only when it is a focusable real button. |
+| Arrow keys | Move between tabs through the parent Tabs pattern. |
+
+## Layout rules
+
+| Rule | Value |
+| --- | --- |
+| Horizontal size | Fixed inline size matching the parent density; commonly 40px equivalent. |
+| Vertical size | Full tab-list width with fixed block size. |
+| Position | At the start/end edge of the scroll container. |
+| Overlay | Avoid covering tab labels; reserve space or use gradient mask plus button. |
+| Motion | Smooth scroll is allowed, but disable it for `prefers-reduced-motion`. |
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+function ScrollableTabsHeader({ tabs, value, onValueChange }: Props) {
+  return (
+    <Tabs value={value} onValueChange={onValueChange} variant="underline">
+      <TabScrollButton
+        direction="left"
+        orientation="horizontal"
+        disabled={!canScrollBack}
+        aria-label="이전 탭 보기"
+        onClick={scrollBack}
+      />
+      <Tabs.List>
+        {tabs.map((tab) => (
+          <Tabs.Trigger key={tab.value} value={tab.value}>
+            {tab.label}
+          </Tabs.Trigger>
+        ))}
+      </Tabs.List>
+      <TabScrollButton
+        direction="right"
+        orientation="horizontal"
+        disabled={!canScrollForward}
+        aria-label="다음 탭 보기"
+        onClick={scrollForward}
+      />
+    </Tabs>
+  );
+}
 ```
+
+## Edge cases
+
+- **No overflow**: hide both controls or keep reserved space consistently. Do not show disabled arrows forever in compact mobile UIs.
+- **RTL**: visual arrows and scroll math must be tested together; browser `scrollLeft` behavior differs by engine.
+- **Vertical tabs**: rotate or swap icons so the control reads as up/down, not left/right.
+- **Touch devices**: horizontal swipe/drag should work even when scroll buttons are hidden.
+- **Many tabs**: keep arrow-key navigation functional for all tabs, including off-screen tabs.
+- **Reduced motion**: use instant scroll instead of smooth scrolling.
+- **High contrast mode**: do not rely on opacity alone for disabled state; pair with `disabled` semantics.
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't render scroll buttons as tabs.
+- Don't include scroll buttons in the tab count announced to screen readers.
+- Don't use a "More" dropdown as the first solution for overflowed tabs.
+- Don't hide off-screen tabs from the accessibility tree if they are still part of the tab set.
 
 ## References
 
-- Mui: [`TabScrollButton.d.ts`](../refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts)
+- MUI direct source: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts`](../refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts)
+- MUI implementation: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.js`](../refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.js)
+- MUI tabs source: [`refs/mui/packages/mui-material/src/Tabs/`](../refs/mui/packages/mui-material/src/Tabs/)
+- Ant Design parent pattern: [`refs/ant-design/components/tabs/`](../refs/ant-design/components/tabs/)
+- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx)
+- Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [examples/component-tabs.md](component-tabs.md)
+- [examples/component-tab.md](component-tab.md)
+- [WAI-ARIA Tabs Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/)

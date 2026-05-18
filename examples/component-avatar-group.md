@@ -1,96 +1,170 @@
-# `AvatarGroup` — spec (DRAFT — scaffolded 2026-05-11 via TS-AST)
+# `AvatarGroup` - spec
 
-> **Draft scaffold** generated from upstream sources via the TypeScript
-> Compiler API. The **API table below is parsed directly from the source's
-> typed declarations** — props / types / defaults / `@deprecated` markers
-> are accurate and trustworthy.
->
-> The **narrative sections** (when to use, anatomy, tokens, accessibility,
-> edge cases, code example) are placeholders. A maintainer should fill
-> them in based on actual usage and remove this banner before declaring
-> the spec polished.
->
-> Sources analyzed:
-> - **mui**: `refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts` (8 interface(s), 0 component(s))
+> Direct upstream component: MUI `AvatarGroup`. Parent pattern references: Ant Design `Avatar.Group`, MUI `AvatarGroup`, shadcn-ui avatar examples.
 
-## When to use
+## Purpose
 
-(Fill in: what user need does this serve? What's the canonical use case?
-When to use vs sibling components?)
+`AvatarGroup` shows a compact set of people or entities by overlapping avatars and summarizing overflow as a surplus item such as `+3`. Use it in collaboration surfaces, assignee lists, chat participants, document viewers, and activity feeds.
+
+Use a text list instead when the user must compare every participant name.
 
 ## Anatomy
 
-(Fill in: ASCII diagram of the component's parts.)
+```
+AvatarGroup
+├── Avatar item 1
+├── Avatar item 2
+├── Avatar item 3
+└── Surplus item       optional; "+N" or custom renderer
+```
 
-```
-[diagram here]
-```
+| Part | Required | Purpose |
+| --- | --- | --- |
+| Root | yes | Groups stacked avatars as one visual unit. |
+| Avatar child | yes | Individual `Avatar` components or compatible nodes. |
+| Surplus item | conditional | Represents hidden participants when `total > max`. |
+| Tooltip/popover | optional | Reveals hidden names when surplus is interactive. |
 
 ## API
 
 ```tsx
-<AvatarGroup>
-  {children}
+<AvatarGroup
+  max={4}
+  total={project.members.length}
+  renderSurplus={(count) => `+${count}`}
+>
+  {project.members.slice(0, 4).map((member) => (
+    <Avatar key={member.id} src={member.photoUrl} alt={member.name} />
+  ))}
 </AvatarGroup>
 ```
 
-### Props
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | - | Avatars to stack. |
+| `classes` | `Partial<AvatarGroupClasses>` | - | Style override hooks for MUI-style implementations. |
+| `component` | `React.ElementType` | `"div"` | Root element override. Use semantic list elements when names are meaningful content. |
+| `max` | `number` | `5` | Maximum visible avatars before showing surplus. |
+| `renderSurplus` | `(surplus: number) => ReactNode` | - | Custom surplus renderer. Keep accessible text. |
+| `spacing` | `"small" \| "medium" \| number` | `"medium"` | Overlap distance between avatars. |
+| `slots` | `{ surplus?: React.ElementType }` | - | Slot override for surplus item. |
+| `slotProps` | `{ surplus?: object }` | - | Props forwarded to surplus slot. |
+| `sx` | `SxProps<Theme>` | - | MUI system override. Prefer tokens for shared design-system code. |
+| `total` | `number` | `children.length` | Total count when only a subset of avatars is rendered. |
+| `variant` | `"circular" \| "rounded" \| "square"` | `"circular"` | Shape passed to visible avatars and surplus. |
 
-| Prop | Type | Default | Required | Source(s) | Description |
-| --- | --- | --- | --- | --- | --- |
-| `component` | `React.ElementType \| undefined` | — | — | mui | (fill in) |
+## API choices made
 
-## Variants
-
-(Fill in: visual variants — size / color / shape / etc.)
+- Keep `max`, `total`, and `renderSurplus` because they solve the common virtualized/partial-render participant case.
+- Keep `spacing` as a token-mapped prop, but prefer named values over arbitrary numbers in product code.
+- Do not add `size` to this thin spec because parent `Avatar` already owns sizing. A product wrapper may pass size to children.
+- Use composition over an `items` prop so existing `Avatar` fallback, status, and image behavior stay intact.
 
 ## States
 
-| State | Visual |
-| --- | --- |
-| Default | (fill in) |
-| Hover | (fill in) |
-| Focus-visible | 2px focus ring; cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md) |
-| Active | (fill in) |
-| Disabled | reduced opacity; `aria-disabled="true"` |
+| State | Trigger | Visual rule |
+| --- | --- | --- |
+| Default | `children.length <= max` | Avatars overlap by a tokenized offset and share a border ring. |
+| Surplus | `total > max` | Last visible item displays surplus count with same size/shape as avatars. |
+| Hover | Pointer over interactive avatar/surplus | Raise z-index and show tooltip/popover only if the item is actionable. |
+| Focus-visible | Keyboard focus on interactive child | 2px focus ring, not clipped by overlap. |
+| Active | Press interactive surplus | Pressed state belongs to the surplus button/popover trigger. |
+| Disabled | Parent surface disabled | Avoid interactive affordances; avatars remain visible but muted only if the parent is disabled. |
+| Loading | Participants loading | Use skeleton avatars with fixed group width to avoid layout shift. |
+| Error | Failed participant load | Fall back to initials/default avatar; do not hide the person. |
 
 ## Tokens consumed
 
-(Fill in. List every token this component reads. Flag missing tokens.)
-
 ```
+--avatar-size-sm
+--avatar-size-md
+--avatar-size-lg
+--avatar-overlap-sm
+--avatar-overlap-md
 --color-bg-default
---color-fg-default
---space-md
+--color-bg-subtle
+--color-text-primary
+--color-text-secondary
+--color-border-default
+--color-focus-ring
+--radius-full
 --radius-md
 ```
 
+If these avatar tokens do not exist, map them to the existing size, spacing, border, and radius tokens instead of adding raw values.
+
 ## Accessibility
 
-- Semantic element: (fill in)
-- ARIA: (fill in)
-- Keyboard: (fill in — cite [keyboard-and-focus.md](../knowledge/a11y/keyboard-and-focus.md))
-- Touch target: ≥ 44pt for primary mobile / ≥ 24px for desktop AA
+- If the group conveys meaningful membership, render as `<ul aria-label="참여자">` with each avatar in an `<li>`.
+- If visible names already appear adjacent to the group, the avatar images can be hidden from the accessibility tree to avoid duplicate announcements.
+- Each image avatar still needs correct `alt` text when it is the only name representation.
+- Surplus item needs an accessible name such as `aria-label="외 3명"`.
+- If surplus opens a popover, it must be a real `<button>` and the popover must list the hidden names.
+- Interactive avatars must meet 44x44 mobile touch target. For smaller visual avatars, extend hit area without changing visual size.
 
-## Edge cases
+## Layout rules
 
-(Fill in 3+ edge cases.)
+| Rule | Value |
+| --- | --- |
+| Stacking | Later avatars sit visually above earlier avatars in LTR unless `direction` is explicitly reversed by a wrapper. |
+| Border ring | Use `--color-bg-default` or parent surface color so overlap remains legible. |
+| Overlap | About one quarter to one third of avatar size; use tokens. |
+| Surplus | Same size and shape as avatars; do not use a loose text label outside the stack. |
+| RTL | Reverse margin direction with logical CSS. |
 
 ## Code example
 
 ```tsx
-// Fill in a concrete usage example
+<AvatarGroup
+  component="ul"
+  aria-label="프로젝트 참여자"
+  max={4}
+  total={members.length}
+  renderSurplus={(count) => (
+    <button type="button" aria-label={`외 ${count}명 보기`}>
+      +{count}
+    </button>
+  )}
+>
+  {members.slice(0, 4).map((member) => (
+    <li key={member.id}>
+      <Avatar
+        src={member.photoUrl}
+        alt={member.name}
+        fallback={initials(member.name)}
+      />
+    </li>
+  ))}
+</AvatarGroup>
 ```
+
+## Edge cases
+
+- **`max` less than 2**: clamp in product wrappers or warn in development. One visible avatar plus surplus is the minimum useful group.
+- **`total` exceeds rendered children**: surplus should use `total - visibleCount`, not hidden rendered children only.
+- **Duplicate names**: tooltip/popover should include secondary identifiers, such as team or email.
+- **Hundreds of participants**: render only visible avatars plus surplus; do not mount every avatar image.
+- **RTL**: overlap direction and z-index order must be reviewed visually.
+- **High contrast mode**: overlap boundaries must remain visible through border, not only shadow.
+- **Failed image loads**: each avatar follows `Avatar` fallback rules; group layout must not shift.
 
 ## Don't
 
-- (Fill in 2-3 specific misuses.)
+- Don't use `AvatarGroup` when exact identity comparison is the primary task.
+- Don't make each avatar separately clickable inside a clickable parent row.
+- Don't show `+0` or a surplus item when all avatars are visible.
+- Don't use color alone to indicate online/away status in the group.
 
 ## References
 
-- Mui: [`AvatarGroup.d.ts`](../refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts)
+- MUI direct source: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts`](../refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts)
+- MUI implementation: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.js`](../refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.js)
+- Ant Design parent pattern: [`refs/ant-design/components/avatar/`](../refs/ant-design/components/avatar/)
+- shadcn-ui avatar source: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx)
+- shadcn-ui group examples: [`refs/shadcn-ui/apps/v4/examples/base/avatar-group.tsx`](../refs/shadcn-ui/apps/v4/examples/base/avatar-group.tsx)
+- Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference
 
-- [`knowledge/components/INDEX.md`](../knowledge/components/INDEX.md)
-- (Add 2-3 related component specs)
+- [examples/component-avatar.md](component-avatar.md)
+- [knowledge/patterns/list-and-feed.md](../knowledge/patterns/list-and-feed.md)

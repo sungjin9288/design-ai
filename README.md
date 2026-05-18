@@ -204,7 +204,7 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v4.13.0** (DRAFT polish round 2).
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v4.13.0** (DRAFT closure + audit hardening).
 
 The corpus has been audited under CI checks since v1.7. It currently runs 8 audits:
 - Frontmatter validity

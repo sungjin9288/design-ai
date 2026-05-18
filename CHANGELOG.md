@@ -2,21 +2,22 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## v4.13.0 — Polish remaining DRAFT specs and reconciliation auto-apply (2026-05)
+## v4.13.0 — Close DRAFT spec debt and reconciliation auto-apply (2026-05)
 
-22 DRAFT → 7 DRAFT. 15 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
+22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
 
 ### Phase 50 — DRAFT polish round 2
 
-#### Polished (15)
+#### Polished (22)
 - **Input family** (3): `input-base` (39 props — full surface), `filled-input`, `input-adornment`.
 - **Table family** (7): `table-cell` (10 props — alignment conventions, KR amount handling), `table-body` (empty/loading state patterns), `table-head` (sticky header, scope), `table-pagination` (KR-localized labels), `table-container`, `table-footer` (totals row patterns), `table-sort-label`.
 - **Step family** (3): `step-icon` (state visuals), `step-label` (KR honorific), `step-content` (vertical-orientation flows).
 - **Misc** (2): `snackbar-content`, `alert-title`.
+- **Final thin sub-components** (7): `accordion-actions`, `accordion-details`, `accordion-summary`, `avatar-group`, `step-button`, `step-connector`, `tab-scroll-button`.
 
-#### Intentionally remain DRAFT (7)
-- **Accordion subs** (3): `accordion-actions`, `accordion-details`, `accordion-summary` — rarely standalone.
-- **Thin sub-components** (4): `avatar-group`, `step-button`, `step-connector`, `tab-scroll-button` — 1-8 props each, rarely cited; banner stays so adopters know API table is accurate but narrative is intentional skeleton.
+#### Final DRAFT closure (7)
+- **Accordion subs** (3): `accordion-actions`, `accordion-details`, `accordion-summary` now document scoped action rows, disclosed body regions, and summary button semantics against the parent Disclosure / Accordion contract.
+- **Thin sub-components** (4): `avatar-group`, `step-button`, `step-connector`, `tab-scroll-button` now document their minimal API surfaces, derived parent state, accessibility boundaries, edge cases, and token usage.
 
 ### Cross-ref corrections
 - 3 step specs referenced `component-stepper.md` (doesn't exist; canonical is `component-steps.md`). Fixed.
@@ -34,26 +35,26 @@ User-facing release notes for design-ai. Versions follow semver.
 - All 8 audits pass (with strengthened link-check from v4.8 catching the stepper→steps fix, plus raw hex hygiene for examples).
 - Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
 - Raw hex audit self-test covers token violations, allowlisted fixtures, line-level exceptions, CSS anchors, and order-number false positives.
-- 15 new fully-polished specs follow established sub-component spec template.
+- 22 new fully-polished specs follow established sub-component spec template.
 - Korean conventions threaded through all polished specs (KR text density, 합쇼체 vs 해요체 usage, KR-localized label formatters for TablePagination).
 
 ### Polish-debt inventory (post v4.13)
 
-| Family | Polished | DRAFT | % |
+| Family | Polished | Open debt | % |
 | --- | --- | --- | --- |
 | Form (FormControl + 5 subs) | 6/6 | 0 | 100% |
 | List (ListItem + 5 subs) | 6/6 | 0 | 100% |
 | Dialog (parent + 4 children) | 5/5 | 0 | 100% |
 | Card (parent + 4 subs) | 5/5 | 0 | 100% |
 | Menu (parent + Item + List) | 3/3 | 0 | 100% |
-| Tabs (Tab + Tabs + ScrollButton) | 2/3 | 1 | 67% |
-| Tables (8 subs) | 7/8 | 1 (TableSortLabel polished but Table parent absent) | 88% |
-| Steps (Step + Stepper subs) | 5/7 | 2 (StepButton, StepConnector) | 71% |
+| Tabs (Tab + Tabs + ScrollButton) | 3/3 | 0 | 100% |
+| Tables (8 subs) | 7/8 | parent `component-table.md` absent; no DRAFT banner | 88% |
+| Steps (Step + Stepper subs) | 7/7 | 0 | 100% |
 | Inputs (Outlined + Filled + Base + Adornment + Number) | 5/5 | 0 | 100% |
-| Transitions (Fade + Grow + Slide + Zoom) | 2/4 polished, 4/4 covered | — | covered |
-| Accordion (parent + 3 subs) | 1/4 | 3 | 25% (intentional) |
+| Transitions (Fade + Grow + Slide + Zoom) | 2/4 polished, 4/4 covered | no public DRAFT debt | covered |
+| Accordion (parent + 3 subs) | 4/4 | 0 | 100% |
 
-5 families now fully polished (Form, List, Dialog, Card, Menu, Inputs).
+9 families now fully polished (Form, List, Dialog, Card, Menu, Inputs, Tabs, Steps, Accordion).
 
 ### Versions
 - `package.json` + `.claude-plugin/plugin.json`: 4.12.0 → 4.13.0.
@@ -61,7 +62,7 @@ User-facing release notes for design-ai. Versions follow semver.
 ### What this enables
 - Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
 - HIGH-confidence upstream reconciliation can be applied mechanically without rewriting component narratives.
-- Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
+- Component spec consumers no longer need to distinguish polished specs from v2 scaffold placeholders in `examples/`.
 
 ## v4.12.0 — Extractor v3 reconciliation mode (2026-05)
 

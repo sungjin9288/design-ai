@@ -51,19 +51,20 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
-## Phase 50 — DRAFT polish round 2 + reconciliation auto-apply (v4.13.0) ✓ shipped
+## Phase 50 — DRAFT closure + reconciliation auto-apply (v4.13.0) ✓ shipped
 
-22 DRAFT → 7 DRAFT. 15 polished. 5 families now 100% polished (Form / List / Dialog / Card / Menu / Inputs).
+22 DRAFT → 0 DRAFT. 22 polished. 9 families now 100% polished (Form / List / Dialog / Card / Menu / Inputs / Tabs / Steps / Accordion).
 
-### Polished (15)
+### Polished (22)
 - Input family: input-base (39 props), filled-input, input-adornment.
 - Table family: table-cell, -body, -head, -pagination, -container, -footer, -sort-label.
 - Step family: step-icon, -label, -content.
 - Misc: snackbar-content, alert-title.
+- Final thin sub-components: accordion-actions, accordion-details, accordion-summary, avatar-group, step-button, step-connector, tab-scroll-button.
 
-### Intentionally DRAFT (7)
-- 3 accordion subs (rarely standalone).
-- 4 thin sub-components (avatar-group, step-button, step-connector, tab-scroll-button — 1-8 props each, banner kept so adopters know narrative is intentional skeleton).
+### Final DRAFT closure (7)
+- 3 accordion subs now cover summary button semantics, disclosed body regions, and scoped action rows.
+- 4 thin sub-components now cover minimal API surfaces, parent-derived state, accessibility boundaries, edge cases, and token usage.
 
 ### Added
 - `component_spec_reconcile.py --apply-high` updates existing API table rows for HIGH-confidence proposals only.
@@ -78,17 +79,17 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - All 8 audits pass.
 - Reconciliation auto-apply self-test covers polished and scaffolded API table formats.
 - Raw hex audit self-test covers token violations, allowlisted fixtures, line-level exceptions, CSS anchors, and order-number false positives.
-- 15 new fully-polished specs follow established template.
+- 22 new fully-polished specs follow established template.
 - 3 cross-ref corrections (`component-stepper.md` → `component-steps.md`).
 
 ### What this enables
 - Release candidates can focus on distribution confidence instead of unresolved DRAFT-spec uncertainty.
 - HIGH-confidence upstream reconciliation can be applied mechanically without rewriting component narratives.
 - New component examples now fail CI if they hardcode raw hex colors instead of semantic token aliases.
-- Remaining DRAFT debt is isolated to low-priority thin sub-components and explicitly named for future polish rounds.
+- Component examples no longer contain v2 scaffold DRAFT banners.
 
 ### What's still ahead (4.x — incremental only)
-- Polish remaining 7 thin DRAFT specs (low priority).
+- Quarterly upstream drift review for polished thin specs.
 - Coverage 80.9% → 90% (utility types — diminishing value).
 - Real-CI verification (push these workflows; observe green).
 - External launch (held).
