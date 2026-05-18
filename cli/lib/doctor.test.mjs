@@ -5,12 +5,14 @@ import assert from "node:assert/strict";
 import {
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   REPOSITORY_AUDIT_SCRIPTS,
@@ -21,8 +23,19 @@ import {
   summarizeChecks,
 } from "./doctor.mjs";
 
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+
 function writeJson(filePath, value) {
   writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function runAllAuditScripts() {
+  const runner = readFileSync(path.join(REPO_ROOT, "tools", "audit", "run-all.py"), "utf8");
+  const auditsBlock = runner.match(
+    /AUDITS: tuple\[AuditSpec, \.\.\.\] = \(\n([\s\S]*?)\n\)\n\n\n@dataclass/,
+  );
+  assert.ok(auditsBlock, "Expected tools/audit/run-all.py to declare an AUDITS tuple");
+  return [...auditsBlock[1].matchAll(/script="([^"]+\.py)"/g)].map((match) => match[1]);
 }
 
 function createMinimalSource({
@@ -135,6 +148,10 @@ test("inspectExpectedLinks reports missing target directory", () => {
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test("repository audit script list stays aligned with run-all.py", () => {
+  assert.deepEqual(REPOSITORY_AUDIT_SCRIPTS, runAllAuditScripts());
 });
 
 test("collectDoctorReport passes source layout when required audit scripts exist", () => {

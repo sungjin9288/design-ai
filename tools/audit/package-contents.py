@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -160,6 +161,18 @@ def load_required_paths() -> set[str]:
     return REQUIRED_PATHS | load_manifest_paths() | load_skill_sidecar_paths()
 
 
+def load_run_all_audit_scripts() -> list[str]:
+    text = (ROOT / "tools/audit/run-all.py").read_text(encoding="utf-8")
+    match = re.search(
+        r"AUDITS: tuple\[AuditSpec, \.\.\.\] = \(\n(?P<body>.*?)\n\)\n\n\n@dataclass",
+        text,
+        re.DOTALL,
+    )
+    if not match:
+        raise SystemExit("failed to locate AUDITS tuple in tools/audit/run-all.py")
+    return re.findall(r'script="([^"]+\.py)"', match.group("body"))
+
+
 def load_package_json() -> dict:
     return json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))
 
@@ -268,6 +281,22 @@ def run_self_test() -> int:
     assert_condition(
         "tools/audit/check-coverage.py" in required_paths,
         "coverage audit script should be required package contents",
+    )
+    run_all_audit_paths = {
+        f"tools/audit/{script}"
+        for script in load_run_all_audit_scripts()
+    }
+    missing_run_all_audit_paths = sorted(
+        path for path in run_all_audit_paths if path not in required_paths
+    )
+    assert_condition(
+        len(run_all_audit_paths) == 7,
+        "run-all.py should still enumerate seven repository audits",
+    )
+    assert_condition(
+        not missing_run_all_audit_paths,
+        "run-all.py audit scripts should be required package contents: "
+        + ", ".join(missing_run_all_audit_paths),
     )
 
     passing_pack = {
