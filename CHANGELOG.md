@@ -2,10 +2,27 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## v4.13.0 — Close DRAFT spec debt, coverage alias accounting, and reconciliation auto-apply (2026-05)
+## v4.13.0 — Close DRAFT spec debt, reach 90% coverage, and reconciliation auto-apply (2026-05)
 
 22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).
 Coverage accounting now recognizes parent/alias specs, moving canonical component coverage from 161/199 (80.9%) to 177/199 (88.9%) without duplicating already-covered sub-component docs.
+Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) move canonical component coverage to 180/199 (90.5%).
+
+### Phase 52 — Coverage 90% utility specs
+
+#### Added
+- `component-button-base.md` documents the low-level interactive primitive used to build design-system controls, including semantic root rules, focus-visible handling, ripple boundaries, disabled behavior, and polymorphic link/button risks.
+- `component-css-baseline.md` documents root reset ownership, body typography, color-scheme integration, print behavior, SSR ordering, and microfrontend boundaries.
+- `component-config-provider.md` documents app-level theme, locale, direction, component defaults, portal containers, CSP, static APIs, and Korean product shell concerns.
+- `examples/README.md` now lists the three new specs in the component catalog.
+
+#### Impact
+- Component spec coverage: 177/199 (88.9%) → 180/199 (90.5%).
+- The remaining canonical gap is now mostly low-level internals, registry metadata, and utility types rather than common product-facing primitives.
+
+#### Verified
+- `check-coverage.py` regenerated `knowledge/COVERAGE.md` with the 90.5% coverage result.
+- Full audit/test/release metadata suite validates the corpus at close-out.
 
 ### Phase 51 — Coverage alias accounting
 

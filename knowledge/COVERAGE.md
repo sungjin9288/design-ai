@@ -14,10 +14,10 @@ generated_at: 2026-05-18
 | --- | --- | --- |
 | Knowledge files | 92 | 77 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 19 | 19 with verification phase |
-| Worked examples | 216 | |
+| Worked examples | 219 | |
 | Extractors | 11 | |
 | Canonical components | 199 | indexed across Ant / MUI / shadcn |
-| Components with worked spec | 177 | **88.9% spec coverage** (16 via parent/alias specs) |
+| Components with worked spec | 180 | **90.5% spec coverage** (16 via parent/alias specs) |
 
 ## Knowledge by category
 
@@ -49,7 +49,7 @@ generated_at: 2026-05-18
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 730 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 736 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -281,6 +281,7 @@ generated_at: 2026-05-18
 | [examples/component-bottom-navigation.md](../examples/component-bottom-navigation.md) | 226 | `BottomNavigation` — spec |
 | [examples/component-box.md](../examples/component-box.md) | 112 | `Box` — spec |
 | [examples/component-breadcrumb.md](../examples/component-breadcrumb.md) | 222 | `Breadcrumb` — spec |
+| [examples/component-button-base.md](../examples/component-button-base.md) | 190 | `ButtonBase` — spec |
 | [examples/component-button-group.md](../examples/component-button-group.md) | 117 | `ButtonGroup` — spec |
 | [examples/component-button.md](../examples/component-button.md) | 213 | `Button` — spec |
 | [examples/component-calendar.md](../examples/component-calendar.md) | 280 | `Calendar` (full month view) — spec |
@@ -302,7 +303,9 @@ generated_at: 2026-05-18
 | [examples/component-color-picker.md](../examples/component-color-picker.md) | 110 | `ColorPicker` — spec |
 | [examples/component-combobox.md](../examples/component-combobox.md) | 267 | `Combobox` — spec |
 | [examples/component-command.md](../examples/component-command.md) | 299 | `CommandPalette` — spec |
+| [examples/component-config-provider.md](../examples/component-config-provider.md) | 190 | `ConfigProvider` — spec |
 | [examples/component-context-menu.md](../examples/component-context-menu.md) | 179 | `ContextMenu` — spec |
+| [examples/component-css-baseline.md](../examples/component-css-baseline.md) | 148 | `CssBaseline` — spec |
 | [examples/component-date-picker.md](../examples/component-date-picker.md) | 249 | `DatePicker` — spec |
 | [examples/component-descriptions.md](../examples/component-descriptions.md) | 242 | `Descriptions` (key-value list) — spec |
 | [examples/component-dialog-actions.md](../examples/component-dialog-actions.md) | 111 | `DialogActions` — spec |
@@ -474,7 +477,7 @@ generated_at: 2026-05-18
 
 ## Component spec coverage
 
-**177 / 199 canonical components have a worked spec (88.9%)** — 16 are covered by parent/alias specs.
+**180 / 199 canonical components have a worked spec (90.5%)** — 16 are covered by parent/alias specs.
 
 Specs that match canonical names directly:
 
@@ -499,6 +502,7 @@ Specs that match canonical names directly:
 - `box` → [examples/component-box.md](../examples/component-box.md)
 - `breadcrumb` → [examples/component-breadcrumb.md](../examples/component-breadcrumb.md)
 - `button` → [examples/component-button.md](../examples/component-button.md)
+- `button-base` → [examples/component-button-base.md](../examples/component-button-base.md)
 - `button-group` → [examples/component-button-group.md](../examples/component-button-group.md)
 - `card` → [examples/component-card.md](../examples/component-card.md)
 - `card-actions` → [examples/component-card-actions.md](../examples/component-card-actions.md)
@@ -514,7 +518,9 @@ Specs that match canonical names directly:
 - `color-picker` → [examples/component-color-picker.md](../examples/component-color-picker.md)
 - `combobox` → [examples/component-combobox.md](../examples/component-combobox.md)
 - `command` → [examples/component-command.md](../examples/component-command.md)
+- `config-provider` → [examples/component-config-provider.md](../examples/component-config-provider.md)
 - `context-menu` → [examples/component-context-menu.md](../examples/component-context-menu.md)
+- `css-baseline` → [examples/component-css-baseline.md](../examples/component-css-baseline.md)
 - `date-picker` → [examples/component-date-picker.md](../examples/component-date-picker.md)
 - `descriptions` → [examples/component-descriptions.md](../examples/component-descriptions.md)
 - `dialog-actions` → [examples/component-dialog-actions.md](../examples/component-dialog-actions.md)

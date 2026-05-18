@@ -13,6 +13,7 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | File | Component | What it covers |
 | --- | --- | --- |
 | [component-button.md](component-button.md) | Button | The most-used control. Variants, intent, sizes, loading state, asChild pattern. |
+| [component-button-base.md](component-button-base.md) | ButtonBase | Low-level interactive primitive for building design-system controls. Semantics, focus-visible, ripple, disabled, and polymorphic root rules. |
 | [component-input.md](component-input.md) | Input (text field) | Label/help/error, validation timing, autocomplete, IME (Korean) handling, password/clearable affordances. |
 | [component-modal.md](component-modal.md) | Modal / Dialog / Sheet | Focus trap, scroll lock, keyboard contract, three variants in one spec (dialog/alert-dialog/sheet). |
 | [component-toast.md](component-toast.md) | Toast / Snackbar | Imperative API (`toast.success(...)`), promise wrapper, intent + duration matrix, persistent errors. |
@@ -64,10 +65,12 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [component-input-otp.md](component-input-otp.md) | InputOTP (verification code) | Multi-cell digit input. Korean SMS verification flow, autocomplete=one-time-code. |
 | [component-watermark.md](component-watermark.md) | Watermark | Repeating overlay for sensitive content. Per-user trace, screenshot deterrent. |
 | [component-code.md](component-code.md) | Code (inline + block) | Monospace text + syntax highlighting + copy button. |
+| [component-css-baseline.md](component-css-baseline.md) | CssBaseline | Root global baseline for app shells. Box sizing, body typography, color-scheme, print, SSR, and reset ownership. |
 | [component-typography.md](component-typography.md) | Typography (text primitive) | Variant-driven text. When NOT to use (Tailwind utility classes are usually clearer). |
 | [component-badge.md](component-badge.md) | Badge | Standalone label + indicator dual modes. Variants (default/secondary/destructive/outline), count + dot indicator on parent. |
 | [component-dropdown.md](component-dropdown.md) | Dropdown / DropdownMenu | Triggered overlay menu of actions. WAI-ARIA Menu pattern, sub-menus, checkbox / radio items, shortcuts. |
 | [component-context-menu.md](component-context-menu.md) | ContextMenu | Right-click / long-press triggered menu. Same WAI-ARIA Menu pattern as Dropdown. |
+| [component-config-provider.md](component-config-provider.md) | ConfigProvider | App-level design-system configuration boundary. Theme, locale, direction, portals, CSP, static APIs, and component defaults. |
 | [component-hover-card.md](component-hover-card.md) | HoverCard | Hover-triggered floating preview. Distinct from Tooltip + Popover; profile previews, link previews. |
 | [component-sheet.md](component-sheet.md) | Sheet | Side-anchored modal panel. Mobile-first detents, side variants (top/right/bottom/left). |
 | [component-command.md](component-command.md) | Command / CommandPalette | cmdk-based searchable command palette. Cmd+K pattern, fuzzy match, async results. |

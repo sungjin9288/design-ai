@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 52 — Coverage 90% utility specs (v4.13.0) ✓ shipped
+
+The corpus crossed the 90% canonical component coverage milestone by documenting three foundational utility/provider primitives that are useful to real design-system authors.
+
+### Added
+- `examples/component-button-base.md` — low-level interactive primitive spec covering semantics, focus-visible handling, ripple boundaries, disabled behavior, and polymorphic root risks.
+- `examples/component-css-baseline.md` — root global baseline spec covering reset ownership, body typography, color-scheme, print behavior, SSR ordering, and microfrontend boundaries.
+- `examples/component-config-provider.md` — app-level provider spec covering theme, locale, direction, component defaults, portal containers, CSP, static APIs, and Korean product shell concerns.
+- `examples/README.md` now exposes all three specs in the component catalog.
+
+### Impact
+- Component spec coverage: 177/199 (88.9%) → 180/199 (90.5%).
+- The remaining gap is now mostly low-level internals, registry metadata, and utility types rather than common product-facing primitives.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/check-coverage.py`
+- Full verification suite at close-out:
+  - `python3 -B tools/audit/run-all.py --strict`
+  - `npm test`
+  - `npm run package:check`
+  - `npm run release:metadata`
+  - `npm run release:self-test`
+  - `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The public corpus now has 90%+ canonical component coverage with no DRAFT banners, so adopter workflows can rely on polished specs for nearly all common primitives.
+- Future coverage work can be selective: document only utility/provider entries that reduce real implementation ambiguity.
+
+### What's still ahead (4.x — incremental only)
+- Quarterly upstream drift review for polished thin specs and provider primitives.
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+
 ## Phase 51 — Coverage alias accounting (v4.13.0) ✓ shipped
 
 Coverage accounting now recognizes canonical components already covered by parent/alias specs. This moves component spec coverage from 161/199 (80.9%) to 177/199 (88.9%) without creating duplicate thin docs.
@@ -79,7 +116,7 @@ Coverage accounting now recognizes canonical components already covered by paren
 - The remaining path to 90% is narrowed to true utility/provider primitives instead of duplicate sub-component files.
 
 ### What's still ahead (4.x — incremental only)
-- Coverage 88.9% → 90% (only 3 additional canonical entries needed; remaining gap is mostly utility/provider primitives).
+- Coverage 90%+ maintenance, with future additions focused on genuinely useful provider/utility docs rather than duplicate sub-component files.
 - Quarterly upstream drift review for polished thin specs.
 - Real-CI verification (push these workflows; observe green).
 - External launch (held).
