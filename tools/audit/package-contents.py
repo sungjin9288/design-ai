@@ -83,6 +83,7 @@ REQUIRED_PATHS = {
     "tools/audit/doctor_assertions.py",
     "tools/audit/smoke_assertions.py",
     "tools/audit/example-qa.py",
+    "tools/audit/local-ci.py",
     "tools/audit/package-contents.py",
     "tools/audit/package-smoke.py",
     "tools/audit/registry-smoke.py",

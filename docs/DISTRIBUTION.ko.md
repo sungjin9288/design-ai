@@ -107,6 +107,14 @@ npm run release:check
 
 이 명령은 CLI unit test, 8개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력까지 포함해요.
 
+GitHub CI에 올리기 전에는 더 넓은 로컬 parity gate도 실행하세요:
+
+```bash
+npm run ci:local
+```
+
+이 명령은 `release:check`에 더해 Python syntax check, knowledge/docs/examples size budget, VS Code extension compile/unit test, mkdocs build까지 확인해요.
+
 publish 워크플로가 끝난 뒤에는 공개 설치 경로도 확인하세요:
 
 ```bash

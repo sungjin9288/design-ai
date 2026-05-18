@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 56 — CI cache hardening + local parity gate (v4.13.0) ✓ shipped
+
+The branch is now better prepared for Real-CI verification: GitHub Actions npm caching points at the actual lockfile, and maintainers have a single local command that exercises workflow-only surfaces before pushing.
+
+### Added
+- `tools/audit/local-ci.py` runs the local equivalent of the non-publishing GitHub workflows.
+- `npm run ci:local` wraps `release:check`, Python syntax checks, knowledge/docs/examples size budget, VS Code extension compile/unit tests, and mkdocs site build.
+- `README.md`, `README.ko.md`, `docs/RELEASE-CHECKLIST.md`, `docs/DISTRIBUTION.md`, and `docs/DISTRIBUTION.ko.md` document when to use the broader local gate.
+
+### Changed
+- `.github/workflows/audit.yml` now sets `cache-dependency-path: vscode-extension/package-lock.json` for jobs using `actions/setup-node` npm caching.
+- VS Code extension dependency installs in CI now use `npm ci --no-audit --no-fund` instead of `npm install`, matching the committed lockfile.
+
+### Impact
+- A pushed branch should no longer depend on a root `package-lock.json` that does not exist.
+- Local release verification now covers workflow-only checks that `release:check` intentionally did not run: Python `py_compile`, size budget, VS Code extension compile/unit tests, and mkdocs build.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local`
+- `npm run release:metadata`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Real-CI verification can be treated as an external confirmation step after local parity passes, not as the first run of docs or VS Code workflow checks.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Continue targeted coverage only when upstream adds product-relevant primitives.
+
 ## Phase 55 — Upstream refs refresh + BorderBeam coverage (v4.13.0) ✓ shipped
 
 Fresh upstream refs were pulled, generated knowledge was regenerated, and the newly surfaced Ant Design `border-beam` canonical received a full worked spec so the corpus stays above the 90% coverage threshold.

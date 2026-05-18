@@ -107,7 +107,7 @@ Build the leverage tool, then push coverage further.
 - **v4.10 (Phases 45-47)** — VS Code real-instance e2e infrastructure, SESSION-LOG refresh, and component extractor v3 cross-source conflict detection.
 - **v4.11 (Phase 48)** — CI wiring. Audit, unit tests, VS Code e2e, and informational conflict-check moved into GitHub workflows.
 - **v4.12 (Phase 49)** — Reconciliation mode. `component_spec_reconcile.py` proposes unified API rows and can safely apply HIGH-confidence updates.
-- **v4.13 (Phases 50-55)** — Closed all DRAFT spec debt, added raw-hex example hygiene, reached 90%+ canonical coverage, documented summary-first drift review, synced Korean maintenance docs, refreshed upstream refs, and added `BorderBeam` coverage after Ant Design expanded the canonical index to 200.
+- **v4.13 (Phases 50-56)** — Closed all DRAFT spec debt, added raw-hex example hygiene, reached 90%+ canonical coverage, documented summary-first drift review, synced Korean maintenance docs, refreshed upstream refs, added `BorderBeam` coverage after Ant Design expanded the canonical index to 200, and added a local CI parity gate for push-readiness.
 
 ## Patterns that didn't work
 
@@ -163,13 +163,13 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, and full local release verification. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **Real-CI verification** — push the branch, observe audit / unit / package / docs workflows green.
 2. **External launch** — publish only after CI and owner review; announcement drafts already exist under `docs/announcements/`.
 3. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.
 
-When the owner is ready to push externally, the local release gate is green, RELEASE-CHECKLIST is ritualized, announcements are drafted, and install paths are verified.
+When the owner is ready to push externally, `npm run ci:local` is green, RELEASE-CHECKLIST is ritualized, announcements are drafted, and install paths are verified.
 
 ## Repo structure
 

@@ -90,6 +90,8 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+          # Root package has no lockfile; VS Code extension owns the npm deps.
+          cache-dependency-path: "vscode-extension/package-lock.json"
 
       - name: Install root deps
         run: npm install --no-audit --no-fund
@@ -99,7 +101,7 @@ jobs:
 
       - name: Install VS Code extension deps
         working-directory: vscode-extension
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Compile VS Code extension
         working-directory: vscode-extension
@@ -147,10 +149,11 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+          cache-dependency-path: "vscode-extension/package-lock.json"
 
       - name: Install VS Code extension deps
         working-directory: vscode-extension
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Compile extension + integration tests
         working-directory: vscode-extension

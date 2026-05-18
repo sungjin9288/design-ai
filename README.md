@@ -227,6 +227,7 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
 - Skill PLAYBOOKs include a verification phase checklist.
 - Korean strings spelled out in Korean (no machine translation passing through).
 - All audits pass.
+- Before pushing for CI, run `npm run ci:local` when you need local parity with the non-publishing GitHub workflows. It wraps `release:check`, Python syntax checks, knowledge size budget, VS Code extension compile/unit tests, and the mkdocs build.
 
 ## License
 

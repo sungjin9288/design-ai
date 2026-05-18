@@ -134,6 +134,7 @@ Tarball target: < 15MB. Run `npm run package:check` to verify package contents.
 
 Before tagging a release:
 
+- [ ] Local CI parity gate passes: `npm run ci:local`
 - [ ] Core automated gate passes: `npm run release:check`
 - [ ] Release assertion self-tests pass: `npm run release:self-test`
 - [ ] All audits pass: `design-ai audit --strict`

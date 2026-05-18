@@ -9,6 +9,34 @@ Coverage accounting now recognizes parent/alias specs, moving canonical componen
 Three additional foundational specs (`button-base`, `css-baseline`, `config-provider`) moved canonical component coverage to 180/199 (90.5%); a later refs refresh added Ant Design `border-beam`, and the matching worked spec keeps current coverage at 181/200 (90.5%).
 The cross-source conflict checker now supports summary-only drift triage and a local self-test for severity classification.
 Korean maintenance docs now describe the same 8-audit gate and drift review workflow as the English contributor docs.
+Push-readiness now has a local CI parity command and GitHub Actions cache paths are aligned with the actual VS Code extension lockfile.
+
+### Phase 56 — CI cache hardening and local parity gate
+
+#### Added
+- Added `npm run ci:local`, backed by `tools/audit/local-ci.py`, to run the local equivalent of non-publishing GitHub CI before a branch is pushed.
+- The local parity gate wraps `release:check`, then adds Python `py_compile`, knowledge/docs/examples size budget, VS Code extension `npm ci` + compile + unit tests, and `mkdocs build --clean`.
+- Release and distribution docs now explain when to use `ci:local` versus the narrower `release:check`.
+
+#### Changed
+- `.github/workflows/audit.yml` now points npm cache lookup at `vscode-extension/package-lock.json` instead of relying on a nonexistent root lockfile.
+- VS Code workflow dependency installs now use `npm ci` so CI consumes the committed lockfile exactly.
+
+#### Impact
+- Real-CI verification is less likely to fail before tests start because setup-node can resolve a concrete cache dependency path.
+- Maintainers can reproduce workflow-only checks locally without waiting for a pushed branch.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local`
+- `npm run release:metadata`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The remaining Real-CI step becomes an external confirmation of already-exercised local surfaces instead of the first place cache, docs, or VS Code compile issues appear.
 
 ### Phase 55 — Upstream refs refresh and BorderBeam coverage
 
