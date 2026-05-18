@@ -10,6 +10,7 @@ EXPECTED_DOCTOR_PASS_LABELS = {
     "Node runtime",
     "Python runtime",
     "Audit runner",
+    "Audit scripts",
     "Doctor assertions helper",
     "Smoke assertions helper",
     "Example QA audit",

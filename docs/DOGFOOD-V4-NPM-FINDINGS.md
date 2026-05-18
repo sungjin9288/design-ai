@@ -41,7 +41,8 @@ Package smoke passed
 The installed-package doctor reported:
 
 ```text
-Summary: 15 pass, 0 warning(s), 0 failure(s)
+Summary: 16 pass, 0 warning(s), 0 failure(s)
+Audit scripts: 7 repository audit script(s) found
 Doctor assertions helper: tools/audit/doctor_assertions.py found
 Smoke assertions helper: tools/audit/smoke_assertions.py found
 Package contents check: tools/audit/package-contents.py found
@@ -129,7 +130,7 @@ This dogfood approximates what a clean adopter sees:
 1. Install the packed CLI package.
 2. Run `design-ai version`, top-level `help`, `help --json`, every expected command-specific help topic from the catalog with usage assertions, every documented help alias, every documented command alias with output assertions, functional aliases (`find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint`), all three `list` catalog domains, human / JSON `search`, `show`, and `examples`, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, and prompt/pack forced file-output flows.
 3. Run `design-ai install` against an empty Claude Code home and assert the installer reports 19 skills, 4 agents, and 16 slash commands.
-4. Run `design-ai doctor --strict` and `design-ai status`, asserting doctor reports 15 pass / 0 warnings / 0 failures and status reports the same installed counts.
+4. Run `design-ai doctor --strict` and `design-ai status`, asserting doctor reports 16 pass / 0 warnings / 0 failures and status reports the same installed counts.
 5. Run `design-ai uninstall` and assert the symlink farm removal reports 39 removed links.
 6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including independent version/top-level help checks, `help --json` catalog read, documented help topic usage and alias smoke, command alias smoke, functional alias smoke, list catalog smoke, corpus discovery smoke, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced file-write confirmation smoke, lifecycle output smoke, `doctor --strict` human diagnostics assertions, and the same `doctor --json` PASS assertions.
 

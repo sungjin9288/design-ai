@@ -128,6 +128,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Node runtime:",
     "Python runtime:",
     "Audit runner: tools/audit/run-all.py found",
+    "Audit scripts: 7 repository audit script(s) found",
     "Doctor assertions helper: tools/audit/doctor_assertions.py found",
     "Smoke assertions helper: tools/audit/smoke_assertions.py found",
     "Example QA audit: tools/audit/example-qa.py found",
@@ -2275,6 +2276,7 @@ def passing_doctor_strict_output() -> str:
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
         "✓  Audit runner: tools/audit/run-all.py found",
+        "✓  Audit scripts: 7 repository audit script(s) found",
         "✓  Doctor assertions helper: tools/audit/doctor_assertions.py found",
         "✓  Smoke assertions helper: tools/audit/smoke_assertions.py found",
         "✓  Example QA audit: tools/audit/example-qa.py found",
@@ -2285,7 +2287,7 @@ def passing_doctor_strict_output() -> str:
         "✓  Installed agents: 4/4 installed",
         "✓  Installed slash commands: 16/16 installed",
         "",
-        "ℹ  Summary: 15 pass, 0 warning(s), 0 failure(s)",
+        f"ℹ  Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
         "",
     ])
 
@@ -4426,7 +4428,7 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_doctor_strict_output(
             passing_doctor_strict_output().replace(
-                "Summary: 15 pass, 0 warning(s), 0 failure(s)",
+                f"Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
                 "Summary: 14 pass, 1 warning(s), 0 failure(s)",
             ),
             context=context,

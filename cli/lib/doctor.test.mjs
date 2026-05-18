@@ -13,6 +13,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  REPOSITORY_AUDIT_SCRIPTS,
   STATUS,
   collectDoctorReport,
   inspectExpectedLinks,
@@ -31,6 +32,7 @@ function createMinimalSource({
   includePackageContentsAudit = true,
   includePackageSmokeAudit = true,
   includeRegistrySmokeAudit = true,
+  missingRepositoryAuditScript = "",
 } = {}) {
   const tmp = mkdtempSync(path.join(tmpdir(), "design-ai-doctor-"));
   const sourceRoot = path.join(tmp, "source");
@@ -51,6 +53,12 @@ function createMinimalSource({
   writeFileSync(path.join(sourceRoot, "install.sh"), "#!/usr/bin/env bash\n");
   writeFileSync(path.join(sourceRoot, "tools", "audit", "run-all.py"), "# audit runner\n");
 
+  for (const script of REPOSITORY_AUDIT_SCRIPTS) {
+    if (script === missingRepositoryAuditScript) continue;
+    if (script === "example-qa.py" && !includeExampleQaAudit) continue;
+    writeFileSync(path.join(sourceRoot, "tools", "audit", script), `# ${script}\n`);
+  }
+
   if (includeDoctorAssertionsAudit) {
     writeFileSync(
       path.join(sourceRoot, "tools", "audit", "doctor_assertions.py"),
@@ -62,9 +70,6 @@ function createMinimalSource({
       path.join(sourceRoot, "tools", "audit", "smoke_assertions.py"),
       "# smoke assertions\n",
     );
-  }
-  if (includeExampleQaAudit) {
-    writeFileSync(path.join(sourceRoot, "tools", "audit", "example-qa.py"), "# example qa\n");
   }
   if (includePackageContentsAudit) {
     writeFileSync(
@@ -143,12 +148,31 @@ test("collectDoctorReport passes source layout when required audit scripts exist
 
     assert.equal(checkByLabel(report, "Source layout").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Audit runner").status, STATUS.PASS);
+    assert.equal(checkByLabel(report, "Audit scripts").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Doctor assertions helper").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Smoke assertions helper").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Example QA audit").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Package contents check").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Package smoke check").status, STATUS.PASS);
     assert.equal(checkByLabel(report, "Registry smoke check").status, STATUS.PASS);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("collectDoctorReport fails when a run-all dependency audit script is missing", () => {
+  const { tmp, sourceRoot } = createMinimalSource({ missingRepositoryAuditScript: "link-check.py" });
+  try {
+    const report = collectDoctorReport({
+      sourceRoot,
+      claudeHome: path.join(tmp, "claude"),
+      prefix: "design-",
+    });
+    const auditScriptsCheck = checkByLabel(report, "Audit scripts");
+
+    assert.equal(checkByLabel(report, "Source layout").status, STATUS.FAIL);
+    assert.equal(auditScriptsCheck.status, STATUS.FAIL);
+    assert.match(auditScriptsCheck.detail, /1\/7 missing: link-check\.py/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

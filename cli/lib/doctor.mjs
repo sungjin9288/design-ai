@@ -22,6 +22,16 @@ export const STATUS = {
   FAIL: "FAIL",
 };
 
+export const REPOSITORY_AUDIT_SCRIPTS = [
+  "frontmatter-check.py",
+  "link-check.py",
+  "korean-copy-check.py",
+  "integration-check.py",
+  "stale-check.py",
+  "check-coverage.py",
+  "example-qa.py",
+];
+
 function exists(p) {
   try {
     return existsSync(p);
@@ -204,16 +214,20 @@ export function collectDoctorReport(options = {}) {
     packageContentsAudit: path.join(sourceRoot, "tools", "audit", "package-contents.py"),
     packageSmokeAudit: path.join(sourceRoot, "tools", "audit", "package-smoke.py"),
     registrySmokeAudit: path.join(sourceRoot, "tools", "audit", "registry-smoke.py"),
+    repositoryAudits: REPOSITORY_AUDIT_SCRIPTS.map((script) =>
+      path.join(sourceRoot, "tools", "audit", script),
+    ),
     skillsDir: path.join(sourceRoot, "skills"),
     agentsDir: path.join(sourceRoot, "agents"),
     commandsDir: path.join(sourceRoot, "commands"),
   };
 
-  const required = [
+  const required = Array.from(new Set([
     paths.packageJson,
     paths.pluginManifest,
     paths.installScript,
     paths.auditRunner,
+    ...paths.repositoryAudits,
     paths.doctorAssertionsAudit,
     paths.smokeAssertionsAudit,
     paths.exampleQaAudit,
@@ -223,7 +237,7 @@ export function collectDoctorReport(options = {}) {
     paths.skillsDir,
     paths.agentsDir,
     paths.commandsDir,
-  ];
+  ]));
   const missingRequired = required.filter((p) => !exists(p));
 
   if (missingRequired.length === 0) {
@@ -321,6 +335,26 @@ export function collectDoctorReport(options = {}) {
       STATUS.FAIL,
       "Audit runner",
       "tools/audit/run-all.py missing",
+      "Reinstall design-ai or restore tools/audit/.",
+    );
+  }
+
+  const missingRepositoryAudits = REPOSITORY_AUDIT_SCRIPTS.filter(
+    (script) => !exists(path.join(sourceRoot, "tools", "audit", script)),
+  );
+  if (missingRepositoryAudits.length === 0) {
+    addCheck(
+      checks,
+      STATUS.PASS,
+      "Audit scripts",
+      `${REPOSITORY_AUDIT_SCRIPTS.length} repository audit script(s) found`,
+    );
+  } else {
+    addCheck(
+      checks,
+      STATUS.FAIL,
+      "Audit scripts",
+      `${missingRepositoryAudits.length}/${REPOSITORY_AUDIT_SCRIPTS.length} missing: ${missingRepositoryAudits.join(", ")}`,
       "Reinstall design-ai or restore tools/audit/.",
     );
   }
