@@ -13,6 +13,7 @@ from typing import Callable
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_FORCE_OVERWRITE_SENTINEL = "__design-ai-smoke-force-overwrite-sentinel__"
 EXPECTED_HELP_TOPICS = (
     "install",
@@ -334,7 +335,16 @@ EXPECTED_PROMPT_FILES = (
     EXPECTED_EXAMPLES_HIT,
 )
 EXPECTED_PACK_MAX_BYTES = 1000
-EXPECTED_AUDIT_COUNT = 7
+EXPECTED_AUDIT_SCRIPTS = (
+    "frontmatter-check.py",
+    "link-check.py",
+    "korean-copy-check.py",
+    "integration-check.py",
+    "stale-check.py",
+    "check-coverage.py",
+    "example-qa.py",
+)
+EXPECTED_AUDIT_COUNT = len(EXPECTED_AUDIT_SCRIPTS)
 EXPECTED_CHECK_ARTIFACT_NAME = "component-artifact.md"
 EXPECTED_CHECK_EXAMPLES_LIMIT = 1
 EXPECTED_NUMERIC_VALUE_SMOKES = (
@@ -361,6 +371,19 @@ EXPECTED_CHECK_RESULT_IDS = (
 
 def format_cmd(cmd: list[str]) -> str:
     return shlex.join(cmd)
+
+
+def load_run_all_audit_scripts() -> tuple[str, ...]:
+    text = (ROOT / "tools/audit/run-all.py").read_text(encoding="utf-8")
+    match = re.search(
+        r"AUDITS: tuple\[AuditSpec, \.\.\.\] = \(\n(?P<body>.*?)\n\)\n\n\n@dataclass",
+        text,
+        re.DOTALL,
+    )
+    if not match:
+        raise SystemExit("failed to locate AUDITS tuple in tools/audit/run-all.py")
+
+    return tuple(re.findall(r'script="([^"]+\.py)"', match.group("body")))
 
 
 def assert_no_ansi(output: str, cmd: list[str]) -> None:
@@ -3844,6 +3867,17 @@ def run_self_test() -> None:
     )
 
     audit_cmd = ["design-ai", "audit", "--strict", "--quiet"]
+    run_all_audit_scripts = load_run_all_audit_scripts()
+    if run_all_audit_scripts != EXPECTED_AUDIT_SCRIPTS:
+        raise SystemExit(
+            "smoke assertions self-test failed: EXPECTED_AUDIT_SCRIPTS differs from "
+            "tools/audit/run-all.py AUDITS"
+        )
+    if EXPECTED_AUDIT_COUNT != len(run_all_audit_scripts):
+        raise SystemExit(
+            "smoke assertions self-test failed: EXPECTED_AUDIT_COUNT differs from "
+            "tools/audit/run-all.py AUDITS"
+        )
     assert_audit_strict_quiet_output(passing_audit_strict_quiet_output(), context=context, cmd=audit_cmd)
     expect_self_test_failure(
         lambda: assert_audit_strict_quiet_output(
