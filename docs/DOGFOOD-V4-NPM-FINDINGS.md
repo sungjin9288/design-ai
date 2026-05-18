@@ -23,7 +23,7 @@ npm run package:smoke
 - runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own version/top-level help checks, `help --json` catalog read, help topic usage, help alias, command alias, functional alias output, list catalog, corpus discovery smoke, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced file-write confirmation smoke, and install/`doctor --strict`/status/uninstall lifecycle output assertions
 - asserts the `doctor --json` required PASS set for both direct install and one-shot `npm exec` install
 
-The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the coverage timestamp preservation, doctor, shared smoke, package smoke, and registry smoke assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
+The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the audit runner, coverage timestamp preservation, doctor, shared smoke, package smoke, and registry smoke assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`.
 
 ## Current result
 
@@ -91,6 +91,10 @@ The smoke path sets `NO_COLOR=1` and checks captured CLI output for ANSI escape 
 ### 7. Coverage timestamp preservation is covered
 
 `npm run release:self-test` now includes `npm run coverage:self-test`, which exercises `check-coverage.py` without touching `knowledge/COVERAGE.md`. It proves unchanged reports preserve the existing `generated_at` value while real report content changes refresh the date.
+
+### 8. Audit runner exit-code behavior is covered
+
+`npm run release:self-test` now includes `npm run audit:runner:self-test`, which exercises `run-all.py` without invoking the repository audits. It proves strict mode exits non-zero on failures, warn-only mode keeps exit code 0 while naming failed audits, and the seven-audit release gate count stays explicit.
 
 ## Issues surfaced
 
