@@ -14,7 +14,39 @@ from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 ROOT = Path(__file__).resolve().parents[2]
+PLUGIN_MANIFEST = ROOT / ".claude-plugin" / "plugin.json"
+PLUGIN_INVENTORY_SECTIONS = (
+    ("skills", "skill"),
+    ("commands", "command"),
+    ("agents", "agent"),
+)
 OUTPUT_FORCE_OVERWRITE_SENTINEL = "__design-ai-smoke-force-overwrite-sentinel__"
+
+
+def load_plugin_manifest() -> dict[str, object]:
+    try:
+        return json.loads(PLUGIN_MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"failed to load plugin manifest for smoke assertions: {PLUGIN_MANIFEST}") from error
+
+
+def count_manifest_section(manifest: dict[str, object], section: str) -> int:
+    items = manifest.get(section)
+    return len(items) if isinstance(items, list) else 0
+
+
+def format_inventory_count(count: int, singular: str) -> str:
+    return f"{count} {singular}{'' if count == 1 else 's'}"
+
+
+def build_plugin_inventory_summary(manifest: dict[str, object]) -> str:
+    return ", ".join(
+        format_inventory_count(count_manifest_section(manifest, section), singular)
+        for section, singular in PLUGIN_INVENTORY_SECTIONS
+    )
+
+
+EXPECTED_PLUGIN_INVENTORY_SUMMARY = build_plugin_inventory_summary(load_plugin_manifest())
 EXPECTED_HELP_TOPICS = (
     "install",
     "update",
@@ -88,7 +120,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
-    "Plugin:  19 skills, 16 commands, 4 agents",
+    f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY}",
 )
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
@@ -2270,7 +2302,7 @@ def passing_main_help_output() -> str:
         "Environment overrides:",
         "Quickstart:",
         "Docs:    https://github.com/sungjin/design-ai",
-        "Plugin:  19 skills, 16 commands, 4 agents (UI/UX, motion,",
+        f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY} (UI/UX, motion,",
     ])
 
 
@@ -2723,6 +2755,12 @@ def run_self_test() -> None:
     parse_error_message = f"failed to parse doctor JSON after {context}"
 
     assert_no_ansi("plain output", cmd)
+    if build_plugin_inventory_summary({
+        "skills": [{"name": "a"}, {"name": "b"}],
+        "commands": [{"name": "c"}],
+        "agents": [],
+    }) != "2 skills, 1 command, 0 agents":
+        raise SystemExit("plugin inventory summary formatting self-test failed")
     expect_self_test_failure(
         lambda: assert_no_ansi("\x1b[31mred", cmd),
         expected="ANSI escape",
