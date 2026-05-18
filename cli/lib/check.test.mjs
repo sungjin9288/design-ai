@@ -37,6 +37,14 @@ const WARNING_ARTIFACT = `
 This output cites knowledge/PRINCIPLES.md and gives a concise recommendation with enough detail to review. It includes a contrast note but does not describe interaction details. Contrast is considered for the main foreground and background pair.
 `;
 
+const BAD_ARTIFACT = `
+# Palette draft
+
+TODO: fill in later.
+
+Use #3366ff for the main action and #ffffff for text.
+`;
+
 async function captureConsole(fn) {
   const stdout = [];
   const stderr = [];
@@ -128,13 +136,7 @@ test("checkArtifactContent passes a grounded accessible artifact", () => {
 
 test("checkArtifactContent fails unresolved markers and color without contrast ratio", () => {
   const report = checkArtifactContent({
-    content: `
-# Palette draft
-
-TODO: fill in later.
-
-Use #3366ff for the main action and #ffffff for text.
-    `,
+    content: BAD_ARTIFACT,
     filePath: "bad.md",
   });
 
@@ -185,6 +187,40 @@ test("runCheck strict treats warning reports as a failing exit code", async () =
     assert.equal(report.status, "warn");
     assert.equal(report.failures, 0);
     assert.equal(exitCode, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("runCheck fails failing reports even when strict is not enabled", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-command-fail-"));
+  try {
+    const artifactPath = path.join(root, "bad.md");
+    writeFileSync(artifactPath, BAD_ARTIFACT);
+
+    const { stdout, exitCode } = await captureConsole(() => runCheck([artifactPath, "--json"]));
+    const report = JSON.parse(stdout);
+
+    assert.equal(report.status, "fail");
+    assert.equal(report.failures > 0, true);
+    assert.equal(exitCode, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("runCheck issues-only human output hides passing checks", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-command-issues-only-"));
+  try {
+    const artifactPath = path.join(root, "warn.md");
+    writeFileSync(artifactPath, WARNING_ARTIFACT);
+
+    const { stdout, exitCode } = await captureConsole(() => runCheck([artifactPath, "--issues-only"]));
+
+    assert.match(stdout, /Status: warn/);
+    assert.match(stdout, /Keyboard and focus behavior/);
+    assert.doesNotMatch(stdout, /Meaningful artifact depth/);
+    assert.equal(exitCode, undefined);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
