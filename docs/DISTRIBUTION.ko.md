@@ -105,7 +105,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 npm run release:check
 ```
 
-이 명령은 CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요.
+이 명령은 CLI unit test, 7개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, `doctor --strict` human diagnostics, install/status/uninstall lifecycle 출력까지 포함해요.
 
 publish 워크플로가 끝난 뒤에는 공개 설치 경로도 확인하세요:
 
