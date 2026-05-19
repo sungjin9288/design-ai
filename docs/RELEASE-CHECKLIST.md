@@ -18,7 +18,7 @@ For pre-push Real-CI parity, run the broader local workflow gate:
 npm run ci:local
 ```
 
-This wraps `release:check`, then adds the GitHub workflow-only checks: Python `py_compile`, knowledge/docs/examples size budget, VS Code extension dependency install + compile + unit tests, `mkdocs build --clean`, and the MkDocs warning policy that allows only intentional `refs/` source-link warnings. If mkdocs is missing, install the docs dependencies first:
+This wraps `release:check`, then adds the GitHub workflow-only checks: Python `py_compile`, knowledge/docs/examples size budget, VS Code extension dependency install + compile + unit tests, docs workflow policy alignment, `mkdocs build --clean`, and the MkDocs warning policy that allows only intentional `refs/` source-link warnings. If mkdocs is missing, install the docs dependencies first:
 
 ```bash
 python3 -m pip install -r docs/requirements.txt

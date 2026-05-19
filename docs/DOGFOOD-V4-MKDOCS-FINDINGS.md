@@ -151,12 +151,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: added `tools/audit/local-ci.py --docs-only` and switched `.github/workflows/docs.yml` to use it. The workflow path filter now includes the shared docs build helper files.
 
+### 11. Workflow alignment needed a drift check
+
+**Found by**: reviewing how Phase 63 would be kept correct after future docs workflow edits.
+
+**Symptom**: The docs workflow had been aligned with local CI, but nothing would fail if a later edit reintroduced direct `mkdocs build --clean` or removed the helper paths from the workflow trigger.
+
+**Fix**: `tools/audit/local-ci.py` now checks `.github/workflows/docs.yml` for the shared `--docs-only` command and required path filters. The check runs in local CI, docs-only mode, and local CI self-test.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path and local CI checks that the workflow stays aligned.
 
 ## Performance
 

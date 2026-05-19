@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 64 — Docs workflow policy drift check (v4.13.0) ✓ shipped
+
+The docs deployment workflow alignment from Phase 63 is now enforced by local CI.
+
+### Added
+- `tools/audit/local-ci.py` checks `.github/workflows/docs.yml` for the shared `--docs-only` build path.
+- `tools/audit/local-ci.py --self-test` now covers passing and failing docs workflow policy fixtures.
+
+### Changed
+- `npm run ci:local` and `python3 -B tools/audit/local-ci.py --docs-only` now fail if the docs workflow calls `mkdocs build --clean` directly or omits shared docs helper paths from the workflow trigger.
+- Release checklist documentation now calls out docs workflow policy alignment as part of local CI.
+
+### Impact
+- Future workflow edits cannot silently bypass the non-`refs/` MkDocs warning policy.
+- Real-CI docs deployment remains aligned with local parity unless maintainers deliberately update the policy and its checks together.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Docs workflow policy is now an executable invariant rather than a manual review note.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 63 — Docs workflow uses local MkDocs policy (v4.13.0) ✓ shipped
 
 The GitHub Pages deployment workflow now runs through the same docs-only warning-policy path as local CI.

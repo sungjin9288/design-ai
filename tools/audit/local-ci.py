@@ -24,6 +24,12 @@ KNOWLEDGE_WARN_LINES = 150_000
 KNOWLEDGE_MAX_LINES = 200_000
 PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "tools/preview")
 LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
+DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
+DOCS_WORKFLOW_POLICY_RUN = "run: python3 -B tools/audit/local-ci.py --docs-only"
+DOCS_WORKFLOW_REQUIRED_PATHS = (
+    '      - "tools/audit/local-ci.py"',
+    '      - "tools/build-docs.sh"',
+)
 
 
 def run(command: list[str], *, cwd: Path = ROOT) -> None:
@@ -112,6 +118,25 @@ def run_docs_build() -> None:
     run(["./tools/build-docs.sh"])
     mkdocs_output = run_capture(["python3", "-m", "mkdocs", "build", "--clean"], echo=False)
     assert_mkdocs_warning_policy(mkdocs_output)
+
+
+def docs_workflow_policy_errors(text: str) -> list[str]:
+    errors: list[str] = []
+    if DOCS_WORKFLOW_POLICY_RUN not in text:
+        errors.append("docs workflow must run local-ci.py --docs-only")
+    if "run: mkdocs build --clean" in text:
+        errors.append("docs workflow must not call mkdocs build directly")
+    for required_path in DOCS_WORKFLOW_REQUIRED_PATHS:
+        if required_path not in text:
+            errors.append(f"docs workflow path filter missing {required_path.strip()}")
+    return errors
+
+
+def run_docs_workflow_policy_check(path: Path = DOCS_WORKFLOW) -> None:
+    errors = docs_workflow_policy_errors(path.read_text(encoding="utf-8"))
+    if errors:
+        raise SystemExit("docs workflow policy check failed:\n" + "\n".join(f"- {error}" for error in errors))
+    print("\nDocs workflow policy check passed", flush=True)
 
 
 def mkdocs_warning_lines(output: str) -> list[str]:
@@ -217,6 +242,36 @@ def run_self_test() -> int:
         else:
             raise SystemExit("self-test failed: non-refs mkdocs warning should raise SystemExit")
 
+        passing_workflow = "\n".join(
+            [
+                '      - "tools/audit/local-ci.py"',
+                '      - "tools/build-docs.sh"',
+                "      - name: Build site with warning policy",
+                f"        {DOCS_WORKFLOW_POLICY_RUN}",
+            ]
+        )
+        assert_condition(
+            docs_workflow_policy_errors(passing_workflow) == [],
+            "docs workflow fixture should pass when it uses docs-only policy",
+        )
+
+        failing_workflow = "\n".join(
+            [
+                "      - name: Build site",
+                "        run: mkdocs build --clean",
+            ]
+        )
+        workflow_errors = docs_workflow_policy_errors(failing_workflow)
+        assert_condition(
+            len(workflow_errors) == 4,
+            "docs workflow fixture should fail on direct mkdocs command and missing path filters",
+        )
+        assert_condition(
+            any("--docs-only" in error for error in workflow_errors),
+            "docs workflow failure should mention docs-only policy",
+        )
+        run_docs_workflow_policy_check()
+
     print("Local CI self-test passed")
     return 0
 
@@ -242,6 +297,7 @@ def main() -> int:
         return run_self_test()
 
     if args.docs_only:
+        run_docs_workflow_policy_check()
         run_docs_build()
         print("\nDocs-only MkDocs policy check passed", flush=True)
         return 0
@@ -250,6 +306,7 @@ def main() -> int:
         run_release_check()
     run_python_compile()
     run_size_budget()
+    run_docs_workflow_policy_check()
     if not args.skip_vscode:
         run_vscode_checks()
     if not args.skip_docs:

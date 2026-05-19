@@ -17,6 +17,37 @@ MkDocs warning output now contains no non-`refs/` warnings in the local build.
 The local CI parity gate now enforces that same MkDocs warning policy so new non-`refs/` docs warnings fail before push.
 Successful local CI docs runs now summarize MkDocs warning policy instead of printing the full refs warning stream.
 The GitHub Pages docs workflow now uses the same docs-only MkDocs warning-policy path as local CI.
+Local CI now checks that the docs workflow keeps using that shared docs-only policy path.
+
+### Phase 64 — Docs workflow policy drift check
+
+#### Added
+- Added a docs workflow policy check to `tools/audit/local-ci.py`.
+- Added self-test fixtures for passing and failing docs workflow policy shapes.
+
+#### Changed
+- `npm run ci:local`, `python3 -B tools/audit/local-ci.py --docs-only`, and `npm run ci:local:self-test` now fail if `.github/workflows/docs.yml` stops using `local-ci.py --docs-only`, calls `mkdocs build --clean` directly, or omits the shared docs helper paths from its trigger filter.
+- Release checklist documentation now notes that local CI verifies docs workflow policy alignment.
+
+#### Impact
+- The Phase 63 workflow alignment is now guarded against future drift.
+- Maintainers can edit `docs.yml`, `tools/audit/local-ci.py`, or `tools/build-docs.sh` with a local check that catches mismatched docs deploy wiring before push.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Docs workflow policy alignment is no longer a one-time review; it is an executable local invariant.
 
 ### Phase 63 — Docs workflow uses local MkDocs policy
 
