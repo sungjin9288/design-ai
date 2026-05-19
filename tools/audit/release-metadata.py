@@ -279,6 +279,19 @@ def assert_condition(condition: bool, message: str) -> None:
         raise SystemExit(f"self-test failed: {message}")
 
 
+def format_human_summary(summary: dict) -> str:
+    if summary["errors"]:
+        return "\n".join(["Release metadata check failed:"] + [f"- {error}" for error in summary["errors"]])
+
+    audit_count = summary["audit_count"] if summary["audit_count"] is not None else "unknown"
+    return (
+        "Release metadata check passed: "
+        f"v{summary['version']}, "
+        f"{audit_count} audits, "
+        f"CHANGELOG {summary['changelog_date']}"
+    )
+
+
 def run_self_test() -> int:
     package_json = {"version": "1.2.3"}
     plugin_json = {"version": "1.2.3"}
@@ -345,6 +358,10 @@ warnings at the accepted baseline.
         passing["release_policy_docs_checked"] == list(REQUIRED_RELEASE_POLICY_DOC_LABELS),
         "complete fixture should report the required release policy docs in order",
     )
+    assert_condition(
+        format_human_summary(passing) == "Release metadata check passed: v1.2.3, 8 audits, CHANGELOG 2026-05",
+        "human formatter should preserve the passing release metadata summary",
+    )
 
     failing = release_metadata_summary(
         package_json=package_json,
@@ -362,6 +379,15 @@ warnings at the accepted baseline.
     assert_condition("CHANGELOG.md top entry audit count mismatch" in joined_errors, "stale audit count should fail")
     assert_condition("docs/ROADMAP.md is missing a current release entry" in joined_errors, "missing roadmap entry should fail")
     assert_condition("docs/DISTRIBUTION.md" in joined_errors, "distribution warning policy drift should fail")
+    failing_human_output = format_human_summary(failing)
+    assert_condition(
+        failing_human_output.startswith("Release metadata check failed:\n- "),
+        "human formatter should print failed summaries as bullet-prefixed errors",
+    )
+    assert_condition(
+        "- plugin manifest version mismatch: 1.2.2 != 1.2.3" in failing_human_output,
+        "human formatter should include structured validation errors",
+    )
 
     command_drift = release_metadata_summary(
         package_json=package_json,
@@ -560,17 +586,8 @@ def main() -> int:
 
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))
-    elif summary["errors"]:
-        print("Release metadata check failed:")
-        for error in summary["errors"]:
-            print(f"- {error}")
     else:
-        print(
-            "Release metadata check passed: "
-            f"v{summary['version']}, "
-            f"{summary['audit_count']} audits, "
-            f"CHANGELOG {summary['changelog_date']}"
-        )
+        print(format_human_summary(summary))
 
     return 1 if summary["errors"] else 0
 

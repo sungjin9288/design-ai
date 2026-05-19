@@ -33,6 +33,35 @@ Release metadata now rejects release policy docs checked in a non-deterministic 
 Release metadata now reports missing release policy doc files as structured errors instead of tracebacks.
 Release metadata now reports missing or invalid core release inputs as structured errors instead of tracebacks.
 Release metadata now reports audit-count source failures as structured errors instead of exiting early.
+Release metadata now self-tests its human pass/fail output formatter.
+
+### Phase 80 — Release metadata human output formatter guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now formats non-JSON output through `format_human_summary()`.
+- `npm run release:metadata:self-test` now asserts the passing summary string and failure bullet-prefix output.
+- `docs/RELEASE-CHECKLIST.md` now describes structured bullet errors for release metadata failures.
+
+#### Impact
+- Human release metadata output is now covered by the same self-test chain as the structured loader and validation guards.
+- Future changes cannot silently remove the failed-output header or bullet-prefixed structured errors.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata now preserves both machine-readable JSON and reviewer-friendly human output as explicit contracts.
 
 ### Phase 79 — Release metadata audit-count loader guard added
 

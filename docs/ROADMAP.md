@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 80 — Release metadata human output formatter guard added (v4.13.0) ✓ shipped
+
+Release metadata now self-tests its non-JSON output contract.
+
+### Changed
+- `tools/audit/release-metadata.py` now uses `format_human_summary()` for human pass/fail output.
+- `npm run release:metadata:self-test` now checks the passing summary string and failed bullet output.
+- `docs/RELEASE-CHECKLIST.md` now describes structured bullet errors for metadata failures.
+
+### Impact
+- Human release metadata output can be refactored without losing the failed-output header or structured bullet lines.
+- JSON output remains unchanged, while reviewer-facing terminal output now has explicit regression coverage.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata keeps a tested contract for both automation output and maintainer terminal output.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 79 — Release metadata audit-count loader guard added (v4.13.0) ✓ shipped
 
 Release metadata now reports audit-count source failures as structured errors.
