@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 65 — Docs workflow policy parser tightened (v4.13.0) ✓ shipped
+
+The docs workflow drift check now validates extracted workflow fields instead of broad file substrings.
+
+### Changed
+- `tools/audit/local-ci.py` now parses one-line `run:` commands from workflow text.
+- `tools/audit/local-ci.py` now parses entries under `paths:` and checks required docs helper paths from that list.
+- The expected docs workflow command and path constants are stored separately.
+
+### Impact
+- The docs workflow policy check is less sensitive to indentation and unrelated text.
+- Failure messages remain focused on the actual invariant: missing `--docs-only`, direct MkDocs build use, or missing helper path filters.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Workflow policy enforcement can evolve without adding a ninth repository audit or relying on fragile whole-file substring checks.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 64 — Docs workflow policy drift check (v4.13.0) ✓ shipped
 
 The docs deployment workflow alignment from Phase 63 is now enforced by local CI.

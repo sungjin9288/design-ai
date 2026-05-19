@@ -25,10 +25,10 @@ KNOWLEDGE_MAX_LINES = 200_000
 PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "tools/preview")
 LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
-DOCS_WORKFLOW_POLICY_RUN = "run: python3 -B tools/audit/local-ci.py --docs-only"
+DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
 DOCS_WORKFLOW_REQUIRED_PATHS = (
-    '      - "tools/audit/local-ci.py"',
-    '      - "tools/build-docs.sh"',
+    "tools/audit/local-ci.py",
+    "tools/build-docs.sh",
 )
 
 
@@ -120,15 +120,67 @@ def run_docs_build() -> None:
     assert_mkdocs_warning_policy(mkdocs_output)
 
 
+def unquote_yaml_scalar(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    return value
+
+
+def yaml_indent(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
+def workflow_run_commands(text: str) -> list[str]:
+    commands: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("run:"):
+            commands.append(unquote_yaml_scalar(stripped.removeprefix("run:").strip()))
+    return commands
+
+
+def workflow_path_entries(text: str) -> list[str]:
+    entries: list[str] = []
+    in_paths = False
+    paths_indent = 0
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        indent = yaml_indent(line)
+        if stripped == "paths:":
+            in_paths = True
+            paths_indent = indent
+            continue
+
+        if not in_paths:
+            continue
+
+        if indent <= paths_indent and not stripped.startswith("- "):
+            in_paths = False
+            continue
+
+        if stripped.startswith("- "):
+            entries.append(unquote_yaml_scalar(stripped.removeprefix("- ").strip()))
+
+    return entries
+
+
 def docs_workflow_policy_errors(text: str) -> list[str]:
     errors: list[str] = []
-    if DOCS_WORKFLOW_POLICY_RUN not in text:
+    run_commands = workflow_run_commands(text)
+    path_entries = workflow_path_entries(text)
+
+    if DOCS_WORKFLOW_POLICY_COMMAND not in run_commands:
         errors.append("docs workflow must run local-ci.py --docs-only")
-    if "run: mkdocs build --clean" in text:
+    if any("mkdocs build --clean" in command for command in run_commands):
         errors.append("docs workflow must not call mkdocs build directly")
     for required_path in DOCS_WORKFLOW_REQUIRED_PATHS:
-        if required_path not in text:
-            errors.append(f"docs workflow path filter missing {required_path.strip()}")
+        if required_path not in path_entries:
+            errors.append(f"docs workflow path filter missing {required_path}")
     return errors
 
 
@@ -244,11 +296,24 @@ def run_self_test() -> int:
 
         passing_workflow = "\n".join(
             [
+                "    paths:",
                 '      - "tools/audit/local-ci.py"',
                 '      - "tools/build-docs.sh"',
+                "  workflow_dispatch:",
                 "      - name: Build site with warning policy",
-                f"        {DOCS_WORKFLOW_POLICY_RUN}",
+                f"        run: {DOCS_WORKFLOW_POLICY_COMMAND}",
             ]
+        )
+        assert_condition(
+            workflow_path_entries(passing_workflow) == [
+                "tools/audit/local-ci.py",
+                "tools/build-docs.sh",
+            ],
+            "workflow path parser should read quoted path entries",
+        )
+        assert_condition(
+            workflow_run_commands(passing_workflow) == [DOCS_WORKFLOW_POLICY_COMMAND],
+            "workflow run parser should read one-line run commands",
         )
         assert_condition(
             docs_workflow_policy_errors(passing_workflow) == [],

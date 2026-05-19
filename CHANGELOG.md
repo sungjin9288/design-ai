@@ -18,6 +18,33 @@ The local CI parity gate now enforces that same MkDocs warning policy so new non
 Successful local CI docs runs now summarize MkDocs warning policy instead of printing the full refs warning stream.
 The GitHub Pages docs workflow now uses the same docs-only MkDocs warning-policy path as local CI.
 Local CI now checks that the docs workflow keeps using that shared docs-only policy path.
+Docs workflow policy checks now inspect parsed `run:` commands and `paths:` entries instead of relying on broad substring matches.
+
+### Phase 65 — Docs workflow policy parser tightened
+
+#### Changed
+- `tools/audit/local-ci.py` now extracts one-line workflow `run:` commands and `paths:` entries before applying the docs workflow policy check.
+- The docs workflow policy constants now track the expected command and required paths separately.
+
+#### Impact
+- The drift check is less brittle because it validates the workflow shape being guarded rather than searching for indentation-specific snippets across the full file.
+- Future workflow edits should produce clearer failure messages for missing `--docs-only`, direct MkDocs command use, or missing helper path filters.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Docs workflow policy enforcement is easier to maintain without changing the 8-audit release gate.
 
 ### Phase 64 — Docs workflow policy drift check
 
