@@ -22,6 +22,30 @@ Docs workflow policy checks now inspect parsed `run:` commands and `paths:` entr
 Docs deployment now re-runs when Korean top-level site entries change.
 Local CI now also guards the docs workflow corpus directory path filters.
 MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
+Korean distribution guidance now describes the same MkDocs refs warning baseline cap as the English release docs.
+
+### Phase 69 — Korean distribution warning policy guidance synced
+
+#### Changed
+- `docs/DISTRIBUTION.ko.md` now describes the Phase 68 MkDocs warning policy: non-`refs/` warnings are blocked, and refs-only warnings must stay within the accepted baseline cap.
+
+#### Impact
+- Korean release/publish guidance now matches the English distribution checklist before Real-CI verification.
+- Maintainers using the Korean docs get the same warning-policy expectation when preparing `npm run ci:local`.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release guidance stays bilingual and consistent as the local CI docs policy continues to harden.
 
 ### Phase 68 — MkDocs refs warning baseline capped
 

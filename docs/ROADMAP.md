@@ -51,6 +51,36 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 69 — Korean distribution warning policy guidance synced (v4.13.0) ✓ shipped
+
+The Korean distribution guide now matches the Phase 68 MkDocs warning policy.
+
+### Changed
+- `docs/DISTRIBUTION.ko.md` now states that `npm run ci:local` blocks non-`refs/` MkDocs warnings and requires refs-only warnings to stay within the accepted baseline cap.
+
+### Impact
+- Korean release guidance now matches the English distribution docs before Real-CI verification.
+- Maintainers using Korean docs get the same expectation for the docs warning policy.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release checklist stays bilingual as the local docs policy continues to harden.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 68 — MkDocs refs warning baseline capped (v4.13.0) ✓ shipped
 
 The local MkDocs warning policy now caps the intentional `refs/` warning stream at the accepted baseline.
