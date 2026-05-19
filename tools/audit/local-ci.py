@@ -27,6 +27,12 @@ LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
 DOCS_WORKFLOW_REQUIRED_PATHS = (
+    "knowledge/**",
+    "examples/**",
+    "skills/**",
+    "agents/**",
+    "commands/**",
+    "docs/**",
     "AGENTS.md",
     "AGENTS.ko.md",
     "CLAUDE.md",

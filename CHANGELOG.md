@@ -20,6 +20,32 @@ The GitHub Pages docs workflow now uses the same docs-only MkDocs warning-policy
 Local CI now checks that the docs workflow keeps using that shared docs-only policy path.
 Docs workflow policy checks now inspect parsed `run:` commands and `paths:` entries instead of relying on broad substring matches.
 Docs deployment now re-runs when Korean top-level site entries change.
+Local CI now also guards the docs workflow corpus directory path filters.
+
+### Phase 67 — Docs workflow corpus path invariant expanded
+
+#### Changed
+- `tools/audit/local-ci.py` now requires the docs workflow path filter to keep the corpus directory globs used by the MkDocs site: `knowledge/**`, `examples/**`, `skills/**`, `agents/**`, `commands/**`, and `docs/**`.
+
+#### Impact
+- Future edits to `.github/workflows/docs.yml` cannot silently drop the main corpus directories from the GitHub Pages deploy trigger.
+- The docs workflow trigger invariant now covers both corpus directories and top-level symlinked site inputs.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Docs deployment trigger coverage now matches the MkDocs site inputs more completely before Real-CI verification.
 
 ### Phase 66 — Korean top-level docs trigger Pages deploy
 

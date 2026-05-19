@@ -51,6 +51,38 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 67 — Docs workflow corpus path invariant expanded (v4.13.0) ✓ shipped
+
+The local docs workflow drift check now guards all main corpus directory triggers.
+
+### Changed
+- `tools/audit/local-ci.py` now requires the docs workflow path filter to include `knowledge/**`, `examples/**`, `skills/**`, `agents/**`, `commands/**`, and `docs/**`.
+
+### Impact
+- Future workflow edits cannot silently stop deploying changes to the main MkDocs corpus directories.
+- The docs workflow trigger invariant now covers corpus directories, top-level site files, shared helper scripts, and the workflow file itself.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- GitHub Pages trigger coverage stays aligned with the directories symlinked into the MkDocs site.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 66 — Korean top-level docs trigger Pages deploy (v4.13.0) ✓ shipped
 
 The GitHub Pages workflow now watches the Korean top-level files that are symlinked into the MkDocs source tree.

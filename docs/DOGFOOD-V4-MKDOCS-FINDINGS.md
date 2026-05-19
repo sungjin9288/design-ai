@@ -175,12 +175,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: added both Korean top-level files to the docs workflow path filter and expanded the local CI drift check so top-level site inputs remain required workflow paths.
 
+### 14. Corpus directory triggers should be part of the invariant too
+
+**Found by**: reviewing the workflow path-filter drift check after adding top-level site inputs.
+
+**Symptom**: The actual workflow already watched `knowledge/**`, `examples/**`, `skills/**`, `agents/**`, `commands/**`, and `docs/**`, but local CI did not treat those corpus directory globs as required policy entries.
+
+**Fix**: expanded `tools/audit/local-ci.py` required docs workflow paths to include the main corpus directory globs.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path, watches Korean top-level site inputs, and local CI checks that the workflow stays aligned by inspecting workflow commands and path entries.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path, watches corpus directories and Korean top-level site inputs, and local CI checks that the workflow stays aligned by inspecting workflow commands and path entries.
 
 ## Performance
 
