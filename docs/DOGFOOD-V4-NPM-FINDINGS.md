@@ -100,7 +100,7 @@ The smoke path sets `NO_COLOR=1` and checks captured CLI output for ANSI escape 
 
 ### 9. Release metadata drift is covered
 
-`npm run release:metadata` now verifies package/plugin version alignment, the top CHANGELOG entry, the current ROADMAP phase, required release sections, the documented eight-audit count, and the release-facing docs' `ci:local` MkDocs warning-policy baseline guidance across README, RELEASE-CHECKLIST, and Distribution docs. This prevents a release from passing when the implementation version and release narrative drift apart, or when English/Korean release guidance loses the docs warning-policy contract or its executable pre-push command.
+`npm run release:metadata` now verifies package/plugin version alignment, the top CHANGELOG entry, the current ROADMAP phase, required release sections, the documented eight-audit count, and the release-facing docs' `ci:local` MkDocs warning-policy baseline guidance across README, RELEASE-CHECKLIST, and Distribution docs. It also fails if a required release policy doc drops out of the checked set. This prevents a release from passing when the implementation version and release narrative drift apart, or when English/Korean release guidance loses the docs warning-policy contract, its executable pre-push command, or coverage membership.
 
 ## Issues surfaced
 

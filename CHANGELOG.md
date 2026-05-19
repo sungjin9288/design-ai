@@ -27,6 +27,35 @@ Release metadata now checks that English and Korean distribution docs keep the M
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+Release metadata now fails if a required release policy doc drops out of the checked set.
+
+### Phase 74 — Release policy docs coverage set guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now keeps the required release policy docs in `REQUIRED_RELEASE_POLICY_DOC_LABELS` and derives path checks from that set.
+- `npm run release:metadata:self-test` now fails if a required release policy doc, such as `README.ko.md`, drops out of the checked set.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that release metadata guards both policy content and policy coverage membership.
+
+#### Impact
+- Maintainers cannot accidentally remove a release-facing policy doc from metadata coverage without a failing release metadata check.
+- The broader Phase 72/73 guard now protects both the checked docs' contents and the checked docs list itself.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release policy metadata coverage is now fail-closed for both document membership and policy wording.
 
 ### Phase 73 — Release policy docs ci:local command guard added
 

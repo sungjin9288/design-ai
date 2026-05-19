@@ -23,12 +23,15 @@ PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 ROADMAP = ROOT / "docs" / "ROADMAP.md"
 RUN_ALL = ROOT / "tools" / "audit" / "run-all.py"
-RELEASE_POLICY_DOC_PATHS = (
-    ("README.md", ROOT / "README.md"),
-    ("README.ko.md", ROOT / "README.ko.md"),
-    ("docs/RELEASE-CHECKLIST.md", ROOT / "docs" / "RELEASE-CHECKLIST.md"),
-    ("docs/DISTRIBUTION.md", ROOT / "docs" / "DISTRIBUTION.md"),
-    ("docs/DISTRIBUTION.ko.md", ROOT / "docs" / "DISTRIBUTION.ko.md"),
+REQUIRED_RELEASE_POLICY_DOC_LABELS = (
+    "README.md",
+    "README.ko.md",
+    "docs/RELEASE-CHECKLIST.md",
+    "docs/DISTRIBUTION.md",
+    "docs/DISTRIBUTION.ko.md",
+)
+RELEASE_POLICY_DOC_PATHS = tuple(
+    (label, ROOT / label) for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
 )
 
 CHANGELOG_HEADER_RE = re.compile(
@@ -121,6 +124,14 @@ def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
+    return [
+        f"release policy docs missing required file: {label}"
+        for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
+        if label not in release_policy_docs
+    ]
+
+
 def release_metadata_summary(
     *,
     package_json: dict,
@@ -182,6 +193,7 @@ def release_metadata_summary(
         )
         errors.extend(audit_count_errors("docs/ROADMAP.md current entry", roadmap_entry, audit_count))
 
+    errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
         errors.extend(release_warning_policy_doc_errors(label, text))
 
@@ -264,6 +276,10 @@ warnings at the accepted baseline.
         audit_count=8,
     )
     assert_condition(passing["errors"] == [], "complete fixture should pass without errors")
+    assert_condition(
+        passing["release_policy_docs_checked"] == list(REQUIRED_RELEASE_POLICY_DOC_LABELS),
+        "complete fixture should report the required release policy docs in order",
+    )
 
     failing = release_metadata_summary(
         package_json=package_json,
@@ -295,6 +311,22 @@ warnings at the accepted baseline.
     )
     command_drift_errors = "\n".join(command_drift["errors"])
     assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
+
+    missing_docs = dict(release_policy_docs)
+    missing_docs.pop("README.ko.md")
+    missing_doc_summary = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=missing_docs,
+        audit_count=8,
+    )
+    missing_doc_errors = "\n".join(missing_doc_summary["errors"])
+    assert_condition(
+        "release policy docs missing required file: README.ko.md" in missing_doc_errors,
+        "release metadata should fail if a required policy doc drops out of coverage",
+    )
 
     run_all_fixture = """AUDITS: tuple[AuditSpec, ...] = (
     AuditSpec(name="frontmatter", script="frontmatter-check.py"),

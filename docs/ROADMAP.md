@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 74 — Release policy docs coverage set guard added (v4.13.0) ✓ shipped
+
+Release metadata now guards the required policy-doc coverage set itself.
+
+### Changed
+- `tools/audit/release-metadata.py` now stores the required release policy docs in `REQUIRED_RELEASE_POLICY_DOC_LABELS`.
+- `RELEASE_POLICY_DOC_PATHS` is derived from that required set.
+- `npm run release:metadata:self-test` now covers a missing-doc failure when `README.ko.md` is removed from the policy docs map.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that metadata checks policy-doc membership as well as policy wording.
+
+### Impact
+- A required policy doc cannot silently disappear from release metadata coverage.
+- The Phase 72/73 release-facing docs guard now fails closed for both coverage membership and command/policy content.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains reliable even as the list of release-facing docs evolves.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 73 — Release policy docs ci:local command guard added (v4.13.0) ✓ shipped
 
 Release metadata now guards the executable command in release-facing policy docs.
