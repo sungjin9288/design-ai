@@ -152,3 +152,7 @@ export function parseSearchArgs(args) {
     dirs: out.dirs.length > 0 ? out.dirs : DEFAULT_SEARCH_DIRS,
   };
 }
+
+export function formatSearchJson(payload) {
+  return JSON.stringify(payload, null, 2);
+}

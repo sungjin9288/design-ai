@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 87 — Search command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai search` now self-tests its JSON output contract for corpus search hits and empty result payloads.
+
+### Changed
+- `cli/lib/search.mjs` now uses `formatSearchJson()` as the shared formatter for corpus search JSON output.
+- `cli/commands/search.mjs` now sends `--json` output through that formatter.
+- `cli/lib/search.test.mjs` now checks JSON round-trip behavior, top-level payload key order, hit-entry key order, empty-result payload order, and readable Korean previews.
+
+### Impact
+- Automation that uses `design-ai search --json` can rely on stable `query` and `hits` payload order.
+- Korean search previews stay readable instead of being escaped in corpus search JSON output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai search` keeps machine-readable corpus discovery refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 86 — Examples command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai examples` now self-tests its JSON output contract for query-driven and route-biased worked-example discovery.

@@ -13,6 +13,7 @@ import path from "node:path";
 
 import {
   buildPreview,
+  formatSearchJson,
   parseSearchArgs,
   searchCorpus,
   walkMarkdown,
@@ -89,6 +90,56 @@ test("searchCorpus respects limit", () => {
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test("formatSearchJson preserves search payload order and readable Korean preview", () => {
+  const tmp = mkdtempSync(path.join(tmpdir(), "design-ai-search-"));
+  try {
+    mkdirSync(path.join(tmp, "knowledge"), { recursive: true });
+    writeFileSync(path.join(tmp, "knowledge", "korean-button.md"), "# 한국어 버튼\n\n버튼 검색 결과는 readable JSON이어야 합니다.");
+
+    const hits = searchCorpus({
+      query: "버튼",
+      designAiPath: tmp,
+      dirs: ["knowledge"],
+      limit: 1,
+    });
+    const formatted = formatSearchJson({
+      query: "버튼",
+      hits,
+    });
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), ["query", "hits"]);
+    assert.deepEqual(Object.keys(parsed.hits[0]), [
+      "file",
+      "lineNumber",
+      "relPath",
+      "preview",
+    ]);
+    assert.equal(parsed.query, "버튼");
+    assert.equal(parsed.hits[0].lineNumber, 1);
+    assert.equal(parsed.hits[0].relPath, path.join("knowledge", "korean-button.md"));
+    assert.ok(parsed.hits[0].preview.includes("한국어 버튼"));
+    assert.match(formatted, /"hits": \[\n    \{\n      "file": "/);
+    assert.ok(formatted.includes("한국어 버튼"));
+    assert.ok(!formatted.includes("\\u"));
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("formatSearchJson preserves empty search result payload order", () => {
+  const formatted = formatSearchJson({
+    query: "missing",
+    hits: [],
+  });
+  const parsed = JSON.parse(formatted);
+
+  assert.deepEqual(Object.keys(parsed), ["query", "hits"]);
+  assert.equal(parsed.query, "missing");
+  assert.deepEqual(parsed.hits, []);
+  assert.match(formatted, /"query": "missing",\n  "hits": \[\]/);
 });
 
 test("parseSearchArgs supports query, limit, dirs, and json", () => {

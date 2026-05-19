@@ -2,7 +2,7 @@
 
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { dim, header, info, warn } from "../lib/log.mjs";
-import { parseSearchArgs, searchCorpus } from "../lib/search.mjs";
+import { formatSearchJson, parseSearchArgs, searchCorpus } from "../lib/search.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai search <query> [--limit N] [--dir kind] [--json]\n");
@@ -42,7 +42,7 @@ export async function runSearch(args) {
   });
 
   if (parsed.json) {
-    console.log(JSON.stringify({ query: parsed.query, hits }, null, 2));
+    console.log(formatSearchJson({ query: parsed.query, hits }));
     return;
   }
 
