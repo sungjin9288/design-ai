@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 58 — MkDocs-safe Ant Design token swatches (v4.13.0) ✓ shipped
+
+The generated Ant Design token reference no longer produces false MkDocs hash-link warnings for preset palette swatches.
+
+### Added
+- `tools/extractors/ant_design_tokens.py --self-test` validates seed parsing, preset parsing, swatch rendering, and decorative `aria-hidden` output.
+- `npm run tokens:ant-design:self-test` exposes the extractor self-test directly.
+- `npm run release:self-test` now includes the Ant Design token extractor self-test.
+
+### Changed
+- Ant Design preset palette swatches now render as inline decorative HTML instead of `![](#HEX)` image links.
+- `knowledge/design-tokens/ant-design.md` was regenerated from the extractor.
+- `docs/DOGFOOD-V4-MKDOCS-FINDINGS.md` now records that the old hex-anchor warning class is fixed.
+
+### Impact
+- MkDocs no longer emits false internal-anchor messages for Ant Design colors such as `#1677FF`.
+- Remaining docs-build warnings are easier to review because generated color swatch noise is gone.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/extractors/ant_design_tokens.py --self-test`
+- `python3 -B tools/extractors/ant_design_tokens.py`
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Real-CI docs logs should be more readable when this branch is pushed, because one known generated-warning class has been removed at the source.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Continue targeted coverage only when upstream adds product-relevant primitives.
+
 ## Phase 57 — Local CI parity self-test coverage (v4.13.0) ✓ shipped
 
 The new local CI parity gate now has its own lightweight self-test and participates in the existing release self-test chain.

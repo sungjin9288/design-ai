@@ -103,14 +103,21 @@ These are DRAFT-banner specs but the API tables are accurate and the cross-refer
 
 This matters because the dogfood deliverable is itself an example for adopters — citing fake paths would mislead them.
 
+### 5. Generated Ant Design swatches looked like hash links
+
+**Found by**: mkdocs build log review after adding the local CI parity gate.
+
+**Symptom**: `knowledge/design-tokens/ant-design.md` rendered preset swatches as `![](#HEX)`. MkDocs treated those values as internal anchor links and reported false link messages for colors like `#1677FF`.
+
+**Fix**: changed `tools/extractors/ant_design_tokens.py` to emit decorative inline HTML swatches with `aria-hidden="true"`, regenerated the token reference, and added `tools/extractors/ant_design_tokens.py --self-test` to prevent the hash-image pattern from returning.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
-- **~150 warnings: `#1677FF`, `#722ED1` etc. anchor links** — Ant Design tokens spec uses hex codes inline; mkdocs misreads as anchor links. Cosmetic only; doesn't break the site. Could be fixed with `attr_list` extension or by escaping the `#` differently.
 - **~70 warnings: `.py`, `.yml`, `.ko.md` files referenced from doc but not in nav** — files exist in repo, just not promoted to mkdocs-tracked content. Acceptable for repo-local utility links.
 
-Total remaining warnings: 631. All surveyed; none blocking.
+Total remaining link warnings in the latest local build: 681. The Ant Design color-anchor class is now 0; remaining warnings are repo-local reference links or files intentionally outside the MkDocs nav.
 
 ## Performance
 

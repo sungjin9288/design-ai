@@ -9,6 +9,7 @@ Idempotent. Re-run after `git -C refs/ant-design pull`.
 """
 from __future__ import annotations
 
+import argparse
 import re
 from datetime import date
 from pathlib import Path
@@ -17,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "refs/ant-design/components/theme/themes/seed.ts"
 PRESET_SOURCE = ROOT / "refs/ant-design/components/theme/themes/seed.ts"
 OUT = ROOT / "knowledge/design-tokens/ant-design.md"
+SWATCH_STYLE = (
+    "display:inline-block;width:0.875rem;height:0.875rem;"
+    "border-radius:999px;border:1px solid rgba(0,0,0,.18);"
+    "vertical-align:-0.125em;"
+)
 
 
 def parse_seed_tokens(text: str) -> dict[str, str]:
@@ -87,7 +93,10 @@ def render(tokens: dict[str, str], presets: dict[str, str]) -> str:
 
     preset_rows = ["| Name | Hex | Swatch |", "| --- | --- | --- |"]
     for name, hex_v in presets.items():
-        preset_rows.append(f"| {name} | `{hex_v}` | ![]({hex_v}) |")
+        preset_rows.append(
+            f'| {name} | `{hex_v}` | <span aria-hidden="true" '
+            f'style="{SWATCH_STYLE}background-color:{hex_v};"></span> |'
+        )
     preset_table = "\n".join(preset_rows) + "\n"
 
     return f"""---
@@ -161,7 +170,49 @@ If your project does not use `antd` but you want the same ramp model:
 """
 
 
-def main() -> None:
+def assert_condition(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(f"ant-design token self-test failed: {message}")
+
+
+def run_self_test() -> int:
+    sample = """
+const defaultPresetColors = {
+  blue: '#1677FF',
+  green: '#52C41A',
+};
+
+const seedToken = {
+  colorPrimary: '#1677ff',
+  fontSize: 14,
+  motion: true,
+  sizeUnit: 4,
+  borderRadius: 6,
+  lineWidth: 1,
+};
+"""
+    tokens = parse_seed_tokens(sample)
+    presets = parse_preset_colors(sample)
+    output = render(tokens, presets)
+
+    assert_condition(tokens["colorPrimary"] == "'#1677ff'", "seed color should parse")
+    assert_condition(presets["blue"] == "#1677FF", "preset color should parse")
+    assert_condition("![](#" not in output, "swatch output should not create hash image links")
+    assert_condition("background-color:#1677FF" in output, "swatch should render as inline HTML")
+    assert_condition('aria-hidden="true"' in output, "decorative swatch should be hidden from assistive tech")
+
+    print("Ant Design token extractor self-test passed")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--self-test", action="store_true", help="Run local parser/render checks.")
+    args = parser.parse_args()
+
+    if args.self_test:
+        return run_self_test()
+
     if not SOURCE.exists():
         raise SystemExit(f"Source not found: {SOURCE}")
     text = SOURCE.read_text(encoding="utf-8")
@@ -170,7 +221,8 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(render(tokens, presets), encoding="utf-8")
     print(f"  wrote {OUT.relative_to(ROOT)} ({len(tokens)} tokens, {len(presets)} presets)")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

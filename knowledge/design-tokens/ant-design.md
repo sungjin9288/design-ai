@@ -33,19 +33,19 @@ Ant Design ships 12 preset color families. Each anchor below is the "primary" hu
 
 | Name | Hex | Swatch |
 | --- | --- | --- |
-| blue | `#1677FF` | ![](#1677FF) |
-| purple | `#722ED1` | ![](#722ED1) |
-| cyan | `#13C2C2` | ![](#13C2C2) |
-| green | `#52C41A` | ![](#52C41A) |
-| magenta | `#EB2F96` | ![](#EB2F96) |
-| pink | `#EB2F96` | ![](#EB2F96) |
-| red | `#F5222D` | ![](#F5222D) |
-| orange | `#FA8C16` | ![](#FA8C16) |
-| yellow | `#FADB14` | ![](#FADB14) |
-| volcano | `#FA541C` | ![](#FA541C) |
-| geekblue | `#2F54EB` | ![](#2F54EB) |
-| gold | `#FAAD14` | ![](#FAAD14) |
-| lime | `#A0D911` | ![](#A0D911) |
+| blue | `#1677FF` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#1677FF;"></span> |
+| purple | `#722ED1` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#722ED1;"></span> |
+| cyan | `#13C2C2` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#13C2C2;"></span> |
+| green | `#52C41A` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#52C41A;"></span> |
+| magenta | `#EB2F96` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#EB2F96;"></span> |
+| pink | `#EB2F96` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#EB2F96;"></span> |
+| red | `#F5222D` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#F5222D;"></span> |
+| orange | `#FA8C16` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#FA8C16;"></span> |
+| yellow | `#FADB14` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#FADB14;"></span> |
+| volcano | `#FA541C` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#FA541C;"></span> |
+| geekblue | `#2F54EB` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#2F54EB;"></span> |
+| gold | `#FAAD14` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#FAAD14;"></span> |
+| lime | `#A0D911` | <span aria-hidden="true" style="display:inline-block;width:0.875rem;height:0.875rem;border-radius:999px;border:1px solid rgba(0,0,0,.18);vertical-align:-0.125em;background-color:#A0D911;"></span> |
 
 
 ## Typography

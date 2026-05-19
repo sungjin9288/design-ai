@@ -11,6 +11,34 @@ The cross-source conflict checker now supports summary-only drift triage and a l
 Korean maintenance docs now describe the same 8-audit gate and drift review workflow as the English contributor docs.
 Push-readiness now has a local CI parity command and GitHub Actions cache paths are aligned with the actual VS Code extension lockfile.
 The local CI parity gate now has a lightweight self-test wired into the release self-test chain.
+Ant Design token swatches no longer create MkDocs hash-link noise, and the extractor now has a release self-test for that renderer.
+
+### Phase 58 — MkDocs-safe Ant Design token swatches
+
+#### Added
+- Added `tools/extractors/ant_design_tokens.py --self-test` to validate seed parsing, preset parsing, MkDocs-safe swatch rendering, and decorative `aria-hidden` output.
+- Added `npm run tokens:ant-design:self-test` and wired it into `npm run release:self-test`.
+
+#### Changed
+- Regenerated `knowledge/design-tokens/ant-design.md` so preset palette swatches render as inline decorative HTML instead of `![](#HEX)` image links.
+- Updated the v4 MkDocs dogfood notes to remove the Ant Design hex-anchor warning from the accepted-warning list.
+
+#### Impact
+- MkDocs no longer reports false internal-anchor messages for Ant Design preset palette colors such as `#1677FF`.
+- Future extractor changes are less likely to reintroduce hash-image swatch links because the release self-test now checks for that exact regression.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/extractors/ant_design_tokens.py --self-test`
+- `python3 -B tools/extractors/ant_design_tokens.py`
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The local docs build is quieter before Real-CI verification, making remaining warnings easier to triage because they are not mixed with generated color-swatch false positives.
 
 ### Phase 57 — Local CI parity self-test coverage
 
