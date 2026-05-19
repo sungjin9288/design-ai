@@ -27,7 +27,7 @@ export const HELP_COMMANDS = [
   { topic: "update", usage: "update", description: "Pull latest source + reinstall" },
   { topic: "uninstall", usage: "uninstall", description: "Remove symlinks (keeps source files)" },
   { topic: "status", usage: "status", description: "Show what's installed (use VERBOSE=1 for full list)" },
-  { topic: "list", usage: "list [skills|commands|agents]", description: "List catalog from the plugin manifest" },
+  { topic: "list", usage: "list [skills|commands|agents] [--json]", description: "List catalog from the plugin manifest" },
   { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--json]", description: "Search the local markdown corpus" },
   { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
   { topic: "route", usage: "route <brief|--from-file file|--stdin|--list> [--limit N]", description: "Recommend commands, skills, and knowledge; add --explain" },

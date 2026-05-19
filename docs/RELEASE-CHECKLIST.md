@@ -78,9 +78,10 @@ node cli/bin/design-ai.mjs version
 node cli/bin/design-ai.mjs help
 node cli/bin/design-ai.mjs status
 node cli/bin/design-ai.mjs list skills
+node cli/bin/design-ai.mjs list skills --json
 ```
 
-All four must respond cleanly.
+All five must respond cleanly.
 
 ### 6. NPM package preview
 
@@ -139,8 +140,8 @@ git push origin vX.Y.Z
 
 GitHub Actions takes over:
 - `audit.yml` re-runs all eight audits and unit tests.
-- `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including version and top-level help output, command alias help and functional alias output, command-specific help topic output, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output, then publishes to npm with provenance.
-- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help/command aliases, functional aliases, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, and install/`doctor --strict`/status/uninstall lifecycle output are verified from the public registry.
+- `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including version and top-level help output, command alias help and functional alias output, command-specific help topic output, all three `list` catalog domains in human and JSON mode, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output, then publishes to npm with provenance.
+- After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help/command aliases, functional aliases, all three `list` catalog domains in human and JSON mode, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, and install/`doctor --strict`/status/uninstall lifecycle output are verified from the public registry.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
 - `docs.yml` re-builds the doc site through `tools/audit/local-ci.py --docs-only` and deploys it.
 

@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 91 — List command JSON catalog output added (v4.13.0) ✓ shipped
+
+`design-ai list` now emits a self-tested JSON catalog for shipped skills, slash commands, and agents.
+
+### Changed
+- `cli/commands/list.mjs` now supports `--json` for all catalog sections and filtered `skills`, `commands`, or `agents` sections.
+- `cli/commands/list.mjs` now uses `buildListCatalog()` and `formatListJson()` for machine-readable manifest catalog output.
+- `cli/lib/list-command.test.mjs` now checks argument parsing, top-level catalog key order, section key order, manifest item key order, filtered catalog output, and readable localized catalog text.
+- `tools/audit/smoke_assertions.py`, `tools/audit/package-smoke.py`, and `tools/audit/registry-smoke.py` now cover list catalog JSON output for all catalog domains.
+
+### Impact
+- Automation that uses `design-ai list --json` can enumerate skills, slash commands, and agents without parsing human terminal output.
+- Existing human `design-ai list` and `design-ai ls` output remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/list-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Manifest catalog enumeration becomes a stable automation-facing contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 90 — Doctor command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai doctor` now self-tests its JSON output contract for install-health context, diagnostic checks, summary counts, and fix metadata.

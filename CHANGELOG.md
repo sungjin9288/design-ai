@@ -44,6 +44,37 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
+`design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
+
+### Phase 91 — List command JSON catalog output added
+
+#### Changed
+- `cli/commands/list.mjs` now accepts `--json` for all catalog sections or a filtered `skills`, `commands`, or `agents` section.
+- `cli/commands/list.mjs` now exposes `buildListCatalog()` and `formatListJson()` for manifest catalog JSON output.
+- `cli/lib/list-command.test.mjs` now asserts argument parsing, JSON round-trip behavior, top-level catalog key order, section key order, manifest item key order, filtered section output, and readable localized catalog text.
+- Package and registry smoke assertions now verify `design-ai list <kind> --json` for all three catalog domains.
+
+#### Impact
+- Automation can enumerate shipped skills, slash commands, and agents without parsing human terminal output.
+- Functional alias `design-ai ls` keeps the existing human behavior, while canonical `design-ai list` now has a stable machine-readable catalog path.
+
+#### Verified
+- `node --test cli/lib/list-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Manifest catalog output can be consumed by package smoke, registry smoke, installers, docs, or external automation without depending on terminal formatting.
 
 ### Phase 90 — Doctor command JSON formatter guard added
 

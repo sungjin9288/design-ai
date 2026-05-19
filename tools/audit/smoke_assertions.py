@@ -221,6 +221,7 @@ EXPECTED_SEARCH_DIRS = (
 EXPECTED_UNKNOWN_SEARCH_DIR = "knowlege"
 EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
+    ("list", "--jsno", "--json"),
     ("route", "--limt", "--limit"),
     ("prompt", "--rout", "--route"),
     ("pack", "--max-byte", "--max-bytes"),
@@ -485,6 +486,8 @@ def passing_numeric_value_output(expected_message: str) -> str:
 
 
 def unknown_option_args(command_name: str, option: str) -> list[str]:
+    if command_name == "list":
+        return ["list", option]
     if command_name == "route":
         return ["route", EXPECTED_ROUTE_BRIEF, option, "1", "--json"]
     if command_name == "prompt":
@@ -520,6 +523,43 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         *(f"  {item}" for item in items),
         "",
     ])
+
+
+def list_catalog_item_path(kind: str, name: str) -> str:
+    if kind == "skills":
+        return f"skills/{name}/SKILL.md"
+    if kind == "commands":
+        return f"commands/{name}.md"
+    if kind == "agents":
+        return f"agents/{name}.md"
+    raise SystemExit(f"unsupported list catalog kind for smoke fixture: {kind}")
+
+
+def passing_list_catalog_json(kind: str = "skills") -> str:
+    items = [
+        {
+            "name": item,
+            "path": list_catalog_item_path(kind, item),
+            "description": f"{item} description",
+        }
+        for item in EXPECTED_LIST_CATALOG[kind]
+    ]
+    return json.dumps(
+        {
+            "name": "design-ai",
+            "version": "4.13.0",
+            "kind": kind,
+            "sections": [
+                {
+                    "kind": kind,
+                    "count": len(items),
+                    "items": items,
+                }
+            ],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
 
 
 def passing_output_overwrite_failure_output(path: str = "/tmp/existing.md") -> str:
@@ -1517,6 +1557,60 @@ def assert_list_catalog_output(raw: str, *, kind: str, context: str, cmd: list[s
             raise SystemExit(
                 f"list catalog output after {context} included unexpected {other_kind} section for {kind} filter"
             )
+
+
+def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    expected_items = EXPECTED_LIST_CATALOG.get(kind)
+    if expected_items is None:
+        raise SystemExit(f"unsupported list catalog kind for smoke assertion: {kind}")
+
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"list catalog JSON after {context} is not valid JSON: {error}") from error
+
+    if list(catalog) != ["name", "version", "kind", "sections"]:
+        raise SystemExit(f"list catalog JSON after {context} top-level keys changed")
+    if catalog.get("name") != "design-ai":
+        raise SystemExit(f"list catalog JSON after {context} plugin name is not design-ai")
+    if not re.fullmatch(r"\d+\.\d+\.\d+", str(catalog.get("version", ""))):
+        raise SystemExit(f"list catalog JSON after {context} version differs from expected semver")
+    if catalog.get("kind") != kind:
+        raise SystemExit(f"list catalog JSON after {context} kind differs from expected {kind}")
+
+    sections = catalog.get("sections")
+    if not isinstance(sections, list) or len(sections) != 1:
+        raise SystemExit(f"list catalog JSON after {context} should contain exactly one section")
+
+    section = sections[0]
+    if not isinstance(section, dict):
+        raise SystemExit(f"list catalog JSON after {context} section is not an object")
+    if list(section) != ["kind", "count", "items"]:
+        raise SystemExit(f"list catalog JSON after {context} section keys changed")
+    if section.get("kind") != kind:
+        raise SystemExit(f"list catalog JSON after {context} section kind differs from expected {kind}")
+    if section.get("count") != len(expected_items):
+        raise SystemExit(f"list catalog JSON after {context} section count differs from expected {len(expected_items)}")
+
+    items = section.get("items")
+    if not isinstance(items, list):
+        raise SystemExit(f"list catalog JSON after {context} items is not a list")
+    observed_names = []
+    for item in items:
+        if not isinstance(item, dict):
+            raise SystemExit(f"list catalog JSON after {context} item is not an object")
+        if list(item) != ["name", "path", "description"]:
+            raise SystemExit(f"list catalog JSON after {context} item keys changed")
+        observed_names.append(item.get("name"))
+        if item.get("path") != list_catalog_item_path(kind, str(item.get("name", ""))):
+            raise SystemExit(f"list catalog JSON after {context} item path differs for {item.get('name')}")
+        if not isinstance(item.get("description"), str) or not item["description"]:
+            raise SystemExit(f"list catalog JSON after {context} item description is missing for {item.get('name')}")
+
+    if tuple(observed_names) != expected_items:
+        raise SystemExit(f"list catalog JSON after {context} item order differs from expected {kind} catalog")
 
 
 def find_existing_path(entries: object, path: str, *, context: str, label: str) -> None:
@@ -3054,9 +3148,40 @@ def run_self_test() -> None:
 
     list_cmd = ["design-ai", "list", "skills"]
     assert_list_catalog_output(passing_list_catalog_output("skills"), kind="skills", context=context, cmd=list_cmd)
+    assert_list_catalog_json(
+        passing_list_catalog_json("skills"),
+        kind="skills",
+        context=context,
+        cmd=[*list_cmd, "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_list_catalog_output("\x1b[31mred", kind="skills", context=context, cmd=list_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json("\x1b[31mred", kind="skills", context=context, cmd=[*list_cmd, "--json"]),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json(
+            passing_list_catalog_json("skills").replace('"count": 19', '"count": 18'),
+            kind="skills",
+            context=context,
+            cmd=[*list_cmd, "--json"],
+        ),
+        expected="section count differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json(
+            passing_list_catalog_json("skills").replace('"name": "component-spec-writer"', '"name": "component-spec"'),
+            kind="skills",
+            context=context,
+            cmd=[*list_cmd, "--json"],
+        ),
+        expected="item path differs",
         scope="smoke assertions",
     )
     expect_self_test_failure(

@@ -60,6 +60,7 @@ from smoke_assertions import (
     assert_help_topic_output,
     assert_install_doctor_lifecycle_output,
     assert_list_catalog_output,
+    assert_list_catalog_json,
     assert_main_help_output,
     assert_no_ansi,
     assert_numeric_value_failure,
@@ -389,6 +390,18 @@ def assert_list_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_list_catalog_output(result.stdout, kind=kind, context=context, cmd=cmd)
+
+
+def assert_list_json_smoke(
+    cmd: list[str],
+    *,
+    kind: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_list_catalog_json(result.stdout, kind=kind, context=context, cmd=cmd)
 
 
 def write_smoke_brief(brief_path: Path) -> None:
@@ -868,6 +881,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 cwd=npx_root,
                 env=env,
                 context=f"registry smoke npm exec list {kind}",
+            )
+            assert_list_json_smoke(
+                npm_exec_cmd(package_spec, "list", kind, "--json"),
+                kind=kind,
+                cwd=npx_root,
+                env=env,
+                context=f"registry smoke npm exec list {kind} JSON",
             )
         assert_search_smoke(
             npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),

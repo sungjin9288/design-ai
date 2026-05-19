@@ -37,6 +37,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
 
   assert.match(output, /Usage:\s+design-ai <command> \[args\]/);
   assert.match(output, /design-ai help \[command\|--json\]/);
+  assert.match(output, /list \[skills\|commands\|agents\] \[--json\]/);
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
@@ -88,6 +89,10 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   ]);
   assert.deepEqual(catalog.topics.map((topic) => topic.topic), HELP_TOPICS);
   assert.deepEqual(Object.keys(catalog.aliases), Object.keys(HELP_ALIASES));
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "list").usage,
+    "design-ai list [skills|commands|agents] [--json]",
+  );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "show").usage,
     "design-ai show <file[:line]> [--lines N:M] [--context N] [--json]",
