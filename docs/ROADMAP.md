@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 86 — Examples command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai examples` now self-tests its JSON output contract for query-driven and route-biased worked-example discovery.
+
+### Changed
+- `cli/lib/examples.mjs` now uses `formatExamplesJson()` as the shared formatter for worked-example discovery JSON output.
+- `cli/commands/examples.mjs` now sends `--json` output through that formatter.
+- `cli/lib/examples.test.mjs` now checks JSON round-trip behavior, top-level payload key order, example-entry key order, route-biased payload order, and readable Korean example text.
+
+### Impact
+- Automation that uses `design-ai examples --json` can rely on stable `query`, `routeId`, `effectiveQuery`, and `examples` payload order.
+- Korean example titles and previews stay readable instead of being escaped in worked-example discovery JSON output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai examples` keeps machine-readable worked-example lookup refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 85 — Pack command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai pack` now self-tests its JSON output contract for complete and partial prompt-context bundles.

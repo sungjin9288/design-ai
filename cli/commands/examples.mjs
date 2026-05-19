@@ -2,7 +2,7 @@
 
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { dim, header, info, warn } from "../lib/log.mjs";
-import { listExamples, parseExamplesArgs } from "../lib/examples.mjs";
+import { formatExamplesJson, listExamples, parseExamplesArgs } from "../lib/examples.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai examples [query] [--route id] [--limit N] [--json]\n");
@@ -39,7 +39,7 @@ export async function runExamples(args) {
   });
 
   if (parsed.json) {
-    console.log(JSON.stringify(payload, null, 2));
+    console.log(formatExamplesJson(payload));
     return;
   }
 

@@ -39,6 +39,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
 `design-ai prompt` now formats machine-readable prompt plans through a self-tested JSON formatter with stable inferred/forced route plan order.
 `design-ai pack` now formats machine-readable prompt-context bundles through a self-tested JSON formatter with stable summary, plan, and file-entry order.
+`design-ai examples` now formats machine-readable worked-example discovery through a self-tested JSON formatter with stable route-biased result order.
+
+### Phase 86 — Examples command JSON formatter guard added
+
+#### Changed
+- `cli/lib/examples.mjs` now exposes `formatExamplesJson()` for `design-ai examples --json` output.
+- `cli/commands/examples.mjs` now routes worked-example discovery JSON through the shared formatter.
+- `cli/lib/examples.test.mjs` now asserts JSON round-trip behavior, top-level payload key order, example-entry key order, route-biased payload order, readable Korean example text, and non-escaped Unicode output.
+
+#### Impact
+- Automation that uses `design-ai examples --json` to choose known-good reference artifacts can keep relying on stable `query`, `routeId`, `effectiveQuery`, and `examples` payload order.
+- Korean example titles and previews remain readable in machine-readable discovery output.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Worked-example discovery JSON can be refactored without silently changing the automation-facing route reference contract.
 
 ### Phase 85 — Pack command JSON formatter guard added
 

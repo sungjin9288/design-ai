@@ -252,3 +252,7 @@ export function listExamples({ designAiPath, query = "", routeId = "", limit = D
     examples: examples.slice(0, limit),
   };
 }
+
+export function formatExamplesJson(payload) {
+  return JSON.stringify(payload, null, 2);
+}

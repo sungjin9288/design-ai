@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  formatExamplesJson,
   listExamples,
   parseExamplesArgs,
 } from "./examples.mjs";
@@ -73,6 +74,49 @@ test("listExamples searches examples and excludes README", () => {
   }
 });
 
+test("formatExamplesJson preserves examples payload order and readable Korean preview", () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      path.join(root, "examples", "component-korean-button.md"),
+      "# 한국어 버튼\n\n버튼 컴포넌트는 keyboard focus와 aria-label을 포함합니다.",
+    );
+
+    const payload = listExamples({
+      designAiPath: root,
+      query: "버튼",
+      limit: 3,
+    });
+
+    const formatted = formatExamplesJson(payload);
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), [
+      "query",
+      "routeId",
+      "effectiveQuery",
+      "examples",
+    ]);
+    assert.deepEqual(Object.keys(parsed.examples[0]), [
+      "relPath",
+      "title",
+      "category",
+      "score",
+      "preview",
+    ]);
+    assert.equal(parsed.query, "버튼");
+    assert.equal(parsed.routeId, "");
+    assert.equal(parsed.effectiveQuery, "버튼");
+    assert.equal(parsed.examples[0].relPath, path.join("examples", "component-korean-button.md"));
+    assert.ok(parsed.examples[0].preview.includes("버튼"));
+    assert.match(formatted, /"examples": \[\n    \{\n      "relPath": "examples\/component-korean-button\.md"/);
+    assert.ok(formatted.includes("한국어 버튼"));
+    assert.ok(!formatted.includes("\\u"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("listExamples can bias results by route id", () => {
   const root = makeFixture();
   try {
@@ -85,6 +129,35 @@ test("listExamples can bias results by route id", () => {
     assert.equal(result.routeId, "palette-from-brand");
     assert.ok(result.effectiveQuery.includes("palette"));
     assert.equal(result.examples[0].relPath, path.join("examples", "palette-saas-violet.md"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("formatExamplesJson preserves route-biased examples payload order", () => {
+  const root = makeFixture();
+  try {
+    const payload = listExamples({
+      designAiPath: root,
+      routeId: "game-ui",
+      limit: 1,
+    });
+
+    const formatted = formatExamplesJson(payload);
+    const parsed = JSON.parse(formatted);
+
+    assert.equal(parsed.query, "");
+    assert.equal(parsed.routeId, "game-ui");
+    assert.equal(parsed.effectiveQuery, "game hud menu");
+    assert.equal(parsed.examples.length, 1);
+    assert.equal(parsed.examples[0].relPath, path.join("examples", "component-game-menu.md"));
+    assert.deepEqual(Object.keys(parsed.examples[0]), [
+      "relPath",
+      "title",
+      "category",
+      "score",
+      "preview",
+    ]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
