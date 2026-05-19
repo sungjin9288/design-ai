@@ -32,6 +32,35 @@ Release metadata now rejects unexpected release policy docs in the checked set.
 Release metadata now rejects release policy docs checked in a non-deterministic order.
 Release metadata now reports missing release policy doc files as structured errors instead of tracebacks.
 Release metadata now reports missing or invalid core release inputs as structured errors instead of tracebacks.
+Release metadata now reports audit-count source failures as structured errors instead of exiting early.
+
+### Phase 79 — Release metadata audit-count loader guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now loads the `tools/audit/run-all.py` audit-count source through a structured loader.
+- `npm run release:metadata:self-test` now covers valid audit-count parsing, missing `AUDITS` tuple, missing audit script entries, and missing `run-all.py` path fixtures.
+- `docs/RELEASE-CHECKLIST.md` and `docs/DOGFOOD-V4-NPM-FINDINGS.md` now document that audit-count source failures produce structured release metadata errors.
+
+#### Impact
+- If the audit runner changes shape or disappears, release metadata reports the audit-count source problem instead of raising `SystemExit` before JSON/human output can be produced.
+- CHANGELOG and ROADMAP audit-count comparison now only runs when the expected repository audit count is available, avoiding noisy mismatch errors after source-loading failures.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata keeps a complete structured failure surface across manifests, release docs, policy docs, and the audit-count source.
 
 ### Phase 78 — Release metadata core input loader guard added
 

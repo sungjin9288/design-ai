@@ -98,19 +98,29 @@ def load_release_policy_docs(
     return docs, errors
 
 
-def load_audit_count(text: str | None = None) -> int:
-    run_all_text = text if text is not None else RUN_ALL.read_text(encoding="utf-8")
+def load_audit_count(text: str | None = None, path: Path = RUN_ALL) -> tuple[int | None, list[str]]:
+    source = "tools/audit/run-all.py" if path == RUN_ALL else str(path)
+    if text is None:
+        try:
+            run_all_text = path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            return None, [f"release metadata audit count source is missing: {source} ({path})"]
+        except OSError as exc:
+            return None, [f"release metadata audit count source cannot be read: {source} ({path}): {exc}"]
+    else:
+        run_all_text = text
+
     match = re.search(
         r"AUDITS: tuple\[AuditSpec, \.\.\.\] = \(\n(?P<body>.*?)\n\)\n\n\n@dataclass",
         run_all_text,
         re.DOTALL,
     )
     if not match:
-        raise SystemExit("failed to locate AUDITS tuple in tools/audit/run-all.py")
+        return None, [f"release metadata audit count source is missing AUDITS tuple: {source}"]
     scripts = AUDIT_SCRIPT_RE.findall(match.group("body"))
     if not scripts:
-        raise SystemExit("failed to locate audit script list in tools/audit/run-all.py")
-    return len(scripts)
+        return None, [f"release metadata audit count source has no audit script entries: {source}"]
+    return len(scripts), []
 
 
 def first_changelog_entry(changelog_text: str) -> tuple[re.Match[str] | None, str]:
@@ -137,7 +147,10 @@ def validate_month(month: str) -> bool:
     return 1 <= int(month) <= 12
 
 
-def audit_count_errors(label: str, entry: str, expected_count: int) -> list[str]:
+def audit_count_errors(label: str, entry: str, expected_count: int | None) -> list[str]:
+    if expected_count is None:
+        return []
+
     errors: list[str] = []
     mentions = [(int(match.group("count")), match.group(0)) for match in AUDIT_COUNT_RE.finditer(entry)]
     if not mentions:
@@ -191,7 +204,7 @@ def release_metadata_summary(
     changelog_text: str,
     roadmap_text: str,
     release_policy_docs: dict[str, str],
-    audit_count: int,
+    audit_count: int | None,
 ) -> dict:
     errors: list[str] = []
     version = package_json.get("version")
@@ -430,8 +443,28 @@ class AuditResult:
     spec=AuditSpec(name="fixture", script="fixture.py")
 """
     assert_condition(
-        load_audit_count(run_all_fixture) == 2,
+        load_audit_count(run_all_fixture) == (2, []),
         "audit count should parse only the AUDITS tuple and ignore self-test fixtures",
+    )
+    missing_tuple_count, missing_tuple_errors = load_audit_count("# missing audits tuple\n")
+    assert_condition(
+        missing_tuple_count is None
+        and "release metadata audit count source is missing AUDITS tuple" in "\n".join(missing_tuple_errors),
+        "audit count loader should report missing AUDITS tuple without a traceback",
+    )
+    empty_scripts_fixture = """AUDITS: tuple[AuditSpec, ...] = (
+    AuditSpec(name="frontmatter", script="frontmatter"),
+)
+
+
+@dataclass
+class AuditResult:
+"""
+    empty_scripts_count, empty_scripts_errors = load_audit_count(empty_scripts_fixture)
+    assert_condition(
+        empty_scripts_count is None
+        and "release metadata audit count source has no audit script entries" in "\n".join(empty_scripts_errors),
+        "audit count loader should report missing script entries without a traceback",
     )
 
     loaded_docs, load_errors = load_release_policy_docs(
@@ -481,6 +514,12 @@ class AuditResult:
             "release metadata input is missing: fixture missing text" in "\n".join(missing_text_errors),
             "core text loader should report missing text without a traceback",
         )
+        missing_audit_count, missing_audit_errors = load_audit_count(path=temp_path / "missing-run-all.py")
+        assert_condition(
+            missing_audit_count is None
+            and "release metadata audit count source is missing" in "\n".join(missing_audit_errors),
+            "audit count loader should report missing run-all.py without a traceback",
+        )
 
     print("Release metadata self-test passed")
     return 0
@@ -500,13 +539,14 @@ def main() -> int:
     plugin_json, plugin_json_errors = load_json_input(".claude-plugin/plugin.json", PLUGIN_JSON)
     changelog_text, changelog_errors = load_text_input("CHANGELOG.md", CHANGELOG)
     roadmap_text, roadmap_errors = load_text_input("docs/ROADMAP.md", ROADMAP)
+    audit_count, audit_count_load_errors = load_audit_count()
     summary = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog_text,
         roadmap_text=roadmap_text,
         release_policy_docs=release_policy_docs,
-        audit_count=load_audit_count(),
+        audit_count=audit_count,
     )
     summary["errors"] = (
         package_json_errors
@@ -514,6 +554,7 @@ def main() -> int:
         + changelog_errors
         + roadmap_errors
         + release_policy_doc_load_errors
+        + audit_count_load_errors
         + summary["errors"]
     )
 

@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 79 — Release metadata audit-count loader guard added (v4.13.0) ✓ shipped
+
+Release metadata now reports audit-count source failures as structured errors.
+
+### Changed
+- `tools/audit/release-metadata.py` now returns `(audit_count, errors)` from `load_audit_count()` instead of raising `SystemExit`.
+- `npm run release:metadata:self-test` now covers missing `AUDITS` tuple, missing audit script entries, and missing `run-all.py` path fixtures.
+- `docs/RELEASE-CHECKLIST.md` now states that audit-count source failures produce release metadata errors instead of tracebacks or early exits.
+
+### Impact
+- A broken audit runner shape no longer prevents release metadata from producing JSON/human error output.
+- CHANGELOG and ROADMAP audit-count checks avoid cascading mismatch noise when the expected audit count cannot be loaded.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains actionable even when its audit-count source drifts or disappears.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 78 — Release metadata core input loader guard added (v4.13.0) ✓ shipped
 
 Release metadata now reports core input loading failures as structured errors.
