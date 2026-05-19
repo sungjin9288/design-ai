@@ -22,9 +22,14 @@ PACKAGE_JSON = ROOT / "package.json"
 PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 ROADMAP = ROOT / "docs" / "ROADMAP.md"
-DISTRIBUTION = ROOT / "docs" / "DISTRIBUTION.md"
-DISTRIBUTION_KO = ROOT / "docs" / "DISTRIBUTION.ko.md"
 RUN_ALL = ROOT / "tools" / "audit" / "run-all.py"
+RELEASE_POLICY_DOC_PATHS = (
+    ("README.md", ROOT / "README.md"),
+    ("README.ko.md", ROOT / "README.ko.md"),
+    ("docs/RELEASE-CHECKLIST.md", ROOT / "docs" / "RELEASE-CHECKLIST.md"),
+    ("docs/DISTRIBUTION.md", ROOT / "docs" / "DISTRIBUTION.md"),
+    ("docs/DISTRIBUTION.ko.md", ROOT / "docs" / "DISTRIBUTION.ko.md"),
+)
 
 CHANGELOG_HEADER_RE = re.compile(
     r"^## v(?P<version>\d+\.\d+\.\d+) — (?P<title>.+?) "
@@ -121,8 +126,7 @@ def release_metadata_summary(
     plugin_json: dict,
     changelog_text: str,
     roadmap_text: str,
-    distribution_text: str,
-    distribution_ko_text: str,
+    release_policy_docs: dict[str, str],
     audit_count: int,
 ) -> dict:
     errors: list[str] = []
@@ -177,8 +181,8 @@ def release_metadata_summary(
         )
         errors.extend(audit_count_errors("docs/ROADMAP.md current entry", roadmap_entry, audit_count))
 
-    errors.extend(release_warning_policy_doc_errors("docs/DISTRIBUTION.md", distribution_text))
-    errors.extend(release_warning_policy_doc_errors("docs/DISTRIBUTION.ko.md", distribution_ko_text))
+    for label, text in release_policy_docs.items():
+        errors.extend(release_warning_policy_doc_errors(label, text))
 
     return {
         "version": version,
@@ -187,7 +191,7 @@ def release_metadata_summary(
         "changelog_date": changelog_date,
         "roadmap_entry_found": bool(roadmap_entry),
         "audit_count": audit_count,
-        "release_policy_docs_checked": ["docs/DISTRIBUTION.md", "docs/DISTRIBUTION.ko.md"],
+        "release_policy_docs_checked": list(release_policy_docs),
         "errors": errors,
     }
 
@@ -231,25 +235,31 @@ def run_self_test() -> int:
 ### What's still ahead
 - Continue fixture hardening.
 """
-    distribution = """# Distribution
+    english_policy_doc = """# Distribution
 
 The release workflow runs `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline.
 """
-    distribution_ko = """# Distribution Korean
+    korean_policy_doc = """# Distribution Korean
 
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요.
 """
+    release_policy_docs = {
+        "README.md": english_policy_doc,
+        "README.ko.md": korean_policy_doc,
+        "docs/RELEASE-CHECKLIST.md": english_policy_doc,
+        "docs/DISTRIBUTION.md": english_policy_doc,
+        "docs/DISTRIBUTION.ko.md": korean_policy_doc,
+    }
     passing = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
-        distribution_text=distribution,
-        distribution_ko_text=distribution_ko,
+        release_policy_docs=release_policy_docs,
         audit_count=8,
     )
     assert_condition(passing["errors"] == [], "complete fixture should pass without errors")
@@ -259,8 +269,10 @@ warnings at the accepted baseline.
         plugin_json={"version": "1.2.2"},
         changelog_text=changelog.replace("All 8 audits pass.", "All 7 audits pass."),
         roadmap_text=roadmap.replace("(v1.2.3)", "(v1.2.2)"),
-        distribution_text=distribution.replace("accepted baseline", "accepted policy"),
-        distribution_ko_text=distribution_ko,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace("accepted baseline", "accepted policy"),
+        },
         audit_count=8,
     )
     joined_errors = "\n".join(failing["errors"])
@@ -302,8 +314,10 @@ def main() -> int:
         plugin_json=load_json(PLUGIN_JSON),
         changelog_text=CHANGELOG.read_text(encoding="utf-8"),
         roadmap_text=ROADMAP.read_text(encoding="utf-8"),
-        distribution_text=DISTRIBUTION.read_text(encoding="utf-8"),
-        distribution_ko_text=DISTRIBUTION_KO.read_text(encoding="utf-8"),
+        release_policy_docs={
+            label: path.read_text(encoding="utf-8")
+            for label, path in RELEASE_POLICY_DOC_PATHS
+        },
         audit_count=load_audit_count(),
     )
 

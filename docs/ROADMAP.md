@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 72 — Release policy docs metadata coverage expanded (v4.13.0) ✓ shipped
+
+Release metadata now checks every release-facing docs page that carries the MkDocs warning-policy baseline.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks `README.md`, `README.ko.md`, `docs/RELEASE-CHECKLIST.md`, `docs/DISTRIBUTION.md`, and `docs/DISTRIBUTION.ko.md` for the warning-policy phrase groups.
+- `npm run release:metadata -- --json` now reports that full `release_policy_docs_checked` set.
+- `docs/RELEASE-CHECKLIST.md` and `docs/DOGFOOD-V4-NPM-FINDINGS.md` now describe the expanded release policy docs coverage.
+
+### Impact
+- Entry docs, the release checklist, and Distribution docs now stay aligned on the `ci:local` MkDocs warning-policy baseline.
+- Maintainers get one metadata gate for the release-facing docs they read before Real-CI verification.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release guidance remains consistent across README, checklist, and distribution surfaces.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 71 — Release metadata bilingual phrase guard hardened (v4.13.0) ✓ shipped
 
 The release metadata distribution policy guard now accepts Korean equivalents.

@@ -25,6 +25,35 @@ MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
 Korean distribution guidance now describes the same MkDocs refs warning baseline cap as the English release docs.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
+Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
+
+### Phase 72 — Release policy docs metadata coverage expanded
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks all release-facing MkDocs warning-policy docs: `README.md`, `README.ko.md`, `docs/RELEASE-CHECKLIST.md`, `docs/DISTRIBUTION.md`, and `docs/DISTRIBUTION.ko.md`.
+- `npm run release:metadata -- --json` now reports the full `release_policy_docs_checked` list.
+- `docs/RELEASE-CHECKLIST.md` and `docs/DOGFOOD-V4-NPM-FINDINGS.md` now describe the broader release policy docs coverage.
+
+#### Impact
+- README-level pre-push guidance and the canonical release checklist can no longer drift away from the Distribution docs without failing release metadata validation.
+- The warning-policy baseline guard now protects the docs maintainers are most likely to read before running Real-CI.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Pre-push and release guidance stay consistent across entry docs, checklist docs, and distribution docs.
 
 ### Phase 71 — Release metadata bilingual phrase guard hardened
 
