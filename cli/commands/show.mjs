@@ -2,7 +2,7 @@
 
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { header, info } from "../lib/log.mjs";
-import { parseShowArgs, readShowFile } from "../lib/show.mjs";
+import { formatShowJson, parseShowArgs, readShowFile } from "../lib/show.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai show <file[:line|start-end]> [--lines N:M] [--context N] [--json]\n");
@@ -41,7 +41,7 @@ export async function runShow(args) {
   });
 
   if (parsed.json) {
-    console.log(JSON.stringify(result, null, 2));
+    console.log(formatShowJson(result));
     return;
   }
 

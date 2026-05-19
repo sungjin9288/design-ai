@@ -155,3 +155,7 @@ export function readShowFile({ sourceRoot, target, lines = null, context = 8 }) 
     lines: visibleLines,
   };
 }
+
+export function formatShowJson(result) {
+  return JSON.stringify(result, null, 2);
+}

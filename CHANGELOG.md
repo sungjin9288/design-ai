@@ -41,6 +41,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai pack` now formats machine-readable prompt-context bundles through a self-tested JSON formatter with stable summary, plan, and file-entry order.
 `design-ai examples` now formats machine-readable worked-example discovery through a self-tested JSON formatter with stable route-biased result order.
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
+`design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
+
+### Phase 88 — Show command JSON formatter guard added
+
+#### Changed
+- `cli/lib/show.mjs` now exposes `formatShowJson()` for `design-ai show --json` output.
+- `cli/commands/show.mjs` now routes corpus file JSON output through the shared formatter.
+- `cli/lib/show.test.mjs` now asserts JSON round-trip behavior, top-level file payload key order, line-entry key order, explicit line-range payload order, readable Korean file text, and non-escaped Unicode output.
+
+#### Impact
+- Automation that uses `design-ai show --json` after `design-ai search --json` can keep relying on stable file metadata and line-entry payload order.
+- Korean file content remains readable in machine-readable corpus file output.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Corpus file JSON can be refactored without silently changing the automation-facing file display contract.
 
 ### Phase 87 — Search command JSON formatter guard added
 
