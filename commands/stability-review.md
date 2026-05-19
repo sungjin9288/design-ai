@@ -61,9 +61,9 @@ After the user confirms changes, suggest a CHANGELOG entry:
 
 - Full ritual documentation: [`docs/CONTRIBUTING.md`](../docs/CONTRIBUTING.md) "Quarterly stability review"
 - Tools:
-  - [`tools/audit/stability-review.py`](../tools/audit/stability-review.py)
-  - [`tools/migrations/promote-stability.py`](../tools/migrations/promote-stability.py)
-  - [`tools/migrations/bump-last-updated.py`](../tools/migrations/bump-last-updated.py)
+  - `tools/audit/stability-review.py`
+  - `tools/migrations/promote-stability.py`
+  - `tools/migrations/bump-last-updated.py`
 
 ## Verification phase (run before declaring done)
 

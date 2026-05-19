@@ -154,4 +154,4 @@ The path confirms package contents, bin shim creation, one-shot npm execution, v
 - [`docs/DOGFOOD-V4-FINDINGS.md`](DOGFOOD-V4-FINDINGS.md) - Phase 39 corpus content dogfood
 - [`docs/DOGFOOD-V4-VSCODE-FINDINGS.md`](DOGFOOD-V4-VSCODE-FINDINGS.md) - Phase 40 VS Code extension dogfood
 - [`docs/RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) - pre-release verification checklist
-- [`tools/audit/package-smoke.py`](../tools/audit/package-smoke.py) - automated npm tarball smoke
+- `tools/audit/package-smoke.py` - automated npm tarball smoke

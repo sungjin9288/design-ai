@@ -86,7 +86,7 @@ Remaining canonicals are mostly sub-components (e.g., `Step.Item` of `Steps`) or
 MIT. Use it commercially. Fork it. Translate it.
 
 **Q: Can I contribute?**
-Yes — see [`docs/CONTRIBUTING.md`](../CONTRIBUTING.md) (or [`docs/CONTRIBUTING.ko.md`](../CONTRIBUTING.ko.md)).
+Yes — see [`docs/CONTRIBUTING.md`](../CONTRIBUTING.md) (or [`docs/CONTRIBUTING.ko.md`](https://github.com/sungjin/design-ai/blob/main/docs/CONTRIBUTING.ko.md)).
 
 ## Links
 

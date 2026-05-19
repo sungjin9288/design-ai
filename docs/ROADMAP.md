@@ -51,6 +51,37 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 60 — MkDocs warning stream narrowed to refs (v4.13.0) ✓ shipped
+
+The local docs build now has 0 non-`refs/` MkDocs warnings; remaining warnings are intentionally concentrated in upstream source-reference links.
+
+### Changed
+- Stability-review command tooling references now render as code paths instead of links to files outside the MkDocs site tree.
+- Npm dogfood tooling references now render as code paths where they refer to repository scripts.
+- Korean launch draft and Korean contributor references now point at GitHub URLs to avoid static-i18n `.ko.md` resolution noise.
+
+### Impact
+- MkDocs `WARNING` lines dropped to 632 in the latest local build.
+- Non-`refs/` MkDocs warnings are 0.
+- Remaining warning volume is now policy-level `refs/` source-link handling, not general docs navigation breakage.
+
+### Verified
+- All 8 audits pass.
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Real-CI docs logs should now make any new non-`refs/` warning stand out immediately.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 59 — Documentation link hygiene before Real-CI (v4.13.0) ✓ shipped
 
 The public docs now avoid common directory-style links that MkDocs cannot resolve cleanly in the symlink-farm site build.

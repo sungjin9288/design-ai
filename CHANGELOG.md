@@ -13,6 +13,29 @@ Push-readiness now has a local CI parity command and GitHub Actions cache paths 
 The local CI parity gate now has a lightweight self-test wired into the release self-test chain.
 Ant Design token swatches no longer create MkDocs hash-link noise, and the extractor now has a release self-test for that renderer.
 Docs navigation links now target concrete tracked pages instead of directories, reducing MkDocs link noise before Real-CI.
+MkDocs warning output now contains no non-`refs/` warnings in the local build.
+
+### Phase 60 — MkDocs warning stream narrowed to refs
+
+#### Changed
+- Converted stability-review command tool links and npm dogfood tool references into code paths because those files are repo-local tooling, not site pages.
+- Moved Korean announcement draft links and Korean contributor reference links to GitHub URLs so MkDocs static i18n no longer treats `.ko.md` launch drafts as unresolved site pages.
+
+#### Impact
+- Local MkDocs `WARNING` output is now concentrated entirely in intentional `refs/` source-material links.
+- Non-`refs/` MkDocs warnings are 0, which makes Real-CI docs logs significantly easier to scan.
+
+#### Verified
+- All 8 audits pass.
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The remaining docs warning work can be treated as a deliberate policy choice for `refs/` source links instead of a mixed set of real navigation bugs and intentional repo references.
 
 ### Phase 59 — Documentation link hygiene before Real-CI
 

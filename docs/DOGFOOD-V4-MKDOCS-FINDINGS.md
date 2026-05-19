@@ -119,13 +119,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: changed navigation-style links to concrete markdown files or public docs URLs, corrected `examples/` relative paths into `knowledge/`, `commands/`, and `docs/`, and rendered tool-only references outside the site tree as code paths.
 
+### 7. Non-refs warnings still hid the remaining policy question
+
+**Found by**: final local MkDocs warning review after directory-link cleanup.
+
+**Symptom**: After navigation links were fixed, a small set of non-`refs/` warnings still came from command/tooling docs and `.ko.md` announcement drafts. These were not content bugs, but they obscured the fact that the only substantial remaining warning class is intentional upstream `refs/` source linking.
+
+**Fix**: converted repo-tool references to code paths and moved Korean launch draft/contributor references to GitHub URLs where they are meant to point at files rather than site pages.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
-- **~70 warnings: `.py`, `.yml`, `.ko.md` files referenced from doc but not in nav** — files exist in repo, just not promoted to mkdocs-tracked content. Acceptable for repo-local utility links.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 643. Root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are repo-local reference links or files intentionally outside the MkDocs nav.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references.
 
 ## Performance
 
