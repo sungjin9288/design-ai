@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 66 — Korean top-level docs trigger Pages deploy (v4.13.0) ✓ shipped
+
+The GitHub Pages workflow now watches the Korean top-level files that are symlinked into the MkDocs source tree.
+
+### Changed
+- `.github/workflows/docs.yml` now includes `README.ko.md` and `AGENTS.ko.md` in its `paths` filter.
+- `tools/audit/local-ci.py` now treats the top-level MkDocs source files as required docs workflow paths.
+
+### Impact
+- Korean landing page and Korean agent entry point changes now trigger docs deployment directly.
+- Local CI catches future path-filter drift for the top-level site inputs created by `tools/build-docs.sh`.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Korean top-level documentation changes no longer wait for another docs path change to deploy.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 65 — Docs workflow policy parser tightened (v4.13.0) ✓ shipped
 
 The docs workflow drift check now validates extracted workflow fields instead of broad file substrings.

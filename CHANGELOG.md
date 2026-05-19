@@ -19,6 +19,33 @@ Successful local CI docs runs now summarize MkDocs warning policy instead of pri
 The GitHub Pages docs workflow now uses the same docs-only MkDocs warning-policy path as local CI.
 Local CI now checks that the docs workflow keeps using that shared docs-only policy path.
 Docs workflow policy checks now inspect parsed `run:` commands and `paths:` entries instead of relying on broad substring matches.
+Docs deployment now re-runs when Korean top-level site entries change.
+
+### Phase 66 — Korean top-level docs trigger Pages deploy
+
+#### Changed
+- `.github/workflows/docs.yml` now includes `README.ko.md` and `AGENTS.ko.md` in its path filter.
+- `tools/audit/local-ci.py` now requires every top-level file that `tools/build-docs.sh` symlinks into `site-src/` to remain present in the docs workflow path filter.
+
+#### Impact
+- Korean landing page and Korean agent entry point edits now trigger the GitHub Pages docs workflow.
+- Future path-filter drift for top-level site inputs is caught by local CI before push.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Korean docs updates are no longer dependent on unrelated docs changes to reach the deployed site.
 
 ### Phase 65 — Docs workflow policy parser tightened
 

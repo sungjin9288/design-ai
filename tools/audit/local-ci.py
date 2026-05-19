@@ -27,8 +27,16 @@ LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
 DOCS_WORKFLOW_REQUIRED_PATHS = (
+    "AGENTS.md",
+    "AGENTS.ko.md",
+    "CLAUDE.md",
+    "README.md",
+    "README.ko.md",
+    "CHANGELOG.md",
+    "mkdocs.yml",
     "tools/audit/local-ci.py",
     "tools/build-docs.sh",
+    ".github/workflows/docs.yml",
 )
 
 
@@ -297,18 +305,14 @@ def run_self_test() -> int:
         passing_workflow = "\n".join(
             [
                 "    paths:",
-                '      - "tools/audit/local-ci.py"',
-                '      - "tools/build-docs.sh"',
+                *(f'      - "{path}"' for path in DOCS_WORKFLOW_REQUIRED_PATHS),
                 "  workflow_dispatch:",
                 "      - name: Build site with warning policy",
                 f"        run: {DOCS_WORKFLOW_POLICY_COMMAND}",
             ]
         )
         assert_condition(
-            workflow_path_entries(passing_workflow) == [
-                "tools/audit/local-ci.py",
-                "tools/build-docs.sh",
-            ],
+            workflow_path_entries(passing_workflow) == list(DOCS_WORKFLOW_REQUIRED_PATHS),
             "workflow path parser should read quoted path entries",
         )
         assert_condition(
@@ -328,7 +332,7 @@ def run_self_test() -> int:
         )
         workflow_errors = docs_workflow_policy_errors(failing_workflow)
         assert_condition(
-            len(workflow_errors) == 4,
+            len(workflow_errors) == len(DOCS_WORKFLOW_REQUIRED_PATHS) + 2,
             "docs workflow fixture should fail on direct mkdocs command and missing path filters",
         )
         assert_condition(
