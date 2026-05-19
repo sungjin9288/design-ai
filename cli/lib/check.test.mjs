@@ -15,6 +15,7 @@ import {
   checkAllExampleArtifacts,
   checkArtifactContent,
   checkExampleArtifacts,
+  formatCheckJson,
   parseCheckArgs,
 } from "./check.mjs";
 import { runCheck } from "../commands/check.mjs";
@@ -132,6 +133,42 @@ test("checkArtifactContent passes a grounded accessible artifact", () => {
   assert.equal(report.failures, 0);
   assert.equal(report.warnings, 0);
   assert.equal(report.results.every((item) => item.level === "pass"), true);
+});
+
+test("formatCheckJson preserves artifact report order and readable Korean messages", () => {
+  const report = checkArtifactContent({
+    content: GOOD_ARTIFACT,
+    filePath: "good.md",
+  });
+  const formatted = formatCheckJson({
+    ...report,
+    results: [
+      ...report.results,
+      {
+        id: "korean-fixture",
+        title: "Korean fixture",
+        level: "warn",
+        passed: false,
+        message: "한국어 오류 메시지",
+      },
+    ],
+  });
+  const parsed = JSON.parse(formatted);
+
+  assert.deepEqual(Object.keys(parsed), [
+    "filePath",
+    "status",
+    "passes",
+    "warnings",
+    "failures",
+    "total",
+    "score",
+    "results",
+  ]);
+  assert.equal(parsed.filePath, "good.md");
+  assert.match(formatted, /"results": \[\n    \{/);
+  assert.match(formatted, /한국어 오류 메시지/);
+  assert.doesNotMatch(formatted, /\\u[0-9a-fA-F]{4}/);
 });
 
 test("checkArtifactContent fails unresolved markers and color without contrast ratio", () => {
@@ -345,6 +382,46 @@ Responsive behavior covers mobile and desktop. Don't use the component for destr
     assert.equal(report.total, 1);
     assert.equal(report.examples[0].example.relPath, "examples/component-button.md");
     assert.equal(report.examples[0].report.status, "pass");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("formatCheckJson preserves examples report order", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-examples-json-"));
+  try {
+    const examplePath = path.join(root, "examples/component-button.md");
+    mkdirSync(path.dirname(examplePath), { recursive: true });
+    writeFileSync(examplePath, `
+# Button component spec
+
+This component spec cites knowledge/components/INDEX.md and knowledge/a11y/keyboard-and-focus.md. The anatomy has root, label, icon, and loading slots. Variants cover primary, secondary, destructive, and ghost. States cover hover, active, focus, disabled, and loading. The API uses props for variant, size, disabled, loading, and aria-label.
+
+The foreground/background pair is --color-primary-foreground on --color-primary-default with a measured 4.8:1 contrast ratio. Keyboard behavior supports Tab, Enter, and Space with focus-visible styling. Screen reader behavior uses aria-disabled and an accessible name.
+
+Responsive behavior covers mobile and desktop. Don't use the component for destructive confirmation flows.
+    `);
+
+    const report = checkExampleArtifacts({
+      designAiPath: root,
+      routeId: "component-spec",
+      limit: 1,
+    });
+    const parsed = JSON.parse(formatCheckJson(report));
+
+    assert.deepEqual(Object.keys(parsed), [
+      "mode",
+      "routeId",
+      "query",
+      "limit",
+      "status",
+      "total",
+      "passed",
+      "warned",
+      "failed",
+      "examples",
+    ]);
+    assert.equal(parsed.examples[0].example.relPath, "examples/component-button.md");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -7,6 +7,7 @@ import {
   checkAllExampleArtifacts,
   checkArtifactContent,
   checkExampleArtifacts,
+  formatCheckJson,
   parseCheckArgs,
 } from "../lib/check.mjs";
 import { dim, error, header, info, red, success, warn } from "../lib/log.mjs";
@@ -110,7 +111,7 @@ export async function runCheck(args) {
       });
 
     if (parsed.json) {
-      console.log(JSON.stringify(report, null, 2));
+      console.log(formatCheckJson(report));
     } else if (parsed.allRoutes) {
       header("design-ai check examples", "all routes");
       info(`Source: ${DESIGN_AI_HOME}`);
@@ -154,7 +155,7 @@ export async function runCheck(args) {
   const report = checkArtifactContent({ content, filePath, routeId: parsed.routeId });
 
   if (parsed.json) {
-    console.log(JSON.stringify(report, null, 2));
+    console.log(formatCheckJson(report));
   } else {
     header("design-ai check", parsed.stdin ? "stdin" : parsed.target);
     if (parsed.routeId) info(`Route: ${parsed.routeId}`);

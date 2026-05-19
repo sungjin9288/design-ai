@@ -35,6 +35,35 @@ Release metadata now reports missing or invalid core release inputs as structure
 Release metadata now reports audit-count source failures as structured errors instead of exiting early.
 Release metadata now self-tests its human pass/fail output formatter.
 Release metadata now self-tests its JSON output formatter and summary key order.
+`design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
+
+### Phase 82 — Check command JSON formatter guard added
+
+#### Changed
+- `cli/lib/check.mjs` now exposes `formatCheckJson()` for `design-ai check` machine-readable output.
+- `cli/commands/check.mjs` now routes artifact and examples `--json` output through the shared formatter.
+- `cli/lib/check.test.mjs` now asserts JSON round-trip behavior, artifact report key order, examples report key order, readable Korean messages, and non-escaped Unicode output.
+
+#### Impact
+- `design-ai check --json` and `design-ai check --examples ... --json` keep a stable automation-facing shape while the command internals continue to evolve.
+- Korean diagnostics or future localized check messages remain readable in JSON output.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The CLI quality gate now has an explicit formatter contract for machine-readable artifact and examples reports.
 
 ### Phase 81 — Release metadata JSON output formatter guard added
 

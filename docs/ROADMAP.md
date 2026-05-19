@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 82 — Check command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai check` now self-tests its JSON output contract for artifact and examples reports.
+
+### Changed
+- `cli/lib/check.mjs` now uses `formatCheckJson()` as the shared formatter for check reports.
+- `cli/commands/check.mjs` now sends artifact and examples `--json` output through that formatter.
+- `cli/lib/check.test.mjs` now checks JSON round-trip behavior, artifact/examples key order, and readable Korean messages.
+
+### Impact
+- Automation that consumes `design-ai check --json` can rely on the same top-level report order.
+- Future localized diagnostics can include Korean text without Unicode-escaped output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai check` keeps machine-readable artifact quality reports refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 81 — Release metadata JSON output formatter guard added (v4.13.0) ✓ shipped
 
 Release metadata now self-tests its JSON output contract.

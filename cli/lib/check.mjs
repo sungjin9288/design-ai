@@ -549,3 +549,7 @@ export function checkAllExampleArtifacts({ designAiPath, limit = DEFAULT_EXAMPLE
     routes,
   };
 }
+
+export function formatCheckJson(report) {
+  return JSON.stringify(report, null, 2);
+}
