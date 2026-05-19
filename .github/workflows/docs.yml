@@ -15,6 +15,8 @@ on:
       - "README.md"
       - "CHANGELOG.md"
       - "mkdocs.yml"
+      - "tools/audit/local-ci.py"
+      - "tools/build-docs.sh"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -47,15 +49,11 @@ jobs:
       - name: Install mkdocs-material
         run: pip install -r docs/requirements.txt
 
-      - name: Populate site-src/ symlink farm
-        run: ./tools/build-docs.sh
-
-      - name: Build site
-        run: mkdocs build --clean
-        # Note: deliberately not --strict. The corpus has many cross-references
-        # that mkdocs flags as INFO (e.g., links to directories that resolve to
-        # README.md, or hex colors interpreted as anchors). Real broken links
-        # are caught by the dedicated link-check.py audit on every PR.
+      - name: Build site with warning policy
+        run: python3 -B tools/audit/local-ci.py --docs-only
+        # Note: deliberately not mkdocs --strict. Upstream source references
+        # under refs/ are allowed, while any non-refs MkDocs WARNING fails in
+        # tools/audit/local-ci.py so deploy logs stay aligned with local parity.
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

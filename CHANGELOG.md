@@ -16,6 +16,36 @@ Docs navigation links now target concrete tracked pages instead of directories, 
 MkDocs warning output now contains no non-`refs/` warnings in the local build.
 The local CI parity gate now enforces that same MkDocs warning policy so new non-`refs/` docs warnings fail before push.
 Successful local CI docs runs now summarize MkDocs warning policy instead of printing the full refs warning stream.
+The GitHub Pages docs workflow now uses the same docs-only MkDocs warning-policy path as local CI.
+
+### Phase 63 — Docs workflow uses local MkDocs policy
+
+#### Added
+- Added `python3 tools/audit/local-ci.py --docs-only` for docs deploy jobs that need only MkDocs build plus warning policy.
+
+#### Changed
+- `.github/workflows/docs.yml` now builds the site through `tools/audit/local-ci.py --docs-only` instead of calling `./tools/build-docs.sh` and `mkdocs build --clean` directly.
+- The docs workflow trigger now includes `tools/audit/local-ci.py` and `tools/build-docs.sh` so docs deployment re-runs when the shared docs build path changes.
+- README pre-push guidance now names the MkDocs non-`refs/` warning policy explicitly.
+
+#### Impact
+- Local pre-push docs verification and GitHub Pages deployment now use the same warning policy implementation.
+- Real-CI docs deployment should fail on the same non-`refs/` MkDocs warning regressions that fail locally.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Push-readiness is tighter because the deploy workflow no longer has a separate, weaker docs build path.
 
 ### Phase 62 — Local CI MkDocs output summarized
 

@@ -187,7 +187,7 @@ main 브랜치의 모든 커밋에서 8개 모두 통과해요.
 - 스킬 PLAYBOOK은 verification phase 체크리스트 포함.
 - 한국어 문자열은 한국어로 직접 작성 (기계 번역 금지).
 - 모든 검사 통과.
-- CI에 올리기 전 GitHub workflow와 가까운 로컬 검증이 필요하면 `npm run ci:local`을 실행하세요. `release:check`, Python syntax check, knowledge size budget, VS Code extension compile/unit test, mkdocs build를 한 번에 확인해요.
+- CI에 올리기 전 GitHub workflow와 가까운 로컬 검증이 필요하면 `npm run ci:local`을 실행하세요. `release:check`, Python syntax check, knowledge size budget, VS Code extension compile/unit test, MkDocs build, docs deployment workflow와 같은 non-`refs/` MkDocs warning policy를 한 번에 확인해요.
 
 ## 라이선스
 

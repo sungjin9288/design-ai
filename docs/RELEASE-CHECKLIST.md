@@ -102,11 +102,10 @@ npm run package:smoke
 
 ```bash
 pip install -r docs/requirements.txt
-./tools/build-docs.sh
-mkdocs build --clean
+python3 -B tools/audit/local-ci.py --docs-only
 ```
 
-Should succeed in < 20 seconds. Visit `site/index.html` locally to spot-check.
+Should succeed in < 20 seconds and end with the MkDocs non-`refs/` warning policy summary. Visit `site/index.html` locally to spot-check.
 
 ### 8. VS Code extension build
 
@@ -143,7 +142,7 @@ GitHub Actions takes over:
 - `publish.yml` runs on `v*` tags — verifies versions, runs audits, checks package contents, packs, smoke-tests the installed tarball, including version and top-level help output, command alias help and functional alias output, command-specific help topic output, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/status/uninstall lifecycle output, then publishes to npm with provenance.
 - After npm publish, `publish.yml` runs the registry smoke test against the published package so `npm exec --package @design-ai/cli@<version>`, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help/command aliases, functional aliases, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, and install/`doctor --strict`/status/uninstall lifecycle output are verified from the public registry.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
-- `docs.yml` re-builds and deploys the doc site.
+- `docs.yml` re-builds the doc site through `tools/audit/local-ci.py --docs-only` and deploys it.
 
 ### 11. Post-tag
 

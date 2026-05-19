@@ -143,12 +143,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: `tools/audit/local-ci.py` now captures successful MkDocs output quietly and prints the compact warning-policy summary instead. Failed subprocesses still echo captured output for diagnostics.
 
+### 10. Docs deployment still had a separate build path
+
+**Found by**: comparing `npm run ci:local` with `.github/workflows/docs.yml` before Real-CI verification.
+
+**Symptom**: Local CI enforced the non-`refs/` warning policy, but the GitHub Pages workflow still called `mkdocs build --clean` directly. A warning regression could therefore fail locally but still deploy if someone bypassed the local gate.
+
+**Fix**: added `tools/audit/local-ci.py --docs-only` and switched `.github/workflows/docs.yml` to use it. The workflow path filter now includes the shared docs build helper files.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path.
 
 ## Performance
 

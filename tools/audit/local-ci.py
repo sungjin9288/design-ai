@@ -9,6 +9,7 @@ is pushed for Real-CI verification.
 
 Usage:
   python3 tools/audit/local-ci.py
+  python3 tools/audit/local-ci.py --docs-only
 """
 from __future__ import annotations
 
@@ -224,6 +225,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--self-test", action="store_true", help="Run local fixture checks.")
     parser.add_argument(
+        "--docs-only",
+        action="store_true",
+        help="Run only mkdocs build plus warning policy, matching the docs deployment workflow.",
+    )
+    parser.add_argument(
         "--skip-release-check",
         action="store_true",
         help="Skip the expensive npm release gate when rerunning workflow-only checks.",
@@ -234,6 +240,11 @@ def main() -> int:
 
     if args.self_test:
         return run_self_test()
+
+    if args.docs_only:
+        run_docs_build()
+        print("\nDocs-only MkDocs policy check passed", flush=True)
+        return 0
 
     if not args.skip_release_check:
         run_release_check()

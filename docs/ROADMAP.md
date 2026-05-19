@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 63 — Docs workflow uses local MkDocs policy (v4.13.0) ✓ shipped
+
+The GitHub Pages deployment workflow now runs through the same docs-only warning-policy path as local CI.
+
+### Added
+- `tools/audit/local-ci.py --docs-only` runs MkDocs version check, `tools/build-docs.sh`, `mkdocs build --clean`, and non-`refs/` warning enforcement without release, VS Code, or package checks.
+
+### Changed
+- `.github/workflows/docs.yml` now calls `python3 -B tools/audit/local-ci.py --docs-only`.
+- The docs workflow path filter now includes `tools/audit/local-ci.py` and `tools/build-docs.sh`.
+- README pre-push guidance now explicitly mentions the MkDocs non-`refs/` warning policy.
+
+### Impact
+- Local docs parity and GitHub Pages deployment share one warning-policy implementation.
+- Real-CI docs deployment should fail on the same non-`refs/` MkDocs warning regressions as local `ci:local`.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Real-CI verification is more meaningful because docs deployment no longer uses a separate direct MkDocs command.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 62 — Local CI MkDocs output summarized (v4.13.0) ✓ shipped
 
 Successful local CI docs runs now keep MkDocs output compact while preserving the Phase 61 warning policy.
