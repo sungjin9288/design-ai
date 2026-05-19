@@ -8,7 +8,9 @@ import { auditScriptLabel } from "../commands/audit.mjs";
 import {
   HELP_ALIASES,
   HELP_TOPICS,
+  buildHelpCatalog,
   buildPluginInventorySummary,
+  formatHelpJson,
   runHelp,
 } from "../commands/help.mjs";
 import { REPOSITORY_AUDIT_SCRIPTS } from "./doctor.mjs";
@@ -71,6 +73,50 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
     "design-ai route <brief|--from-file file|--stdin|--list> [--limit N]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
+});
+
+test("formatHelpJson preserves help catalog order and alias map order", () => {
+  const formatted = formatHelpJson(buildHelpCatalog());
+  const catalog = JSON.parse(formatted);
+
+  assert.deepEqual(Object.keys(catalog), ["usage", "topics", "aliases"]);
+  assert.deepEqual(Object.keys(catalog.topics[0]), [
+    "topic",
+    "usage",
+    "description",
+    "aliases",
+  ]);
+  assert.deepEqual(catalog.topics.map((topic) => topic.topic), HELP_TOPICS);
+  assert.deepEqual(Object.keys(catalog.aliases), Object.keys(HELP_ALIASES));
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "show").usage,
+    "design-ai show <file[:line]> [--lines N:M] [--context N] [--json]",
+  );
+  assert.match(formatted, /"topics": \[\n    \{\n      "topic": "install",/);
+});
+
+test("formatHelpJson keeps localized help text readable", () => {
+  const formatted = formatHelpJson({
+    usage: "design-ai 도움말",
+    topics: [
+      {
+        topic: "도움말",
+        usage: "design-ai help",
+        description: "한국어 도움말 설명",
+        aliases: ["도움"],
+      },
+    ],
+    aliases: {
+      도움: "help",
+    },
+  });
+  const catalog = JSON.parse(formatted);
+
+  assert.equal(catalog.usage, "design-ai 도움말");
+  assert.equal(catalog.topics[0].description, "한국어 도움말 설명");
+  assert.deepEqual(catalog.aliases, { 도움: "help" });
+  assert.ok(formatted.includes("한국어 도움말 설명"));
+  assert.ok(!formatted.includes("\\u"));
 });
 
 test("runHelp delegates command topics to command-specific help", async () => {

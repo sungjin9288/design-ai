@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 89 — Help command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai help` now self-tests its JSON output contract for top-level command discovery, topic entries, and alias maps.
+
+### Changed
+- `cli/commands/help.mjs` now uses `formatHelpJson()` as the shared formatter for help-topic catalog JSON output.
+- `cli/commands/help.mjs` now sends `--json` output through that formatter.
+- `cli/lib/help-command.test.mjs` now checks JSON round-trip behavior, top-level catalog key order, topic-entry key order, alias map order, and readable localized help text.
+
+### Impact
+- Automation that uses `design-ai help --json` can rely on stable `usage`, `topics`, and `aliases` payload order.
+- Localized help text stays readable instead of being escaped in machine-readable help catalog output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai help` keeps machine-readable command discovery refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 88 — Show command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai show` now self-tests its JSON output contract for corpus file metadata, context windows, and explicit line ranges.

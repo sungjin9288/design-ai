@@ -42,6 +42,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai examples` now formats machine-readable worked-example discovery through a self-tested JSON formatter with stable route-biased result order.
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
+`design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
+
+### Phase 89 — Help command JSON formatter guard added
+
+#### Changed
+- `cli/commands/help.mjs` now exposes `formatHelpJson()` for `design-ai help --json` output.
+- `cli/commands/help.mjs` now routes help-topic catalog JSON output through the shared formatter.
+- `cli/lib/help-command.test.mjs` now asserts JSON round-trip behavior, top-level catalog key order, topic-entry key order, alias map order, and readable localized help text.
+
+#### Impact
+- Automation that uses `design-ai help --json` to discover supported commands and aliases can keep relying on stable `usage`, `topics`, and `aliases` payload order.
+- Localized help text remains readable in machine-readable help catalog output.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Help catalog JSON can be refactored without silently changing the automation-facing command discovery contract.
 
 ### Phase 88 — Show command JSON formatter guard added
 

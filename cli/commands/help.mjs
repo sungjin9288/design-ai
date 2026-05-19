@@ -138,8 +138,12 @@ export function buildHelpCatalog() {
   };
 }
 
+export function formatHelpJson(catalog) {
+  return JSON.stringify(catalog, null, 2);
+}
+
 function printHelpJson() {
-  console.log(JSON.stringify(buildHelpCatalog(), null, 2));
+  console.log(formatHelpJson(buildHelpCatalog()));
 }
 
 function countManifestSection(manifest, section) {
