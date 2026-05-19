@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 68 — MkDocs refs warning baseline capped (v4.13.0) ✓ shipped
+
+The local MkDocs warning policy now caps the intentional `refs/` warning stream at the accepted baseline.
+
+### Changed
+- `tools/audit/local-ci.py` now fails if refs-only MkDocs warnings exceed the current accepted baseline of 632.
+- `tools/audit/local-ci.py --self-test` now covers refs-warning classification and baseline-regression behavior.
+
+### Impact
+- New upstream-source links cannot silently grow the accepted warning stream before Real-CI verification.
+- Maintainers get a focused failure that asks for either link normalization or a documented baseline update.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The remaining docs warning policy is now bounded by both category and count.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 67 — Docs workflow corpus path invariant expanded (v4.13.0) ✓ shipped
 
 The local docs workflow drift check now guards all main corpus directory triggers.

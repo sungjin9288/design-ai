@@ -183,12 +183,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: expanded `tools/audit/local-ci.py` required docs workflow paths to include the main corpus directory globs.
 
+### 15. Refs-only warnings needed a count baseline too
+
+**Found by**: reviewing the remaining policy gap after the docs workflow path invariants were complete.
+
+**Symptom**: Local CI rejected non-`refs/` warnings, but any new `refs/` warning still passed as acceptable. That meant the known 632-warning stream could grow quietly even though every added warning makes Real-CI logs harder to compare.
+
+**Fix**: added a 632-warning refs baseline cap to `tools/audit/local-ci.py` and covered both the passing baseline and over-baseline failure in the local CI self-test.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success; the GitHub Pages docs workflow uses the same docs-only policy path, watches corpus directories and Korean top-level site inputs, and local CI checks that the workflow stays aligned by inspecting workflow commands and path entries.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references, and local CI now caps that accepted stream at 632 warnings. `npm run ci:local` enforces this non-`refs/` warning policy and refs baseline on success; the GitHub Pages docs workflow uses the same docs-only policy path, watches corpus directories and Korean top-level site inputs, and local CI checks that the workflow stays aligned by inspecting workflow commands and path entries.
 
 ## Performance
 

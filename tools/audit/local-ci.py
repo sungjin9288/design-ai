@@ -26,6 +26,7 @@ PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "t
 LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
+MKDOCS_REFS_WARNING_BASELINE = 632
 DOCS_WORKFLOW_REQUIRED_PATHS = (
     "knowledge/**",
     "examples/**",
@@ -213,20 +214,39 @@ def non_refs_mkdocs_warning_lines(output: str) -> list[str]:
     return [line for line in mkdocs_warning_lines(output) if "refs/" not in line]
 
 
-def assert_mkdocs_warning_policy(output: str) -> None:
-    unexpected = non_refs_mkdocs_warning_lines(output)
-    if not unexpected:
-        print(
-            f"\nMkDocs warning policy passed: {len(mkdocs_warning_lines(output))} refs-only warning(s)",
-            flush=True,
-        )
-        return
+def refs_mkdocs_warning_lines(output: str) -> list[str]:
+    return [line for line in mkdocs_warning_lines(output) if "refs/" in line]
 
-    sample = "\n".join(f"- {line}" for line in unexpected[:10])
-    raise SystemExit(
-        "mkdocs emitted non-refs warning(s); fix docs navigation or update the warning policy.\n"
-        f"Unexpected warning count: {len(unexpected)}\n"
-        f"{sample}"
+
+def assert_mkdocs_warning_policy(
+    output: str,
+    *,
+    refs_warning_baseline: int = MKDOCS_REFS_WARNING_BASELINE,
+) -> None:
+    unexpected = non_refs_mkdocs_warning_lines(output)
+    if unexpected:
+        sample = "\n".join(f"- {line}" for line in unexpected[:10])
+        raise SystemExit(
+            "mkdocs emitted non-refs warning(s); fix docs navigation or update the warning policy.\n"
+            f"Unexpected warning count: {len(unexpected)}\n"
+            f"{sample}"
+        )
+
+    refs_warnings = refs_mkdocs_warning_lines(output)
+    if len(refs_warnings) > refs_warning_baseline:
+        sample = "\n".join(f"- {line}" for line in refs_warnings[:10])
+        raise SystemExit(
+            "mkdocs refs-only warning count exceeded the accepted baseline; normalize new "
+            "refs links or update the baseline with a documented policy decision.\n"
+            f"Refs warning count: {len(refs_warnings)}\n"
+            f"Accepted baseline: {refs_warning_baseline}\n"
+            f"{sample}"
+        )
+
+    print(
+        "\nMkDocs warning policy passed: "
+        f"{len(refs_warnings)}/{refs_warning_baseline} refs-only warning(s)",
+        flush=True,
     )
 
 
@@ -292,10 +312,25 @@ def run_self_test() -> int:
             "refs-only mkdocs warnings should be allowed",
         )
         assert_condition(
+            len(refs_mkdocs_warning_lines(refs_only_output)) == 2,
+            "refs mkdocs warning classifier should count refs warning lines",
+        )
+        assert_condition(
             run_capture(["python3", "-c", "print('quiet success')"], echo=False).strip() == "quiet success",
             "quiet command capture should return stdout without echoing on success",
         )
-        assert_mkdocs_warning_policy(refs_only_output)
+        assert_mkdocs_warning_policy(refs_only_output, refs_warning_baseline=2)
+
+        refs_baseline_regression_output = refs_only_output + "\n" + (
+            "WARNING - Doc file 'examples/extra.md' contains a link '../refs/extra/source.md', "
+            "but the target 'refs/extra/source.md' is not found among documentation files."
+        )
+        try:
+            assert_mkdocs_warning_policy(refs_baseline_regression_output, refs_warning_baseline=2)
+        except SystemExit as error:
+            assert_condition("baseline" in str(error), "refs warning cap failure should explain baseline")
+        else:
+            raise SystemExit("self-test failed: refs warning cap should raise SystemExit")
 
         mixed_output = refs_only_output + "\n" + (
             "WARNING - Doc file 'index.md' contains a link 'skills/', "

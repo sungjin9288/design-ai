@@ -18,7 +18,7 @@ For pre-push Real-CI parity, run the broader local workflow gate:
 npm run ci:local
 ```
 
-This wraps `release:check`, then adds the GitHub workflow-only checks: Python `py_compile`, knowledge/docs/examples size budget, VS Code extension dependency install + compile + unit tests, docs workflow policy alignment, `mkdocs build --clean`, and the MkDocs warning policy that allows only intentional `refs/` source-link warnings. If mkdocs is missing, install the docs dependencies first:
+This wraps `release:check`, then adds the GitHub workflow-only checks: Python `py_compile`, knowledge/docs/examples size budget, VS Code extension dependency install + compile + unit tests, docs workflow policy alignment, `mkdocs build --clean`, and the MkDocs warning policy that allows only intentional `refs/` source-link warnings while capping them at the accepted baseline. If mkdocs is missing, install the docs dependencies first:
 
 ```bash
 python3 -m pip install -r docs/requirements.txt
@@ -105,7 +105,7 @@ pip install -r docs/requirements.txt
 python3 -B tools/audit/local-ci.py --docs-only
 ```
 
-Should succeed in < 20 seconds and end with the MkDocs non-`refs/` warning policy summary. Visit `site/index.html` locally to spot-check.
+Should succeed in < 20 seconds and end with the MkDocs warning policy summary, including the refs-only warning count versus its accepted baseline. Visit `site/index.html` locally to spot-check.
 
 ### 8. VS Code extension build
 

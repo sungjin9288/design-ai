@@ -21,6 +21,34 @@ Local CI now checks that the docs workflow keeps using that shared docs-only pol
 Docs workflow policy checks now inspect parsed `run:` commands and `paths:` entries instead of relying on broad substring matches.
 Docs deployment now re-runs when Korean top-level site entries change.
 Local CI now also guards the docs workflow corpus directory path filters.
+MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
+
+### Phase 68 — MkDocs refs warning baseline capped
+
+#### Changed
+- `tools/audit/local-ci.py` now caps accepted MkDocs `refs/` warning output at the current 632-warning baseline.
+- The local CI self-test now covers refs-only warning count classification and a baseline-regression failure case.
+
+#### Impact
+- Future docs changes can still keep intentional upstream `refs/` source links, but they cannot silently increase the warning stream before Real-CI verification.
+- Maintainers now get a specific failure message when new `refs/` links expand the accepted warning baseline without a documented policy decision.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run ci:local:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- The remaining MkDocs warning policy is now bounded by count as well as by category, making Real-CI logs easier to compare against local parity.
 
 ### Phase 67 — Docs workflow corpus path invariant expanded
 
