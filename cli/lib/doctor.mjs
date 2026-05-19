@@ -63,6 +63,10 @@ export function summarizeChecks(checks) {
   );
 }
 
+export function formatDoctorJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
 export function isNodeVersionSupported(version = process.versions.node) {
   const major = Number(String(version).split(".")[0]);
   return Number.isFinite(major) && major >= 18;

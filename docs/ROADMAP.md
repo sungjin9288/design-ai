@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 90 — Doctor command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai doctor` now self-tests its JSON output contract for install-health context, diagnostic checks, summary counts, and fix metadata.
+
+### Changed
+- `cli/lib/doctor.mjs` now uses `formatDoctorJson()` as the shared formatter for doctor diagnostics JSON output.
+- `cli/commands/doctor.mjs` now sends `--json` output through that formatter.
+- `cli/lib/doctor.test.mjs` now checks JSON round-trip behavior, top-level diagnostic key order, context/expected/check/summary/fix key order, and readable localized diagnostic text.
+
+### Impact
+- Automation that uses `design-ai doctor --json` can rely on stable install-health payload order.
+- Localized diagnostic labels, details, actions, and fix reasons stay readable instead of being escaped in machine-readable diagnostics output.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/doctor.test.mjs`
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai doctor` keeps machine-readable install-health diagnostics refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 89 — Help command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai help` now self-tests its JSON output contract for top-level command discovery, topic entries, and alias maps.

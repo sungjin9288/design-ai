@@ -43,6 +43,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
+`design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
+
+### Phase 90 — Doctor command JSON formatter guard added
+
+#### Changed
+- `cli/lib/doctor.mjs` now exposes `formatDoctorJson()` for `design-ai doctor --json` output.
+- `cli/commands/doctor.mjs` now routes diagnostics JSON output through the shared formatter.
+- `cli/lib/doctor.test.mjs` now asserts JSON round-trip behavior, top-level diagnostic key order, context/expected/check/summary/fix key order, and readable localized diagnostic text.
+
+#### Impact
+- Automation that parses `design-ai doctor --json` can keep relying on stable `context`, `checks`, `summary`, and `fix` payload order.
+- Localized diagnostic labels, details, actions, and fix reasons remain readable in machine-readable doctor output.
+
+#### Verified
+- `node --test cli/lib/doctor.test.mjs`
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Doctor diagnostics JSON can be refactored without silently changing the automation-facing install-health contract.
 
 ### Phase 89 — Help command JSON formatter guard added
 

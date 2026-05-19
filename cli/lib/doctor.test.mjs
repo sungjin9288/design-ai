@@ -18,6 +18,7 @@ import {
   REPOSITORY_AUDIT_SCRIPTS,
   STATUS,
   collectDoctorReport,
+  formatDoctorJson,
   inspectExpectedLinks,
   isNodeVersionSupported,
   summarizeChecks,
@@ -125,6 +126,83 @@ test("summarizeChecks counts pass, warn, and fail states", () => {
   ]);
 
   assert.deepEqual(summary, { pass: 2, warn: 1, fail: 1 });
+});
+
+test("formatDoctorJson preserves diagnostic report order", () => {
+  const { tmp, sourceRoot } = createMinimalSource();
+  try {
+    const report = collectDoctorReport({
+      sourceRoot,
+      claudeHome: path.join(tmp, "claude"),
+      prefix: "design-",
+    });
+    const formatted = formatDoctorJson({
+      ...report,
+      fix: {
+        attempted: false,
+        applied: false,
+        reason: "",
+      },
+    });
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), ["context", "checks", "summary", "fix"]);
+    assert.deepEqual(Object.keys(parsed.context), [
+      "sourceRoot",
+      "claudeHome",
+      "prefix",
+      "expected",
+    ]);
+    assert.deepEqual(Object.keys(parsed.context.expected), ["skills", "agents", "commands"]);
+    assert.deepEqual(Object.keys(parsed.checks[0]), ["status", "label", "detail", "action"]);
+    assert.deepEqual(Object.keys(parsed.summary), ["pass", "warn", "fail"]);
+    assert.deepEqual(Object.keys(parsed.fix), ["attempted", "applied", "reason"]);
+    assert.equal(parsed.context.prefix, "design-");
+    assert.match(formatted, /"checks": \[\n    \{\n      "status": "PASS",/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("formatDoctorJson keeps localized diagnostic text readable", () => {
+  const formatted = formatDoctorJson({
+    context: {
+      sourceRoot: "/tmp/디자인",
+      claudeHome: "/tmp/클로드",
+      prefix: "디자인-",
+      expected: {
+        skills: 1,
+        agents: 1,
+        commands: 1,
+      },
+    },
+    checks: [
+      {
+        status: STATUS.WARN,
+        label: "한국어 진단",
+        detail: "설치 경로 확인 필요",
+        action: "design-ai install 실행",
+      },
+    ],
+    summary: {
+      pass: 0,
+      warn: 1,
+      fail: 0,
+    },
+    fix: {
+      attempted: true,
+      applied: false,
+      reason: "수동 확인이 필요합니다.",
+    },
+  });
+  const parsed = JSON.parse(formatted);
+
+  assert.equal(parsed.context.sourceRoot, "/tmp/디자인");
+  assert.equal(parsed.checks[0].label, "한국어 진단");
+  assert.equal(parsed.checks[0].detail, "설치 경로 확인 필요");
+  assert.equal(parsed.fix.reason, "수동 확인이 필요합니다.");
+  assert.ok(formatted.includes("한국어 진단"));
+  assert.ok(!formatted.includes("\\u"));
 });
 
 test("inspectExpectedLinks reports missing target directory", () => {

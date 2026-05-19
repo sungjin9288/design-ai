@@ -1,6 +1,6 @@
 // `design-ai doctor` — diagnose source, runtime, and Claude Code install state.
 
-import { collectDoctorReport, STATUS } from "../lib/doctor.mjs";
+import { collectDoctorReport, formatDoctorJson, STATUS } from "../lib/doctor.mjs";
 import { header, info, success, warn, error, dim } from "../lib/log.mjs";
 import { run } from "../lib/exec.mjs";
 import {
@@ -123,7 +123,7 @@ export async function runDoctor(args) {
   }
 
   if (flags.json) {
-    console.log(JSON.stringify({ ...report, fix }, null, 2));
+    console.log(formatDoctorJson({ ...report, fix }));
   } else {
     printReport(report);
     if (flags.fix) {
