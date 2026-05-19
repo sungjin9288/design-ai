@@ -36,6 +36,36 @@ Release metadata now reports audit-count source failures as structured errors in
 Release metadata now self-tests its human pass/fail output formatter.
 Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
+`design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
+
+### Phase 83 — Route command JSON formatter guard added
+
+#### Changed
+- `cli/lib/route.mjs` now exposes `formatRouteJson()` for route recommendation and catalog output.
+- `cli/commands/route.mjs` now routes `design-ai route --json` and `design-ai route --list --json` through the shared formatter.
+- `cli/lib/route.test.mjs` now asserts JSON round-trip behavior, recommendation payload key order, catalog payload key order, readable Korean route keywords, and non-escaped Unicode output.
+
+#### Impact
+- Automation that consumes route recommendations can keep relying on the same top-level payload shape for both task-scored routes and catalog listing.
+- Korean route keywords remain readable in JSON output, which matters for Korean briefs and downstream agent routing.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Route recommendation JSON can be refactored without silently changing automation-facing route or catalog report contracts.
 
 ### Phase 82 — Check command JSON formatter guard added
 

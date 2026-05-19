@@ -3,7 +3,13 @@
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { dim, header, info, warn } from "../lib/log.mjs";
 import { resolveBriefInput } from "../lib/brief.mjs";
-import { parseRouteArgs, readRouteManifestVersion, routeBrief, routeCatalog } from "../lib/route.mjs";
+import {
+  formatRouteJson,
+  parseRouteArgs,
+  readRouteManifestVersion,
+  routeBrief,
+  routeCatalog,
+} from "../lib/route.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai route <brief> [--limit N] [--explain] [--json]");
@@ -91,7 +97,7 @@ export async function runRoute(args) {
     };
 
     if (parsed.json) {
-      console.log(JSON.stringify(payload, null, 2));
+      console.log(formatRouteJson(payload));
       return;
     }
 
@@ -139,7 +145,7 @@ export async function runRoute(args) {
   };
 
   if (parsed.json) {
-    console.log(JSON.stringify(payload, null, 2));
+    console.log(formatRouteJson(payload));
     return;
   }
 

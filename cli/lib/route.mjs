@@ -483,3 +483,7 @@ export function readRouteManifestVersion(sourceRoot) {
     return "unknown";
   }
 }
+
+export function formatRouteJson(payload) {
+  return JSON.stringify(payload, null, 2);
+}

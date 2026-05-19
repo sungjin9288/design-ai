@@ -12,7 +12,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  formatRouteJson,
   parseRouteArgs,
+  readRouteManifestVersion,
   routeCatalog,
   routeById,
   routeBrief,
@@ -205,6 +207,42 @@ test("routeBrief recommends component spec for component briefs", () => {
   }
 });
 
+test("formatRouteJson preserves route recommendation order and readable Korean keywords", () => {
+  const root = makeFixture();
+  try {
+    const brief = "Spec a Button component API with keyboard accessibility";
+    const payload = {
+      brief,
+      version: readRouteManifestVersion(root),
+      routes: routeBrief({
+        brief,
+        sourceRoot: root,
+        limit: 1,
+      }),
+    };
+    const formatted = formatRouteJson(payload);
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), ["brief", "version", "routes"]);
+    assert.equal(parsed.brief, brief);
+    assert.deepEqual(Object.keys(parsed.routes[0]).slice(0, 8), [
+      "id",
+      "label",
+      "score",
+      "confidence",
+      "matchedKeywords",
+      "command",
+      "skills",
+      "agents",
+    ]);
+    assert.match(formatted, /"routes": \[\n    \{/);
+    assert.match(formatted, /컴포넌트/);
+    assert.doesNotMatch(formatted, /\\u[0-9a-fA-F]{4}/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("routeBrief does not match short spatial keyword inside another word", () => {
   const root = makeFixture();
   try {
@@ -214,6 +252,24 @@ test("routeBrief does not match short spatial keyword inside another word", () =
     });
 
     assert.equal(routes.some((route) => route.id === "spatial"), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("formatRouteJson preserves catalog payload order", () => {
+  const root = makeFixture();
+  try {
+    const payload = {
+      version: readRouteManifestVersion(root),
+      routes: routeCatalog({ sourceRoot: root }),
+    };
+    const parsed = JSON.parse(formatRouteJson(payload));
+
+    assert.deepEqual(Object.keys(parsed), ["version", "routes"]);
+    assert.equal(parsed.routes[0].id, "design-review");
+    assert.equal(parsed.routes[0].confidence, "catalog");
+    assert.equal(parsed.routes[0].explanation.summary, "Catalog listing; no task brief was scored.");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
