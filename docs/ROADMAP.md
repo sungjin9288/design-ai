@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 81 — Release metadata JSON output formatter guard added (v4.13.0) ✓ shipped
+
+Release metadata now self-tests its JSON output contract.
+
+### Changed
+- `tools/audit/release-metadata.py` now uses `format_json_summary()` for `--json` output.
+- `npm run release:metadata:self-test` now checks JSON round-trip behavior, summary key order, checked-doc indentation/order, and Korean error readability.
+- `docs/RELEASE-CHECKLIST.md` now documents the stable JSON summary contract.
+
+### Impact
+- JSON release metadata output can be refactored without losing top-level key order or checked-doc order.
+- Korean structured errors remain readable instead of being escaped into Unicode sequences.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata keeps tested contracts for both automation-facing JSON and maintainer-facing terminal output.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 80 — Release metadata human output formatter guard added (v4.13.0) ✓ shipped
 
 Release metadata now self-tests its non-JSON output contract.

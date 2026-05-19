@@ -54,6 +54,16 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
     ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
 )
+RELEASE_METADATA_SUMMARY_KEYS = (
+    "version",
+    "plugin_version",
+    "changelog_version",
+    "changelog_date",
+    "roadmap_entry_found",
+    "audit_count",
+    "release_policy_docs_checked",
+    "errors",
+)
 
 
 def load_json_input(label: str, path: Path) -> tuple[dict, list[str]]:
@@ -292,6 +302,10 @@ def format_human_summary(summary: dict) -> str:
     )
 
 
+def format_json_summary(summary: dict) -> str:
+    return json.dumps(summary, ensure_ascii=False, indent=2)
+
+
 def run_self_test() -> int:
     package_json = {"version": "1.2.3"}
     plugin_json = {"version": "1.2.3"}
@@ -359,6 +373,19 @@ warnings at the accepted baseline.
         "complete fixture should report the required release policy docs in order",
     )
     assert_condition(
+        tuple(passing) == RELEASE_METADATA_SUMMARY_KEYS,
+        "complete fixture should preserve the release metadata summary key order",
+    )
+    passing_json_output = format_json_summary(passing)
+    assert_condition(
+        json.loads(passing_json_output) == passing,
+        "JSON formatter should round-trip the release metadata summary",
+    )
+    assert_condition(
+        '"release_policy_docs_checked": [\n    "README.md",' in passing_json_output,
+        "JSON formatter should preserve readable indentation and checked-doc order",
+    )
+    assert_condition(
         format_human_summary(passing) == "Release metadata check passed: v1.2.3, 8 audits, CHANGELOG 2026-05",
         "human formatter should preserve the passing release metadata summary",
     )
@@ -387,6 +414,11 @@ warnings at the accepted baseline.
     assert_condition(
         "- plugin manifest version mismatch: 1.2.2 != 1.2.3" in failing_human_output,
         "human formatter should include structured validation errors",
+    )
+    korean_error_json = format_json_summary({**passing, "errors": ["MkDocs 경고 정책 누락"]})
+    assert_condition(
+        "MkDocs 경고 정책 누락" in korean_error_json and "\\u" not in korean_error_json,
+        "JSON formatter should keep Korean structured errors readable",
     )
 
     command_drift = release_metadata_summary(
@@ -585,7 +617,7 @@ def main() -> int:
     )
 
     if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        print(format_json_summary(summary))
     else:
         print(format_human_summary(summary))
 

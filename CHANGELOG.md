@@ -34,6 +34,35 @@ Release metadata now reports missing release policy doc files as structured erro
 Release metadata now reports missing or invalid core release inputs as structured errors instead of tracebacks.
 Release metadata now reports audit-count source failures as structured errors instead of exiting early.
 Release metadata now self-tests its human pass/fail output formatter.
+Release metadata now self-tests its JSON output formatter and summary key order.
+
+### Phase 81 — Release metadata JSON output formatter guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now formats machine-readable output through `format_json_summary()`.
+- `npm run release:metadata:self-test` now asserts JSON round-trip behavior, summary key order, checked-doc indentation/order, and readable Korean structured errors.
+- `docs/RELEASE-CHECKLIST.md` now documents the stable JSON summary contract alongside human structured bullet errors.
+
+#### Impact
+- `npm run release:metadata -- --json` now has explicit regression coverage for key order, checked docs order, and non-ASCII error readability.
+- Automation can keep relying on the same top-level summary shape while Korean release-policy errors remain readable in JSON output.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata now preserves machine-readable JSON and human terminal output through explicit formatter contracts.
 
 ### Phase 80 — Release metadata human output formatter guard added
 
