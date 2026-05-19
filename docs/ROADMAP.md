@@ -51,6 +51,37 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 59 — Documentation link hygiene before Real-CI (v4.13.0) ✓ shipped
+
+The public docs now avoid common directory-style links that MkDocs cannot resolve cleanly in the symlink-farm site build.
+
+### Changed
+- README badges, language toggles, AGENTS references, skill catalog entries, MCP docs, and integration docs now point to concrete markdown files or public docs URLs.
+- Worked examples now use correct relative paths from `examples/` into `knowledge/`, `commands/`, `docs/`, and sibling component specs.
+- Repository tool references that are intentionally outside the MkDocs docs tree now render as code paths instead of site links.
+
+### Impact
+- Root `index.md` / `index.ko.md` link warnings are 0 in the local MkDocs build.
+- Skill directory link INFO messages are 0 in the local MkDocs build.
+- MkDocs `WARNING` lines dropped to 643 in the latest local build, with the remaining noise concentrated in repo-local source references and older launch/i18n materials.
+
+### Verified
+- All 8 audits pass.
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Real-CI docs output should be easier to inspect because navigation-level false positives are no longer mixed into the warning stream.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Continue targeted coverage only when upstream adds product-relevant primitives.
+
 ## Phase 58 — MkDocs-safe Ant Design token swatches (v4.13.0) ✓ shipped
 
 The generated Ant Design token reference no longer produces false MkDocs hash-link warnings for preset palette swatches.

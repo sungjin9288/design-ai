@@ -35,7 +35,7 @@ List every screen and every reusable component on each. If components are repeat
 
 If it's an existing system component, just reference it: "Use `<Button intent='primary' size='lg'>` from our system." Don't re-spec.
 
-If it's new, follow the [`component-spec-writer`](../component-spec-writer/) skill's playbook to produce a full sub-spec.
+If it's new, follow the [`component-spec-writer`](../component-spec-writer/PLAYBOOK.md) skill's playbook to produce a full sub-spec.
 
 ### 4. Document interactions
 

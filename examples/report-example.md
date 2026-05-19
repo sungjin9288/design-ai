@@ -61,8 +61,8 @@
 또한 약관 동의(필수)와 분리해 별도 checkbox로 두어야 함.
 
 **참고**:
-- [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — 마케팅 동의 분리 규칙
-- [`knowledge/i18n/korean-publishing.md`](../../knowledge/i18n/korean-publishing.md) — 약관/동의 패턴
+- [`knowledge/i18n/korean-product-conventions.md`](../knowledge/i18n/korean-product-conventions.md) — 마케팅 동의 분리 규칙
+- [`knowledge/i18n/korean-publishing.md`](../knowledge/i18n/korean-publishing.md) — 약관/동의 패턴
 - [정보통신망법 제50조의2](https://www.law.go.kr/...)
 
 ---
@@ -91,8 +91,8 @@
 iOS Safari에서는 `lang="en"` 속성이 IME를 영문 모드로 전환합니다.
 
 **참고**:
-- [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md) — IME composition handling
-- [`examples/component-input.md`](../component-input.md) — Input spec
+- [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md) — IME composition handling
+- [`examples/component-input.md`](component-input.md) — Input spec
 
 ---
 
@@ -123,9 +123,9 @@ useSearchParams().set("email-verify", "true")
 ```
 
 **참고**:
-- [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md) — multi-step form 패턴
-- [`examples/component-form.md`](../component-form.md) — Form spec
-- [`examples/component-modal.md`](../component-modal.md) — modal 사용
+- [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md) — multi-step form 패턴
+- [`examples/component-form.md`](component-form.md) — Form spec
+- [`examples/component-modal.md`](component-modal.md) — modal 사용
 
 ---
 
@@ -142,7 +142,7 @@ useSearchParams().set("email-verify", "true")
 + /^01[0-9]-?\d{3,4}-?\d{4}$/  // KR 010-####-####
 ```
 
-**참고**: [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md)
+**참고**: [`knowledge/i18n/korean-product-conventions.md`](../knowledge/i18n/korean-product-conventions.md)
 
 ---
 
@@ -153,7 +153,7 @@ useSearchParams().set("email-verify", "true")
 
 **해결**: button을 항상 enabled로 두고, 클릭 시 invalid field로 focus 이동 + 에러 메시지 표시.
 
-cite [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md).
+cite [`knowledge/patterns/form-design.md`](../knowledge/patterns/form-design.md).
 
 ---
 

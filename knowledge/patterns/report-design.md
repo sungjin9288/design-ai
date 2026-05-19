@@ -326,5 +326,5 @@ Korean fintech / startup reports trend lighter (Toss-style):
 - [`knowledge/patterns/information-architecture.md`](information-architecture.md) — for longer reports
 - [`knowledge/patterns/chart-color-encoding.md`](chart-color-encoding.md) — charts in reports
 - [`knowledge/patterns/design-system-qa.md`](design-system-qa.md) — audit-specific format
-- [`skills/ux-audit/`](../../skills/ux-audit/) — audit skill
-- [`skills/design-critique/`](../../skills/design-critique/) — critique skill
+- [`skills/ux-audit/PLAYBOOK.md`](../../skills/ux-audit/PLAYBOOK.md) — audit skill
+- [`skills/design-critique/PLAYBOOK.md`](../../skills/design-critique/PLAYBOOK.md) — critique skill

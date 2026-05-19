@@ -111,13 +111,21 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: changed `tools/extractors/ant_design_tokens.py` to emit decorative inline HTML swatches with `aria-hidden="true"`, regenerated the token reference, and added `tools/extractors/ant_design_tokens.py --self-test` to prevent the hash-image pattern from returning.
 
+### 6. Directory links obscured real docs warnings
+
+**Found by**: local MkDocs warning categorization during push-readiness hardening.
+
+**Symptom**: root README badges, language toggles, skill catalog entries, MCP docs, and a few worked examples linked to directories such as `skills/`, `examples/`, or `skills/component-spec-writer/`. The repo-local link audit accepted some of these, but MkDocs could not resolve them to tracked site pages cleanly.
+
+**Fix**: changed navigation-style links to concrete markdown files or public docs URLs, corrected `examples/` relative paths into `knowledge/`, `commands/`, and `docs/`, and rendered tool-only references outside the site tree as code paths.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 - **~70 warnings: `.py`, `.yml`, `.ko.md` files referenced from doc but not in nav** — files exist in repo, just not promoted to mkdocs-tracked content. Acceptable for repo-local utility links.
 
-Total remaining link warnings in the latest local build: 681. The Ant Design color-anchor class is now 0; remaining warnings are repo-local reference links or files intentionally outside the MkDocs nav.
+Total remaining MkDocs `WARNING` lines in the latest local build: 643. Root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are repo-local reference links or files intentionally outside the MkDocs nav.
 
 ## Performance
 

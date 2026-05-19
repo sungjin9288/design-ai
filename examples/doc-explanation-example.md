@@ -169,9 +169,9 @@ For now: **W3C DTCG is the bet**.
 
 - [W3C DTCG specification](https://design-tokens.github.io/community-group/format/)
 - [Style Dictionary v4 docs](https://styledictionary.com/)
-- [`docs/TOKEN-SYNC.md`](../../docs/TOKEN-SYNC.md) — three-tier token strategy
-- [`knowledge/design-tokens/`](../../knowledge/design-tokens/) — token reference docs per upstream system
-- [`tools/figma-plugin/src/code.ts`](../../tools/figma-plugin/src/code.ts) — implementation
+- [`docs/TOKEN-SYNC.md`](../docs/TOKEN-SYNC.md) — three-tier token strategy
+- [`knowledge/design-tokens/ant-design.md`](../knowledge/design-tokens/ant-design.md) — token reference docs per upstream system
+- `tools/figma-plugin/src/code.ts` — implementation
 ```
 
 ---

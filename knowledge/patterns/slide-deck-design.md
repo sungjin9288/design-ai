@@ -313,4 +313,4 @@ For Korean fintech pitch decks: per Toss-style aesthetic — minimal, single pri
 - [`knowledge/patterns/chart-color-encoding.md`](chart-color-encoding.md) — chart-on-slide
 - [`knowledge/patterns/information-architecture.md`](information-architecture.md) — structuring sections
 - [`knowledge/colors/color-theory.md`](../colors/color-theory.md) — palette construction
-- [`skills/slide-deck-author/`](../../skills/slide-deck-author/) — authoring skill (uses these rules)
+- [`skills/slide-deck-author/PLAYBOOK.md`](../../skills/slide-deck-author/PLAYBOOK.md) — authoring skill (uses these rules)

@@ -133,11 +133,11 @@ The button now uses your brand-derived tokens.
 
 You generated tokens. Now:
 
-- **Spec your first component** with `/component-spec Button` — see [`skills/component-spec-writer`](skills/component-spec-writer/).
-- **Bootstrap a full design system** with `/design-from-brief` — see [`commands/design-from-brief.md`](commands/design-from-brief.md).
-- **Sync with Figma** via Tokens Studio plugin — see [`docs/integrations/figma-mcp.md`](docs/integrations/figma-mcp.md).
+- **Spec your first component** with `/component-spec Button` — see [`skills/component-spec-writer`](../skills/component-spec-writer/PLAYBOOK.md).
+- **Bootstrap a full design system** with `/design-from-brief` — see [`commands/design-from-brief.md`](../commands/design-from-brief.md).
+- **Sync with Figma** via Tokens Studio plugin — see [`docs/integrations/figma-mcp.md`](../docs/integrations/figma-mcp.md).
 
-If you got stuck, check [`docs/USING.md`](docs/USING.md) for agent-specific setup.
+If you got stuck, check [`docs/USING.md`](../docs/USING.md) for agent-specific setup.
 ```
 
 ---

@@ -234,5 +234,5 @@ For early-stage Korean fintech / startup: focus design system first; brand emerg
 - [`knowledge/typography/font-pairings.md`](../typography/font-pairings.md) — font selection per mood
 - [`knowledge/patterns/styles-catalog.md`](styles-catalog.md) — visual style families
 - [`knowledge/patterns/brand-references.md`](brand-references.md) — peer brand references
-- [`skills/design-system-builder/`](../../skills/design-system-builder/) — converts brand inputs to a system
+- [`skills/design-system-builder/PLAYBOOK.md`](../../skills/design-system-builder/PLAYBOOK.md) — converts brand inputs to a system
 - [`knowledge/i18n/korean-product-conventions.md`](../i18n/korean-product-conventions.md) — Korean voice conventions

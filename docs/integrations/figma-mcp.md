@@ -145,5 +145,5 @@ design-ai's `figma-token-sync` skill detects no MCP and falls back to:
 - [`docs/MCP-INTEGRATION.md`](../MCP-INTEGRATION.md) — overview
 - [`docs/FIGMA-INTEGRATION.md`](../FIGMA-INTEGRATION.md) — broader Figma workflows (without MCP)
 - [`docs/TOKEN-SYNC.md`](../TOKEN-SYNC.md) — token sync strategy
-- [`skills/figma-token-sync/`](../../skills/figma-token-sync/) — the MCP-aware skill
-- [`tools/figma-plugin/`](../../tools/figma-plugin/) — alternative manual import path
+- [`skills/figma-token-sync/PLAYBOOK.md`](../../skills/figma-token-sync/PLAYBOOK.md) — the MCP-aware skill
+- `tools/figma-plugin/README.md` — alternative manual import path

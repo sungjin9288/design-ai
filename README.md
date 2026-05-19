@@ -1,12 +1,12 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](.github/workflows/audit.yml)
+[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/)
-[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/)
-[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/)
+[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/PRINCIPLES.md)
+[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/README.md)
+[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/README.md)
 
-> 🇺🇸 English / [🇰🇷 한국어](README.ko.md)
+> 🇺🇸 English / [🇰🇷 한국어](https://sungjin9288.github.io/design-ai/ko/)
 
 A model-agnostic design knowledge base + skill system. Drop it in front of any AI coding agent (Claude Code, Codex CLI, Cursor, Aider) and it becomes a senior product designer with 20+ years of experience — opinionated, accessible-by-default, Korean-market-fluent.
 
@@ -81,7 +81,7 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 | **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. [Walkthrough](docs/integrations/cursor-walkthrough.md). |
 | **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
-| **VS Code** | Install the [`design-ai` extension](vscode-extension/) — sidebar tree + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
+| **VS Code** | Install the `design-ai` extension — sidebar tree + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
 See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.
@@ -231,7 +231,7 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/sungjin/design-ai/blob/main/LICENSE).
 
 ## Changelog
 

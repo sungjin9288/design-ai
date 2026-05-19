@@ -137,7 +137,7 @@ Use [TEMPLATE.md](TEMPLATE.md). Verify:
 - [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md) — when Korean IME is relevant
 - [`knowledge/platforms/react-native.md`](../../knowledge/platforms/react-native.md) — when target is RN
 - Source files in `refs/` (cite the exact paths).
-- Existing worked specs in [`examples/`](../../examples/) — reference for shape and depth.
+- Existing worked specs in [`examples/README.md`](../../examples/README.md) — reference for shape and depth.
 
 ## Verification phase (run before declaring done)
 

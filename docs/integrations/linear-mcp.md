@@ -210,6 +210,6 @@ design-system-qa skill falls back to:
 
 - [`docs/MCP-INTEGRATION.md`](../MCP-INTEGRATION.md) — overview
 - [`docs/integrations/github-mcp.md`](github-mcp.md) — GitHub Issues alternative
-- [`skills/design-system-qa/`](../../skills/design-system-qa/) — generates findings
-- [`skills/ux-audit/`](../../skills/ux-audit/) — generates findings
+- [`skills/design-system-qa/PLAYBOOK.md`](../../skills/design-system-qa/PLAYBOOK.md) — generates findings
+- [`skills/ux-audit/PLAYBOOK.md`](../../skills/ux-audit/PLAYBOOK.md) — generates findings
 - [`knowledge/patterns/design-system-qa.md`](../../knowledge/patterns/design-system-qa.md)

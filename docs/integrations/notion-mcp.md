@@ -170,5 +170,5 @@ design-ai's `design-broadcast` skill (covers Slack + Notion) detects missing MCP
 ## Cross-reference
 
 - [`docs/MCP-INTEGRATION.md`](../MCP-INTEGRATION.md) — overview
-- [`skills/design-broadcast/`](../../skills/design-broadcast/) — uses Notion MCP for sharing
+- [`skills/design-broadcast/PLAYBOOK.md`](../../skills/design-broadcast/PLAYBOOK.md) — uses Notion MCP for sharing
 - [`docs/integrations/slack-mcp.md`](slack-mcp.md) — companion for design review summaries

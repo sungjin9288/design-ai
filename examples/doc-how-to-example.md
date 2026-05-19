@@ -181,7 +181,7 @@ Skip the en stage entirely. Don't ship english-strings-with-Korean-fallback — 
 - [`knowledge/i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md) — type rules
 - [`knowledge/i18n/korean-payments.md`](../knowledge/i18n/korean-payments.md) — payment patterns
 - [`knowledge/i18n/korean-publishing.md`](../knowledge/i18n/korean-publishing.md) — store submission
-- [`tools/audit/korean-copy-check.py`](../tools/audit/korean-copy-check.py) — automated check
+- `tools/audit/korean-copy-check.py` — automated check
 ```
 
 ---

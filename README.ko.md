@@ -1,12 +1,12 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](.github/workflows/audit.yml)
+[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/)
-[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/)
-[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/)
+[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/PRINCIPLES.md)
+[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/README.md)
+[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/README.md)
 
-> 🇰🇷 한국어 / [🇺🇸 English](README.md)
+> 🇰🇷 한국어 / [🇺🇸 English](https://sungjin9288.github.io/design-ai/)
 
 모델에 종속되지 않는 디자인 지식 베이스 + 스킬 시스템. 어떤 AI 코딩 에이전트(Claude Code, Codex CLI, Cursor, Aider)에 붙이든 20년 경력의 시니어 프로덕트 디자이너로 변신해요. 의견이 분명하고, 접근성을 기본으로 챙기며, 한국 시장을 깊이 이해해요.
 
@@ -191,7 +191,7 @@ main 브랜치의 모든 커밋에서 8개 모두 통과해요.
 
 ## 라이선스
 
-MIT. [LICENSE](LICENSE) 참조.
+MIT. [LICENSE](https://github.com/sungjin/design-ai/blob/main/LICENSE) 참조.
 
 ## 변경 이력
 

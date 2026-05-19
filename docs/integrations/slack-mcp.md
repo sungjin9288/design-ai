@@ -203,6 +203,6 @@ Confirm channel naming with the team before posting.
 ## Cross-reference
 
 - [`docs/MCP-INTEGRATION.md`](../MCP-INTEGRATION.md) — overview
-- [`skills/design-broadcast/`](../../skills/design-broadcast/) — uses Slack + Notion
+- [`skills/design-broadcast/PLAYBOOK.md`](../../skills/design-broadcast/PLAYBOOK.md) — uses Slack + Notion
 - [`docs/integrations/notion-mcp.md`](notion-mcp.md) — companion for capturing decisions
 - Slack [Block Kit Builder](https://app.slack.com/block-kit-builder) — interactive formatter

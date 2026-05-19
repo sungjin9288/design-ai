@@ -237,4 +237,4 @@ If you want to share with others:
 
 - [`docs/USING.md`](USING.md) — multi-agent setup (includes symlink instructions)
 - [`docs/CODEX-INTEGRATION.md`](CODEX-INTEGRATION.md) — Codex-specific integration
-- [`README.md`](../README.md) — project overview
+- [`README.md`](https://sungjin9288.github.io/design-ai/) — project overview

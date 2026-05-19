@@ -160,7 +160,7 @@ bash tools/extractors/run-all.sh # knowledge/ 재생성
 ## 참고 문서
 
 - [`AGENTS.ko.md`](../AGENTS.ko.md) — 보편적 진입점
-- [`README.ko.md`](../README.ko.md) — 사람이 읽는 진입점
+- [`README.ko.md`](https://sungjin9288.github.io/design-ai/ko/) — 사람이 읽는 진입점
 - [`QUICKSTART.ko.md`](QUICKSTART.ko.md) — 5분 시작 가이드
 - [`DISTRIBUTION.ko.md`](DISTRIBUTION.ko.md) — 배포 채널 비교
-- [`integrations/`](integrations/) — 도구별 워크스루 (Codex / Cursor / Aider / SDK / VS Code)
+- [`integrations/codex-walkthrough.ko.md`](integrations/codex-walkthrough.ko.md) — 도구별 워크스루 예시 (Codex / Cursor / Aider / SDK / VS Code)

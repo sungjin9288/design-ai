@@ -217,6 +217,6 @@ The component spec should include a Code Connect section pointing both direction
 ## Cross-reference
 
 - [docs/USING.md](USING.md) — running design-ai with various AI agents
-- [skills/color-palette/](../skills/color-palette/) — palette generator
-- [skills/component-spec-writer/](../skills/component-spec-writer/) — component spec authoring
+- [skills/color-palette/PLAYBOOK.md](../skills/color-palette/PLAYBOOK.md) — palette generator
+- [skills/component-spec-writer/PLAYBOOK.md](../skills/component-spec-writer/PLAYBOOK.md) — component spec authoring
 - [examples/palette-saas-violet.md](../examples/palette-saas-violet.md) — Style Dictionary JSON output ready for Tokens Studio import

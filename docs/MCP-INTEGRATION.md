@@ -123,7 +123,7 @@ These skills explicitly leverage MCPs when present:
 | `figma-token-sync` | Figma (read/write Variables) |
 | `design-broadcast` | Slack (post), Notion (page) |
 
-See [`skills/`](../skills/) for full playbooks.
+See [`skills/README.md`](../skills/README.md) for full playbooks.
 
 ## MCP catalog with design-ai relevance
 
@@ -226,4 +226,4 @@ design-ai uses these for:
 - [`docs/CODEX-INTEGRATION.md`](CODEX-INTEGRATION.md) — Codex MCP setup
 - [`docs/CURSOR-INTEGRATION.md`](CURSOR-INTEGRATION.md) — Cursor MCP setup
 - [`docs/AIDER-INTEGRATION.md`](AIDER-INTEGRATION.md) — Aider (no MCP yet)
-- [`docs/integrations/`](integrations/) — per-MCP guides
+- [`docs/integrations/figma-mcp.md`](integrations/figma-mcp.md) — per-MCP guide examples

@@ -39,7 +39,7 @@
 | 공간 디자인 (VR / AR / 패널 / 편안함) | `knowledge/spatial/` |
 | 한국어 (타이포그래피, 결제, 본인인증, 앱스토어) | `knowledge/i18n/` |
 
-기대되는 출력 품질의 레퍼런스는 [`examples/`](examples/) 참고 — 각 스킬에서 나온 워크드 출력 모음이에요.
+기대되는 출력 품질의 레퍼런스는 [`examples/README.md`](examples/README.md) 참고 — 각 스킬에서 나온 워크드 출력 모음이에요.
 
 파일이 없으면 `refs/` (raw 소스 자료)로 폴백하고 사용자에게 지식 격차를 알려서 채울 수 있게 해요.
 
@@ -112,12 +112,12 @@ python3 tools/preview/render-tokens.py
 
 ## 주요 파일
 
-- [`README.ko.md`](README.ko.md) — 사람을 위한 진입점
+- [`README.ko.md`](https://sungjin9288.github.io/design-ai/ko/) — 사람을 위한 진입점
 - [`knowledge/PRINCIPLES.md`](knowledge/PRINCIPLES.md) — 30개 핵심 규칙
 - [`knowledge/COVERAGE.md`](knowledge/COVERAGE.md) — 무엇이 문서화됐는지
 - [`docs/QUICKSTART.ko.md`](docs/QUICKSTART.ko.md) — 5분 시작
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — 단계별 빌드 로그
-- [`docs/integrations/`](docs/integrations/) — Codex / Cursor / Aider / SDK 워크스루
+- [`docs/integrations/codex-walkthrough.ko.md`](docs/integrations/codex-walkthrough.ko.md) — Codex / Cursor / Aider / SDK 워크스루
 
 ## 영문 버전과 동기화
 

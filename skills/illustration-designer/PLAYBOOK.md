@@ -27,7 +27,7 @@ Design and spec an illustration system, OR a single illustration within an exist
 
 | Task | Approach |
 | --- | --- |
-| Define a new system | All 5 knowledge files in [`knowledge/illustration/`](../../knowledge/illustration/) apply |
+| Define a new system | Start with [`illustration-systems.md`](../../knowledge/illustration/illustration-systems.md), then apply the surface-specific illustration references |
 | Add to existing system | Follow style guide; don't redefine |
 | Single spot illustration | [`spot-illustrations.md`](../../knowledge/illustration/spot-illustrations.md) |
 | Hero illustration | [`hero-illustrations.md`](../../knowledge/illustration/hero-illustrations.md) |

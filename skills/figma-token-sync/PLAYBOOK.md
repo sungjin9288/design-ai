@@ -138,7 +138,7 @@ For destructive operations (push, overwrite), stop after diff and confirm before
 - [`docs/TOKEN-SYNC.md`](../../docs/TOKEN-SYNC.md) — three-tier source-of-truth strategy
 - [`docs/integrations/figma-mcp.md`](../../docs/integrations/figma-mcp.md) — MCP usage details
 - [`docs/FIGMA-INTEGRATION.md`](../../docs/FIGMA-INTEGRATION.md) — broader Figma workflows
-- [`knowledge/design-tokens/`](../../knowledge/design-tokens/) — token format references
+- [`knowledge/design-tokens/ant-design.md`](../../knowledge/design-tokens/ant-design.md) — token format references
 
 ## Done when
 

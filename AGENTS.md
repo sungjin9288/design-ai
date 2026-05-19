@@ -102,7 +102,7 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Korean payments (Toss, Kakao, Naver, 본인인증) | `knowledge/i18n/korean-payments.md` |
 | Korean app store submission | `knowledge/i18n/korean-publishing.md` |
 
-For reference quality of expected output, see [`examples/`](examples/) — worked outputs from each skill.
+For reference quality of expected output, see [`examples/README.md`](examples/README.md) — worked outputs from each skill.
 
 If the file does not exist, fall back to `refs/` (raw source material) and tell the user the knowledge gap so it can be filled.
 

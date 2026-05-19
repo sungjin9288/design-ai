@@ -151,7 +151,7 @@ Use the structure:
 - [`docs/FIGMA-INTEGRATION.md`](../../docs/FIGMA-INTEGRATION.md) — Figma side
 - [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md) — what a11y tests catch
 - [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md) — what keyboard tests catch
-- The component specs in [`examples/`](../../examples/) — what contract tests should verify per component
+- The component specs in [`examples/README.md`](../../examples/README.md) — what contract tests should verify per component
 
 ## Done when
 

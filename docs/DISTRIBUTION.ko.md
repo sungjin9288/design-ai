@@ -155,7 +155,7 @@ design-ai version
 
 ### 다른 환경
 
-- **Codex CLI / Cursor / Aider**: 직접 [`docs/integrations/`](integrations/)의 워크스루를 보세요.
+- **Codex CLI / Cursor / Aider**: 직접 [`docs/integrations/codex-walkthrough.ko.md`](integrations/codex-walkthrough.ko.md)의 워크스루 예시를 보세요.
 - **Anthropic / OpenAI SDK**: [`docs/integrations/sdk-walkthrough.md`](integrations/sdk-walkthrough.md).
 
 ## 문제 해결

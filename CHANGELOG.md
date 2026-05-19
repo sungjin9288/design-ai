@@ -12,6 +12,31 @@ Korean maintenance docs now describe the same 8-audit gate and drift review work
 Push-readiness now has a local CI parity command and GitHub Actions cache paths are aligned with the actual VS Code extension lockfile.
 The local CI parity gate now has a lightweight self-test wired into the release self-test chain.
 Ant Design token swatches no longer create MkDocs hash-link noise, and the extractor now has a release self-test for that renderer.
+Docs navigation links now target concrete tracked pages instead of directories, reducing MkDocs link noise before Real-CI.
+
+### Phase 59 — Documentation link hygiene before Real-CI
+
+#### Changed
+- Replaced directory-style links in README, AGENTS, skills, MCP/integration docs, and selected worked examples with concrete tracked markdown files or public docs URLs.
+- Corrected worked-example relative links from `examples/` into `knowledge/`, `commands/`, `docs/`, and sibling component specs.
+- Converted tool-only references that are outside the MkDocs docs tree into code literals where they are meant as repository paths rather than site links.
+
+#### Impact
+- MkDocs no longer reports root `index.md` / `index.ko.md` warnings for language toggles, top-level badges, `skills/`, `examples/`, or `LICENSE` links.
+- Skill directory INFO noise is now 0 in the local MkDocs build.
+- Remaining warnings are concentrated in intentionally repo-local `refs/`/tooling references and older announcement/i18n edge cases.
+
+#### Verified
+- All 8 audits pass.
+- `./tools/build-docs.sh`
+- `python3 -m mkdocs build --clean`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Real-CI docs logs are easier to scan because common navigation and skill catalog links no longer obscure the warning categories that still need deliberate handling.
 
 ### Phase 58 — MkDocs-safe Ant Design token swatches
 

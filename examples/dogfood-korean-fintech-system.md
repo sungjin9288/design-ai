@@ -306,7 +306,7 @@ Rejected:
 - **Ant Design Mobile**: powerful but Chinese-market-coded; less common in Korean consumer apps; aesthetic doesn't fit modern Korean fintech.
 - **NativeBase / Tamagui**: Tailwind-adjacent but smaller community in Korea.
 
-For React Native specifically: shadcn-ui has community RN ports (`gluestack-ui` is the closest 1:1, or use shadcn web → adapt). Spec the components per [skills/component-spec-writer/](../skills/component-spec-writer/) and pick the implementation per platform.
+For React Native specifically: shadcn-ui has community RN ports (`gluestack-ui` is the closest 1:1, or use shadcn web → adapt). Spec the components per [skills/component-spec-writer/PLAYBOOK.md](../skills/component-spec-writer/PLAYBOOK.md) and pick the implementation per platform.
 
 ---
 

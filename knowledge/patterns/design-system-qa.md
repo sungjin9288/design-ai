@@ -353,4 +353,4 @@ When shipping a new component (or revising one), verify all five layers:
 - [`docs/FIGMA-INTEGRATION.md`](../../docs/FIGMA-INTEGRATION.md) — Figma side of QA
 - [`knowledge/a11y/contrast.md`](../a11y/contrast.md) — what a11y regression catches
 - [`knowledge/a11y/keyboard-and-focus.md`](../a11y/keyboard-and-focus.md) — keyboard contract tests
-- [`skills/design-system-qa/`](../../skills/design-system-qa/) — the skill that applies this
+- [`skills/design-system-qa/PLAYBOOK.md`](../../skills/design-system-qa/PLAYBOOK.md) — the skill that applies this

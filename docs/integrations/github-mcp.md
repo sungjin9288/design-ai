@@ -173,6 +173,6 @@ This is humane review — actionable summary at top, deep links to specifics.
 ## Cross-reference
 
 - [`docs/MCP-INTEGRATION.md`](../MCP-INTEGRATION.md) — overview
-- [`skills/design-pr-review/`](../../skills/design-pr-review/) — the MCP-aware skill
+- [`skills/design-pr-review/PLAYBOOK.md`](../../skills/design-pr-review/PLAYBOOK.md) — the MCP-aware skill
 - [`docs/integrations/linear-mcp.md`](linear-mcp.md) — Linear alternative for issue tracking
 - [`knowledge/patterns/design-system-qa.md`](../../knowledge/patterns/design-system-qa.md) — what gets checked
