@@ -23,7 +23,7 @@ npm run package:smoke
 - runs a local tarball `npm exec --package ... -- design-ai ...` path to simulate one-shot `npx`, including its own version/top-level help checks, `help --json` catalog read, help topic usage, help alias, command alias, functional alias output, list catalog, corpus discovery smoke, explicit `show --lines` ranges, `route --explain` output, JSON `check` report smoke, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced file-write confirmation smoke, and install/`doctor --strict`/status/uninstall lifecycle output assertions
 - asserts the `doctor --json` required PASS set for both direct install and one-shot `npm exec` install
 
-The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the audit runner, coverage timestamp preservation, doctor, shared smoke, package smoke, registry smoke, and release metadata assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`. Release metadata also fails with structured bullet errors if a required release policy doc drops out of the checked set, an unexpected policy doc enters it, the checked docs order drifts, a required policy doc is missing from disk, a core release input is missing, unreadable, or invalid JSON, or the audit-count source cannot be loaded or parsed. Its JSON output keeps stable summary keys, checked-doc order, and readable Korean structured errors. `design-ai check` and `design-ai route` now also route machine-readable reports through self-tested JSON formatters so smoke assertions keep validating the same automation-facing shape.
+The local `npm run release:check` gate and the GitHub audit/publish/release workflows call `npm run release:self-test`, which runs the audit runner, coverage timestamp preservation, doctor, shared smoke, package smoke, registry smoke, and release metadata assertion self-tests before package contents or tarball smoke checks. The same package smoke runs in publish/release workflows after `npm pack`. Release metadata also fails with structured bullet errors if a required release policy doc drops out of the checked set, an unexpected policy doc enters it, the checked docs order drifts, a required policy doc is missing from disk, a core release input is missing, unreadable, or invalid JSON, or the audit-count source cannot be loaded or parsed. Its JSON output keeps stable summary keys, checked-doc order, and readable Korean structured errors. `design-ai check`, `design-ai route`, and `design-ai prompt` now also route machine-readable reports through self-tested JSON formatters so smoke assertions keep validating the same automation-facing shape.
 
 ## Current result
 
@@ -31,8 +31,8 @@ Latest local tarball smoke:
 
 ```text
 @design-ai/cli@4.13.0
-package size: 1.3 MB
-unpacked size: 4.3 MB
+package size: 1.4 MB
+unpacked size: 4.5 MB
 total files: 500
 Smoke assertions self-test passed
 Release metadata self-test passed
@@ -139,7 +139,7 @@ This dogfood approximates what a clean adopter sees:
 5. Run `design-ai uninstall` and assert the symlink farm removal reports 39 removed links.
 6. Run the same lifecycle through local tarball `npm exec --package ...` to cover the `npx`-style bin path, including independent version/top-level help checks, `help --json` catalog read, documented help topic usage and alias smoke, command alias smoke, functional alias smoke, list catalog smoke, corpus discovery smoke, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced file-write confirmation smoke, lifecycle output smoke, `doctor --strict` human diagnostics assertions, and the same `doctor --json` PASS assertions.
 
-The path confirms package contents, bin shim creation, one-shot npm execution, version alignment, machine-readable help-topic discoverability, route recommendation JSON shape, manifest catalog enumeration, human-readable corpus discovery, artifact quality check JSON shape, explicit line-range display, route explanation details, route-id, option, search-directory value typo recovery, and numeric range validation, prompt/pack forced file-write UX, symlink creation, symlink cleanup, Korean character handling in catalog output, and no-color smoke logs.
+The path confirms package contents, bin shim creation, one-shot npm execution, version alignment, machine-readable help-topic discoverability, route recommendation JSON shape, prompt-plan JSON shape, manifest catalog enumeration, human-readable corpus discovery, artifact quality check JSON shape, explicit line-range display, route explanation details, route-id, option, search-directory value typo recovery, and numeric range validation, prompt/pack forced file-write UX, symlink creation, symlink cleanup, Korean character handling in catalog output, and no-color smoke logs.
 
 ## What this does not validate
 

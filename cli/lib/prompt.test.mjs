@@ -13,6 +13,7 @@ import path from "node:path";
 
 import {
   buildPromptPlan,
+  formatPromptJson,
   parsePromptArgs,
 } from "./prompt.mjs";
 
@@ -133,6 +134,50 @@ test("buildPromptPlan creates a slash command prompt for component specs", () =>
   }
 });
 
+test("formatPromptJson preserves prompt plan order and readable Korean brief", () => {
+  const root = makeFixture();
+  try {
+    const plan = buildPromptPlan({
+      brief: "컴포넌트 버튼 스펙 작성",
+      sourceRoot: root,
+      prefix: "design-",
+    });
+
+    const formatted = formatPromptJson(plan);
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), [
+      "brief",
+      "version",
+      "route",
+      "slashCommand",
+      "referenceExamples",
+      "filesToRead",
+      "checklist",
+      "qualityCommand",
+      "prompt",
+    ]);
+    assert.deepEqual(Object.keys(parsed.route).slice(0, 8), [
+      "id",
+      "label",
+      "score",
+      "confidence",
+      "matchedKeywords",
+      "command",
+      "skills",
+      "agents",
+    ]);
+    assert.equal(parsed.route.id, "component-spec");
+    assert.ok(parsed.route.matchedKeywords.includes("컴포넌트"));
+    assert.ok(parsed.prompt.includes("Task: 컴포넌트 버튼 스펙 작성"));
+    assert.match(formatted, /"filesToRead": \[\n    "AGENTS\.md"/);
+    assert.ok(formatted.includes("컴포넌트"));
+    assert.ok(!formatted.includes("\\u"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("buildPromptPlan can force a route id", () => {
   const root = makeFixture();
   try {
@@ -154,6 +199,32 @@ test("buildPromptPlan can force a route id", () => {
     assert.ok(plan.prompt.includes("Routing reason: Route selected explicitly with --route."));
     assert.ok(plan.prompt.includes("route selected via --route"));
     assert.ok(plan.checklist.some((item) => item.includes("highest-impact issue")));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("formatPromptJson preserves forced route prompt plan order", () => {
+  const root = makeFixture();
+  try {
+    const plan = buildPromptPlan({
+      brief: "spec a Button component API",
+      sourceRoot: root,
+      prefix: "design-",
+      routeId: "design-review",
+    });
+
+    const formatted = formatPromptJson(plan);
+    const parsed = JSON.parse(formatted);
+
+    assert.equal(parsed.route.id, "design-review");
+    assert.equal(parsed.route.confidence, "forced");
+    assert.equal(parsed.route.forced, true);
+    assert.deepEqual(Object.keys(parsed.route).slice(-2), ["explanation", "forced"]);
+    assert.equal(parsed.slashCommand, "/design-design-review");
+    assert.equal(parsed.qualityCommand, "design-ai check output.md --route design-review --strict");
+    assert.ok(parsed.prompt.includes("Selected route: Design review"));
+    assert.match(formatted, /"route": \{\n    "id": "design-review"/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

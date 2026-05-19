@@ -179,6 +179,10 @@ export function buildPromptPlan({ brief, sourceRoot, prefix = SYMLINK_PREFIX, ro
   };
 }
 
+export function formatPromptJson(plan) {
+  return JSON.stringify(plan, null, 2);
+}
+
 export function renderPrompt({
   brief,
   route,

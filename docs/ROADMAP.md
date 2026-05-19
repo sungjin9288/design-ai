@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 84 — Prompt command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai prompt` now self-tests its JSON output contract for inferred and forced route prompt plans.
+
+### Changed
+- `cli/lib/prompt.mjs` now uses `formatPromptJson()` as the shared formatter for prompt-plan JSON output.
+- `cli/commands/prompt.mjs` now sends both stdout and `--out` JSON prompt plans through that formatter.
+- `cli/lib/prompt.test.mjs` now checks JSON round-trip behavior, prompt plan key order, nested route key order, forced-route payload order, and readable Korean briefs.
+
+### Impact
+- Automation that consumes generated prompt plans can rely on the same top-level report order for inferred and forced route workflows.
+- Korean briefs stay readable instead of being escaped in prompt-plan JSON output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai prompt` keeps machine-readable agent handoff plans refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 83 — Route command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai route` now self-tests its JSON output contract for recommendation and catalog reports.

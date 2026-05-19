@@ -3,7 +3,7 @@
 import { DESIGN_AI_HOME, SYMLINK_PREFIX } from "../lib/paths.mjs";
 import { header, info, success } from "../lib/log.mjs";
 import { resolveBriefInput } from "../lib/brief.mjs";
-import { buildPromptPlan, parsePromptArgs } from "../lib/prompt.mjs";
+import { buildPromptPlan, formatPromptJson, parsePromptArgs } from "../lib/prompt.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
@@ -58,7 +58,7 @@ export async function runPrompt(args) {
     routeId: parsed.routeId,
   });
 
-  const content = parsed.json ? `${JSON.stringify(plan, null, 2)}\n` : `${plan.prompt}\n`;
+  const content = parsed.json ? `${formatPromptJson(plan)}\n` : `${plan.prompt}\n`;
 
   if (parsed.outPath) {
     const written = writeOutputFile({

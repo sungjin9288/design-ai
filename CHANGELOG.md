@@ -37,6 +37,36 @@ Release metadata now self-tests its human pass/fail output formatter.
 Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
 `design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
+`design-ai prompt` now formats machine-readable prompt plans through a self-tested JSON formatter with stable inferred/forced route plan order.
+
+### Phase 84 — Prompt command JSON formatter guard added
+
+#### Changed
+- `cli/lib/prompt.mjs` now exposes `formatPromptJson()` for `design-ai prompt --json` output.
+- `cli/commands/prompt.mjs` now routes stdout and `--out` prompt-plan JSON through the shared formatter.
+- `cli/lib/prompt.test.mjs` now asserts JSON round-trip behavior, prompt plan key order, nested route key order, forced-route payload order, readable Korean briefs, and non-escaped Unicode output.
+
+#### Impact
+- Automation that consumes generated prompt plans can keep relying on a stable top-level payload shape for inferred and forced route workflows.
+- Korean briefs remain readable in machine-readable prompt output, including `--out` files used for handoff or agent orchestration.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Prompt-plan JSON can be refactored without silently changing the agent handoff contract for generated prompts.
 
 ### Phase 83 — Route command JSON formatter guard added
 
