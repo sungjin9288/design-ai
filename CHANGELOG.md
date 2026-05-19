@@ -23,6 +23,34 @@ Docs deployment now re-runs when Korean top-level site entries change.
 Local CI now also guards the docs workflow corpus directory path filters.
 MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
 Korean distribution guidance now describes the same MkDocs refs warning baseline cap as the English release docs.
+Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
+
+### Phase 70 — Bilingual distribution policy metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now verifies that both `docs/DISTRIBUTION.md` and `docs/DISTRIBUTION.ko.md` retain the MkDocs warning-policy phrases for refs-only warnings and the accepted baseline.
+- `npm run release:metadata:self-test` now covers a distribution warning-policy drift failure fixture.
+- `docs/RELEASE-CHECKLIST.md` now describes the expanded release metadata check.
+
+#### Impact
+- Future release documentation edits cannot silently remove the bilingual refs warning baseline guidance before tagging.
+- The Phase 69 Korean/English documentation sync is now executable release metadata policy instead of a manual convention.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release docs policy drift is caught by the same metadata gate maintainers already run before Real-CI.
 
 ### Phase 69 — Korean distribution warning policy guidance synced
 

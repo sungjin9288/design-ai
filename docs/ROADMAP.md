@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 70 — Bilingual distribution policy metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now guards the English and Korean distribution warning-policy language.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks `docs/DISTRIBUTION.md` and `docs/DISTRIBUTION.ko.md` for the MkDocs warning-policy terms covering refs-only warnings and the accepted baseline.
+- `npm run release:metadata:self-test` now includes a distribution warning-policy drift fixture.
+- `docs/RELEASE-CHECKLIST.md` now states that release metadata covers the bilingual distribution warning-policy guidance.
+
+### Impact
+- Future docs edits cannot silently drop the Phase 68/69 warning-policy baseline language from either distribution guide.
+- The release metadata gate now protects the bilingual release guidance before Real-CI verification.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Bilingual release docs stay aligned with the executable MkDocs warning policy as local CI hardening continues.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 69 — Korean distribution warning policy guidance synced (v4.13.0) ✓ shipped
 
 The Korean distribution guide now matches the Phase 68 MkDocs warning policy.

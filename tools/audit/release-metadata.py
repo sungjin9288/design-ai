@@ -22,6 +22,8 @@ PACKAGE_JSON = ROOT / "package.json"
 PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 ROADMAP = ROOT / "docs" / "ROADMAP.md"
+DISTRIBUTION = ROOT / "docs" / "DISTRIBUTION.md"
+DISTRIBUTION_KO = ROOT / "docs" / "DISTRIBUTION.ko.md"
 RUN_ALL = ROOT / "tools" / "audit" / "run-all.py"
 
 CHANGELOG_HEADER_RE = re.compile(
@@ -36,6 +38,12 @@ VERSION_BUMP_RE = re.compile(
 )
 AUDIT_COUNT_RE = re.compile(r"\bAll\s+(?P<count>\d+)\s+audits?\s+pass(?:ed)?\b", re.IGNORECASE)
 AUDIT_SCRIPT_RE = re.compile(r'script="([^"]+\.py)"')
+RELEASE_WARNING_POLICY_TERM_GROUPS = (
+    ("MkDocs warning policy",),
+    ("baseline",),
+    ("refs-only", "`refs/` source-link"),
+    ("non-`refs/`", "only intentional `refs/`", "의도된 `refs/`"),
+)
 
 
 def load_json(path: Path) -> dict:
@@ -97,12 +105,23 @@ def required_section_errors(label: str, entry: str, sections: tuple[str, ...]) -
     return [f"{label} is missing required section: {section}" for section in sections if section not in entry]
 
 
+def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    for term_group in RELEASE_WARNING_POLICY_TERM_GROUPS:
+        if not any(term in text for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing MkDocs warning-policy phrase: {expected}")
+    return errors
+
+
 def release_metadata_summary(
     *,
     package_json: dict,
     plugin_json: dict,
     changelog_text: str,
     roadmap_text: str,
+    distribution_text: str,
+    distribution_ko_text: str,
     audit_count: int,
 ) -> dict:
     errors: list[str] = []
@@ -157,6 +176,9 @@ def release_metadata_summary(
         )
         errors.extend(audit_count_errors("docs/ROADMAP.md current entry", roadmap_entry, audit_count))
 
+    errors.extend(release_warning_policy_doc_errors("docs/DISTRIBUTION.md", distribution_text))
+    errors.extend(release_warning_policy_doc_errors("docs/DISTRIBUTION.ko.md", distribution_ko_text))
+
     return {
         "version": version,
         "plugin_version": plugin_version,
@@ -164,6 +186,7 @@ def release_metadata_summary(
         "changelog_date": changelog_date,
         "roadmap_entry_found": bool(roadmap_entry),
         "audit_count": audit_count,
+        "release_policy_docs_checked": ["docs/DISTRIBUTION.md", "docs/DISTRIBUTION.ko.md"],
         "errors": errors,
     }
 
@@ -207,11 +230,25 @@ def run_self_test() -> int:
 ### What's still ahead
 - Continue fixture hardening.
 """
+    distribution = """# Distribution
+
+The release workflow runs `npm run ci:local`, including the MkDocs warning policy
+that allows only intentional `refs/` source-link warnings and caps refs-only
+warnings at the accepted baseline.
+"""
+    distribution_ko = """# Distribution Korean
+
+`npm run ci:local`은 MkDocs warning policy를 확인해요. non-`refs/` warning은
+차단하고, 의도된 `refs/` source-link와 refs-only warning은 승인된 baseline
+안에 있어야 해요.
+"""
     passing = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
+        distribution_text=distribution,
+        distribution_ko_text=distribution_ko,
         audit_count=8,
     )
     assert_condition(passing["errors"] == [], "complete fixture should pass without errors")
@@ -221,12 +258,15 @@ def run_self_test() -> int:
         plugin_json={"version": "1.2.2"},
         changelog_text=changelog.replace("All 8 audits pass.", "All 7 audits pass."),
         roadmap_text=roadmap.replace("(v1.2.3)", "(v1.2.2)"),
+        distribution_text=distribution.replace("accepted baseline", "accepted policy"),
+        distribution_ko_text=distribution_ko,
         audit_count=8,
     )
     joined_errors = "\n".join(failing["errors"])
     assert_condition("plugin manifest version mismatch" in joined_errors, "plugin mismatch should fail")
     assert_condition("CHANGELOG.md top entry audit count mismatch" in joined_errors, "stale audit count should fail")
     assert_condition("docs/ROADMAP.md is missing a current release entry" in joined_errors, "missing roadmap entry should fail")
+    assert_condition("docs/DISTRIBUTION.md" in joined_errors, "distribution warning policy drift should fail")
 
     run_all_fixture = """AUDITS: tuple[AuditSpec, ...] = (
     AuditSpec(name="frontmatter", script="frontmatter-check.py"),
@@ -261,6 +301,8 @@ def main() -> int:
         plugin_json=load_json(PLUGIN_JSON),
         changelog_text=CHANGELOG.read_text(encoding="utf-8"),
         roadmap_text=ROADMAP.read_text(encoding="utf-8"),
+        distribution_text=DISTRIBUTION.read_text(encoding="utf-8"),
+        distribution_ko_text=DISTRIBUTION_KO.read_text(encoding="utf-8"),
         audit_count=load_audit_count(),
     )
 
