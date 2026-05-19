@@ -38,6 +38,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
 `design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
 `design-ai prompt` now formats machine-readable prompt plans through a self-tested JSON formatter with stable inferred/forced route plan order.
+`design-ai pack` now formats machine-readable prompt-context bundles through a self-tested JSON formatter with stable summary, plan, and file-entry order.
+
+### Phase 85 — Pack command JSON formatter guard added
+
+#### Changed
+- `cli/lib/pack.mjs` now exposes `formatPackJson()` for `design-ai pack --json` output.
+- `cli/commands/pack.mjs` now routes stdout and `--out` prompt-context bundle JSON through the shared formatter.
+- `cli/lib/pack.test.mjs` now asserts JSON round-trip behavior, prompt-pack key order, context summary key order, nested prompt-plan key order, file-entry key order, forced-route partial-context payload order, readable Korean briefs, and non-escaped Unicode output.
+
+#### Impact
+- Automation that consumes prompt-context bundles can keep relying on a stable top-level payload shape for complete and partial context packs.
+- Korean briefs remain readable in machine-readable pack output, including `--out` JSON bundles used for agent orchestration.
+
+#### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Prompt-context bundle JSON can be refactored without silently changing the machine-readable agent context handoff contract.
 
 ### Phase 84 — Prompt command JSON formatter guard added
 

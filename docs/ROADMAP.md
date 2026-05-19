@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 85 — Pack command JSON output formatter guard added (v4.13.0) ✓ shipped
+
+`design-ai pack` now self-tests its JSON output contract for complete and partial prompt-context bundles.
+
+### Changed
+- `cli/lib/pack.mjs` now uses `formatPackJson()` as the shared formatter for prompt-context bundle JSON output.
+- `cli/commands/pack.mjs` now sends both stdout and `--out` JSON bundles through that formatter.
+- `cli/lib/pack.test.mjs` now checks JSON round-trip behavior, prompt-pack key order, context summary key order, nested prompt-plan key order, file-entry key order, forced-route partial-context payload order, and readable Korean briefs.
+
+### Impact
+- Automation that consumes generated context bundles can rely on the same top-level report order for complete and partial packs.
+- Korean briefs stay readable instead of being escaped in prompt-context bundle JSON output.
+
+### Verified
+- All 8 audits pass.
+- `npm test`
+- `npm run smoke:assertions:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- `design-ai pack` keeps machine-readable prompt-context bundles refactor-safe.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 84 — Prompt command JSON output formatter guard added (v4.13.0) ✓ shipped
 
 `design-ai prompt` now self-tests its JSON output contract for inferred and forced route prompt plans.

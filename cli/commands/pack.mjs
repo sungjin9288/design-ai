@@ -3,7 +3,7 @@
 import { DESIGN_AI_HOME, SYMLINK_PREFIX } from "../lib/paths.mjs";
 import { header, info, success } from "../lib/log.mjs";
 import { resolveBriefInput } from "../lib/brief.mjs";
-import { buildPromptPack, parsePackArgs } from "../lib/pack.mjs";
+import { buildPromptPack, formatPackJson, parsePackArgs } from "../lib/pack.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
@@ -59,7 +59,7 @@ export async function runPack(args) {
     routeId: parsed.routeId,
   });
 
-  const content = parsed.json ? `${JSON.stringify(pack, null, 2)}\n` : `${pack.markdown}\n`;
+  const content = parsed.json ? `${formatPackJson(pack)}\n` : `${pack.markdown}\n`;
 
   if (parsed.outPath) {
     const written = writeOutputFile({

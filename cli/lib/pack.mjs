@@ -188,6 +188,10 @@ export function buildPromptPack({ brief, sourceRoot, prefix = SYMLINK_PREFIX, ma
   };
 }
 
+export function formatPackJson(pack) {
+  return JSON.stringify(pack, null, 2);
+}
+
 function formatPercent(ratio) {
   return `${Math.round(ratio * 100)}%`;
 }

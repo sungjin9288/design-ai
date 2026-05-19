@@ -13,6 +13,7 @@ import path from "node:path";
 
 import {
   buildPromptPack,
+  formatPackJson,
   parsePackArgs,
 } from "./pack.mjs";
 
@@ -138,6 +139,65 @@ test("buildPromptPack includes prompt and context files", () => {
   }
 });
 
+test("formatPackJson preserves prompt pack order and readable Korean brief", () => {
+  const root = makeFixture();
+  try {
+    const pack = buildPromptPack({
+      brief: "컴포넌트 버튼 스펙 작성",
+      sourceRoot: root,
+      prefix: "design-",
+      maxBytes: 20_000,
+    });
+
+    const formatted = formatPackJson(pack);
+    const parsed = JSON.parse(formatted);
+
+    assert.deepEqual(Object.keys(parsed), [
+      "brief",
+      "version",
+      "maxBytes",
+      "usedBytes",
+      "summary",
+      "warnings",
+      "plan",
+      "files",
+      "markdown",
+    ]);
+    assert.deepEqual(Object.keys(parsed.summary), [
+      "totalFiles",
+      "includedFiles",
+      "truncatedFiles",
+      "missingFiles",
+      "usedBytes",
+      "maxBytes",
+      "remainingBytes",
+      "usedRatio",
+      "status",
+    ]);
+    assert.deepEqual(Object.keys(parsed.plan).slice(0, 9), [
+      "brief",
+      "version",
+      "route",
+      "slashCommand",
+      "referenceExamples",
+      "filesToRead",
+      "checklist",
+      "qualityCommand",
+      "prompt",
+    ]);
+    assert.equal(parsed.plan.route.id, "component-spec");
+    assert.equal(parsed.summary.status, "complete");
+    assert.equal(parsed.files[0].path, "AGENTS.md");
+    assert.ok(parsed.plan.prompt.includes("Task: 컴포넌트 버튼 스펙 작성"));
+    assert.ok(parsed.markdown.includes("Brief: 컴포넌트 버튼 스펙 작성"));
+    assert.match(formatted, /"files": \[\n    \{\n      "path": "AGENTS\.md"/);
+    assert.ok(formatted.includes("컴포넌트"));
+    assert.ok(!formatted.includes("\\u"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("buildPromptPack can force a route id", () => {
   const root = makeFixture();
   try {
@@ -152,6 +212,42 @@ test("buildPromptPack can force a route id", () => {
     assert.equal(pack.plan.route.id, "design-review");
     assert.equal(pack.plan.route.forced, true);
     assert.ok(pack.markdown.includes("Selected route: Design review"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("formatPackJson preserves forced route and partial-context order", () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(path.join(root, "AGENTS.md"), `# Agents\n${"x".repeat(5000)}`);
+
+    const pack = buildPromptPack({
+      brief: "spec a Button component API",
+      sourceRoot: root,
+      prefix: "design-",
+      routeId: "design-review",
+      maxBytes: 1000,
+    });
+
+    const formatted = formatPackJson(pack);
+    const parsed = JSON.parse(formatted);
+
+    assert.equal(parsed.plan.route.id, "design-review");
+    assert.equal(parsed.plan.route.confidence, "forced");
+    assert.equal(parsed.plan.route.forced, true);
+    assert.equal(parsed.summary.status, "partial");
+    assert.ok(parsed.warnings.some((warning) => warning.includes("Truncated context file")));
+    assert.deepEqual(Object.keys(parsed.files[0]), [
+      "path",
+      "bytes",
+      "includedBytes",
+      "included",
+      "truncated",
+      "content",
+    ]);
+    assert.deepEqual(Object.keys(parsed.plan.route).slice(-2), ["explanation", "forced"]);
+    assert.match(formatted, /"warnings": \[\n    "Truncated context file:/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
