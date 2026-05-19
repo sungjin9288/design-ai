@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 77 — Release policy docs loader error guard added (v4.13.0) ✓ shipped
+
+Release metadata now reports policy-doc filesystem failures as structured errors.
+
+### Changed
+- `tools/audit/release-metadata.py` now uses `load_release_policy_docs()` to read the required release policy docs.
+- `npm run release:metadata:self-test` now covers a missing-on-disk policy doc fixture.
+- `docs/RELEASE-CHECKLIST.md` now states that missing required policy docs produce release metadata errors instead of tracebacks.
+
+### Impact
+- Deleted or unreadable release policy docs now produce actionable release metadata failures.
+- The exact coverage contract applies to both the loaded filesystem path and the pure metadata summary path.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains useful when docs coverage fails because a required file disappeared.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 76 — Release policy docs deterministic order guard added (v4.13.0) ✓ shipped
 
 Release metadata now guards the policy-doc coverage order as well as membership.

@@ -59,6 +59,21 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_release_policy_docs(
+    policy_doc_paths: tuple[tuple[str, Path], ...] = RELEASE_POLICY_DOC_PATHS,
+) -> tuple[dict[str, str], list[str]]:
+    docs: dict[str, str] = {}
+    errors: list[str] = []
+    for label, path in policy_doc_paths:
+        try:
+            docs[label] = path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            errors.append(f"release policy docs required file is missing on disk: {label} ({path})")
+        except OSError as exc:
+            errors.append(f"release policy docs required file cannot be read: {label} ({path}): {exc}")
+    return docs, errors
+
+
 def load_audit_count(text: str | None = None) -> int:
     run_all_text = text if text is not None else RUN_ALL.read_text(encoding="utf-8")
     match = re.search(
@@ -395,6 +410,19 @@ class AuditResult:
         "audit count should parse only the AUDITS tuple and ignore self-test fixtures",
     )
 
+    loaded_docs, load_errors = load_release_policy_docs(
+        (
+            ("README.md", ROOT / "README.md"),
+            ("docs/MISSING-POLICY.md", ROOT / "docs" / "MISSING-POLICY.md"),
+        )
+    )
+    assert_condition("README.md" in loaded_docs, "release policy doc loader should read existing files")
+    joined_load_errors = "\n".join(load_errors)
+    assert_condition(
+        "release policy docs required file is missing on disk: docs/MISSING-POLICY.md" in joined_load_errors,
+        "release policy doc loader should report missing files without a traceback",
+    )
+
     print("Release metadata self-test passed")
     return 0
 
@@ -408,17 +436,16 @@ def main() -> int:
     if args.self_test:
         return run_self_test()
 
+    release_policy_docs, release_policy_doc_load_errors = load_release_policy_docs()
     summary = release_metadata_summary(
         package_json=load_json(PACKAGE_JSON),
         plugin_json=load_json(PLUGIN_JSON),
         changelog_text=CHANGELOG.read_text(encoding="utf-8"),
         roadmap_text=ROADMAP.read_text(encoding="utf-8"),
-        release_policy_docs={
-            label: path.read_text(encoding="utf-8")
-            for label, path in RELEASE_POLICY_DOC_PATHS
-        },
+        release_policy_docs=release_policy_docs,
         audit_count=load_audit_count(),
     )
+    summary["errors"] = release_policy_doc_load_errors + summary["errors"]
 
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))

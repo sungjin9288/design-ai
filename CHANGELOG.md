@@ -30,6 +30,35 @@ Release metadata now also requires release-facing policy docs to keep the `ci:lo
 Release metadata now fails if a required release policy doc drops out of the checked set.
 Release metadata now rejects unexpected release policy docs in the checked set.
 Release metadata now rejects release policy docs checked in a non-deterministic order.
+Release metadata now reports missing release policy doc files as structured errors instead of tracebacks.
+
+### Phase 77 — Release policy docs loader error guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now loads release policy docs through `load_release_policy_docs()` instead of an inline dict comprehension.
+- `npm run release:metadata:self-test` now covers a missing-on-disk policy doc fixture and asserts that the loader reports it without a traceback.
+- `docs/RELEASE-CHECKLIST.md` now documents that missing required policy docs are reported as structured release metadata errors.
+
+#### Impact
+- If a required release policy doc is deleted or unreadable, maintainers get a release metadata failure that names the affected label and path.
+- The Phase 74-76 coverage contract now holds across both in-memory summary validation and the real filesystem loading path.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata failures remain actionable even when the required policy-doc files are missing from disk.
 
 ### Phase 76 — Release policy docs deterministic order guard added
 

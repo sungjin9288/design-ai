@@ -48,7 +48,7 @@ Automated gate:
 npm run release:metadata
 ```
 
-This also checks that the current CHANGELOG and ROADMAP entries mention the same repository audit count as `tools/audit/run-all.py`, and that README, RELEASE-CHECKLIST, and English/Korean distribution docs retain the MkDocs warning-policy baseline guidance. The checked release policy docs must match the required metadata labels in deterministic order: `README.md`, `README.ko.md`, `docs/RELEASE-CHECKLIST.md`, `docs/DISTRIBUTION.md`, and `docs/DISTRIBUTION.ko.md`.
+This also checks that the current CHANGELOG and ROADMAP entries mention the same repository audit count as `tools/audit/run-all.py`, and that README, RELEASE-CHECKLIST, and English/Korean distribution docs retain the MkDocs warning-policy baseline guidance. The checked release policy docs must match the required metadata labels in deterministic order: `README.md`, `README.ko.md`, `docs/RELEASE-CHECKLIST.md`, `docs/DISTRIBUTION.md`, and `docs/DISTRIBUTION.ko.md`. If a required policy doc is missing from disk, the release metadata check reports a structured error instead of a Python traceback.
 
 ### 3. CHANGELOG
 
