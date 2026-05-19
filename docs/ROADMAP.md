@@ -51,6 +51,37 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 62 — Local CI MkDocs output summarized (v4.13.0) ✓ shipped
+
+Successful local CI docs runs now keep MkDocs output compact while preserving the Phase 61 warning policy.
+
+### Changed
+- `tools/audit/local-ci.py` captures successful MkDocs build output without echoing the full accepted `refs/` warning stream.
+- Failed subprocesses still print captured output so MkDocs install, config, or build failures remain visible.
+
+### Impact
+- Local parity logs no longer print hundreds of expected `refs/` warning lines on success.
+- Maintainers still get a clear `MkDocs warning policy passed: N refs-only warning(s)` summary.
+
+### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `npm run release:self-test`
+- `npm run ci:local -- --skip-release-check --skip-vscode`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Pre-push local CI output is short enough to inspect quickly before Real-CI verification.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 61 — Local CI enforces MkDocs warning policy (v4.13.0) ✓ shipped
 
 The Phase 60 MkDocs warning baseline is now enforced by the local CI parity gate.

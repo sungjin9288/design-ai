@@ -32,7 +32,7 @@ def run(command: list[str], *, cwd: Path = ROOT) -> None:
         raise SystemExit(result.returncode)
 
 
-def run_capture(command: list[str], *, cwd: Path = ROOT) -> str:
+def run_capture(command: list[str], *, cwd: Path = ROOT, echo: bool = True) -> str:
     print(f"\n$ {' '.join(command)}", flush=True)
     result = subprocess.run(
         command,
@@ -41,7 +41,7 @@ def run_capture(command: list[str], *, cwd: Path = ROOT) -> str:
         stderr=subprocess.STDOUT,
         text=True,
     )
-    if result.stdout:
+    if result.stdout and (echo or result.returncode != 0):
         print(result.stdout, end="", flush=True)
     if result.returncode != 0:
         raise SystemExit(result.returncode)
@@ -109,7 +109,7 @@ def run_docs_build() -> None:
             ) from error
         raise
     run(["./tools/build-docs.sh"])
-    mkdocs_output = run_capture(["python3", "-m", "mkdocs", "build", "--clean"])
+    mkdocs_output = run_capture(["python3", "-m", "mkdocs", "build", "--clean"], echo=False)
     assert_mkdocs_warning_policy(mkdocs_output)
 
 
@@ -198,6 +198,10 @@ def run_self_test() -> int:
         assert_condition(
             non_refs_mkdocs_warning_lines(refs_only_output) == [],
             "refs-only mkdocs warnings should be allowed",
+        )
+        assert_condition(
+            run_capture(["python3", "-c", "print('quiet success')"], echo=False).strip() == "quiet success",
+            "quiet command capture should return stdout without echoing on success",
         )
         assert_mkdocs_warning_policy(refs_only_output)
 

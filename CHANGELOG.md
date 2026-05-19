@@ -15,6 +15,31 @@ Ant Design token swatches no longer create MkDocs hash-link noise, and the extra
 Docs navigation links now target concrete tracked pages instead of directories, reducing MkDocs link noise before Real-CI.
 MkDocs warning output now contains no non-`refs/` warnings in the local build.
 The local CI parity gate now enforces that same MkDocs warning policy so new non-`refs/` docs warnings fail before push.
+Successful local CI docs runs now summarize MkDocs warning policy instead of printing the full refs warning stream.
+
+### Phase 62 — Local CI MkDocs output summarized
+
+#### Changed
+- `tools/audit/local-ci.py` now captures successful MkDocs build output quietly and prints only the warning-policy summary.
+- Failed subprocesses still print captured output so MkDocs or environment errors remain diagnosable.
+
+#### Impact
+- `npm run ci:local -- --skip-release-check --skip-vscode` no longer floods local and Real-CI parity logs with hundreds of accepted `refs/` warning lines.
+- The docs verification signal is now easier to scan: successful runs end with the refs-only warning count, while non-`refs/` policy failures still show actionable samples.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `npm run release:self-test`
+- `npm run ci:local -- --skip-release-check --skip-vscode`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Push-readiness logs stay compact enough to review quickly while preserving the warning policy added in Phase 61.
 
 ### Phase 61 — Local CI enforces MkDocs warning policy
 

@@ -135,12 +135,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: `tools/audit/local-ci.py` now captures `mkdocs build --clean` output, allows only warning lines that reference `refs/`, and fails on any non-`refs/` warning. Its self-test covers refs-only output and mixed output.
 
+### 9. Successful local parity logs were too noisy
+
+**Found by**: running the new warning-policy path through `npm run ci:local -- --skip-release-check --skip-vscode`.
+
+**Symptom**: The policy worked, but successful runs still echoed the full MkDocs output, including hundreds of accepted `refs/` warning lines. That made the local parity log harder to scan even though the final policy result was clean.
+
+**Fix**: `tools/audit/local-ci.py` now captures successful MkDocs output quietly and prints the compact warning-policy summary instead. Failed subprocesses still echo captured output for diagnostics.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline and summarizes it on success.
 
 ## Performance
 
