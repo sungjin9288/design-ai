@@ -26,6 +26,35 @@ Korean distribution guidance now describes the same MkDocs refs warning baseline
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
+Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+
+### Phase 73 — Release policy docs ci:local command guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires release-facing MkDocs warning-policy docs to keep a `ci:local` command reference.
+- `npm run release:metadata:self-test` now covers a README command-drift failure where `npm run ci:local` is accidentally replaced by `npm run release:check`.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now documents command-reference drift coverage alongside warning-policy baseline coverage.
+
+#### Impact
+- Pre-push docs can no longer preserve the warning-policy wording while losing the actual command maintainers need to run before Real-CI.
+- README, release checklist, and Distribution docs remain aligned on both the policy and the executable command.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release policy docs keep the command-level handoff intact, not only the warning-policy prose.
 
 ### Phase 72 — Release policy docs metadata coverage expanded
 

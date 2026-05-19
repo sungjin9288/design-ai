@@ -44,6 +44,7 @@ VERSION_BUMP_RE = re.compile(
 AUDIT_COUNT_RE = re.compile(r"\bAll\s+(?P<count>\d+)\s+audits?\s+pass(?:ed)?\b", re.IGNORECASE)
 AUDIT_SCRIPT_RE = re.compile(r'script="([^"]+\.py)"')
 RELEASE_WARNING_POLICY_TERM_GROUPS = (
+    ("npm run ci:local", "ci:local"),
     ("MkDocs warning policy", "MkDocs 경고 정책"),
     ("baseline", "기준선"),
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
@@ -280,6 +281,20 @@ warnings at the accepted baseline.
     assert_condition("CHANGELOG.md top entry audit count mismatch" in joined_errors, "stale audit count should fail")
     assert_condition("docs/ROADMAP.md is missing a current release entry" in joined_errors, "missing roadmap entry should fail")
     assert_condition("docs/DISTRIBUTION.md" in joined_errors, "distribution warning policy drift should fail")
+
+    command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace("npm run ci:local", "npm run release:check"),
+        },
+        audit_count=8,
+    )
+    command_drift_errors = "\n".join(command_drift["errors"])
+    assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
 
     run_all_fixture = """AUDITS: tuple[AuditSpec, ...] = (
     AuditSpec(name="frontmatter", script="frontmatter-check.py"),

@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 73 — Release policy docs ci:local command guard added (v4.13.0) ✓ shipped
+
+Release metadata now guards the executable command in release-facing policy docs.
+
+### Changed
+- `tools/audit/release-metadata.py` now requires release-facing MkDocs warning-policy docs to mention `ci:local`.
+- `npm run release:metadata:self-test` now includes a README command-drift fixture where `npm run ci:local` is replaced by `npm run release:check`.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that release metadata covers both warning-policy baseline drift and command-reference drift.
+
+### Impact
+- Docs cannot keep the warning-policy words while losing the actual pre-push command maintainers need before Real-CI.
+- README, release checklist, and Distribution docs stay aligned on both command and policy.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release-facing docs keep command-level pre-push guidance intact.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 72 — Release policy docs metadata coverage expanded (v4.13.0) ✓ shipped
 
 Release metadata now checks every release-facing docs page that carries the MkDocs warning-policy baseline.
