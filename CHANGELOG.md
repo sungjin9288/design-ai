@@ -29,6 +29,35 @@ Release metadata now covers README, release checklist, and Distribution docs for
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
 Release metadata now fails if a required release policy doc drops out of the checked set.
 Release metadata now rejects unexpected release policy docs in the checked set.
+Release metadata now rejects release policy docs checked in a non-deterministic order.
+
+### Phase 76 — Release policy docs deterministic order guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now compares the release policy docs map order against `REQUIRED_RELEASE_POLICY_DOC_LABELS`.
+- `npm run release:metadata:self-test` now covers a reordered policy-doc fixture that keeps the same labels but changes the JSON summary order.
+- `docs/RELEASE-CHECKLIST.md` now states the exact release policy docs label order guarded by release metadata.
+
+#### Impact
+- `release_policy_docs_checked` stays deterministic for automation, reviewers, and release notes.
+- Missing/unexpected policy docs still report their direct errors first, while pure ordering drift now fails with a dedicated mismatch message.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata now has a stable, exact policy-doc coverage contract: required labels, no extra labels, and deterministic order.
 
 ### Phase 75 — Release policy docs exact set guard added
 

@@ -126,16 +126,22 @@ def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
 
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
     required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
-    errors = [
+    missing_errors = [
         f"release policy docs missing required file: {label}"
         for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
         if label not in release_policy_docs
     ]
-    errors.extend(
+    unexpected_errors = [
         f"release policy docs contains unexpected file: {label}"
         for label in release_policy_docs
         if label not in required_labels
-    )
+    ]
+    errors = missing_errors + unexpected_errors
+    actual_labels = tuple(release_policy_docs)
+    if not errors and actual_labels != REQUIRED_RELEASE_POLICY_DOC_LABELS:
+        expected = ", ".join(REQUIRED_RELEASE_POLICY_DOC_LABELS)
+        actual = ", ".join(actual_labels)
+        errors.append(f"release policy docs order mismatch: expected {expected}; got {actual}")
     return errors
 
 
@@ -351,6 +357,27 @@ warnings at the accepted baseline.
     assert_condition(
         "release policy docs contains unexpected file: docs/UNTRACKED.md" in unexpected_doc_errors,
         "release metadata should fail if an unexpected policy doc enters coverage",
+    )
+
+    reordered_docs = {
+        "README.md": english_policy_doc,
+        "docs/RELEASE-CHECKLIST.md": english_policy_doc,
+        "README.ko.md": korean_policy_doc,
+        "docs/DISTRIBUTION.md": english_policy_doc,
+        "docs/DISTRIBUTION.ko.md": korean_policy_doc,
+    }
+    reordered_doc_summary = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=reordered_docs,
+        audit_count=8,
+    )
+    reordered_doc_errors = "\n".join(reordered_doc_summary["errors"])
+    assert_condition(
+        "release policy docs order mismatch" in reordered_doc_errors,
+        "release metadata should fail if the policy docs order drifts",
     )
 
     run_all_fixture = """AUDITS: tuple[AuditSpec, ...] = (

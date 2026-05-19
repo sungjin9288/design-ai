@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 76 — Release policy docs deterministic order guard added (v4.13.0) ✓ shipped
+
+Release metadata now guards the policy-doc coverage order as well as membership.
+
+### Changed
+- `tools/audit/release-metadata.py` now fails when release policy docs contain the required labels in a different order.
+- `npm run release:metadata:self-test` now covers a reordered policy-doc fixture.
+- `docs/RELEASE-CHECKLIST.md` now documents the exact required release policy docs order.
+
+### Impact
+- `release_policy_docs_checked` stays stable for release JSON output and reviewer comparisons.
+- Required docs, unexpected docs, and order drift now each have explicit release metadata failure modes.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains deterministic even when the checked docs set is maintained by future edits.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 75 — Release policy docs exact set guard added (v4.13.0) ✓ shipped
 
 Release metadata now guards the policy-doc coverage set as an exact set.
