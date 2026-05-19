@@ -24,6 +24,34 @@ Local CI now also guards the docs workflow corpus directory path filters.
 MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
 Korean distribution guidance now describes the same MkDocs refs warning baseline cap as the English release docs.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
+Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
+
+### Phase 71 — Release metadata bilingual phrase guard hardened
+
+#### Changed
+- `tools/audit/release-metadata.py` now accepts both English and Korean equivalents for the MkDocs warning-policy, refs-only warning, non-`refs/` warning, and accepted baseline phrase groups.
+- `npm run release:metadata:self-test` now proves a Korean `MkDocs 경고 정책` / `기준선` fixture passes the distribution policy guard.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now documents that release metadata covers bilingual distribution warning-policy drift.
+
+#### Impact
+- Korean release docs can use natural Korean terms without weakening the executable release metadata guard.
+- The policy check remains strict about meaning while avoiding unnecessary failures caused by English-only phrase matching.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Bilingual release docs can stay idiomatic while still being guarded by automated release metadata validation.
 
 ### Phase 70 — Bilingual distribution policy metadata guard added
 

@@ -39,10 +39,10 @@ VERSION_BUMP_RE = re.compile(
 AUDIT_COUNT_RE = re.compile(r"\bAll\s+(?P<count>\d+)\s+audits?\s+pass(?:ed)?\b", re.IGNORECASE)
 AUDIT_SCRIPT_RE = re.compile(r'script="([^"]+\.py)"')
 RELEASE_WARNING_POLICY_TERM_GROUPS = (
-    ("MkDocs warning policy",),
-    ("baseline",),
-    ("refs-only", "`refs/` source-link"),
-    ("non-`refs/`", "only intentional `refs/`", "의도된 `refs/`"),
+    ("MkDocs warning policy", "MkDocs 경고 정책"),
+    ("baseline", "기준선"),
+    ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
+    ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
 )
 
 
@@ -107,8 +107,9 @@ def required_section_errors(label: str, entry: str, sections: tuple[str, ...]) -
 
 def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
+    normalized = text.casefold()
     for term_group in RELEASE_WARNING_POLICY_TERM_GROUPS:
-        if not any(term in text for term in term_group):
+        if not any(term.casefold() in normalized for term in term_group):
             expected = " or ".join(term_group)
             errors.append(f"{label} is missing MkDocs warning-policy phrase: {expected}")
     return errors
@@ -238,8 +239,8 @@ warnings at the accepted baseline.
 """
     distribution_ko = """# Distribution Korean
 
-`npm run ci:local`은 MkDocs warning policy를 확인해요. non-`refs/` warning은
-차단하고, 의도된 `refs/` source-link와 refs-only warning은 승인된 baseline
+`npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
+차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요.
 """
     passing = release_metadata_summary(

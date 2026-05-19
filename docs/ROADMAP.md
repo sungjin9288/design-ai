@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 71 — Release metadata bilingual phrase guard hardened (v4.13.0) ✓ shipped
+
+The release metadata distribution policy guard now accepts Korean equivalents.
+
+### Changed
+- `tools/audit/release-metadata.py` now accepts English and Korean phrase alternatives for MkDocs warning policy, refs-only warning, non-`refs/` warning, and accepted baseline checks.
+- `npm run release:metadata:self-test` now includes a Korean `MkDocs 경고 정책` / `기준선` passing fixture.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that release metadata covers bilingual distribution warning-policy drift.
+
+### Impact
+- Korean docs can use natural Korean policy language without causing false release metadata failures.
+- The guard still fails when the required warning-policy meaning disappears from either distribution guide.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Bilingual release guidance remains idiomatic while staying under automated metadata validation.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 70 — Bilingual distribution policy metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now guards the English and Korean distribution warning-policy language.
