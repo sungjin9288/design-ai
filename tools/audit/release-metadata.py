@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -55,8 +56,31 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
 )
 
 
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+def load_json_input(label: str, path: Path) -> tuple[dict, list[str]]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}, [f"release metadata input is missing: {label} ({path})"]
+    except json.JSONDecodeError as exc:
+        return {}, [
+            "release metadata input is invalid JSON: "
+            f"{label} ({path}): line {exc.lineno}, column {exc.colno}: {exc.msg}"
+        ]
+    except OSError as exc:
+        return {}, [f"release metadata input cannot be read: {label} ({path}): {exc}"]
+
+    if not isinstance(data, dict):
+        return {}, [f"release metadata input must be a JSON object: {label} ({path})"]
+    return data, []
+
+
+def load_text_input(label: str, path: Path) -> tuple[str, list[str]]:
+    try:
+        return path.read_text(encoding="utf-8"), []
+    except FileNotFoundError:
+        return "", [f"release metadata input is missing: {label} ({path})"]
+    except OSError as exc:
+        return "", [f"release metadata input cannot be read: {label} ({path}): {exc}"]
 
 
 def load_release_policy_docs(
@@ -423,6 +447,41 @@ class AuditResult:
         "release policy doc loader should report missing files without a traceback",
     )
 
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        valid_json = temp_path / "valid.json"
+        invalid_json = temp_path / "invalid.json"
+        valid_text = temp_path / "valid.md"
+        valid_json.write_text('{"version": "1.2.3"}', encoding="utf-8")
+        invalid_json.write_text('{"version": ', encoding="utf-8")
+        valid_text.write_text("# Fixture\n", encoding="utf-8")
+
+        parsed_json, parsed_json_errors = load_json_input("fixture valid JSON", valid_json)
+        assert_condition(
+            parsed_json == {"version": "1.2.3"} and parsed_json_errors == [],
+            "core JSON loader should parse valid JSON objects",
+        )
+        _, invalid_json_errors = load_json_input("fixture invalid JSON", invalid_json)
+        assert_condition(
+            "release metadata input is invalid JSON: fixture invalid JSON" in "\n".join(invalid_json_errors),
+            "core JSON loader should report invalid JSON without a traceback",
+        )
+        _, missing_json_errors = load_json_input("fixture missing JSON", temp_path / "missing.json")
+        assert_condition(
+            "release metadata input is missing: fixture missing JSON" in "\n".join(missing_json_errors),
+            "core JSON loader should report missing JSON without a traceback",
+        )
+        parsed_text, parsed_text_errors = load_text_input("fixture valid text", valid_text)
+        assert_condition(
+            parsed_text == "# Fixture\n" and parsed_text_errors == [],
+            "core text loader should read valid UTF-8 text",
+        )
+        _, missing_text_errors = load_text_input("fixture missing text", temp_path / "missing.md")
+        assert_condition(
+            "release metadata input is missing: fixture missing text" in "\n".join(missing_text_errors),
+            "core text loader should report missing text without a traceback",
+        )
+
     print("Release metadata self-test passed")
     return 0
 
@@ -437,15 +496,26 @@ def main() -> int:
         return run_self_test()
 
     release_policy_docs, release_policy_doc_load_errors = load_release_policy_docs()
+    package_json, package_json_errors = load_json_input("package.json", PACKAGE_JSON)
+    plugin_json, plugin_json_errors = load_json_input(".claude-plugin/plugin.json", PLUGIN_JSON)
+    changelog_text, changelog_errors = load_text_input("CHANGELOG.md", CHANGELOG)
+    roadmap_text, roadmap_errors = load_text_input("docs/ROADMAP.md", ROADMAP)
     summary = release_metadata_summary(
-        package_json=load_json(PACKAGE_JSON),
-        plugin_json=load_json(PLUGIN_JSON),
-        changelog_text=CHANGELOG.read_text(encoding="utf-8"),
-        roadmap_text=ROADMAP.read_text(encoding="utf-8"),
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog_text,
+        roadmap_text=roadmap_text,
         release_policy_docs=release_policy_docs,
         audit_count=load_audit_count(),
     )
-    summary["errors"] = release_policy_doc_load_errors + summary["errors"]
+    summary["errors"] = (
+        package_json_errors
+        + plugin_json_errors
+        + changelog_errors
+        + roadmap_errors
+        + release_policy_doc_load_errors
+        + summary["errors"]
+    )
 
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))

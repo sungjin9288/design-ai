@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 78 — Release metadata core input loader guard added (v4.13.0) ✓ shipped
+
+Release metadata now reports core input loading failures as structured errors.
+
+### Changed
+- `tools/audit/release-metadata.py` now uses structured loaders for `package.json`, `.claude-plugin/plugin.json`, `CHANGELOG.md`, and `docs/ROADMAP.md`.
+- `npm run release:metadata:self-test` now covers missing JSON, invalid JSON, missing text, and valid fixture input paths.
+- `docs/RELEASE-CHECKLIST.md` now states that core input loading failures produce release metadata errors instead of tracebacks.
+
+### Impact
+- Broken core release inputs now produce actionable metadata errors instead of Python exceptions.
+- The release metadata command keeps a consistent JSON/human error surface for manifests, release docs, and policy docs.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains useful and machine-readable even when required manifests or release docs are damaged.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 77 — Release policy docs loader error guard added (v4.13.0) ✓ shipped
 
 Release metadata now reports policy-doc filesystem failures as structured errors.

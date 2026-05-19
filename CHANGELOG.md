@@ -31,6 +31,35 @@ Release metadata now fails if a required release policy doc drops out of the che
 Release metadata now rejects unexpected release policy docs in the checked set.
 Release metadata now rejects release policy docs checked in a non-deterministic order.
 Release metadata now reports missing release policy doc files as structured errors instead of tracebacks.
+Release metadata now reports missing or invalid core release inputs as structured errors instead of tracebacks.
+
+### Phase 78 — Release metadata core input loader guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now reads `package.json`, `.claude-plugin/plugin.json`, `CHANGELOG.md`, and `docs/ROADMAP.md` through structured input loaders.
+- `npm run release:metadata:self-test` now covers valid JSON/text fixtures plus missing JSON, invalid JSON, and missing text inputs.
+- `docs/RELEASE-CHECKLIST.md` now documents that core release inputs and policy docs both produce structured metadata errors when loading fails.
+
+#### Impact
+- Release metadata no longer falls back to Python tracebacks when a core manifest or release doc is missing, unreadable, or invalid JSON.
+- JSON and human release metadata output now preserve the same actionable error surface across core inputs and policy-doc inputs.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata stays machine-readable and reviewer-friendly even when its required input files are damaged.
 
 ### Phase 77 — Release policy docs loader error guard added
 
