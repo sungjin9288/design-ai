@@ -4,8 +4,8 @@ Run the local equivalent of the non-publishing GitHub CI surfaces.
 
 This is intentionally broader than `npm run release:check`: it also exercises
 the workflow-only Python syntax check, knowledge size budget, VS Code extension
-compile/unit tests, and mkdocs site build before a branch is pushed for
-Real-CI verification.
+compile/unit tests, mkdocs site build, and mkdocs warning policy before a branch
+is pushed for Real-CI verification.
 
 Usage:
   python3 tools/audit/local-ci.py
@@ -30,6 +30,22 @@ def run(command: list[str], *, cwd: Path = ROOT) -> None:
     result = subprocess.run(command, cwd=cwd)
     if result.returncode != 0:
         raise SystemExit(result.returncode)
+
+
+def run_capture(command: list[str], *, cwd: Path = ROOT) -> str:
+    print(f"\n$ {' '.join(command)}", flush=True)
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    if result.stdout:
+        print(result.stdout, end="", flush=True)
+    if result.returncode != 0:
+        raise SystemExit(result.returncode)
+    return result.stdout
 
 
 def run_release_check() -> None:
@@ -93,7 +109,33 @@ def run_docs_build() -> None:
             ) from error
         raise
     run(["./tools/build-docs.sh"])
-    run(["python3", "-m", "mkdocs", "build", "--clean"])
+    mkdocs_output = run_capture(["python3", "-m", "mkdocs", "build", "--clean"])
+    assert_mkdocs_warning_policy(mkdocs_output)
+
+
+def mkdocs_warning_lines(output: str) -> list[str]:
+    return [line for line in output.splitlines() if "WARNING" in line]
+
+
+def non_refs_mkdocs_warning_lines(output: str) -> list[str]:
+    return [line for line in mkdocs_warning_lines(output) if "refs/" not in line]
+
+
+def assert_mkdocs_warning_policy(output: str) -> None:
+    unexpected = non_refs_mkdocs_warning_lines(output)
+    if not unexpected:
+        print(
+            f"\nMkDocs warning policy passed: {len(mkdocs_warning_lines(output))} refs-only warning(s)",
+            flush=True,
+        )
+        return
+
+    sample = "\n".join(f"- {line}" for line in unexpected[:10])
+    raise SystemExit(
+        "mkdocs emitted non-refs warning(s); fix docs navigation or update the warning policy.\n"
+        f"Unexpected warning count: {len(unexpected)}\n"
+        f"{sample}"
+    )
 
 
 def assert_condition(condition: bool, message: str) -> None:
@@ -141,6 +183,34 @@ def run_self_test() -> int:
             assert_condition("hard cap" in str(error), "hard cap should explain the failure")
         else:
             raise SystemExit("self-test failed: hard cap should raise SystemExit")
+
+        refs_only_output = "\n".join(
+            [
+                "INFO - Documentation built",
+                "WARNING - Doc file 'examples/component.md' contains a link '../refs/mui/Button.js', but the target 'refs/mui/Button.js' is not found among documentation files.",
+                "WARNING - Doc file 'knowledge/components/INDEX.md' contains a link '../../refs/ant-design/button.md', but the target 'refs/ant-design/button.md' is not found among documentation files.",
+            ]
+        )
+        assert_condition(
+            len(mkdocs_warning_lines(refs_only_output)) == 2,
+            "mkdocs warning classifier should count WARNING lines",
+        )
+        assert_condition(
+            non_refs_mkdocs_warning_lines(refs_only_output) == [],
+            "refs-only mkdocs warnings should be allowed",
+        )
+        assert_mkdocs_warning_policy(refs_only_output)
+
+        mixed_output = refs_only_output + "\n" + (
+            "WARNING - Doc file 'index.md' contains a link 'skills/', "
+            "but the target 'skills/' is not found among documentation files."
+        )
+        try:
+            assert_mkdocs_warning_policy(mixed_output)
+        except SystemExit as error:
+            assert_condition("non-refs" in str(error), "non-refs warning failure should explain the policy")
+        else:
+            raise SystemExit("self-test failed: non-refs mkdocs warning should raise SystemExit")
 
     print("Local CI self-test passed")
     return 0

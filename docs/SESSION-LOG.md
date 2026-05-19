@@ -107,7 +107,7 @@ Build the leverage tool, then push coverage further.
 - **v4.10 (Phases 45-47)** — VS Code real-instance e2e infrastructure, SESSION-LOG refresh, and component extractor v3 cross-source conflict detection.
 - **v4.11 (Phase 48)** — CI wiring. Audit, unit tests, VS Code e2e, and informational conflict-check moved into GitHub workflows.
 - **v4.12 (Phase 49)** — Reconciliation mode. `component_spec_reconcile.py` proposes unified API rows and can safely apply HIGH-confidence updates.
-- **v4.13 (Phases 50-60)** — Closed all DRAFT spec debt, added raw-hex example hygiene, reached 90%+ canonical coverage, documented summary-first drift review, synced Korean maintenance docs, refreshed upstream refs, added `BorderBeam` coverage after Ant Design expanded the canonical index to 200, added a self-tested local CI parity gate for push-readiness, removed generated Ant Design swatch hash-link noise from MkDocs builds, tightened public docs links before Real-CI, and narrowed MkDocs warnings to intentional `refs/` source links.
+- **v4.13 (Phases 50-61)** — Closed all DRAFT spec debt, added raw-hex example hygiene, reached 90%+ canonical coverage, documented summary-first drift review, synced Korean maintenance docs, refreshed upstream refs, added `BorderBeam` coverage after Ant Design expanded the canonical index to 200, added a self-tested local CI parity gate for push-readiness, removed generated Ant Design swatch hash-link noise from MkDocs builds, tightened public docs links before Real-CI, narrowed MkDocs warnings to intentional `refs/` source links, and made that non-`refs/` warning baseline enforceable inside `npm run ci:local`.
 
 ## Patterns that didn't work
 

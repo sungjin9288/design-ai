@@ -14,6 +14,34 @@ The local CI parity gate now has a lightweight self-test wired into the release 
 Ant Design token swatches no longer create MkDocs hash-link noise, and the extractor now has a release self-test for that renderer.
 Docs navigation links now target concrete tracked pages instead of directories, reducing MkDocs link noise before Real-CI.
 MkDocs warning output now contains no non-`refs/` warnings in the local build.
+The local CI parity gate now enforces that same MkDocs warning policy so new non-`refs/` docs warnings fail before push.
+
+### Phase 61 — Local CI enforces MkDocs warning policy
+
+#### Added
+- Added MkDocs output capture and warning classification to `tools/audit/local-ci.py`.
+- Added self-test coverage for refs-only warning output and mixed warning output.
+
+#### Changed
+- `npm run ci:local` now fails when `mkdocs build --clean` emits any non-`refs/` warning, while preserving the existing accepted upstream `refs/` source-link warnings.
+- Release and distribution docs now describe the warning-policy check as part of pre-push Real-CI parity.
+
+#### Impact
+- The Phase 60 warning baseline is now executable guardrail, not only release documentation.
+- Any new broken docs navigation, unresolved `.ko.md` page, or directory-style link warning should be caught locally before Real-CI.
+
+#### Verified
+- All 8 audits pass.
+- `npm run ci:local:self-test`
+- `npm run release:self-test`
+- `npm run ci:local -- --skip-release-check --skip-vscode`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Push-readiness improves because docs warning regressions now fail the same local parity command maintainers already run before Real-CI.
 
 ### Phase 60 — MkDocs warning stream narrowed to refs
 

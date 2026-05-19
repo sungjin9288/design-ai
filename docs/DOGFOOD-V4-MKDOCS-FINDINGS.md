@@ -127,12 +127,20 @@ This matters because the dogfood deliverable is itself an example for adopters �
 
 **Fix**: converted repo-tool references to code paths and moved Korean launch draft/contributor references to GitHub URLs where they are meant to point at files rather than site pages.
 
+### 8. Warning policy needed to be executable, not only documented
+
+**Found by**: reviewing Phase 60's narrowed warning stream before push-readiness.
+
+**Symptom**: The local build had 0 non-`refs/` warnings, but `npm run ci:local` still treated any successful MkDocs process as good enough. That meant a future directory-style link, unresolved Korean page link, or launch draft link could reappear and pass local parity.
+
+**Fix**: `tools/audit/local-ci.py` now captures `mkdocs build --clean` output, allows only warning lines that reference `refs/`, and fails on any non-`refs/` warning. Its self-test covers refs-only output and mixed output.
+
 ## Known acceptable warnings (not fixed)
 
 - **280 warnings: `brand-references.md` → `refs/`** — `refs/` is gitignored upstream sources. The links are intentional (point to upstream brand examples for context). Acceptable.
 - **112 warnings: `components/INDEX.md` → various** — index file references files outside site scope; acceptable.
 
-Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references.
+Total remaining MkDocs `WARNING` lines in the latest local build: 632. Non-`refs/` warnings are 0, root `index.md` / `index.ko.md` warnings are 0, skill directory link INFO messages are 0, and the Ant Design color-anchor class remains 0. Remaining warnings are upstream `refs/` source links intentionally kept as repo references. `npm run ci:local` now enforces this non-`refs/` warning baseline.
 
 ## Performance
 

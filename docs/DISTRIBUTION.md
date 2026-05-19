@@ -93,6 +93,7 @@ The workflow:
 - Runs all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - Runs CLI unit tests before publishing or attaching release assets.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
+- Runs `npm run ci:local` before Real-CI when preparing a push, including the MkDocs warning policy that allows only intentional `refs/` source-link warnings.
 - Installs the packed tarball into a temporary project, validates `design-ai version` and top-level help output, reads the `design-ai help --json` topic catalog, verifies the expected public topic and alias set, validates every `design-ai help <command>` topic-specific usage output, smoke-tests documented help and command aliases with output assertions, verifies functional aliases such as `find`, `cat`, `recommend`, `example`, `ex`, `ls`, and `lint`, `list skills`, `list commands`, `list agents`, human and JSON `search` / `show` / `examples` output, explicit `show --lines` ranges and `route --explain` output, verifies unknown route-id/option/value suggestion and numeric range failures, verifies prompt/pack forced `--out` overwrites plus their `Wrote <path>` confirmations, and verifies `design-ai install`, `doctor --strict`, `status`, and `uninstall` lifecycle output against a fake `CLAUDE_HOME`.
 - Publishes with `--provenance` (npm provenance attestation).
 - After publish, smoke-tests the public registry package with `npm exec --package @design-ai/cli@<version>`, including version and top-level help output, the expected `design-ai help --json` catalog, discovered help topic usage output, documented help and command aliases, functional aliases such as `find`, `cat`, `recommend`, `example`, `ex`, `ls`, and `lint`, all three `list` catalog domains, human / JSON corpus discovery output, explicit `show --lines` ranges and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced output-file confirmations, and install/`doctor --strict`/status/uninstall lifecycle output.
@@ -134,7 +135,7 @@ Tarball target: < 15MB. Run `npm run package:check` to verify package contents.
 
 Before tagging a release:
 
-- [ ] Local CI parity gate passes: `npm run ci:local`
+- [ ] Local CI parity gate passes, including the MkDocs non-`refs/` warning guard: `npm run ci:local`
 - [ ] Core automated gate passes: `npm run release:check`
 - [ ] Release assertion self-tests pass: `npm run release:self-test`
 - [ ] All audits pass: `design-ai audit --strict`
