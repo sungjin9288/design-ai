@@ -125,11 +125,18 @@ def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
 
 
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
-    return [
+    required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
+    errors = [
         f"release policy docs missing required file: {label}"
         for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
         if label not in release_policy_docs
     ]
+    errors.extend(
+        f"release policy docs contains unexpected file: {label}"
+        for label in release_policy_docs
+        if label not in required_labels
+    )
+    return errors
 
 
 def release_metadata_summary(
@@ -326,6 +333,24 @@ warnings at the accepted baseline.
     assert_condition(
         "release policy docs missing required file: README.ko.md" in missing_doc_errors,
         "release metadata should fail if a required policy doc drops out of coverage",
+    )
+
+    unexpected_docs = {
+        **release_policy_docs,
+        "docs/UNTRACKED.md": english_policy_doc,
+    }
+    unexpected_doc_summary = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=unexpected_docs,
+        audit_count=8,
+    )
+    unexpected_doc_errors = "\n".join(unexpected_doc_summary["errors"])
+    assert_condition(
+        "release policy docs contains unexpected file: docs/UNTRACKED.md" in unexpected_doc_errors,
+        "release metadata should fail if an unexpected policy doc enters coverage",
     )
 
     run_all_fixture = """AUDITS: tuple[AuditSpec, ...] = (

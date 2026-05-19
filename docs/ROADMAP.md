@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 75 — Release policy docs exact set guard added (v4.13.0) ✓ shipped
+
+Release metadata now guards the policy-doc coverage set as an exact set.
+
+### Changed
+- `tools/audit/release-metadata.py` now rejects release policy doc labels outside `REQUIRED_RELEASE_POLICY_DOC_LABELS`.
+- `npm run release:metadata:self-test` now covers an unexpected `docs/UNTRACKED.md` policy-doc entry.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that metadata checks exact policy-doc membership as well as policy wording.
+
+### Impact
+- A required policy doc cannot silently disappear from release metadata coverage.
+- An unexpected or mistyped policy-doc label cannot silently enter release metadata coverage.
+- The Phase 72/73 release-facing docs guard now fails closed for exact coverage membership and command/policy content.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata remains reliable even as the list of release-facing docs evolves.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 74 — Release policy docs coverage set guard added (v4.13.0) ✓ shipped
 
 Release metadata now guards the required policy-doc coverage set itself.

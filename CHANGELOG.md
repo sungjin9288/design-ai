@@ -28,6 +28,35 @@ Release metadata now accepts Korean equivalents for the MkDocs warning-policy ph
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
 Release metadata now fails if a required release policy doc drops out of the checked set.
+Release metadata now rejects unexpected release policy docs in the checked set.
+
+### Phase 75 — Release policy docs exact set guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now rejects release policy doc labels that are not part of `REQUIRED_RELEASE_POLICY_DOC_LABELS`.
+- `npm run release:metadata:self-test` now covers an unexpected `docs/UNTRACKED.md` fixture entering the release policy docs map.
+- `docs/DOGFOOD-V4-NPM-FINDINGS.md` now records that release metadata guards exact policy-doc coverage membership, not only missing entries.
+
+#### Impact
+- Maintainers cannot accidentally broaden release metadata coverage with an unreviewed or mistyped policy-doc label.
+- The Phase 74 coverage guard is now exact: required docs must be present, and unexpected docs must stay out.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata:self-test`
+- `npm run release:metadata -- --json`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run ci:local -- --skip-release-check --skip-vscode --skip-docs`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release policy metadata coverage is now fail-closed for exact document membership and policy wording.
 
 ### Phase 74 — Release policy docs coverage set guard added
 
