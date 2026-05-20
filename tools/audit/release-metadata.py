@@ -85,6 +85,17 @@ RELEASE_STATUS_JSON_TERM_GROUPS = (
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
+RELEASE_POLICY_PHRASE_CHECKS = (
+    ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
+    ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
+    ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
+    ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
+    ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
+    ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
+    ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
+    ("status JSON install-state phrase", RELEASE_STATUS_JSON_TERM_GROUPS),
+    ("update dry-run lifecycle phrase", RELEASE_UPDATE_DRY_RUN_TERM_GROUPS),
+)
 RELEASE_METADATA_SUMMARY_KEYS = (
     "version",
     "plugin_version",
@@ -207,93 +218,14 @@ def required_section_errors(label: str, entry: str, sections: tuple[str, ...]) -
     return [f"{label} is missing required section: {section}" for section in sections if section not in entry]
 
 
-def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
+def release_policy_phrase_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
     normalized = text.casefold()
-    for term_group in RELEASE_WARNING_POLICY_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing MkDocs warning-policy phrase: {expected}")
-    return errors
-
-
-def release_version_json_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_VERSION_JSON_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing version JSON metadata phrase: {expected}")
-    return errors
-
-
-def release_help_json_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_HELP_JSON_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing help JSON topic catalog phrase: {expected}")
-    return errors
-
-
-def release_install_json_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_INSTALL_JSON_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing install JSON lifecycle phrase: {expected}")
-    return errors
-
-
-def release_uninstall_json_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_UNINSTALL_JSON_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing uninstall JSON lifecycle phrase: {expected}")
-    return errors
-
-
-def release_audit_strict_quiet_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing audit strict-quiet smoke phrase: {expected}")
-    return errors
-
-
-def release_doctor_strict_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_DOCTOR_STRICT_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing doctor strict smoke phrase: {expected}")
-    return errors
-
-
-def release_status_json_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_STATUS_JSON_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing status JSON install-state phrase: {expected}")
-    return errors
-
-
-def release_update_dry_run_doc_errors(label: str, text: str) -> list[str]:
-    errors: list[str] = []
-    normalized = text.casefold()
-    for term_group in RELEASE_UPDATE_DRY_RUN_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(f"{label} is missing update dry-run lifecycle phrase: {expected}")
+    for phrase_label, term_groups in RELEASE_POLICY_PHRASE_CHECKS:
+        for term_group in term_groups:
+            if not any(term.casefold() in normalized for term in term_group):
+                expected = " or ".join(term_group)
+                errors.append(f"{label} is missing {phrase_label}: {expected}")
     return errors
 
 
@@ -381,15 +313,7 @@ def release_metadata_summary(
 
     errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
-        errors.extend(release_warning_policy_doc_errors(label, text))
-        errors.extend(release_version_json_doc_errors(label, text))
-        errors.extend(release_help_json_doc_errors(label, text))
-        errors.extend(release_install_json_doc_errors(label, text))
-        errors.extend(release_uninstall_json_doc_errors(label, text))
-        errors.extend(release_audit_strict_quiet_doc_errors(label, text))
-        errors.extend(release_doctor_strict_doc_errors(label, text))
-        errors.extend(release_status_json_doc_errors(label, text))
-        errors.extend(release_update_dry_run_doc_errors(label, text))
+        errors.extend(release_policy_phrase_doc_errors(label, text))
 
     return {
         "version": version,

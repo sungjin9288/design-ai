@@ -35,6 +35,7 @@ Release metadata now reports missing or invalid core release inputs as structure
 Release metadata now reports audit-count source failures as structured errors instead of exiting early.
 Release metadata now self-tests its human pass/fail output formatter.
 Release metadata now self-tests its JSON output formatter and summary key order.
+Release metadata policy-doc phrase validation now runs from a single table-driven guard list instead of one helper per smoke phrase.
 `design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
 `design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
 `design-ai prompt` now formats machine-readable prompt plans through a self-tested JSON formatter with stable inferred/forced route plan order.
@@ -60,6 +61,34 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 105 — Release metadata phrase guard table refactor
+
+#### Changed
+- `tools/audit/release-metadata.py` now validates all release policy-doc smoke phrases through `RELEASE_POLICY_PHRASE_CHECKS` and one shared `release_policy_phrase_doc_errors()` helper.
+- The refactor preserves the existing structured error strings for MkDocs warning-policy, help JSON, version JSON, install/uninstall JSON, audit strict-quiet, doctor strict, status JSON, and update dry-run drift.
+- Existing self-test drift fixtures now exercise the same table-driven path instead of separate phrase-specific helper functions.
+
+#### Impact
+- Adding the next release smoke phrase now requires one table entry and one drift fixture instead of a new constant, helper, and validation loop call.
+- Runtime CLI behavior, release metadata JSON shape, checked policy-doc order, and release-facing documentation requirements remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata can keep expanding smoke-contract coverage without accumulating repetitive validation helpers.
 
 ### Phase 104 — Help JSON release metadata guard added
 

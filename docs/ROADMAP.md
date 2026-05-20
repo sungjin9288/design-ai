@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 105 — Release metadata phrase guard table refactor (v4.13.0) ✓ shipped
+
+Release metadata phrase validation now uses one table-driven guard list.
+
+### Changed
+- `tools/audit/release-metadata.py` now routes all release policy-doc smoke phrase checks through `RELEASE_POLICY_PHRASE_CHECKS`.
+- `release_policy_phrase_doc_errors()` now produces the same structured phrase-drift errors that the individual helper functions previously produced.
+- Existing self-test drift fixtures now validate the shared phrase-check path.
+- CHANGELOG and SESSION-LOG now record the Phase 105 refactor.
+
+### Impact
+- Future release smoke phrase guards can be added with less code churn and less risk of forgetting the validation loop.
+- Existing CLI behavior, metadata output shape, policy-doc requirements, and release docs remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release metadata can keep expanding smoke-contract coverage without accumulating phrase-specific helper boilerplate.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 104 — Help JSON release metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the help JSON topic catalog guidance already covered by package and registry smoke checks.
