@@ -87,6 +87,7 @@ from smoke_assertions import (
     assert_unknown_list_domain_failure,
     assert_unknown_option_failure,
     assert_unknown_route_id_failure,
+    assert_install_json,
     assert_version_json,
     assert_uninstall_json,
     assert_uninstall_output,
@@ -381,6 +382,18 @@ def assert_command_alias_smoke(
 def assert_install_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_install_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_install_json_smoke(
+    cmd: list[str],
+    *,
+    prefix: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_install_json(result.stdout, prefix=prefix, context=context, cmd=cmd)
 
 
 def assert_status_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1433,10 +1446,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin uninstall",
         )
-        assert_install_smoke(
-            [str(bin_path), "install"],
+        assert_install_json_smoke(
+            [str(bin_path), "install", "--json"],
+            prefix="smoke-design-",
             env=smoke_env,
-            context="package smoke installed bin reinstall before uninstall JSON",
+            context="package smoke installed bin install JSON",
         )
         assert_uninstall_json_smoke(
             [str(bin_path), "uninstall", "--json"],
@@ -1999,7 +2013,7 @@ def smoke_tarball(tarball: Path) -> None:
                 "design-ai status && "
                 "design-ai status --json > npx-status.json && "
                 "design-ai uninstall && "
-                "design-ai install && "
+                "design-ai install --json > npx-install.json && "
                 "design-ai uninstall --json > npx-uninstall.json",
             ),
             cwd=npx_root,
@@ -2012,6 +2026,12 @@ def smoke_tarball(tarball: Path) -> None:
             prefix="npx-design-",
             context="package smoke npm exec status JSON",
             cmd=["design-ai", "status", "--json"],
+        )
+        assert_install_json(
+            (npx_root / "npx-install.json").read_text(encoding="utf-8"),
+            prefix="npx-design-",
+            context="package smoke npm exec install JSON",
+            cmd=["design-ai", "install", "--json"],
         )
         assert_uninstall_json(
             (npx_root / "npx-uninstall.json").read_text(encoding="utf-8"),

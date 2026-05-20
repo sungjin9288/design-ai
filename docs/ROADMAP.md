@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 97 — Install command JSON lifecycle output added (v4.13.0) ✓ shipped
+
+`design-ai install` now emits machine-readable lifecycle output for package and registry smoke automation.
+
+### Changed
+- `cli/commands/install.mjs` now supports `--json` while keeping the existing human install output.
+- The install JSON report includes source root, Claude home, symlink prefix, and installed skill/agent/command counts.
+- `cli/lib/install-command.test.mjs` covers parser behavior, unknown-option suggestions, installed-count parsing, JSON key order, and readable localized paths.
+- Package smoke and registry smoke now verify both human install output and JSON `install --json` lifecycle output.
+- Release metadata now guards policy docs against dropping `install --json` lifecycle smoke guidance.
+
+### Impact
+- Release automation can validate install lifecycle completion without scraping human terminal output.
+- Existing install, status, doctor, and uninstall flows remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/install-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `CLAUDE_HOME=<tmp>/claude DESIGN_AI_PREFIX=smoke-design- NO_COLOR=1 node cli/bin/design-ai.mjs install --json`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Install lifecycle smoke now has machine-readable entry and exit checks.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 96 — Uninstall command JSON lifecycle output added (v4.13.0) ✓ shipped
 
 `design-ai uninstall` now emits machine-readable lifecycle output for package and registry smoke automation.

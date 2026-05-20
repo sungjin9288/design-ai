@@ -57,6 +57,9 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
 RELEASE_VERSION_JSON_TERM_GROUPS = (
     ("version --json", "design-ai version --json"),
 )
+RELEASE_INSTALL_JSON_TERM_GROUPS = (
+    ("design-ai install --json", "`install --json`"),
+)
 RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
     ("uninstall --json", "design-ai uninstall --json"),
 )
@@ -202,6 +205,16 @@ def release_version_json_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_install_json_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in RELEASE_INSTALL_JSON_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing install JSON lifecycle phrase: {expected}")
+    return errors
+
+
 def release_uninstall_json_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
     normalized = text.casefold()
@@ -298,6 +311,7 @@ def release_metadata_summary(
     for label, text in release_policy_docs.items():
         errors.extend(release_warning_policy_doc_errors(label, text))
         errors.extend(release_version_json_doc_errors(label, text))
+        errors.extend(release_install_json_doc_errors(label, text))
         errors.extend(release_uninstall_json_doc_errors(label, text))
 
     return {
@@ -373,7 +387,8 @@ def run_self_test() -> int:
 The release workflow runs `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests `design-ai version --json`
-for machine-readable CLI/plugin version metadata and `design-ai uninstall --json`
+for machine-readable CLI/plugin version metadata, `design-ai install --json`
+for machine-readable install lifecycle output, and `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output.
 """
     korean_policy_doc = """# Distribution Korean
@@ -381,8 +396,9 @@ for machine-readable uninstall lifecycle output.
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. `design-ai version --json`으로 machine-readable version
-metadata도 smoke test하고, `design-ai uninstall --json`으로 machine-readable
-uninstall lifecycle output도 확인해요.
+metadata도 smoke test하고, `design-ai install --json`으로 machine-readable
+install lifecycle output을 확인하며, `design-ai uninstall --json`으로
+machine-readable uninstall lifecycle output도 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -482,6 +498,23 @@ uninstall lifecycle output도 확인해요.
     assert_condition(
         "README.ko.md is missing version JSON metadata phrase" in version_json_drift_errors,
         "release policy docs should mention version JSON metadata smoke",
+    )
+
+    install_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace("install --json", "install"),
+        },
+        audit_count=8,
+    )
+    install_json_drift_errors = "\n".join(install_json_drift["errors"])
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing install JSON lifecycle phrase" in install_json_drift_errors,
+        "release policy docs should mention install JSON lifecycle smoke",
     )
 
     uninstall_json_drift = release_metadata_summary(

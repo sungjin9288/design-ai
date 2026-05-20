@@ -37,6 +37,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
 
   assert.match(output, /Usage:\s+design-ai <command> \[args\]/);
   assert.match(output, /design-ai help \[command\|--json\]/);
+  assert.match(output, /install \[--json\]/);
   assert.match(output, /audit \[--strict\] \[--quiet\] \[--json\]/);
   assert.match(output, /version \[--json\]/);
   assert.match(output, /uninstall \[--json\]/);
@@ -93,6 +94,10 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   ]);
   assert.deepEqual(catalog.topics.map((topic) => topic.topic), HELP_TOPICS);
   assert.deepEqual(Object.keys(catalog.aliases), Object.keys(HELP_ALIASES));
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "install").usage,
+    "design-ai install [--json]",
+  );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "version").usage,
     "design-ai version [--json]",
@@ -161,8 +166,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--max-bytes N\] \[--json\]/);
 
   const installOutput = await captureStdout(() => runHelp(["install"]));
-  assert.match(installOutput, /Usage:\s+design-ai install/);
+  assert.match(installOutput, /Usage:\s+design-ai install \[--json\]/);
   assert.match(installOutput, /Symlinks design-ai skills/);
+  assert.match(installOutput, /--json\s+Emit machine-readable install result/);
 
   const uninstallOutput = await captureStdout(() => runHelp(["uninstall"]));
   assert.match(uninstallOutput, /Usage:\s+design-ai uninstall \[--json\]/);

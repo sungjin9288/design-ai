@@ -49,8 +49,39 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
 Release metadata now guards release-facing docs against dropping `design-ai version --json` smoke guidance.
+`design-ai install` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and install-count keys.
+Release metadata now guards release-facing docs against dropping `design-ai install --json` smoke guidance.
 `design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
+
+### Phase 97 — Install command JSON lifecycle output added
+
+#### Changed
+- `cli/commands/install.mjs` now accepts `--json` and emits source root, Claude home, symlink prefix, and installed skill/agent/command counts as a stable install result.
+- `cli/lib/install-command.test.mjs` now asserts install argument parsing, unknown-option suggestions, installed-count parsing, JSON key order, and readable localized paths.
+- Help output, package smoke, registry smoke, and shared smoke assertions now cover `design-ai install --json` in addition to the existing human install lifecycle output.
+- Release-facing README, Distribution, and Release checklist docs now describe the human install plus JSON `install --json` lifecycle smoke contract.
+- `tools/audit/release-metadata.py` now requires release policy docs to retain `install --json` lifecycle guidance.
+
+#### Impact
+- Package and registry smoke can verify install lifecycle completion without parsing terminal text.
+- Existing human `design-ai install`, `i`, and install.sh symlink behavior remains unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `node --test cli/lib/install-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `CLAUDE_HOME=<tmp>/claude DESIGN_AI_PREFIX=smoke-design- NO_COLOR=1 node cli/bin/design-ai.mjs install --json`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Install and uninstall lifecycle checks now both have stable machine-readable outputs for release automation.
 
 ### Phase 96 — Uninstall command JSON lifecycle output added
 

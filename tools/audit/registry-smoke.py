@@ -89,6 +89,7 @@ from smoke_assertions import (
     assert_unknown_list_domain_failure,
     assert_unknown_option_failure,
     assert_unknown_route_id_failure,
+    assert_install_json,
     assert_uninstall_json,
     assert_version_json,
     assert_version_output,
@@ -349,6 +350,15 @@ def assert_status_json_file(path: Path, *, prefix: str, context: str) -> None:
         prefix=prefix,
         context=context,
         cmd=["design-ai", "status", "--json"],
+    )
+
+
+def assert_install_json_file(path: Path, *, prefix: str, context: str) -> None:
+    assert_install_json(
+        path.read_text(encoding="utf-8"),
+        prefix=prefix,
+        context=context,
+        cmd=["design-ai", "install", "--json"],
     )
 
 
@@ -1332,6 +1342,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         )
         doctor_json = npx_root / "doctor.json"
         status_json = npx_root / "status.json"
+        install_json = npx_root / "install.json"
         uninstall_json = npx_root / "uninstall.json"
         assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(
@@ -1345,7 +1356,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 "design-ai status && "
                 "design-ai status --json > status.json && "
                 "design-ai uninstall && "
-                "design-ai install && "
+                "design-ai install --json > install.json && "
                 "design-ai uninstall --json > uninstall.json",
             ),
             cwd=npx_root,
@@ -1354,6 +1365,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         )
         assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
         assert_status_json_file(status_json, prefix="registry-design-", context="registry smoke status JSON")
+        assert_install_json_file(install_json, prefix="registry-design-", context="registry smoke install JSON")
         assert_uninstall_json_file(uninstall_json, prefix="registry-design-", context="registry smoke uninstall JSON")
 
 

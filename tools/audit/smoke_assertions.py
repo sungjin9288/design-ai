@@ -86,7 +86,7 @@ EXPECTED_HELP_ALIASES = {
     "v": "version",
 }
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
-    "install": ("Usage:", "design-ai install"),
+    "install": ("Usage:", "design-ai install [--json]"),
     "update": ("Usage:", "design-ai update"),
     "uninstall": ("Usage:", "design-ai uninstall [--json]"),
     "status": ("Usage:", "design-ai status [--json]"),
@@ -221,6 +221,7 @@ EXPECTED_SEARCH_DIRS = (
 EXPECTED_UNKNOWN_SEARCH_DIR = "knowlege"
 EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
+    ("install", "--jsn", "--json"),
     ("list", "--jsno", "--json"),
     ("status", "--jsn", "--json"),
     ("uninstall", "--jsn", "--json"),
@@ -499,6 +500,8 @@ def passing_numeric_value_output(expected_message: str) -> str:
 
 
 def unknown_option_args(command_name: str, option: str) -> list[str]:
+    if command_name == "install":
+        return ["install", option]
     if command_name == "list":
         return ["list", option]
     if command_name == "status":
@@ -2618,6 +2621,32 @@ def passing_install_output() -> str:
     ])
 
 
+def expected_installed_counts() -> dict[str, int]:
+    return {
+        "skills": len(EXPECTED_LIST_CATALOG["skills"]),
+        "agents": len(EXPECTED_LIST_CATALOG["agents"]),
+        "commands": len(EXPECTED_LIST_CATALOG["commands"]),
+        "total": expected_installed_symlink_count(),
+    }
+
+
+def passing_install_json(prefix: str = "smoke-design-") -> str:
+    return json.dumps(
+        {
+            "context": {
+                "sourceRoot": "/tmp/design-ai",
+                "claudeHome": "/tmp/claude-home",
+                "prefix": prefix,
+            },
+            "result": {
+                "installed": expected_installed_counts(),
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_status_output() -> str:
     return "\n".join([
         "",
@@ -2913,6 +2942,44 @@ def assert_install_output(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         label="install output",
     )
+
+
+def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"install JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "result"]:
+        raise SystemExit(f"install JSON after {context} top-level keys changed")
+
+    install_context = payload.get("context")
+    if not isinstance(install_context, dict):
+        raise SystemExit(f"install JSON after {context} context is not an object")
+    if list(install_context) != ["sourceRoot", "claudeHome", "prefix"]:
+        raise SystemExit(f"install JSON after {context} context keys changed")
+    if not isinstance(install_context.get("sourceRoot"), str) or not install_context["sourceRoot"]:
+        raise SystemExit(f"install JSON after {context} sourceRoot is missing")
+    if not isinstance(install_context.get("claudeHome"), str) or not install_context["claudeHome"]:
+        raise SystemExit(f"install JSON after {context} claudeHome is missing")
+    if install_context.get("prefix") != prefix:
+        raise SystemExit(f"install JSON after {context} prefix differs from expected {prefix}")
+
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise SystemExit(f"install JSON after {context} result is not an object")
+    if list(result) != ["installed"]:
+        raise SystemExit(f"install JSON after {context} result keys changed")
+
+    installed = result.get("installed")
+    if not isinstance(installed, dict):
+        raise SystemExit(f"install JSON after {context} installed is not an object")
+    if list(installed) != ["skills", "agents", "commands", "total"]:
+        raise SystemExit(f"install JSON after {context} installed keys changed")
+    if installed != expected_installed_counts():
+        raise SystemExit(f"install JSON after {context} installed counts differ from expected install set")
 
 
 def assert_status_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -5045,6 +5112,12 @@ def run_self_test() -> None:
     )
     install_cmd = ["design-ai", "install"]
     assert_install_output(passing_install_output(), context=context, cmd=install_cmd)
+    assert_install_json(
+        passing_install_json("smoke-design-"),
+        prefix="smoke-design-",
+        context=context,
+        cmd=[*install_cmd, "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_install_output(
             passing_install_output().replace("Installed 19 skills", "Installed 18 skills"),
@@ -5065,6 +5138,26 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_install_output("\x1b[31mred", context=context, cmd=install_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            passing_install_json("smoke-design-").replace('"total": 39', '"total": 38'),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
+        expected="installed counts differ",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            "\x1b[31mred",
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
         expected="ANSI escape",
         scope="smoke assertions",
     )
