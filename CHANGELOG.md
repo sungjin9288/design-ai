@@ -44,6 +44,7 @@ Release metadata now self-tests the phrase guard table labels, uniqueness, and t
 `design-ai examples` now formats machine-readable worked-example discovery through a self-tested JSON formatter with stable route-biased result order.
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
+Release metadata now guards release-facing docs against dropping human/JSON corpus discovery smoke guidance.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
@@ -63,6 +64,35 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 108 — Corpus discovery release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain human/JSON corpus discovery smoke guidance alongside list, help, audit, doctor, status, version, install, uninstall, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when corpus discovery JSON wording is removed from a release-facing policy doc.
+- English and Korean README release guidance now explicitly names human/JSON corpus discovery smoke coverage.
+- `docs/RELEASE-CHECKLIST.md` now lists corpus discovery JSON inside release metadata's protected release smoke phrase set.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the package and registry smoke contract for `search`, `show`, and `examples` machine-readable discovery flows.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Corpus discovery JSON guidance is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 107 — List JSON release metadata guard added
 
