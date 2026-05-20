@@ -48,6 +48,34 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
+Release metadata now guards release-facing docs against dropping `design-ai version --json` smoke guidance.
+
+### Phase 95 — README release-smoke version JSON guidance guarded
+
+#### Changed
+- `README.md` and `README.ko.md` now document `status [--json]`, `list ... [--json]`, `audit ... [--json]`, and `version [--json]` in the public CLI command summary.
+- English and Korean README release guidance now describes human/JSON `design-ai version --json`, human/JSON audit output, and human+JSON status lifecycle smoke checks.
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain `version --json` guidance, alongside the existing MkDocs warning-policy guard.
+- `release-metadata.py --self-test` now includes a version JSON drift fixture so this release-facing docs contract fails closed.
+
+#### Impact
+- Contributors and adopters see the same machine-readable version metadata contract in README, distribution docs, and release checklist.
+- Release metadata now catches README or policy-doc drift before tagging.
+
+#### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing documentation now stays aligned with the version JSON smoke contract instead of depending on manual README edits.
 
 ### Phase 94 — Version command JSON metadata output added
 

@@ -54,6 +54,9 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
     ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
 )
+RELEASE_VERSION_JSON_TERM_GROUPS = (
+    ("version --json", "design-ai version --json"),
+)
 RELEASE_METADATA_SUMMARY_KEYS = (
     "version",
     "plugin_version",
@@ -186,6 +189,16 @@ def release_warning_policy_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_version_json_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in RELEASE_VERSION_JSON_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing version JSON metadata phrase: {expected}")
+    return errors
+
+
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
     required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
     missing_errors = [
@@ -271,6 +284,7 @@ def release_metadata_summary(
     errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
         errors.extend(release_warning_policy_doc_errors(label, text))
+        errors.extend(release_version_json_doc_errors(label, text))
 
     return {
         "version": version,
@@ -344,13 +358,15 @@ def run_self_test() -> int:
 
 The release workflow runs `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
-warnings at the accepted baseline.
+warnings at the accepted baseline. It also smoke-tests `design-ai version --json`
+for machine-readable CLI/plugin version metadata.
 """
     korean_policy_doc = """# Distribution Korean
 
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
-안에 있어야 해요.
+안에 있어야 해요. `design-ai version --json`으로 machine-readable version
+metadata도 smoke test해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -434,6 +450,23 @@ warnings at the accepted baseline.
     )
     command_drift_errors = "\n".join(command_drift["errors"])
     assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
+
+    version_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("version --json", "version"),
+        },
+        audit_count=8,
+    )
+    version_json_drift_errors = "\n".join(version_json_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing version JSON metadata phrase" in version_json_drift_errors,
+        "release policy docs should mention version JSON metadata smoke",
+    )
 
     missing_docs = dict(release_policy_docs)
     missing_docs.pop("README.ko.md")

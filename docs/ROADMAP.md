@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 95 — README release-smoke version JSON guidance guarded (v4.13.0) ✓ shipped
+
+Release-facing README guidance now stays aligned with the `design-ai version --json` smoke contract.
+
+### Changed
+- `README.md` and `README.ko.md` now list the current machine-readable CLI surfaces for status, list, audit, and version commands.
+- README release guidance now describes human/JSON version metadata, human/JSON audit output, and human+JSON status lifecycle smoke checks for package and registry verification.
+- `tools/audit/release-metadata.py` now checks every release policy doc for `version --json` guidance in addition to the MkDocs warning-policy phrases.
+- `release-metadata.py --self-test` now includes a fixture that fails when release-facing docs drop the version JSON smoke phrase.
+
+### Impact
+- Contributor-facing release docs cannot silently drift away from the current package/registry smoke coverage.
+- Existing CLI behavior and smoke command execution remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release docs and metadata checks now preserve the version JSON smoke contract through future README edits.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 94 — Version command JSON metadata output added (v4.13.0) ✓ shipped
 
 `design-ai version` now emits a self-tested JSON metadata report for CLI/plugin version alignment.
