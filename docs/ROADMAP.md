@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 121 — Packed tarball npm exec release metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the one-shot packed-tarball `npm exec --package <tarball>` guidance already covered by package smoke.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for packed-tarball npm exec smoke guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops one-shot `npm exec --package <tarball>` wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now distinguish the local packed-tarball installed-bin and npm exec paths from public registry npm exec smoke.
+- CHANGELOG and SESSION-LOG now record the Phase 121 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the package smoke contract for one-shot packed-tarball execution.
+- Existing CLI, package smoke, and registry smoke behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local tarball smoke guidance now has an end-to-end drift guard from package-smoke implementation to release-facing docs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 120 — Unknown command failure release metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects unknown command/help/list/search-dir failure guidance already covered by package and registry smoke checks.

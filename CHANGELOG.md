@@ -27,6 +27,7 @@ Release metadata now checks that English and Korean distribution docs keep the M
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+Release metadata now guards release-facing docs against dropping packed-tarball `npm exec --package <tarball>` smoke guidance.
 Release metadata now fails if a required release policy doc drops out of the checked set.
 Release metadata now rejects unexpected release policy docs in the checked set.
 Release metadata now rejects release policy docs checked in a non-deterministic order.
@@ -76,6 +77,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 121 — Packed tarball npm exec release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain packed-tarball one-shot `npm exec --package <tarball>` smoke guidance alongside installed-bin, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when one-shot packed-tarball npm exec wording is removed from a release-facing policy doc.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now describe the local packed-tarball installed-bin and `npm exec --package <tarball>` paths separately from public registry `npm exec`.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently imply package smoke only validates the installed bin path while dropping the one-shot npm exec path.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Local tarball smoke guidance now preserves both package execution paths: installed bin and one-shot npm exec.
 
 ### Phase 120 — Unknown command failure release metadata guard added
 
