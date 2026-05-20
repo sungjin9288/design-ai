@@ -87,6 +87,7 @@ from smoke_assertions import (
     assert_unknown_list_domain_failure,
     assert_unknown_option_failure,
     assert_unknown_route_id_failure,
+    assert_version_json,
     assert_uninstall_output,
     assert_version_output,
     command_alias_script,
@@ -357,6 +358,11 @@ def assert_main_help_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | N
 def assert_version_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_version_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_command_alias_smoke(
@@ -903,6 +909,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin version",
         )
+        assert_version_json_smoke(
+            [str(bin_path), "version", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin version JSON",
+        )
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -1421,6 +1432,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec version",
+        )
+        assert_version_json_smoke(
+            npm_exec_cmd(tarball, "version", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec version JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 94 — Version command JSON metadata output added (v4.13.0) ✓ shipped
+
+`design-ai version` now emits a self-tested JSON metadata report for CLI/plugin version alignment.
+
+### Changed
+- `cli/commands/version.mjs` now supports `--json` while keeping the existing human version output.
+- `cli/commands/version.mjs` now uses `parseVersionArgs()`, `collectVersionReport()`, and `formatVersionJson()` for machine-readable version metadata.
+- `cli/lib/version-command.test.mjs` now checks argument parsing, unknown-option suggestions, top-level JSON key order, context key order, version key order, aligned/mismatched states, and readable localized paths.
+- `tools/audit/smoke_assertions.py`, `tools/audit/package-smoke.py`, and `tools/audit/registry-smoke.py` now cover version JSON output for installed package and registry lifecycle paths.
+
+### Impact
+- Automation that uses `design-ai version --json` can verify CLI/plugin version alignment without parsing human terminal output.
+- Existing human `design-ai version`, `design-ai --version`, and `design-ai -v` workflows remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/version-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `node cli/bin/design-ai.mjs version --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Version alignment becomes a stable automation-facing contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 93 — Audit command JSON repository gate output added (v4.13.0) ✓ shipped
 
 `design-ai audit` now emits a self-tested JSON report for the shared eight-audit repository gate.

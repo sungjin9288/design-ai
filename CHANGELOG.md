@@ -47,6 +47,38 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
+`design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
+
+### Phase 94 — Version command JSON metadata output added
+
+#### Changed
+- `cli/commands/version.mjs` now accepts `--json` and emits CLI version, plugin/corpus version, source root, and alignment state as a stable metadata report.
+- `cli/commands/version.mjs` now exposes `parseVersionArgs()`, `collectVersionReport()`, and `formatVersionJson()` so version metadata has a testable contract.
+- `cli/lib/version-command.test.mjs` now asserts option parsing, unknown-option suggestions, JSON key order, aligned/mismatched version states, and readable localized source paths.
+- Package and registry smoke assertions now verify `design-ai version --json` in installed-bin and one-shot npm exec paths.
+
+#### Impact
+- Release tooling, package smoke, registry smoke, and external scripts can verify CLI/plugin version alignment without parsing terminal text.
+- Existing human `design-ai version`, `design-ai --version`, and `design-ai -v` behavior remains intact.
+
+#### Verified
+- `node --test cli/lib/version-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `node cli/bin/design-ai.mjs version --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Version alignment becomes a stable automation-facing contract across local, packed-tarball, and registry smoke workflows.
 
 ### Phase 93 — Audit command JSON repository gate output added
 

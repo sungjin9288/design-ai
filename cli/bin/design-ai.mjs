@@ -17,7 +17,7 @@
 //   check                Check generated Markdown artifact quality
 //   doctor               Diagnose source, runtime, and install state
 //   examples             Find worked examples by query or route
-//   version              Show CLI + plugin versions
+//   version [--json]     Show CLI + plugin versions
 //   help                 Show help
 
 import { runCommand } from "../lib/dispatch.mjs";

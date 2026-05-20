@@ -89,6 +89,7 @@ from smoke_assertions import (
     assert_unknown_list_domain_failure,
     assert_unknown_option_failure,
     assert_unknown_route_id_failure,
+    assert_version_json,
     assert_version_output,
     command_alias_script,
     doctor_report_json_missing,
@@ -311,6 +312,11 @@ def assert_main_help_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | N
 def assert_version_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_version_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_command_alias_smoke(
@@ -792,6 +798,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec version",
+        )
+        assert_version_json_smoke(
+            npm_exec_cmd(package_spec, "version", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec version JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(package_spec, "help"),

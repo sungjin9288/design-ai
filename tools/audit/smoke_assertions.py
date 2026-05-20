@@ -101,7 +101,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "audit": ("Usage:", "design-ai audit [--strict] [--quiet] [--json]"),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
-    "version": ("Usage:", "design-ai version"),
+    "version": ("Usage:", "design-ai version [--json]"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
 EXPECTED_MAIN_HELP_FRAGMENTS = (
@@ -231,6 +231,7 @@ EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("search", "--dr", "--dir"),
     ("show", "--line", "--lines"),
     ("audit", "--strct", "--strict"),
+    ("version", "--jsn", "--json"),
     ("doctor", "--jsn", "--json"),
 )
 EXPECTED_LIST_CATALOG = {
@@ -517,6 +518,8 @@ def unknown_option_args(command_name: str, option: str) -> list[str]:
         return ["show", EXPECTED_CORPUS_SHOW_TARGET, option, "1:2"]
     if command_name == "audit":
         return ["audit", option]
+    if command_name == "version":
+        return ["version", option]
     if command_name == "doctor":
         return ["doctor", option]
     raise SystemExit(f"unsupported unknown option smoke command: {command_name}")
@@ -2538,6 +2541,23 @@ def passing_version_output() -> str:
     ])
 
 
+def passing_version_json() -> str:
+    return json.dumps(
+        {
+            "context": {
+                "sourceRoot": "/tmp/design-ai",
+            },
+            "versions": {
+                "cli": "4.13.0",
+                "plugin": "4.13.0",
+                "aligned": True,
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_doctor_strict_output() -> str:
     return "\n".join([
         "",
@@ -2809,6 +2829,40 @@ def assert_version_output(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         label="version output",
     )
+
+
+def assert_version_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"version JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "versions"]:
+        raise SystemExit(f"version JSON after {context} top-level keys changed")
+
+    version_context = payload.get("context")
+    if not isinstance(version_context, dict):
+        raise SystemExit(f"version JSON after {context} context is not an object")
+    if list(version_context) != ["sourceRoot"]:
+        raise SystemExit(f"version JSON after {context} context keys changed")
+    if not isinstance(version_context.get("sourceRoot"), str) or not version_context["sourceRoot"]:
+        raise SystemExit(f"version JSON after {context} sourceRoot is missing")
+
+    versions = payload.get("versions")
+    if not isinstance(versions, dict):
+        raise SystemExit(f"version JSON after {context} versions is not an object")
+    if list(versions) != ["cli", "plugin", "aligned"]:
+        raise SystemExit(f"version JSON after {context} version keys changed")
+    for key in ("cli", "plugin"):
+        value = versions.get(key)
+        if not isinstance(value, str) or not re.fullmatch(r"\d+\.\d+\.\d+", value):
+            raise SystemExit(f"version JSON after {context} {key} version differs from expected semver")
+    if versions.get("aligned") is not True:
+        raise SystemExit(f"version JSON after {context} versions are not aligned")
+    if versions["cli"] != versions["plugin"]:
+        raise SystemExit(f"version JSON after {context} CLI and plugin versions differ")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -4818,6 +4872,7 @@ def run_self_test() -> None:
     )
     version_cmd = ["design-ai", "version"]
     assert_version_output(passing_version_output(), context=context, cmd=version_cmd)
+    assert_version_json(passing_version_json(), context=context, cmd=[*version_cmd, "--json"])
     expect_self_test_failure(
         lambda: assert_version_output(passing_help_catalog_json(), context=context, cmd=version_cmd),
         expected="looks like JSON",
@@ -4835,6 +4890,29 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_version_output("\x1b[31mred", context=context, cmd=version_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_json("\x1b[31m{}", context=context, cmd=[*version_cmd, "--json"]),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_json(
+            passing_version_json().replace('"aligned": true', '"aligned": false'),
+            context=context,
+            cmd=[*version_cmd, "--json"],
+        ),
+        expected="versions are not aligned",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_json(
+            passing_version_json().replace('"plugin": "4.13.0"', '"plugin": "unknown"'),
+            context=context,
+            cmd=[*version_cmd, "--json"],
+        ),
+        expected="version differs from expected semver",
         scope="smoke assertions",
     )
     assert_command_alias_output(
