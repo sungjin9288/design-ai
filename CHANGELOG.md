@@ -45,6 +45,37 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
+`design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
+
+### Phase 92 — Status command JSON install-state output added
+
+#### Changed
+- `cli/commands/status.mjs` now accepts `--json` and emits install-state reports for skills, agents, and slash commands.
+- `cli/commands/status.mjs` now exposes `parseStatusArgs()`, `collectStatusReport()`, and `formatStatusJson()` so status reporting has a testable data contract.
+- `cli/lib/status-command.test.mjs` now asserts option parsing, unknown-option suggestions, top-level status key order, context key order, section key order, sorted entry output, missing-section output, and readable localized paths.
+- Package and registry smoke assertions now verify `design-ai status --json` after install and before uninstall.
+
+#### Impact
+- Automation can inspect installed design-ai symlink state without parsing human lifecycle output.
+- Existing human `design-ai status`, `design-ai s`, and `VERBOSE=1` output behavior remains intact.
+
+#### Verified
+- `node --test cli/lib/status-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Install lifecycle smoke, registry smoke, and external scripts can validate installed counts and symlink entries through a stable JSON install-state report.
 
 ### Phase 91 — List command JSON catalog output added
 

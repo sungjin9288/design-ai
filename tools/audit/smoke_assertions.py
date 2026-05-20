@@ -89,7 +89,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install"),
     "update": ("Usage:", "design-ai update"),
     "uninstall": ("Usage:", "design-ai uninstall"),
-    "status": ("Usage:", "design-ai status"),
+    "status": ("Usage:", "design-ai status [--json]"),
     "list": ("Usage:", "design-ai list [skills|commands|agents]"),
     "search": ("Usage:", "design-ai search <query> [--limit N] [--dir kind] [--json]"),
     "show": ("Usage:", "design-ai show <file[:line|start-end]> [--lines N:M] [--context N] [--json]"),
@@ -222,6 +222,7 @@ EXPECTED_UNKNOWN_SEARCH_DIR = "knowlege"
 EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("list", "--jsno", "--json"),
+    ("status", "--jsn", "--json"),
     ("route", "--limt", "--limit"),
     ("prompt", "--rout", "--route"),
     ("pack", "--max-byte", "--max-bytes"),
@@ -488,6 +489,8 @@ def passing_numeric_value_output(expected_message: str) -> str:
 def unknown_option_args(command_name: str, option: str) -> list[str]:
     if command_name == "list":
         return ["list", option]
+    if command_name == "status":
+        return ["status", option]
     if command_name == "route":
         return ["route", EXPECTED_ROUTE_BRIEF, option, "1", "--json"]
     if command_name == "prompt":
@@ -2483,6 +2486,52 @@ def passing_status_output() -> str:
     ])
 
 
+def status_entry_name(kind: str, name: str, prefix: str) -> str:
+    if kind == "skills":
+        return f"{prefix}{name}"
+    if kind in ("agents", "commands"):
+        return f"{prefix}{name}.md"
+    raise SystemExit(f"unsupported status kind for smoke fixture: {kind}")
+
+
+def passing_status_json(prefix: str = "smoke-design-") -> str:
+    sections = []
+    for kind, label, target_dir in (
+        ("skills", "Skills", "/tmp/claude-home/skills"),
+        ("agents", "Agents", "/tmp/claude-home/agents"),
+        ("commands", "Slash commands", "/tmp/claude-home/commands"),
+    ):
+        entries = [
+            status_entry_name(kind, item, prefix)
+            for item in sorted(EXPECTED_LIST_CATALOG[kind])
+        ]
+        sections.append({
+            "kind": kind,
+            "label": label,
+            "targetDir": target_dir,
+            "targetExists": True,
+            "installed": len(entries),
+            "entries": entries,
+        })
+    return json.dumps(
+        {
+            "context": {
+                "sourceRoot": "/tmp/design-ai",
+                "claudeHome": "/tmp/claude-home",
+                "prefix": prefix,
+            },
+            "sections": sections,
+            "summary": {
+                "installed": 39,
+                "missingSections": 0,
+                "emptySections": 0,
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_uninstall_output() -> str:
     return "\n".join([
         "",
@@ -2674,6 +2723,77 @@ def assert_status_output(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         label="status output",
     )
+
+
+def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"status JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "sections", "summary"]:
+        raise SystemExit(f"status JSON after {context} top-level keys changed")
+
+    status_context = payload.get("context")
+    if not isinstance(status_context, dict):
+        raise SystemExit(f"status JSON after {context} context is not an object")
+    if list(status_context) != ["sourceRoot", "claudeHome", "prefix"]:
+        raise SystemExit(f"status JSON after {context} context keys changed")
+    if not isinstance(status_context.get("sourceRoot"), str) or not status_context["sourceRoot"]:
+        raise SystemExit(f"status JSON after {context} sourceRoot is missing")
+    if not isinstance(status_context.get("claudeHome"), str) or not status_context["claudeHome"]:
+        raise SystemExit(f"status JSON after {context} claudeHome is missing")
+    if status_context.get("prefix") != prefix:
+        raise SystemExit(f"status JSON after {context} prefix differs from expected {prefix}")
+
+    sections = payload.get("sections")
+    if not isinstance(sections, list):
+        raise SystemExit(f"status JSON after {context} sections is not a list")
+    expected_kinds = ("skills", "agents", "commands")
+    if tuple(section.get("kind") for section in sections if isinstance(section, dict)) != expected_kinds:
+        raise SystemExit(f"status JSON after {context} section order differs from expected install order")
+
+    total_installed = 0
+    for section in sections:
+        if not isinstance(section, dict):
+            raise SystemExit(f"status JSON after {context} section is not an object")
+        if list(section) != ["kind", "label", "targetDir", "targetExists", "installed", "entries"]:
+            raise SystemExit(f"status JSON after {context} section keys changed")
+        kind = section.get("kind")
+        if kind not in EXPECTED_LIST_CATALOG:
+            raise SystemExit(f"status JSON after {context} contains unsupported section kind: {kind}")
+        if not isinstance(section.get("label"), str) or not section["label"]:
+            raise SystemExit(f"status JSON after {context} section label is missing for {kind}")
+        if not isinstance(section.get("targetDir"), str) or not section["targetDir"]:
+            raise SystemExit(f"status JSON after {context} targetDir is missing for {kind}")
+        if section.get("targetExists") is not True:
+            raise SystemExit(f"status JSON after {context} target dir is missing for {kind}")
+        expected_entries = tuple(
+            status_entry_name(kind, item, prefix)
+            for item in sorted(EXPECTED_LIST_CATALOG[kind])
+        )
+        entries = section.get("entries")
+        if not isinstance(entries, list):
+            raise SystemExit(f"status JSON after {context} entries is not a list for {kind}")
+        if tuple(entries) != expected_entries:
+            raise SystemExit(f"status JSON after {context} entries differ from expected {kind} install set")
+        if section.get("installed") != len(expected_entries):
+            raise SystemExit(f"status JSON after {context} installed count differs for {kind}")
+        total_installed += len(expected_entries)
+
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise SystemExit(f"status JSON after {context} summary is not an object")
+    if list(summary) != ["installed", "missingSections", "emptySections"]:
+        raise SystemExit(f"status JSON after {context} summary keys changed")
+    if summary.get("installed") != total_installed:
+        raise SystemExit(f"status JSON after {context} summary installed count differs")
+    if summary.get("missingSections") != 0:
+        raise SystemExit(f"status JSON after {context} summary reports missing sections")
+    if summary.get("emptySections") != 0:
+        raise SystemExit(f"status JSON after {context} summary reports empty sections")
 
 
 def assert_uninstall_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -4667,6 +4787,12 @@ def run_self_test() -> None:
     )
     status_cmd = ["design-ai", "status"]
     assert_status_output(passing_status_output(), context=context, cmd=status_cmd)
+    assert_status_json(
+        passing_status_json("smoke-design-"),
+        prefix="smoke-design-",
+        context=context,
+        cmd=[*status_cmd, "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_status_output(
             passing_status_output().replace("Skills: 19 installed", "Skills: 0 installed"),
@@ -4683,6 +4809,36 @@ def run_self_test() -> None:
             cmd=status_cmd,
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            "\x1b[31mred",
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            passing_status_json("smoke-design-").replace('"installed": 39', '"installed": 38'),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="summary installed count differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            passing_status_json("smoke-design-").replace("smoke-design-color-palette", "smoke-design-color"),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="entries differ",
         scope="smoke assertions",
     )
     uninstall_cmd = ["design-ai", "uninstall"]

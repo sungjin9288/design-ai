@@ -81,6 +81,7 @@ from smoke_assertions import (
     assert_show_human_range_output,
     assert_show_json_range,
     assert_show_json_line,
+    assert_status_json,
     assert_search_dir_value_failure,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
@@ -332,6 +333,15 @@ def assert_install_lifecycle_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_install_doctor_lifecycle_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_status_json_file(path: Path, *, prefix: str, context: str) -> None:
+    assert_status_json(
+        path.read_text(encoding="utf-8"),
+        prefix=prefix,
+        context=context,
+        cmd=["design-ai", "status", "--json"],
+    )
 
 
 def assert_search_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1287,6 +1297,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             context="registry smoke npm exec audit strict",
         )
         doctor_json = npx_root / "doctor.json"
+        status_json = npx_root / "status.json"
         assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(
                 package_spec,
@@ -1297,6 +1308,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 "design-ai doctor --json > doctor.json && "
                 "design-ai doctor --strict && "
                 "design-ai status && "
+                "design-ai status --json > status.json && "
                 "design-ai uninstall",
             ),
             cwd=npx_root,
@@ -1304,6 +1316,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             context="registry smoke install lifecycle",
         )
         assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
+        assert_status_json_file(status_json, prefix="registry-design-", context="registry smoke status JSON")
 
 
 def run_self_test() -> None:

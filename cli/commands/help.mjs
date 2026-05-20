@@ -26,7 +26,7 @@ export const HELP_COMMANDS = [
   { topic: "install", usage: "install", description: "Symlink design-ai into Claude Code (~/.claude)" },
   { topic: "update", usage: "update", description: "Pull latest source + reinstall" },
   { topic: "uninstall", usage: "uninstall", description: "Remove symlinks (keeps source files)" },
-  { topic: "status", usage: "status", description: "Show what's installed (use VERBOSE=1 for full list)" },
+  { topic: "status", usage: "status [--json]", description: "Show what's installed (use VERBOSE=1 for full list)" },
   { topic: "list", usage: "list [skills|commands|agents] [--json]", description: "List catalog from the plugin manifest" },
   { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--json]", description: "Search the local markdown corpus" },
   { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
