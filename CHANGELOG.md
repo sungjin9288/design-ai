@@ -45,6 +45,7 @@ Release metadata now self-tests the phrase guard table labels, uniqueness, and t
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
 Release metadata now guards release-facing docs against dropping human/JSON corpus discovery smoke guidance.
+Release metadata now guards release-facing docs against dropping explicit `show --lines` and `route --explain` smoke guidance.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
@@ -64,6 +65,34 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 109 — Show lines and route explain release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain explicit `show --lines` and `route --explain` smoke guidance alongside corpus discovery, list, help, audit, doctor, status, version, install, uninstall, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `route --explain` wording is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now lists `show --lines` / `route --explain` inside release metadata's protected release smoke phrase set.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the package and registry smoke contract for explicit corpus line-range and route explanation output.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Explicit output smoke guidance for `show --lines` and `route --explain` is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 108 — Corpus discovery release metadata guard added
 

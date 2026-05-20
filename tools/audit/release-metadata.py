@@ -79,6 +79,20 @@ RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS = (
         "human / JSON corpus discovery 출력",
     ),
 )
+RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
+    (
+        "show --lines",
+        "`show --lines`",
+        "show --lines range",
+        "show --lines ranges",
+        "명시적 `show --lines`",
+    ),
+    (
+        "route --explain",
+        "`route --explain`",
+        "명시적 `route --explain`",
+    ),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
     ("design-ai install --json", "`install --json`"),
 )
@@ -110,6 +124,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "help JSON topic catalog phrase",
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
+    "show-lines route-explain smoke phrase",
     "install JSON lifecycle phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
@@ -123,6 +138,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
+    ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
@@ -455,6 +471,7 @@ warnings at the accepted baseline. It also smoke-tests human/JSON
 `design-ai audit --strict --quiet` output, `design-ai help --json` topic
 catalog output, all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
+explicit `show --lines` ranges and `route --explain` output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
@@ -471,6 +488,7 @@ install-state output before uninstall.
 smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
+명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
@@ -660,6 +678,23 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing corpus discovery JSON phrase" in corpus_discovery_drift_errors,
         "release policy docs should mention corpus discovery JSON smoke",
+    )
+
+    explicit_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace("route --explain", "route"),
+        },
+        audit_count=8,
+    )
+    explicit_output_drift_errors = "\n".join(explicit_output_drift["errors"])
+    assert_condition(
+        "README.md is missing show-lines route-explain smoke phrase" in explicit_output_drift_errors,
+        "release policy docs should mention show-lines and route-explain smoke",
     )
 
     install_json_drift = release_metadata_summary(
