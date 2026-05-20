@@ -93,6 +93,15 @@ RELEASE_PACKAGE_CONTENTS_TERM_GROUPS = (
         "package:check",
     ),
 )
+RELEASE_METADATA_CHECK_TERM_GROUPS = (
+    (
+        "release metadata checks",
+        "release metadata check",
+        "`npm run release:metadata`",
+        "npm run release:metadata",
+        "release metadata 검증",
+    ),
+)
 RELEASE_CLI_UNIT_TEST_TERM_GROUPS = (
     (
         "CLI unit tests",
@@ -328,6 +337,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
     "package contents check phrase",
+    "release metadata check phrase",
     "CLI unit test phrase",
     "repository audit gate phrase",
     "whitespace check phrase",
@@ -363,6 +373,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
+    ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
     ("whitespace check phrase", RELEASE_WHITESPACE_CHECK_TERM_GROUPS),
@@ -718,6 +729,7 @@ the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and the package contents check,
+`npm run release:metadata` release metadata check,
 CLI unit tests,
 all 8 audits,
 whitespace checks,
@@ -753,6 +765,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 package contents check도 확인하고,
+`npm run release:metadata` release metadata 검증도 확인하고,
 CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
 whitespace check 검증도 확인하고,
@@ -978,6 +991,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing package contents check phrase" in package_contents_drift_errors,
         "release policy docs should mention package contents checks",
+    )
+
+    release_metadata_check_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run release:metadata` release metadata check",
+                "release manifest review",
+            ),
+        },
+        audit_count=8,
+    )
+    release_metadata_check_drift_errors = "\n".join(release_metadata_check_drift["errors"])
+    assert_condition(
+        "README.md is missing release metadata check phrase"
+        in release_metadata_check_drift_errors,
+        "release policy docs should mention release metadata checks",
     )
 
     cli_unit_test_drift = release_metadata_summary(

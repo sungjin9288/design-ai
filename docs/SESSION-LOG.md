@@ -123,6 +123,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 126)** — Guarded release-facing docs against dropping whitespace check guidance.
 - **v4.13 (Phase 127)** — Guarded release-facing docs against dropping release self-test guidance.
 - **v4.13 (Phase 128)** — Guarded release-facing docs against dropping packed-tarball installed-bin smoke guidance.
+- **v4.13 (Phase 129)** — Guarded release-facing docs against dropping release metadata check guidance.
 
 ## Patterns that didn't work
 
