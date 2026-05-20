@@ -39,6 +39,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /design-ai help \[command\|--json\]/);
   assert.match(output, /audit \[--strict\] \[--quiet\] \[--json\]/);
   assert.match(output, /version \[--json\]/);
+  assert.match(output, /uninstall \[--json\]/);
   assert.match(output, /status \[--json\]/);
   assert.match(output, /list \[skills\|commands\|agents\] \[--json\]/);
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
@@ -95,6 +96,10 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "version").usage,
     "design-ai version [--json]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "uninstall").usage,
+    "design-ai uninstall [--json]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "audit").usage,
@@ -158,6 +163,10 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const installOutput = await captureStdout(() => runHelp(["install"]));
   assert.match(installOutput, /Usage:\s+design-ai install/);
   assert.match(installOutput, /Symlinks design-ai skills/);
+
+  const uninstallOutput = await captureStdout(() => runHelp(["uninstall"]));
+  assert.match(uninstallOutput, /Usage:\s+design-ai uninstall \[--json\]/);
+  assert.match(uninstallOutput, /--json\s+Emit machine-readable uninstall result/);
 
   const auditOutput = await captureStdout(() => runHelp(["audit"]));
   const auditLabels = REPOSITORY_AUDIT_SCRIPTS.map(auditScriptLabel).join(", ");

@@ -49,6 +49,36 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
 Release metadata now guards release-facing docs against dropping `design-ai version --json` smoke guidance.
+`design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
+Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
+
+### Phase 96 — Uninstall command JSON lifecycle output added
+
+#### Changed
+- `cli/commands/uninstall.mjs` now accepts `--json` and emits source root, Claude home, symlink prefix, and removed symlink count as a stable uninstall result.
+- `cli/lib/uninstall-command.test.mjs` now asserts uninstall argument parsing, unknown-option suggestions, removed-count parsing, JSON key order, and readable localized paths.
+- Help output, package smoke, registry smoke, and shared smoke assertions now cover `design-ai uninstall --json` in addition to the existing human uninstall lifecycle output.
+- Release-facing README, Distribution, and Release checklist docs now describe the human uninstall plus JSON `uninstall --json` lifecycle smoke contract.
+- `tools/audit/release-metadata.py` now requires release policy docs to retain `uninstall --json` lifecycle guidance.
+
+#### Impact
+- Package and registry smoke can verify uninstall lifecycle completion without parsing terminal text.
+- Existing human `design-ai uninstall`, `remove`, and `rm` behavior remains unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `node --test cli/lib/uninstall-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `CLAUDE_HOME=<tmp>/claude DESIGN_AI_PREFIX=smoke-design- NO_COLOR=1 node cli/bin/design-ai.mjs uninstall --json`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Install-state and uninstall lifecycle checks now both have stable machine-readable outputs for release automation.
 
 ### Phase 95 — README release-smoke version JSON guidance guarded
 

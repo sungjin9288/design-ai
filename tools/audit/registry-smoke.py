@@ -89,6 +89,7 @@ from smoke_assertions import (
     assert_unknown_list_domain_failure,
     assert_unknown_option_failure,
     assert_unknown_route_id_failure,
+    assert_uninstall_json,
     assert_version_json,
     assert_version_output,
     command_alias_script,
@@ -348,6 +349,15 @@ def assert_status_json_file(path: Path, *, prefix: str, context: str) -> None:
         prefix=prefix,
         context=context,
         cmd=["design-ai", "status", "--json"],
+    )
+
+
+def assert_uninstall_json_file(path: Path, *, prefix: str, context: str) -> None:
+    assert_uninstall_json(
+        path.read_text(encoding="utf-8"),
+        prefix=prefix,
+        context=context,
+        cmd=["design-ai", "uninstall", "--json"],
     )
 
 
@@ -1322,6 +1332,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         )
         doctor_json = npx_root / "doctor.json"
         status_json = npx_root / "status.json"
+        uninstall_json = npx_root / "uninstall.json"
         assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(
                 package_spec,
@@ -1333,7 +1344,9 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 "design-ai doctor --strict && "
                 "design-ai status && "
                 "design-ai status --json > status.json && "
-                "design-ai uninstall",
+                "design-ai uninstall && "
+                "design-ai install && "
+                "design-ai uninstall --json > uninstall.json",
             ),
             cwd=npx_root,
             env=env,
@@ -1341,6 +1354,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         )
         assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
         assert_status_json_file(status_json, prefix="registry-design-", context="registry smoke status JSON")
+        assert_uninstall_json_file(uninstall_json, prefix="registry-design-", context="registry smoke uninstall JSON")
 
 
 def run_self_test() -> None:

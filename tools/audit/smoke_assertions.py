@@ -88,7 +88,7 @@ EXPECTED_HELP_ALIASES = {
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install"),
     "update": ("Usage:", "design-ai update"),
-    "uninstall": ("Usage:", "design-ai uninstall"),
+    "uninstall": ("Usage:", "design-ai uninstall [--json]"),
     "status": ("Usage:", "design-ai status [--json]"),
     "list": ("Usage:", "design-ai list [skills|commands|agents]"),
     "search": ("Usage:", "design-ai search <query> [--limit N] [--dir kind] [--json]"),
@@ -223,6 +223,7 @@ EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("list", "--jsno", "--json"),
     ("status", "--jsn", "--json"),
+    ("uninstall", "--jsn", "--json"),
     ("route", "--limt", "--limit"),
     ("prompt", "--rout", "--route"),
     ("pack", "--max-byte", "--max-bytes"),
@@ -502,6 +503,8 @@ def unknown_option_args(command_name: str, option: str) -> list[str]:
         return ["list", option]
     if command_name == "status":
         return ["status", option]
+    if command_name == "uninstall":
+        return ["uninstall", option]
     if command_name == "route":
         return ["route", EXPECTED_ROUTE_BRIEF, option, "1", "--json"]
     if command_name == "prompt":
@@ -2692,6 +2695,27 @@ def passing_uninstall_output() -> str:
     ])
 
 
+def expected_installed_symlink_count() -> int:
+    return sum(len(items) for items in EXPECTED_LIST_CATALOG.values())
+
+
+def passing_uninstall_json(prefix: str = "smoke-design-") -> str:
+    return json.dumps(
+        {
+            "context": {
+                "sourceRoot": "/tmp/design-ai",
+                "claudeHome": "/tmp/claude-home",
+                "prefix": prefix,
+            },
+            "result": {
+                "removed": expected_installed_symlink_count(),
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_install_lifecycle_output() -> str:
     return "\n".join([
         passing_install_output(),
@@ -2984,6 +3008,38 @@ def assert_uninstall_output(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         label="uninstall output",
     )
+
+
+def assert_uninstall_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"uninstall JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "result"]:
+        raise SystemExit(f"uninstall JSON after {context} top-level keys changed")
+
+    uninstall_context = payload.get("context")
+    if not isinstance(uninstall_context, dict):
+        raise SystemExit(f"uninstall JSON after {context} context is not an object")
+    if list(uninstall_context) != ["sourceRoot", "claudeHome", "prefix"]:
+        raise SystemExit(f"uninstall JSON after {context} context keys changed")
+    if not isinstance(uninstall_context.get("sourceRoot"), str) or not uninstall_context["sourceRoot"]:
+        raise SystemExit(f"uninstall JSON after {context} sourceRoot is missing")
+    if not isinstance(uninstall_context.get("claudeHome"), str) or not uninstall_context["claudeHome"]:
+        raise SystemExit(f"uninstall JSON after {context} claudeHome is missing")
+    if uninstall_context.get("prefix") != prefix:
+        raise SystemExit(f"uninstall JSON after {context} prefix differs from expected {prefix}")
+
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise SystemExit(f"uninstall JSON after {context} result is not an object")
+    if list(result) != ["removed"]:
+        raise SystemExit(f"uninstall JSON after {context} result keys changed")
+    if result.get("removed") != expected_installed_symlink_count():
+        raise SystemExit(f"uninstall JSON after {context} removed count differs from expected install set")
 
 
 def assert_install_lifecycle_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -5070,6 +5126,12 @@ def run_self_test() -> None:
     )
     uninstall_cmd = ["design-ai", "uninstall"]
     assert_uninstall_output(passing_uninstall_output(), context=context, cmd=uninstall_cmd)
+    assert_uninstall_json(
+        passing_uninstall_json("smoke-design-"),
+        prefix="smoke-design-",
+        context=context,
+        cmd=[*uninstall_cmd, "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_uninstall_output(
             passing_uninstall_output().replace("Removed 39 design-ai symlinks", "Removed 38 design-ai symlinks"),
@@ -5077,6 +5139,26 @@ def run_self_test() -> None:
             cmd=uninstall_cmd,
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_uninstall_json(
+            passing_uninstall_json("smoke-design-").replace('"removed": 39', '"removed": 38'),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*uninstall_cmd, "--json"],
+        ),
+        expected="removed count differs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_uninstall_json(
+            "\x1b[31mred",
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*uninstall_cmd, "--json"],
+        ),
+        expected="ANSI escape",
         scope="smoke assertions",
     )
     assert_install_lifecycle_output(

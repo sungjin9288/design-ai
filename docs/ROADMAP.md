@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 96 — Uninstall command JSON lifecycle output added (v4.13.0) ✓ shipped
+
+`design-ai uninstall` now emits machine-readable lifecycle output for package and registry smoke automation.
+
+### Changed
+- `cli/commands/uninstall.mjs` now supports `--json` while keeping the existing human uninstall output.
+- The uninstall JSON report includes source root, Claude home, symlink prefix, and removed symlink count.
+- `cli/lib/uninstall-command.test.mjs` covers parser behavior, unknown-option suggestions, removed-count parsing, JSON key order, and readable localized paths.
+- Package smoke and registry smoke now verify both human uninstall output and JSON `uninstall --json` lifecycle output.
+- Release metadata now guards policy docs against dropping `uninstall --json` lifecycle smoke guidance.
+
+### Impact
+- Release automation can validate uninstall lifecycle completion without scraping human terminal output.
+- Existing install, status, doctor, and human uninstall flows remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/uninstall-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `CLAUDE_HOME=<tmp>/claude DESIGN_AI_PREFIX=smoke-design- NO_COLOR=1 node cli/bin/design-ai.mjs uninstall --json`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Install lifecycle smoke now has machine-readable entry and exit checks.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 95 — README release-smoke version JSON guidance guarded (v4.13.0) ✓ shipped
 
 Release-facing README guidance now stays aligned with the `design-ai version --json` smoke contract.
