@@ -222,6 +222,7 @@ EXPECTED_UNKNOWN_SEARCH_DIR = "knowlege"
 EXPECTED_UNKNOWN_SEARCH_DIR_SUGGESTION = "knowledge"
 EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("install", "--jsn", "--json"),
+    ("update", "--hlep", "--help"),
     ("list", "--jsno", "--json"),
     ("status", "--jsn", "--json"),
     ("uninstall", "--jsn", "--json"),
@@ -502,6 +503,8 @@ def passing_numeric_value_output(expected_message: str) -> str:
 def unknown_option_args(command_name: str, option: str) -> list[str]:
     if command_name == "install":
         return ["install", option]
+    if command_name == "update":
+        return ["update", option]
     if command_name == "list":
         return ["list", option]
     if command_name == "status":

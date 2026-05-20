@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 98 — Update command option guard added (v4.13.0) ✓ shipped
+
+`design-ai update` now rejects unsupported arguments before it can pull source changes or rerun install.sh.
+
+### Changed
+- `cli/commands/update.mjs` now has a dedicated parser for help flags, unknown options, and unexpected positional arguments.
+- `cli/lib/update-command.test.mjs` covers help aliases, empty argument parsing, typo suggestions, and positional-argument rejection.
+- Shared smoke assertions now include `design-ai update --hlep` so package and registry smoke tests verify the same fail-closed update contract.
+
+### Impact
+- Update command typos fail fast with `Did you mean \`--help\`?` instead of continuing into git/install work.
+- Existing `design-ai update`, `upgrade`, `u`, and help output remain compatible.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/update-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --hlep`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Lifecycle CLI smoke coverage now catches update option typos before release packaging.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 97 — Install command JSON lifecycle output added (v4.13.0) ✓ shipped
 
 `design-ai install` now emits machine-readable lifecycle output for package and registry smoke automation.

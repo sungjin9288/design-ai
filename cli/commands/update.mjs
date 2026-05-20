@@ -3,6 +3,7 @@
 import { run, runSync } from "../lib/exec.mjs";
 import { header, info, success, warn } from "../lib/log.mjs";
 import { hasHelpFlag } from "../lib/help-flags.mjs";
+import { unknownOptionMessage } from "../lib/suggest.mjs";
 import {
   DESIGN_AI_HOME,
   CLAUDE_HOME,
@@ -11,6 +12,28 @@ import {
   pathExists,
 } from "../lib/paths.mjs";
 import path from "node:path";
+
+const UPDATE_OPTIONS = ["-h", "--help"];
+const UPDATE_USAGE = "Usage: design-ai update";
+
+export function parseUpdateArgs(args) {
+  const flags = {
+    help: false,
+  };
+
+  for (const arg of args) {
+    if (arg === "-h" || arg === "--help") {
+      flags.help = true;
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      throw new Error(`${unknownOptionMessage("update", arg, UPDATE_OPTIONS)}\n${UPDATE_USAGE}`);
+    }
+    throw new Error(UPDATE_USAGE);
+  }
+
+  return flags;
+}
 
 function printHelp() {
   console.log("Usage:  design-ai update\n");
@@ -27,6 +50,8 @@ export async function runUpdate(args) {
     printHelp();
     return;
   }
+
+  parseUpdateArgs(args);
 
   header("design-ai update");
   info(`Source: ${DESIGN_AI_HOME}`);

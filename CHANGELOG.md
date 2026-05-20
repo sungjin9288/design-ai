@@ -53,6 +53,37 @@ Release metadata now guards release-facing docs against dropping `design-ai vers
 Release metadata now guards release-facing docs against dropping `design-ai install --json` smoke guidance.
 `design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
+`design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
+
+### Phase 98 — Update command option guard added
+
+#### Changed
+- `cli/commands/update.mjs` now parses supported flags and rejects unknown options or positional arguments before running git pull or install.sh.
+- `cli/lib/update-command.test.mjs` covers `--help`, `-h`, no-arg execution intent, unknown-option suggestions, and unexpected positional arguments.
+- Shared package and registry smoke assertions now include `design-ai update --hlep` so packaged CLIs fail closed with a `--help` suggestion.
+
+#### Impact
+- A mistyped update command no longer risks starting source update or reinstall work.
+- Existing `design-ai update`, `upgrade`, `u`, and help behavior remains unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `node --test cli/lib/update-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --hlep`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Lifecycle command typos are now consistently caught by the same CLI suggestion and smoke contract before release.
 
 ### Phase 97 — Install command JSON lifecycle output added
 
