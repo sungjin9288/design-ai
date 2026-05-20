@@ -121,6 +121,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 124)** — Guarded release-facing docs against dropping CLI unit test guidance.
 - **v4.13 (Phase 125)** — Guarded release-facing docs against dropping all-eight repository audit gate guidance.
 - **v4.13 (Phase 126)** — Guarded release-facing docs against dropping whitespace check guidance.
+- **v4.13 (Phase 127)** — Guarded release-facing docs against dropping release self-test guidance.
 
 ## Patterns that didn't work
 

@@ -110,6 +110,15 @@ RELEASE_WHITESPACE_CHECK_TERM_GROUPS = (
         "whitespace check 검증",
     ),
 )
+RELEASE_SELF_TEST_TERM_GROUPS = (
+    (
+        "`npm run release:self-test`",
+        "npm run release:self-test",
+        "release self-test",
+        "release assertion self-tests",
+        "release self-test 검증",
+    ),
+)
 RELEASE_HUMAN_VERSION_TERM_GROUPS = (
     (
         "human `design-ai version`",
@@ -311,6 +320,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "CLI unit test phrase",
     "repository audit gate phrase",
     "whitespace check phrase",
+    "release self-test phrase",
     "human version smoke phrase",
     "version JSON metadata phrase",
     "top-level help smoke phrase",
@@ -344,6 +354,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
     ("whitespace check phrase", RELEASE_WHITESPACE_CHECK_TERM_GROUPS),
+    ("release self-test phrase", RELEASE_SELF_TEST_TERM_GROUPS),
     ("human version smoke phrase", RELEASE_HUMAN_VERSION_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("top-level help smoke phrase", RELEASE_TOP_LEVEL_HELP_TERM_GROUPS),
@@ -697,6 +708,7 @@ and the package contents check,
 CLI unit tests,
 all 8 audits,
 whitespace checks,
+`npm run release:self-test` release assertion self-tests,
 human/JSON `design-ai audit --strict --quiet` output, top-level help output,
 `design-ai help --json` topic
 catalog output, command alias help and functional alias output,
@@ -730,6 +742,7 @@ package contents check도 확인하고,
 CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
 whitespace check 검증도 확인하고,
+`npm run release:self-test` release self-test 검증도 확인하고,
 human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
@@ -988,6 +1001,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing whitespace check phrase" in whitespace_check_drift_errors,
         "release policy docs should mention whitespace checks",
+    )
+
+    release_self_test_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run release:self-test` release assertion self-tests",
+                "release assertion checks",
+            ),
+        },
+        audit_count=8,
+    )
+    release_self_test_drift_errors = "\n".join(release_self_test_drift["errors"])
+    assert_condition(
+        "README.md is missing release self-test phrase" in release_self_test_drift_errors,
+        "release policy docs should mention release self-tests",
     )
 
     human_version_drift = release_metadata_summary(
