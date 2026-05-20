@@ -74,6 +74,16 @@ RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
         "functional alias 출력",
     ),
 )
+RELEASE_HELP_TOPIC_TERM_GROUPS = (
+    (
+        "command-specific help topic output",
+        "every `design-ai help <command>` topic-specific usage output",
+        "discovered help topic usage output",
+        "command-specific help topic 출력",
+        "모든 `design-ai help <command>` topic-specific usage 출력",
+        "발견된 help topic usage 출력",
+    ),
+)
 RELEASE_LIST_JSON_TERM_GROUPS = (
     (
         "list --json",
@@ -166,6 +176,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "version JSON metadata phrase",
     "help JSON topic catalog phrase",
     "alias smoke phrase",
+    "help topic smoke phrase",
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
     "show-lines route-explain smoke phrase",
@@ -183,6 +194,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
+    ("help topic smoke phrase", RELEASE_HELP_TOPIC_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
@@ -519,6 +531,7 @@ that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human/JSON
 `design-ai audit --strict --quiet` output, `design-ai help --json` topic
 catalog output, command alias help and functional alias output,
+command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 explicit `show --lines` ranges and `route --explain` output,
@@ -539,6 +552,7 @@ install-state output before uninstall.
 안에 있어야 해요. human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
+command-specific help topic 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
@@ -716,6 +730,25 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing alias smoke phrase" in alias_smoke_drift_errors,
         "release policy docs should mention command and functional alias smoke",
+    )
+
+    help_topic_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "command-specific help topic output", "command help output"
+            ),
+        },
+        audit_count=8,
+    )
+    help_topic_drift_errors = "\n".join(help_topic_drift["errors"])
+    assert_condition(
+        "README.md is missing help topic smoke phrase" in help_topic_drift_errors,
+        "release policy docs should mention command-specific help topic smoke",
     )
 
     list_json_drift = release_metadata_summary(
