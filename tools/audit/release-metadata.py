@@ -101,6 +101,15 @@ RELEASE_REPOSITORY_AUDIT_TERM_GROUPS = (
         "8개 repository audit",
     ),
 )
+RELEASE_WHITESPACE_CHECK_TERM_GROUPS = (
+    (
+        "whitespace checks",
+        "whitespace check",
+        "`git diff --check`",
+        "git diff --check",
+        "whitespace check 검증",
+    ),
+)
 RELEASE_HUMAN_VERSION_TERM_GROUPS = (
     (
         "human `design-ai version`",
@@ -301,6 +310,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "package contents check phrase",
     "CLI unit test phrase",
     "repository audit gate phrase",
+    "whitespace check phrase",
     "human version smoke phrase",
     "version JSON metadata phrase",
     "top-level help smoke phrase",
@@ -333,6 +343,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
+    ("whitespace check phrase", RELEASE_WHITESPACE_CHECK_TERM_GROUPS),
     ("human version smoke phrase", RELEASE_HUMAN_VERSION_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("top-level help smoke phrase", RELEASE_TOP_LEVEL_HELP_TERM_GROUPS),
@@ -685,6 +696,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 and the package contents check,
 CLI unit tests,
 all 8 audits,
+whitespace checks,
 human/JSON `design-ai audit --strict --quiet` output, top-level help output,
 `design-ai help --json` topic
 catalog output, command alias help and functional alias output,
@@ -717,6 +729,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 package contents check도 확인하고,
 CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
+whitespace check 검증도 확인하고,
 human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
@@ -955,6 +968,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing repository audit gate phrase" in repository_audit_drift_errors,
         "release policy docs should mention repository audit gate coverage",
+    )
+
+    whitespace_check_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "whitespace checks",
+                "spacing review",
+            ),
+        },
+        audit_count=8,
+    )
+    whitespace_check_drift_errors = "\n".join(whitespace_check_drift["errors"])
+    assert_condition(
+        "README.md is missing whitespace check phrase" in whitespace_check_drift_errors,
+        "release policy docs should mention whitespace checks",
     )
 
     human_version_drift = release_metadata_summary(
