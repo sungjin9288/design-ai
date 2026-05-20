@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 125 — Repository audit gate release metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects all-eight repository audit guidance already covered by `npm run audit:strict` in the release gate.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for all-eight repository audit guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops repository audit gate wording.
+- `docs/RELEASE-CHECKLIST.md` now lists all-eight repository audit guidance in the release metadata protected phrase set.
+- CHANGELOG and SESSION-LOG now record the Phase 125 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the repository audit gate while keeping downstream package contents, package smoke, and registry smoke guidance.
+- Existing CLI, repository audits, unit tests, package contents check, package smoke, and registry smoke behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Repository audit gate guidance now has an end-to-end drift guard from `run-all.py --strict` to release-facing docs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 124 — CLI unit test release metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects CLI unit test guidance already covered by `npm test` in the release gate.

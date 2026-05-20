@@ -31,6 +31,7 @@ Release metadata now guards release-facing docs against dropping packed-tarball 
 Release metadata now guards release-facing docs against dropping public registry `npm exec --package @design-ai/cli@<version>` smoke guidance.
 Release metadata now guards release-facing docs against dropping package contents check guidance.
 Release metadata now guards release-facing docs against dropping CLI unit test guidance.
+Release metadata now guards release-facing docs against dropping repository audit gate guidance.
 Release metadata now fails if a required release policy doc drops out of the checked set.
 Release metadata now rejects unexpected release policy docs in the checked set.
 Release metadata now rejects release policy docs checked in a non-deterministic order.
@@ -80,6 +81,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 125 — Repository audit gate release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain all-eight repository audit guidance alongside CLI unit tests, package contents, local packed-tarball, public registry, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when repository audit gate wording is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now names all-eight repository audit guidance inside the release metadata protected phrase set.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the repository audit gate while preserving unit test, package, and smoke guidance.
+- The guard is documentation-only at runtime; existing CLI behavior, repository audit execution, unit test execution, package contents check execution, package smoke execution, and registry smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the repository audit gate as a first-class release contract before package contents and smoke checks run.
 
 ### Phase 124 — CLI unit test release metadata guard added
 
