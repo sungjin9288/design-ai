@@ -105,6 +105,23 @@ RELEASE_SUGGESTION_FAILURE_TERM_GROUPS = (
         "numeric range failure 검증",
     ),
 )
+RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
+    ("prompt/pack",),
+    (
+        "forced `--out`",
+        "forced output-file",
+        "강제 `--out`",
+        "강제 output-file",
+    ),
+    (
+        "file-write confirmation",
+        "file-write confirmations",
+        "`Wrote <path>` confirmation",
+        "`Wrote <path>` confirmations",
+        "output-file confirmation",
+        "output-file confirmations",
+    ),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
     ("design-ai install --json", "`install --json`"),
 )
@@ -138,6 +155,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "corpus discovery JSON phrase",
     "show-lines route-explain smoke phrase",
     "suggestion failure smoke phrase",
+    "prompt-pack output smoke phrase",
     "install JSON lifecycle phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
@@ -153,6 +171,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
+    ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
@@ -487,6 +506,7 @@ catalog output, all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 explicit `show --lines` ranges and `route --explain` output,
 unknown route-id/option/value suggestion and numeric range failures,
+prompt/pack forced `--out` overwrites plus file-write confirmations,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
@@ -505,6 +525,7 @@ smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
 human / JSON corpus discovery 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
+prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
@@ -728,6 +749,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
         "release policy docs should mention suggestion and numeric range failure smoke",
+    )
+
+    prompt_pack_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "file-write confirmations", "write confirmations"
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_pack_output_drift_errors = "\n".join(prompt_pack_output_drift["errors"])
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing prompt-pack output smoke phrase"
+        in prompt_pack_output_drift_errors,
+        "release policy docs should mention prompt/pack output-file smoke",
     )
 
     install_json_drift = release_metadata_summary(
