@@ -36,6 +36,7 @@ Release metadata now reports audit-count source failures as structured errors in
 Release metadata now self-tests its human pass/fail output formatter.
 Release metadata now self-tests its JSON output formatter and summary key order.
 Release metadata policy-doc phrase validation now runs from a single table-driven guard list instead of one helper per smoke phrase.
+Release metadata now self-tests the phrase guard table labels, uniqueness, and term-group shape.
 `design-ai check` now formats machine-readable output through a self-tested JSON formatter with stable artifact/example key order.
 `design-ai route` now formats machine-readable recommendation and catalog output through a self-tested JSON formatter.
 `design-ai prompt` now formats machine-readable prompt plans through a self-tested JSON formatter with stable inferred/forced route plan order.
@@ -61,6 +62,34 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 106 — Release metadata phrase table self-test added
+
+#### Changed
+- `tools/audit/release-metadata.py` now defines the expected release policy phrase labels separately from the phrase guard table.
+- `release-metadata.py --self-test` now verifies phrase guard table label order, label uniqueness, and term-group shape before drift fixtures run.
+- The new table-shape fixtures fail closed when a phrase entry is dropped, duplicated, or given an invalid empty term.
+
+#### Impact
+- Future edits to `RELEASE_POLICY_PHRASE_CHECKS` cannot silently weaken release policy-doc coverage by losing a guard entry or adding malformed term groups.
+- Runtime CLI behavior, release metadata JSON shape, checked policy-doc order, and release-facing documentation requirements remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release metadata can keep using one shared phrase guard table without making the table itself a silent drift risk.
 
 ### Phase 105 — Release metadata phrase guard table refactor
 

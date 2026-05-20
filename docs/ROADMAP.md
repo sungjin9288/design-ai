@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 106 — Release metadata phrase table self-test added (v4.13.0) ✓ shipped
+
+Release metadata now self-tests the shared phrase guard table before validating release policy docs.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps expected release policy phrase labels in `RELEASE_POLICY_PHRASE_LABELS`.
+- `release_policy_phrase_table_errors()` validates label order, label uniqueness, non-empty term groups, and non-empty string terms.
+- `release-metadata.py --self-test` now includes fixtures for dropped phrase labels, duplicate labels, and invalid empty terms.
+- CHANGELOG and SESSION-LOG now record the Phase 106 table-shape guard.
+
+### Impact
+- Future release smoke phrase coverage cannot silently drift because a table entry was removed, duplicated, or malformed.
+- Existing CLI behavior, metadata output shape, policy-doc requirements, and release docs remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The table-driven release phrase guard can keep scaling without depending on reviewer memory to notice schema drift.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 105 — Release metadata phrase guard table refactor (v4.13.0) ✓ shipped
 
 Release metadata phrase validation now uses one table-driven guard list.

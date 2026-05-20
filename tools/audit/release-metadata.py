@@ -85,6 +85,17 @@ RELEASE_STATUS_JSON_TERM_GROUPS = (
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
+RELEASE_POLICY_PHRASE_LABELS = (
+    "MkDocs warning-policy phrase",
+    "version JSON metadata phrase",
+    "help JSON topic catalog phrase",
+    "install JSON lifecycle phrase",
+    "uninstall JSON lifecycle phrase",
+    "audit strict-quiet smoke phrase",
+    "doctor strict smoke phrase",
+    "status JSON install-state phrase",
+    "update dry-run lifecycle phrase",
+)
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
@@ -216,6 +227,36 @@ def audit_count_errors(label: str, entry: str, expected_count: int | None) -> li
 
 def required_section_errors(label: str, entry: str, sections: tuple[str, ...]) -> list[str]:
     return [f"{label} is missing required section: {section}" for section in sections if section not in entry]
+
+
+def release_policy_phrase_table_errors(
+    phrase_checks: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...] = RELEASE_POLICY_PHRASE_CHECKS,
+) -> list[str]:
+    errors: list[str] = []
+    labels = tuple(label for label, _ in phrase_checks)
+    if labels != RELEASE_POLICY_PHRASE_LABELS:
+        expected = ", ".join(RELEASE_POLICY_PHRASE_LABELS)
+        actual = ", ".join(labels)
+        errors.append(
+            f"release policy phrase guard labels mismatch: expected {expected}; got {actual}"
+        )
+    if len(labels) != len(set(labels)):
+        errors.append("release policy phrase guard labels must be unique")
+
+    for label, term_groups in phrase_checks:
+        if not isinstance(label, str) or not label:
+            errors.append("release policy phrase guard label must be a non-empty string")
+        if not isinstance(term_groups, tuple) or not term_groups:
+            errors.append(f"release policy phrase guard has no term groups: {label}")
+            continue
+        for term_group in term_groups:
+            if not isinstance(term_group, tuple) or not term_group:
+                errors.append(f"release policy phrase guard has an empty term group: {label}")
+                continue
+            for term in term_group:
+                if not isinstance(term, str) or not term:
+                    errors.append(f"release policy phrase guard has an invalid term: {label}")
+    return errors
 
 
 def release_policy_phrase_doc_errors(label: str, text: str) -> list[str]:
@@ -446,6 +487,39 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         format_human_summary(passing) == "Release metadata check passed: v1.2.3, 8 audits, CHANGELOG 2026-05",
         "human formatter should preserve the passing release metadata summary",
+    )
+    assert_condition(
+        release_policy_phrase_table_errors() == [],
+        "release policy phrase guard table should be well formed",
+    )
+    missing_phrase_table_errors = "\n".join(
+        release_policy_phrase_table_errors(RELEASE_POLICY_PHRASE_CHECKS[:-1])
+    )
+    assert_condition(
+        "release policy phrase guard labels mismatch" in missing_phrase_table_errors,
+        "release policy phrase guard table should fail if a phrase label drops out",
+    )
+    duplicate_phrase_checks = RELEASE_POLICY_PHRASE_CHECKS + (RELEASE_POLICY_PHRASE_CHECKS[0],)
+    duplicate_phrase_table_errors = "\n".join(
+        release_policy_phrase_table_errors(duplicate_phrase_checks)
+    )
+    assert_condition(
+        "release policy phrase guard labels must be unique" in duplicate_phrase_table_errors,
+        "release policy phrase guard table should fail duplicate labels",
+    )
+    empty_group_table_errors = "\n".join(
+        release_policy_phrase_table_errors((("fixture phrase", ((),)),))
+    )
+    assert_condition(
+        "release policy phrase guard has an empty term group" in empty_group_table_errors,
+        "release policy phrase guard table should fail empty term groups",
+    )
+    invalid_phrase_table_errors = "\n".join(
+        release_policy_phrase_table_errors((("fixture phrase", (("",),)),))
+    )
+    assert_condition(
+        "release policy phrase guard has an invalid term" in invalid_phrase_table_errors,
+        "release policy phrase guard table should fail invalid terms",
     )
 
     failing = release_metadata_summary(
