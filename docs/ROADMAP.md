@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 133 — Package smoke command metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the local `package:smoke` command that runs packed-tarball installed-bin and one-shot npm exec checks.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `npm run package:smoke` packed-tarball command guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the `package:smoke` command.
+- README, Korean README, and `docs/RELEASE-CHECKLIST.md` now identify `package:smoke` as the packed-tarball smoke command before listing its execution paths.
+- CHANGELOG and SESSION-LOG now record the Phase 133 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep packed-tarball smoke path details while dropping the `package:smoke` command that verifies them.
+- Existing CLI, package smoke, registry smoke, release check, release metadata execution, release self-test execution, whitespace check execution, repository audits, unit tests, and package contents check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the local package smoke command and the packed-tarball execution paths as one contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 132 — Registry smoke command metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the post-publish `registry:smoke` command that verifies the public npm install path.

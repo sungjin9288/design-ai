@@ -82,8 +82,21 @@ RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS = (
         "packed tarball smoke",
         "packed-tarball smoke test",
         "packed-tarball smoke gate",
-        "`npm run package:smoke`",
-        "npm run package:smoke",
+    ),
+)
+RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS = (
+    ("`npm run package:smoke`", "npm run package:smoke"),
+    (
+        "packed-tarball smoke",
+        "packed tarball smoke",
+        "packed-tarball smoke gate",
+        "package smoke",
+    ),
+    (
+        "installed-bin",
+        "installed bin",
+        "one-shot `npm exec --package <tarball>`",
+        "one-shot npm exec",
     ),
 )
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
@@ -374,6 +387,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
     "release check command phrase",
     "packed tarball smoke phrase",
+    "package smoke command phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -413,6 +427,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
     ("release check command phrase", RELEASE_CHECK_GATE_TERM_GROUPS),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
+    ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
@@ -772,6 +787,7 @@ as the core automated gate and `npm run ci:local`, including the MkDocs warning 
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human `design-ai version` output,
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
+`npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
@@ -810,6 +826,7 @@ install-state output before uninstall.
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. human `design-ai version` 출력도 smoke test하고,
 packed-tarball installed-bin 경로도 확인하고,
+`npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
@@ -987,6 +1004,9 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
             "README.md": english_policy_doc.replace(
                 "the packed-tarball installed-bin path",
                 "the packed tarball command path",
+            ).replace(
+                "installed-bin and one-shot npm exec package coverage",
+                "local package execution coverage",
             ),
         },
         audit_count=8,
@@ -1020,6 +1040,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention packed-tarball smoke",
     )
 
+    package_smoke_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run package:smoke`",
+                "the package smoke command",
+            ),
+        },
+        audit_count=8,
+    )
+    package_smoke_command_drift_errors = "\n".join(package_smoke_command_drift["errors"])
+    assert_condition(
+        "README.md is missing package smoke command phrase" in package_smoke_command_drift_errors,
+        "release policy docs should mention package:smoke command guidance",
+    )
+
     packed_tarball_npm_exec_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -1030,6 +1070,9 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
             "README.md": english_policy_doc.replace(
                 "one-shot `npm exec --package <tarball>`",
                 "one-shot package exec",
+            ).replace(
+                "installed-bin and one-shot npm exec package coverage",
+                "installed-bin package coverage",
             ),
         },
         audit_count=8,
