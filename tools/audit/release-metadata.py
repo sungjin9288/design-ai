@@ -138,6 +138,16 @@ RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
         "명시적 `route --explain`",
     ),
 )
+RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS = (
+    (
+        "unknown command/help/list/search-dir failure",
+        "unknown command/help/list/search-dir failures",
+        "unknown command, help-topic, list-domain, and search-dir failures",
+        "unknown command/help/list-domain/search-dir failure",
+        "unknown command/help/list/search-dir failure 검증",
+        "unknown command/help/list-domain/search-dir failure 검증",
+    ),
+)
 RELEASE_SUGGESTION_FAILURE_TERM_GROUPS = (
     (
         "unknown route-id/option/value suggestion",
@@ -249,6 +259,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "corpus discovery JSON phrase",
     "route JSON catalog stdin smoke phrase",
     "show-lines route-explain smoke phrase",
+    "unknown command failure smoke phrase",
     "suggestion failure smoke phrase",
     "prompt-pack mode smoke phrase",
     "prompt-pack output smoke phrase",
@@ -275,6 +286,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("route JSON catalog stdin smoke phrase", RELEASE_ROUTE_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
+    ("unknown command failure smoke phrase", RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
@@ -619,6 +631,7 @@ all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON/catalog/stdin output,
 explicit `show --lines` ranges and `route --explain` output,
+unknown command/help/list/search-dir failures,
 unknown route-id/option/value suggestion and numeric range failures,
 prompt/pack JSON/markdown/from-file/stdin output,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
@@ -646,6 +659,7 @@ command-specific help topic 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON/catalog/stdin 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
+unknown command/help/list/search-dir failure 검증도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
@@ -964,6 +978,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing show-lines route-explain smoke phrase" in explicit_output_drift_errors,
         "release policy docs should mention show-lines and route-explain smoke",
+    )
+
+    unknown_command_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown command/help/list/search-dir failures",
+                "unknown failures",
+            ),
+        },
+        audit_count=8,
+    )
+    unknown_command_failure_drift_errors = "\n".join(unknown_command_failure_drift["errors"])
+    assert_condition(
+        "README.md is missing unknown command failure smoke phrase"
+        in unknown_command_failure_drift_errors,
+        "release policy docs should mention unknown command/help/list/search-dir failure smoke",
     )
 
     suggestion_failure_drift = release_metadata_summary(

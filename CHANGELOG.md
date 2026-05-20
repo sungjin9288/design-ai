@@ -47,6 +47,7 @@ Release metadata now self-tests the phrase guard table labels, uniqueness, and t
 Release metadata now guards release-facing docs against dropping human/JSON corpus discovery smoke guidance.
 Release metadata now guards release-facing docs against dropping route JSON/catalog/stdin smoke guidance.
 Release metadata now guards release-facing docs against dropping explicit `show --lines` and `route --explain` smoke guidance.
+Release metadata now guards release-facing docs against dropping unknown command/help/list/search-dir failure smoke guidance.
 Release metadata now guards release-facing docs against dropping unknown suggestion and numeric range failure smoke guidance.
 Release metadata now guards release-facing docs against dropping prompt/pack JSON/markdown/from-file/stdin smoke guidance.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
@@ -75,6 +76,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 120 — Unknown command failure release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain unknown command/help/list/search-dir failure smoke guidance alongside route-id/option/value suggestions, numeric range failures, and the existing route, check, prompt/pack, audit, doctor, help, list, corpus, and lifecycle guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when unknown command/help/list/search-dir wording is removed from a release-facing policy doc.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now list unknown command/help/list/search-dir failures inside the packed-tarball and registry smoke surfaces.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently narrow failure-path smoke guidance to route-id/option/value and numeric range checks while dropping unknown command, help topic, list domain, and search-dir coverage.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Failure-path smoke guidance now preserves the same unknown command/help/list/search-dir coverage that package and registry smoke already validate.
 
 ### Phase 119 — Human lifecycle release metadata guard added
 

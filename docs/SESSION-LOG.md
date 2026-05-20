@@ -114,6 +114,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 117)** — Guarded release-facing docs against dropping route JSON/catalog/stdin smoke guidance.
 - **v4.13 (Phase 118)** — Guarded release-facing docs against dropping prompt/pack JSON/markdown/from-file/stdin smoke guidance.
 - **v4.13 (Phase 119)** — Guarded release-facing docs against dropping human install/status/uninstall lifecycle smoke guidance.
+- **v4.13 (Phase 120)** — Guarded release-facing docs against dropping unknown command/help/list/search-dir failure smoke guidance.
 
 ## Patterns that didn't work
 
