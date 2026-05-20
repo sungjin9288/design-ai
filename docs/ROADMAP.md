@@ -51,6 +51,51 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 99 — Update command dry-run preview added (v4.13.0) ✓ shipped
+
+`design-ai update --dry-run` now previews source update and reinstall actions without mutating the repo or Claude home.
+
+### Changed
+- `cli/commands/update.mjs` now accepts `--dry-run` for human preview output and `--dry-run --json` for machine-readable update plans.
+- The dry-run JSON report includes stable `context`, `plan`, and `result` sections with git pull intent, install script readiness, exact command arrays, and `mutating: false`.
+- `cli/lib/update-command.test.mjs` now covers dry-run parser behavior, JSON-only rejection, key order, command arrays, localized paths, and readiness flags.
+- Help output, README, Distribution, and Release checklist docs now list `design-ai update [--dry-run] [--json]`.
+- Package smoke and registry smoke now validate both human and JSON update dry-run output before install lifecycle checks.
+
+### Impact
+- Contributors can preview update effects before any git pull or install.sh work starts.
+- Release automation can verify update readiness from a deterministic JSON plan.
+- Existing mutating `design-ai update`, `upgrade`, `u`, and help behavior remain compatible.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/update-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --dry-run`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --dry-run --json`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --json`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Update lifecycle smoke can now assert non-mutating preview behavior before packaged or registry install checks proceed.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 98 — Update command option guard added (v4.13.0) ✓ shipped
 
 `design-ai update` now rejects unsupported arguments before it can pull source changes or rerun install.sh.

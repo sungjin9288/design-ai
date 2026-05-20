@@ -3,7 +3,7 @@
 //
 // Commands:
 //   install              Install design-ai into Claude Code (~/.claude)
-//   update               Update to latest design-ai (re-fetch + reinstall)
+//   update [--dry-run]   Update to latest design-ai (re-fetch + reinstall)
 //   uninstall            Remove design-ai from Claude Code
 //   status               Show what's installed
 //   list [domain]        List skills / commands / knowledge (optionally filtered)

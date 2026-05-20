@@ -84,6 +84,8 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_status_json,
     assert_search_dir_value_failure,
+    assert_update_dry_run_json,
+    assert_update_dry_run_output,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
@@ -342,6 +344,29 @@ def assert_install_lifecycle_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_install_doctor_lifecycle_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_update_dry_run_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_update_dry_run_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_update_dry_run_json_smoke(
+    cmd: list[str],
+    *,
+    prefix: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_update_dry_run_json(result.stdout, prefix=prefix, context=context, cmd=cmd)
 
 
 def assert_status_json_file(path: Path, *, prefix: str, context: str) -> None:
@@ -1339,6 +1364,19 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec audit JSON",
+        )
+        assert_update_dry_run_smoke(
+            npm_exec_cmd(package_spec, "update", "--dry-run"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec update dry run",
+        )
+        assert_update_dry_run_json_smoke(
+            npm_exec_cmd(package_spec, "update", "--dry-run", "--json"),
+            prefix="registry-design-",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec update dry-run JSON",
         )
         doctor_json = npx_root / "doctor.json"
         status_json = npx_root / "status.json"

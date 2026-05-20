@@ -82,6 +82,8 @@ from smoke_assertions import (
     assert_status_json,
     assert_status_output,
     assert_search_dir_value_failure,
+    assert_update_dry_run_json,
+    assert_update_dry_run_output,
     assert_unknown_command_failure,
     assert_unknown_help_topic_failure,
     assert_unknown_list_domain_failure,
@@ -394,6 +396,29 @@ def assert_install_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_install_json(result.stdout, prefix=prefix, context=context, cmd=cmd)
+
+
+def assert_update_dry_run_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_update_dry_run_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_update_dry_run_json_smoke(
+    cmd: list[str],
+    *,
+    prefix: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_update_dry_run_json(result.stdout, prefix=prefix, context=context, cmd=cmd)
 
 
 def assert_status_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1419,6 +1444,17 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin audit JSON",
         )
+        assert_update_dry_run_smoke(
+            [str(bin_path), "update", "--dry-run"],
+            env=smoke_env,
+            context="package smoke installed bin update dry run",
+        )
+        assert_update_dry_run_json_smoke(
+            [str(bin_path), "update", "--dry-run", "--json"],
+            prefix="smoke-design-",
+            env=smoke_env,
+            context="package smoke installed bin update dry-run JSON",
+        )
         assert_install_smoke(
             [str(bin_path), "install"],
             env=smoke_env,
@@ -1998,6 +2034,19 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec audit JSON",
+        )
+        assert_update_dry_run_smoke(
+            npm_exec_cmd(tarball, "update", "--dry-run"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec update dry run",
+        )
+        assert_update_dry_run_json_smoke(
+            npm_exec_cmd(tarball, "update", "--dry-run", "--json"),
+            prefix="npx-design-",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec update dry-run JSON",
         )
         assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(

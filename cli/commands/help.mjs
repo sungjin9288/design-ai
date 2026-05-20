@@ -24,7 +24,7 @@ import { runVersion } from "./version.mjs";
 
 export const HELP_COMMANDS = [
   { topic: "install", usage: "install [--json]", description: "Symlink design-ai into Claude Code (~/.claude)" },
-  { topic: "update", usage: "update", description: "Pull latest source + reinstall" },
+  { topic: "update", usage: "update [--dry-run] [--json]", description: "Pull latest source + reinstall" },
   { topic: "uninstall", usage: "uninstall [--json]", description: "Remove symlinks (keeps source files)" },
   { topic: "status", usage: "status [--json]", description: "Show what's installed (use VERBOSE=1 for full list)" },
   { topic: "list", usage: "list [skills|commands|agents] [--json]", description: "List catalog from the plugin manifest" },

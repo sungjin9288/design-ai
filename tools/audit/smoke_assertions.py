@@ -87,7 +87,7 @@ EXPECTED_HELP_ALIASES = {
 }
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install [--json]"),
-    "update": ("Usage:", "design-ai update"),
+    "update": ("Usage:", "design-ai update [--dry-run] [--json]"),
     "uninstall": ("Usage:", "design-ai uninstall [--json]"),
     "status": ("Usage:", "design-ai status [--json]"),
     "list": ("Usage:", "design-ai list [skills|commands|agents]"),
@@ -139,6 +139,15 @@ EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
     "Installed 16 slash commands",
     "Installed. Restart Claude Code",
     "design-ai status",
+)
+EXPECTED_UPDATE_DRY_RUN_OUTPUT_FRAGMENTS = (
+    "design-ai update dry run",
+    "Source:",
+    "Target:",
+    "Prefix:",
+    "Git:",
+    "Install:",
+    "Dry run complete. No files changed.",
 )
 EXPECTED_STATUS_OUTPUT_FRAGMENTS = (
     "design-ai status",
@@ -2650,6 +2659,57 @@ def passing_install_json(prefix: str = "smoke-design-") -> str:
     )
 
 
+def passing_update_dry_run_output() -> str:
+    return "\n".join([
+        "",
+        "  design-ai update dry run",
+        "",
+        "Source: /tmp/design-ai",
+        "Target: /tmp/claude-home",
+        "Prefix: smoke-design-",
+        "",
+        "Git: skipped; source is not a git clone.",
+        "Install: would run bash /tmp/design-ai/install.sh install",
+        "",
+        "Dry run complete. No files changed.",
+        "",
+    ])
+
+
+def passing_update_dry_run_json(prefix: str = "smoke-design-") -> str:
+    return json.dumps(
+        {
+            "context": {
+                "sourceRoot": "/tmp/design-ai",
+                "claudeHome": "/tmp/claude-home",
+                "prefix": prefix,
+            },
+            "plan": {
+                "gitPull": {
+                    "sourceIsGitClone": False,
+                    "wouldRun": False,
+                    "command": [],
+                    "reason": "source is not a git clone",
+                },
+                "install": {
+                    "installScriptExists": True,
+                    "wouldRun": True,
+                    "installScript": "/tmp/design-ai/install.sh",
+                    "command": ["bash", "/tmp/design-ai/install.sh", "install"],
+                    "reason": "install.sh is available",
+                },
+            },
+            "result": {
+                "dryRun": True,
+                "mutating": False,
+                "ready": True,
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_status_output() -> str:
     return "\n".join([
         "",
@@ -2983,6 +3043,90 @@ def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) 
         raise SystemExit(f"install JSON after {context} installed keys changed")
     if installed != expected_installed_counts():
         raise SystemExit(f"install JSON after {context} installed counts differ from expected install set")
+
+
+def assert_update_dry_run_output(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"update dry-run output after {context} looks like JSON output")
+    if "Pulling latest from git" in raw or "Re-running install.sh" in raw:
+        raise SystemExit(f"update dry-run output after {context} reported mutating update work")
+
+    assert_contains_fragments(
+        raw,
+        EXPECTED_UPDATE_DRY_RUN_OUTPUT_FRAGMENTS,
+        context=context,
+        label="update dry-run output",
+    )
+
+
+def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"update dry-run JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "plan", "result"]:
+        raise SystemExit(f"update dry-run JSON after {context} top-level keys changed")
+
+    update_context = payload.get("context")
+    if not isinstance(update_context, dict):
+        raise SystemExit(f"update dry-run JSON after {context} context is not an object")
+    if list(update_context) != ["sourceRoot", "claudeHome", "prefix"]:
+        raise SystemExit(f"update dry-run JSON after {context} context keys changed")
+    if not isinstance(update_context.get("sourceRoot"), str) or not update_context["sourceRoot"]:
+        raise SystemExit(f"update dry-run JSON after {context} sourceRoot is missing")
+    if not isinstance(update_context.get("claudeHome"), str) or not update_context["claudeHome"]:
+        raise SystemExit(f"update dry-run JSON after {context} claudeHome is missing")
+    if update_context.get("prefix") != prefix:
+        raise SystemExit(f"update dry-run JSON after {context} prefix differs from expected {prefix}")
+
+    plan = payload.get("plan")
+    if not isinstance(plan, dict):
+        raise SystemExit(f"update dry-run JSON after {context} plan is not an object")
+    if list(plan) != ["gitPull", "install"]:
+        raise SystemExit(f"update dry-run JSON after {context} plan keys changed")
+
+    git_pull = plan.get("gitPull")
+    if not isinstance(git_pull, dict):
+        raise SystemExit(f"update dry-run JSON after {context} gitPull is not an object")
+    if list(git_pull) != ["sourceIsGitClone", "wouldRun", "command", "reason"]:
+        raise SystemExit(f"update dry-run JSON after {context} gitPull keys changed")
+    if not isinstance(git_pull.get("sourceIsGitClone"), bool):
+        raise SystemExit(f"update dry-run JSON after {context} sourceIsGitClone is not boolean")
+    if git_pull.get("wouldRun") != git_pull.get("sourceIsGitClone"):
+        raise SystemExit(f"update dry-run JSON after {context} gitPull wouldRun does not match clone state")
+    expected_git_command = ["git", "pull", "--ff-only"] if git_pull.get("wouldRun") else []
+    if git_pull.get("command") != expected_git_command:
+        raise SystemExit(f"update dry-run JSON after {context} gitPull command differs from clone state")
+    if not isinstance(git_pull.get("reason"), str) or not git_pull["reason"]:
+        raise SystemExit(f"update dry-run JSON after {context} gitPull reason is missing")
+
+    install = plan.get("install")
+    if not isinstance(install, dict):
+        raise SystemExit(f"update dry-run JSON after {context} install is not an object")
+    if list(install) != ["installScriptExists", "wouldRun", "installScript", "command", "reason"]:
+        raise SystemExit(f"update dry-run JSON after {context} install keys changed")
+    if install.get("installScriptExists") is not True:
+        raise SystemExit(f"update dry-run JSON after {context} install script is missing")
+    if install.get("wouldRun") is not True:
+        raise SystemExit(f"update dry-run JSON after {context} install wouldRun is not true")
+    if not isinstance(install.get("installScript"), str) or not install["installScript"].endswith("install.sh"):
+        raise SystemExit(f"update dry-run JSON after {context} installScript is invalid")
+    if install.get("command") != ["bash", install["installScript"], "install"]:
+        raise SystemExit(f"update dry-run JSON after {context} install command changed")
+    if not isinstance(install.get("reason"), str) or not install["reason"]:
+        raise SystemExit(f"update dry-run JSON after {context} install reason is missing")
+
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise SystemExit(f"update dry-run JSON after {context} result is not an object")
+    if list(result) != ["dryRun", "mutating", "ready"]:
+        raise SystemExit(f"update dry-run JSON after {context} result keys changed")
+    if result != {"dryRun": True, "mutating": False, "ready": True}:
+        raise SystemExit(f"update dry-run JSON after {context} result summary changed")
 
 
 def assert_status_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -5121,6 +5265,18 @@ def run_self_test() -> None:
         context=context,
         cmd=[*install_cmd, "--json"],
     )
+    update_cmd = ["design-ai", "update", "--dry-run"]
+    assert_update_dry_run_output(
+        passing_update_dry_run_output(),
+        context=context,
+        cmd=update_cmd,
+    )
+    assert_update_dry_run_json(
+        passing_update_dry_run_json("smoke-design-"),
+        prefix="smoke-design-",
+        context=context,
+        cmd=[*update_cmd, "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_install_output(
             passing_install_output().replace("Installed 19 skills", "Installed 18 skills"),
@@ -5162,6 +5318,25 @@ def run_self_test() -> None:
             cmd=[*install_cmd, "--json"],
         ),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_output(
+            passing_update_dry_run_output() + "\nPulling latest from git...",
+            context=context,
+            cmd=update_cmd,
+        ),
+        expected="mutating update work",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            passing_update_dry_run_json("smoke-design-").replace('"ready": true', '"ready": false'),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="result summary changed",
         scope="smoke assertions",
     )
     status_cmd = ["design-ai", "status"]

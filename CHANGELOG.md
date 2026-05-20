@@ -54,6 +54,46 @@ Release metadata now guards release-facing docs against dropping `design-ai inst
 `design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
+`design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
+
+### Phase 99 — Update command dry-run preview added
+
+#### Changed
+- `cli/commands/update.mjs` now accepts `--dry-run` and `--dry-run --json` to preview update work before running git pull or install.sh.
+- The update dry-run report exposes stable `context`, `plan`, and `result` sections, including git clone detection, install script availability, exact commands that would run, and a `mutating: false` marker.
+- `cli/lib/update-command.test.mjs` now covers dry-run parsing, JSON-only rejection, key order, command arrays, localized paths, and readiness state.
+- Help output, README, Distribution, and Release checklist docs now advertise `design-ai update [--dry-run] [--json]`.
+- Shared package and registry smoke assertions now run both human and JSON dry-run checks before lifecycle install work.
+
+#### Impact
+- Contributors can inspect update effects safely before any source pull or reinstall side effect.
+- Release automation can validate update readiness from a stable JSON contract instead of parsing human terminal text.
+- Existing mutating `design-ai update`, `upgrade`, and `u` behavior remains unchanged.
+- `design-ai update --json` without `--dry-run` intentionally fails so mutating update output does not imply a stable JSON lifecycle schema.
+
+#### Verified
+- All 8 audits pass.
+- `node --test cli/lib/update-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --dry-run`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --dry-run --json`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs update --json`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Update lifecycle verification now has both a safe human preview and a deterministic automation contract before external release smoke runs.
 
 ### Phase 98 — Update command option guard added
 
