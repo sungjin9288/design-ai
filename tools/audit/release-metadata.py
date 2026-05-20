@@ -54,6 +54,18 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
     ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
 )
+RELEASE_CHECK_GATE_TERM_GROUPS = (
+    ("`npm run release:check`", "npm run release:check"),
+    (
+        "core automated gate",
+        "core gate",
+        "before release PRs or tags",
+        "Before tagging any release",
+        "Before tagging a release",
+        "태그 전",
+        "태그를 만들기 전",
+    ),
+)
 RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS = (
     (
         "packed-tarball installed-bin",
@@ -343,6 +355,7 @@ RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
 )
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
+    "release check command phrase",
     "packed tarball smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
@@ -380,6 +393,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
+    ("release check command phrase", RELEASE_CHECK_GATE_TERM_GROUPS),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -734,7 +748,8 @@ def run_self_test() -> int:
 """
     english_policy_doc = """# Distribution
 
-The release workflow runs `npm run ci:local`, including the MkDocs warning policy
+Before tagging any release, the release workflow runs `npm run release:check`
+as the core automated gate and `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human `design-ai version` output,
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
@@ -770,6 +785,7 @@ install-state output before uninstall.
 """
     korean_policy_doc = """# Distribution Korean
 
+태그 전에는 `npm run release:check` core gate와 `npm run ci:local`을 실행해요.
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. human `design-ai version` 출력도 smoke test하고,
@@ -919,6 +935,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     )
     command_drift_errors = "\n".join(command_drift["errors"])
     assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
+
+    release_check_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run release:check`",
+                "the release command sequence",
+            ),
+        },
+        audit_count=8,
+    )
+    release_check_drift_errors = "\n".join(release_check_drift["errors"])
+    assert_condition(
+        "README.md is missing release check command phrase" in release_check_drift_errors,
+        "release policy docs should mention release:check command guidance",
+    )
 
     packed_tarball_installed_bin_drift = release_metadata_summary(
         package_json=package_json,

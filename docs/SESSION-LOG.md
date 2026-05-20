@@ -125,6 +125,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 128)** — Guarded release-facing docs against dropping packed-tarball installed-bin smoke guidance.
 - **v4.13 (Phase 129)** — Guarded release-facing docs against dropping release metadata check guidance.
 - **v4.13 (Phase 130)** — Guarded release-facing docs against dropping packed-tarball smoke gate guidance.
+- **v4.13 (Phase 131)** — Guarded release-facing docs against dropping the `release:check` core gate command.
 
 ## Patterns that didn't work
 

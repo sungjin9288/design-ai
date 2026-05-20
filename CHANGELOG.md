@@ -27,6 +27,7 @@ Release metadata now checks that English and Korean distribution docs keep the M
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+Release metadata now guards release-facing docs against dropping the `release:check` core gate command.
 Release metadata now guards release-facing docs against dropping packed-tarball smoke gate guidance.
 Release metadata now guards release-facing docs against dropping packed-tarball `npm exec --package <tarball>` smoke guidance.
 Release metadata now guards release-facing docs against dropping packed-tarball installed-bin smoke guidance.
@@ -86,6 +87,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 131 — Release check command metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain the `npm run release:check` core gate command alongside MkDocs warning-policy, packed-tarball smoke, installed-bin, one-shot packed-tarball npm exec, public registry, package contents, release metadata checks, release self-tests, CLI unit tests, all-eight repository audits, whitespace checks, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `release:check` command wording is removed from a release-facing policy doc.
+- README, Korean README, and `docs/RELEASE-CHECKLIST.md` now explicitly name `release:check` as the core gate rather than only listing the downstream checks it runs.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep downstream gate details while dropping the `release:check` command that maintainers are expected to run.
+- The guard is documentation-only at runtime; existing CLI behavior, release check execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, whitespace check execution, repository audit execution, unit test execution, and package contents check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the top-level local release command and the checks it orchestrates as one contract.
 
 ### Phase 130 — Packed tarball smoke metadata guard added
 
