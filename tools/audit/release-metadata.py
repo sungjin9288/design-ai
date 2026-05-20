@@ -167,6 +167,13 @@ RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
         "output-file confirmations",
     ),
 )
+RELEASE_PROMPT_PACK_MODE_TERM_GROUPS = (
+    (
+        "prompt/pack JSON/markdown/from-file/stdin",
+        "prompt/pack JSON, markdown, from-file, and stdin",
+        "prompt/pack JSON/markdown/from-file/stdin 출력",
+    ),
+)
 RELEASE_CHECK_COMMAND_TERM_GROUPS = (
     (
         "check examples/artifact/stdin/all-routes",
@@ -212,6 +219,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "route JSON catalog stdin smoke phrase",
     "show-lines route-explain smoke phrase",
     "suggestion failure smoke phrase",
+    "prompt-pack mode smoke phrase",
     "prompt-pack output smoke phrase",
     "check command smoke phrase",
     "install JSON lifecycle phrase",
@@ -234,6 +242,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("route JSON catalog stdin smoke phrase", RELEASE_ROUTE_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
+    ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
@@ -574,6 +583,7 @@ human / JSON corpus discovery output,
 route JSON/catalog/stdin output,
 explicit `show --lines` ranges and `route --explain` output,
 unknown route-id/option/value suggestion and numeric range failures,
+prompt/pack JSON/markdown/from-file/stdin output,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
 check examples/artifact/stdin/all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
@@ -599,6 +609,7 @@ human / JSON corpus discovery 출력도 확인해요.
 route JSON/catalog/stdin 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
+prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
 check examples/artifact/stdin/all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
@@ -931,6 +942,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
         "release policy docs should mention suggestion and numeric range failure smoke",
+    )
+
+    prompt_pack_mode_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "prompt/pack JSON/markdown/from-file/stdin",
+                "prompt/pack output",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_pack_mode_drift_errors = "\n".join(prompt_pack_mode_drift["errors"])
+    assert_condition(
+        "README.md is missing prompt-pack mode smoke phrase" in prompt_pack_mode_drift_errors,
+        "release policy docs should mention prompt/pack mode smoke",
     )
 
     prompt_pack_output_drift = release_metadata_summary(
