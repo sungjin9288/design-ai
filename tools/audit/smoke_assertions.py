@@ -98,7 +98,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "prompt": ("Usage:", "design-ai prompt <brief> [--route id] [--json] [--out file] [--force]"),
     "pack": ("Usage:", "design-ai pack <brief> [--route id] [--max-bytes N] [--json] [--out file] [--force]"),
     "check": ("Usage:", "design-ai check <artifact.md>", "design-ai check --examples --all-routes"),
-    "audit": ("Usage:", "design-ai audit [--strict] [--quiet]"),
+    "audit": ("Usage:", "design-ai audit [--strict] [--quiet] [--json]"),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
     "version": ("Usage:", "design-ai version"),
@@ -378,6 +378,16 @@ EXPECTED_AUDIT_SCRIPTS = (
     "stale-check.py",
     "check-coverage.py",
     "example-qa.py",
+)
+EXPECTED_AUDIT_NAMES = (
+    "frontmatter",
+    "link",
+    "korean-copy",
+    "raw-hex",
+    "integration",
+    "stale",
+    "coverage",
+    "example-qa",
 )
 EXPECTED_AUDIT_COUNT = len(EXPECTED_AUDIT_SCRIPTS)
 EXPECTED_CHECK_ARTIFACT_NAME = "component-artifact.md"
@@ -1219,6 +1229,41 @@ def passing_audit_strict_quiet_output() -> str:
         "────────────────────────────────────────────────────────────",
         f"✓ All {EXPECTED_AUDIT_COUNT} audits passed in 2.00s",
     ])
+
+
+def passing_audit_json(*, strict: bool = True, quiet: bool = True) -> str:
+    audits = []
+    for name, script in zip(EXPECTED_AUDIT_NAMES, EXPECTED_AUDIT_SCRIPTS):
+        audits.append({
+            "name": name,
+            "script": script,
+            "description": f"{name} fixture",
+            "passed": True,
+            "returncode": 0,
+            "durationSeconds": 0.25,
+            "strictArgs": ["--strict"] if name == "stale" and strict else [],
+        })
+
+    return json.dumps(
+        {
+            "context": {
+                "root": "/tmp/design-ai",
+                "auditDir": "tools/audit",
+                "strict": strict,
+                "quiet": quiet,
+            },
+            "audits": audits,
+            "summary": {
+                "total": EXPECTED_AUDIT_COUNT,
+                "passed": EXPECTED_AUDIT_COUNT,
+                "failed": 0,
+                "durationSeconds": 2.0,
+                "exitCode": 0,
+            },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
 
 
 def passing_check_artifact_content() -> str:
@@ -2163,6 +2208,86 @@ def assert_audit_strict_quiet_output(raw: str, *, context: str, cmd: list[str]) 
 
     if re.search(r"\bfailed\b|audit\(s\) failed|✗", raw, flags=re.IGNORECASE):
         raise SystemExit(f"audit output after {context} reports failures")
+
+
+def assert_audit_json(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+    strict: bool = True,
+    quiet: bool = True,
+) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"audit JSON after {context} is not valid JSON: {error}") from error
+
+    if list(payload) != ["context", "audits", "summary"]:
+        raise SystemExit(f"audit JSON after {context} top-level keys changed")
+
+    audit_context = payload.get("context")
+    if not isinstance(audit_context, dict):
+        raise SystemExit(f"audit JSON after {context} context is not an object")
+    if list(audit_context) != ["root", "auditDir", "strict", "quiet"]:
+        raise SystemExit(f"audit JSON after {context} context keys changed")
+    if not isinstance(audit_context.get("root"), str) or not audit_context["root"]:
+        raise SystemExit(f"audit JSON after {context} root is missing")
+    if audit_context.get("auditDir") != "tools/audit":
+        raise SystemExit(f"audit JSON after {context} auditDir differs from expected tools/audit")
+    if audit_context.get("strict") is not strict:
+        raise SystemExit(f"audit JSON after {context} strict flag differs from expected {strict}")
+    if audit_context.get("quiet") is not quiet:
+        raise SystemExit(f"audit JSON after {context} quiet flag differs from expected {quiet}")
+
+    audits = payload.get("audits")
+    if not isinstance(audits, list):
+        raise SystemExit(f"audit JSON after {context} audits is not a list")
+    if len(audits) != EXPECTED_AUDIT_COUNT:
+        raise SystemExit(f"audit JSON after {context} audit count differs from expected {EXPECTED_AUDIT_COUNT}")
+
+    expected_pairs = tuple(zip(EXPECTED_AUDIT_NAMES, EXPECTED_AUDIT_SCRIPTS))
+    for index, audit in enumerate(audits):
+        if not isinstance(audit, dict):
+            raise SystemExit(f"audit JSON after {context} audit entry is not an object")
+        if list(audit) != [
+            "name",
+            "script",
+            "description",
+            "passed",
+            "returncode",
+            "durationSeconds",
+            "strictArgs",
+        ]:
+            raise SystemExit(f"audit JSON after {context} audit entry keys changed")
+        expected_name, expected_script = expected_pairs[index]
+        if audit.get("name") != expected_name or audit.get("script") != expected_script:
+            raise SystemExit(f"audit JSON after {context} audit order differs from run-all.py")
+        if not isinstance(audit.get("description"), str) or not audit["description"]:
+            raise SystemExit(f"audit JSON after {context} audit description is missing for {expected_name}")
+        if audit.get("passed") is not True or audit.get("returncode") != 0:
+            raise SystemExit(f"audit JSON after {context} reports failed audit {expected_name}")
+        if not isinstance(audit.get("durationSeconds"), (int, float)) or audit["durationSeconds"] < 0:
+            raise SystemExit(f"audit JSON after {context} duration is invalid for {expected_name}")
+        expected_strict_args = ["--strict"] if expected_name == "stale" and strict else []
+        if audit.get("strictArgs") != expected_strict_args:
+            raise SystemExit(f"audit JSON after {context} strictArgs differ for {expected_name}")
+
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise SystemExit(f"audit JSON after {context} summary is not an object")
+    if list(summary) != ["total", "passed", "failed", "durationSeconds", "exitCode"]:
+        raise SystemExit(f"audit JSON after {context} summary keys changed")
+    if summary.get("total") != EXPECTED_AUDIT_COUNT:
+        raise SystemExit(f"audit JSON after {context} summary total differs")
+    if summary.get("passed") != EXPECTED_AUDIT_COUNT or summary.get("failed") != 0:
+        raise SystemExit(f"audit JSON after {context} summary pass/fail counts differ")
+    if not isinstance(summary.get("durationSeconds"), (int, float)) or summary["durationSeconds"] < 0:
+        raise SystemExit(f"audit JSON after {context} summary duration is invalid")
+    if summary.get("exitCode") != 0:
+        raise SystemExit(f"audit JSON after {context} summary exitCode is non-zero")
 
 
 def assert_component_spec_check_report(
@@ -4163,6 +4288,7 @@ def run_self_test() -> None:
             "tools/audit/run-all.py AUDITS"
         )
     assert_audit_strict_quiet_output(passing_audit_strict_quiet_output(), context=context, cmd=audit_cmd)
+    assert_audit_json(passing_audit_json(), context=context, cmd=[*audit_cmd, "--json"])
     expect_self_test_failure(
         lambda: assert_audit_strict_quiet_output(
             passing_audit_strict_quiet_output().replace("Runner: tools/audit/run-all.py", "Runner: missing.py"),
@@ -4196,6 +4322,29 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_audit_strict_quiet_output("\x1b[31m{}", context=context, cmd=audit_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_json("\x1b[31m{}", context=context, cmd=[*audit_cmd, "--json"]),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_json(
+            passing_audit_json().replace('"failed": 0', '"failed": 1'),
+            context=context,
+            cmd=[*audit_cmd, "--json"],
+        ),
+        expected="summary pass/fail counts differ",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_audit_json(
+            passing_audit_json().replace('"script": "frontmatter-check.py"', '"script": "missing.py"', 1),
+            context=context,
+            cmd=[*audit_cmd, "--json"],
+        ),
+        expected="audit order differs",
         scope="smoke assertions",
     )
 

@@ -55,7 +55,7 @@ design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--ro
 design-ai examples q worked example 검색; --route id/--limit N/--json 지원
 design-ai search q    로컬 코퍼스 Markdown 검색; --dir kind/--limit N/--json 지원
 design-ai show file   코퍼스 파일 또는 line range 출력; --lines N:M/--context N/--json 지원
-design-ai audit       8개 repository audit 실행; --strict/--quiet 지원
+design-ai audit       8개 repository audit 실행; --strict/--quiet/--json 지원
 design-ai doctor      설치 및 runtime 상태 진단; --strict/--json/--fix 지원
 design-ai version     CLI + 플러그인 버전
 design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 topic catalog 출력
@@ -95,9 +95,9 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 - publish 또는 release asset 첨부 전에 CLI unit test 실행.
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
 - push 준비 시 `npm run ci:local`로 Real-CI parity를 먼저 확인하고, 의도된 `refs/` source-link warning만 허용하며 refs-only warning도 승인된 baseline을 넘지 않는지 함께 검증.
-- 패킹된 tarball을 임시 프로젝트에 설치하고 `design-ai version`과 top-level help 출력을 검증한 뒤 `design-ai help --json` topic catalog를 읽어 expected public topic/alias set을 확인하고, 모든 `design-ai help <command>` topic-specific usage 출력, 문서화된 help/command alias 출력, `find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint` functional alias 출력, 세 가지 `list` catalog domain의 human/JSON 출력, human/JSON `search` / `show` / `examples` 출력, 명시적 `show --lines` range와 `route --explain` 출력, unknown route-id/option/value suggestion 및 numeric range failure 검증, prompt/pack 강제 `--out` overwrite와 `Wrote <path>` confirmation, fake `CLAUDE_HOME` 기반 `design-ai install` / `doctor --strict` / human+JSON `status` / `uninstall` lifecycle 출력까지 검증.
+- 패킹된 tarball을 임시 프로젝트에 설치하고 `design-ai version`과 top-level help 출력을 검증한 뒤 `design-ai help --json` topic catalog를 읽어 expected public topic/alias set을 확인하고, 모든 `design-ai help <command>` topic-specific usage 출력, 문서화된 help/command alias 출력, `find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint` functional alias 출력, 세 가지 `list` catalog domain의 human/JSON 출력, human/JSON `search` / `show` / `examples` 출력, 명시적 `show --lines` range와 `route --explain` 출력, unknown route-id/option/value suggestion 및 numeric range failure 검증, prompt/pack 강제 `--out` overwrite와 `Wrote <path>` confirmation, human/JSON `audit --strict --quiet`, fake `CLAUDE_HOME` 기반 `design-ai install` / `doctor --strict` / human+JSON `status` / `uninstall` lifecycle 출력까지 검증.
 - `--provenance`로 publish (npm provenance attestation).
-- publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test하고, version/top-level help 출력, expected `design-ai help --json` catalog, 발견된 help topic usage 출력, 문서화된 help/command alias 출력, `find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint` functional alias 출력, 세 가지 `list` catalog domain의 human/JSON 출력, human/JSON corpus discovery 출력, 명시적 `show --lines` range와 `route --explain` 출력, unknown route-id/option/value suggestion 및 numeric range failure 검증, prompt/pack 강제 output-file confirmation, install/`doctor --strict`/human+JSON status/uninstall lifecycle 출력도 함께 검증.
+- publish 후 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 smoke test하고, version/top-level help 출력, expected `design-ai help --json` catalog, 발견된 help topic usage 출력, 문서화된 help/command alias 출력, `find`, `cat`, `recommend`, `example`, `ex`, `ls`, `lint` functional alias 출력, 세 가지 `list` catalog domain의 human/JSON 출력, human/JSON corpus discovery 출력, 명시적 `show --lines` range와 `route --explain` 출력, unknown route-id/option/value suggestion 및 numeric range failure 검증, prompt/pack 강제 output-file confirmation, human/JSON `audit --strict --quiet`, install/`doctor --strict`/human+JSON status/uninstall lifecycle 출력도 함께 검증.
 - GitHub Release에는 같은 `npm pack` allowlist로 만든 tarball을 첨부.
 
 로컬에서 태그를 만들기 전에는 먼저 다음 core gate를 실행하세요:
@@ -106,7 +106,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 npm run release:check
 ```
 
-이 명령은 CLI unit test, 8개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, `doctor --strict` human diagnostics, install/human+JSON status/uninstall lifecycle 출력까지 포함해요.
+이 명령은 CLI unit test, 8개 audit, whitespace check, package contents check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 version/top-level help, command alias help와 functional alias output, command-specific help topic output, 명시적 `show --lines`와 `route --explain`, unknown route-id/option/value suggestion, numeric range failure, prompt/pack 강제 `--out` overwrite와 file-write confirmation, human/JSON `audit --strict --quiet`, `doctor --strict` human diagnostics, install/human+JSON status/uninstall lifecycle 출력까지 포함해요.
 
 GitHub CI에 올리기 전에는 더 넓은 로컬 parity gate도 실행하세요:
 
@@ -136,6 +136,7 @@ npx @design-ai/cli install
 # 확인
 design-ai status
 design-ai status --json
+design-ai audit --strict --quiet --json
 design-ai list skills
 ```
 

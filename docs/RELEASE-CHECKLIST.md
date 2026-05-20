@@ -10,7 +10,7 @@ Pre-flight steps for every design-ai release. Stamped at v3.12 — usable from v
 npm run release:check
 ```
 
-This runs CLI unit tests, all eight repository audits, whitespace checks, automated package contents checks, release metadata checks, `npm run release:self-test`, and the packed-tarball smoke test. The release metadata check verifies package/plugin version alignment, current CHANGELOG and ROADMAP entries, and release-facing docs guidance for the MkDocs warning-policy baseline. The tarball smoke covers version and top-level help output, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, `doctor --strict` human diagnostics, and install/human+JSON status/uninstall lifecycle output. Continue with the manual release checks below after this gate passes.
+This runs CLI unit tests, all eight repository audits, whitespace checks, automated package contents checks, release metadata checks, `npm run release:self-test`, and the packed-tarball smoke test. The release metadata check verifies package/plugin version alignment, current CHANGELOG and ROADMAP entries, and release-facing docs guidance for the MkDocs warning-policy baseline. The tarball smoke covers version and top-level help output, command alias help and functional alias output, command-specific help topic output, explicit `show --lines` and `route --explain` output, unknown route-id/option/value suggestion and numeric range failures, prompt/pack forced `--out` overwrite plus file-write confirmations, human/JSON `audit --strict --quiet`, `doctor --strict` human diagnostics, and install/human+JSON status/uninstall lifecycle output. Continue with the manual release checks below after this gate passes.
 
 For pre-push Real-CI parity, run the broader local workflow gate:
 
@@ -78,11 +78,12 @@ node cli/bin/design-ai.mjs version
 node cli/bin/design-ai.mjs help
 node cli/bin/design-ai.mjs status
 node cli/bin/design-ai.mjs status --json
+node cli/bin/design-ai.mjs audit --strict --quiet --json
 node cli/bin/design-ai.mjs list skills
 node cli/bin/design-ai.mjs list skills --json
 ```
 
-All six must respond cleanly.
+All seven must respond cleanly.
 
 ### 6. NPM package preview
 

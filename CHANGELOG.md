@@ -46,6 +46,39 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
+`design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
+
+### Phase 93 — Audit command JSON repository gate output added
+
+#### Changed
+- `tools/audit/run-all.py` now accepts `--json` and emits repository audit results with context, per-audit entries, and summary counts.
+- `cli/commands/audit.mjs` now accepts `--json`, passes it to the shared runner, and suppresses wrapper headers so JSON output stays machine-readable.
+- `cli/lib/audit-command.test.mjs` now asserts audit parser behavior, runner-argument forwarding, help handling, and unknown-option suggestions.
+- Package and registry smoke assertions now verify `design-ai audit --strict --quiet --json` in addition to the existing human audit smoke.
+
+#### Impact
+- CI, release tooling, registry smoke, and external scripts can inspect audit pass/fail state without parsing terminal text.
+- Existing human `design-ai audit`, `design-ai a`, `--strict`, and `--quiet` behavior remains intact.
+
+#### Verified
+- `python3 tools/audit/run-all.py --self-test`
+- `node --test cli/lib/audit-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `node cli/bin/design-ai.mjs audit --strict --quiet --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release and CI automation can consume the full eight-audit repository gate through a stable JSON report.
 
 ### Phase 92 — Status command JSON install-state output added
 

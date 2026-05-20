@@ -47,6 +47,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_OPTION_SMOKES,
     EXPECTED_UNKNOWN_ROUTE_ID,
     EXPECTED_UNKNOWN_SEARCH_DIR,
+    assert_audit_json,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
@@ -458,6 +459,11 @@ def assert_route_stdin_smoke(
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_audit_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_audit_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_check_examples_smoke(
@@ -1295,6 +1301,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec audit strict",
+        )
+        assert_audit_json_smoke(
+            npm_exec_cmd(package_spec, "audit", "--strict", "--quiet", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec audit JSON",
         )
         doctor_json = npx_root / "doctor.json"
         status_json = npx_root / "status.json"

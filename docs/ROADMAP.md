@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 93 — Audit command JSON repository gate output added (v4.13.0) ✓ shipped
+
+`design-ai audit` now emits a self-tested JSON report for the shared eight-audit repository gate.
+
+### Changed
+- `tools/audit/run-all.py` now supports `--json` while keeping the existing human summary output.
+- `tools/audit/run-all.py` now uses `build_json_report()` and `format_json_report()` for machine-readable audit results.
+- `cli/commands/audit.mjs` now supports `--json` and keeps wrapper headers out of JSON mode.
+- `cli/lib/audit-command.test.mjs` now checks argument parsing, runner argument forwarding, help output, and unknown-option suggestions.
+- `tools/audit/smoke_assertions.py`, `tools/audit/package-smoke.py`, and `tools/audit/registry-smoke.py` now cover audit JSON output for the installed package and registry lifecycle paths.
+
+### Impact
+- Automation that uses `design-ai audit --strict --quiet --json` can verify the repository gate without parsing terminal text.
+- Existing human `design-ai audit`, `design-ai a`, `--strict`, and `--quiet` workflows remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 tools/audit/run-all.py --self-test`
+- `node --test cli/lib/audit-command.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `npm run smoke:assertions:self-test`
+- `node cli/bin/design-ai.mjs audit --strict --quiet --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The final pre-push repository quality gate becomes a stable automation-facing contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 92 — Status command JSON install-state output added (v4.13.0) ✓ shipped
 
 `design-ai status` now emits a self-tested JSON report for installed design-ai symlinks.

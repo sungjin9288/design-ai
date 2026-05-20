@@ -10,6 +10,7 @@ Usage:
   python3 tools/audit/run-all.py            # warn-only mode
   python3 tools/audit/run-all.py --strict   # exit 1 if any audit fails
   python3 tools/audit/run-all.py --quiet    # only print failures + final summary
+  python3 tools/audit/run-all.py --json     # emit machine-readable audit results
   python3 tools/audit/run-all.py --self-test
 
 Exit codes:
@@ -19,6 +20,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 import time
@@ -141,6 +143,50 @@ def summarize_results(results: Sequence[AuditResult], *, strict: bool) -> tuple[
     return lines, 0
 
 
+def build_json_report(
+    results: Sequence[AuditResult],
+    *,
+    strict: bool,
+    quiet: bool,
+    exit_code: int,
+    root: Path = ROOT,
+    audit_dir: Path = AUDIT_DIR,
+) -> dict[str, object]:
+    failures = [result for result in results if not result.passed]
+    total_duration = sum(result.duration_s for result in results)
+    return {
+        "context": {
+            "root": str(root),
+            "auditDir": str(audit_dir.relative_to(root)),
+            "strict": strict,
+            "quiet": quiet,
+        },
+        "audits": [
+            {
+                "name": result.spec.name,
+                "script": result.spec.script,
+                "description": result.spec.description,
+                "passed": result.passed,
+                "returncode": result.returncode,
+                "durationSeconds": round(result.duration_s, 3),
+                "strictArgs": list(result.spec.strict_args if strict else ()),
+            }
+            for result in results
+        ],
+        "summary": {
+            "total": len(results),
+            "passed": len(results) - len(failures),
+            "failed": len(failures),
+            "durationSeconds": round(total_duration, 3),
+            "exitCode": exit_code,
+        },
+    }
+
+
+def format_json_report(report: dict[str, object]) -> str:
+    return json.dumps(report, ensure_ascii=False, indent=2)
+
+
 def assert_self_test(condition: bool, message: str) -> None:
     if not condition:
         raise SystemExit(f"audit runner self-test failed: {message}")
@@ -178,6 +224,47 @@ def run_self_test() -> int:
     assert_self_test(strict_code == 1, "strict mode should exit 1 when any audit fails")
     assert_self_test("Use --strict to fail with non-zero exit code." not in strict_lines, "strict failures should not print warn-only hint")
 
+    json_report = build_json_report([passing, failing], strict=True, quiet=False, exit_code=strict_code)
+    formatted_json = format_json_report(json_report)
+    parsed_json = json.loads(formatted_json)
+    assert_self_test(list(parsed_json) == ["context", "audits", "summary"], "JSON report top-level keys should stay stable")
+    assert_self_test(
+        list(parsed_json["context"]) == ["root", "auditDir", "strict", "quiet"],
+        "JSON context keys should stay stable",
+    )
+    assert_self_test(
+        list(parsed_json["audits"][0]) == [
+            "name",
+            "script",
+            "description",
+            "passed",
+            "returncode",
+            "durationSeconds",
+            "strictArgs",
+        ],
+        "JSON audit entry keys should stay stable",
+    )
+    assert_self_test(
+        list(parsed_json["summary"]) == ["total", "passed", "failed", "durationSeconds", "exitCode"],
+        "JSON summary keys should stay stable",
+    )
+    assert_self_test(parsed_json["summary"]["exitCode"] == 1, "JSON summary should include strict exit code")
+    localized_json = format_json_report(build_json_report(
+        [
+            AuditResult(
+                spec=AuditSpec(name="한국어", script="korean.py", description="한국어 설명"),
+                returncode=0,
+                duration_s=0.1,
+                stdout="",
+                stderr="",
+            )
+        ],
+        strict=False,
+        quiet=True,
+        exit_code=0,
+    ))
+    assert_self_test("한국어 설명" in localized_json and "\\u" not in localized_json, "JSON output should keep localized text readable")
+
     assert_self_test(len(AUDITS) == 8, "release gate should still enumerate eight repository audits")
     assert_self_test(
         any(spec.name == "stale" and "--strict" in spec.strict_args for spec in AUDITS),
@@ -201,6 +288,11 @@ def main() -> int:
         help="Only print failures and the final summary line.",
     )
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable audit results.",
+    )
+    parser.add_argument(
         "--self-test",
         action="store_true",
         help="Run built-in runner summary and exit-code fixtures without invoking audits.",
@@ -210,15 +302,18 @@ def main() -> int:
     if args.self_test:
         return run_self_test()
 
-    print()
-    print(f"Running {len(AUDITS)} audits from {AUDIT_DIR.relative_to(ROOT)}/")
-    print()
+    if not args.json:
+        print()
+        print(f"Running {len(AUDITS)} audits from {AUDIT_DIR.relative_to(ROOT)}/")
+        print()
 
     results: list[AuditResult] = []
     for spec in AUDITS:
         result = run_audit(spec, strict=args.strict)
         results.append(result)
 
+        if args.json:
+            continue
         if not args.quiet:
             print(format_status(result))
             if not result.passed:
@@ -239,8 +334,16 @@ def main() -> int:
                 print(result.stderr.rstrip(), file=sys.stderr)
 
     summary_lines, exit_code = summarize_results(results, strict=args.strict)
-    for line in summary_lines:
-        print(line)
+    if args.json:
+        print(format_json_report(build_json_report(
+            results,
+            strict=args.strict,
+            quiet=args.quiet,
+            exit_code=exit_code,
+        )))
+    else:
+        for line in summary_lines:
+            print(line)
     return exit_code
 
 

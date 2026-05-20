@@ -9,8 +9,8 @@ import { DESIGN_AI_HOME, pathExists } from "../lib/paths.mjs";
 import { unknownOptionMessage } from "../lib/suggest.mjs";
 
 const AUDIT_RUNNER = path.join(DESIGN_AI_HOME, "tools", "audit", "run-all.py");
-const AUDIT_OPTIONS = ["-h", "--help", "--strict", "--quiet"];
-const ALLOWED_ARGS = new Set(["--strict", "--quiet"]);
+const AUDIT_OPTIONS = ["-h", "--help", "--strict", "--quiet", "--json"];
+const AUDIT_USAGE = "Usage: design-ai audit [--strict] [--quiet] [--json]";
 const AUDIT_HELP_LABEL_OVERRIDES = new Map([
   ["korean-copy-check.py", "Korean copy"],
   ["example-qa.py", "example QA"],
@@ -28,42 +28,68 @@ export function auditScriptLabel(script) {
     .replaceAll("-", " ");
 }
 
-function normalizeArgs(args) {
-  const normalized = [];
+export function parseAuditArgs(args) {
+  const flags = {
+    help: false,
+    strict: false,
+    quiet: false,
+    json: false,
+  };
+
   for (const arg of args) {
     if (arg === "-h" || arg === "--help") {
-      return ["--help"];
+      flags.help = true;
+      continue;
     }
-    if (!ALLOWED_ARGS.has(arg)) {
+    if (arg === "--strict") {
+      flags.strict = true;
+      continue;
+    }
+    if (arg === "--quiet") {
+      flags.quiet = true;
+      continue;
+    }
+    if (arg === "--json") {
+      flags.json = true;
+      continue;
+    }
+    if (arg.startsWith("-")) {
       throw new Error(
         `${unknownOptionMessage("audit", arg, AUDIT_OPTIONS)}\n` +
-          "Usage: design-ai audit [--strict] [--quiet]"
+          AUDIT_USAGE
       );
     }
-    normalized.push(arg);
+    throw new Error(AUDIT_USAGE);
   }
-  return normalized;
+
+  return {
+    ...flags,
+    runnerArgs: [
+      ...(flags.strict ? ["--strict"] : []),
+      ...(flags.quiet ? ["--quiet"] : []),
+      ...(flags.json ? ["--json"] : []),
+    ],
+  };
 }
 
 function printHelp() {
   const auditLabels = REPOSITORY_AUDIT_SCRIPTS.map(auditScriptLabel).join(", ");
 
-  console.log("Usage:  design-ai audit [--strict] [--quiet]\n");
+  console.log("Usage:  design-ai audit [--strict] [--quiet] [--json]\n");
   console.log(`Runs the same ${REPOSITORY_AUDIT_SCRIPTS.length} repository audits used by CI:`);
   console.log(`  ${auditLabels}\n`);
   console.log("Options:");
   console.log("  --strict   Exit non-zero when any supported audit fails");
   console.log("  --quiet    Print only failures and the final summary");
+  console.log("  --json     Emit machine-readable audit results");
 }
 
 export async function runAudit(args) {
-  const auditArgs = normalizeArgs(args);
-  if (auditArgs.includes("--help")) {
+  const parsed = parseAuditArgs(args);
+  if (parsed.help) {
     printHelp();
     return;
   }
-
-  header("design-ai audit", "Run repository quality checks");
 
   if (!pathExists(AUDIT_RUNNER)) {
     throw new Error(
@@ -72,11 +98,14 @@ export async function runAudit(args) {
     );
   }
 
-  info(`Source: ${DESIGN_AI_HOME}`);
-  info("Runner: tools/audit/run-all.py");
-  console.log();
+  if (!parsed.json) {
+    header("design-ai audit", "Run repository quality checks");
+    info(`Source: ${DESIGN_AI_HOME}`);
+    info("Runner: tools/audit/run-all.py");
+    console.log();
+  }
 
-  await run("python3", [AUDIT_RUNNER, ...auditArgs], {
+  await run("python3", [AUDIT_RUNNER, ...parsed.runnerArgs], {
     cwd: DESIGN_AI_HOME,
   });
 }

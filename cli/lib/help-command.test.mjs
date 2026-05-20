@@ -37,6 +37,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
 
   assert.match(output, /Usage:\s+design-ai <command> \[args\]/);
   assert.match(output, /design-ai help \[command\|--json\]/);
+  assert.match(output, /audit \[--strict\] \[--quiet\] \[--json\]/);
   assert.match(output, /status \[--json\]/);
   assert.match(output, /list \[skills\|commands\|agents\] \[--json\]/);
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
@@ -90,6 +91,10 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   ]);
   assert.deepEqual(catalog.topics.map((topic) => topic.topic), HELP_TOPICS);
   assert.deepEqual(Object.keys(catalog.aliases), Object.keys(HELP_ALIASES));
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "audit").usage,
+    "design-ai audit [--strict] [--quiet] [--json]",
+  );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "status").usage,
     "design-ai status [--json]",
@@ -151,7 +156,8 @@ test("runHelp delegates command topics to command-specific help", async () => {
 
   const auditOutput = await captureStdout(() => runHelp(["audit"]));
   const auditLabels = REPOSITORY_AUDIT_SCRIPTS.map(auditScriptLabel).join(", ");
-  assert.match(auditOutput, /Usage:\s+design-ai audit \[--strict\] \[--quiet\]/);
+  assert.match(auditOutput, /Usage:\s+design-ai audit \[--strict\] \[--quiet\] \[--json\]/);
+  assert.match(auditOutput, /--json\s+Emit machine-readable audit results/);
   assert.ok(
     auditOutput.includes(`Runs the same ${REPOSITORY_AUDIT_SCRIPTS.length} repository audits used by CI:`),
     "audit help should describe the repository audit count from the shared script list",

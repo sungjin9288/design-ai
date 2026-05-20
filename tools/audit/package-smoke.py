@@ -41,6 +41,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_OPTION_SMOKES,
     EXPECTED_UNKNOWN_ROUTE_ID,
     EXPECTED_UNKNOWN_SEARCH_DIR,
+    assert_audit_json,
     assert_audit_strict_quiet_output,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
@@ -522,6 +523,11 @@ def assert_route_stdin_smoke(
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
+
+
+def assert_audit_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_audit_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_check_examples_smoke(
@@ -1371,6 +1377,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin audit strict",
         )
+        assert_audit_json_smoke(
+            [str(bin_path), "audit", "--strict", "--quiet", "--json"],
+            env=smoke_env,
+            context="package smoke installed bin audit JSON",
+        )
         assert_install_smoke(
             [str(bin_path), "install"],
             env=smoke_env,
@@ -1926,6 +1937,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec audit strict",
+        )
+        assert_audit_json_smoke(
+            npm_exec_cmd(tarball, "audit", "--strict", "--quiet", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec audit JSON",
         )
         assert_install_lifecycle_smoke(
             npm_exec_shell_cmd(

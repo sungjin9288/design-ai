@@ -35,7 +35,7 @@ export const HELP_COMMANDS = [
   { topic: "prompt", usage: "prompt <brief|--from-file file|--stdin> [--route id] [--out file]", description: "Generate a ready-to-use agent prompt" },
   { topic: "pack", usage: "pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", description: "Generate prompt plus bounded context with summary" },
   { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes]", description: "Check generated Markdown artifact quality; add --issues-only" },
-  { topic: "audit", usage: "audit [--strict] [--quiet]", description: "Run repository quality checks" },
+  { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "version", usage: "version", description: "Show CLI + plugin versions" },
