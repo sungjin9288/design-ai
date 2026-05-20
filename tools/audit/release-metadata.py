@@ -64,6 +64,16 @@ RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS = (
         "패킹된 tarball을 임시 프로젝트에 설치",
     ),
 )
+RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS = (
+    (
+        "packed-tarball smoke",
+        "packed tarball smoke",
+        "packed-tarball smoke test",
+        "packed-tarball smoke gate",
+        "`npm run package:smoke`",
+        "npm run package:smoke",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -333,6 +343,7 @@ RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
 )
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
+    "packed tarball smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -369,6 +380,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
+    ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
@@ -725,7 +737,7 @@ def run_self_test() -> int:
 The release workflow runs `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human `design-ai version` output,
-the packed-tarball installed-bin path,
+the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and the package contents check,
@@ -929,6 +941,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "README.md is missing packed tarball installed-bin smoke phrase"
         in packed_tarball_installed_bin_drift_errors,
         "release policy docs should mention packed-tarball installed-bin smoke",
+    )
+
+    packed_tarball_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "the packed-tarball smoke gate",
+                "the package runtime gate",
+            ),
+        },
+        audit_count=8,
+    )
+    packed_tarball_smoke_drift_errors = "\n".join(packed_tarball_smoke_drift["errors"])
+    assert_condition(
+        "README.md is missing packed tarball smoke phrase" in packed_tarball_smoke_drift_errors,
+        "release policy docs should mention packed-tarball smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(

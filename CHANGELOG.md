@@ -27,6 +27,7 @@ Release metadata now checks that English and Korean distribution docs keep the M
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+Release metadata now guards release-facing docs against dropping packed-tarball smoke gate guidance.
 Release metadata now guards release-facing docs against dropping packed-tarball `npm exec --package <tarball>` smoke guidance.
 Release metadata now guards release-facing docs against dropping packed-tarball installed-bin smoke guidance.
 Release metadata now guards release-facing docs against dropping public registry `npm exec --package @design-ai/cli@<version>` smoke guidance.
@@ -85,6 +86,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 130 — Packed tarball smoke metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain packed-tarball smoke gate guidance alongside installed-bin, one-shot packed-tarball npm exec, public registry, package contents, release metadata checks, release self-tests, CLI unit tests, all-eight repository audits, whitespace checks, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when packed-tarball smoke wording is removed from a release-facing policy doc.
+- README, Korean README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now name packed-tarball smoke as the package smoke gate that contains installed-bin and one-shot npm exec paths.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep the individual package smoke paths while dropping the packed-tarball smoke gate that runs them.
+- The guard is documentation-only at runtime; existing CLI behavior, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, whitespace check execution, repository audit execution, unit test execution, and package contents check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the package smoke gate and its two local packed-tarball execution paths together.
 
 ### Phase 129 — Release metadata check guidance guard added
 

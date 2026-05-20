@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 130 — Packed tarball smoke metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the packed-tarball smoke gate that wraps the installed-bin and one-shot npm exec package checks.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for packed-tarball smoke gate guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops packed-tarball smoke wording.
+- README, Korean README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now identify packed-tarball smoke as the package smoke gate for installed-bin and one-shot npm exec paths.
+- CHANGELOG and SESSION-LOG now record the Phase 130 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep the individual package smoke paths while dropping the packed-tarball smoke gate that runs them.
+- Existing CLI, package smoke, registry smoke, release metadata execution, release self-test execution, whitespace check execution, repository audits, unit tests, and package contents check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release-facing docs now preserve the package smoke gate and the local packed-tarball execution paths as one contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 129 — Release metadata check guidance guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the release metadata check guidance already covered by `npm run release:metadata` in the release gate.
