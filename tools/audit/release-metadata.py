@@ -54,6 +54,16 @@ RELEASE_WARNING_POLICY_TERM_GROUPS = (
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
     ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
 )
+RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS = (
+    (
+        "packed-tarball installed-bin",
+        "packed tarball installed bin",
+        "installed-bin",
+        "installed bin",
+        "Installs the packed tarball into a temporary project",
+        "패킹된 tarball을 임시 프로젝트에 설치",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -314,6 +324,7 @@ RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
 )
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
+    "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
     "package contents check phrase",
@@ -348,6 +359,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
+    ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
@@ -702,6 +714,7 @@ def run_self_test() -> int:
 The release workflow runs `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human `design-ai version` output,
+the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and the package contents check,
@@ -736,6 +749,7 @@ install-state output before uninstall.
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. human `design-ai version` 출력도 smoke test하고,
+packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 package contents check도 확인하고,
@@ -880,6 +894,29 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     )
     command_drift_errors = "\n".join(command_drift["errors"])
     assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
+
+    packed_tarball_installed_bin_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "the packed-tarball installed-bin path",
+                "the packed tarball command path",
+            ),
+        },
+        audit_count=8,
+    )
+    packed_tarball_installed_bin_drift_errors = "\n".join(
+        packed_tarball_installed_bin_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing packed tarball installed-bin smoke phrase"
+        in packed_tarball_installed_bin_drift_errors,
+        "release policy docs should mention packed-tarball installed-bin smoke",
+    )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
         package_json=package_json,
