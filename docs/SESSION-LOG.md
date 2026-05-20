@@ -118,6 +118,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 121)** — Guarded release-facing docs against dropping packed-tarball `npm exec --package <tarball>` smoke guidance.
 - **v4.13 (Phase 122)** — Guarded release-facing docs against dropping public registry `npm exec --package @design-ai/cli@<version>` smoke guidance.
 - **v4.13 (Phase 123)** — Guarded release-facing docs against dropping package contents check guidance.
+- **v4.13 (Phase 124)** — Guarded release-facing docs against dropping CLI unit test guidance.
 
 ## Patterns that didn't work
 
