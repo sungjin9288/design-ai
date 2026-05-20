@@ -55,6 +55,36 @@ Release metadata now guards release-facing docs against dropping `design-ai inst
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
+Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 100 — Update dry-run release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain `update --dry-run` lifecycle smoke guidance alongside version, install, and uninstall JSON guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `update --dry-run` is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now states that release metadata guards lifecycle smoke guidance, including the update dry-run contract.
+- Release history docs now record Phase 100 as the follow-up guard for the Phase 99 update dry-run preview.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drift away from the packaged/registry update dry-run smoke contract.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Update dry-run release smoke guidance is now protected by the same metadata drift guard as the other lifecycle machine-readable contracts.
 
 ### Phase 99 — Update command dry-run preview added
 

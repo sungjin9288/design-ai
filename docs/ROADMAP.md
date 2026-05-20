@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 100 — Update dry-run release metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the update dry-run smoke guidance added in Phase 99.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `update --dry-run` guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the update dry-run lifecycle phrase.
+- `docs/RELEASE-CHECKLIST.md` now describes release metadata coverage for lifecycle smoke guidance, including `update --dry-run`.
+- CHANGELOG and SESSION-LOG now record the Phase 100 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the update dry-run smoke contract.
+- Existing CLI, package smoke, and registry smoke behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Lifecycle smoke guidance now has an end-to-end drift guard from implementation, to packaged smoke, to release-facing docs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 99 — Update command dry-run preview added (v4.13.0) ✓ shipped
 
 `design-ai update --dry-run` now previews source update and reinstall actions without mutating the repo or Claude home.

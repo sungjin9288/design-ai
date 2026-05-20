@@ -63,6 +63,9 @@ RELEASE_INSTALL_JSON_TERM_GROUPS = (
 RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
     ("uninstall --json", "design-ai uninstall --json"),
 )
+RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
+    ("update --dry-run", "design-ai update --dry-run"),
+)
 RELEASE_METADATA_SUMMARY_KEYS = (
     "version",
     "plugin_version",
@@ -225,6 +228,16 @@ def release_uninstall_json_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_update_dry_run_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in RELEASE_UPDATE_DRY_RUN_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing update dry-run lifecycle phrase: {expected}")
+    return errors
+
+
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
     required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
     missing_errors = [
@@ -313,6 +326,7 @@ def release_metadata_summary(
         errors.extend(release_version_json_doc_errors(label, text))
         errors.extend(release_install_json_doc_errors(label, text))
         errors.extend(release_uninstall_json_doc_errors(label, text))
+        errors.extend(release_update_dry_run_doc_errors(label, text))
 
     return {
         "version": version,
@@ -389,7 +403,8 @@ that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests `design-ai version --json`
 for machine-readable CLI/plugin version metadata, `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
-for machine-readable uninstall lifecycle output.
+for machine-readable uninstall lifecycle output. It also checks human/JSON
+`design-ai update --dry-run` output before mutating lifecycle commands.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -398,7 +413,8 @@ for machine-readable uninstall lifecycle output.
 안에 있어야 해요. `design-ai version --json`으로 machine-readable version
 metadata도 smoke test하고, `design-ai install --json`으로 machine-readable
 install lifecycle output을 확인하며, `design-ai uninstall --json`으로
-machine-readable uninstall lifecycle output도 확인해요.
+machine-readable uninstall lifecycle output도 확인해요. human/JSON
+`design-ai update --dry-run` 출력도 mutating lifecycle command 전에 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -532,6 +548,23 @@ machine-readable uninstall lifecycle output도 확인해요.
     assert_condition(
         "docs/RELEASE-CHECKLIST.md is missing uninstall JSON lifecycle phrase" in uninstall_json_drift_errors,
         "release policy docs should mention uninstall JSON lifecycle smoke",
+    )
+
+    update_dry_run_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace("update --dry-run", "update"),
+        },
+        audit_count=8,
+    )
+    update_dry_run_drift_errors = "\n".join(update_dry_run_drift["errors"])
+    assert_condition(
+        "README.md is missing update dry-run lifecycle phrase" in update_dry_run_drift_errors,
+        "release policy docs should mention update dry-run lifecycle smoke",
     )
 
     missing_docs = dict(release_policy_docs)
