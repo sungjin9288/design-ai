@@ -48,6 +48,7 @@ Release metadata now guards release-facing docs against dropping human/JSON corp
 Release metadata now guards release-facing docs against dropping explicit `show --lines` and `route --explain` smoke guidance.
 Release metadata now guards release-facing docs against dropping unknown suggestion and numeric range failure smoke guidance.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
+Release metadata now guards release-facing docs against dropping check examples/artifact/stdin/all-routes smoke guidance.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
@@ -71,6 +72,34 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 116 — Check command release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain check examples/artifact/stdin/all-routes smoke guidance alongside human version, version JSON, top-level help, help JSON, alias smoke, help topic output, list, corpus discovery, explicit output, suggestion/range failure, prompt/pack output-file, audit, doctor, status, install, uninstall, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when check command wording is removed from a release-facing policy doc.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now list check examples/artifact/stdin/all-routes inside the packed-tarball and registry smoke surfaces.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the package and registry smoke contract for `design-ai check` examples, artifact, stdin, and all-routes output.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Check command smoke guidance is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 115 — Human version release metadata guard added
 

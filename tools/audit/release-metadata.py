@@ -160,6 +160,13 @@ RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
         "output-file confirmations",
     ),
 )
+RELEASE_CHECK_COMMAND_TERM_GROUPS = (
+    (
+        "check examples/artifact/stdin/all-routes",
+        "check examples, artifact, stdin, and all-routes",
+        "check examples/artifact/stdin/all-routes 출력",
+    ),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
     ("design-ai install --json", "`install --json`"),
 )
@@ -198,6 +205,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "show-lines route-explain smoke phrase",
     "suggestion failure smoke phrase",
     "prompt-pack output smoke phrase",
+    "check command smoke phrase",
     "install JSON lifecycle phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
@@ -218,6 +226,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
+    ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
@@ -556,6 +565,7 @@ human / JSON corpus discovery output,
 explicit `show --lines` ranges and `route --explain` output,
 unknown route-id/option/value suggestion and numeric range failures,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
+check examples/artifact/stdin/all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
@@ -579,6 +589,7 @@ human / JSON corpus discovery 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
+check examples/artifact/stdin/all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
@@ -717,6 +728,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing human version smoke phrase" in human_version_drift_errors,
         "release policy docs should mention human version smoke",
+    )
+
+    check_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "check examples/artifact/stdin/all-routes",
+                "check output",
+            ),
+        },
+        audit_count=8,
+    )
+    check_command_drift_errors = "\n".join(check_command_drift["errors"])
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing check command smoke phrase" in check_command_drift_errors,
+        "release policy docs should mention check command smoke",
     )
 
     version_json_drift = release_metadata_summary(
