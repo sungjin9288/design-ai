@@ -71,9 +71,38 @@ Release metadata now guards release-facing docs against dropping `design-ai inst
 `design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
 Release metadata now guards release-facing docs against dropping `status --json` install-state smoke guidance.
+Release metadata now guards release-facing docs against dropping human install/status/uninstall lifecycle smoke guidance.
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 119 — Human lifecycle release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain human install, human+JSON status, and human uninstall lifecycle smoke guidance alongside their JSON lifecycle phrases and the existing route, check, prompt/pack, audit, doctor, help, list, corpus, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes drift fixtures that fail when human install, status, or uninstall wording is removed from a release-facing policy doc while the JSON lifecycle wording remains.
+- `docs/RELEASE-CHECKLIST.md` now lists the human lifecycle smoke phrases inside the release metadata protected phrase set.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently collapse lifecycle smoke guidance down to JSON-only install/status/uninstall checks.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Human lifecycle smoke guidance is now protected by the same metadata drift guard as the JSON lifecycle checks package and registry smoke already validate.
 
 ### Phase 118 — Prompt/pack mode release metadata guard added
 
