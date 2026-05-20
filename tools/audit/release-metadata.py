@@ -60,6 +60,20 @@ RELEASE_VERSION_JSON_TERM_GROUPS = (
 RELEASE_HELP_JSON_TERM_GROUPS = (
     ("help --json", "design-ai help --json"),
 )
+RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
+    (
+        "command alias help",
+        "documented help and command aliases",
+        "help and command aliases",
+        "help/command alias 출력",
+        "문서화된 help/command alias 출력",
+    ),
+    (
+        "functional alias output",
+        "functional aliases",
+        "functional alias 출력",
+    ),
+)
 RELEASE_LIST_JSON_TERM_GROUPS = (
     (
         "list --json",
@@ -151,6 +165,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
     "version JSON metadata phrase",
     "help JSON topic catalog phrase",
+    "alias smoke phrase",
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
     "show-lines route-explain smoke phrase",
@@ -167,6 +182,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
+    ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
@@ -502,7 +518,8 @@ The release workflow runs `npm run ci:local`, including the MkDocs warning polic
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human/JSON
 `design-ai audit --strict --quiet` output, `design-ai help --json` topic
-catalog output, all three `list` catalog domains in human and JSON mode,
+catalog output, command alias help and functional alias output,
+all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 explicit `show --lines` ranges and `route --explain` output,
 unknown route-id/option/value suggestion and numeric range failures,
@@ -521,6 +538,7 @@ install-state output before uninstall.
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
+command alias help와 functional alias 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
@@ -681,6 +699,23 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing help JSON topic catalog phrase" in help_json_drift_errors,
         "release policy docs should mention help JSON topic catalog smoke",
+    )
+
+    alias_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("functional alias 출력", "alias 출력"),
+        },
+        audit_count=8,
+    )
+    alias_smoke_drift_errors = "\n".join(alias_smoke_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing alias smoke phrase" in alias_smoke_drift_errors,
+        "release policy docs should mention command and functional alias smoke",
     )
 
     list_json_drift = release_metadata_summary(
