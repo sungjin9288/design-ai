@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 132 — Registry smoke command metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the post-publish `registry:smoke` command that verifies the public npm install path.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `npm run registry:smoke` post-publish command guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the `registry:smoke` command.
+- `docs/RELEASE-CHECKLIST.md` now names `registry:smoke` inside the release metadata protected phrase set.
+- CHANGELOG and SESSION-LOG now record the Phase 132 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep the public registry npm exec path while dropping the post-publish command that verifies it.
+- Existing CLI, registry smoke, release check, package smoke, release metadata execution, release self-test execution, whitespace check execution, repository audits, unit tests, and package contents check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the post-publish registry smoke command and the public registry install path as one contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 131 — Release check command metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the top-level `release:check` core gate command that maintainers run before release PRs or tags.
