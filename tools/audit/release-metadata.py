@@ -66,6 +66,9 @@ RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
 RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS = (
     ("audit --strict --quiet", "design-ai audit --strict --quiet"),
 )
+RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
+    ("doctor --strict", "design-ai doctor --strict"),
+)
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
@@ -241,6 +244,16 @@ def release_audit_strict_quiet_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_doctor_strict_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in RELEASE_DOCTOR_STRICT_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing doctor strict smoke phrase: {expected}")
+    return errors
+
+
 def release_update_dry_run_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
     normalized = text.casefold()
@@ -340,6 +353,7 @@ def release_metadata_summary(
         errors.extend(release_install_json_doc_errors(label, text))
         errors.extend(release_uninstall_json_doc_errors(label, text))
         errors.extend(release_audit_strict_quiet_doc_errors(label, text))
+        errors.extend(release_doctor_strict_doc_errors(label, text))
         errors.extend(release_update_dry_run_doc_errors(label, text))
 
     return {
@@ -419,7 +433,8 @@ warnings at the accepted baseline. It also smoke-tests human/JSON
 for machine-readable CLI/plugin version metadata, `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output. It also checks human/JSON
-`design-ai update --dry-run` output before mutating lifecycle commands.
+`design-ai update --dry-run` output before mutating lifecycle commands and
+`doctor --strict` human diagnostics before release.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -430,7 +445,8 @@ smoke test하고, `design-ai version --json`으로 machine-readable version meta
 smoke test하며, `design-ai install --json`으로 machine-readable install lifecycle
 output을 확인하고, `design-ai uninstall --json`으로 machine-readable uninstall
 lifecycle output도 확인해요. human/JSON `design-ai update --dry-run` 출력도
-mutating lifecycle command 전에 확인해요.
+mutating lifecycle command 전에 확인하고, `doctor --strict` human diagnostics도
+release 전에 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -582,6 +598,23 @@ mutating lifecycle command 전에 확인해요.
         "docs/DISTRIBUTION.ko.md is missing audit strict-quiet smoke phrase"
         in audit_strict_quiet_drift_errors,
         "release policy docs should mention audit strict-quiet smoke",
+    )
+
+    doctor_strict_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace("doctor --strict", "doctor"),
+        },
+        audit_count=8,
+    )
+    doctor_strict_drift_errors = "\n".join(doctor_strict_drift["errors"])
+    assert_condition(
+        "docs/RELEASE-CHECKLIST.md is missing doctor strict smoke phrase" in doctor_strict_drift_errors,
+        "release policy docs should mention doctor strict smoke",
     )
 
     update_dry_run_drift = release_metadata_summary(
