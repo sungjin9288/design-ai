@@ -69,6 +69,16 @@ RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS = (
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
     ("doctor --strict", "design-ai doctor --strict"),
 )
+RELEASE_STATUS_JSON_TERM_GROUPS = (
+    (
+        "status --json",
+        "design-ai status --json",
+        "human+json status",
+        "human/json status",
+        "human+json `status`",
+        "human/json `status`",
+    ),
+)
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
@@ -254,6 +264,16 @@ def release_doctor_strict_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def release_status_json_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in RELEASE_STATUS_JSON_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing status JSON install-state phrase: {expected}")
+    return errors
+
+
 def release_update_dry_run_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
     normalized = text.casefold()
@@ -354,6 +374,7 @@ def release_metadata_summary(
         errors.extend(release_uninstall_json_doc_errors(label, text))
         errors.extend(release_audit_strict_quiet_doc_errors(label, text))
         errors.extend(release_doctor_strict_doc_errors(label, text))
+        errors.extend(release_status_json_doc_errors(label, text))
         errors.extend(release_update_dry_run_doc_errors(label, text))
 
     return {
@@ -434,7 +455,8 @@ for machine-readable CLI/plugin version metadata, `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output. It also checks human/JSON
 `design-ai update --dry-run` output before mutating lifecycle commands and
-`doctor --strict` human diagnostics before release.
+`doctor --strict` human diagnostics before release, plus `status --json`
+install-state output before uninstall.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -446,7 +468,8 @@ smoke test하며, `design-ai install --json`으로 machine-readable install life
 output을 확인하고, `design-ai uninstall --json`으로 machine-readable uninstall
 lifecycle output도 확인해요. human/JSON `design-ai update --dry-run` 출력도
 mutating lifecycle command 전에 확인하고, `doctor --strict` human diagnostics도
-release 전에 확인해요.
+release 전에 확인하며, `status --json` install-state output도 uninstall 전에
+확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -615,6 +638,23 @@ release 전에 확인해요.
     assert_condition(
         "docs/RELEASE-CHECKLIST.md is missing doctor strict smoke phrase" in doctor_strict_drift_errors,
         "release policy docs should mention doctor strict smoke",
+    )
+
+    status_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace("status --json", "status"),
+        },
+        audit_count=8,
+    )
+    status_json_drift_errors = "\n".join(status_json_drift["errors"])
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing status JSON install-state phrase" in status_json_drift_errors,
+        "release policy docs should mention status JSON install-state smoke",
     )
 
     update_dry_run_drift = release_metadata_summary(

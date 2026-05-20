@@ -55,9 +55,39 @@ Release metadata now guards release-facing docs against dropping `design-ai vers
 Release metadata now guards release-facing docs against dropping `design-ai install --json` smoke guidance.
 `design-ai uninstall` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and removal-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai uninstall --json` smoke guidance.
+Release metadata now guards release-facing docs against dropping `status --json` install-state smoke guidance.
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 103 — Status JSON release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain `status --json` or human+JSON status install-state guidance alongside audit, doctor, version, install, uninstall, and update dry-run smoke guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `status --json` is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now lists `status --json` inside release metadata's protected release smoke phrase set.
+- Release history docs now record Phase 103 as the guard for the existing status JSON package and registry smoke contract.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drift away from the packaged/registry status JSON install-state smoke contract.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Status JSON install-state guidance is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 102 — Doctor strict release metadata guard added
 
