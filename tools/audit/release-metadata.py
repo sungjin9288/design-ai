@@ -93,6 +93,18 @@ RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
         "명시적 `route --explain`",
     ),
 )
+RELEASE_SUGGESTION_FAILURE_TERM_GROUPS = (
+    (
+        "unknown route-id/option/value suggestion",
+        "unknown route-id/option/value suggestion and numeric range failures",
+        "unknown route-id/option/value suggestion 및 numeric range failure",
+    ),
+    (
+        "numeric range failure",
+        "numeric range failures",
+        "numeric range failure 검증",
+    ),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
     ("design-ai install --json", "`install --json`"),
 )
@@ -125,6 +137,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
     "show-lines route-explain smoke phrase",
+    "suggestion failure smoke phrase",
     "install JSON lifecycle phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
@@ -139,6 +152,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
+    ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
@@ -472,6 +486,7 @@ warnings at the accepted baseline. It also smoke-tests human/JSON
 catalog output, all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 explicit `show --lines` ranges and `route --explain` output,
+unknown route-id/option/value suggestion and numeric range failures,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 `design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
@@ -489,6 +504,7 @@ smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
+unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
@@ -695,6 +711,23 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing show-lines route-explain smoke phrase" in explicit_output_drift_errors,
         "release policy docs should mention show-lines and route-explain smoke",
+    )
+
+    suggestion_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("numeric range failure", "numeric range"),
+        },
+        audit_count=8,
+    )
+    suggestion_failure_drift_errors = "\n".join(suggestion_failure_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
+        "release policy docs should mention suggestion and numeric range failure smoke",
     )
 
     install_json_drift = release_metadata_summary(
