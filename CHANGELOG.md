@@ -43,6 +43,7 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
+Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
@@ -59,6 +60,35 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 104 — Help JSON release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain `design-ai help --json` topic catalog guidance alongside audit, doctor, status, version, install, uninstall, and update dry-run smoke guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `help --json` is removed from a release-facing policy doc.
+- English and Korean README release guidance now names the `design-ai help --json` topic catalog explicitly in package and registry smoke descriptions.
+- `docs/RELEASE-CHECKLIST.md` now lists `help --json` inside release metadata's protected release smoke phrase set.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drift away from the packaged/registry help JSON topic catalog smoke contract.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Help JSON topic catalog guidance is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 103 — Status JSON release metadata guard added
 
