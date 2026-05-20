@@ -60,6 +60,17 @@ RELEASE_VERSION_JSON_TERM_GROUPS = (
 RELEASE_HELP_JSON_TERM_GROUPS = (
     ("help --json", "design-ai help --json"),
 )
+RELEASE_LIST_JSON_TERM_GROUPS = (
+    (
+        "list --json",
+        "list skills --json",
+        "list commands --json",
+        "list agents --json",
+        "human and JSON `list skills`",
+        "all three `list` catalog domains in human and JSON mode",
+        "세 가지 `list` catalog domain의 human/JSON 출력",
+    ),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
     ("design-ai install --json", "`install --json`"),
 )
@@ -89,6 +100,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
     "version JSON metadata phrase",
     "help JSON topic catalog phrase",
+    "list JSON catalog phrase",
     "install JSON lifecycle phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
@@ -100,6 +112,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
+    ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
@@ -430,8 +443,9 @@ The release workflow runs `npm run ci:local`, including the MkDocs warning polic
 that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human/JSON
 `design-ai audit --strict --quiet` output, `design-ai help --json` topic
-catalog output, `design-ai version --json` for machine-readable CLI/plugin
-version metadata, `design-ai install --json`
+catalog output, all three `list` catalog domains in human and JSON mode,
+`design-ai version --json` for machine-readable CLI/plugin version metadata,
+`design-ai install --json`
 for machine-readable install lifecycle output, and `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output. It also checks human/JSON
 `design-ai update --dry-run` output before mutating lifecycle commands and
@@ -444,6 +458,7 @@ install-state output before uninstall.
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
 안에 있어야 해요. human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, `design-ai help --json` topic catalog output도 확인하며,
+세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
@@ -599,6 +614,23 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing help JSON topic catalog phrase" in help_json_drift_errors,
         "release policy docs should mention help JSON topic catalog smoke",
+    )
+
+    list_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("human/JSON 출력", "human 출력"),
+        },
+        audit_count=8,
+    )
+    list_json_drift_errors = "\n".join(list_json_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing list JSON catalog phrase" in list_json_drift_errors,
+        "release policy docs should mention list JSON catalog smoke",
     )
 
     install_json_drift = release_metadata_summary(
