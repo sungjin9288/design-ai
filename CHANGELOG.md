@@ -47,6 +47,7 @@ Release metadata now self-tests its JSON output formatter and summary key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
+Release metadata now guards release-facing docs against dropping human/JSON `design-ai audit --strict --quiet` smoke guidance.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
 Release metadata now guards release-facing docs against dropping `design-ai version --json` smoke guidance.
 `design-ai install` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and install-count keys.
@@ -56,6 +57,35 @@ Release metadata now guards release-facing docs against dropping `design-ai unin
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 101 — Audit strict-quiet release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain human/JSON `audit --strict --quiet` smoke guidance alongside version, install, uninstall, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `audit --strict --quiet` is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now describes release metadata coverage as release smoke guidance so audit and lifecycle contracts share the same policy surface.
+- Release history docs now record Phase 101 as the guard for the existing audit strict-quiet package and registry smoke contract.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drift away from the packaged/registry audit strict-quiet smoke contract.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Audit strict-quiet release smoke guidance is now protected by the same metadata drift guard as the machine-readable and lifecycle contracts.
 
 ### Phase 100 — Update dry-run release metadata guard added
 

@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 101 — Audit strict-quiet release metadata guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the audit strict-quiet smoke guidance already covered by package and registry smoke checks.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `audit --strict --quiet` guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the audit strict-quiet smoke phrase.
+- `docs/RELEASE-CHECKLIST.md` now describes release metadata coverage for release smoke guidance, including `audit --strict --quiet`.
+- CHANGELOG and SESSION-LOG now record the Phase 101 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the audit strict-quiet smoke contract.
+- Existing CLI, package smoke, and registry smoke behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke guidance now has an end-to-end drift guard from implementation, to packaged smoke, to release-facing docs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 100 — Update dry-run release metadata guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the update dry-run smoke guidance added in Phase 99.
