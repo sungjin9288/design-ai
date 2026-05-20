@@ -117,6 +117,13 @@ RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS = (
         "human / JSON corpus discovery 출력",
     ),
 )
+RELEASE_ROUTE_JSON_TERM_GROUPS = (
+    (
+        "route JSON/catalog/stdin",
+        "route recommendation, catalog, and stdin JSON",
+        "route JSON/catalog/stdin 출력",
+    ),
+)
 RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
     (
         "show --lines",
@@ -202,6 +209,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "help topic smoke phrase",
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
+    "route JSON catalog stdin smoke phrase",
     "show-lines route-explain smoke phrase",
     "suggestion failure smoke phrase",
     "prompt-pack output smoke phrase",
@@ -223,6 +231,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("help topic smoke phrase", RELEASE_HELP_TOPIC_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
+    ("route JSON catalog stdin smoke phrase", RELEASE_ROUTE_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
@@ -562,6 +571,7 @@ catalog output, command alias help and functional alias output,
 command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
+route JSON/catalog/stdin output,
 explicit `show --lines` ranges and `route --explain` output,
 unknown route-id/option/value suggestion and numeric range failures,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
@@ -586,6 +596,7 @@ command alias help와 functional alias 출력도 확인해요.
 command-specific help topic 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
+route JSON/catalog/stdin 출력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
@@ -728,6 +739,23 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.ko.md is missing human version smoke phrase" in human_version_drift_errors,
         "release policy docs should mention human version smoke",
+    )
+
+    route_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace("route JSON/catalog/stdin", "route output"),
+        },
+        audit_count=8,
+    )
+    route_json_drift_errors = "\n".join(route_json_drift["errors"])
+    assert_condition(
+        "README.md is missing route JSON catalog stdin smoke phrase" in route_json_drift_errors,
+        "release policy docs should mention route JSON catalog stdin smoke",
     )
 
     check_command_drift = release_metadata_summary(

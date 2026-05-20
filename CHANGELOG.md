@@ -45,6 +45,7 @@ Release metadata now self-tests the phrase guard table labels, uniqueness, and t
 `design-ai search` now formats machine-readable corpus search results through a self-tested JSON formatter with stable hit-entry order.
 `design-ai show` now formats machine-readable corpus file output through a self-tested JSON formatter with stable line-entry order.
 Release metadata now guards release-facing docs against dropping human/JSON corpus discovery smoke guidance.
+Release metadata now guards release-facing docs against dropping route JSON/catalog/stdin smoke guidance.
 Release metadata now guards release-facing docs against dropping explicit `show --lines` and `route --explain` smoke guidance.
 Release metadata now guards release-facing docs against dropping unknown suggestion and numeric range failure smoke guidance.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
@@ -72,6 +73,34 @@ Release metadata now guards release-facing docs against dropping `status --json`
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 117 — Route JSON release metadata guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain route JSON/catalog/stdin smoke guidance alongside check, human version, version JSON, top-level help, help JSON, alias smoke, help topic output, list, corpus discovery, explicit output, suggestion/range failure, prompt/pack output-file, audit, doctor, status, install, uninstall, and update dry-run guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when route JSON/catalog/stdin wording is removed from a release-facing policy doc.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now list route JSON/catalog/stdin inside the packed-tarball and registry smoke surfaces.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently drop the package and registry smoke contract for route recommendation JSON, route catalog JSON, and route stdin output.
+- The guard is documentation-only at runtime; existing CLI behavior and package smoke execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Route JSON/catalog/stdin smoke guidance is now protected by the same metadata drift guard as the other packaged and registry smoke contracts.
 
 ### Phase 116 — Check command release metadata guard added
 

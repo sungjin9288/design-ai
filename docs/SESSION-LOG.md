@@ -111,6 +111,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 114)** — Guarded release-facing docs against dropping top-level help smoke guidance.
 - **v4.13 (Phase 115)** — Guarded release-facing docs against dropping human version smoke guidance.
 - **v4.13 (Phase 116)** — Guarded release-facing docs against dropping check examples/artifact/stdin/all-routes smoke guidance.
+- **v4.13 (Phase 117)** — Guarded release-facing docs against dropping route JSON/catalog/stdin smoke guidance.
 
 ## Patterns that didn't work
 
