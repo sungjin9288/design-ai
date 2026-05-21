@@ -437,8 +437,14 @@ RELEASE_UNINSTALL_HUMAN_TERM_GROUPS = (
         "human uninstall lifecycle",
     ),
 )
+RELEASE_UNINSTALL_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai uninstall --json`",),
+)
 RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
-    ("uninstall --json", "design-ai uninstall --json"),
+    (
+        "machine-readable uninstall lifecycle output",
+        "machine-readable uninstall lifecycle 출력",
+    ),
 )
 RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS = (
     ("audit --strict --quiet", "design-ai audit --strict --quiet"),
@@ -495,6 +501,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "human status lifecycle phrase",
     "status JSON install-state phrase",
     "human uninstall lifecycle phrase",
+    "uninstall JSON command phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
     "doctor strict smoke phrase",
@@ -546,6 +553,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("human status lifecycle phrase", RELEASE_STATUS_HUMAN_TERM_GROUPS),
     ("status JSON install-state phrase", RELEASE_STATUS_JSON_TERM_GROUPS),
     ("human uninstall lifecycle phrase", RELEASE_UNINSTALL_HUMAN_TERM_GROUPS),
+    ("uninstall JSON command phrase", RELEASE_UNINSTALL_JSON_COMMAND_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
@@ -1908,20 +1916,49 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention human uninstall lifecycle smoke",
     )
 
-    uninstall_json_drift = release_metadata_summary(
+    uninstall_json_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace("uninstall --json", "uninstall"),
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
+                "`design-ai uninstall --json`",
+                "the JSON uninstall command",
+            ),
         },
         audit_count=8,
     )
-    uninstall_json_drift_errors = "\n".join(uninstall_json_drift["errors"])
+    uninstall_json_command_drift_errors = "\n".join(
+        uninstall_json_command_drift["errors"]
+    )
     assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing uninstall JSON lifecycle phrase" in uninstall_json_drift_errors,
+        "docs/RELEASE-CHECKLIST.md is missing uninstall JSON command phrase"
+        in uninstall_json_command_drift_errors,
+        "release policy docs should mention design-ai uninstall --json command guidance",
+    )
+
+    uninstall_json_lifecycle_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
+                "machine-readable uninstall lifecycle output",
+                "machine-readable uninstall output",
+            ),
+        },
+        audit_count=8,
+    )
+    uninstall_json_lifecycle_drift_errors = "\n".join(
+        uninstall_json_lifecycle_drift["errors"]
+    )
+    assert_condition(
+        "docs/RELEASE-CHECKLIST.md is missing uninstall JSON lifecycle phrase"
+        in uninstall_json_lifecycle_drift_errors,
         "release policy docs should mention uninstall JSON lifecycle smoke",
     )
 
