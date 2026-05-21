@@ -140,6 +140,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 143)** — Split `design-ai version --json` command drift from machine-readable version metadata drift.
 - **v4.13 (Phase 144)** — Split `design-ai install --json` command drift from machine-readable install lifecycle output drift.
 - **v4.13 (Phase 145)** — Split `design-ai uninstall --json` command drift from machine-readable uninstall lifecycle output drift.
+- **v4.13 (Phase 146)** — Split `design-ai status --json` command drift from machine-readable install-state output drift.
 
 ## Patterns that didn't work
 

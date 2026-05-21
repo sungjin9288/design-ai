@@ -415,14 +415,13 @@ RELEASE_STATUS_HUMAN_TERM_GROUPS = (
         "human and JSON `status`",
     ),
 )
+RELEASE_STATUS_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai status --json`",),
+)
 RELEASE_STATUS_JSON_TERM_GROUPS = (
     (
-        "status --json",
-        "design-ai status --json",
-        "human+json status",
-        "human/json status",
-        "human+json `status`",
-        "human/json `status`",
+        "machine-readable install-state output",
+        "machine-readable install-state 출력",
     ),
 )
 RELEASE_UNINSTALL_HUMAN_TERM_GROUPS = (
@@ -499,6 +498,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "install JSON command phrase",
     "install JSON lifecycle phrase",
     "human status lifecycle phrase",
+    "status JSON command phrase",
     "status JSON install-state phrase",
     "human uninstall lifecycle phrase",
     "uninstall JSON command phrase",
@@ -551,6 +551,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("install JSON command phrase", RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("human status lifecycle phrase", RELEASE_STATUS_HUMAN_TERM_GROUPS),
+    ("status JSON command phrase", RELEASE_STATUS_JSON_COMMAND_TERM_GROUPS),
     ("status JSON install-state phrase", RELEASE_STATUS_JSON_TERM_GROUPS),
     ("human uninstall lifecycle phrase", RELEASE_UNINSTALL_HUMAN_TERM_GROUPS),
     ("uninstall JSON command phrase", RELEASE_UNINSTALL_JSON_COMMAND_TERM_GROUPS),
@@ -908,12 +909,12 @@ prompt/pack forced `--out` overwrites plus file-write confirmations,
 check examples/artifact/stdin/all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 human install plus `design-ai install --json`
-for machine-readable install lifecycle output, human+JSON status output, and
+for machine-readable install lifecycle output, human+JSON status output,
+`design-ai status --json` for machine-readable install-state output, and
 human uninstall plus `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output. It also checks human/JSON
 `design-ai update --dry-run` output before mutating lifecycle commands and
-`doctor --strict` human diagnostics before release, plus `status --json`
-install-state output before uninstall.
+`doctor --strict` human diagnostics before release.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -949,10 +950,10 @@ check examples/artifact/stdin/all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 human install과 JSON `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 human+JSON `status` 출력도 확인하며,
+`design-ai status --json`으로 machine-readable install-state output도 uninstall 전에 확인하고,
 human uninstall과 JSON `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
 human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전에
-확인하고, `doctor --strict` human diagnostics도 release 전에 확인하며,
-`status --json` install-state output도 uninstall 전에 확인해요.
+확인하고, `doctor --strict` human diagnostics도 release 전에 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -1997,7 +1998,7 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention doctor strict smoke",
     )
 
-    status_json_drift = release_metadata_summary(
+    status_json_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
@@ -2005,15 +2006,39 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         release_policy_docs={
             **release_policy_docs,
             "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "human+JSON status output",
-                "status output",
-            ).replace("status --json", "status"),
+                "`design-ai status --json`",
+                "the JSON status command",
+            ),
         },
         audit_count=8,
     )
-    status_json_drift_errors = "\n".join(status_json_drift["errors"])
+    status_json_command_drift_errors = "\n".join(status_json_command_drift["errors"])
     assert_condition(
-        "docs/DISTRIBUTION.md is missing status JSON install-state phrase" in status_json_drift_errors,
+        "docs/DISTRIBUTION.md is missing status JSON command phrase"
+        in status_json_command_drift_errors,
+        "release policy docs should mention design-ai status --json command guidance",
+    )
+
+    status_json_install_state_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "machine-readable install-state output",
+                "machine-readable status output",
+            ),
+        },
+        audit_count=8,
+    )
+    status_json_install_state_drift_errors = "\n".join(
+        status_json_install_state_drift["errors"]
+    )
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing status JSON install-state phrase"
+        in status_json_install_state_drift_errors,
         "release policy docs should mention status JSON install-state smoke",
     )
 
