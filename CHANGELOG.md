@@ -73,6 +73,7 @@ Release metadata now guards release-facing docs against dropping prompt/pack JSO
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
 Release metadata now guards release-facing docs against dropping check examples/artifact/stdin/all-routes smoke guidance.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
+Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 Release metadata now guards release-facing docs against dropping command and functional alias smoke guidance.
@@ -96,6 +97,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 141 — Top-level help command guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain the `design-ai help` command alongside top-level help smoke guidance, help JSON topic catalog guidance, version, alias, route, prompt/pack, check, audit, doctor, lifecycle, failure-path, package smoke, registry smoke, release check, and local CI guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `design-ai help` command wording is removed from a release-facing policy doc.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name `design-ai help` as the top-level help command rather than only describing top-level help output.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep top-level help wording while dropping the `design-ai help` command that package and registry smoke validate.
+- The guard is documentation-only at runtime; existing CLI behavior, help command execution, local CI execution, repository audit execution, CLI unit test execution, whitespace check execution, release self-test execution, release metadata execution, package contents check execution, package smoke execution, registry smoke execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the top-level help command and top-level help smoke guidance as one contract.
 
 ### Phase 140 — Local CI command guard split
 
