@@ -75,6 +75,7 @@ Release metadata now guards release-facing docs against dropping check examples/
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
+Release metadata now reports `design-ai help --json` command drift separately from help JSON topic catalog drift.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 Release metadata now guards release-facing docs against dropping command and functional alias smoke guidance.
 Release metadata now guards release-facing docs against dropping command-specific help topic smoke guidance.
@@ -97,6 +98,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 142 — Help JSON command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai help --json` command with a dedicated phrase label instead of coupling it to topic catalog wording.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai help --json` command and for dropping help JSON topic catalog wording.
+- `docs/RELEASE-CHECKLIST.md` now names both the `design-ai help --json` command and help JSON topic catalog guidance in the protected release metadata phrase set.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost the command to run or the topic catalog behavior that command validates.
+- The guard is documentation-only at runtime; existing CLI behavior, help JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the `design-ai help --json` command and the help JSON topic catalog behavior as two independently reported contracts.
 
 ### Phase 141 — Top-level help command guard added
 

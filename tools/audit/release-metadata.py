@@ -258,8 +258,11 @@ RELEASE_TOP_LEVEL_HELP_COMMAND_TERM_GROUPS = (
     ("`design-ai help`",),
     ("top-level help", "top-level help output", "top-level help 출력"),
 )
+RELEASE_HELP_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai help --json`",),
+)
 RELEASE_HELP_JSON_TERM_GROUPS = (
-    ("help --json", "design-ai help --json"),
+    ("topic catalog", "topic catalog output", "topic catalog 출력"),
 )
 RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
     (
@@ -460,6 +463,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "version JSON metadata phrase",
     "top-level help command phrase",
     "top-level help smoke phrase",
+    "help JSON command phrase",
     "help JSON topic catalog phrase",
     "alias smoke phrase",
     "help topic smoke phrase",
@@ -508,6 +512,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("top-level help command phrase", RELEASE_TOP_LEVEL_HELP_COMMAND_TERM_GROUPS),
     ("top-level help smoke phrase", RELEASE_TOP_LEVEL_HELP_TERM_GROUPS),
+    ("help JSON command phrase", RELEASE_HELP_JSON_COMMAND_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
     ("help topic smoke phrase", RELEASE_HELP_TOPIC_TERM_GROUPS),
@@ -865,8 +870,8 @@ and `npm run package:check` package contents check,
 `git diff --check` whitespace checks,
 `npm run release:self-test` release assertion self-tests,
 human/JSON `design-ai audit --strict --quiet` output, `design-ai help` top-level help output,
-`design-ai help --json` topic
-catalog output, command alias help and functional alias output,
+`design-ai help --json` topic catalog output,
+command alias help and functional alias output,
 command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
@@ -1555,20 +1560,46 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention top-level help smoke",
     )
 
-    help_json_drift = release_metadata_summary(
+    help_json_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.md": english_policy_doc.replace("help --json", "help"),
+            "README.md": english_policy_doc.replace(
+                "`design-ai help --json`",
+                "the JSON help command",
+            ),
         },
         audit_count=8,
     )
-    help_json_drift_errors = "\n".join(help_json_drift["errors"])
+    help_json_command_drift_errors = "\n".join(help_json_command_drift["errors"])
     assert_condition(
-        "README.md is missing help JSON topic catalog phrase" in help_json_drift_errors,
+        "README.md is missing help JSON command phrase" in help_json_command_drift_errors,
+        "release policy docs should mention design-ai help --json command guidance",
+    )
+
+    help_json_topic_catalog_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "topic catalog output",
+                "JSON help output",
+            ),
+        },
+        audit_count=8,
+    )
+    help_json_topic_catalog_drift_errors = "\n".join(
+        help_json_topic_catalog_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing help JSON topic catalog phrase"
+        in help_json_topic_catalog_drift_errors,
         "release policy docs should mention help JSON topic catalog smoke",
     )
 

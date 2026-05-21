@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 142 — Help JSON command guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports `design-ai help --json` command drift separately from help JSON topic catalog drift.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai help --json` command with its own release policy phrase label.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai help --json` command and dropping help JSON topic catalog wording.
+- `docs/RELEASE-CHECKLIST.md` now documents both protected phrases in the release metadata guard list.
+- CHANGELOG and SESSION-LOG now record the Phase 142 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose the help JSON command versus the topic catalog behavior it validates.
+- Existing CLI, help JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the `design-ai help --json` command and help JSON topic catalog guidance as two independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 141 — Top-level help command guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the local `design-ai help` command that package and registry smoke use to validate top-level help output.
