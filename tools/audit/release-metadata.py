@@ -469,6 +469,15 @@ RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS = (
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
+RELEASE_UPDATE_DRY_RUN_COMMAND_TERM_GROUPS = (
+    ("`design-ai update --dry-run`",),
+)
+RELEASE_UPDATE_DRY_RUN_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai update --dry-run --json`",),
+)
+RELEASE_UPDATE_DRY_RUN_PLAN_TERM_GROUPS = (
+    ("machine-readable update plan",),
+)
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
     "local CI command phrase",
@@ -525,6 +534,9 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "doctor strict command phrase",
     "doctor human diagnostics phrase",
     "update dry-run lifecycle phrase",
+    "update dry-run command phrase",
+    "update dry-run JSON command phrase",
+    "update dry-run plan phrase",
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
@@ -582,6 +594,9 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("doctor strict command phrase", RELEASE_DOCTOR_STRICT_COMMAND_TERM_GROUPS),
     ("doctor human diagnostics phrase", RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS),
     ("update dry-run lifecycle phrase", RELEASE_UPDATE_DRY_RUN_TERM_GROUPS),
+    ("update dry-run command phrase", RELEASE_UPDATE_DRY_RUN_COMMAND_TERM_GROUPS),
+    ("update dry-run JSON command phrase", RELEASE_UPDATE_DRY_RUN_JSON_COMMAND_TERM_GROUPS),
+    ("update dry-run plan phrase", RELEASE_UPDATE_DRY_RUN_PLAN_TERM_GROUPS),
 )
 RELEASE_METADATA_SUMMARY_KEYS = (
     "version",
@@ -936,8 +951,9 @@ human install plus `design-ai install --json`
 for machine-readable install lifecycle output, human+JSON status output,
 `design-ai status --json` for machine-readable install-state output, and
 human uninstall plus `design-ai uninstall --json`
-for machine-readable uninstall lifecycle output. It also checks human/JSON
-`design-ai update --dry-run` output before mutating lifecycle commands and
+for machine-readable uninstall lifecycle output. It also checks human
+`design-ai update --dry-run` output and `design-ai update --dry-run --json`
+machine-readable update plan before mutating lifecycle commands, plus
 `design-ai doctor --strict` human diagnostics before release.
 """
     korean_policy_doc = """# Distribution Korean
@@ -977,8 +993,9 @@ human install과 JSON `design-ai install --json`으로 machine-readable install 
 human+JSON `status` 출력도 확인하며,
 `design-ai status --json`으로 machine-readable install-state output도 uninstall 전에 확인하고,
 human uninstall과 JSON `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
-human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전에
-확인하고, `design-ai doctor --strict` human diagnostics도 release 전에 확인해요.
+human `design-ai update --dry-run` 출력과 `design-ai update --dry-run --json`
+machine-readable update plan도 mutating lifecycle command 전에 확인하고,
+`design-ai doctor --strict` human diagnostics도 release 전에 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -2172,6 +2189,75 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing update dry-run lifecycle phrase" in update_dry_run_drift_errors,
         "release policy docs should mention update dry-run lifecycle smoke",
+    )
+
+    update_dry_run_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai update --dry-run`",
+                "`update --dry-run`",
+            ),
+        },
+        audit_count=8,
+    )
+    update_dry_run_command_drift_errors = "\n".join(
+        update_dry_run_command_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing update dry-run command phrase"
+        in update_dry_run_command_drift_errors,
+        "release policy docs should mention exact design-ai update --dry-run command guidance",
+    )
+
+    update_dry_run_json_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai update --dry-run --json`",
+                "`update --dry-run --json`",
+            ),
+        },
+        audit_count=8,
+    )
+    update_dry_run_json_command_drift_errors = "\n".join(
+        update_dry_run_json_command_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing update dry-run JSON command phrase"
+        in update_dry_run_json_command_drift_errors,
+        "release policy docs should mention exact design-ai update --dry-run --json command guidance",
+    )
+
+    update_dry_run_plan_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "machine-readable update plan",
+                "machine-readable update output",
+            ),
+        },
+        audit_count=8,
+    )
+    update_dry_run_plan_drift_errors = "\n".join(
+        update_dry_run_plan_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing update dry-run plan phrase"
+        in update_dry_run_plan_drift_errors,
+        "release policy docs should mention machine-readable update plan guidance",
     )
 
     missing_docs = dict(release_policy_docs)

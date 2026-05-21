@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 149 — Update dry-run JSON command guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai update --dry-run` and `design-ai update --dry-run --json` commands with their own release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the human dry-run command, dropping the JSON dry-run command, and dropping machine-readable update plan wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now document all three protected update dry-run phrases in release smoke guidance.
+- CHANGELOG and SESSION-LOG now record the Phase 149 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose the update dry-run command, the JSON dry-run command, or the machine-readable update plan behavior it validates.
+- Existing CLI, update dry-run output, update dry-run JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the update dry-run human command, JSON command, and machine-readable update plan guidance as three independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 148 — Doctor strict command guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports `design-ai doctor --strict` command drift separately from human diagnostics wording drift.

@@ -143,6 +143,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 146)** — Split `design-ai status --json` command drift from machine-readable install-state output drift.
 - **v4.13 (Phase 147)** — Split `design-ai audit --strict --quiet --json` command drift from machine-readable repository-audit output drift.
 - **v4.13 (Phase 148)** — Split `design-ai doctor --strict` command drift from human diagnostics wording drift.
+- **v4.13 (Phase 149)** — Split update dry-run command, JSON command, and machine-readable update plan drift.
 
 ## Patterns that didn't work
 

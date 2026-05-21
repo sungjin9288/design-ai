@@ -103,7 +103,38 @@ Release metadata now guards release-facing docs against dropping `status --json`
 Release metadata now guards release-facing docs against dropping human install/status/uninstall lifecycle smoke guidance.
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
-Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
+Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 149 — Update dry-run JSON command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai update --dry-run` and `design-ai update --dry-run --json` commands with dedicated phrase labels instead of coupling them to generic update dry-run wording.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the human dry-run command, dropping the JSON dry-run command, and dropping machine-readable update plan wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name the human dry-run command, JSON dry-run command, and machine-readable update plan in release smoke guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost the dry-run command to run, the JSON dry-run command, or the machine-readable update plan behavior that command validates.
+- The guard is documentation-only at runtime; existing CLI behavior, update dry-run output, update dry-run JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the update dry-run human command, JSON command, and machine-readable update plan as three independently reported contracts.
 
 ### Phase 148 — Doctor strict command guard split
 
