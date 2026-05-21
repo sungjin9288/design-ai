@@ -175,6 +175,15 @@ RELEASE_CLI_UNIT_TEST_TERM_GROUPS = (
         "CLI unit test 검증",
     ),
 )
+RELEASE_CLI_UNIT_TEST_COMMAND_TERM_GROUPS = (
+    ("`npm test`", "npm test"),
+    (
+        "CLI unit tests",
+        "CLI unit test",
+        "CLI unit test 실행",
+        "CLI unit test 검증",
+    ),
+)
 RELEASE_REPOSITORY_AUDIT_TERM_GROUPS = (
     (
         "all eight repository audits",
@@ -421,6 +430,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "package contents check phrase",
     "release metadata command phrase",
     "release metadata check phrase",
+    "CLI unit test command phrase",
     "CLI unit test phrase",
     "repository audit gate phrase",
     "whitespace check command phrase",
@@ -465,6 +475,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
     ("release metadata command phrase", RELEASE_METADATA_COMMAND_TERM_GROUPS),
     ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
+    ("CLI unit test command phrase", RELEASE_CLI_UNIT_TEST_COMMAND_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
     ("whitespace check command phrase", RELEASE_WHITESPACE_COMMAND_TERM_GROUPS),
@@ -826,7 +837,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
-CLI unit tests,
+`npm test` CLI unit tests,
 all 8 audits,
 `git diff --check` whitespace checks,
 `npm run release:self-test` release assertion self-tests,
@@ -865,7 +876,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
-CLI unit test 실행도 확인하고,
+`npm test` CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
 `git diff --check` whitespace check 검증도 확인하고,
 `npm run release:self-test` release self-test 검증도 확인하고,
@@ -1240,6 +1251,26 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "README.md is missing release metadata check phrase"
         in release_metadata_check_drift_errors,
         "release policy docs should mention release metadata checks",
+    )
+
+    cli_unit_test_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm test`",
+                "the CLI test command",
+            ),
+        },
+        audit_count=8,
+    )
+    cli_unit_test_command_drift_errors = "\n".join(cli_unit_test_command_drift["errors"])
+    assert_condition(
+        "README.md is missing CLI unit test command phrase" in cli_unit_test_command_drift_errors,
+        "release policy docs should mention npm test CLI unit test command guidance",
     )
 
     cli_unit_test_drift = release_metadata_summary(

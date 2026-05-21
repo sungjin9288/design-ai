@@ -91,7 +91,7 @@ The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
 - Runs all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
-- Runs CLI unit tests before publishing or attaching release assets.
+- Runs `npm test` CLI unit tests before publishing or attaching release assets.
 - Runs whitespace checks with `git diff --check` before packaging.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
 - Runs `npm run release:metadata` to verify release metadata checks before release self-tests.

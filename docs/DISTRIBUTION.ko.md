@@ -92,7 +92,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 - 태그가 `package.json` 버전과 일치하는지 검증.
 - `package.json`과 `plugin.json` 버전이 일치하는지 검증.
 - 8개 검사 모두 실행 (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
-- publish 또는 release asset 첨부 전에 CLI unit test 실행.
+- publish 또는 release asset 첨부 전에 `npm test` CLI unit test 실행.
 - packaging 전에 `git diff --check`로 whitespace check 검증.
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
 - `npm run release:metadata`로 release metadata check를 실행해 release self-test 전에 버전과 release-facing docs guidance를 확인.
