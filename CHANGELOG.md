@@ -68,6 +68,7 @@ Release metadata now guards release-facing docs against dropping human/JSON corp
 Release metadata now guards release-facing docs against dropping route JSON/catalog/stdin smoke guidance.
 Release metadata now reports route JSON output, route catalog output, and route stdin input drift separately.
 Release metadata now guards release-facing docs against dropping explicit `show --lines` and `route --explain` smoke guidance.
+Release metadata now reports show-lines output drift separately from route-explain output drift.
 Release metadata now guards release-facing docs against dropping unknown command/help/list/search-dir failure smoke guidance.
 Release metadata now guards release-facing docs against dropping unknown suggestion and numeric range failure smoke guidance.
 Release metadata now guards release-facing docs against dropping prompt/pack JSON/markdown/from-file/stdin smoke guidance.
@@ -108,6 +109,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 153 — Explicit output guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now keeps the broad explicit output guard and adds separate show-lines output and route-explain output release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping `show --lines` output wording and dropping `route --explain` output wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out `show --lines` output and `route --explain` output as separate release smoke surfaces.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost explicit line-range output coverage or route explanation output coverage.
+- The guard is documentation-only at runtime; existing CLI behavior, `show --lines` output, `route --explain` output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve explicit line-range output and route explanation output as two independently reported contracts.
 
 ### Phase 152 — Route smoke guard split
 

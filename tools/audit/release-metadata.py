@@ -368,6 +368,10 @@ RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
     (
         "show --lines",
         "`show --lines`",
+        "show --lines output",
+        "`show --lines` output",
+        "show --lines 출력",
+        "`show --lines` 출력",
         "show --lines range",
         "show --lines ranges",
         "명시적 `show --lines`",
@@ -375,7 +379,30 @@ RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
     (
         "route --explain",
         "`route --explain`",
+        "route --explain output",
+        "`route --explain` output",
+        "route --explain 출력",
+        "`route --explain` 출력",
         "명시적 `route --explain`",
+    ),
+)
+RELEASE_SHOW_LINES_OUTPUT_TERM_GROUPS = (
+    (
+        "show --lines output",
+        "`show --lines` output",
+        "show --lines 출력",
+        "`show --lines` 출력",
+        "show --lines range",
+        "show --lines ranges",
+    ),
+)
+RELEASE_ROUTE_EXPLAIN_OUTPUT_TERM_GROUPS = (
+    (
+        "route --explain output",
+        "`route --explain` output",
+        "route --explain 출력",
+        "`route --explain` 출력",
+        "route explanation output",
     ),
 )
 RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS = (
@@ -564,6 +591,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "route catalog output phrase",
     "route stdin input phrase",
     "show-lines route-explain smoke phrase",
+    "show-lines output phrase",
+    "route-explain output phrase",
     "unknown command failure smoke phrase",
     "suggestion failure smoke phrase",
     "prompt-pack mode smoke phrase",
@@ -631,6 +660,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("route catalog output phrase", RELEASE_ROUTE_CATALOG_OUTPUT_TERM_GROUPS),
     ("route stdin input phrase", RELEASE_ROUTE_STDIN_INPUT_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
+    ("show-lines output phrase", RELEASE_SHOW_LINES_OUTPUT_TERM_GROUPS),
+    ("route-explain output phrase", RELEASE_ROUTE_EXPLAIN_OUTPUT_TERM_GROUPS),
     ("unknown command failure smoke phrase", RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
@@ -998,7 +1029,7 @@ command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
-explicit `show --lines` ranges and `route --explain` output,
+explicit `show --lines` output and `route --explain` output,
 unknown command/help/list/search-dir failures,
 unknown route-id/option/value suggestion and numeric range failures,
 prompt/pack JSON/markdown/from-file/stdin output,
@@ -1040,7 +1071,7 @@ command-specific help topic 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
-명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
+명시적 `show --lines` 출력과 `route --explain` 출력도 확인해요.
 unknown command/help/list/search-dir failure 검증도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
@@ -1986,6 +2017,46 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing show-lines route-explain smoke phrase" in explicit_output_drift_errors,
         "release policy docs should mention show-lines and route-explain smoke",
+    )
+
+    show_lines_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`show --lines` output",
+                "`show --lines`",
+            ),
+        },
+        audit_count=8,
+    )
+    show_lines_output_drift_errors = "\n".join(show_lines_output_drift["errors"])
+    assert_condition(
+        "README.md is missing show-lines output phrase" in show_lines_output_drift_errors,
+        "release policy docs should mention show-lines output smoke",
+    )
+
+    route_explain_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`route --explain` output",
+                "`route --explain`",
+            ),
+        },
+        audit_count=8,
+    )
+    route_explain_output_drift_errors = "\n".join(route_explain_output_drift["errors"])
+    assert_condition(
+        "README.md is missing route-explain output phrase" in route_explain_output_drift_errors,
+        "release policy docs should mention route-explain output smoke",
     )
 
     unknown_command_failure_drift = release_metadata_summary(
