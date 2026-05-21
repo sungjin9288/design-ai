@@ -146,6 +146,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 149)** — Split update dry-run command, JSON command, and machine-readable update plan drift.
 - **v4.13 (Phase 150)** — Split command alias smoke drift from functional alias smoke drift.
 - **v4.13 (Phase 151)** — Split list JSON mode drift from list catalog domain drift.
+- **v4.13 (Phase 152)** — Split route JSON output, route catalog output, and route stdin input drift.
 
 ## Patterns that didn't work
 

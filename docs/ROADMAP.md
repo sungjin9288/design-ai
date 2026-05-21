@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 152 — Route smoke guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports route JSON output, route catalog output, and route stdin input drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad route JSON/catalog/stdin guard and adds separate route JSON output, route catalog output, and route stdin input release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping route JSON output wording, route catalog output wording, and route stdin input wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out route JSON output, route catalog output, and route stdin input as separate protected release smoke surfaces.
+- CHANGELOG and SESSION-LOG now record the Phase 152 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose route recommendation JSON output, route catalog output, or route stdin input coverage.
+- Existing CLI, route JSON output, route catalog output, route stdin input execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve route JSON output, route catalog output, and route stdin input as three independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 151 — List catalog guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports list JSON mode drift separately from list catalog domain drift.

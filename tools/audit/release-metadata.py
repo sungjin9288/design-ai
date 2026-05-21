@@ -340,8 +340,28 @@ RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS = (
 RELEASE_ROUTE_JSON_TERM_GROUPS = (
     (
         "route JSON/catalog/stdin",
+        "route JSON output, route catalog output, and route stdin input",
         "route recommendation, catalog, and stdin JSON",
         "route JSON/catalog/stdin 출력",
+        "route JSON 출력, route catalog 출력, route stdin 입력",
+    ),
+)
+RELEASE_ROUTE_JSON_OUTPUT_TERM_GROUPS = (
+    (
+        "route JSON output",
+        "route JSON 출력",
+    ),
+)
+RELEASE_ROUTE_CATALOG_OUTPUT_TERM_GROUPS = (
+    (
+        "route catalog output",
+        "route catalog 출력",
+    ),
+)
+RELEASE_ROUTE_STDIN_INPUT_TERM_GROUPS = (
+    (
+        "route stdin input",
+        "route stdin 입력",
     ),
 )
 RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
@@ -540,6 +560,9 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "list catalog domains phrase",
     "corpus discovery JSON phrase",
     "route JSON catalog stdin smoke phrase",
+    "route JSON output phrase",
+    "route catalog output phrase",
+    "route stdin input phrase",
     "show-lines route-explain smoke phrase",
     "unknown command failure smoke phrase",
     "suggestion failure smoke phrase",
@@ -604,6 +627,9 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("list catalog domains phrase", RELEASE_LIST_CATALOG_DOMAIN_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("route JSON catalog stdin smoke phrase", RELEASE_ROUTE_JSON_TERM_GROUPS),
+    ("route JSON output phrase", RELEASE_ROUTE_JSON_OUTPUT_TERM_GROUPS),
+    ("route catalog output phrase", RELEASE_ROUTE_CATALOG_OUTPUT_TERM_GROUPS),
+    ("route stdin input phrase", RELEASE_ROUTE_STDIN_INPUT_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("unknown command failure smoke phrase", RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
@@ -971,7 +997,7 @@ command alias help and functional alias output,
 command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
-route JSON/catalog/stdin output,
+route JSON output, route catalog output, and route stdin input,
 explicit `show --lines` ranges and `route --explain` output,
 unknown command/help/list/search-dir failures,
 unknown route-id/option/value suggestion and numeric range failures,
@@ -1013,7 +1039,7 @@ command alias help와 functional alias 출력도 확인해요.
 command-specific help topic 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
-route JSON/catalog/stdin 출력도 확인해요.
+route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
 명시적 `show --lines` range와 `route --explain` 출력도 확인해요.
 unknown command/help/list/search-dir failure 검증도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
@@ -1572,7 +1598,10 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.md": english_policy_doc.replace("route JSON/catalog/stdin", "route output"),
+            "README.md": english_policy_doc.replace(
+                "route JSON output, route catalog output, and route stdin input",
+                "route output",
+            ),
         },
         audit_count=8,
     )
@@ -1580,6 +1609,64 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing route JSON catalog stdin smoke phrase" in route_json_drift_errors,
         "release policy docs should mention route JSON catalog stdin smoke",
+    )
+
+    route_json_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace("route JSON output", "route output"),
+        },
+        audit_count=8,
+    )
+    route_json_output_drift_errors = "\n".join(route_json_output_drift["errors"])
+    assert_condition(
+        "README.md is missing route JSON output phrase" in route_json_output_drift_errors,
+        "release policy docs should mention route JSON output smoke",
+    )
+
+    route_catalog_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "route catalog output",
+                "route output",
+            ),
+        },
+        audit_count=8,
+    )
+    route_catalog_output_drift_errors = "\n".join(
+        route_catalog_output_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing route catalog output phrase"
+        in route_catalog_output_drift_errors,
+        "release policy docs should mention route catalog output smoke",
+    )
+
+    route_stdin_input_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("route stdin 입력", "route 입력"),
+        },
+        audit_count=8,
+    )
+    route_stdin_input_drift_errors = "\n".join(route_stdin_input_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing route stdin input phrase"
+        in route_stdin_input_drift_errors,
+        "release policy docs should mention route stdin input smoke",
     )
 
     check_command_drift = release_metadata_summary(
