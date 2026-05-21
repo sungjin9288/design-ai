@@ -78,6 +78,7 @@ Release metadata now guards release-facing docs against dropping top-level help 
 Release metadata now reports `design-ai help --json` command drift separately from help JSON topic catalog drift.
 Release metadata now guards release-facing docs against dropping `design-ai help --json` topic catalog guidance.
 Release metadata now guards release-facing docs against dropping command and functional alias smoke guidance.
+Release metadata now reports command alias smoke drift separately from functional alias smoke drift.
 Release metadata now guards release-facing docs against dropping command-specific help topic smoke guidance.
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
@@ -105,6 +106,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 150 — Alias smoke guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks command alias smoke wording and functional alias smoke wording with separate release policy phrase labels while keeping the broad alias smoke guard.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping command alias wording and dropping functional alias wording.
+- `docs/RELEASE-CHECKLIST.md` now names command alias smoke and functional alias smoke separately in release metadata coverage guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost command alias help guidance or functional alias output guidance.
+- The guard is documentation-only at runtime; existing CLI behavior, help alias output, functional alias output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve command alias help guidance and functional alias output guidance as two independently reported contracts.
 
 ### Phase 149 — Update dry-run JSON command guard split
 

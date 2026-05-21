@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 150 — Alias smoke guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports command alias smoke drift separately from functional alias smoke drift.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad alias smoke guard and adds separate command alias smoke and functional alias smoke release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping command alias wording and dropping functional alias wording.
+- `docs/RELEASE-CHECKLIST.md` now describes command alias smoke and functional alias smoke as separate protected release metadata phrases.
+- CHANGELOG and SESSION-LOG now record the Phase 150 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose command alias help guidance versus functional alias output guidance.
+- Existing CLI, help alias output, functional alias output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve command alias help guidance and functional alias output guidance as two independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 149 — Update dry-run JSON command guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.

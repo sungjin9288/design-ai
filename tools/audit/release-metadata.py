@@ -270,7 +270,7 @@ RELEASE_HELP_JSON_COMMAND_TERM_GROUPS = (
 RELEASE_HELP_JSON_TERM_GROUPS = (
     ("topic catalog", "topic catalog output", "topic catalog 출력"),
 )
-RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
+RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS = (
     (
         "command alias help",
         "documented help and command aliases",
@@ -278,11 +278,17 @@ RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
         "help/command alias 출력",
         "문서화된 help/command alias 출력",
     ),
+)
+RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS = (
     (
         "functional alias output",
         "functional aliases",
         "functional alias 출력",
     ),
+)
+RELEASE_ALIAS_SMOKE_TERM_GROUPS = (
+    *RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS,
+    *RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS,
 )
 RELEASE_HELP_TOPIC_TERM_GROUPS = (
     (
@@ -508,6 +514,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "help JSON command phrase",
     "help JSON topic catalog phrase",
     "alias smoke phrase",
+    "command alias smoke phrase",
+    "functional alias smoke phrase",
     "help topic smoke phrase",
     "list JSON catalog phrase",
     "corpus discovery JSON phrase",
@@ -568,6 +576,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("help JSON command phrase", RELEASE_HELP_JSON_COMMAND_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
+    ("command alias smoke phrase", RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS),
+    ("functional alias smoke phrase", RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS),
     ("help topic smoke phrase", RELEASE_HELP_TOPIC_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
@@ -1710,6 +1720,52 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.ko.md is missing alias smoke phrase" in alias_smoke_drift_errors,
         "release policy docs should mention command and functional alias smoke",
+    )
+
+    command_alias_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "command alias help",
+                "alias help",
+            ),
+        },
+        audit_count=8,
+    )
+    command_alias_smoke_drift_errors = "\n".join(
+        command_alias_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing command alias smoke phrase"
+        in command_alias_smoke_drift_errors,
+        "release policy docs should mention command alias smoke",
+    )
+
+    functional_alias_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "functional alias output",
+                "alias output",
+            ),
+        },
+        audit_count=8,
+    )
+    functional_alias_smoke_drift_errors = "\n".join(
+        functional_alias_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing functional alias smoke phrase"
+        in functional_alias_smoke_drift_errors,
+        "release policy docs should mention functional alias smoke",
     )
 
     help_topic_drift = release_metadata_summary(
