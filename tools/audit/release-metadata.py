@@ -448,6 +448,15 @@ RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
 RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS = (
     ("audit --strict --quiet", "design-ai audit --strict --quiet"),
 )
+RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai audit --strict --quiet --json`",),
+)
+RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS = (
+    (
+        "machine-readable repository-audit output",
+        "machine-readable repository-audit 출력",
+    ),
+)
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
     ("doctor --strict", "design-ai doctor --strict"),
 )
@@ -504,6 +513,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "uninstall JSON command phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
+    "audit JSON command phrase",
+    "audit JSON repository-audit phrase",
     "doctor strict smoke phrase",
     "update dry-run lifecycle phrase",
 )
@@ -557,6 +568,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("uninstall JSON command phrase", RELEASE_UNINSTALL_JSON_COMMAND_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
+    ("audit JSON command phrase", RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS),
+    ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
     ("update dry-run lifecycle phrase", RELEASE_UPDATE_DRY_RUN_TERM_GROUPS),
 )
@@ -895,6 +908,7 @@ and `npm run package:check` package contents check,
 `git diff --check` whitespace checks,
 `npm run release:self-test` release assertion self-tests,
 human/JSON `design-ai audit --strict --quiet` output, `design-ai help` top-level help output,
+`design-ai audit --strict --quiet --json` for machine-readable repository-audit output,
 `design-ai help --json` topic catalog output,
 command alias help and functional alias output,
 command-specific help topic output,
@@ -934,7 +948,8 @@ npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 �
 `git diff --check` whitespace check 검증도 확인하고,
 `npm run release:self-test` release self-test 검증도 확인하고,
 human/JSON `design-ai audit --strict --quiet` 출력도
-smoke test하고, `design-ai help` top-level help 출력도 확인하며,
+smoke test하고, `design-ai audit --strict --quiet --json`으로
+machine-readable repository-audit output도 확인하며, `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
 command-specific help topic 출력도 확인해요.
@@ -1979,6 +1994,50 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "docs/DISTRIBUTION.ko.md is missing audit strict-quiet smoke phrase"
         in audit_strict_quiet_drift_errors,
         "release policy docs should mention audit strict-quiet smoke",
+    )
+
+    audit_json_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "`design-ai audit --strict --quiet --json`",
+                "the JSON audit command",
+            ),
+        },
+        audit_count=8,
+    )
+    audit_json_command_drift_errors = "\n".join(audit_json_command_drift["errors"])
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing audit JSON command phrase"
+        in audit_json_command_drift_errors,
+        "release policy docs should mention design-ai audit --strict --quiet --json command guidance",
+    )
+
+    audit_json_repository_audit_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "machine-readable repository-audit output",
+                "machine-readable audit output",
+            ),
+        },
+        audit_count=8,
+    )
+    audit_json_repository_audit_drift_errors = "\n".join(
+        audit_json_repository_audit_drift["errors"]
+    )
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing audit JSON repository-audit phrase"
+        in audit_json_repository_audit_drift_errors,
+        "release policy docs should mention audit JSON repository-audit output smoke",
     )
 
     doctor_strict_drift = release_metadata_summary(

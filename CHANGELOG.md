@@ -85,6 +85,7 @@ Release metadata now guards release-facing docs against dropping `list --json` c
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
 Release metadata now reports `design-ai status --json` command drift separately from install-state output drift.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
+Release metadata now reports `design-ai audit --strict --quiet --json` command drift separately from machine-readable repository-audit output drift.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai audit --strict --quiet` smoke guidance.
 Release metadata now guards release-facing docs against dropping `doctor --strict` human diagnostics guidance.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
@@ -102,6 +103,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 147 — Audit JSON command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai audit --strict --quiet --json` command with a dedicated phrase label instead of coupling it to machine-readable repository-audit output wording.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai audit --strict --quiet --json` command and for dropping machine-readable repository-audit output wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name both the `design-ai audit --strict --quiet --json` command and machine-readable repository-audit output in release smoke guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost the audit JSON command to run or the repository-audit output behavior that command validates.
+- The guard is documentation-only at runtime; existing CLI behavior, audit JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the `design-ai audit --strict --quiet --json` command and machine-readable repository-audit output as two independently reported contracts.
 
 ### Phase 146 — Status JSON command guard split
 
