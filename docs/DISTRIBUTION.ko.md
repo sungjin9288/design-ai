@@ -91,7 +91,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 워크플로:
 - 태그가 `package.json` 버전과 일치하는지 검증.
 - `package.json`과 `plugin.json` 버전이 일치하는지 검증.
-- 8개 검사 모두 실행 (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
+- `npm run audit:strict`로 8개 검사 모두 실행 (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - publish 또는 release asset 첨부 전에 `npm test` CLI unit test 실행.
 - packaging 전에 `git diff --check`로 whitespace check 검증.
 - `npm run package:check`로 tarball에 필요한 runtime file이 포함되고 test/cache/source-only file이 빠졌는지 확인.
@@ -108,7 +108,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 npm run release:check
 ```
 
-이 명령은 CLI unit test, 8개 audit, `git diff --check` whitespace check, package contents check, release metadata check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 installed-bin과 one-shot `npm exec --package <tarball>` 경로, human/JSON version, top-level help, command alias help와 functional alias output, command-specific help topic output, route JSON/catalog/stdin 출력, 명시적 `show --lines`와 `route --explain`, unknown command/help/list/search-dir failure, unknown route-id/option/value suggestion, numeric range failure, prompt/pack JSON/markdown/from-file/stdin 출력, prompt/pack 강제 `--out` overwrite와 file-write confirmation, check examples/artifact/stdin/all-routes 출력, human/JSON `audit --strict --quiet`, human/JSON `update --dry-run`, `doctor --strict` human diagnostics, human install과 JSON `install --json`, human+JSON status, human uninstall, JSON `uninstall --json` lifecycle 출력까지 포함해요.
+이 명령은 CLI unit test, `npm run audit:strict` 8개 audit, `git diff --check` whitespace check, package contents check, release metadata check, `npm run release:self-test`, packed-tarball smoke를 한 번에 검증해요. Packed-tarball smoke는 installed-bin과 one-shot `npm exec --package <tarball>` 경로, human/JSON version, top-level help, command alias help와 functional alias output, command-specific help topic output, route JSON/catalog/stdin 출력, 명시적 `show --lines`와 `route --explain`, unknown command/help/list/search-dir failure, unknown route-id/option/value suggestion, numeric range failure, prompt/pack JSON/markdown/from-file/stdin 출력, prompt/pack 강제 `--out` overwrite와 file-write confirmation, check examples/artifact/stdin/all-routes 출력, human/JSON `audit --strict --quiet`, human/JSON `update --dry-run`, `doctor --strict` human diagnostics, human install과 JSON `install --json`, human+JSON status, human uninstall, JSON `uninstall --json` lifecycle 출력까지 포함해요.
 `npm run package:smoke`는 이 packed-tarball smoke gate를 직접 실행해 installed-bin과 one-shot npm exec 경로를 함께 확인해요.
 
 GitHub CI에 올리기 전에는 더 넓은 로컬 parity gate도 실행하세요:

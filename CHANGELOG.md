@@ -39,6 +39,7 @@ Release metadata now guards release-facing docs against dropping the post-publis
 Release metadata now guards release-facing docs against dropping package contents check guidance.
 Release metadata now guards release-facing docs against dropping release metadata check guidance.
 Release metadata now guards release-facing docs against dropping the `npm test` command.
+Release metadata now guards release-facing docs against dropping the `npm run audit:strict` command.
 Release metadata now guards release-facing docs against dropping CLI unit test guidance.
 Release metadata now guards release-facing docs against dropping repository audit gate guidance.
 Release metadata now guards release-facing docs against dropping the `git diff --check` command.
@@ -94,6 +95,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 139 — Repository audit command guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain the `npm run audit:strict` command alongside all-eight repository audits, CLI unit tests, whitespace checks, release self-tests, release metadata checks, package contents, package smoke, packed-tarball smoke, installed-bin, one-shot packed-tarball npm exec, registry smoke, public registry npm exec, release check, MkDocs warning-policy, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `npm run audit:strict` command wording is removed from a release-facing policy doc.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name `npm run audit:strict` as the all-eight repository audit command rather than only describing repository audit coverage.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep all-eight repository audit wording while dropping the `npm run audit:strict` command that runs before whitespace, package, and smoke checks.
+- The guard is documentation-only at runtime; existing CLI behavior, repository audit execution, CLI unit test execution, whitespace check execution, release self-test execution, release metadata execution, package contents check execution, package smoke execution, registry smoke execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the repository audit command and all-eight repository audit guidance as one contract.
 
 ### Phase 138 — CLI unit test command guard added
 
