@@ -396,8 +396,14 @@ RELEASE_INSTALL_HUMAN_TERM_GROUPS = (
         "human install lifecycle",
     ),
 )
+RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai install --json`",),
+)
 RELEASE_INSTALL_JSON_TERM_GROUPS = (
-    ("design-ai install --json", "`install --json`"),
+    (
+        "machine-readable install lifecycle output",
+        "machine-readable install lifecycle 출력",
+    ),
 )
 RELEASE_STATUS_HUMAN_TERM_GROUPS = (
     (
@@ -484,6 +490,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "prompt-pack output smoke phrase",
     "check command smoke phrase",
     "human install lifecycle phrase",
+    "install JSON command phrase",
     "install JSON lifecycle phrase",
     "human status lifecycle phrase",
     "status JSON install-state phrase",
@@ -534,6 +541,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
     ("human install lifecycle phrase", RELEASE_INSTALL_HUMAN_TERM_GROUPS),
+    ("install JSON command phrase", RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
     ("human status lifecycle phrase", RELEASE_STATUS_HUMAN_TERM_GROUPS),
     ("status JSON install-state phrase", RELEASE_STATUS_JSON_TERM_GROUPS),
@@ -1818,20 +1826,47 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention human install lifecycle smoke",
     )
 
-    install_json_drift = release_metadata_summary(
+    install_json_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace("install --json", "install"),
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "`design-ai install --json`",
+                "the JSON install command",
+            ),
         },
         audit_count=8,
     )
-    install_json_drift_errors = "\n".join(install_json_drift["errors"])
+    install_json_command_drift_errors = "\n".join(install_json_command_drift["errors"])
     assert_condition(
-        "docs/DISTRIBUTION.md is missing install JSON lifecycle phrase" in install_json_drift_errors,
+        "docs/DISTRIBUTION.md is missing install JSON command phrase"
+        in install_json_command_drift_errors,
+        "release policy docs should mention design-ai install --json command guidance",
+    )
+
+    install_json_lifecycle_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "machine-readable install lifecycle output",
+                "machine-readable install output",
+            ),
+        },
+        audit_count=8,
+    )
+    install_json_lifecycle_drift_errors = "\n".join(
+        install_json_lifecycle_drift["errors"]
+    )
+    assert_condition(
+        "docs/DISTRIBUTION.md is missing install JSON lifecycle phrase"
+        in install_json_lifecycle_drift_errors,
         "release policy docs should mention install JSON lifecycle smoke",
     )
 

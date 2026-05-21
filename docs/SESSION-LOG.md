@@ -138,6 +138,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 141)** — Guarded release-facing docs against dropping the local `design-ai help` command.
 - **v4.13 (Phase 142)** — Split `design-ai help --json` command drift from help JSON topic catalog drift.
 - **v4.13 (Phase 143)** — Split `design-ai version --json` command drift from machine-readable version metadata drift.
+- **v4.13 (Phase 144)** — Split `design-ai install --json` command drift from machine-readable install lifecycle output drift.
 
 ## Patterns that didn't work
 

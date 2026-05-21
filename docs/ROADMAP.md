@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 144 — Install JSON command guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports `design-ai install --json` command drift separately from machine-readable install lifecycle output drift.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai install --json` command with its own release policy phrase label.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai install --json` command and dropping machine-readable install lifecycle output wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now document both protected phrases in release smoke guidance.
+- CHANGELOG and SESSION-LOG now record the Phase 144 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose the install JSON command versus the install lifecycle output behavior it validates.
+- Existing CLI, install JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the `design-ai install --json` command and machine-readable install lifecycle output guidance as two independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 143 — Version JSON command guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports `design-ai version --json` command drift separately from machine-readable version metadata drift.
