@@ -460,6 +460,12 @@ RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS = (
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
     ("doctor --strict", "design-ai doctor --strict"),
 )
+RELEASE_DOCTOR_STRICT_COMMAND_TERM_GROUPS = (
+    ("`design-ai doctor --strict`",),
+)
+RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS = (
+    ("human diagnostics",),
+)
 RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
     ("update --dry-run", "design-ai update --dry-run"),
 )
@@ -516,6 +522,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "audit JSON command phrase",
     "audit JSON repository-audit phrase",
     "doctor strict smoke phrase",
+    "doctor strict command phrase",
+    "doctor human diagnostics phrase",
     "update dry-run lifecycle phrase",
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
@@ -571,6 +579,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("audit JSON command phrase", RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS),
     ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
+    ("doctor strict command phrase", RELEASE_DOCTOR_STRICT_COMMAND_TERM_GROUPS),
+    ("doctor human diagnostics phrase", RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS),
     ("update dry-run lifecycle phrase", RELEASE_UPDATE_DRY_RUN_TERM_GROUPS),
 )
 RELEASE_METADATA_SUMMARY_KEYS = (
@@ -928,7 +938,7 @@ for machine-readable install lifecycle output, human+JSON status output,
 human uninstall plus `design-ai uninstall --json`
 for machine-readable uninstall lifecycle output. It also checks human/JSON
 `design-ai update --dry-run` output before mutating lifecycle commands and
-`doctor --strict` human diagnostics before release.
+`design-ai doctor --strict` human diagnostics before release.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -968,7 +978,7 @@ human+JSON `status` 출력도 확인하며,
 `design-ai status --json`으로 machine-readable install-state output도 uninstall 전에 확인하고,
 human uninstall과 JSON `design-ai uninstall --json`으로 machine-readable uninstall lifecycle output도 확인해요.
 human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전에
-확인하고, `doctor --strict` human diagnostics도 release 전에 확인해요.
+확인하고, `design-ai doctor --strict` human diagnostics도 release 전에 확인해요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,
@@ -2055,6 +2065,52 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "docs/RELEASE-CHECKLIST.md is missing doctor strict smoke phrase" in doctor_strict_drift_errors,
         "release policy docs should mention doctor strict smoke",
+    )
+
+    doctor_strict_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
+                "`design-ai doctor --strict`",
+                "`doctor --strict`",
+            ),
+        },
+        audit_count=8,
+    )
+    doctor_strict_command_drift_errors = "\n".join(
+        doctor_strict_command_drift["errors"]
+    )
+    assert_condition(
+        "docs/RELEASE-CHECKLIST.md is missing doctor strict command phrase"
+        in doctor_strict_command_drift_errors,
+        "release policy docs should mention exact design-ai doctor --strict command guidance",
+    )
+
+    doctor_human_diagnostics_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
+                "human diagnostics",
+                "plain diagnostics",
+            ),
+        },
+        audit_count=8,
+    )
+    doctor_human_diagnostics_drift_errors = "\n".join(
+        doctor_human_diagnostics_drift["errors"]
+    )
+    assert_condition(
+        "docs/RELEASE-CHECKLIST.md is missing doctor human diagnostics phrase"
+        in doctor_human_diagnostics_drift_errors,
+        "release policy docs should mention doctor human diagnostics guidance",
     )
 
     status_json_command_drift = release_metadata_summary(

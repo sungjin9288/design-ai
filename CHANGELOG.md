@@ -87,7 +87,8 @@ Release metadata now reports `design-ai status --json` command drift separately 
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
 Release metadata now reports `design-ai audit --strict --quiet --json` command drift separately from machine-readable repository-audit output drift.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai audit --strict --quiet` smoke guidance.
-Release metadata now guards release-facing docs against dropping `doctor --strict` human diagnostics guidance.
+Release metadata now guards release-facing docs against dropping `design-ai doctor --strict` human diagnostics guidance.
+Release metadata now reports `design-ai doctor --strict` command drift separately from human diagnostics wording drift.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
 Release metadata now guards release-facing docs against dropping human version smoke guidance.
 Release metadata now reports `design-ai version --json` command drift separately from version metadata drift.
@@ -103,6 +104,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 148 — Doctor strict command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai doctor --strict` command with a dedicated phrase label instead of coupling it to human diagnostics wording.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai doctor --strict` command and for dropping human diagnostics wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name both the `design-ai doctor --strict` command and human diagnostics in release smoke guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost the doctor strict command to run or the human diagnostics behavior that command validates.
+- The guard is documentation-only at runtime; existing CLI behavior, doctor strict diagnostics output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the `design-ai doctor --strict` command and human diagnostics as two independently reported contracts.
 
 ### Phase 147 — Audit JSON command guard split
 
