@@ -141,8 +141,15 @@ RELEASE_PACKAGE_CONTENTS_TERM_GROUPS = (
         "package contents check",
         "package contents checks",
         "package contents verification",
-        "`npm run package:check`",
-        "package:check",
+    ),
+)
+RELEASE_PACKAGE_CONTENTS_COMMAND_TERM_GROUPS = (
+    ("`npm run package:check`", "npm run package:check"),
+    (
+        "package contents check",
+        "package contents checks",
+        "package contents verification",
+        "package contents check도",
     ),
 )
 RELEASE_METADATA_CHECK_TERM_GROUPS = (
@@ -392,6 +399,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
     "registry smoke command phrase",
+    "package contents command phrase",
     "package contents check phrase",
     "release metadata check phrase",
     "CLI unit test phrase",
@@ -432,6 +440,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
     ("registry smoke command phrase", RELEASE_REGISTRY_SMOKE_COMMAND_TERM_GROUPS),
+    ("package contents command phrase", RELEASE_PACKAGE_CONTENTS_COMMAND_TERM_GROUPS),
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
     ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
@@ -791,7 +800,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
-and the package contents check,
+and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
 CLI unit tests,
 all 8 audits,
@@ -830,7 +839,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
-package contents check도 확인하고,
+`npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
 CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
@@ -1124,6 +1133,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "README.md is missing registry smoke command phrase"
         in registry_smoke_command_drift_errors,
         "release policy docs should mention registry:smoke command guidance",
+    )
+
+    package_contents_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run package:check`",
+                "the package contents command",
+            ),
+        },
+        audit_count=8,
+    )
+    package_contents_command_drift_errors = "\n".join(package_contents_command_drift["errors"])
+    assert_condition(
+        "README.md is missing package contents command phrase"
+        in package_contents_command_drift_errors,
+        "release policy docs should mention package:check command guidance",
     )
 
     package_contents_drift = release_metadata_summary(

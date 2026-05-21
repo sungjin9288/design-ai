@@ -128,6 +128,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 131)** — Guarded release-facing docs against dropping the `release:check` core gate command.
 - **v4.13 (Phase 132)** — Guarded release-facing docs against dropping the post-publish `registry:smoke` command.
 - **v4.13 (Phase 133)** — Guarded release-facing docs against dropping the local `package:smoke` command.
+- **v4.13 (Phase 134)** — Guarded release-facing docs against dropping the local `package:check` command.
 
 ## Patterns that didn't work
 
