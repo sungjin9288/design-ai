@@ -83,6 +83,7 @@ Release metadata now guards release-facing docs against dropping command-specifi
 `design-ai doctor` now formats machine-readable diagnostics through a self-tested JSON formatter with stable context, check, summary, and fix key order.
 `design-ai list` now supports machine-readable catalog output through a self-tested JSON formatter with stable section and manifest-item order.
 Release metadata now guards release-facing docs against dropping `list --json` catalog smoke guidance.
+Release metadata now reports list JSON mode drift separately from list catalog domain drift.
 `design-ai status` now supports machine-readable install-state output through a self-tested JSON formatter with stable context, section, entry, and summary order.
 Release metadata now reports `design-ai status --json` command drift separately from install-state output drift.
 `design-ai audit` now supports machine-readable repository-audit output through the shared audit runner with stable context, audit-entry, and summary order.
@@ -106,6 +107,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 151 — List catalog guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks list JSON mode wording and list catalog domain coverage with separate release policy phrase labels while keeping the broad list JSON catalog guard.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping list JSON mode wording and dropping all-three list catalog domain wording.
+- `docs/RELEASE-CHECKLIST.md` now names list JSON mode and list catalog domains separately in release metadata coverage guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost JSON-mode list guidance or lost the skills/commands/agents catalog domain coverage that package and registry smoke validate.
+- The guard is documentation-only at runtime; existing CLI behavior, list JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve list JSON mode guidance and list catalog domain coverage as two independently reported contracts.
 
 ### Phase 150 — Alias smoke guard split
 

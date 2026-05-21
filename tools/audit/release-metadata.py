@@ -311,6 +311,24 @@ RELEASE_LIST_JSON_TERM_GROUPS = (
         "세 가지 `list` catalog domain의 human/JSON 출력",
     ),
 )
+RELEASE_LIST_JSON_MODE_TERM_GROUPS = (
+    (
+        "list --json",
+        "list skills --json",
+        "list commands --json",
+        "list agents --json",
+        "human and JSON `list skills`",
+        "all three `list` catalog domains in human and JSON mode",
+        "세 가지 `list` catalog domain의 human/JSON 출력",
+    ),
+)
+RELEASE_LIST_CATALOG_DOMAIN_TERM_GROUPS = (
+    (
+        "all three `list` catalog domains",
+        "human and JSON `list skills`, `list commands`, and `list agents`",
+        "세 가지 `list` catalog domain",
+    ),
+)
 RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS = (
     (
         "human and JSON `search` / `show` / `examples` output",
@@ -518,6 +536,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "functional alias smoke phrase",
     "help topic smoke phrase",
     "list JSON catalog phrase",
+    "list JSON mode phrase",
+    "list catalog domains phrase",
     "corpus discovery JSON phrase",
     "route JSON catalog stdin smoke phrase",
     "show-lines route-explain smoke phrase",
@@ -580,6 +600,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("functional alias smoke phrase", RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS),
     ("help topic smoke phrase", RELEASE_HELP_TOPIC_TERM_GROUPS),
     ("list JSON catalog phrase", RELEASE_LIST_JSON_TERM_GROUPS),
+    ("list JSON mode phrase", RELEASE_LIST_JSON_MODE_TERM_GROUPS),
+    ("list catalog domains phrase", RELEASE_LIST_CATALOG_DOMAIN_TERM_GROUPS),
     ("corpus discovery JSON phrase", RELEASE_CORPUS_DISCOVERY_JSON_TERM_GROUPS),
     ("route JSON catalog stdin smoke phrase", RELEASE_ROUTE_JSON_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
@@ -1802,6 +1824,47 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.ko.md is missing list JSON catalog phrase" in list_json_drift_errors,
         "release policy docs should mention list JSON catalog smoke",
+    )
+
+    list_json_mode_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("human/JSON 출력", "human 출력"),
+        },
+        audit_count=8,
+    )
+    list_json_mode_drift_errors = "\n".join(list_json_mode_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing list JSON mode phrase"
+        in list_json_mode_drift_errors,
+        "release policy docs should mention list JSON mode smoke",
+    )
+
+    list_catalog_domain_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "all three `list` catalog domains in human and JSON mode",
+                "`list --json` output",
+            ),
+        },
+        audit_count=8,
+    )
+    list_catalog_domain_drift_errors = "\n".join(
+        list_catalog_domain_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing list catalog domains phrase"
+        in list_catalog_domain_drift_errors,
+        "release policy docs should mention list catalog domain coverage",
     )
 
     corpus_discovery_drift = release_metadata_summary(
