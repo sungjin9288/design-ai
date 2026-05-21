@@ -134,6 +134,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 137)** — Guarded release-facing docs against dropping the local `git diff --check` command.
 - **v4.13 (Phase 138)** — Guarded release-facing docs against dropping the local `npm test` command.
 - **v4.13 (Phase 139)** — Guarded release-facing docs against dropping the local `npm run audit:strict` command.
+- **v4.13 (Phase 140)** — Split local `npm run ci:local` command drift from MkDocs warning-policy drift.
 
 ## Patterns that didn't work
 

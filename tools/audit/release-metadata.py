@@ -48,11 +48,13 @@ VERSION_BUMP_RE = re.compile(
 AUDIT_COUNT_RE = re.compile(r"\bAll\s+(?P<count>\d+)\s+audits?\s+pass(?:ed)?\b", re.IGNORECASE)
 AUDIT_SCRIPT_RE = re.compile(r'script="([^"]+\.py)"')
 RELEASE_WARNING_POLICY_TERM_GROUPS = (
-    ("npm run ci:local", "ci:local"),
     ("MkDocs warning policy", "MkDocs 경고 정책"),
     ("baseline", "기준선"),
     ("refs-only", "`refs/` source-link", "`refs/` 소스 링크"),
     ("non-`refs/`", "non-refs", "only intentional `refs/`", "의도된 `refs/`"),
+)
+RELEASE_LOCAL_CI_COMMAND_TERM_GROUPS = (
+    ("`npm run ci:local`", "npm run ci:local"),
 )
 RELEASE_CHECK_GATE_TERM_GROUPS = (
     ("`npm run release:check`", "npm run release:check"),
@@ -430,6 +432,7 @@ RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
 )
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
+    "local CI command phrase",
     "release check command phrase",
     "packed tarball smoke phrase",
     "package smoke command phrase",
@@ -476,6 +479,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
 )
 RELEASE_POLICY_PHRASE_CHECKS = (
     ("MkDocs warning-policy phrase", RELEASE_WARNING_POLICY_TERM_GROUPS),
+    ("local CI command phrase", RELEASE_LOCAL_CI_COMMAND_TERM_GROUPS),
     ("release check command phrase", RELEASE_CHECK_GATE_TERM_GROUPS),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
@@ -1017,7 +1021,7 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "JSON formatter should keep Korean structured errors readable",
     )
 
-    command_drift = release_metadata_summary(
+    local_ci_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
@@ -1028,8 +1032,11 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         },
         audit_count=8,
     )
-    command_drift_errors = "\n".join(command_drift["errors"])
-    assert_condition("README.md" in command_drift_errors, "release policy docs should mention ci:local")
+    local_ci_command_drift_errors = "\n".join(local_ci_command_drift["errors"])
+    assert_condition(
+        "README.md is missing local CI command phrase" in local_ci_command_drift_errors,
+        "release policy docs should mention ci:local command guidance",
+    )
 
     release_check_drift = release_metadata_summary(
         package_json=package_json,

@@ -27,6 +27,7 @@ Release metadata now checks that English and Korean distribution docs keep the M
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
 Release metadata now also requires release-facing policy docs to keep the `ci:local` command reference.
+Release metadata now reports `ci:local` command drift separately from MkDocs warning-policy drift.
 Release metadata now guards release-facing docs against dropping the `release:check` core gate command.
 Release metadata now guards release-facing docs against dropping packed-tarball smoke gate guidance.
 Release metadata now guards release-facing docs against dropping the `package:smoke` command.
@@ -95,6 +96,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 140 — Local CI command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks `npm run ci:local` with a dedicated local CI command phrase label instead of coupling that command to the MkDocs warning-policy phrase label.
+- `release-metadata.py --self-test` now asserts the exact `local CI command phrase` drift error when `npm run ci:local` wording is removed from a release-facing policy doc.
+- `docs/RELEASE-CHECKLIST.md` now documents `npm run ci:local` command guidance separately from MkDocs warning-policy baseline guidance in the release metadata protected phrase set.
+
+#### Impact
+- Release metadata failures now distinguish the local CI command handoff from MkDocs warning-policy baseline prose, so maintainers can see whether a doc dropped the command to run, the warning policy itself, or both.
+- The guard is documentation-only at runtime; existing CLI behavior, local CI execution, repository audit execution, CLI unit test execution, whitespace check execution, release self-test execution, release metadata execution, package contents check execution, package smoke execution, registry smoke execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve local CI command guidance and MkDocs warning-policy guidance as two independently reported contracts.
 
 ### Phase 139 — Repository audit command guard added
 

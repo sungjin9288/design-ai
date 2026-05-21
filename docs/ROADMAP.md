@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 140 — Local CI command guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports local CI command drift separately from MkDocs warning-policy drift.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks `npm run ci:local` with a dedicated local CI command phrase label.
+- `release-metadata.py --self-test` now has a drift fixture that fails with the exact local CI command phrase error when a release-facing policy doc drops the `npm run ci:local` command.
+- `docs/RELEASE-CHECKLIST.md` now documents `npm run ci:local` command guidance separately from MkDocs warning-policy baseline guidance.
+- CHANGELOG and SESSION-LOG now record the Phase 140 split.
+
+### Impact
+- Release metadata failures now distinguish the local CI command handoff from MkDocs warning-policy baseline prose, so maintainers can see whether a doc dropped the command to run, the warning policy itself, or both.
+- Existing CLI, local CI execution, repository audits, CLI unit test execution, whitespace check execution, release self-test execution, release metadata execution, package contents check, package smoke, registry smoke, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve local CI command guidance and MkDocs warning-policy guidance as two independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 139 — Repository audit command guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the local `npm run audit:strict` command that runs all eight repository audits before whitespace, package, and smoke checks.
