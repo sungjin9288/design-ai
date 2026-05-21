@@ -88,6 +88,7 @@ Release metadata now guards release-facing docs against dropping human/JSON `des
 Release metadata now guards release-facing docs against dropping `doctor --strict` human diagnostics guidance.
 `design-ai version` now supports machine-readable version metadata through a self-tested JSON formatter with stable context and version key order.
 Release metadata now guards release-facing docs against dropping human version smoke guidance.
+Release metadata now reports `design-ai version --json` command drift separately from version metadata drift.
 Release metadata now guards release-facing docs against dropping `design-ai version --json` smoke guidance.
 `design-ai install` now supports machine-readable lifecycle output through a self-tested JSON formatter with stable context and install-count keys.
 Release metadata now guards release-facing docs against dropping `design-ai install --json` smoke guidance.
@@ -98,6 +99,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 143 — Version JSON command guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now checks the exact `design-ai version --json` command with a dedicated phrase label instead of coupling it to machine-readable version metadata wording.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping the `design-ai version --json` command and for dropping machine-readable version metadata wording.
+- README, Korean README, English/Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name both the `design-ai version --json` command and machine-readable version metadata behavior in release smoke guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost the version JSON command to run or the version metadata behavior that command validates.
+- The guard is documentation-only at runtime; existing CLI behavior, version JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the `design-ai version --json` command and machine-readable version metadata behavior as two independently reported contracts.
 
 ### Phase 142 — Help JSON command guard split
 

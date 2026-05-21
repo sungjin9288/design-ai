@@ -137,6 +137,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 140)** — Split local `npm run ci:local` command drift from MkDocs warning-policy drift.
 - **v4.13 (Phase 141)** — Guarded release-facing docs against dropping the local `design-ai help` command.
 - **v4.13 (Phase 142)** — Split `design-ai help --json` command drift from help JSON topic catalog drift.
+- **v4.13 (Phase 143)** — Split `design-ai version --json` command drift from machine-readable version metadata drift.
 
 ## Patterns that didn't work
 

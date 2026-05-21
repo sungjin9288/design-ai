@@ -248,8 +248,14 @@ RELEASE_HUMAN_VERSION_TERM_GROUPS = (
         "human/JSON `design-ai version`과",
     ),
 )
+RELEASE_VERSION_JSON_COMMAND_TERM_GROUPS = (
+    ("`design-ai version --json`",),
+)
 RELEASE_VERSION_JSON_TERM_GROUPS = (
-    ("version --json", "design-ai version --json"),
+    (
+        "machine-readable CLI/plugin version metadata",
+        "machine-readable version metadata",
+    ),
 )
 RELEASE_TOP_LEVEL_HELP_TERM_GROUPS = (
     ("top-level help", "top-level help output", "top-level help 출력"),
@@ -460,6 +466,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "release self-test command phrase",
     "release self-test phrase",
     "human version smoke phrase",
+    "version JSON command phrase",
     "version JSON metadata phrase",
     "top-level help command phrase",
     "top-level help smoke phrase",
@@ -509,6 +516,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("release self-test command phrase", RELEASE_SELF_TEST_COMMAND_TERM_GROUPS),
     ("release self-test phrase", RELEASE_SELF_TEST_TERM_GROUPS),
     ("human version smoke phrase", RELEASE_HUMAN_VERSION_TERM_GROUPS),
+    ("version JSON command phrase", RELEASE_VERSION_JSON_COMMAND_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
     ("top-level help command phrase", RELEASE_TOP_LEVEL_HELP_COMMAND_TERM_GROUPS),
     ("top-level help smoke phrase", RELEASE_TOP_LEVEL_HELP_TERM_GROUPS),
@@ -1503,20 +1511,45 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
         "release policy docs should mention check command smoke",
     )
 
-    version_json_drift = release_metadata_summary(
+    version_json_command_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
         changelog_text=changelog,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("version --json", "version"),
+            "README.ko.md": korean_policy_doc.replace(
+                "`design-ai version --json`",
+                "the JSON version command",
+            ),
         },
         audit_count=8,
     )
-    version_json_drift_errors = "\n".join(version_json_drift["errors"])
+    version_json_command_drift_errors = "\n".join(version_json_command_drift["errors"])
     assert_condition(
-        "README.ko.md is missing version JSON metadata phrase" in version_json_drift_errors,
+        "README.ko.md is missing version JSON command phrase"
+        in version_json_command_drift_errors,
+        "release policy docs should mention design-ai version --json command guidance",
+    )
+
+    version_json_metadata_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace(
+                "machine-readable version metadata",
+                "machine-readable version output",
+            ),
+        },
+        audit_count=8,
+    )
+    version_json_metadata_drift_errors = "\n".join(version_json_metadata_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing version JSON metadata phrase"
+        in version_json_metadata_drift_errors,
         "release policy docs should mention version JSON metadata smoke",
     )
 
