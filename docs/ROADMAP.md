@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 137 — Whitespace check command guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the local `git diff --check` command that runs whitespace checks before package contents and smoke gates.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `git diff --check` command guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the `git diff --check` command.
+- README, Korean README, Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now identify `git diff --check` as the whitespace check command.
+- CHANGELOG and SESSION-LOG now record the Phase 137 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep whitespace check wording while dropping the `git diff --check` command that runs before package contents and smoke checks.
+- Existing CLI, whitespace check execution, release self-test execution, release metadata execution, package contents check, package smoke, registry smoke, release check, repository audits, and unit tests behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the whitespace command and whitespace check guidance as one contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 136 — Release self-test command guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the local `release:self-test` command that runs release assertion fixtures before package smoke.

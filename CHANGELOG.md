@@ -40,6 +40,7 @@ Release metadata now guards release-facing docs against dropping package content
 Release metadata now guards release-facing docs against dropping release metadata check guidance.
 Release metadata now guards release-facing docs against dropping CLI unit test guidance.
 Release metadata now guards release-facing docs against dropping repository audit gate guidance.
+Release metadata now guards release-facing docs against dropping the `git diff --check` command.
 Release metadata now guards release-facing docs against dropping whitespace check guidance.
 Release metadata now guards release-facing docs against dropping the `release:self-test` command.
 Release metadata now guards release-facing docs against dropping release self-test guidance.
@@ -92,6 +93,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 137 — Whitespace check command guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain the `git diff --check` command alongside whitespace checks, release self-tests, release metadata checks, package contents, package smoke, packed-tarball smoke, installed-bin, one-shot packed-tarball npm exec, registry smoke, public registry npm exec, release check, MkDocs warning-policy, CLI unit tests, all-eight repository audits, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `git diff --check` command wording is removed from a release-facing policy doc.
+- README, Korean README, Korean Distribution, and `docs/RELEASE-CHECKLIST.md` now name `git diff --check` as the whitespace check command rather than only describing whitespace checks.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep whitespace check wording while dropping the `git diff --check` command that runs before package contents and smoke checks.
+- The guard is documentation-only at runtime; existing CLI behavior, whitespace check execution, release self-test execution, release metadata execution, package contents check execution, package smoke execution, registry smoke execution, release check execution, repository audit execution, and unit test execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the whitespace command and whitespace check guidance as one contract.
 
 ### Phase 136 — Release self-test command guard added
 

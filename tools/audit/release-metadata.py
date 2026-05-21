@@ -189,8 +189,14 @@ RELEASE_WHITESPACE_CHECK_TERM_GROUPS = (
     (
         "whitespace checks",
         "whitespace check",
-        "`git diff --check`",
-        "git diff --check",
+        "whitespace check 검증",
+    ),
+)
+RELEASE_WHITESPACE_COMMAND_TERM_GROUPS = (
+    ("`git diff --check`", "git diff --check"),
+    (
+        "whitespace checks",
+        "whitespace check",
         "whitespace check 검증",
     ),
 )
@@ -417,6 +423,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "release metadata check phrase",
     "CLI unit test phrase",
     "repository audit gate phrase",
+    "whitespace check command phrase",
     "whitespace check phrase",
     "release self-test command phrase",
     "release self-test phrase",
@@ -460,6 +467,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
+    ("whitespace check command phrase", RELEASE_WHITESPACE_COMMAND_TERM_GROUPS),
     ("whitespace check phrase", RELEASE_WHITESPACE_CHECK_TERM_GROUPS),
     ("release self-test command phrase", RELEASE_SELF_TEST_COMMAND_TERM_GROUPS),
     ("release self-test phrase", RELEASE_SELF_TEST_TERM_GROUPS),
@@ -820,7 +828,7 @@ and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
 CLI unit tests,
 all 8 audits,
-whitespace checks,
+`git diff --check` whitespace checks,
 `npm run release:self-test` release assertion self-tests,
 human/JSON `design-ai audit --strict --quiet` output, top-level help output,
 `design-ai help --json` topic
@@ -859,7 +867,7 @@ npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 �
 `npm run release:metadata` release metadata 검증도 확인하고,
 CLI unit test 실행도 확인하고,
 8개 audit도 확인하고,
-whitespace check 검증도 확인하고,
+`git diff --check` whitespace check 검증도 확인하고,
 `npm run release:self-test` release self-test 검증도 확인하고,
 human/JSON `design-ai audit --strict --quiet` 출력도
 smoke test하고, top-level help 출력도 확인하며,
@@ -1272,6 +1280,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing repository audit gate phrase" in repository_audit_drift_errors,
         "release policy docs should mention repository audit gate coverage",
+    )
+
+    whitespace_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`git diff --check`",
+                "the whitespace command",
+            ),
+        },
+        audit_count=8,
+    )
+    whitespace_command_drift_errors = "\n".join(whitespace_command_drift["errors"])
+    assert_condition(
+        "README.md is missing whitespace check command phrase"
+        in whitespace_command_drift_errors,
+        "release policy docs should mention git diff whitespace check command guidance",
     )
 
     whitespace_check_drift = release_metadata_summary(
