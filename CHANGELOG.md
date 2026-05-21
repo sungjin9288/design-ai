@@ -31,6 +31,7 @@ Release metadata now guards release-facing docs against dropping the `release:ch
 Release metadata now guards release-facing docs against dropping packed-tarball smoke gate guidance.
 Release metadata now guards release-facing docs against dropping the `package:smoke` command.
 Release metadata now guards release-facing docs against dropping the `package:check` command.
+Release metadata now guards release-facing docs against dropping the `release:metadata` command.
 Release metadata now guards release-facing docs against dropping packed-tarball `npm exec --package <tarball>` smoke guidance.
 Release metadata now guards release-facing docs against dropping packed-tarball installed-bin smoke guidance.
 Release metadata now guards release-facing docs against dropping public registry `npm exec --package @design-ai/cli@<version>` smoke guidance.
@@ -90,6 +91,35 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update` now rejects unknown options with self-tested suggestion output before any git pull or reinstall work starts.
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai update --dry-run` smoke guidance.
+
+### Phase 135 — Release metadata command guard added
+
+#### Changed
+- `tools/audit/release-metadata.py` now requires every release policy doc to retain the `npm run release:metadata` command alongside release metadata checks, package contents, package smoke, packed-tarball smoke, installed-bin, one-shot packed-tarball npm exec, registry smoke, public registry npm exec, release check, MkDocs warning-policy, release self-tests, CLI unit tests, all-eight repository audits, whitespace checks, version, help, route, prompt/pack, check, audit, doctor, lifecycle, and failure-path guidance.
+- `release-metadata.py --self-test` now includes a drift fixture that fails when `release:metadata` command wording is removed from a release-facing policy doc.
+- README, Korean README, and `docs/RELEASE-CHECKLIST.md` now name `release:metadata` as the release metadata command rather than only describing release metadata checks.
+
+#### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep release metadata check wording while dropping the `release:metadata` command that runs the guard before tagging.
+- The guard is documentation-only at runtime; existing CLI behavior, release metadata execution, package contents check execution, package smoke execution, registry smoke execution, release check execution, release self-test execution, whitespace check execution, repository audit execution, and unit test execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve the release metadata command and release metadata check wording as one contract.
 
 ### Phase 134 — Package contents command metadata guard added
 

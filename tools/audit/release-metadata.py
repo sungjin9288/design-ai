@@ -156,8 +156,14 @@ RELEASE_METADATA_CHECK_TERM_GROUPS = (
     (
         "release metadata checks",
         "release metadata check",
-        "`npm run release:metadata`",
-        "npm run release:metadata",
+        "release metadata 검증",
+    ),
+)
+RELEASE_METADATA_COMMAND_TERM_GROUPS = (
+    ("`npm run release:metadata`", "npm run release:metadata"),
+    (
+        "release metadata checks",
+        "release metadata check",
         "release metadata 검증",
     ),
 )
@@ -401,6 +407,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "registry smoke command phrase",
     "package contents command phrase",
     "package contents check phrase",
+    "release metadata command phrase",
     "release metadata check phrase",
     "CLI unit test phrase",
     "repository audit gate phrase",
@@ -442,6 +449,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("registry smoke command phrase", RELEASE_REGISTRY_SMOKE_COMMAND_TERM_GROUPS),
     ("package contents command phrase", RELEASE_PACKAGE_CONTENTS_COMMAND_TERM_GROUPS),
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
+    ("release metadata command phrase", RELEASE_METADATA_COMMAND_TERM_GROUPS),
     ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
@@ -1174,6 +1182,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing package contents check phrase" in package_contents_drift_errors,
         "release policy docs should mention package contents checks",
+    )
+
+    release_metadata_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run release:metadata`",
+                "the release metadata command",
+            ),
+        },
+        audit_count=8,
+    )
+    release_metadata_command_drift_errors = "\n".join(release_metadata_command_drift["errors"])
+    assert_condition(
+        "README.md is missing release metadata command phrase"
+        in release_metadata_command_drift_errors,
+        "release policy docs should mention release:metadata command guidance",
     )
 
     release_metadata_check_drift = release_metadata_summary(
