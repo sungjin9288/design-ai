@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 136 — Release self-test command guard added (v4.13.0) ✓ shipped
+
+Release metadata now protects the local `release:self-test` command that runs release assertion fixtures before package smoke.
+
+### Changed
+- `tools/audit/release-metadata.py` now checks release policy docs for `npm run release:self-test` command guidance.
+- `release-metadata.py --self-test` now has a drift fixture that fails when a release-facing policy doc drops the `release:self-test` command.
+- README, Korean README, and `docs/RELEASE-CHECKLIST.md` now identify `release:self-test` as the release assertion fixture command before package smoke.
+- CHANGELOG and SESSION-LOG now record the Phase 136 guard.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs cannot silently keep release self-test wording while dropping the `release:self-test` command that runs assertion fixtures before package smoke.
+- Existing CLI, release self-test execution, release metadata execution, package contents check, package smoke, registry smoke, release check, whitespace check execution, repository audits, and unit tests behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve the release self-test command and release self-test guidance as one contract.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 135 — Release metadata command guard added (v4.13.0) ✓ shipped
 
 Release metadata now protects the local `release:metadata` command that runs release metadata checks before tagging.

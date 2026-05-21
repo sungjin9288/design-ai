@@ -130,6 +130,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 133)** — Guarded release-facing docs against dropping the local `package:smoke` command.
 - **v4.13 (Phase 134)** — Guarded release-facing docs against dropping the local `package:check` command.
 - **v4.13 (Phase 135)** — Guarded release-facing docs against dropping the local `release:metadata` command.
+- **v4.13 (Phase 136)** — Guarded release-facing docs against dropping the local `release:self-test` command.
 
 ## Patterns that didn't work
 

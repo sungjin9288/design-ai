@@ -196,8 +196,14 @@ RELEASE_WHITESPACE_CHECK_TERM_GROUPS = (
 )
 RELEASE_SELF_TEST_TERM_GROUPS = (
     (
-        "`npm run release:self-test`",
-        "npm run release:self-test",
+        "release self-test",
+        "release assertion self-tests",
+        "release self-test 검증",
+    ),
+)
+RELEASE_SELF_TEST_COMMAND_TERM_GROUPS = (
+    ("`npm run release:self-test`", "npm run release:self-test"),
+    (
         "release self-test",
         "release assertion self-tests",
         "release self-test 검증",
@@ -412,6 +418,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "CLI unit test phrase",
     "repository audit gate phrase",
     "whitespace check phrase",
+    "release self-test command phrase",
     "release self-test phrase",
     "human version smoke phrase",
     "version JSON metadata phrase",
@@ -454,6 +461,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit gate phrase", RELEASE_REPOSITORY_AUDIT_TERM_GROUPS),
     ("whitespace check phrase", RELEASE_WHITESPACE_CHECK_TERM_GROUPS),
+    ("release self-test command phrase", RELEASE_SELF_TEST_COMMAND_TERM_GROUPS),
     ("release self-test phrase", RELEASE_SELF_TEST_TERM_GROUPS),
     ("human version smoke phrase", RELEASE_HUMAN_VERSION_TERM_GROUPS),
     ("version JSON metadata phrase", RELEASE_VERSION_JSON_TERM_GROUPS),
@@ -1284,6 +1292,27 @@ human/JSON `design-ai update --dry-run` 출력도 mutating lifecycle command 전
     assert_condition(
         "README.md is missing whitespace check phrase" in whitespace_check_drift_errors,
         "release policy docs should mention whitespace checks",
+    )
+
+    release_self_test_command_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`npm run release:self-test`",
+                "the assertion fixture command",
+            ),
+        },
+        audit_count=8,
+    )
+    release_self_test_command_drift_errors = "\n".join(release_self_test_command_drift["errors"])
+    assert_condition(
+        "README.md is missing release self-test command phrase"
+        in release_self_test_command_drift_errors,
+        "release policy docs should mention release:self-test command guidance",
     )
 
     release_self_test_drift = release_metadata_summary(
