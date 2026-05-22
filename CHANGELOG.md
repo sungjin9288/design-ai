@@ -92,6 +92,7 @@ Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-b
 Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
 Help, list, and version JSON smoke assertions now verify command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
+Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -127,6 +128,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 172 — Status JSON install-state target assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai status --json` section labels and target directories against the install-state contract used by package and registry smoke.
+- Status JSON assertions now require each section to keep the exact `Skills`, `Agents`, and `Slash commands` labels, keep target directories under `claudeHome`, and end each target path with the matching `skills`, `agents`, or `commands` directory.
+- The smoke assertion self-test now covers section label drift, target directory escaping `claudeHome`, and target directory basename drift fixtures.
+
+#### Impact
+- Package and registry smoke checks now fail when status JSON remains parseable and has the right symlink entries, but no longer describes the same user-facing install-state sections or Claude Code target directories.
+- Existing CLI runtime behavior, status JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
 
 ### Phase 171 — Update dry-run JSON smoke plan assertion hardening
 

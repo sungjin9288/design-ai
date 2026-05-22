@@ -314,6 +314,16 @@ EXPECTED_LIST_CATALOG = {
         "token-extractor",
     ),
 }
+EXPECTED_STATUS_SECTION_LABELS = {
+    "skills": "Skills",
+    "agents": "Agents",
+    "commands": "Slash commands",
+}
+EXPECTED_STATUS_TARGET_DIR_BASENAMES = {
+    "skills": "skills",
+    "agents": "agents",
+    "commands": "commands",
+}
 EXPECTED_ERROR_PREFIX = "\u2717"
 EXPECTED_CORPUS_SEARCH_QUERY = "Pretendard"
 EXPECTED_CORPUS_SEARCH_HIT = "knowledge/PRINCIPLES.md"
@@ -3839,6 +3849,10 @@ def is_lifecycle_json_non_negative_int(value: object) -> bool:
     return type(value) is int and value >= 0
 
 
+def normalize_lifecycle_path(value: str) -> str:
+    return value.replace("\\", "/").rstrip("/")
+
+
 def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 
@@ -4059,10 +4073,20 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
         kind = section.get("kind")
         if kind not in EXPECTED_LIST_CATALOG:
             raise SystemExit(f"status JSON after {context} contains unsupported section kind: {kind}")
-        if not isinstance(section.get("label"), str) or not section["label"]:
-            raise SystemExit(f"status JSON after {context} section label is missing for {kind}")
-        if not isinstance(section.get("targetDir"), str) or not section["targetDir"]:
+        if section.get("label") != EXPECTED_STATUS_SECTION_LABELS[kind]:
+            raise SystemExit(f"status JSON after {context} section label differs for {kind}")
+        target_dir = section.get("targetDir")
+        if not isinstance(target_dir, str) or not target_dir:
             raise SystemExit(f"status JSON after {context} targetDir is missing for {kind}")
+        normalized_claude_home = normalize_lifecycle_path(status_context["claudeHome"])
+        normalized_target_dir = normalize_lifecycle_path(target_dir)
+        if (
+            normalized_target_dir == normalized_claude_home
+            or not normalized_target_dir.startswith(f"{normalized_claude_home}/")
+        ):
+            raise SystemExit(f"status JSON after {context} targetDir is outside claudeHome for {kind}")
+        if normalized_target_dir.rsplit("/", 1)[-1] != EXPECTED_STATUS_TARGET_DIR_BASENAMES[kind]:
+            raise SystemExit(f"status JSON after {context} targetDir basename differs for {kind}")
         if section.get("targetExists") is not True:
             raise SystemExit(f"status JSON after {context} target dir is missing for {kind}")
         if not is_lifecycle_json_non_negative_int(section.get("installed")):
@@ -7003,6 +7027,42 @@ def run_self_test() -> None:
             cmd=[*status_cmd, "--json"],
         ),
         expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    status_payload_label_drift = json.loads(passing_status_json("smoke-design-"))
+    status_payload_label_drift["sections"][0]["label"] = "Skill links"
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_label_drift),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="section label differs",
+        scope="smoke assertions",
+    )
+    status_payload_outside_target = json.loads(passing_status_json("smoke-design-"))
+    status_payload_outside_target["sections"][0]["targetDir"] = "/tmp/other-claude-home/skills"
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_outside_target),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="targetDir is outside claudeHome",
+        scope="smoke assertions",
+    )
+    status_payload_wrong_target_basename = json.loads(passing_status_json("smoke-design-"))
+    status_payload_wrong_target_basename["sections"][0]["targetDir"] = "/tmp/claude-home/not-skills"
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_wrong_target_basename),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="targetDir basename differs",
         scope="smoke assertions",
     )
     expect_self_test_failure(
