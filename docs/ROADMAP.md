@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 166 — Lifecycle JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Lifecycle JSON smoke assertions now verify payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies lifecycle JSON payloads for `design-ai install --json`, `design-ai status --json`, `design-ai uninstall --json`, and `design-ai update --dry-run --json` with shared object/key guards.
+- Install JSON assertions now reject non-object top-level payloads, bool-as-int count drift, and installed total values that do not equal the section counts.
+- Status JSON assertions now reject unexpected section counts, bool-as-int section/summary counts, and non-object top-level payloads before comparing installed entries.
+- Uninstall and update dry-run JSON assertions now reject non-object top-level payloads, and uninstall JSON rejects bool-as-int removed counts.
+- CHANGELOG and SESSION-LOG now record the Phase 166 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when lifecycle JSON remains parseable but drifts from the machine-readable install/status/uninstall/update contract that automation consumes.
+- Existing CLI runtime behavior, lifecycle JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects lifecycle JSON as stable machine-readable install-state and lifecycle-result contracts, not only as valid JSON with expected command labels.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 165 — Audit JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Audit JSON smoke assertions now verify payload type, entry schema, numeric contracts, and summary/count consistency.

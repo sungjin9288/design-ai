@@ -160,6 +160,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 163)** — Split doctor JSON command and machine-readable diagnostics output drift.
 - **v4.13 (Phase 164)** — Hardened doctor JSON smoke assertions for schema shape and summary consistency.
 - **v4.13 (Phase 165)** — Hardened audit JSON smoke assertions for payload type, entry schema, numeric contracts, and summary consistency.
+- **v4.13 (Phase 166)** — Hardened lifecycle JSON smoke assertions for payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
 
 ## Patterns that didn't work
 

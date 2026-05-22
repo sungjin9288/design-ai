@@ -3081,6 +3081,25 @@ def assert_install_output(raw: str, *, context: str, cmd: list[str]) -> None:
     )
 
 
+def assert_lifecycle_json_keys(
+    value: object,
+    expected_keys: list[str],
+    *,
+    label: str,
+    context: str,
+    command_label: str,
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise SystemExit(f"{command_label} after {context} {label} is not an object")
+    if list(value) != expected_keys:
+        raise SystemExit(f"{command_label} after {context} {label} keys changed")
+    return value
+
+
+def is_lifecycle_json_non_negative_int(value: object) -> bool:
+    return type(value) is int and value >= 0
+
+
 def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 
@@ -3089,14 +3108,21 @@ def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) 
     except json.JSONDecodeError as error:
         raise SystemExit(f"install JSON after {context} is not valid JSON: {error}") from error
 
-    if list(payload) != ["context", "result"]:
-        raise SystemExit(f"install JSON after {context} top-level keys changed")
+    payload = assert_lifecycle_json_keys(
+        payload,
+        ["context", "result"],
+        label="top-level",
+        context=context,
+        command_label="install JSON",
+    )
 
-    install_context = payload.get("context")
-    if not isinstance(install_context, dict):
-        raise SystemExit(f"install JSON after {context} context is not an object")
-    if list(install_context) != ["sourceRoot", "claudeHome", "prefix"]:
-        raise SystemExit(f"install JSON after {context} context keys changed")
+    install_context = assert_lifecycle_json_keys(
+        payload.get("context"),
+        ["sourceRoot", "claudeHome", "prefix"],
+        label="context",
+        context=context,
+        command_label="install JSON",
+    )
     if not isinstance(install_context.get("sourceRoot"), str) or not install_context["sourceRoot"]:
         raise SystemExit(f"install JSON after {context} sourceRoot is missing")
     if not isinstance(install_context.get("claudeHome"), str) or not install_context["claudeHome"]:
@@ -3104,17 +3130,26 @@ def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) 
     if install_context.get("prefix") != prefix:
         raise SystemExit(f"install JSON after {context} prefix differs from expected {prefix}")
 
-    result = payload.get("result")
-    if not isinstance(result, dict):
-        raise SystemExit(f"install JSON after {context} result is not an object")
-    if list(result) != ["installed"]:
-        raise SystemExit(f"install JSON after {context} result keys changed")
+    result = assert_lifecycle_json_keys(
+        payload.get("result"),
+        ["installed"],
+        label="result",
+        context=context,
+        command_label="install JSON",
+    )
 
-    installed = result.get("installed")
-    if not isinstance(installed, dict):
-        raise SystemExit(f"install JSON after {context} installed is not an object")
-    if list(installed) != ["skills", "agents", "commands", "total"]:
-        raise SystemExit(f"install JSON after {context} installed keys changed")
+    installed = assert_lifecycle_json_keys(
+        result.get("installed"),
+        ["skills", "agents", "commands", "total"],
+        label="installed",
+        context=context,
+        command_label="install JSON",
+    )
+    for key in ("skills", "agents", "commands", "total"):
+        if not is_lifecycle_json_non_negative_int(installed.get(key)):
+            raise SystemExit(f"install JSON after {context} installed {key} is invalid")
+    if installed["total"] != installed["skills"] + installed["agents"] + installed["commands"]:
+        raise SystemExit(f"install JSON after {context} installed total does not match section counts")
     if installed != expected_installed_counts():
         raise SystemExit(f"install JSON after {context} installed counts differ from expected install set")
 
@@ -3142,14 +3177,21 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
     except json.JSONDecodeError as error:
         raise SystemExit(f"update dry-run JSON after {context} is not valid JSON: {error}") from error
 
-    if list(payload) != ["context", "plan", "result"]:
-        raise SystemExit(f"update dry-run JSON after {context} top-level keys changed")
+    payload = assert_lifecycle_json_keys(
+        payload,
+        ["context", "plan", "result"],
+        label="top-level",
+        context=context,
+        command_label="update dry-run JSON",
+    )
 
-    update_context = payload.get("context")
-    if not isinstance(update_context, dict):
-        raise SystemExit(f"update dry-run JSON after {context} context is not an object")
-    if list(update_context) != ["sourceRoot", "claudeHome", "prefix"]:
-        raise SystemExit(f"update dry-run JSON after {context} context keys changed")
+    update_context = assert_lifecycle_json_keys(
+        payload.get("context"),
+        ["sourceRoot", "claudeHome", "prefix"],
+        label="context",
+        context=context,
+        command_label="update dry-run JSON",
+    )
     if not isinstance(update_context.get("sourceRoot"), str) or not update_context["sourceRoot"]:
         raise SystemExit(f"update dry-run JSON after {context} sourceRoot is missing")
     if not isinstance(update_context.get("claudeHome"), str) or not update_context["claudeHome"]:
@@ -3157,17 +3199,21 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
     if update_context.get("prefix") != prefix:
         raise SystemExit(f"update dry-run JSON after {context} prefix differs from expected {prefix}")
 
-    plan = payload.get("plan")
-    if not isinstance(plan, dict):
-        raise SystemExit(f"update dry-run JSON after {context} plan is not an object")
-    if list(plan) != ["gitPull", "install"]:
-        raise SystemExit(f"update dry-run JSON after {context} plan keys changed")
+    plan = assert_lifecycle_json_keys(
+        payload.get("plan"),
+        ["gitPull", "install"],
+        label="plan",
+        context=context,
+        command_label="update dry-run JSON",
+    )
 
-    git_pull = plan.get("gitPull")
-    if not isinstance(git_pull, dict):
-        raise SystemExit(f"update dry-run JSON after {context} gitPull is not an object")
-    if list(git_pull) != ["sourceIsGitClone", "wouldRun", "command", "reason"]:
-        raise SystemExit(f"update dry-run JSON after {context} gitPull keys changed")
+    git_pull = assert_lifecycle_json_keys(
+        plan.get("gitPull"),
+        ["sourceIsGitClone", "wouldRun", "command", "reason"],
+        label="gitPull",
+        context=context,
+        command_label="update dry-run JSON",
+    )
     if not isinstance(git_pull.get("sourceIsGitClone"), bool):
         raise SystemExit(f"update dry-run JSON after {context} sourceIsGitClone is not boolean")
     if git_pull.get("wouldRun") != git_pull.get("sourceIsGitClone"):
@@ -3178,11 +3224,13 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
     if not isinstance(git_pull.get("reason"), str) or not git_pull["reason"]:
         raise SystemExit(f"update dry-run JSON after {context} gitPull reason is missing")
 
-    install = plan.get("install")
-    if not isinstance(install, dict):
-        raise SystemExit(f"update dry-run JSON after {context} install is not an object")
-    if list(install) != ["installScriptExists", "wouldRun", "installScript", "command", "reason"]:
-        raise SystemExit(f"update dry-run JSON after {context} install keys changed")
+    install = assert_lifecycle_json_keys(
+        plan.get("install"),
+        ["installScriptExists", "wouldRun", "installScript", "command", "reason"],
+        label="install",
+        context=context,
+        command_label="update dry-run JSON",
+    )
     if install.get("installScriptExists") is not True:
         raise SystemExit(f"update dry-run JSON after {context} install script is missing")
     if install.get("wouldRun") is not True:
@@ -3194,11 +3242,13 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
     if not isinstance(install.get("reason"), str) or not install["reason"]:
         raise SystemExit(f"update dry-run JSON after {context} install reason is missing")
 
-    result = payload.get("result")
-    if not isinstance(result, dict):
-        raise SystemExit(f"update dry-run JSON after {context} result is not an object")
-    if list(result) != ["dryRun", "mutating", "ready"]:
-        raise SystemExit(f"update dry-run JSON after {context} result keys changed")
+    result = assert_lifecycle_json_keys(
+        payload.get("result"),
+        ["dryRun", "mutating", "ready"],
+        label="result",
+        context=context,
+        command_label="update dry-run JSON",
+    )
     if result != {"dryRun": True, "mutating": False, "ready": True}:
         raise SystemExit(f"update dry-run JSON after {context} result summary changed")
 
@@ -3224,14 +3274,21 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
     except json.JSONDecodeError as error:
         raise SystemExit(f"status JSON after {context} is not valid JSON: {error}") from error
 
-    if list(payload) != ["context", "sections", "summary"]:
-        raise SystemExit(f"status JSON after {context} top-level keys changed")
+    payload = assert_lifecycle_json_keys(
+        payload,
+        ["context", "sections", "summary"],
+        label="top-level",
+        context=context,
+        command_label="status JSON",
+    )
 
-    status_context = payload.get("context")
-    if not isinstance(status_context, dict):
-        raise SystemExit(f"status JSON after {context} context is not an object")
-    if list(status_context) != ["sourceRoot", "claudeHome", "prefix"]:
-        raise SystemExit(f"status JSON after {context} context keys changed")
+    status_context = assert_lifecycle_json_keys(
+        payload.get("context"),
+        ["sourceRoot", "claudeHome", "prefix"],
+        label="context",
+        context=context,
+        command_label="status JSON",
+    )
     if not isinstance(status_context.get("sourceRoot"), str) or not status_context["sourceRoot"]:
         raise SystemExit(f"status JSON after {context} sourceRoot is missing")
     if not isinstance(status_context.get("claudeHome"), str) or not status_context["claudeHome"]:
@@ -3243,15 +3300,20 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
     if not isinstance(sections, list):
         raise SystemExit(f"status JSON after {context} sections is not a list")
     expected_kinds = ("skills", "agents", "commands")
+    if len(sections) != len(expected_kinds):
+        raise SystemExit(f"status JSON after {context} section count differs from expected install order")
     if tuple(section.get("kind") for section in sections if isinstance(section, dict)) != expected_kinds:
         raise SystemExit(f"status JSON after {context} section order differs from expected install order")
 
     total_installed = 0
     for section in sections:
-        if not isinstance(section, dict):
-            raise SystemExit(f"status JSON after {context} section is not an object")
-        if list(section) != ["kind", "label", "targetDir", "targetExists", "installed", "entries"]:
-            raise SystemExit(f"status JSON after {context} section keys changed")
+        section = assert_lifecycle_json_keys(
+            section,
+            ["kind", "label", "targetDir", "targetExists", "installed", "entries"],
+            label="section",
+            context=context,
+            command_label="status JSON",
+        )
         kind = section.get("kind")
         if kind not in EXPECTED_LIST_CATALOG:
             raise SystemExit(f"status JSON after {context} contains unsupported section kind: {kind}")
@@ -3261,6 +3323,8 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
             raise SystemExit(f"status JSON after {context} targetDir is missing for {kind}")
         if section.get("targetExists") is not True:
             raise SystemExit(f"status JSON after {context} target dir is missing for {kind}")
+        if not is_lifecycle_json_non_negative_int(section.get("installed")):
+            raise SystemExit(f"status JSON after {context} installed count is invalid for {kind}")
         expected_entries = tuple(
             status_entry_name(kind, item, prefix)
             for item in sorted(EXPECTED_LIST_CATALOG[kind])
@@ -3274,11 +3338,16 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
             raise SystemExit(f"status JSON after {context} installed count differs for {kind}")
         total_installed += len(expected_entries)
 
-    summary = payload.get("summary")
-    if not isinstance(summary, dict):
-        raise SystemExit(f"status JSON after {context} summary is not an object")
-    if list(summary) != ["installed", "missingSections", "emptySections"]:
-        raise SystemExit(f"status JSON after {context} summary keys changed")
+    summary = assert_lifecycle_json_keys(
+        payload.get("summary"),
+        ["installed", "missingSections", "emptySections"],
+        label="summary",
+        context=context,
+        command_label="status JSON",
+    )
+    for key in ("installed", "missingSections", "emptySections"):
+        if not is_lifecycle_json_non_negative_int(summary.get(key)):
+            raise SystemExit(f"status JSON after {context} summary {key} is invalid")
     if summary.get("installed") != total_installed:
         raise SystemExit(f"status JSON after {context} summary installed count differs")
     if summary.get("missingSections") != 0:
@@ -3306,14 +3375,21 @@ def assert_uninstall_json(raw: str, *, prefix: str, context: str, cmd: list[str]
     except json.JSONDecodeError as error:
         raise SystemExit(f"uninstall JSON after {context} is not valid JSON: {error}") from error
 
-    if list(payload) != ["context", "result"]:
-        raise SystemExit(f"uninstall JSON after {context} top-level keys changed")
+    payload = assert_lifecycle_json_keys(
+        payload,
+        ["context", "result"],
+        label="top-level",
+        context=context,
+        command_label="uninstall JSON",
+    )
 
-    uninstall_context = payload.get("context")
-    if not isinstance(uninstall_context, dict):
-        raise SystemExit(f"uninstall JSON after {context} context is not an object")
-    if list(uninstall_context) != ["sourceRoot", "claudeHome", "prefix"]:
-        raise SystemExit(f"uninstall JSON after {context} context keys changed")
+    uninstall_context = assert_lifecycle_json_keys(
+        payload.get("context"),
+        ["sourceRoot", "claudeHome", "prefix"],
+        label="context",
+        context=context,
+        command_label="uninstall JSON",
+    )
     if not isinstance(uninstall_context.get("sourceRoot"), str) or not uninstall_context["sourceRoot"]:
         raise SystemExit(f"uninstall JSON after {context} sourceRoot is missing")
     if not isinstance(uninstall_context.get("claudeHome"), str) or not uninstall_context["claudeHome"]:
@@ -3321,11 +3397,15 @@ def assert_uninstall_json(raw: str, *, prefix: str, context: str, cmd: list[str]
     if uninstall_context.get("prefix") != prefix:
         raise SystemExit(f"uninstall JSON after {context} prefix differs from expected {prefix}")
 
-    result = payload.get("result")
-    if not isinstance(result, dict):
-        raise SystemExit(f"uninstall JSON after {context} result is not an object")
-    if list(result) != ["removed"]:
-        raise SystemExit(f"uninstall JSON after {context} result keys changed")
+    result = assert_lifecycle_json_keys(
+        payload.get("result"),
+        ["removed"],
+        label="result",
+        context=context,
+        command_label="uninstall JSON",
+    )
+    if not is_lifecycle_json_non_negative_int(result.get("removed")):
+        raise SystemExit(f"uninstall JSON after {context} removed count is invalid")
     if result.get("removed") != expected_installed_symlink_count():
         raise SystemExit(f"uninstall JSON after {context} removed count differs from expected install set")
 
@@ -5445,6 +5525,41 @@ def run_self_test() -> None:
             context=context,
             cmd=[*install_cmd, "--json"],
         ),
+        expected="installed total does not match section counts",
+        scope="smoke assertions",
+    )
+    install_payload_bool_count = json.loads(passing_install_json("smoke-design-"))
+    install_payload_bool_count["result"]["installed"]["skills"] = True
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            json.dumps(install_payload_bool_count),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
+        expected="installed skills is invalid",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            json.dumps(["context", "result"]),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
+        expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    install_payload_wrong_counts = json.loads(passing_install_json("smoke-design-"))
+    install_payload_wrong_counts["result"]["installed"]["skills"] = 18
+    install_payload_wrong_counts["result"]["installed"]["total"] = 38
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            json.dumps(install_payload_wrong_counts),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
         expected="installed counts differ",
         scope="smoke assertions",
     )
@@ -5475,6 +5590,16 @@ def run_self_test() -> None:
             cmd=[*update_cmd, "--json"],
         ),
         expected="result summary changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(["context", "plan", "result"]),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="top-level is not an object",
         scope="smoke assertions",
     )
     status_cmd = ["design-ai", "status"]
@@ -5523,6 +5648,40 @@ def run_self_test() -> None:
         expected="summary installed count differs",
         scope="smoke assertions",
     )
+    status_payload_bool_summary = json.loads(passing_status_json("smoke-design-"))
+    status_payload_bool_summary["summary"]["missingSections"] = False
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_bool_summary),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="summary missingSections is invalid",
+        scope="smoke assertions",
+    )
+    status_payload_bool_section = json.loads(passing_status_json("smoke-design-"))
+    status_payload_bool_section["sections"][0]["installed"] = True
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_bool_section),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="installed count is invalid",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(["context", "sections", "summary"]),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="top-level is not an object",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: assert_status_json(
             passing_status_json("smoke-design-").replace("smoke-design-color-palette", "smoke-design-color"),
@@ -5558,6 +5717,28 @@ def run_self_test() -> None:
             cmd=[*uninstall_cmd, "--json"],
         ),
         expected="removed count differs",
+        scope="smoke assertions",
+    )
+    uninstall_payload_bool_removed = json.loads(passing_uninstall_json("smoke-design-"))
+    uninstall_payload_bool_removed["result"]["removed"] = True
+    expect_self_test_failure(
+        lambda: assert_uninstall_json(
+            json.dumps(uninstall_payload_bool_removed),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*uninstall_cmd, "--json"],
+        ),
+        expected="removed count is invalid",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_uninstall_json(
+            json.dumps(["context", "result"]),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*uninstall_cmd, "--json"],
+        ),
+        expected="top-level is not an object",
         scope="smoke assertions",
     )
     expect_self_test_failure(
