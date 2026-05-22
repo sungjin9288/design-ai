@@ -174,6 +174,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 177)** — Added learning profile audit controls: read-only `learn --audit` inspection for profile shape, duplicates, timestamp gaps, long notes, and possible sensitive content.
 - **v4.13 (Phase 178)** — Added scoped learning prompt injection: `prompt`/`pack --with-learning` now accept category and limit filters before including local preferences.
 - **v4.13 (Phase 179)** — Added learning profile stats summaries: read-only `learn --stats` reports counts, category/source distribution, recency, and audit status.
+- **v4.13 (Phase 180)** — Added learned-context audit summaries: `learn --export`, `prompt --with-learning`, and `pack --with-learning` now carry profile audit status and warn when injected preferences come from a warning-bearing profile.
 
 ## Patterns that didn't work
 

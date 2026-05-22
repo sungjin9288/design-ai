@@ -15,6 +15,7 @@ What ships in v4.13:
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects the learned context into the generated task prompt, with optional `--learning-category` and `--learning-limit` scoping.
 - `design-ai pack --with-learning ...` includes the same learned context in portable prompt packs, with the same optional scoping controls.
+- Exported and injected learned context carries an audit summary; if the profile has warnings, the generated context includes a notice to run `design-ai learn --audit`.
 
 What does not ship:
 
@@ -63,6 +64,8 @@ design-ai learn --export
 design-ai learn --export --category accessibility --limit 3
 ```
 
+The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings.
+
 Audit the local profile before using it in prompts:
 
 ```bash
@@ -101,6 +104,8 @@ design-ai prompt "Audit this checkout UX" --with-learning
 design-ai prompt "Audit this checkout UX" --with-learning --learning-category korean --learning-limit 5
 ```
 
+When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. If the local profile has audit warnings, the learned-context block tells the receiving agent to run `design-ai learn --audit` before relying on that context.
+
 Use learned context in a prompt pack:
 
 ```bash
@@ -137,5 +142,7 @@ Use `--with-learning` only when the saved context is relevant to the current tas
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries.
 
 Use `design-ai learn --stats` when you need a quick read on profile size, category distribution, source distribution, latest entry, and audit status before deciding whether to run a detailed audit.
+
+Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected.
 
 Deletion actions require `--yes` because they mutate the local profile. Use `--list` first when you need the exact id or list number.

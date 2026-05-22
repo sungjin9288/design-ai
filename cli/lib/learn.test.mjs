@@ -380,6 +380,11 @@ test("prompt and pack can include learning context explicitly", () => withTempDi
   });
 
   assert.equal(plan.learningContext.entries.length, 1);
+  assert.deepEqual(plan.learningContext.auditSummary, {
+    status: "pass",
+    failures: 0,
+    warnings: 0,
+  });
   assert.match(plan.prompt, /Learned design context:/);
   assert.match(plan.prompt, /Use quiet enterprise UI language/);
 
@@ -396,11 +401,48 @@ test("prompt and pack can include learning context explicitly", () => withTempDi
   assert.match(pack.plan.prompt, /Use quiet enterprise UI language/);
 }));
 
+test("buildLearningContext carries audit warnings into learned-context markdown", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise UI language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise UI language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const context = buildLearningContext({ filePath });
+
+  assert.equal(context.auditSummary.status, "warn");
+  assert.equal(context.auditSummary.failures, 0);
+  assert.ok(context.auditSummary.warnings >= 1);
+  assert.match(context.markdown, /Learning profile audit: warn/);
+  assert.match(context.markdown, /design-ai learn --audit/);
+}));
+
 test("buildLearningContext reports empty profiles without creating files", () => withTempDir((dir) => {
   const filePath = path.join(dir, "missing.json");
   const context = buildLearningContext({ filePath });
 
   assert.equal(context.empty, true);
   assert.deepEqual(context.entries, []);
+  assert.deepEqual(context.auditSummary, {
+    status: "pass",
+    failures: 0,
+    warnings: 0,
+  });
   assert.match(context.markdown, /No local learning preferences are stored yet/);
 }));

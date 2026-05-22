@@ -589,7 +589,12 @@ export function recentLearningEntries(profile, limit = 12, options = {}) {
   });
 }
 
-export function renderLearningMarkdown(profile, { limit = 12, category = "" } = {}) {
+function learningAuditNotice(auditSummary) {
+  if (!auditSummary || auditSummary.status === "pass") return "";
+  return `Learning profile audit: ${auditSummary.status} (${auditSummary.failures} failure(s), ${auditSummary.warnings} warning(s)). Run \`design-ai learn --audit\` before relying on this context.`;
+}
+
+export function renderLearningMarkdown(profile, { limit = 12, category = "", auditSummary = null } = {}) {
   const entries = recentLearningEntries(profile, limit, { category });
   const lines = ["## Learned design context", ""];
 
@@ -601,6 +606,10 @@ export function renderLearningMarkdown(profile, { limit = 12, category = "" } = 
   }
 
   lines.push("Apply these as user/project preferences. Do not let them override explicit task instructions, accessibility requirements, or privacy constraints.");
+  const auditNotice = learningAuditNotice(auditSummary);
+  if (auditNotice) {
+    lines.push(auditNotice);
+  }
   lines.push("");
   for (const entry of entries) {
     lines.push(`- [${entry.category}] ${entry.text}`);
@@ -609,6 +618,7 @@ export function renderLearningMarkdown(profile, { limit = 12, category = "" } = 
 }
 
 export function buildLearningContext({ filePath = defaultLearningFile(), limit = 12, category = "" } = {}) {
+  const audit = auditLearningProfile({ filePath });
   const profile = loadLearningProfile(filePath);
   const entries = recentLearningEntries(profile, limit, { category });
   return {
@@ -617,7 +627,8 @@ export function buildLearningContext({ filePath = defaultLearningFile(), limit =
     limit,
     entries,
     empty: entries.length === 0,
-    markdown: renderLearningMarkdown(profile, { limit, category }),
+    auditSummary: audit.summary,
+    markdown: renderLearningMarkdown(profile, { limit, category, auditSummary: audit.summary }),
   };
 }
 

@@ -12,7 +12,7 @@ This document separates shipped product scope from future product ideas so the r
 | Design agent workflows | Complete for v4.13 | 16 commands, 4 review agents, route/prompt/pack/check/search/show/examples CLI workflows | Real-CI verification before external launch |
 | Local release confidence | Complete for v4.13 | `npm run release:check` covers tests, audits, package contents, metadata, self-tests, and packed-tarball smoke | Public registry smoke after publish |
 | AI chat / conversational design consulting | Complete for v4.13 | `conversational-ui-designer`, `/conversational`, and conversational knowledge cover voice, chatbot, and AI chat UX | Keep Korean platform conventions current |
-| Local AI learning preferences | Complete for v4.13 | `design-ai learn`, filtered `prompt --with-learning` / `pack --with-learning`, confirmed `learn --forget`/`--clear`, and non-mutating `learn --audit` / `learn --stats` controls provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
+| Local AI learning preferences | Complete for v4.13 | `design-ai learn`, filtered `prompt --with-learning` / `pack --with-learning`, confirmed `learn --forget`/`--clear`, non-mutating `learn --audit` / `learn --stats`, and learned-context audit summaries provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
 | AI model training | Not shipped scope | README states fine-tuning is outside shipped scope | Define a separate product phase if embeddings or fine-tuning becomes a goal |
 | External launch | Not complete | Launch kit exists, but roadmap still marks external launch as held | Push, observe Real-CI, then publish/announce |
 
@@ -24,7 +24,7 @@ The shipped product is a model-agnostic design intelligence layer for AI coding 
 - Load the relevant design knowledge and examples.
 - Produce design-system, component, UX, motion, illustration, print, video, game UI, conversational, spatial, document, and slide-deck artifacts.
 - Check those artifacts for grounding, accessibility, responsive coverage, route-specific quality, and unresolved markers.
-- Store, filter, audit, summarize, export, forget, and clear explicit local learning preferences, and inject scoped category/limit subsets into prompts/packs only when requested.
+- Store, filter, audit, summarize, export, forget, and clear explicit local learning preferences, and inject scoped category/limit subsets into prompts/packs only when requested with audit-summary metadata attached.
 - Install, update, status-check, and uninstall through the packaged CLI.
 - Pass the release gate without relying on manual inspection.
 

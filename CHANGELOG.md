@@ -94,6 +94,7 @@ Help, list, and version JSON smoke assertions now verify command-discovery key s
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+Learned context exported or injected through `learn --export`, `prompt --with-learning`, and `pack --with-learning` now carries audit summary metadata and shows a warning notice when the local profile has audit warnings.
 `design-ai learn --stats` now summarizes local learning profile size, category/source distribution, recency, and audit status without mutating the profile.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now support `--learning-category` plus `--learning-limit` so local preferences can be scoped before injection.
 `design-ai learn --audit` now provides read-only local profile inspection for schema issues, duplicates, stale metadata, long notes, and possible sensitive content before prompt personalization.
@@ -135,6 +136,29 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 180 — Learned-context audit summaries
+
+#### Changed
+- Added `auditSummary` metadata to learned context returned by `learn --export --json`, `prompt --with-learning --json`, and `pack --with-learning --json`.
+- Added a compact warning notice inside learned-context Markdown when the local learning profile audit status is `warn`.
+- Kept clean profiles compact by omitting the notice for `pass` status.
+- Updated AI learning docs, quickstart guidance, product readiness docs, README status copy, roadmap, changelog, and session log for the audit-summary behavior.
+- Expanded learning tests for prompt/pack learning payload metadata and warning-aware learned-context Markdown.
+
+#### Impact
+- Users and downstream agents can see profile quality state at the point local preferences are exported or injected.
+- Existing local learning storage, read-only audit/stats, category/limit scoping, and confirmed deletion controls remain unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/prompt.test.mjs cli/lib/pack.test.mjs`
+- Learned-context audit summary smoke passed with temporary profile files.
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run release:check`
 
 ### Phase 179 — Learning profile stats summary
 

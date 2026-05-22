@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 180 — Learned-context audit summaries (v4.13.0) ✓ shipped
+
+`design-ai learn --export`, `design-ai prompt --with-learning`, and `design-ai pack --with-learning` now carry learning profile audit status with the learned context they produce.
+
+### Changed
+- Added `auditSummary` metadata to learned context payloads returned by export, prompt, and pack flows.
+- Added a compact learned-context Markdown notice when the local profile audit status is `warn`, pointing users back to `design-ai learn --audit` before relying on the context.
+- Kept passing profiles compact by omitting the notice when audit status is `pass`.
+- Updated AI learning docs, quickstart guidance, product readiness docs, README status copy, changelog, and session log for the audit-summary surface.
+- Expanded learning unit coverage for warning-aware learned-context Markdown and prompt/pack learning payload metadata.
+
+### Impact
+- Downstream agents and users can see whether injected local preferences came from a clean or warning-bearing profile.
+- Existing opt-in `--with-learning`, category/limit scoping, read-only `learn --audit` / `learn --stats`, and deletion confirmation behavior remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/prompt.test.mjs cli/lib/pack.test.mjs`
+- Learned-context audit summary smoke passed with temporary profile files.
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local personalization can remain opt-in while making profile quality warnings visible at the exact point where preferences enter generated prompts or packs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 179 — Learning profile stats summary (v4.13.0) ✓ shipped
 
 `design-ai learn` now includes a read-only stats mode for quickly checking local learning profile size, distribution, recency, and audit status.
