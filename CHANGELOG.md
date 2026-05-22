@@ -82,6 +82,7 @@ Release metadata now reports check examples, check artifact, check stdin, and ch
 Release metadata now reports human install, human status, and human uninstall output drift separately.
 Release metadata now reports human audit strict-quiet output drift separately.
 Release metadata now reports human update dry-run output drift separately.
+Release metadata now reports human doctor strict diagnostics output drift separately.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -117,6 +118,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 162 — Doctor human diagnostics output guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now keeps the broad doctor human diagnostics guard and adds a separate human doctor strict diagnostics output release policy phrase label.
+- `release-metadata.py --self-test` now has a drift fixture for dropping human diagnostics output from `design-ai doctor --strict` while the generic human diagnostics wording remains present.
+- README, Korean README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out human diagnostics output from `design-ai doctor --strict` in release smoke guidance.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost generic human diagnostics wording, the exact doctor strict command, or the doctor strict human diagnostics output contract.
+- The guard is documentation-only at runtime; existing CLI behavior, doctor execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve doctor strict smoke guidance as independently reported command, generic human diagnostics, and human diagnostics output contracts.
 
 ### Phase 161 — Human update dry-run output guard split
 
