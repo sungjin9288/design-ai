@@ -498,6 +498,32 @@ EXPECTED_CHECK_RESULT_IDS = (
     "korean-context",
     "route-component-spec-component-contract",
 )
+EXPECTED_CHECK_REPORT_KEYS = [
+    "filePath",
+    "routeId",
+    "status",
+    "passes",
+    "warnings",
+    "failures",
+    "total",
+    "score",
+    "results",
+]
+EXPECTED_CHECK_RESULT_KEYS = ["id", "title", "level", "passed", "message"]
+EXPECTED_CHECK_RESULT_KEYS_WITH_EVIDENCE = [*EXPECTED_CHECK_RESULT_KEYS, "evidence"]
+EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS = [
+    "mode",
+    "routeId",
+    "query",
+    "limit",
+    "status",
+    "total",
+    "passed",
+    "warned",
+    "failed",
+    "examples",
+]
+EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS = ["example", "report"]
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -1555,9 +1581,11 @@ def passing_check_report_payload(*, file_path: str) -> dict:
         "results": [
             {
                 "id": result_id,
+                "title": f"{result_id} fixture",
                 "level": "pass",
                 "passed": True,
                 "message": "fixture pass",
+                **({"evidence": "fixture evidence"} if result_id == "content-depth" else {}),
             }
             for result_id in EXPECTED_CHECK_RESULT_IDS
         ],
@@ -2825,6 +2853,22 @@ def is_audit_json_non_negative_number(value: object) -> bool:
     return type(value) in (int, float) and value >= 0
 
 
+def assert_check_json_keys(value: object, expected_keys: list[str], *, label: str, context: str) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise SystemExit(f"{label} after {context} is not an object")
+    if list(value) != expected_keys:
+        raise SystemExit(f"{label} after {context} keys changed")
+    return value
+
+
+def is_check_json_non_negative_int(value: object) -> bool:
+    return type(value) is int and value >= 0
+
+
+def is_check_json_positive_int(value: object) -> bool:
+    return type(value) is int and value > 0
+
+
 def assert_audit_json(
     raw: str,
     *,
@@ -2930,8 +2974,16 @@ def assert_component_spec_check_report(
     label: str,
     expected_file_suffix: str,
 ) -> None:
-    if not isinstance(report, dict):
-        raise SystemExit(f"{label} after {context} report is not an object")
+    report = assert_check_json_keys(
+        report,
+        EXPECTED_CHECK_REPORT_KEYS,
+        label=f"{label} report",
+        context=context,
+    )
+
+    file_path = report.get("filePath")
+    if not isinstance(file_path, str) or not file_path.endswith(expected_file_suffix):
+        raise SystemExit(f"{label} after {context} report file path differs from expected artifact")
 
     if report.get("routeId") != EXPECTED_ROUTE_ID:
         raise SystemExit(f"{label} after {context} report routeId differs from expected route")
@@ -2939,21 +2991,21 @@ def assert_component_spec_check_report(
     if report.get("status") != "pass":
         raise SystemExit(f"{label} after {context} report status is not pass")
 
+    for key in ("passes", "warnings", "failures", "total"):
+        if not is_check_json_non_negative_int(report.get(key)):
+            raise SystemExit(f"{label} after {context} report {key} is invalid")
+
     if report.get("warnings") != 0 or report.get("failures") != 0:
         raise SystemExit(f"{label} after {context} report contains warnings or failures")
 
     passes = report.get("passes")
     total = report.get("total")
-    if not isinstance(passes, int) or not isinstance(total, int) or passes != total or total < len(EXPECTED_CHECK_RESULT_IDS):
+    if passes != total or total != len(EXPECTED_CHECK_RESULT_IDS):
         raise SystemExit(f"{label} after {context} report pass count differs from expected total")
 
     score = report.get("score")
     if not isinstance(score, str) or score != f"{passes}/{total}":
         raise SystemExit(f"{label} after {context} report score differs from expected score")
-
-    file_path = report.get("filePath")
-    if not isinstance(file_path, str) or not file_path.endswith(expected_file_suffix):
-        raise SystemExit(f"{label} after {context} report file path differs from expected artifact")
 
     results = report.get("results")
     if not isinstance(results, list):
@@ -2970,10 +3022,40 @@ def assert_component_spec_check_report(
             f"{label} after {context} is missing expected result(s): {', '.join(missing_results)}"
         )
 
-    for result_id in EXPECTED_CHECK_RESULT_IDS:
-        result = result_by_id[result_id]
+    if len(results) != len(EXPECTED_CHECK_RESULT_IDS):
+        raise SystemExit(f"{label} after {context} result count differs from expected contract")
+
+    for index, expected_result_id in enumerate(EXPECTED_CHECK_RESULT_IDS):
+        raw_result = results[index]
+        if not isinstance(raw_result, dict):
+            raise SystemExit(f"{label} after {context} result entry is not an object")
+        if raw_result.get("id") != expected_result_id:
+            raise SystemExit(
+                f"{label} after {context} result order differs from expected check: {expected_result_id}"
+            )
+        expected_result_keys = (
+            EXPECTED_CHECK_RESULT_KEYS_WITH_EVIDENCE
+            if expected_result_id == "content-depth"
+            else EXPECTED_CHECK_RESULT_KEYS
+        )
+        result = assert_check_json_keys(
+            raw_result,
+            expected_result_keys,
+            label=f"{label} result entry",
+            context=context,
+        )
+        if not isinstance(result.get("title"), str) or not result["title"]:
+            raise SystemExit(f"{label} after {context} result title is missing: {expected_result_id}")
+        if type(result.get("passed")) is not bool:
+            raise SystemExit(f"{label} after {context} result passed flag is invalid: {expected_result_id}")
+        if not isinstance(result.get("message"), str) or not result["message"]:
+            raise SystemExit(f"{label} after {context} result message is missing: {expected_result_id}")
+        if "evidence" in expected_result_keys and (
+            not isinstance(result.get("evidence"), str) or not result["evidence"]
+        ):
+            raise SystemExit(f"{label} after {context} result evidence is missing: {expected_result_id}")
         if result.get("level") != "pass" or result.get("passed") is not True:
-            raise SystemExit(f"{label} after {context} result is not pass: {result_id}")
+            raise SystemExit(f"{label} after {context} result is not pass: {expected_result_id}")
 
 
 def assert_check_artifact_json_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -3019,8 +3101,12 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse check examples JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"check examples JSON after {context} is not an object")
+    payload = assert_check_json_keys(
+        payload,
+        EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS,
+        label="check examples JSON top-level",
+        context=context,
+    )
 
     if payload.get("mode") != "examples":
         raise SystemExit(f"check examples JSON after {context} mode differs from expected examples mode")
@@ -3031,6 +3117,8 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
     if payload.get("query") != EXPECTED_EXAMPLES_EFFECTIVE_QUERY:
         raise SystemExit(f"check examples JSON after {context} query differs from expected query")
 
+    if not is_check_json_positive_int(payload.get("limit")):
+        raise SystemExit(f"check examples JSON after {context} limit is invalid")
     if payload.get("limit") != EXPECTED_CHECK_EXAMPLES_LIMIT:
         raise SystemExit(f"check examples JSON after {context} limit differs from expected limit")
 
@@ -3044,6 +3132,8 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
         "failed": 0,
     }
     for key, expected in expected_counts.items():
+        if not is_check_json_non_negative_int(payload.get(key)):
+            raise SystemExit(f"check examples JSON after {context} {key} is invalid")
         if payload.get(key) != expected:
             raise SystemExit(f"check examples JSON after {context} {key} differs from expected count")
 
@@ -3052,12 +3142,19 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
         raise SystemExit(f"check examples JSON after {context} does not contain exactly one example")
 
     item = examples[0]
-    if not isinstance(item, dict):
-        raise SystemExit(f"check examples JSON after {context} contains an invalid example entry")
+    item = assert_check_json_keys(
+        item,
+        EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS,
+        label="check examples JSON example entry",
+        context=context,
+    )
 
-    example = item.get("example")
-    if not isinstance(example, dict):
-        raise SystemExit(f"check examples JSON after {context} example metadata is not an object")
+    example = assert_check_json_keys(
+        item.get("example"),
+        EXPECTED_REFERENCE_EXAMPLE_KEYS,
+        label="check examples JSON example metadata",
+        context=context,
+    )
 
     if example.get("relPath") != EXPECTED_EXAMPLES_HIT:
         raise SystemExit(f"check examples JSON after {context} example path differs from expected hit")
@@ -3069,12 +3166,32 @@ def assert_check_examples_json_component_spec(raw: str, *, context: str, cmd: li
     if not isinstance(title, str) or EXPECTED_EXAMPLES_TITLE_FRAGMENT not in title:
         raise SystemExit(f"check examples JSON after {context} example title differs from expected title")
 
+    if not is_check_json_positive_int(example.get("score")):
+        raise SystemExit(f"check examples JSON after {context} example score is invalid")
+
+    if not isinstance(example.get("preview"), str) or not example["preview"]:
+        raise SystemExit(f"check examples JSON after {context} example preview is missing")
+
     assert_component_spec_check_report(
         item.get("report"),
         context=context,
         label="check examples JSON",
         expected_file_suffix=EXPECTED_EXAMPLES_HIT,
     )
+
+    report = item["report"]
+    report_status_counts = {
+        "passed": 1 if report.get("status") == "pass" else 0,
+        "warned": 1 if report.get("status") == "warn" else 0,
+        "failed": 1 if report.get("status") == "fail" else 0,
+    }
+    if (
+        payload.get("total") != len(examples)
+        or payload.get("passed") != report_status_counts["passed"]
+        or payload.get("warned") != report_status_counts["warned"]
+        or payload.get("failed") != report_status_counts["failed"]
+    ):
+        raise SystemExit(f"check examples JSON after {context} summary counts do not match example reports")
 
 
 def assert_check_all_routes_issues_only_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -5702,6 +5819,35 @@ def run_self_test() -> None:
         expected="status is not pass",
         scope="smoke assertions",
     )
+    check_reordered_top_level = json.loads(passing_check_examples_json())
+    check_reordered_top_level = {
+        "routeId": check_reordered_top_level["routeId"],
+        "mode": check_reordered_top_level["mode"],
+        "query": check_reordered_top_level["query"],
+        "limit": check_reordered_top_level["limit"],
+        "status": check_reordered_top_level["status"],
+        "total": check_reordered_top_level["total"],
+        "passed": check_reordered_top_level["passed"],
+        "warned": check_reordered_top_level["warned"],
+        "failed": check_reordered_top_level["failed"],
+        "examples": check_reordered_top_level["examples"],
+    }
+    expect_self_test_failure(
+        lambda: assert_check_examples_json_component_spec(
+            json.dumps(check_reordered_top_level),
+            context=context,
+            cmd=check_examples_cmd,
+        ),
+        expected="top-level after smoke assertion self-test keys changed",
+        scope="smoke assertions",
+    )
+    check_bool_total = json.loads(passing_check_examples_json())
+    check_bool_total["total"] = True
+    expect_self_test_failure(
+        lambda: assert_check_examples_json_component_spec(json.dumps(check_bool_total), context=context, cmd=check_examples_cmd),
+        expected="total is invalid",
+        scope="smoke assertions",
+    )
     check_wrong_example = json.loads(passing_check_examples_json())
     check_wrong_example["examples"][0]["example"]["relPath"] = "examples/component-accordion.md"
     expect_self_test_failure(
@@ -5714,6 +5860,27 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_check_examples_json_component_spec(json.dumps(check_report_warning), context=context, cmd=check_examples_cmd),
         expected="warnings or failures",
+        scope="smoke assertions",
+    )
+    check_missing_entry_key = json.loads(passing_check_examples_json())
+    del check_missing_entry_key["examples"][0]["report"]
+    expect_self_test_failure(
+        lambda: assert_check_examples_json_component_spec(json.dumps(check_missing_entry_key), context=context, cmd=check_examples_cmd),
+        expected="example entry after smoke assertion self-test keys changed",
+        scope="smoke assertions",
+    )
+    check_missing_preview = json.loads(passing_check_examples_json())
+    del check_missing_preview["examples"][0]["example"]["preview"]
+    expect_self_test_failure(
+        lambda: assert_check_examples_json_component_spec(json.dumps(check_missing_preview), context=context, cmd=check_examples_cmd),
+        expected="example metadata after smoke assertion self-test keys changed",
+        scope="smoke assertions",
+    )
+    check_bool_example_score = json.loads(passing_check_examples_json())
+    check_bool_example_score["examples"][0]["example"]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_check_examples_json_component_spec(json.dumps(check_bool_example_score), context=context, cmd=check_examples_cmd),
+        expected="example score is invalid",
         scope="smoke assertions",
     )
     check_missing_result = json.loads(passing_check_examples_json())
@@ -5847,6 +6014,24 @@ def run_self_test() -> None:
         expected="file path differs",
         scope="smoke assertions",
     )
+    artifact_missing_report_key = json.loads(passing_check_artifact_json())
+    del artifact_missing_report_key["score"]
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(
+            json.dumps(artifact_missing_report_key),
+            context=context,
+            cmd=check_artifact_cmd,
+        ),
+        expected="report after smoke assertion self-test keys changed",
+        scope="smoke assertions",
+    )
+    artifact_bool_passes = json.loads(passing_check_artifact_json())
+    artifact_bool_passes["passes"] = True
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_bool_passes), context=context, cmd=check_artifact_cmd),
+        expected="report passes is invalid",
+        scope="smoke assertions",
+    )
     artifact_missing_result = json.loads(passing_check_artifact_json())
     artifact_missing_result["results"] = [
         result
@@ -5856,6 +6041,37 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_missing_result), context=context, cmd=check_artifact_cmd),
         expected="missing expected result",
+        scope="smoke assertions",
+    )
+    artifact_extra_result = json.loads(passing_check_artifact_json())
+    artifact_extra_result["results"].append(dict(artifact_extra_result["results"][-1]))
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_extra_result), context=context, cmd=check_artifact_cmd),
+        expected="result count differs",
+        scope="smoke assertions",
+    )
+    artifact_reordered_result = json.loads(passing_check_artifact_json())
+    artifact_reordered_result["results"][0], artifact_reordered_result["results"][1] = (
+        artifact_reordered_result["results"][1],
+        artifact_reordered_result["results"][0],
+    )
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_reordered_result), context=context, cmd=check_artifact_cmd),
+        expected="result order differs",
+        scope="smoke assertions",
+    )
+    artifact_missing_result_key = json.loads(passing_check_artifact_json())
+    del artifact_missing_result_key["results"][0]["message"]
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_missing_result_key), context=context, cmd=check_artifact_cmd),
+        expected="result entry after smoke assertion self-test keys changed",
+        scope="smoke assertions",
+    )
+    artifact_invalid_passed = json.loads(passing_check_artifact_json())
+    artifact_invalid_passed["results"][0]["passed"] = "true"
+    expect_self_test_failure(
+        lambda: assert_check_artifact_json_component_spec(json.dumps(artifact_invalid_passed), context=context, cmd=check_artifact_cmd),
+        expected="result passed flag is invalid",
         scope="smoke assertions",
     )
     artifact_failed_result = json.loads(passing_check_artifact_json())

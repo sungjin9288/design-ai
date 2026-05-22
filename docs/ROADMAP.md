@@ -51,6 +51,35 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 169 — Check JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai check --json`, `design-ai check --stdin --json`, and `design-ai check --examples --json` with stable report, result, example-entry, and example-metadata key guards.
+- Artifact and stdin check assertions now require stable report keys, exact component-spec result order, non-boolean integer count fields, exact score formatting, required result title/message fields, and `content-depth` evidence shape.
+- Check examples JSON assertions now require stable top-level key order, exact example entry shape, positive non-boolean example scores, non-empty previews, nested report schema checks, and summary counts aligned with nested example reports.
+- CHANGELOG and SESSION-LOG now record the Phase 169 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when `design-ai check` JSON remains parseable but drifts from the artifact QA contract used by release automation and downstream agents.
+- Existing CLI runtime behavior, check JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects `design-ai check` artifact/stdin/examples JSON as stable machine-readable QA contracts, not only as passing reports that contain expected result ids.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 168 — Route/prompt/pack JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.

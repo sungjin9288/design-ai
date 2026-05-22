@@ -89,6 +89,7 @@ Audit JSON smoke assertions now verify payload type, entry schema, numeric contr
 Lifecycle JSON smoke assertions now verify payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
 Corpus discovery JSON smoke assertions now verify search/show/examples key shape, file paths, exact integer fields, and limit-bound result counts.
 Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
+Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -124,6 +125,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 169 — Check JSON smoke schema assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai check --json`, `design-ai check --stdin --json`, and `design-ai check --examples --json` with stable report, result, example-entry, and example-metadata key guards.
+- Check report assertions now require exact non-boolean integer pass/warn/fail/total fields, exact score formatting, exact component-spec result order, required result title/message fields, and `content-depth` evidence shape.
+- Check examples JSON assertions now require stable top-level key order, exact non-boolean summary counts, exact example entry shape, positive non-boolean example scores, non-empty previews, and summary counts aligned with nested example reports.
+
+#### Impact
+- Package and registry smoke checks now fail when `design-ai check` JSON remains parseable but drifts from the machine-readable artifact QA contract used by release automation and downstream agents.
+- Existing CLI runtime behavior, check JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
 
 ### Phase 168 — Route/prompt/pack JSON smoke schema assertion hardening
 
