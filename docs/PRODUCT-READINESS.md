@@ -10,7 +10,7 @@ This document separates shipped product scope from future product ideas so the r
 |---|---|---|---|
 | Design consulting skills | Complete for v4.13 | 19 skills across design systems, UX audit, critique, handoff, motion, illustration, print, video, game UI, conversational UI, and spatial design | Keep knowledge fresh through normal stability review |
 | Design agent workflows | Complete for v4.13 | 16 commands, 4 review agents, route/prompt/pack/check/search/show/examples CLI workflows | Real-CI verification before external launch |
-| Local release confidence | Complete for v4.13 | `npm run release:check` covers tests, audits, package contents, metadata, self-tests, and packed-tarball smoke | Public registry smoke after publish |
+| Local release confidence | Complete for v4.13 | `npm run release:check` covers tests, audits, package contents, metadata, self-tests, and packed-tarball smoke including learning audit cleanup guidance | Public registry smoke after publish |
 | AI chat / conversational design consulting | Complete for v4.13 | `conversational-ui-designer`, `/conversational`, and conversational knowledge cover voice, chatbot, and AI chat UX | Keep Korean platform conventions current |
 | Local AI learning preferences | Complete for v4.13 | `design-ai learn`, filtered `prompt --with-learning` / `pack --with-learning`, confirmed `learn --forget`/`--clear`, non-mutating `learn --audit` cleanup suggestions / `learn --stats`, and learned-context audit summaries provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
 | AI model training | Not shipped scope | README states fine-tuning is outside shipped scope | Define a separate product phase if embeddings or fine-tuning becomes a goal |
@@ -28,7 +28,7 @@ The shipped product is a model-agnostic design intelligence layer for AI coding 
 - Install, update, status-check, and uninstall through the packaged CLI.
 - Pass the release gate without relying on manual inspection.
 
-As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite.
+As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite, including packed-tarball checks for learning audit cleanup suggestions.
 
 Local learning preferences are documented in [`AI-LEARNING.md`](AI-LEARNING.md).
 

@@ -176,6 +176,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 179)** — Added learning profile stats summaries: read-only `learn --stats` reports counts, category/source distribution, recency, and audit status.
 - **v4.13 (Phase 180)** — Added learned-context audit summaries: `learn --export`, `prompt --with-learning`, and `pack --with-learning` now carry profile audit status and warn when injected preferences come from a warning-bearing profile.
 - **v4.13 (Phase 181)** — Added learning audit cleanup suggestions: `learn --audit` now emits read-only remediation guidance plus safe `--forget` commands when warning entries can be removed unambiguously.
+- **v4.13 (Phase 182)** — Added package smoke coverage for learning audit cleanup suggestions: packed-tarball installed-bin and one-shot npm exec paths now verify `learn --audit` JSON suggestions plus human Suggested cleanup output, and release metadata now guards the release-facing docs phrase.
 
 ## Patterns that didn't work
 
@@ -231,7 +232,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers learning audit cleanup guidance, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **Real-CI verification** — push the branch, observe audit / unit / package / docs workflows green.
 2. **External launch** — publish only after CI and owner review; announcement drafts already exist under `docs/announcements/`.

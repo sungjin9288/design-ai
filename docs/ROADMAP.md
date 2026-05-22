@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 182 — Learning audit package smoke coverage (v4.13.0) ✓ shipped
+
+Packed-tarball smoke now verifies the `learn --audit` cleanup guidance through both installed-bin and one-shot `npm exec --package <tarball>` execution paths.
+
+### Changed
+- Added a package-smoke learning profile fixture with duplicate-entry and sensitive-content warnings.
+- Added JSON assertions for `learn --audit --json` status, issue codes, suggestion actions, and safe `--forget ... --yes` command args.
+- Added human-output assertions for the Suggested cleanup section and cleanup command strings.
+- Wired the learned-audit cleanup smoke into both installed-bin and npm exec tarball paths.
+- Added package-smoke self-test fixtures for the new JSON and human-output assertions.
+- Added a release metadata phrase guard so release-facing docs keep mentioning the learn-audit cleanup smoke surface.
+
+### Impact
+- The local release gate now catches packaging/runtime regressions in learning audit cleanup suggestions before publish or push.
+- Existing `learn --audit` behavior, profile storage, confirmed deletion controls, repository audits, package contents checks, and registry smoke remain unchanged.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run package:smoke`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The cleanup guidance shipped in Phase 181 is now exercised in the same packed-tarball surfaces adopters will use.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 181 — Learning audit cleanup suggestions (v4.13.0) ✓ shipped
 
 `design-ai learn --audit` now turns learning profile warnings into explicit cleanup guidance without mutating the local profile.
