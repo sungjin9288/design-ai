@@ -456,9 +456,45 @@ RELEASE_UNKNOWN_SEARCH_DIR_FAILURE_TERM_GROUPS = (
 RELEASE_SUGGESTION_FAILURE_TERM_GROUPS = (
     (
         "unknown route-id/option/value suggestion",
+        "unknown route-id/option/value suggestions",
         "unknown route-id/option/value suggestion and numeric range failures",
+        (
+            "unknown route-id suggestion, unknown option suggestion, "
+            "unknown value suggestion, and numeric range failure"
+        ),
+        (
+            "unknown route-id suggestion, unknown option suggestion, "
+            "unknown value suggestion, numeric range failure"
+        ),
         "unknown route-id/option/value suggestion 및 numeric range failure",
     ),
+    (
+        "numeric range failure",
+        "numeric range failures",
+        "numeric range failure 검증",
+    ),
+)
+RELEASE_UNKNOWN_ROUTE_ID_SUGGESTION_TERM_GROUPS = (
+    (
+        "unknown route-id suggestion",
+        "unknown route-id suggestions",
+        "unknown route id suggestion",
+        "unknown route id suggestions",
+    ),
+)
+RELEASE_UNKNOWN_OPTION_SUGGESTION_TERM_GROUPS = (
+    (
+        "unknown option suggestion",
+        "unknown option suggestions",
+    ),
+)
+RELEASE_UNKNOWN_VALUE_SUGGESTION_TERM_GROUPS = (
+    (
+        "unknown value suggestion",
+        "unknown value suggestions",
+    ),
+)
+RELEASE_NUMERIC_RANGE_FAILURE_TERM_GROUPS = (
     (
         "numeric range failure",
         "numeric range failures",
@@ -637,6 +673,10 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "unknown list-domain failure phrase",
     "unknown search-dir failure phrase",
     "suggestion failure smoke phrase",
+    "unknown route-id suggestion phrase",
+    "unknown option suggestion phrase",
+    "unknown value suggestion phrase",
+    "numeric range failure phrase",
     "prompt-pack mode smoke phrase",
     "prompt-pack output smoke phrase",
     "check command smoke phrase",
@@ -710,6 +750,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("unknown list-domain failure phrase", RELEASE_UNKNOWN_LIST_DOMAIN_FAILURE_TERM_GROUPS),
     ("unknown search-dir failure phrase", RELEASE_UNKNOWN_SEARCH_DIR_FAILURE_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
+    ("unknown route-id suggestion phrase", RELEASE_UNKNOWN_ROUTE_ID_SUGGESTION_TERM_GROUPS),
+    ("unknown option suggestion phrase", RELEASE_UNKNOWN_OPTION_SUGGESTION_TERM_GROUPS),
+    ("unknown value suggestion phrase", RELEASE_UNKNOWN_VALUE_SUGGESTION_TERM_GROUPS),
+    ("numeric range failure phrase", RELEASE_NUMERIC_RANGE_FAILURE_TERM_GROUPS),
     ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
@@ -1077,7 +1121,7 @@ human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
 explicit `show --lines` output and `route --explain` output,
 unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure,
-unknown route-id/option/value suggestion and numeric range failures,
+unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
 prompt/pack JSON/markdown/from-file/stdin output,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
 check examples/artifact/stdin/all-routes output,
@@ -1119,7 +1163,7 @@ human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
 명시적 `show --lines` 출력과 `route --explain` 출력도 확인해요.
 unknown command failure, unknown help-topic failure, unknown list-domain failure, unknown search-dir failure 검증도 확인해요.
-unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
+unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
 prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
 check examples/artifact/stdin/all-routes 출력도 확인해요.
@@ -2236,14 +2280,107 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("numeric range failure", "numeric range"),
+            "README.md": english_policy_doc.replace(
+                (
+                    "unknown route-id suggestion, unknown option suggestion, "
+                    "unknown value suggestion, and numeric range failure"
+                ),
+                "suggestion failures",
+            ),
         },
         audit_count=8,
     )
     suggestion_failure_drift_errors = "\n".join(suggestion_failure_drift["errors"])
     assert_condition(
-        "README.ko.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
+        "README.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
         "release policy docs should mention suggestion and numeric range failure smoke",
+    )
+
+    route_id_suggestion_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown route-id suggestion",
+                "unknown route suggestion",
+            ),
+        },
+        audit_count=8,
+    )
+    route_id_suggestion_drift_errors = "\n".join(route_id_suggestion_drift["errors"])
+    assert_condition(
+        (
+            "README.md is missing unknown route-id suggestion phrase"
+            in route_id_suggestion_drift_errors
+        ),
+        "release policy docs should mention unknown route-id suggestion smoke",
+    )
+
+    option_suggestion_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown option suggestion",
+                "unknown flag suggestion",
+            ),
+        },
+        audit_count=8,
+    )
+    option_suggestion_drift_errors = "\n".join(option_suggestion_drift["errors"])
+    assert_condition(
+        (
+            "README.md is missing unknown option suggestion phrase"
+            in option_suggestion_drift_errors
+        ),
+        "release policy docs should mention unknown option suggestion smoke",
+    )
+
+    value_suggestion_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown value suggestion",
+                "unknown parameter suggestion",
+            ),
+        },
+        audit_count=8,
+    )
+    value_suggestion_drift_errors = "\n".join(value_suggestion_drift["errors"])
+    assert_condition(
+        (
+            "README.md is missing unknown value suggestion phrase"
+            in value_suggestion_drift_errors
+        ),
+        "release policy docs should mention unknown value suggestion smoke",
+    )
+
+    numeric_range_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace("numeric range failure", "numeric range"),
+        },
+        audit_count=8,
+    )
+    numeric_range_failure_drift_errors = "\n".join(numeric_range_failure_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing numeric range failure phrase"
+        in numeric_range_failure_drift_errors,
+        "release policy docs should mention numeric range failure smoke",
     )
 
     prompt_pack_mode_drift = release_metadata_summary(

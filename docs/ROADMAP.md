@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 155 — Suggestion failure guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports route-id suggestion, option suggestion, value suggestion, and numeric range failure drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad suggestion/range failure guard and adds separate route-id suggestion, option suggestion, value suggestion, and numeric range failure release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping unknown route-id suggestion wording, unknown option suggestion wording, unknown value suggestion wording, and numeric range failure wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out the four suggestion/range smoke surfaces as separate protected release smoke surfaces.
+- CHANGELOG and SESSION-LOG now record the Phase 155 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose route-id suggestion, option suggestion, value suggestion, or numeric range failure coverage.
+- Existing CLI, unknown route-id suggestion execution, unknown option suggestion execution, unknown value suggestion execution, numeric range failure execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve route-id suggestion, option suggestion, value suggestion, and numeric range failure smoke guidance as four independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 154 — Unknown failure guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports unknown command, help-topic, list-domain, and search-dir failure drift separately.
