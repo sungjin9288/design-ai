@@ -90,6 +90,7 @@ Lifecycle JSON smoke assertions now verify payload type, nested key shape, exact
 Corpus discovery JSON smoke assertions now verify search/show/examples key shape, file paths, exact integer fields, and limit-bound result counts.
 Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
 Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
+Help, list, and version JSON smoke assertions now verify command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -125,6 +126,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 170 — Help/list/version JSON smoke schema assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai help --json`, `design-ai list --json`, and `design-ai version --json` with stable top-level, topic, alias, catalog section, catalog item, context, and version key guards.
+- Help JSON assertions now require exact topic usage strings, stable topic entry key order, exact alias order, and per-topic alias lists aligned with the canonical alias map.
+- List/version JSON assertions now reject non-object payloads, key-order drift, bool-as-int section counts, catalog item shape drift, and version context/metadata key drift.
+
+#### Impact
+- Package and registry smoke checks now fail when command discovery or version metadata JSON remains parseable but drifts from the machine-readable contracts used by automation and downstream agents.
+- Existing CLI runtime behavior, help/list/version JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
 
 ### Phase 169 — Check JSON smoke schema assertion hardening
 

@@ -85,6 +85,27 @@ EXPECTED_HELP_ALIASES = {
     "ex": "examples",
     "v": "version",
 }
+EXPECTED_HELP_PAYLOAD_KEYS = ["usage", "topics", "aliases"]
+EXPECTED_HELP_TOPIC_KEYS = ["topic", "usage", "description", "aliases"]
+EXPECTED_HELP_TOPIC_USAGES = {
+    "install": "design-ai install [--json]",
+    "update": "design-ai update [--dry-run] [--json]",
+    "uninstall": "design-ai uninstall [--json]",
+    "status": "design-ai status [--json]",
+    "list": "design-ai list [skills|commands|agents] [--json]",
+    "search": "design-ai search <query> [--dir kind] [--limit N] [--json]",
+    "show": "design-ai show <file[:line]> [--lines N:M] [--context N] [--json]",
+    "route": "design-ai route <brief|--from-file file|--stdin|--list> [--limit N]",
+    "routes": "design-ai routes [--json]",
+    "prompt": "design-ai prompt <brief|--from-file file|--stdin> [--route id] [--out file]",
+    "pack": "design-ai pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]",
+    "check": "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes]",
+    "audit": "design-ai audit [--strict] [--quiet] [--json]",
+    "doctor": "design-ai doctor [--strict] [--json] [--fix]",
+    "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
+    "version": "design-ai version [--json]",
+    "help": "design-ai help [command|--json]",
+}
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install [--json]"),
     "update": ("Usage:", "design-ai update [--dry-run] [--json]"),
@@ -2002,6 +2023,21 @@ def assert_list_catalog_output(raw: str, *, kind: str, context: str, cmd: list[s
             )
 
 
+def assert_smoke_json_keys(
+    value: object,
+    expected_keys: list[str],
+    *,
+    label: str,
+    context: str,
+    command_label: str,
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise SystemExit(f"{command_label} after {context} {label} is not an object")
+    if list(value) != expected_keys:
+        raise SystemExit(f"{command_label} after {context} {label} keys changed")
+    return value
+
+
 def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 
@@ -2014,8 +2050,13 @@ def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str
     except json.JSONDecodeError as error:
         raise SystemExit(f"list catalog JSON after {context} is not valid JSON: {error}") from error
 
-    if list(catalog) != ["name", "version", "kind", "sections"]:
-        raise SystemExit(f"list catalog JSON after {context} top-level keys changed")
+    catalog = assert_smoke_json_keys(
+        catalog,
+        ["name", "version", "kind", "sections"],
+        label="top-level",
+        context=context,
+        command_label="list catalog JSON",
+    )
     if catalog.get("name") != "design-ai":
         raise SystemExit(f"list catalog JSON after {context} plugin name is not design-ai")
     if not re.fullmatch(r"\d+\.\d+\.\d+", str(catalog.get("version", ""))):
@@ -2028,12 +2069,17 @@ def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str
         raise SystemExit(f"list catalog JSON after {context} should contain exactly one section")
 
     section = sections[0]
-    if not isinstance(section, dict):
-        raise SystemExit(f"list catalog JSON after {context} section is not an object")
-    if list(section) != ["kind", "count", "items"]:
-        raise SystemExit(f"list catalog JSON after {context} section keys changed")
+    section = assert_smoke_json_keys(
+        section,
+        ["kind", "count", "items"],
+        label="section",
+        context=context,
+        command_label="list catalog JSON",
+    )
     if section.get("kind") != kind:
         raise SystemExit(f"list catalog JSON after {context} section kind differs from expected {kind}")
+    if type(section.get("count")) is not int:
+        raise SystemExit(f"list catalog JSON after {context} section count is invalid")
     if section.get("count") != len(expected_items):
         raise SystemExit(f"list catalog JSON after {context} section count differs from expected {len(expected_items)}")
 
@@ -2042,10 +2088,13 @@ def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str
         raise SystemExit(f"list catalog JSON after {context} items is not a list")
     observed_names = []
     for item in items:
-        if not isinstance(item, dict):
-            raise SystemExit(f"list catalog JSON after {context} item is not an object")
-        if list(item) != ["name", "path", "description"]:
-            raise SystemExit(f"list catalog JSON after {context} item keys changed")
+        item = assert_smoke_json_keys(
+            item,
+            ["name", "path", "description"],
+            label="item",
+            context=context,
+            command_label="list catalog JSON",
+        )
         observed_names.append(item.get("name"))
         if item.get("path") != list_catalog_item_path(kind, str(item.get("name", ""))):
             raise SystemExit(f"list catalog JSON after {context} item path differs for {item.get('name')}")
@@ -3229,7 +3278,7 @@ def passing_help_catalog_json() -> str:
         "topics": [
             {
                 "topic": topic,
-                "usage": f"design-ai {topic}",
+                "usage": EXPECTED_HELP_TOPIC_USAGES[topic],
                 "description": f"{topic} help topic",
                 "aliases": [
                     alias
@@ -3561,8 +3610,13 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse help JSON after {context}") from error
 
-    if not isinstance(catalog, dict):
-        raise SystemExit(f"help JSON after {context} is not an object")
+    catalog = assert_smoke_json_keys(
+        catalog,
+        EXPECTED_HELP_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="help JSON",
+    )
 
     raw_topics = catalog.get("topics")
     if not isinstance(raw_topics, list):
@@ -3571,6 +3625,8 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     raw_aliases = catalog.get("aliases")
     if not isinstance(raw_aliases, dict):
         raise SystemExit(f"help JSON after {context} does not contain an aliases object")
+    if list(raw_aliases) != list(EXPECTED_HELP_ALIASES):
+        raise SystemExit(f"help JSON after {context} alias order differs from expected order")
 
     raw_usage = catalog.get("usage")
     if raw_usage != EXPECTED_HELP_USAGE:
@@ -3582,18 +3638,37 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
     topics: list[str] = []
     topic_aliases: dict[str, str] = {}
     for item in raw_topics:
-        topic = item.get("topic") if isinstance(item, dict) else None
+        item = assert_smoke_json_keys(
+            item,
+            EXPECTED_HELP_TOPIC_KEYS,
+            label="topic entry",
+            context=context,
+            command_label="help JSON",
+        )
+        topic = item.get("topic")
         if not isinstance(topic, str) or not topic:
             raise SystemExit(f"help JSON after {context} contains an invalid topic entry")
         usage = item.get("usage")
-        if not isinstance(usage, str) or not usage:
-            raise SystemExit(f"help JSON after {context} topic {topic} has invalid usage")
+        expected_usage = EXPECTED_HELP_TOPIC_USAGES.get(topic)
+        if expected_usage is None:
+            if not isinstance(usage, str) or not usage:
+                raise SystemExit(f"help JSON after {context} topic {topic} has invalid usage")
+        elif usage != expected_usage:
+            raise SystemExit(f"help JSON after {context} usage differs for topic {topic}")
         description = item.get("description")
         if not isinstance(description, str) or not description:
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid description")
         aliases = item.get("aliases")
         if not isinstance(aliases, list) or not all(isinstance(alias, str) and alias for alias in aliases):
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid aliases")
+        if topic in EXPECTED_HELP_TOPIC_USAGES:
+            expected_aliases = [
+                alias
+                for alias, target in EXPECTED_HELP_ALIASES.items()
+                if target == topic
+            ]
+            if aliases != expected_aliases:
+                raise SystemExit(f"help JSON after {context} aliases differ for topic {topic}")
         for alias in aliases:
             if raw_aliases.get(alias) != topic:
                 raise SystemExit(
@@ -3684,22 +3759,31 @@ def assert_version_json(raw: str, *, context: str, cmd: list[str]) -> None:
     except json.JSONDecodeError as error:
         raise SystemExit(f"version JSON after {context} is not valid JSON: {error}") from error
 
-    if list(payload) != ["context", "versions"]:
-        raise SystemExit(f"version JSON after {context} top-level keys changed")
+    payload = assert_smoke_json_keys(
+        payload,
+        ["context", "versions"],
+        label="top-level",
+        context=context,
+        command_label="version JSON",
+    )
 
-    version_context = payload.get("context")
-    if not isinstance(version_context, dict):
-        raise SystemExit(f"version JSON after {context} context is not an object")
-    if list(version_context) != ["sourceRoot"]:
-        raise SystemExit(f"version JSON after {context} context keys changed")
+    version_context = assert_smoke_json_keys(
+        payload.get("context"),
+        ["sourceRoot"],
+        label="context",
+        context=context,
+        command_label="version JSON",
+    )
     if not isinstance(version_context.get("sourceRoot"), str) or not version_context["sourceRoot"]:
         raise SystemExit(f"version JSON after {context} sourceRoot is missing")
 
-    versions = payload.get("versions")
-    if not isinstance(versions, dict):
-        raise SystemExit(f"version JSON after {context} versions is not an object")
-    if list(versions) != ["cli", "plugin", "aligned"]:
-        raise SystemExit(f"version JSON after {context} version keys changed")
+    versions = assert_smoke_json_keys(
+        payload.get("versions"),
+        ["cli", "plugin", "aligned"],
+        label="versions",
+        context=context,
+        command_label="version JSON",
+    )
     for key in ("cli", "plugin"):
         value = versions.get(key)
         if not isinstance(value, str) or not re.fullmatch(r"\d+\.\d+\.\d+", value):
@@ -4543,6 +4627,28 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     expect_self_test_failure(
+        lambda: assert_list_catalog_json(json.dumps([]), kind="skills", context=context, cmd=[*list_cmd, "--json"]),
+        expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    reordered_list_catalog = json.loads(passing_list_catalog_json("skills"))
+    reordered_list_catalog = {
+        "version": reordered_list_catalog["version"],
+        "name": reordered_list_catalog["name"],
+        "kind": reordered_list_catalog["kind"],
+        "sections": reordered_list_catalog["sections"],
+    }
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json(
+            json.dumps(reordered_list_catalog),
+            kind="skills",
+            context=context,
+            cmd=[*list_cmd, "--json"],
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
         lambda: assert_list_catalog_json(
             passing_list_catalog_json("skills").replace('"count": 19', '"count": 18'),
             kind="skills",
@@ -4550,6 +4656,18 @@ def run_self_test() -> None:
             cmd=[*list_cmd, "--json"],
         ),
         expected="section count differs",
+        scope="smoke assertions",
+    )
+    bool_list_count_catalog = json.loads(passing_list_catalog_json("skills"))
+    bool_list_count_catalog["sections"][0]["count"] = True
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json(
+            json.dumps(bool_list_count_catalog),
+            kind="skills",
+            context=context,
+            cmd=[*list_cmd, "--json"],
+        ),
+        expected="section count is invalid",
         scope="smoke assertions",
     )
     expect_self_test_failure(
@@ -4560,6 +4678,18 @@ def run_self_test() -> None:
             cmd=[*list_cmd, "--json"],
         ),
         expected="item path differs",
+        scope="smoke assertions",
+    )
+    missing_item_description_catalog = json.loads(passing_list_catalog_json("skills"))
+    del missing_item_description_catalog["sections"][0]["items"][0]["description"]
+    expect_self_test_failure(
+        lambda: assert_list_catalog_json(
+            json.dumps(missing_item_description_catalog),
+            kind="skills",
+            context=context,
+            cmd=[*list_cmd, "--json"],
+        ),
+        expected="item keys changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(
@@ -6152,7 +6282,36 @@ def run_self_test() -> None:
             context=context,
             cmd=help_cmd,
         ),
+        expected="top-level",
+        scope="smoke assertions",
+    )
+    missing_aliases_object_catalog = {
+        "usage": EXPECTED_HELP_USAGE,
+        "topics": [],
+        "aliases": [],
+    }
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(missing_aliases_object_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
         expected="aliases object",
+        scope="smoke assertions",
+    )
+    reordered_help_catalog = json.loads(passing_help_catalog_json())
+    reordered_help_catalog = {
+        "topics": reordered_help_catalog["topics"],
+        "usage": reordered_help_catalog["usage"],
+        "aliases": reordered_help_catalog["aliases"],
+    }
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(reordered_help_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="top-level",
         scope="smoke assertions",
     )
     invalid_root_usage_catalog = json.loads(passing_help_catalog_json())
@@ -6174,7 +6333,24 @@ def run_self_test() -> None:
             context=context,
             cmd=help_cmd,
         ),
-        expected="invalid usage",
+        expected="usage differs for topic install",
+        scope="smoke assertions",
+    )
+    invalid_topic_key_catalog = json.loads(passing_help_catalog_json())
+    topic_entry = invalid_topic_key_catalog["topics"][0]
+    invalid_topic_key_catalog["topics"][0] = {
+        "usage": topic_entry["usage"],
+        "topic": topic_entry["topic"],
+        "description": topic_entry["description"],
+        "aliases": topic_entry["aliases"],
+    }
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(invalid_topic_key_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="topic entry",
         scope="smoke assertions",
     )
     invalid_alias_catalog = json.loads(passing_help_catalog_json())
@@ -6188,6 +6364,19 @@ def run_self_test() -> None:
         expected="aliases differ",
         scope="smoke assertions",
     )
+    alias_order_catalog = json.loads(passing_help_catalog_json())
+    alias_items = list(alias_order_catalog["aliases"].items())
+    alias_items[0], alias_items[1] = alias_items[1], alias_items[0]
+    alias_order_catalog["aliases"] = dict(alias_items)
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(alias_order_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="alias order differs",
+        scope="smoke assertions",
+    )
     missing_topic_alias_catalog = json.loads(passing_help_catalog_json())
     missing_topic_alias_catalog["topics"][0]["aliases"] = []
     expect_self_test_failure(
@@ -6196,18 +6385,18 @@ def run_self_test() -> None:
             context=context,
             cmd=help_cmd,
         ),
-        expected="topic aliases differ",
+        expected="aliases differ for topic install",
         scope="smoke assertions",
     )
     alias_mapping_catalog = json.loads(passing_help_catalog_json())
-    alias_mapping_catalog["topics"][0]["aliases"].append("find")
+    alias_mapping_catalog["topics"][1]["aliases"] = list(reversed(alias_mapping_catalog["topics"][1]["aliases"]))
     expect_self_test_failure(
         lambda: parse_help_topics(
             json.dumps(alias_mapping_catalog),
             context=context,
             cmd=help_cmd,
         ),
-        expected="does not map",
+        expected="aliases differ for topic update",
         scope="smoke assertions",
     )
     missing_topic_catalog = json.loads(passing_help_catalog_json())
@@ -6375,6 +6564,52 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_version_json("\x1b[31m{}", context=context, cmd=[*version_cmd, "--json"]),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_version_json(json.dumps([]), context=context, cmd=[*version_cmd, "--json"]),
+        expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    reordered_version_payload = json.loads(passing_version_json())
+    reordered_version_payload = {
+        "versions": reordered_version_payload["versions"],
+        "context": reordered_version_payload["context"],
+    }
+    expect_self_test_failure(
+        lambda: assert_version_json(
+            json.dumps(reordered_version_payload),
+            context=context,
+            cmd=[*version_cmd, "--json"],
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    missing_version_context_key = json.loads(passing_version_json())
+    missing_version_context_key["context"] = {}
+    expect_self_test_failure(
+        lambda: assert_version_json(
+            json.dumps(missing_version_context_key),
+            context=context,
+            cmd=[*version_cmd, "--json"],
+        ),
+        expected="context keys changed",
+        scope="smoke assertions",
+    )
+    reordered_versions_key_payload = json.loads(passing_version_json())
+    versions_payload = reordered_versions_key_payload["versions"]
+    reordered_versions_key_payload["versions"] = {
+        "plugin": versions_payload["plugin"],
+        "cli": versions_payload["cli"],
+        "aligned": versions_payload["aligned"],
+    }
+    expect_self_test_failure(
+        lambda: assert_version_json(
+            json.dumps(reordered_versions_key_payload),
+            context=context,
+            cmd=[*version_cmd, "--json"],
+        ),
+        expected="versions keys changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(

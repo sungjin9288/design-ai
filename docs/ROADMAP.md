@@ -51,6 +51,36 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 170 — Help/list/version JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Help, list, and version JSON smoke assertions now verify command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai help --json`, `design-ai list --json`, and `design-ai version --json` with stable top-level, topic, alias, catalog section, catalog item, context, and version key guards.
+- Help JSON assertions now require exact topic usage strings, stable topic entry key order, exact alias order, and per-topic alias lists aligned with the canonical alias map.
+- List JSON assertions now reject non-object payloads, top-level key-order drift, bool-as-int section counts, and catalog item shape drift.
+- Version JSON assertions now reject non-object payloads, top-level key-order drift, missing context keys, and version metadata key-order drift.
+- CHANGELOG and SESSION-LOG now record the Phase 170 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when command discovery or version metadata JSON remains parseable but drifts from the machine-readable contracts used by automation and downstream agents.
+- Existing CLI runtime behavior, help/list/version JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects command discovery, catalog listing, and version metadata JSON as stable machine-readable contracts, not only as parseable JSON containing expected fragments.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 169 — Check JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.

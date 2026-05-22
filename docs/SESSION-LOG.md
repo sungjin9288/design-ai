@@ -164,6 +164,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 167)** — Hardened corpus discovery JSON smoke assertions for search/show/examples key shape, file paths, exact integer fields, and limit-bound counts.
 - **v4.13 (Phase 168)** — Hardened route/prompt/pack JSON smoke assertions for recommendation and prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
 - **v4.13 (Phase 169)** — Hardened check JSON smoke assertions for artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
+- **v4.13 (Phase 170)** — Hardened help/list/version JSON smoke assertions for command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
 
 ## Patterns that didn't work
 
