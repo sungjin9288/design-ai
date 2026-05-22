@@ -888,8 +888,9 @@ def passing_search_json() -> str:
         "query": EXPECTED_CORPUS_SEARCH_QUERY,
         "hits": [
             {
-                "relPath": EXPECTED_CORPUS_SEARCH_HIT,
+                "file": "/tmp/design-ai/knowledge/PRINCIPLES.md",
                 "lineNumber": 29,
+                "relPath": EXPECTED_CORPUS_SEARCH_HIT,
                 "preview": EXPECTED_CORPUS_SEARCH_PREVIEW,
             }
         ],
@@ -913,6 +914,7 @@ def passing_search_human_output() -> str:
 
 def passing_show_json() -> str:
     return json.dumps({
+        "file": "/tmp/design-ai/knowledge/PRINCIPLES.md",
         "relPath": EXPECTED_CORPUS_SHOW_REL_PATH,
         "start": 1,
         "end": 1,
@@ -925,6 +927,7 @@ def passing_show_json() -> str:
 
 def passing_show_range_json() -> str:
     return json.dumps({
+        "file": "/tmp/design-ai/knowledge/PRINCIPLES.md",
         "relPath": EXPECTED_CORPUS_SHOW_REL_PATH,
         "start": 1,
         "end": 2,
@@ -1423,6 +1426,41 @@ def passing_check_all_routes_issues_only_output() -> str:
     ])
 
 
+def assert_corpus_json_keys(
+    value: object,
+    expected_keys: list[str],
+    *,
+    label: str,
+    context: str,
+    command_label: str,
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise SystemExit(f"{command_label} after {context} {label} is not an object")
+    if list(value) != expected_keys:
+        raise SystemExit(f"{command_label} after {context} {label} keys changed")
+    return value
+
+
+def is_corpus_json_positive_int(value: object) -> bool:
+    return type(value) is int and value >= 1
+
+
+def assert_corpus_file_path(
+    value: object,
+    rel_path: str,
+    *,
+    label: str,
+    context: str,
+    command_label: str,
+) -> None:
+    if not isinstance(value, str) or not value:
+        raise SystemExit(f"{command_label} after {context} {label} file is missing")
+    if not Path(value).is_absolute():
+        raise SystemExit(f"{command_label} after {context} {label} file is not absolute")
+    if not value.endswith(rel_path):
+        raise SystemExit(f"{command_label} after {context} {label} file differs from expected path")
+
+
 def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -1430,24 +1468,45 @@ def assert_search_json_contains_hit(raw: str, *, context: str, cmd: list[str]) -
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse search JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"search JSON after {context} is not an object")
+    payload = assert_corpus_json_keys(
+        payload,
+        ["query", "hits"],
+        label="top-level",
+        context=context,
+        command_label="search JSON",
+    )
 
     if payload.get("query") != EXPECTED_CORPUS_SEARCH_QUERY:
         raise SystemExit(f"search JSON after {context} query differs from expected query")
 
     hits = payload.get("hits")
-    if not isinstance(hits, list) or not hits:
+    if not isinstance(hits, list):
+        raise SystemExit(f"search JSON after {context} hits is not a list")
+    if not hits:
         raise SystemExit(f"search JSON after {context} does not contain any hits")
+    if len(hits) != 1:
+        raise SystemExit(f"search JSON after {context} hit count differs from expected limit")
 
     for hit in hits:
-        if not isinstance(hit, dict):
-            continue
+        hit = assert_corpus_json_keys(
+            hit,
+            ["file", "lineNumber", "relPath", "preview"],
+            label="hit",
+            context=context,
+            command_label="search JSON",
+        )
         if hit.get("relPath") != EXPECTED_CORPUS_SEARCH_HIT:
             continue
+        assert_corpus_file_path(
+            hit.get("file"),
+            EXPECTED_CORPUS_SEARCH_HIT,
+            label="hit",
+            context=context,
+            command_label="search JSON",
+        )
         preview = hit.get("preview")
         line_number = hit.get("lineNumber")
-        if not isinstance(line_number, int) or line_number < 1:
+        if not is_corpus_json_positive_int(line_number):
             raise SystemExit(f"search JSON after {context} has invalid line number for expected hit")
         if not isinstance(preview, str) or EXPECTED_CORPUS_SEARCH_PREVIEW not in preview:
             raise SystemExit(f"search JSON after {context} has invalid preview for expected hit")
@@ -1484,23 +1543,45 @@ def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse show JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"show JSON after {context} is not an object")
+    payload = assert_corpus_json_keys(
+        payload,
+        ["file", "relPath", "start", "end", "totalLines", "lines"],
+        label="top-level",
+        context=context,
+        command_label="show JSON",
+    )
 
     if payload.get("relPath") != EXPECTED_CORPUS_SHOW_REL_PATH:
         raise SystemExit(f"show JSON after {context} relPath differs from expected path")
+    assert_corpus_file_path(
+        payload.get("file"),
+        EXPECTED_CORPUS_SHOW_REL_PATH,
+        label="top-level",
+        context=context,
+        command_label="show JSON",
+    )
 
+    if not is_corpus_json_positive_int(payload.get("start")) or not is_corpus_json_positive_int(payload.get("end")):
+        raise SystemExit(f"show JSON after {context} range uses invalid line numbers")
     if payload.get("start") != 1 or payload.get("end") != 1:
         raise SystemExit(f"show JSON after {context} range differs from expected line")
+    if not is_corpus_json_positive_int(payload.get("totalLines")) or payload["totalLines"] < payload["end"]:
+        raise SystemExit(f"show JSON after {context} totalLines is invalid")
 
     lines = payload.get("lines")
     if not isinstance(lines, list) or len(lines) != 1:
         raise SystemExit(f"show JSON after {context} does not contain exactly one line")
 
-    line = lines[0]
-    if not isinstance(line, dict):
-        raise SystemExit(f"show JSON after {context} contains an invalid line entry")
+    line = assert_corpus_json_keys(
+        lines[0],
+        ["number", "text"],
+        label="line",
+        context=context,
+        command_label="show JSON",
+    )
 
+    if not is_corpus_json_positive_int(line.get("number")):
+        raise SystemExit(f"show JSON after {context} line number is invalid")
     if line.get("number") != 1 or line.get("text") != EXPECTED_CORPUS_SHOW_TEXT:
         raise SystemExit(f"show JSON after {context} line content differs from expected content")
 
@@ -1512,14 +1593,30 @@ def assert_show_json_range(raw: str, *, context: str, cmd: list[str]) -> None:
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse show range JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"show range JSON after {context} is not an object")
+    payload = assert_corpus_json_keys(
+        payload,
+        ["file", "relPath", "start", "end", "totalLines", "lines"],
+        label="top-level",
+        context=context,
+        command_label="show range JSON",
+    )
 
     if payload.get("relPath") != EXPECTED_CORPUS_SHOW_REL_PATH:
         raise SystemExit(f"show range JSON after {context} relPath differs from expected path")
+    assert_corpus_file_path(
+        payload.get("file"),
+        EXPECTED_CORPUS_SHOW_REL_PATH,
+        label="top-level",
+        context=context,
+        command_label="show range JSON",
+    )
 
+    if not is_corpus_json_positive_int(payload.get("start")) or not is_corpus_json_positive_int(payload.get("end")):
+        raise SystemExit(f"show range JSON after {context} range uses invalid line numbers")
     if payload.get("start") != 1 or payload.get("end") != 2:
         raise SystemExit(f"show range JSON after {context} range differs from expected lines")
+    if not is_corpus_json_positive_int(payload.get("totalLines")) or payload["totalLines"] < payload["end"]:
+        raise SystemExit(f"show range JSON after {context} totalLines is invalid")
 
     lines = payload.get("lines")
     if not isinstance(lines, list) or len(lines) != 2:
@@ -1530,8 +1627,15 @@ def assert_show_json_range(raw: str, *, context: str, cmd: list[str]) -> None:
         (2, EXPECTED_CORPUS_SHOW_RANGE_END_TEXT),
     )
     for line, (number, text) in zip(lines, expected, strict=True):
-        if not isinstance(line, dict):
-            raise SystemExit(f"show range JSON after {context} contains an invalid line entry")
+        line = assert_corpus_json_keys(
+            line,
+            ["number", "text"],
+            label="line",
+            context=context,
+            command_label="show range JSON",
+        )
+        if not is_corpus_json_positive_int(line.get("number")):
+            raise SystemExit(f"show range JSON after {context} line number is invalid")
         if line.get("number") != number or line.get("text") != text:
             raise SystemExit(f"show range JSON after {context} line content differs from expected content")
 
@@ -1580,8 +1684,16 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse examples JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"examples JSON after {context} is not an object")
+    payload = assert_corpus_json_keys(
+        payload,
+        ["query", "routeId", "effectiveQuery", "examples"],
+        label="top-level",
+        context=context,
+        command_label="examples JSON",
+    )
+
+    if payload.get("query") != "":
+        raise SystemExit(f"examples JSON after {context} query differs from expected route-biased query")
 
     if payload.get("routeId") != EXPECTED_EXAMPLES_ROUTE:
         raise SystemExit(f"examples JSON after {context} routeId differs from expected route")
@@ -1591,12 +1703,20 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
         raise SystemExit(f"examples JSON after {context} effectiveQuery differs from expected query")
 
     examples = payload.get("examples")
-    if not isinstance(examples, list) or not examples:
+    if not isinstance(examples, list):
+        raise SystemExit(f"examples JSON after {context} examples is not a list")
+    if not examples:
         raise SystemExit(f"examples JSON after {context} does not contain any examples")
+    if len(examples) != 1:
+        raise SystemExit(f"examples JSON after {context} example count differs from expected limit")
 
-    first = examples[0]
-    if not isinstance(first, dict):
-        raise SystemExit(f"examples JSON after {context} contains an invalid example entry")
+    first = assert_corpus_json_keys(
+        examples[0],
+        ["relPath", "title", "category", "score", "preview"],
+        label="example",
+        context=context,
+        command_label="examples JSON",
+    )
 
     if first.get("relPath") != EXPECTED_EXAMPLES_HIT:
         raise SystemExit(f"examples JSON after {context} first example differs from expected hit")
@@ -1609,8 +1729,12 @@ def assert_examples_json_route_hit(raw: str, *, context: str, cmd: list[str]) ->
         raise SystemExit(f"examples JSON after {context} title differs from expected title")
 
     score = first.get("score")
-    if not isinstance(score, int) or score <= 0:
+    if not is_corpus_json_positive_int(score):
         raise SystemExit(f"examples JSON after {context} score is not a positive integer")
+
+    preview = first.get("preview")
+    if not isinstance(preview, str) or not preview:
+        raise SystemExit(f"examples JSON after {context} preview is missing")
 
 
 def assert_examples_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -4144,6 +4268,34 @@ def run_self_test() -> None:
         expected="invalid preview",
         scope="smoke assertions",
     )
+    search_missing_hit_key = json.loads(passing_search_json())
+    del search_missing_hit_key["hits"][0]["file"]
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_missing_hit_key), context=context, cmd=search_cmd),
+        expected="hit keys changed",
+        scope="smoke assertions",
+    )
+    search_bool_line_number = json.loads(passing_search_json())
+    search_bool_line_number["hits"][0]["lineNumber"] = True
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_bool_line_number), context=context, cmd=search_cmd),
+        expected="invalid line number",
+        scope="smoke assertions",
+    )
+    search_relative_file = json.loads(passing_search_json())
+    search_relative_file["hits"][0]["file"] = EXPECTED_CORPUS_SEARCH_HIT
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_relative_file), context=context, cmd=search_cmd),
+        expected="file is not absolute",
+        scope="smoke assertions",
+    )
+    search_extra_hit = json.loads(passing_search_json())
+    search_extra_hit["hits"].append(dict(search_extra_hit["hits"][0]))
+    expect_self_test_failure(
+        lambda: assert_search_json_contains_hit(json.dumps(search_extra_hit), context=context, cmd=search_cmd),
+        expected="hit count differs",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: assert_search_json_contains_hit("\x1b[31m{}", context=context, cmd=search_cmd),
         expected="ANSI escape",
@@ -4197,6 +4349,27 @@ def run_self_test() -> None:
         expected="line content differs",
         scope="smoke assertions",
     )
+    show_missing_file_key = json.loads(passing_show_json())
+    del show_missing_file_key["file"]
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps(show_missing_file_key), context=context, cmd=show_cmd),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    show_bool_start = json.loads(passing_show_json())
+    show_bool_start["start"] = True
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps(show_bool_start), context=context, cmd=show_cmd),
+        expected="range uses invalid line numbers",
+        scope="smoke assertions",
+    )
+    show_bool_line_number = json.loads(passing_show_json())
+    show_bool_line_number["lines"][0]["number"] = True
+    expect_self_test_failure(
+        lambda: assert_show_json_line(json.dumps(show_bool_line_number), context=context, cmd=show_cmd),
+        expected="line number is invalid",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: assert_show_json_line("\x1b[31m{}", context=context, cmd=show_cmd),
         expected="ANSI escape",
@@ -4236,6 +4409,13 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_show_json_range(json.dumps(show_range_wrong_text), context=context, cmd=show_range_cmd),
         expected="line content differs",
+        scope="smoke assertions",
+    )
+    show_range_bool_line_number = json.loads(passing_show_range_json())
+    show_range_bool_line_number["lines"][1]["number"] = True
+    expect_self_test_failure(
+        lambda: assert_show_json_range(json.dumps(show_range_bool_line_number), context=context, cmd=show_range_cmd),
+        expected="line number is invalid",
         scope="smoke assertions",
     )
     expect_self_test_failure(
@@ -4332,6 +4512,27 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_examples_json_route_hit(json.dumps(examples_bad_score), context=context, cmd=examples_cmd),
         expected="score is not a positive integer",
+        scope="smoke assertions",
+    )
+    examples_bool_score = json.loads(passing_examples_json())
+    examples_bool_score["examples"][0]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_bool_score), context=context, cmd=examples_cmd),
+        expected="score is not a positive integer",
+        scope="smoke assertions",
+    )
+    examples_missing_preview = json.loads(passing_examples_json())
+    del examples_missing_preview["examples"][0]["preview"]
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_missing_preview), context=context, cmd=examples_cmd),
+        expected="example keys changed",
+        scope="smoke assertions",
+    )
+    examples_extra_hit = json.loads(passing_examples_json())
+    examples_extra_hit["examples"].append(dict(examples_extra_hit["examples"][0]))
+    expect_self_test_failure(
+        lambda: assert_examples_json_route_hit(json.dumps(examples_extra_hit), context=context, cmd=examples_cmd),
+        expected="example count differs",
         scope="smoke assertions",
     )
     expect_self_test_failure(

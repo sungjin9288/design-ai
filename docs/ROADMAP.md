@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 167 — Corpus discovery JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Corpus discovery JSON smoke assertions now verify search/show/examples key shape, file paths, exact integer fields, and limit-bound result counts.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai search --json`, `design-ai show --json`, `design-ai show --lines --json`, and `design-ai examples --json` with corpus-specific object/key guards.
+- Search JSON assertions now require stable hit keys, non-empty absolute file paths ending in the expected corpus path, exact positive integer line numbers, and the single result promised by `--limit 1`.
+- Show JSON assertions now require stable top-level and line-entry keys, exact positive integer range fields, valid `totalLines`, and file paths aligned with the reported `relPath`.
+- Examples JSON assertions now require stable route-biased payload keys, exact positive integer scores, non-empty previews, and the single result promised by `--limit 1`.
+- CHANGELOG and SESSION-LOG now record the Phase 167 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when corpus discovery JSON remains parseable but drifts from the machine-readable search/show/examples contract that prompt-building and automation depend on.
+- Existing CLI runtime behavior, corpus JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects corpus discovery JSON as stable machine-readable search/show/examples contracts, not only as parseable JSON containing expected text fragments.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 166 — Lifecycle JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Lifecycle JSON smoke assertions now verify payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
