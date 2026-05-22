@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 168 — Route/prompt/pack JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai route --json`, `design-ai routes --json`, `design-ai prompt --json`, and `design-ai pack --json` with stable top-level, route-entry, explanation, reference, prompt-plan, summary, and file-entry key guards.
+- Route JSON assertions now require exact route result counts for `--limit 1`, stable recommendation key shape, exact non-boolean integer scores, keyword lists, reference entry shape, score breakdown shape, and full reference coverage consistency.
+- Prompt JSON assertions now require stable forced-route plan shape, exact `filesToRead` order, reference example previews/scores, route coverage consistency, and prompt bundle content.
+- Pack JSON assertions now require stable bundle and summary key shape, exact budget/count fields, ordered context files aligned with the prompt plan, included file-entry contracts, string warnings, and explicit context budget exhaustion.
+- CHANGELOG and SESSION-LOG now record the Phase 168 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when route selection, prompt generation, or context packing JSON remains parseable but drifts from the machine-readable contracts used by automation and downstream agents.
+- Existing CLI runtime behavior, route/prompt/pack JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects route selection, prompt-plan, and context-pack JSON as stable machine-readable contracts, not only as valid JSON containing expected route fragments.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 167 — Corpus discovery JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Corpus discovery JSON smoke assertions now verify search/show/examples key shape, file paths, exact integer fields, and limit-bound result counts.

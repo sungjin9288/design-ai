@@ -162,6 +162,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 165)** — Hardened audit JSON smoke assertions for payload type, entry schema, numeric contracts, and summary consistency.
 - **v4.13 (Phase 166)** — Hardened lifecycle JSON smoke assertions for payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
 - **v4.13 (Phase 167)** — Hardened corpus discovery JSON smoke assertions for search/show/examples key shape, file paths, exact integer fields, and limit-bound counts.
+- **v4.13 (Phase 168)** — Hardened route/prompt/pack JSON smoke assertions for recommendation and prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
 
 ## Patterns that didn't work
 

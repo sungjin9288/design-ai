@@ -370,6 +370,26 @@ EXPECTED_PROMPT_SLASH_COMMAND = "/design-component-spec"
 EXPECTED_PROMPT_QUALITY_COMMAND = "design-ai check output.md --route component-spec --strict"
 EXPECTED_PROMPT_PLAYBOOK = "skills/component-spec-writer/PLAYBOOK.md"
 EXPECTED_PROMPT_A11Y_AGENT = "agents/a11y-reviewer.md"
+EXPECTED_ROUTE_AGENTS = (
+    EXPECTED_ROUTE_AGENT,
+    EXPECTED_PROMPT_A11Y_AGENT,
+)
+EXPECTED_ROUTE_KNOWLEDGE_FILES = (
+    "knowledge/PRINCIPLES.md",
+    "knowledge/components/INDEX.md",
+    "knowledge/components/shadcn-registry.md",
+    EXPECTED_ROUTE_KNOWLEDGE,
+)
+EXPECTED_REFERENCE_EXAMPLES = (
+    (EXPECTED_EXAMPLES_HIT, "`Button` - spec", EXPECTED_EXAMPLES_CATEGORY, 81, "# `Button` - spec"),
+    (
+        "examples/component-list-item-button.md",
+        "`ListItemButton` - spec",
+        EXPECTED_EXAMPLES_CATEGORY,
+        53,
+        "# `ListItemButton` - spec",
+    ),
+)
 EXPECTED_PROMPT_FILES = (
     "AGENTS.md",
     EXPECTED_ROUTE_COMMAND,
@@ -377,10 +397,63 @@ EXPECTED_PROMPT_FILES = (
     EXPECTED_PROMPT_PLAYBOOK,
     EXPECTED_ROUTE_AGENT,
     EXPECTED_PROMPT_A11Y_AGENT,
-    "knowledge/PRINCIPLES.md",
-    EXPECTED_ROUTE_KNOWLEDGE,
-    EXPECTED_EXAMPLES_HIT,
+    *EXPECTED_ROUTE_KNOWLEDGE_FILES,
+    *(example[0] for example in EXPECTED_REFERENCE_EXAMPLES),
 )
+EXPECTED_ROUTE_ENTRY_KEYS = [
+    "id",
+    "label",
+    "score",
+    "confidence",
+    "matchedKeywords",
+    "command",
+    "skills",
+    "agents",
+    "knowledge",
+    "keywords",
+    "explanation",
+]
+EXPECTED_PROMPT_ROUTE_ENTRY_KEYS = [*EXPECTED_ROUTE_ENTRY_KEYS, "forced"]
+EXPECTED_ROUTE_REFERENCE_KEYS = ["path", "exists"]
+EXPECTED_ROUTE_EXPLANATION_KEYS = ["summary", "scoreBreakdown", "referenceCoverage", "missingReferences"]
+EXPECTED_ROUTE_SCORE_BREAKDOWN_KEYS = ["label", "value"]
+EXPECTED_ROUTE_COVERAGE_KEYS = ["command", "skills", "agents", "knowledge", "total"]
+EXPECTED_ROUTE_COVERAGE_COUNT_KEYS = ["available", "total"]
+EXPECTED_PROMPT_PAYLOAD_KEYS = [
+    "brief",
+    "version",
+    "route",
+    "slashCommand",
+    "referenceExamples",
+    "filesToRead",
+    "checklist",
+    "qualityCommand",
+    "prompt",
+]
+EXPECTED_REFERENCE_EXAMPLE_KEYS = ["relPath", "title", "category", "score", "preview"]
+EXPECTED_PACK_PAYLOAD_KEYS = [
+    "brief",
+    "version",
+    "maxBytes",
+    "usedBytes",
+    "summary",
+    "warnings",
+    "plan",
+    "files",
+    "markdown",
+]
+EXPECTED_PACK_SUMMARY_KEYS = [
+    "totalFiles",
+    "includedFiles",
+    "truncatedFiles",
+    "missingFiles",
+    "usedBytes",
+    "maxBytes",
+    "remainingBytes",
+    "usedRatio",
+    "status",
+]
+EXPECTED_PACK_FILE_KEYS = ["path", "bytes", "includedBytes", "included", "truncated", "content"]
 EXPECTED_PACK_MAX_BYTES = 1000
 EXPECTED_AUDIT_SCRIPTS = (
     "frontmatter-check.py",
@@ -1012,15 +1085,55 @@ def passing_route_json() -> str:
                 "matchedKeywords": list(EXPECTED_ROUTE_MATCHED_KEYWORDS),
                 "command": {"path": EXPECTED_ROUTE_COMMAND, "exists": True},
                 "skills": [{"path": EXPECTED_ROUTE_SKILL, "exists": True}],
-                "agents": [{"path": EXPECTED_ROUTE_AGENT, "exists": True}],
+                "agents": [
+                    {"path": path, "exists": True}
+                    for path in EXPECTED_ROUTE_AGENTS
+                ],
                 "knowledge": [
-                    {"path": "knowledge/PRINCIPLES.md", "exists": True},
-                    {"path": EXPECTED_ROUTE_KNOWLEDGE, "exists": True},
+                    {"path": path, "exists": True}
+                    for path in EXPECTED_ROUTE_KNOWLEDGE_FILES
+                ],
+                "keywords": [
+                    "component",
+                    "button",
+                    "input",
+                    "modal",
+                    "dialog",
+                    "table",
+                    "form",
+                    "dropdown",
+                    "select",
+                    "spec",
+                    "api",
+                    "props",
+                    "컴포넌트",
+                    "버튼",
+                    "입력",
+                    "모달",
+                    "폼",
+                    "테이블",
+                    "스펙",
                 ],
                 "explanation": {
                     "summary": "Matched 4 keywords: component, button, spec, api.",
+                    "scoreBreakdown": [
+                        {
+                            "label": "keyword matches",
+                            "value": len(EXPECTED_ROUTE_MATCHED_KEYWORDS),
+                        },
+                    ],
                     "referenceCoverage": {
-                        "total": {"available": 5, "total": 5},
+                        "command": {"available": 1, "total": 1},
+                        "skills": {"available": 1, "total": 1},
+                        "agents": {"available": len(EXPECTED_ROUTE_AGENTS), "total": len(EXPECTED_ROUTE_AGENTS)},
+                        "knowledge": {
+                            "available": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                            "total": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        },
+                        "total": {
+                            "available": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                            "total": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        },
                     },
                     "missingReferences": [],
                 },
@@ -1068,7 +1181,17 @@ def passing_route_catalog_json() -> str:
             "keywords": [route_id],
             "explanation": {
                 "summary": "Catalog listing; no task brief was scored.",
+                "scoreBreakdown": [
+                    {
+                        "label": "keyword matches",
+                        "value": 0,
+                    },
+                ],
                 "referenceCoverage": {
+                    "command": {"available": 0, "total": 0},
+                    "skills": {"available": 0, "total": 0},
+                    "agents": {"available": 0, "total": 0},
+                    "knowledge": {"available": 1, "total": 1},
                     "total": {"available": 1, "total": 1},
                 },
                 "missingReferences": [],
@@ -1079,16 +1202,35 @@ def passing_route_catalog_json() -> str:
                 "label": EXPECTED_ROUTE_LABEL,
                 "command": {"path": EXPECTED_ROUTE_COMMAND, "exists": True},
                 "skills": [{"path": EXPECTED_ROUTE_SKILL, "exists": True}],
-                "agents": [{"path": EXPECTED_ROUTE_AGENT, "exists": True}],
+                "agents": [
+                    {"path": path, "exists": True}
+                    for path in EXPECTED_ROUTE_AGENTS
+                ],
                 "knowledge": [
-                    {"path": "knowledge/PRINCIPLES.md", "exists": True},
-                    {"path": EXPECTED_ROUTE_KNOWLEDGE, "exists": True},
+                    {"path": path, "exists": True}
+                    for path in EXPECTED_ROUTE_KNOWLEDGE_FILES
                 ],
                 "keywords": ["component", "button", "spec", "api"],
                 "explanation": {
                     "summary": "Catalog listing; no task brief was scored.",
+                    "scoreBreakdown": [
+                        {
+                            "label": "keyword matches",
+                            "value": 0,
+                        },
+                    ],
                     "referenceCoverage": {
-                        "total": {"available": 5, "total": 5},
+                        "command": {"available": 1, "total": 1},
+                        "skills": {"available": 1, "total": 1},
+                        "agents": {"available": len(EXPECTED_ROUTE_AGENTS), "total": len(EXPECTED_ROUTE_AGENTS)},
+                        "knowledge": {
+                            "available": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                            "total": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        },
+                        "total": {
+                            "available": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                            "total": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        },
                     },
                     "missingReferences": [],
                 },
@@ -1108,22 +1250,60 @@ def passing_prompt_payload() -> dict:
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
+            "score": 0,
             "confidence": "forced",
             "matchedKeywords": [],
             "command": {"path": EXPECTED_ROUTE_COMMAND, "exists": True},
             "skills": [{"path": EXPECTED_ROUTE_SKILL, "exists": True}],
             "agents": [
-                {"path": EXPECTED_ROUTE_AGENT, "exists": True},
-                {"path": EXPECTED_PROMPT_A11Y_AGENT, "exists": True},
+                {"path": path, "exists": True}
+                for path in EXPECTED_ROUTE_AGENTS
             ],
             "knowledge": [
-                {"path": "knowledge/PRINCIPLES.md", "exists": True},
-                {"path": EXPECTED_ROUTE_KNOWLEDGE, "exists": True},
+                {"path": path, "exists": True}
+                for path in EXPECTED_ROUTE_KNOWLEDGE_FILES
+            ],
+            "keywords": [
+                "component",
+                "button",
+                "input",
+                "modal",
+                "dialog",
+                "table",
+                "form",
+                "dropdown",
+                "select",
+                "spec",
+                "api",
+                "props",
+                "컴포넌트",
+                "버튼",
+                "입력",
+                "모달",
+                "폼",
+                "테이블",
+                "스펙",
             ],
             "explanation": {
                 "summary": "Route selected explicitly with --route.",
+                "scoreBreakdown": [
+                    {
+                        "label": "keyword matches",
+                        "value": 0,
+                    },
+                ],
                 "referenceCoverage": {
-                    "total": {"available": 5, "total": 5},
+                    "command": {"available": 1, "total": 1},
+                    "skills": {"available": 1, "total": 1},
+                    "agents": {"available": len(EXPECTED_ROUTE_AGENTS), "total": len(EXPECTED_ROUTE_AGENTS)},
+                    "knowledge": {
+                        "available": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        "total": len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                    },
+                    "total": {
+                        "available": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                        "total": 1 + 1 + len(EXPECTED_ROUTE_AGENTS) + len(EXPECTED_ROUTE_KNOWLEDGE_FILES),
+                    },
                 },
                 "missingReferences": [],
             },
@@ -1132,11 +1312,13 @@ def passing_prompt_payload() -> dict:
         "slashCommand": EXPECTED_PROMPT_SLASH_COMMAND,
         "referenceExamples": [
             {
-                "relPath": EXPECTED_EXAMPLES_HIT,
-                "title": "`Button` - spec",
-                "category": EXPECTED_EXAMPLES_CATEGORY,
-                "score": 81,
+                "relPath": rel_path,
+                "title": title,
+                "category": category,
+                "score": score,
+                "preview": preview,
             }
+            for rel_path, title, category, score, preview in EXPECTED_REFERENCE_EXAMPLES
         ],
         "filesToRead": list(EXPECTED_PROMPT_FILES),
         "checklist": [
@@ -1846,13 +2028,151 @@ def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str
         raise SystemExit(f"list catalog JSON after {context} item order differs from expected {kind} catalog")
 
 
+def assert_route_smoke_json_keys(
+    value: object,
+    expected_keys: list[str],
+    *,
+    label: str,
+    context: str,
+    payload_name: str,
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise SystemExit(f"{payload_name} after {context} {label} is not an object")
+    if list(value) != expected_keys:
+        raise SystemExit(f"{payload_name} after {context} {label} keys changed")
+    return value
+
+
+def is_route_smoke_non_negative_int(value: object) -> bool:
+    return type(value) is int and value >= 0
+
+
+def is_route_smoke_positive_int(value: object) -> bool:
+    return type(value) is int and value >= 1
+
+
+def is_route_smoke_non_negative_number(value: object) -> bool:
+    return type(value) in (int, float) and value >= 0
+
+
+def assert_route_smoke_reference_coverage(
+    value: object,
+    *,
+    label: str,
+    context: str,
+    payload_name: str,
+) -> None:
+    coverage = assert_route_smoke_json_keys(
+        value,
+        EXPECTED_ROUTE_COVERAGE_KEYS,
+        label=label,
+        context=context,
+        payload_name=payload_name,
+    )
+    total_available = 0
+    total_count = 0
+    for key in EXPECTED_ROUTE_COVERAGE_KEYS:
+        count = assert_route_smoke_json_keys(
+            coverage.get(key),
+            EXPECTED_ROUTE_COVERAGE_COUNT_KEYS,
+            label=f"{label} {key}",
+            context=context,
+            payload_name=payload_name,
+        )
+        available = count.get("available")
+        total = count.get("total")
+        if not is_route_smoke_non_negative_int(available) or not is_route_smoke_non_negative_int(total):
+            raise SystemExit(f"{payload_name} after {context} {label} reference coverage count is invalid")
+        if available > total:
+            raise SystemExit(f"{payload_name} after {context} {label} reference coverage count is inconsistent")
+        if key != "total":
+            total_available += available
+            total_count += total
+
+    total = coverage["total"]
+    if total["available"] != total_available or total["total"] != total_count:
+        raise SystemExit(f"{payload_name} after {context} {label} total reference coverage is inconsistent")
+    if total["available"] != total["total"] or total["total"] < 1:
+        raise SystemExit(f"{payload_name} after {context} {label} does not report full reference coverage")
+
+
+def assert_route_smoke_explanation(
+    value: object,
+    *,
+    expected_summary_fragment: str,
+    context: str,
+    payload_name: str,
+    label: str = "explanation",
+) -> None:
+    explanation = assert_route_smoke_json_keys(
+        value,
+        EXPECTED_ROUTE_EXPLANATION_KEYS,
+        label=label,
+        context=context,
+        payload_name=payload_name,
+    )
+    summary = explanation.get("summary")
+    if not isinstance(summary, str) or expected_summary_fragment not in summary:
+        raise SystemExit(f"{payload_name} after {context} {label} summary differs from expected content")
+
+    score_breakdown = explanation.get("scoreBreakdown")
+    if not isinstance(score_breakdown, list) or not score_breakdown:
+        raise SystemExit(f"{payload_name} after {context} {label} scoreBreakdown is not a non-empty list")
+    for score_entry in score_breakdown:
+        score_entry = assert_route_smoke_json_keys(
+            score_entry,
+            EXPECTED_ROUTE_SCORE_BREAKDOWN_KEYS,
+            label=f"{label} scoreBreakdown entry",
+            context=context,
+            payload_name=payload_name,
+        )
+        if not isinstance(score_entry.get("label"), str) or not score_entry["label"]:
+            raise SystemExit(f"{payload_name} after {context} {label} scoreBreakdown label is missing")
+        if not is_route_smoke_non_negative_int(score_entry.get("value")):
+            raise SystemExit(f"{payload_name} after {context} {label} scoreBreakdown value is invalid")
+
+    assert_route_smoke_reference_coverage(
+        explanation.get("referenceCoverage"),
+        label=label,
+        context=context,
+        payload_name=payload_name,
+    )
+    if explanation.get("missingReferences") != []:
+        raise SystemExit(f"{payload_name} after {context} contains missing references")
+
+
+def assert_route_reference_entry(
+    entry: object,
+    *,
+    label: str,
+    context: str,
+    payload_name: str,
+) -> dict[str, object]:
+    entry = assert_route_smoke_json_keys(
+        entry,
+        EXPECTED_ROUTE_REFERENCE_KEYS,
+        label=label,
+        context=context,
+        payload_name=payload_name,
+    )
+    if not isinstance(entry.get("path"), str) or not entry["path"]:
+        raise SystemExit(f"{payload_name} after {context} {label} path is missing")
+    if not isinstance(entry.get("exists"), bool):
+        raise SystemExit(f"{payload_name} after {context} {label} exists flag is invalid")
+    return entry
+
+
 def find_existing_path(entries: object, path: str, *, context: str, label: str) -> None:
     if not isinstance(entries, list):
         raise SystemExit(f"route JSON after {context} {label} is not a list")
 
     for entry in entries:
-        if not isinstance(entry, dict):
-            continue
+        entry = assert_route_reference_entry(
+            entry,
+            label=f"{label} entry",
+            context=context,
+            payload_name="route JSON",
+        )
         if entry.get("path") == path:
             if entry.get("exists") is not True:
                 raise SystemExit(f"route JSON after {context} {label} path is not available: {path}")
@@ -1868,8 +2188,13 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse route JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"route JSON after {context} is not an object")
+    payload = assert_route_smoke_json_keys(
+        payload,
+        ["brief", "version", "routes"],
+        label="top-level",
+        context=context,
+        payload_name="route JSON",
+    )
 
     if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
         raise SystemExit(f"route JSON after {context} brief differs from expected brief")
@@ -1882,9 +2207,13 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
     if not isinstance(routes, list) or len(routes) != 1:
         raise SystemExit(f"route JSON after {context} does not contain exactly one route")
 
-    route = routes[0]
-    if not isinstance(route, dict):
-        raise SystemExit(f"route JSON after {context} contains an invalid route entry")
+    route = assert_route_smoke_json_keys(
+        routes[0],
+        EXPECTED_ROUTE_ENTRY_KEYS,
+        label="route",
+        context=context,
+        payload_name="route JSON",
+    )
 
     if route.get("id") != EXPECTED_ROUTE_ID:
         raise SystemExit(f"route JSON after {context} first route differs from expected route")
@@ -1905,12 +2234,15 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
         )
 
     score = route.get("score")
-    if not isinstance(score, int) or score < len(EXPECTED_ROUTE_MATCHED_KEYWORDS):
+    if not is_route_smoke_non_negative_int(score) or score < len(EXPECTED_ROUTE_MATCHED_KEYWORDS):
         raise SystemExit(f"route JSON after {context} score is lower than expected keyword coverage")
 
-    command = route.get("command")
-    if not isinstance(command, dict):
-        raise SystemExit(f"route JSON after {context} command is not an object")
+    command = assert_route_reference_entry(
+        route.get("command"),
+        label="command",
+        context=context,
+        payload_name="route JSON",
+    )
     if command.get("path") != EXPECTED_ROUTE_COMMAND or command.get("exists") is not True:
         raise SystemExit(f"route JSON after {context} command differs from expected available command")
 
@@ -1918,22 +2250,18 @@ def assert_route_json_component_spec(raw: str, *, context: str, cmd: list[str]) 
     find_existing_path(route.get("agents"), EXPECTED_ROUTE_AGENT, context=context, label="agents")
     find_existing_path(route.get("knowledge"), EXPECTED_ROUTE_KNOWLEDGE, context=context, label="knowledge")
 
-    explanation = route.get("explanation")
-    if not isinstance(explanation, dict):
-        raise SystemExit(f"route JSON after {context} explanation is not an object")
+    keywords = route.get("keywords")
+    if not isinstance(keywords, list) or not all(isinstance(keyword, str) for keyword in keywords):
+        raise SystemExit(f"route JSON after {context} keywords is not a string list")
+    if not all(keyword in keywords for keyword in ("component", "button", "spec")):
+        raise SystemExit(f"route JSON after {context} keywords differ from expected discovery terms")
 
-    summary = explanation.get("summary")
-    if not isinstance(summary, str) or "Matched" not in summary:
-        raise SystemExit(f"route JSON after {context} explanation summary differs from expected match summary")
-
-    missing_references = explanation.get("missingReferences")
-    if missing_references != []:
-        raise SystemExit(f"route JSON after {context} contains missing references")
-
-    coverage = explanation.get("referenceCoverage")
-    total = coverage.get("total") if isinstance(coverage, dict) else None
-    if not isinstance(total, dict) or total.get("available") != total.get("total") or total.get("total", 0) < 1:
-        raise SystemExit(f"route JSON after {context} does not report full reference coverage")
+    assert_route_smoke_explanation(
+        route.get("explanation"),
+        expected_summary_fragment="Matched",
+        context=context,
+        payload_name="route JSON",
+    )
 
 
 def assert_route_explain_human_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -1969,8 +2297,13 @@ def assert_route_catalog_json(raw: str, *, context: str, cmd: list[str]) -> None
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse route catalog JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"route catalog JSON after {context} is not an object")
+    payload = assert_route_smoke_json_keys(
+        payload,
+        ["version", "routes"],
+        label="top-level",
+        context=context,
+        payload_name="route catalog JSON",
+    )
 
     version = payload.get("version")
     if not isinstance(version, str) or not version or version == "unknown":
@@ -1994,38 +2327,60 @@ def assert_route_catalog_json(raw: str, *, context: str, cmd: list[str]) -> None
 
     route_by_id = {route.get("id"): route for route in routes if isinstance(route, dict)}
     for route_id in EXPECTED_ROUTE_CATALOG_IDS:
-        route = route_by_id.get(route_id)
-        if not isinstance(route, dict):
+        route_entry = route_by_id.get(route_id)
+        if not isinstance(route_entry, dict):
             raise SystemExit(f"route catalog JSON after {context} is missing expected route: {route_id}")
+        route = assert_route_smoke_json_keys(
+            route_entry,
+            EXPECTED_ROUTE_ENTRY_KEYS,
+            label=f"route {route_id}",
+            context=context,
+            payload_name="route catalog JSON",
+        )
 
         if route.get("confidence") != "catalog":
             raise SystemExit(f"route catalog JSON after {context} route is not marked as catalog: {route_id}")
         if route.get("matchedKeywords") != []:
             raise SystemExit(f"route catalog JSON after {context} route has matched keywords in catalog mode: {route_id}")
+        if route.get("score") != 0:
+            raise SystemExit(f"route catalog JSON after {context} route score differs from catalog mode: {route_id}")
 
         label = route.get("label")
         if not isinstance(label, str) or not label:
             raise SystemExit(f"route catalog JSON after {context} route label is missing: {route_id}")
 
-        explanation = route.get("explanation")
-        if not isinstance(explanation, dict):
-            raise SystemExit(f"route catalog JSON after {context} route explanation is not an object: {route_id}")
-        summary = explanation.get("summary")
-        if not isinstance(summary, str) or "Catalog listing" not in summary:
-            raise SystemExit(f"route catalog JSON after {context} route explanation summary differs from expected catalog mode: {route_id}")
-        if explanation.get("missingReferences") != []:
-            raise SystemExit(f"route catalog JSON after {context} route contains missing references: {route_id}")
-        coverage = explanation.get("referenceCoverage")
-        total = coverage.get("total") if isinstance(coverage, dict) else None
-        available_count = total.get("available") if isinstance(total, dict) else None
-        total_count = total.get("total") if isinstance(total, dict) else None
-        if (
-            not isinstance(available_count, int)
-            or not isinstance(total_count, int)
-            or total_count <= 0
-            or available_count != total_count
-        ):
-            raise SystemExit(f"route catalog JSON after {context} route does not report full reference coverage: {route_id}")
+        command = route.get("command")
+        if command is not None:
+            assert_route_reference_entry(
+                command,
+                label=f"route {route_id} command",
+                context=context,
+                payload_name="route catalog JSON",
+            )
+
+        for section in ("skills", "agents", "knowledge"):
+            entries = route.get(section)
+            if not isinstance(entries, list):
+                raise SystemExit(f"route catalog JSON after {context} route {section} is not a list: {route_id}")
+            for entry in entries:
+                assert_route_reference_entry(
+                    entry,
+                    label=f"route {route_id} {section} entry",
+                    context=context,
+                    payload_name="route catalog JSON",
+                )
+
+        keywords = route.get("keywords")
+        if not isinstance(keywords, list) or not keywords or not all(isinstance(keyword, str) for keyword in keywords):
+            raise SystemExit(f"route catalog JSON after {context} route keywords differ from expected discovery terms: {route_id}")
+
+        assert_route_smoke_explanation(
+            route.get("explanation"),
+            expected_summary_fragment="Catalog listing",
+            context=context,
+            payload_name="route catalog JSON",
+            label=f"route {route_id} explanation",
+        )
 
     component_route = route_by_id[EXPECTED_ROUTE_ID]
     if component_route.get("label") != EXPECTED_ROUTE_LABEL:
@@ -2048,8 +2403,12 @@ def find_payload_path(entries: object, path: str, *, context: str, payload_name:
         raise SystemExit(f"{payload_name} after {context} {label} is not a list")
 
     for entry in entries:
-        if not isinstance(entry, dict):
-            continue
+        entry = assert_route_reference_entry(
+            entry,
+            label=f"{label} entry",
+            context=context,
+            payload_name=payload_name,
+        )
         if entry.get("path") == path:
             if entry.get("exists") is not True:
                 raise SystemExit(f"{payload_name} after {context} {label} path is not available: {path}")
@@ -2059,8 +2418,13 @@ def find_payload_path(entries: object, path: str, *, context: str, payload_name:
 
 
 def assert_prompt_payload_component_spec(payload: object, *, context: str, payload_name: str) -> None:
-    if not isinstance(payload, dict):
-        raise SystemExit(f"{payload_name} after {context} is not an object")
+    payload = assert_route_smoke_json_keys(
+        payload,
+        EXPECTED_PROMPT_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        payload_name=payload_name,
+    )
 
     if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
         raise SystemExit(f"{payload_name} after {context} brief differs from expected brief")
@@ -2069,9 +2433,13 @@ def assert_prompt_payload_component_spec(payload: object, *, context: str, paylo
     if not isinstance(version, str) or not version or version == "unknown":
         raise SystemExit(f"{payload_name} after {context} version is missing")
 
-    route = payload.get("route")
-    if not isinstance(route, dict):
-        raise SystemExit(f"{payload_name} after {context} route is not an object")
+    route = assert_route_smoke_json_keys(
+        payload.get("route"),
+        EXPECTED_PROMPT_ROUTE_ENTRY_KEYS,
+        label="route",
+        context=context,
+        payload_name=payload_name,
+    )
 
     if route.get("id") != EXPECTED_ROUTE_ID:
         raise SystemExit(f"{payload_name} after {context} route differs from expected route")
@@ -2082,9 +2450,19 @@ def assert_prompt_payload_component_spec(payload: object, *, context: str, paylo
     if route.get("confidence") != "forced" or route.get("forced") is not True:
         raise SystemExit(f"{payload_name} after {context} route is not marked as forced")
 
-    command = route.get("command")
-    if not isinstance(command, dict):
-        raise SystemExit(f"{payload_name} after {context} command is not an object")
+    score = route.get("score")
+    if not is_route_smoke_non_negative_int(score):
+        raise SystemExit(f"{payload_name} after {context} route score is invalid")
+
+    if route.get("matchedKeywords") != []:
+        raise SystemExit(f"{payload_name} after {context} forced route matchedKeywords differ from expected empty list")
+
+    command = assert_route_reference_entry(
+        route.get("command"),
+        label="command",
+        context=context,
+        payload_name=payload_name,
+    )
     if command.get("path") != EXPECTED_ROUTE_COMMAND or command.get("exists") is not True:
         raise SystemExit(f"{payload_name} after {context} command differs from expected available command")
 
@@ -2092,17 +2470,19 @@ def assert_prompt_payload_component_spec(payload: object, *, context: str, paylo
     find_payload_path(route.get("agents"), EXPECTED_ROUTE_AGENT, context=context, payload_name=payload_name, label="agents")
     find_payload_path(route.get("knowledge"), EXPECTED_ROUTE_KNOWLEDGE, context=context, payload_name=payload_name, label="knowledge")
 
-    explanation = route.get("explanation")
-    if not isinstance(explanation, dict):
-        raise SystemExit(f"{payload_name} after {context} route explanation is not an object")
+    keywords = route.get("keywords")
+    if not isinstance(keywords, list) or not all(isinstance(keyword, str) for keyword in keywords):
+        raise SystemExit(f"{payload_name} after {context} route keywords is not a string list")
+    if not all(keyword in keywords for keyword in ("component", "button", "spec")):
+        raise SystemExit(f"{payload_name} after {context} route keywords differ from expected discovery terms")
 
-    if explanation.get("missingReferences") != []:
-        raise SystemExit(f"{payload_name} after {context} route contains missing references")
-
-    coverage = explanation.get("referenceCoverage")
-    total = coverage.get("total") if isinstance(coverage, dict) else None
-    if not isinstance(total, dict) or total.get("available") != total.get("total") or total.get("total", 0) < 1:
-        raise SystemExit(f"{payload_name} after {context} does not report full route reference coverage")
+    assert_route_smoke_explanation(
+        route.get("explanation"),
+        expected_summary_fragment="Route selected explicitly",
+        context=context,
+        payload_name=payload_name,
+        label="route explanation",
+    )
 
     slash_command = payload.get("slashCommand")
     if (
@@ -2116,9 +2496,22 @@ def assert_prompt_payload_component_spec(payload: object, *, context: str, paylo
     if not isinstance(examples, list) or not examples:
         raise SystemExit(f"{payload_name} after {context} does not contain reference examples")
 
+    for example in examples:
+        example = assert_route_smoke_json_keys(
+            example,
+            EXPECTED_REFERENCE_EXAMPLE_KEYS,
+            label="reference example",
+            context=context,
+            payload_name=payload_name,
+        )
+        score = example.get("score")
+        if not is_route_smoke_positive_int(score):
+            raise SystemExit(f"{payload_name} after {context} reference example score is invalid")
+        preview = example.get("preview")
+        if not isinstance(preview, str) or not preview:
+            raise SystemExit(f"{payload_name} after {context} reference example preview is missing")
+
     first_example = examples[0]
-    if not isinstance(first_example, dict):
-        raise SystemExit(f"{payload_name} after {context} contains an invalid reference example")
 
     if first_example.get("relPath") != EXPECTED_EXAMPLES_HIT:
         raise SystemExit(f"{payload_name} after {context} first reference example differs from expected hit")
@@ -2131,17 +2524,8 @@ def assert_prompt_payload_component_spec(payload: object, *, context: str, paylo
     if not isinstance(files_to_read, list) or not all(isinstance(item, str) for item in files_to_read):
         raise SystemExit(f"{payload_name} after {context} filesToRead is not a string list")
 
-    if not files_to_read or files_to_read[0] != "AGENTS.md":
-        raise SystemExit(f"{payload_name} after {context} filesToRead does not start with AGENTS.md")
-
-    missing_files = [path for path in EXPECTED_PROMPT_FILES if path not in files_to_read]
-    if missing_files:
-        raise SystemExit(
-            f"{payload_name} after {context} is missing expected file(s): {', '.join(missing_files)}"
-        )
-
-    if len(files_to_read) != len(set(files_to_read)):
-        raise SystemExit(f"{payload_name} after {context} filesToRead contains duplicate paths")
+    if files_to_read != list(EXPECTED_PROMPT_FILES):
+        raise SystemExit(f"{payload_name} after {context} filesToRead differs from expected route plan")
 
     checklist = payload.get("checklist")
     if not isinstance(checklist, list) or not all(isinstance(item, str) for item in checklist):
@@ -2237,8 +2621,13 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse pack JSON after {context}") from error
 
-    if not isinstance(payload, dict):
-        raise SystemExit(f"pack JSON after {context} is not an object")
+    payload = assert_route_smoke_json_keys(
+        payload,
+        EXPECTED_PACK_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        payload_name="pack JSON",
+    )
 
     if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
         raise SystemExit(f"pack JSON after {context} brief differs from expected brief")
@@ -2247,16 +2636,30 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
     if not isinstance(version, str) or not version or version == "unknown":
         raise SystemExit(f"pack JSON after {context} version is missing")
 
-    if payload.get("maxBytes") != EXPECTED_PACK_MAX_BYTES:
+    if not is_route_smoke_positive_int(payload.get("maxBytes")) or payload.get("maxBytes") != EXPECTED_PACK_MAX_BYTES:
         raise SystemExit(f"pack JSON after {context} maxBytes differs from expected budget")
 
     used_bytes = payload.get("usedBytes")
-    if not isinstance(used_bytes, int) or used_bytes < 1 or used_bytes > EXPECTED_PACK_MAX_BYTES:
+    if not is_route_smoke_positive_int(used_bytes) or used_bytes > EXPECTED_PACK_MAX_BYTES:
         raise SystemExit(f"pack JSON after {context} usedBytes is outside expected budget")
 
-    summary = payload.get("summary")
-    if not isinstance(summary, dict):
-        raise SystemExit(f"pack JSON after {context} summary is not an object")
+    summary = assert_route_smoke_json_keys(
+        payload.get("summary"),
+        EXPECTED_PACK_SUMMARY_KEYS,
+        label="summary",
+        context=context,
+        payload_name="pack JSON",
+    )
+
+    for field in ("totalFiles", "includedFiles", "truncatedFiles", "missingFiles", "usedBytes", "maxBytes", "remainingBytes"):
+        if not is_route_smoke_non_negative_int(summary.get(field)):
+            raise SystemExit(f"pack JSON after {context} summary {field} is invalid")
+
+    if not is_route_smoke_non_negative_number(summary.get("usedRatio")):
+        raise SystemExit(f"pack JSON after {context} summary usedRatio is invalid")
+
+    if summary.get("usedBytes") != used_bytes or summary.get("maxBytes") != EXPECTED_PACK_MAX_BYTES:
+        raise SystemExit(f"pack JSON after {context} summary budget differs from top-level budget")
 
     if summary.get("missingFiles") != 0:
         raise SystemExit(f"pack JSON after {context} contains missing context files")
@@ -2266,11 +2669,13 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
 
     total_files = summary.get("totalFiles")
     included_files = summary.get("includedFiles")
-    if not isinstance(total_files, int) or not isinstance(included_files, int) or included_files != total_files:
+    if included_files != total_files:
         raise SystemExit(f"pack JSON after {context} does not include every expected context file")
+    if total_files != len(EXPECTED_PROMPT_FILES):
+        raise SystemExit(f"pack JSON after {context} total file count differs from expected context plan")
 
     truncated_files = summary.get("truncatedFiles")
-    if not isinstance(truncated_files, int) or truncated_files < 1:
+    if truncated_files < 1:
         raise SystemExit(f"pack JSON after {context} does not report truncated context files")
 
     plan = payload.get("plan")
@@ -2282,30 +2687,39 @@ def assert_pack_json_component_spec(raw: str, *, context: str, cmd: list[str]) -
 
     file_paths = []
     for file_entry in files:
-        if not isinstance(file_entry, dict):
-            raise SystemExit(f"pack JSON after {context} contains an invalid file entry")
+        file_entry = assert_route_smoke_json_keys(
+            file_entry,
+            EXPECTED_PACK_FILE_KEYS,
+            label="file entry",
+            context=context,
+            payload_name="pack JSON",
+        )
         file_path = file_entry.get("path")
         if isinstance(file_path, str):
             file_paths.append(file_path)
-        if file_path in ("AGENTS.md", EXPECTED_EXAMPLES_HIT):
-            if file_entry.get("included") is not True:
-                raise SystemExit(f"pack JSON after {context} did not include expected context file: {file_path}")
-            included_bytes = file_entry.get("includedBytes")
-            if not isinstance(included_bytes, int) or included_bytes < 1:
-                raise SystemExit(f"pack JSON after {context} has invalid includedBytes for {file_path}")
+        else:
+            raise SystemExit(f"pack JSON after {context} file entry path is missing")
+        if not is_route_smoke_positive_int(file_entry.get("bytes")):
+            raise SystemExit(f"pack JSON after {context} has invalid bytes for {file_path}")
+        if not is_route_smoke_positive_int(file_entry.get("includedBytes")):
+            raise SystemExit(f"pack JSON after {context} has invalid includedBytes for {file_path}")
+        if file_entry.get("included") is not True:
+            raise SystemExit(f"pack JSON after {context} did not include expected context file: {file_path}")
+        if not isinstance(file_entry.get("truncated"), bool):
+            raise SystemExit(f"pack JSON after {context} file entry truncated flag is invalid")
+        if not isinstance(file_entry.get("content"), str) or not file_entry["content"]:
+            raise SystemExit(f"pack JSON after {context} file entry content is missing")
 
-    missing_files = [path for path in EXPECTED_PROMPT_FILES if path not in file_paths]
-    if missing_files:
-        raise SystemExit(
-            f"pack JSON after {context} is missing expected context file(s): {', '.join(missing_files)}"
-        )
+    if file_paths != list(EXPECTED_PROMPT_FILES):
+        raise SystemExit(f"pack JSON after {context} context file order differs from expected route plan")
 
     warnings = payload.get("warnings")
-    if not isinstance(warnings, list) or not any(
-        isinstance(warning, str) and "Truncated context file" in warning
-        for warning in warnings
-    ):
+    if not isinstance(warnings, list) or not warnings or not all(isinstance(warning, str) for warning in warnings):
+        raise SystemExit(f"pack JSON after {context} warnings is not a non-empty string list")
+    if not any("Truncated context file" in warning for warning in warnings):
         raise SystemExit(f"pack JSON after {context} does not report truncation warnings")
+    if not any(f"{EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES}" in warning for warning in warnings):
+        raise SystemExit(f"pack JSON after {context} does not report context budget exhaustion")
 
     markdown = payload.get("markdown")
     if not isinstance(markdown, str):
@@ -4609,6 +5023,45 @@ def run_self_test() -> None:
         expected="contains missing references",
         scope="smoke assertions",
     )
+    route_reordered_top_level = json.loads(passing_route_json())
+    route_reordered_top_level = {
+        "version": route_reordered_top_level["version"],
+        "brief": route_reordered_top_level["brief"],
+        "routes": route_reordered_top_level["routes"],
+    }
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_reordered_top_level), context=context, cmd=route_cmd),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    route_missing_route_key = json.loads(passing_route_json())
+    del route_missing_route_key["routes"][0]["keywords"]
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_missing_route_key), context=context, cmd=route_cmd),
+        expected="route keys changed",
+        scope="smoke assertions",
+    )
+    route_extra_result = json.loads(passing_route_json())
+    route_extra_result["routes"].append(dict(route_extra_result["routes"][0]))
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_extra_result), context=context, cmd=route_cmd),
+        expected="exactly one route",
+        scope="smoke assertions",
+    )
+    route_bool_score = json.loads(passing_route_json())
+    route_bool_score["routes"][0]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_bool_score), context=context, cmd=route_cmd),
+        expected="score is lower",
+        scope="smoke assertions",
+    )
+    route_bool_score_breakdown = json.loads(passing_route_json())
+    route_bool_score_breakdown["routes"][0]["explanation"]["scoreBreakdown"][0]["value"] = True
+    expect_self_test_failure(
+        lambda: assert_route_json_component_spec(json.dumps(route_bool_score_breakdown), context=context, cmd=route_cmd),
+        expected="scoreBreakdown value is invalid",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: assert_route_json_component_spec("\x1b[31m{}", context=context, cmd=route_cmd),
         expected="ANSI escape",
@@ -4692,7 +5145,7 @@ def run_self_test() -> None:
     route_catalog_missing_coverage["routes"][0]["explanation"]["referenceCoverage"]["total"] = {}
     expect_self_test_failure(
         lambda: assert_route_catalog_json(json.dumps(route_catalog_missing_coverage), context=context, cmd=route_catalog_cmd),
-        expected="full reference coverage",
+        expected="keys changed",
         scope="smoke assertions",
     )
     route_catalog_wrong_component_path = json.loads(passing_route_catalog_json())
@@ -4701,6 +5154,37 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_route_catalog_json(json.dumps(route_catalog_wrong_component_path), context=context, cmd=route_catalog_cmd),
         expected="component route command differs",
+        scope="smoke assertions",
+    )
+    route_catalog_reordered_top_level = json.loads(passing_route_catalog_json())
+    route_catalog_reordered_top_level = {
+        "routes": route_catalog_reordered_top_level["routes"],
+        "version": route_catalog_reordered_top_level["version"],
+    }
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_reordered_top_level), context=context, cmd=route_catalog_cmd),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    route_catalog_missing_route_key = json.loads(passing_route_catalog_json())
+    del route_catalog_missing_route_key["routes"][0]["keywords"]
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_missing_route_key), context=context, cmd=route_catalog_cmd),
+        expected="keys changed",
+        scope="smoke assertions",
+    )
+    route_catalog_bool_score = json.loads(passing_route_catalog_json())
+    route_catalog_bool_score["routes"][0]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_bool_score), context=context, cmd=route_catalog_cmd),
+        expected="score differs",
+        scope="smoke assertions",
+    )
+    route_catalog_bool_coverage = json.loads(passing_route_catalog_json())
+    route_catalog_bool_coverage["routes"][0]["explanation"]["referenceCoverage"]["knowledge"]["available"] = True
+    expect_self_test_failure(
+        lambda: assert_route_catalog_json(json.dumps(route_catalog_bool_coverage), context=context, cmd=route_catalog_cmd),
+        expected="reference coverage count is invalid",
         scope="smoke assertions",
     )
     expect_self_test_failure(
@@ -4732,7 +5216,7 @@ def run_self_test() -> None:
     prompt_missing_file["filesToRead"].remove(EXPECTED_ROUTE_SKILL)
     expect_self_test_failure(
         lambda: assert_prompt_json_component_spec(json.dumps(prompt_missing_file), context=context, cmd=prompt_cmd),
-        expected="missing expected file",
+        expected="filesToRead differs",
         scope="smoke assertions",
     )
     prompt_missing_example = json.loads(passing_prompt_json())
@@ -4747,6 +5231,51 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_prompt_json_component_spec(json.dumps(prompt_bad_quality), context=context, cmd=prompt_cmd),
         expected="quality command differs",
+        scope="smoke assertions",
+    )
+    prompt_reordered_top_level = json.loads(passing_prompt_json())
+    prompt_reordered_top_level = {
+        "version": prompt_reordered_top_level["version"],
+        "brief": prompt_reordered_top_level["brief"],
+        "route": prompt_reordered_top_level["route"],
+        "slashCommand": prompt_reordered_top_level["slashCommand"],
+        "referenceExamples": prompt_reordered_top_level["referenceExamples"],
+        "filesToRead": prompt_reordered_top_level["filesToRead"],
+        "checklist": prompt_reordered_top_level["checklist"],
+        "qualityCommand": prompt_reordered_top_level["qualityCommand"],
+        "prompt": prompt_reordered_top_level["prompt"],
+    }
+    expect_self_test_failure(
+        lambda: assert_prompt_json_component_spec(json.dumps(prompt_reordered_top_level), context=context, cmd=prompt_cmd),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    prompt_missing_route_key = json.loads(passing_prompt_json())
+    del prompt_missing_route_key["route"]["keywords"]
+    expect_self_test_failure(
+        lambda: assert_prompt_json_component_spec(json.dumps(prompt_missing_route_key), context=context, cmd=prompt_cmd),
+        expected="route keys changed",
+        scope="smoke assertions",
+    )
+    prompt_bool_route_score = json.loads(passing_prompt_json())
+    prompt_bool_route_score["route"]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_prompt_json_component_spec(json.dumps(prompt_bool_route_score), context=context, cmd=prompt_cmd),
+        expected="route score is invalid",
+        scope="smoke assertions",
+    )
+    prompt_bool_example_score = json.loads(passing_prompt_json())
+    prompt_bool_example_score["referenceExamples"][0]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_prompt_json_component_spec(json.dumps(prompt_bool_example_score), context=context, cmd=prompt_cmd),
+        expected="reference example score is invalid",
+        scope="smoke assertions",
+    )
+    prompt_missing_example_preview = json.loads(passing_prompt_json())
+    del prompt_missing_example_preview["referenceExamples"][0]["preview"]
+    expect_self_test_failure(
+        lambda: assert_prompt_json_component_spec(json.dumps(prompt_missing_example_preview), context=context, cmd=prompt_cmd),
+        expected="reference example keys changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(
@@ -4864,14 +5393,60 @@ def run_self_test() -> None:
     ]
     expect_self_test_failure(
         lambda: assert_pack_json_component_spec(json.dumps(pack_missing_file), context=context, cmd=pack_cmd),
-        expected="missing expected context file",
+        expected="context file order differs",
         scope="smoke assertions",
     )
     pack_no_warning = json.loads(passing_pack_json())
     pack_no_warning["warnings"] = []
     expect_self_test_failure(
         lambda: assert_pack_json_component_spec(json.dumps(pack_no_warning), context=context, cmd=pack_cmd),
-        expected="does not report truncation warnings",
+        expected="warnings is not a non-empty string list",
+        scope="smoke assertions",
+    )
+    pack_missing_summary_key = json.loads(passing_pack_json())
+    del pack_missing_summary_key["summary"]["usedRatio"]
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_missing_summary_key), context=context, cmd=pack_cmd),
+        expected="summary keys changed",
+        scope="smoke assertions",
+    )
+    pack_bool_used_bytes = json.loads(passing_pack_json())
+    pack_bool_used_bytes["usedBytes"] = True
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_bool_used_bytes), context=context, cmd=pack_cmd),
+        expected="usedBytes is outside expected budget",
+        scope="smoke assertions",
+    )
+    pack_bool_summary_total = json.loads(passing_pack_json())
+    pack_bool_summary_total["summary"]["totalFiles"] = True
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_bool_summary_total), context=context, cmd=pack_cmd),
+        expected="summary totalFiles is invalid",
+        scope="smoke assertions",
+    )
+    pack_bool_file_included_bytes = json.loads(passing_pack_json())
+    pack_bool_file_included_bytes["files"][0]["includedBytes"] = True
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_bool_file_included_bytes), context=context, cmd=pack_cmd),
+        expected="invalid includedBytes",
+        scope="smoke assertions",
+    )
+    pack_missing_file_content = json.loads(passing_pack_json())
+    del pack_missing_file_content["files"][0]["content"]
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_missing_file_content), context=context, cmd=pack_cmd),
+        expected="file entry keys changed",
+        scope="smoke assertions",
+    )
+    pack_missing_budget_warning = json.loads(passing_pack_json())
+    pack_missing_budget_warning["warnings"] = [
+        warning
+        for warning in pack_missing_budget_warning["warnings"]
+        if f"{EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES}" not in warning
+    ]
+    expect_self_test_failure(
+        lambda: assert_pack_json_component_spec(json.dumps(pack_missing_budget_warning), context=context, cmd=pack_cmd),
+        expected="context budget exhaustion",
         scope="smoke assertions",
     )
     expect_self_test_failure(

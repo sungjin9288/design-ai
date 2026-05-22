@@ -88,6 +88,7 @@ Doctor JSON smoke assertions now verify schema shape, key order, and summary/cou
 Audit JSON smoke assertions now verify payload type, entry schema, numeric contracts, and summary/count consistency.
 Lifecycle JSON smoke assertions now verify payload type, nested key shape, exact integer counts, and install/status/uninstall summary consistency.
 Corpus discovery JSON smoke assertions now verify search/show/examples key shape, file paths, exact integer fields, and limit-bound result counts.
+Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -123,6 +124,29 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 168 — Route/prompt/pack JSON smoke schema assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai route --json`, `design-ai routes --json`, `design-ai prompt --json`, and `design-ai pack --json` with stable top-level, route-entry, explanation, reference, prompt-plan, summary, and file-entry key guards.
+- Route JSON assertions now require exact route result counts for `--limit 1`, stable recommendation key shape, exact non-boolean integer scores, keyword lists, reference entry shape, score breakdown shape, and full reference coverage consistency.
+- Prompt JSON assertions now require stable forced-route plan shape, exact `filesToRead` order, reference example previews/scores, route coverage consistency, and prompt bundle content.
+- Pack JSON assertions now require stable bundle and summary key shape, exact budget/count fields, ordered context files aligned with the prompt plan, included file-entry contracts, string warnings, and explicit context budget exhaustion.
+
+#### Impact
+- Package and registry smoke checks now fail when route selection, prompt generation, or context packing JSON remains parseable but drifts from the machine-readable contracts used by automation and downstream agents.
+- Existing CLI runtime behavior, route/prompt/pack JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
 
 ### Phase 167 — Corpus discovery JSON smoke schema assertion hardening
 
