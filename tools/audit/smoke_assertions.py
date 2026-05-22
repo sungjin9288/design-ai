@@ -3953,15 +3953,18 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
         context=context,
         command_label="update dry-run JSON",
     )
-    if not isinstance(git_pull.get("sourceIsGitClone"), bool):
+    if type(git_pull.get("sourceIsGitClone")) is not bool:
         raise SystemExit(f"update dry-run JSON after {context} sourceIsGitClone is not boolean")
+    if type(git_pull.get("wouldRun")) is not bool:
+        raise SystemExit(f"update dry-run JSON after {context} gitPull wouldRun is not boolean")
     if git_pull.get("wouldRun") != git_pull.get("sourceIsGitClone"):
         raise SystemExit(f"update dry-run JSON after {context} gitPull wouldRun does not match clone state")
     expected_git_command = ["git", "pull", "--ff-only"] if git_pull.get("wouldRun") else []
     if git_pull.get("command") != expected_git_command:
         raise SystemExit(f"update dry-run JSON after {context} gitPull command differs from clone state")
-    if not isinstance(git_pull.get("reason"), str) or not git_pull["reason"]:
-        raise SystemExit(f"update dry-run JSON after {context} gitPull reason is missing")
+    expected_git_reason = "source is a git clone" if git_pull.get("sourceIsGitClone") else "source is not a git clone"
+    if git_pull.get("reason") != expected_git_reason:
+        raise SystemExit(f"update dry-run JSON after {context} gitPull reason differs from clone state")
 
     install = assert_lifecycle_json_keys(
         plan.get("install"),
@@ -3978,8 +3981,8 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
         raise SystemExit(f"update dry-run JSON after {context} installScript is invalid")
     if install.get("command") != ["bash", install["installScript"], "install"]:
         raise SystemExit(f"update dry-run JSON after {context} install command changed")
-    if not isinstance(install.get("reason"), str) or not install["reason"]:
-        raise SystemExit(f"update dry-run JSON after {context} install reason is missing")
+    if install.get("reason") != "install.sh is available":
+        raise SystemExit(f"update dry-run JSON after {context} install reason differs from expected install readiness")
 
     result = assert_lifecycle_json_keys(
         payload.get("result"),
@@ -6819,6 +6822,22 @@ def run_self_test() -> None:
         expected="result summary changed",
         scope="smoke assertions",
     )
+    update_payload_reordered = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_payload_reordered = {
+        "plan": update_payload_reordered["plan"],
+        "context": update_payload_reordered["context"],
+        "result": update_payload_reordered["result"],
+    }
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_payload_reordered),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: assert_update_dry_run_json(
             json.dumps(["context", "plan", "result"]),
@@ -6827,6 +6846,83 @@ def run_self_test() -> None:
             cmd=[*update_cmd, "--json"],
         ),
         expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    update_plan_reordered = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_plan_reordered["plan"] = {
+        "install": update_plan_reordered["plan"]["install"],
+        "gitPull": update_plan_reordered["plan"]["gitPull"],
+    }
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_plan_reordered),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="plan keys changed",
+        scope="smoke assertions",
+    )
+    update_git_would_run_int = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_git_would_run_int["plan"]["gitPull"]["wouldRun"] = 0
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_git_would_run_int),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="gitPull wouldRun is not boolean",
+        scope="smoke assertions",
+    )
+    update_git_clone_missing_command = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_git_clone_missing_command["plan"]["gitPull"]["sourceIsGitClone"] = True
+    update_git_clone_missing_command["plan"]["gitPull"]["wouldRun"] = True
+    update_git_clone_missing_command["plan"]["gitPull"]["reason"] = "source is a git clone"
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_git_clone_missing_command),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="gitPull command differs",
+        scope="smoke assertions",
+    )
+    update_git_reason_drift = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_git_reason_drift["plan"]["gitPull"]["reason"] = "git work skipped"
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_git_reason_drift),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="gitPull reason differs",
+        scope="smoke assertions",
+    )
+    update_install_missing_reason = json.loads(passing_update_dry_run_json("smoke-design-"))
+    del update_install_missing_reason["plan"]["install"]["reason"]
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_install_missing_reason),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="install keys changed",
+        scope="smoke assertions",
+    )
+    update_install_reason_drift = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_install_reason_drift["plan"]["install"]["reason"] = "installer exists"
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_install_reason_drift),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="install reason differs",
         scope="smoke assertions",
     )
     status_cmd = ["design-ai", "status"]

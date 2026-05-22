@@ -91,6 +91,7 @@ Corpus discovery JSON smoke assertions now verify search/show/examples key shape
 Route, prompt, and pack JSON smoke assertions now verify recommendation/prompt-bundle key shape, exact numeric fields, reference coverage consistency, and context file order.
 Check JSON smoke assertions now verify artifact/stdin/example report key shape, exact result order, count consistency, and example metadata contracts.
 Help, list, and version JSON smoke assertions now verify command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
+Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -126,6 +127,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 171 — Update dry-run JSON smoke plan assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now verifies `design-ai update --dry-run --json` with stricter update-plan guards for top-level key order, nested `plan` key order, git-pull boolean fields, git command arrays, and git/install readiness reasons.
+- Update dry-run JSON assertions now reject bool-as-int drift for `gitPull.wouldRun`, stale git clone reasons, missing git pull commands for clone sources, missing install reason keys, and install reason wording drift.
+- The smoke assertion self-test now covers top-level reorder, plan reorder, boolean type drift, clone command drift, git reason drift, install key drift, and install reason drift fixtures.
+
+#### Impact
+- Package and registry smoke checks now fail when update preview JSON remains parseable but no longer describes the same non-mutating git/install plan contract used before install lifecycle checks.
+- Existing CLI runtime behavior, update dry-run JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
 
 ### Phase 170 — Help/list/version JSON smoke schema assertion hardening
 
