@@ -10,6 +10,7 @@ What ships in v4.13:
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --audit` inspects profile shape, duplicates, and possible sensitive content without changing the profile.
+- `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects the learned context into the generated task prompt, with optional `--learning-category` and `--learning-limit` scoping.
@@ -71,6 +72,15 @@ design-ai learn --audit --json
 
 The audit is advisory and non-mutating. It reports invalid JSON/profile shape failures plus warnings for duplicate entries, missing timestamps, long notes, and conservative sensitive-content patterns such as secret-like assignments, private key blocks, email addresses, and Korean mobile phone numbers.
 
+Summarize profile health and recency:
+
+```bash
+design-ai learn --stats
+design-ai learn --stats --json
+```
+
+Stats mode is also read-only. It is a compact overview for deciding whether to inspect, filter, or clean up the profile before using `--with-learning`.
+
 Remove one saved entry:
 
 ```bash
@@ -125,5 +135,7 @@ Learning entries are treated as preferences, not absolute instructions. They mus
 Use `--with-learning` only when the saved context is relevant to the current task. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small recent subset should influence the prompt.
 
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries.
+
+Use `design-ai learn --stats` when you need a quick read on profile size, category distribution, source distribution, latest entry, and audit status before deciding whether to run a detailed audit.
 
 Deletion actions require `--yes` because they mutate the local profile. Use `--list` first when you need the exact id or list number.

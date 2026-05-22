@@ -94,6 +94,7 @@ Help, list, and version JSON smoke assertions now verify command-discovery key s
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+`design-ai learn --stats` now summarizes local learning profile size, category/source distribution, recency, and audit status without mutating the profile.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now support `--learning-category` plus `--learning-limit` so local preferences can be scoped before injection.
 `design-ai learn --audit` now provides read-only local profile inspection for schema issues, duplicates, stale metadata, long notes, and possible sensitive content before prompt personalization.
 `design-ai learn` now supports local profile management with category/limit filters plus confirmed `--forget` and `--clear` deletion controls.
@@ -134,6 +135,28 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 179 — Learning profile stats summary
+
+#### Changed
+- Added `design-ai learn --stats` and `design-ai learn --stats --json` as read-only profile overview commands.
+- Summarized profile existence, entry count, category counts, source counts, oldest/latest parseable entries, and audit summary without mutating the profile.
+- Kept stats resilient for missing or invalid profiles by returning audit status instead of writing or normalizing files.
+- Updated CLI help discovery, smoke assertions, README command references, quickstart guidance, product readiness docs, and AI learning docs for the stats surface.
+- Expanded learning unit coverage for stats parsing, normal profile summaries, missing profile summaries, and invalid JSON handling.
+
+#### Impact
+- Users can quickly decide whether to filter, audit, clean up, or inject local preferences before using `--with-learning`.
+- Existing `learn --audit`, list/export filtering, forget/clear controls, scoped prompt/pack injection, and non-learning prompt/pack behavior remain unchanged.
+
+#### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- Learning stats smoke passed with temporary profile files.
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:metadata`
+- `npm run release:check`
 
 ### Phase 178 — Scoped learning prompt injection
 

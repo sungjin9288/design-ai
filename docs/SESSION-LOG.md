@@ -173,6 +173,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 176)** — Added learning profile management controls: list/export filtering, confirmed single-entry forget, and confirmed full-profile clear.
 - **v4.13 (Phase 177)** — Added learning profile audit controls: read-only `learn --audit` inspection for profile shape, duplicates, timestamp gaps, long notes, and possible sensitive content.
 - **v4.13 (Phase 178)** — Added scoped learning prompt injection: `prompt`/`pack --with-learning` now accept category and limit filters before including local preferences.
+- **v4.13 (Phase 179)** — Added learning profile stats summaries: read-only `learn --stats` reports counts, category/source distribution, recency, and audit status.
 
 ## Patterns that didn't work
 

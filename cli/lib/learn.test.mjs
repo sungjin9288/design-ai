@@ -11,6 +11,7 @@ import {
   buildLearningContext,
   clearLearning,
   forgetLearning,
+  learningStats,
   loadLearningProfile,
   normalizeCategory,
   parseLearnArgs,
@@ -57,6 +58,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   const auditArgs = parseLearnArgs(["--audit", "--json"]);
   assert.equal(auditArgs.action, "audit");
   assert.equal(auditArgs.json, true);
+
+  const statsArgs = parseLearnArgs(["--stats", "--json"]);
+  assert.equal(statsArgs.action, "stats");
+  assert.equal(statsArgs.json, true);
 });
 
 test("parseLearnArgs rejects unsupported categories and unknown options", () => {
@@ -238,6 +243,64 @@ test("auditLearningProfile reports invalid profiles without mutating files", () 
   assert.equal(audit.summary.status, "fail");
   assert.equal(audit.summary.failures, 1);
   assert.equal(audit.issues[0].code, "invalid-json");
+  assert.equal(readFileSync(filePath, "utf8"), invalidJson);
+}));
+
+test("learningStats summarizes profile counts, sources, recency, and audit status", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "korean",
+        text: "Prefer dense Korean mobile layouts with compact form controls",
+        source: "import",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const stats = learningStats({ filePath });
+
+  assert.equal(stats.file, filePath);
+  assert.equal(stats.exists, true);
+  assert.equal(stats.count, 2);
+  assert.deepEqual(stats.categoryCounts, { brand: 1, korean: 1 });
+  assert.deepEqual(stats.sourceCounts, { cli: 1, import: 1 });
+  assert.equal(stats.auditSummary.status, "pass");
+  assert.equal(stats.oldestEntry.id, "learn-a");
+  assert.equal(stats.latestEntry.id, "learn-b");
+  assert.equal(stats.latestEntry.textPreview, "Prefer dense Korean mobile layouts with compact form controls");
+}));
+
+test("learningStats reports missing and invalid profiles without mutating files", () => withTempDir((dir) => {
+  const missingPath = path.join(dir, "missing.json");
+  const missing = learningStats({ filePath: missingPath });
+  assert.equal(missing.exists, false);
+  assert.equal(missing.count, 0);
+  assert.equal(missing.auditSummary.status, "pass");
+  assert.deepEqual(missing.sourceCounts, {});
+
+  const filePath = path.join(dir, "learning.json");
+  const invalidJson = "{ not json";
+  writeFileSync(filePath, invalidJson, "utf8");
+
+  const stats = learningStats({ filePath });
+
+  assert.equal(stats.exists, true);
+  assert.equal(stats.count, 0);
+  assert.equal(stats.auditSummary.status, "fail");
+  assert.equal(stats.auditSummary.failures, 1);
+  assert.equal(stats.latestEntry, null);
   assert.equal(readFileSync(filePath, "utf8"), invalidJson);
 }));
 

@@ -8,6 +8,7 @@ import {
   clearLearning,
   forgetLearning,
   formatLearningJson,
+  learningStats,
   loadLearningProfile,
   parseLearnArgs,
   rememberLearning,
@@ -22,6 +23,7 @@ function printHelp() {
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --audit [--json]");
+  console.log("        design-ai learn --stats [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json]");
   console.log("        design-ai learn --clear --yes [--json]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
@@ -35,6 +37,7 @@ function printHelp() {
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
   console.log("  --audit              Inspect profile shape and possible sensitive content without changing it");
+  console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -48,6 +51,7 @@ function printHelp() {
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --audit");
+  console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
@@ -133,6 +137,53 @@ function printAudit(payload) {
   }
 }
 
+function printStats(payload) {
+  header("design-ai learn", "Local learning profile stats");
+  info(`File: ${payload.file}`);
+  info(`Exists: ${payload.exists ? "yes" : "no"}`);
+  info(`Entries: ${payload.count}`);
+  info(`Updated: ${payload.updatedAt || "unknown"}`);
+  info(`Audit: ${payload.auditSummary.status} (${payload.auditSummary.failures} failure(s), ${payload.auditSummary.warnings} warning(s))`);
+
+  const categories = formatCategoryCounts(payload.categoryCounts);
+  if (categories) info(`Categories: ${categories}`);
+
+  const sources = Object.entries(payload.sourceCounts)
+    .map(([source, count]) => `${source} ${count}`)
+    .join(", ");
+  if (sources) info(`Sources: ${sources}`);
+  console.log();
+
+  if (!payload.exists) {
+    console.log("No local learning profile file exists yet.");
+    return;
+  }
+
+  if (payload.auditSummary.failures > 0) {
+    console.log("Profile stats are limited because the profile has audit failures. Run `design-ai learn --audit` for details.");
+    return;
+  }
+
+  if (payload.count === 0) {
+    console.log("No local learning preferences are stored yet.");
+    return;
+  }
+
+  if (!payload.latestEntry) {
+    console.log("No parseable learning entry timestamps found. Run `design-ai learn --audit` for details.");
+    return;
+  }
+
+  if (payload.latestEntry) {
+    console.log(`Latest: [${payload.latestEntry.category}] ${payload.latestEntry.textPreview}`);
+    console.log(`        ${dim(`${payload.latestEntry.id} · ${payload.latestEntry.createdAt}`)}`);
+  }
+  if (payload.oldestEntry && payload.oldestEntry.id !== payload.latestEntry?.id) {
+    console.log(`Oldest: [${payload.oldestEntry.category}] ${payload.oldestEntry.textPreview}`);
+    console.log(`        ${dim(`${payload.oldestEntry.id} · ${payload.oldestEntry.createdAt}`)}`);
+  }
+}
+
 function readLearningInput(parsed) {
   return resolveBriefInput(parsed);
 }
@@ -207,6 +258,16 @@ export async function runLearn(args) {
       return;
     }
     printAudit(payload);
+    return;
+  }
+
+  if (parsed.action === "stats") {
+    const payload = learningStats({ filePath: parsed.filePath });
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+    printStats(payload);
     return;
   }
 

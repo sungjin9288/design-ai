@@ -24,6 +24,7 @@ const LEARN_OPTIONS = [
   "--list",
   "--export",
   "--audit",
+  "--stats",
   "--forget",
   "--clear",
   "--category",
@@ -128,6 +129,8 @@ export function parseLearnArgs(args) {
       setAction(out, "export");
     } else if (arg === "--audit") {
       setAction(out, "audit");
+    } else if (arg === "--stats") {
+      setAction(out, "stats");
     } else if (arg === "--forget") {
       setAction(out, "forget");
       const target = args[i + 1];
@@ -616,6 +619,65 @@ export function buildLearningContext({ filePath = defaultLearningFile(), limit =
     empty: entries.length === 0,
     markdown: renderLearningMarkdown(profile, { limit, category }),
   };
+}
+
+function countBy(items, getKey) {
+  const counts = {};
+  for (const item of items) {
+    const key = String(getKey(item) || "").trim();
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  }
+  return counts;
+}
+
+function previewText(text, maxChars = 96) {
+  const cleaned = cleanNoteText(text);
+  if (cleaned.length <= maxChars) return cleaned;
+  return `${cleaned.slice(0, maxChars - 3)}...`;
+}
+
+function statsEntry(entry) {
+  return {
+    id: entry.id,
+    category: entry.category,
+    source: entry.source,
+    createdAt: entry.createdAt,
+    textPreview: previewText(entry.text),
+  };
+}
+
+export function learningStats({ filePath = defaultLearningFile() } = {}) {
+  const audit = auditLearningProfile({ filePath });
+  const payload = {
+    file: filePath,
+    exists: audit.exists,
+    version: audit.version,
+    updatedAt: audit.updatedAt,
+    count: audit.count,
+    categoryCounts: audit.categoryCounts,
+    sourceCounts: {},
+    oldestEntry: null,
+    latestEntry: null,
+    auditSummary: audit.summary,
+  };
+
+  if (!audit.exists || audit.summary.failures > 0) return payload;
+
+  const profile = loadLearningProfile(filePath);
+  const entries = profile.entries.filter((entry) => entry.text);
+  payload.sourceCounts = countBy(entries, (entry) => entry.source || "cli");
+
+  const datedEntries = entries
+    .map((entry) => ({ entry, time: Date.parse(entry.createdAt) }))
+    .filter(({ time }) => !Number.isNaN(time))
+    .sort((a, b) => a.time - b.time);
+
+  if (datedEntries.length > 0) {
+    payload.oldestEntry = statsEntry(datedEntries[0].entry);
+    payload.latestEntry = statsEntry(datedEntries[datedEntries.length - 1].entry);
+  }
+
+  return payload;
 }
 
 export function formatLearningJson(payload) {

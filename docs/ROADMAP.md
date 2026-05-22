@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 179 — Learning profile stats summary (v4.13.0) ✓ shipped
+
+`design-ai learn` now includes a read-only stats mode for quickly checking local learning profile size, distribution, recency, and audit status.
+
+### Changed
+- Added `design-ai learn --stats` and `design-ai learn --stats --json`.
+- Summarized profile existence, entry count, category counts, source counts, oldest/latest parseable entries, and audit summary without mutating the profile.
+- Kept stats resilient for missing or invalid profiles by reporting audit status instead of writing or normalizing files.
+- Updated CLI help discovery, smoke assertions, README command references, quickstart guidance, product readiness docs, and AI learning docs for the stats surface.
+- Expanded learning unit coverage for stats parsing, normal profile summaries, missing profile summaries, and invalid JSON handling.
+
+### Impact
+- Users can decide whether to filter, audit, clean up, or inject local preferences before using `--with-learning`.
+- Existing `learn --audit`, list/export filtering, forget/clear controls, scoped prompt/pack injection, and non-learning prompt/pack behavior remain unchanged.
+
+### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- Learning stats smoke passed with temporary profile files.
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local personalization memory is easier to inspect at a glance before it influences generated agent prompts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 178 — Scoped learning prompt injection (v4.13.0) ✓ shipped
 
 `design-ai prompt` and `design-ai pack` now let users scope opt-in local learning context by category and entry count before injecting it into generated agent context.
