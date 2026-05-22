@@ -518,6 +518,26 @@ RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
         "output-file confirmations",
     ),
 )
+RELEASE_PROMPT_PACK_FORCED_OUTPUT_TERM_GROUPS = (
+    ("prompt/pack",),
+    (
+        "forced `--out`",
+        "forced output-file",
+        "강제 `--out`",
+        "강제 output-file",
+    ),
+)
+RELEASE_PROMPT_PACK_FILE_WRITE_CONFIRMATION_TERM_GROUPS = (
+    ("prompt/pack",),
+    (
+        "file-write confirmation",
+        "file-write confirmations",
+        "`Wrote <path>` confirmation",
+        "`Wrote <path>` confirmations",
+        "output-file confirmation",
+        "output-file confirmations",
+    ),
+)
 RELEASE_PROMPT_PACK_MODE_TERM_GROUPS = (
     ("prompt/pack",),
     (
@@ -751,6 +771,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "pack from-file output phrase",
     "pack stdin output phrase",
     "prompt-pack output smoke phrase",
+    "prompt-pack forced output-file phrase",
+    "prompt-pack file-write confirmation phrase",
     "check command smoke phrase",
     "human install lifecycle phrase",
     "install JSON command phrase",
@@ -836,6 +858,14 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("pack from-file output phrase", RELEASE_PACK_FROM_FILE_OUTPUT_TERM_GROUPS),
     ("pack stdin output phrase", RELEASE_PACK_STDIN_OUTPUT_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
+    (
+        "prompt-pack forced output-file phrase",
+        RELEASE_PROMPT_PACK_FORCED_OUTPUT_TERM_GROUPS,
+    ),
+    (
+        "prompt-pack file-write confirmation phrase",
+        RELEASE_PROMPT_PACK_FILE_WRITE_CONFIRMATION_TERM_GROUPS,
+    ),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
     ("human install lifecycle phrase", RELEASE_INSTALL_HUMAN_TERM_GROUPS),
     ("install JSON command phrase", RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS),
@@ -1203,7 +1233,7 @@ explicit `show --lines` output and `route --explain` output,
 unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure,
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
 prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output,
-prompt/pack forced `--out` overwrites plus file-write confirmations,
+prompt/pack forced `--out` overwrite and prompt/pack file-write confirmations,
 check examples/artifact/stdin/all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 human install plus `design-ai install --json`
@@ -1245,7 +1275,7 @@ route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
 unknown command failure, unknown help-topic failure, unknown list-domain failure, unknown search-dir failure 검증도 확인해요.
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
 prompt JSON 출력, prompt markdown 출력, prompt from-file 출력, prompt stdin 출력, pack JSON 출력, pack markdown 출력, pack from-file 출력, pack stdin 출력도 확인해요.
-prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
+prompt/pack 강제 `--out` overwrite와 prompt/pack file-write confirmation도 확인해요.
 check examples/artifact/stdin/all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 human install과 JSON `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
@@ -2681,6 +2711,56 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.md is missing prompt-pack output smoke phrase"
         in prompt_pack_output_drift_errors,
         "release policy docs should mention prompt/pack output-file smoke",
+    )
+
+    prompt_pack_forced_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "forced `--out`",
+                "output-file",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_pack_forced_output_drift_errors = "\n".join(
+        prompt_pack_forced_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing prompt-pack forced output-file phrase"
+            in prompt_pack_forced_output_drift_errors
+        ),
+        "release policy docs should mention prompt/pack forced output-file smoke",
+    )
+
+    prompt_pack_file_write_confirmation_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "file-write confirmations",
+                "write confirmations",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_pack_file_write_confirmation_drift_errors = "\n".join(
+        prompt_pack_file_write_confirmation_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/DISTRIBUTION.md is missing prompt-pack file-write confirmation phrase"
+            in prompt_pack_file_write_confirmation_drift_errors
+        ),
+        "release policy docs should mention prompt/pack file-write confirmation smoke",
     )
 
     human_install_drift = release_metadata_summary(

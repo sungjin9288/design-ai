@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 157 — Prompt/pack output-file guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad prompt/pack output-file guard and adds separate prompt/pack forced output-file and prompt/pack file-write confirmation release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping forced `--out` wording and file-write confirmation wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out prompt/pack forced output-file coverage and prompt/pack file-write confirmations as separate protected release smoke surfaces.
+- CHANGELOG and SESSION-LOG now record the Phase 157 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose prompt/pack forced output-file coverage or prompt/pack file-write confirmation coverage.
+- Existing CLI, prompt execution, pack execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve prompt/pack output-file smoke guidance as two independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 156 — Prompt/pack mode guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output drift separately.

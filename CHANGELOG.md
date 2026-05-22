@@ -76,6 +76,7 @@ Release metadata now reports route-id suggestion, option suggestion, value sugge
 Release metadata now guards release-facing docs against dropping prompt/pack JSON/markdown/from-file/stdin smoke guidance.
 Release metadata now reports prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output drift separately.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
+Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
 Release metadata now guards release-facing docs against dropping check examples/artifact/stdin/all-routes smoke guidance.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
@@ -112,6 +113,36 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 157 — Prompt/pack output-file guard split
+
+#### Changed
+- `tools/audit/release-metadata.py` now keeps the broad prompt/pack output-file guard and adds separate prompt/pack forced output-file and prompt/pack file-write confirmation release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping forced `--out` wording and file-write confirmation wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out prompt/pack forced output-file coverage and prompt/pack file-write confirmations separately.
+
+#### Impact
+- Release metadata failures now distinguish whether release-facing docs lost prompt/pack forced output-file coverage or prompt/pack file-write confirmation coverage.
+- The guard is documentation-only at runtime; existing CLI behavior, prompt execution, pack execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+#### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+#### What this enables
+- Release-facing docs now preserve prompt/pack output-file smoke guidance as two independently reported contracts.
 
 ### Phase 156 — Prompt/pack mode guard split
 
