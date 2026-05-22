@@ -780,6 +780,14 @@ RELEASE_UPDATE_DRY_RUN_TERM_GROUPS = (
 RELEASE_UPDATE_DRY_RUN_COMMAND_TERM_GROUPS = (
     ("`design-ai update --dry-run`",),
 )
+RELEASE_UPDATE_DRY_RUN_HUMAN_OUTPUT_TERM_GROUPS = (
+    (
+        "human `design-ai update --dry-run` output",
+        "human update dry-run output",
+        "human `design-ai update --dry-run` 출력",
+        "human update dry-run 출력",
+    ),
+)
 RELEASE_UPDATE_DRY_RUN_JSON_COMMAND_TERM_GROUPS = (
     ("`design-ai update --dry-run --json`",),
 )
@@ -878,6 +886,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "doctor human diagnostics phrase",
     "update dry-run lifecycle phrase",
     "update dry-run command phrase",
+    "update dry-run human output phrase",
     "update dry-run JSON command phrase",
     "update dry-run plan phrase",
 )
@@ -979,6 +988,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("doctor human diagnostics phrase", RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS),
     ("update dry-run lifecycle phrase", RELEASE_UPDATE_DRY_RUN_TERM_GROUPS),
     ("update dry-run command phrase", RELEASE_UPDATE_DRY_RUN_COMMAND_TERM_GROUPS),
+    (
+        "update dry-run human output phrase",
+        RELEASE_UPDATE_DRY_RUN_HUMAN_OUTPUT_TERM_GROUPS,
+    ),
     ("update dry-run JSON command phrase", RELEASE_UPDATE_DRY_RUN_JSON_COMMAND_TERM_GROUPS),
     ("update dry-run plan phrase", RELEASE_UPDATE_DRY_RUN_PLAN_TERM_GROUPS),
 )
@@ -1336,8 +1349,8 @@ human `design-ai install` output plus `design-ai install --json`
 for machine-readable install lifecycle output, human `design-ai status` output plus JSON status output,
 `design-ai status --json` for machine-readable install-state output, and
 human `design-ai uninstall` output plus `design-ai uninstall --json`
-for machine-readable uninstall lifecycle output. It also checks human
-`design-ai update --dry-run` output and `design-ai update --dry-run --json`
+for machine-readable uninstall lifecycle output. It also checks
+human `design-ai update --dry-run` output and `design-ai update --dry-run --json`
 machine-readable update plan before mutating lifecycle commands, plus
 `design-ai doctor --strict` human diagnostics before release.
 """
@@ -3408,6 +3421,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing update dry-run command phrase"
         in update_dry_run_command_drift_errors,
         "release policy docs should mention exact design-ai update --dry-run command guidance",
+    )
+
+    update_dry_run_human_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "human `design-ai update --dry-run` output",
+                "human update preview",
+            ),
+        },
+        audit_count=8,
+    )
+    update_dry_run_human_output_drift_errors = "\n".join(
+        update_dry_run_human_output_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing update dry-run human output phrase"
+        in update_dry_run_human_output_drift_errors,
+        "release policy docs should mention human update dry-run output smoke",
     )
 
     update_dry_run_json_command_drift = release_metadata_summary(

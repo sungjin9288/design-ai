@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 161 — Human update dry-run output guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports human update dry-run output drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad `update --dry-run` lifecycle guard and adds a separate human update dry-run output release policy phrase label.
+- `release-metadata.py --self-test` now has a drift fixture for dropping human `design-ai update --dry-run` output wording while JSON dry-run command and update plan wording remain present.
+- `docs/RELEASE-CHECKLIST.md` now names human update dry-run output separately from the exact command and machine-readable update plan in the metadata guard explanation.
+- CHANGELOG and SESSION-LOG now record the Phase 161 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with a separate metadata error when they lose human update dry-run output coverage.
+- Existing CLI, update dry-run output, update dry-run JSON output, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve update dry-run smoke guidance as independently reported human output, command, JSON command, and machine-readable plan contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 160 — Human audit output guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports human audit strict-quiet output drift separately.
