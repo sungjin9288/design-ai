@@ -613,7 +613,39 @@ RELEASE_CHECK_COMMAND_TERM_GROUPS = (
     (
         "check examples/artifact/stdin/all-routes",
         "check examples, artifact, stdin, and all-routes",
+        (
+            "check examples output, check artifact output, check stdin output, "
+            "and check all-routes output"
+        ),
         "check examples/artifact/stdin/all-routes 출력",
+        (
+            "check examples 출력, check artifact 출력, check stdin 출력, "
+            "check all-routes 출력"
+        ),
+    ),
+)
+RELEASE_CHECK_EXAMPLES_OUTPUT_TERM_GROUPS = (
+    (
+        "check examples output",
+        "check examples 출력",
+    ),
+)
+RELEASE_CHECK_ARTIFACT_OUTPUT_TERM_GROUPS = (
+    (
+        "check artifact output",
+        "check artifact 출력",
+    ),
+)
+RELEASE_CHECK_STDIN_OUTPUT_TERM_GROUPS = (
+    (
+        "check stdin output",
+        "check stdin 출력",
+    ),
+)
+RELEASE_CHECK_ALL_ROUTES_OUTPUT_TERM_GROUPS = (
+    (
+        "check all-routes output",
+        "check all-routes 출력",
     ),
 )
 RELEASE_INSTALL_HUMAN_TERM_GROUPS = (
@@ -774,6 +806,10 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "prompt-pack forced output-file phrase",
     "prompt-pack file-write confirmation phrase",
     "check command smoke phrase",
+    "check examples output phrase",
+    "check artifact output phrase",
+    "check stdin output phrase",
+    "check all-routes output phrase",
     "human install lifecycle phrase",
     "install JSON command phrase",
     "install JSON lifecycle phrase",
@@ -867,6 +903,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
         RELEASE_PROMPT_PACK_FILE_WRITE_CONFIRMATION_TERM_GROUPS,
     ),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
+    ("check examples output phrase", RELEASE_CHECK_EXAMPLES_OUTPUT_TERM_GROUPS),
+    ("check artifact output phrase", RELEASE_CHECK_ARTIFACT_OUTPUT_TERM_GROUPS),
+    ("check stdin output phrase", RELEASE_CHECK_STDIN_OUTPUT_TERM_GROUPS),
+    ("check all-routes output phrase", RELEASE_CHECK_ALL_ROUTES_OUTPUT_TERM_GROUPS),
     ("human install lifecycle phrase", RELEASE_INSTALL_HUMAN_TERM_GROUPS),
     ("install JSON command phrase", RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS),
     ("install JSON lifecycle phrase", RELEASE_INSTALL_JSON_TERM_GROUPS),
@@ -1234,7 +1274,7 @@ unknown command failure, unknown help-topic failure, unknown list-domain failure
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
 prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output,
 prompt/pack forced `--out` overwrite and prompt/pack file-write confirmations,
-check examples/artifact/stdin/all-routes output,
+check examples output, check artifact output, check stdin output, and check all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 human install plus `design-ai install --json`
 for machine-readable install lifecycle output, human+JSON status output,
@@ -1276,7 +1316,7 @@ unknown command failure, unknown help-topic failure, unknown list-domain failure
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
 prompt JSON 출력, prompt markdown 출력, prompt from-file 출력, prompt stdin 출력, pack JSON 출력, pack markdown 출력, pack from-file 출력, pack stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 prompt/pack file-write confirmation도 확인해요.
-check examples/artifact/stdin/all-routes 출력도 확인해요.
+check examples 출력, check artifact 출력, check stdin 출력, check all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 human install과 JSON `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 human+JSON `status` 출력도 확인하며,
@@ -1908,7 +1948,10 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "check examples/artifact/stdin/all-routes",
+                (
+                    "check examples output, check artifact output, "
+                    "check stdin output, and check all-routes output"
+                ),
                 "check output",
             ),
         },
@@ -1918,6 +1961,100 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "docs/DISTRIBUTION.md is missing check command smoke phrase" in check_command_drift_errors,
         "release policy docs should mention check command smoke",
+    )
+
+    check_examples_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "check examples output",
+                "check output",
+            ),
+        },
+        audit_count=8,
+    )
+    check_examples_output_drift_errors = "\n".join(
+        check_examples_output_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing check examples output phrase"
+        in check_examples_output_drift_errors,
+        "release policy docs should mention check examples output smoke",
+    )
+
+    check_artifact_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "check artifact output",
+                "check output",
+            ),
+        },
+        audit_count=8,
+    )
+    check_artifact_output_drift_errors = "\n".join(
+        check_artifact_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/DISTRIBUTION.md is missing check artifact output phrase"
+            in check_artifact_output_drift_errors
+        ),
+        "release policy docs should mention check artifact output smoke",
+    )
+
+    check_stdin_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace(
+                "check stdin 출력",
+                "check 출력",
+            ),
+        },
+        audit_count=8,
+    )
+    check_stdin_output_drift_errors = "\n".join(check_stdin_output_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing check stdin output phrase"
+        in check_stdin_output_drift_errors,
+        "release policy docs should mention check stdin output smoke",
+    )
+
+    check_all_routes_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
+                "check all-routes output",
+                "check output",
+            ),
+        },
+        audit_count=8,
+    )
+    check_all_routes_output_drift_errors = "\n".join(
+        check_all_routes_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/RELEASE-CHECKLIST.md is missing check all-routes output phrase"
+            in check_all_routes_output_drift_errors
+        ),
+        "release policy docs should mention check all-routes output smoke",
     )
 
     version_json_command_drift = release_metadata_summary(

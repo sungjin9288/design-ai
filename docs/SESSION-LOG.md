@@ -152,6 +152,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 155)** — Split route-id suggestion, option suggestion, value suggestion, and numeric range failure drift.
 - **v4.13 (Phase 156)** — Split prompt JSON, prompt markdown, prompt from-file, prompt stdin, pack JSON, pack markdown, pack from-file, and pack stdin drift.
 - **v4.13 (Phase 157)** — Split prompt/pack forced output-file and prompt/pack file-write confirmation drift.
+- **v4.13 (Phase 158)** — Split check examples, check artifact, check stdin, and check all-routes output drift.
 
 ## Patterns that didn't work
 

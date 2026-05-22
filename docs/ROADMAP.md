@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 158 — Check output guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports check examples, check artifact, check stdin, and check all-routes output drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad check examples/artifact/stdin/all-routes guard and adds separate check examples output, check artifact output, check stdin output, and check all-routes output release policy phrase labels.
+- `release-metadata.py --self-test` now has separate drift fixtures for dropping each `design-ai check` smoke-surface wording.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out the four check output surfaces as separate protected release smoke surfaces.
+- CHANGELOG and SESSION-LOG now record the Phase 158 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with separate metadata errors when they lose check examples, artifact, stdin, or all-routes output coverage.
+- Existing CLI, check execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve `design-ai check` smoke guidance as four independently reported contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 157 — Prompt/pack output-file guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
