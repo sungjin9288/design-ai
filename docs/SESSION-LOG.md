@@ -153,6 +153,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 156)** — Split prompt JSON, prompt markdown, prompt from-file, prompt stdin, pack JSON, pack markdown, pack from-file, and pack stdin drift.
 - **v4.13 (Phase 157)** — Split prompt/pack forced output-file and prompt/pack file-write confirmation drift.
 - **v4.13 (Phase 158)** — Split check examples, check artifact, check stdin, and check all-routes output drift.
+- **v4.13 (Phase 159)** — Split human install, human status, and human uninstall output drift.
 
 ## Patterns that didn't work
 
