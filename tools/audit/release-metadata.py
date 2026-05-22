@@ -739,7 +739,22 @@ RELEASE_UNINSTALL_JSON_TERM_GROUPS = (
     ),
 )
 RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS = (
-    ("audit --strict --quiet", "design-ai audit --strict --quiet"),
+    (
+        "audit --strict --quiet",
+        "design-ai audit --strict --quiet",
+        "human `design-ai audit --strict --quiet` output",
+        "human `design-ai audit --strict --quiet` 출력",
+        "human audit strict-quiet output",
+        "human audit strict-quiet 출력",
+    ),
+)
+RELEASE_AUDIT_HUMAN_OUTPUT_TERM_GROUPS = (
+    (
+        "human `design-ai audit --strict --quiet` output",
+        "human audit strict-quiet output",
+        "human `design-ai audit --strict --quiet` 출력",
+        "human audit strict-quiet 출력",
+    ),
 )
 RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS = (
     ("`design-ai audit --strict --quiet --json`",),
@@ -855,6 +870,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "uninstall JSON command phrase",
     "uninstall JSON lifecycle phrase",
     "audit strict-quiet smoke phrase",
+    "audit human output phrase",
     "audit JSON command phrase",
     "audit JSON repository-audit phrase",
     "doctor strict smoke phrase",
@@ -955,6 +971,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("uninstall JSON command phrase", RELEASE_UNINSTALL_JSON_COMMAND_TERM_GROUPS),
     ("uninstall JSON lifecycle phrase", RELEASE_UNINSTALL_JSON_TERM_GROUPS),
     ("audit strict-quiet smoke phrase", RELEASE_AUDIT_STRICT_QUIET_TERM_GROUPS),
+    ("audit human output phrase", RELEASE_AUDIT_HUMAN_OUTPUT_TERM_GROUPS),
     ("audit JSON command phrase", RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS),
     ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
@@ -1299,8 +1316,9 @@ and `npm run package:check` package contents check,
 `npm run audit:strict` all 8 audits,
 `git diff --check` whitespace checks,
 `npm run release:self-test` release assertion self-tests,
-human/JSON `design-ai audit --strict --quiet` output, `design-ai help` top-level help output,
+human `design-ai audit --strict --quiet` output and
 `design-ai audit --strict --quiet --json` for machine-readable repository-audit output,
+`design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
 command alias help and functional alias output,
 command-specific help topic output,
@@ -1340,9 +1358,9 @@ npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 �
 `npm run audit:strict` 8개 audit도 확인하고,
 `git diff --check` whitespace check 검증도 확인하고,
 `npm run release:self-test` release self-test 검증도 확인하고,
-human/JSON `design-ai audit --strict --quiet` 출력도
-smoke test하고, `design-ai audit --strict --quiet --json`으로
-machine-readable repository-audit output도 확인하며, `design-ai help` top-level help 출력도 확인하며,
+human `design-ai audit --strict --quiet` 출력도 smoke test하고,
+`design-ai audit --strict --quiet --json`으로 machine-readable repository-audit output도 확인하며,
+`design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
 command-specific help topic 출력도 확인해요.
@@ -3176,6 +3194,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md is missing audit strict-quiet smoke phrase"
         in audit_strict_quiet_drift_errors,
         "release policy docs should mention audit strict-quiet smoke",
+    )
+
+    audit_human_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "human `design-ai audit --strict --quiet` output",
+                "human audit command",
+            ),
+        },
+        audit_count=8,
+    )
+    audit_human_output_drift_errors = "\n".join(
+        audit_human_output_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing audit human output phrase"
+        in audit_human_output_drift_errors,
+        "release policy docs should mention human audit strict-quiet output smoke",
     )
 
     audit_json_command_drift = release_metadata_summary(

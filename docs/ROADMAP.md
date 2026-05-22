@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 160 — Human audit output guard split (v4.13.0) ✓ shipped
+
+Release metadata now reports human audit strict-quiet output drift separately.
+
+### Changed
+- `tools/audit/release-metadata.py` now keeps the broad `audit --strict --quiet` smoke guard and adds a separate human audit output release policy phrase label.
+- `release-metadata.py --self-test` now has a drift fixture for dropping human `design-ai audit --strict --quiet` output wording while JSON audit wording remains present.
+- README, English/Korean Distribution docs, and `docs/RELEASE-CHECKLIST.md` now spell out human audit output separately from JSON repository-audit output.
+- CHANGELOG and SESSION-LOG now record the Phase 160 split.
+
+### Impact
+- README, Release checklist, and English/Korean Distribution docs now fail with a separate metadata error when they lose human audit output coverage.
+- Existing CLI, audit execution, package smoke execution, registry smoke execution, release metadata execution, release self-test execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remains unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The release-facing docs now preserve audit smoke guidance as independently reported human and machine-readable output contracts.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 159 — Human lifecycle output guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports human install, human status, and human uninstall output drift separately.
