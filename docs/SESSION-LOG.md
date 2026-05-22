@@ -158,6 +158,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 161)** — Split human update dry-run output drift.
 - **v4.13 (Phase 162)** — Split human doctor strict diagnostics output drift.
 - **v4.13 (Phase 163)** — Split doctor JSON command and machine-readable diagnostics output drift.
+- **v4.13 (Phase 164)** — Hardened doctor JSON smoke assertions for schema shape and summary consistency.
 
 ## Patterns that didn't work
 

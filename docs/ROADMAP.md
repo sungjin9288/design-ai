@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 164 — Doctor JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Doctor JSON smoke assertions now verify schema shape, key order, and summary/count consistency.
+
+### Changed
+- `tools/audit/doctor_assertions.py` now verifies the full `design-ai doctor --json` report contract: top-level key order, context shape, expected inventory counts, check entry keys, summary keys, fix keys, and summary/count consistency.
+- Doctor assertion self-tests now include fixtures for missing `fix`, mismatched summary counts, and changed check-entry shape.
+- Shared package/registry smoke doctor JSON fixtures now match the production `context`, `checks`, `summary`, and `fix` payload shape.
+- CHANGELOG and SESSION-LOG now record the Phase 164 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when doctor JSON remains parseable but drifts from the machine-readable diagnostics schema that automation consumes.
+- Existing CLI runtime behavior, doctor JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, repository audit execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/doctor_assertions.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects doctor JSON as a stable machine-readable contract, not only as valid JSON with passing labels.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 163 — Doctor JSON diagnostics guard split (v4.13.0) ✓ shipped
 
 Release metadata now reports doctor JSON command and machine-readable diagnostics output drift separately.

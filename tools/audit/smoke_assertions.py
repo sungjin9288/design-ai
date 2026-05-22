@@ -824,22 +824,62 @@ def assert_force_overwrite_replaced(raw: str, *, context: str, cmd: list[str], e
 
 def passing_doctor_report_json() -> str:
     return json.dumps({
-        "summary": {"pass": len(EXPECTED_DOCTOR_PASS_LABELS), "warn": 0, "fail": 0},
+        "context": {
+            "sourceRoot": "/tmp/design-ai",
+            "claudeHome": "/tmp/claude",
+            "prefix": "design-",
+            "expected": {
+                "skills": 19,
+                "agents": 4,
+                "commands": 16,
+            },
+        },
         "checks": [
-            {"label": label, "status": "PASS"}
+            {
+                "status": "PASS",
+                "label": label,
+                "detail": f"{label} fixture passed",
+                "action": "",
+            }
             for label in sorted(EXPECTED_DOCTOR_PASS_LABELS)
         ],
+        "summary": {"pass": len(EXPECTED_DOCTOR_PASS_LABELS), "warn": 0, "fail": 0},
+        "fix": {
+            "attempted": False,
+            "applied": False,
+            "reason": "",
+        },
     })
 
 
 def doctor_report_json_missing(label_to_remove: str) -> str:
     return json.dumps({
-        "summary": {"pass": len(EXPECTED_DOCTOR_PASS_LABELS) - 1, "warn": 0, "fail": 0},
+        "context": {
+            "sourceRoot": "/tmp/design-ai",
+            "claudeHome": "/tmp/claude",
+            "prefix": "design-",
+            "expected": {
+                "skills": 19,
+                "agents": 4,
+                "commands": 16,
+            },
+        },
         "checks": [
-            {"label": label, "status": "PASS"}
+            {
+                "status": "PASS",
+                "label": label,
+                "detail": f"{label} fixture passed",
+                "action": "",
+            }
             for label in sorted(EXPECTED_DOCTOR_PASS_LABELS)
             if label != label_to_remove
         ],
+        "summary": {"pass": len(EXPECTED_DOCTOR_PASS_LABELS) - 1, "warn": 0, "fail": 0},
+        "fix": {
+            "attempted": False,
+            "applied": False,
+            "reason": "",
+        },
     })
 
 
