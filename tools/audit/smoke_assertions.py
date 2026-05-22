@@ -63,6 +63,7 @@ EXPECTED_HELP_TOPICS = (
     "audit",
     "doctor",
     "examples",
+    "learn",
     "version",
     "help",
 )
@@ -97,12 +98,13 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "show": "design-ai show <file[:line]> [--lines N:M] [--context N] [--json]",
     "route": "design-ai route <brief|--from-file file|--stdin|--list> [--limit N]",
     "routes": "design-ai routes [--json]",
-    "prompt": "design-ai prompt <brief|--from-file file|--stdin> [--route id] [--out file]",
-    "pack": "design-ai pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]",
+    "prompt": "design-ai prompt <brief|--from-file file|--stdin> [--route id] [--with-learning] [--out file]",
+    "pack": "design-ai pack <brief|--from-file file|--stdin> [--route id] [--with-learning] [--max-bytes N]",
     "check": "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes]",
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
+    "learn": "design-ai learn [--remember text|--from-file file|--stdin|--list|--export] [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -116,12 +118,13 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "show": ("Usage:", "design-ai show <file[:line|start-end]> [--lines N:M] [--context N] [--json]"),
     "route": ("Usage:", "design-ai route <brief>", "design-ai route --list [--json]"),
     "routes": ("Usage:", "design-ai routes [--json]", "Equivalent to: design-ai route --list"),
-    "prompt": ("Usage:", "design-ai prompt <brief> [--route id] [--json] [--out file] [--force]"),
-    "pack": ("Usage:", "design-ai pack <brief> [--route id] [--max-bytes N] [--json] [--out file] [--force]"),
+    "prompt": ("Usage:", "design-ai prompt <brief> [--route id] [--with-learning] [--json] [--out file] [--force]"),
+    "pack": ("Usage:", "design-ai pack <brief> [--route id] [--with-learning] [--max-bytes N] [--json] [--out file] [--force]"),
     "check": ("Usage:", "design-ai check <artifact.md>", "design-ai check --examples --all-routes"),
     "audit": ("Usage:", "design-ai audit [--strict] [--quiet] [--json]"),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
+    "learn": ("Usage:", "design-ai learn [--list] [--json]", "local memory, not model training or fine-tuning"),
     "version": ("Usage:", "design-ai version [--json]"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
@@ -138,6 +141,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "pack <brief|--from-file file|--stdin>",
     "check <artifact.md|--stdin|--examples>",
     "examples [query]",
+    "learn [--remember text|--from-file file|--stdin|--list|--export]",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
@@ -266,6 +270,7 @@ EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("audit", "--strct", "--strict"),
     ("version", "--jsn", "--json"),
     ("doctor", "--jsn", "--json"),
+    ("learn", "--jsn", "--json"),
 )
 EXPECTED_LIST_CATALOG = {
     "skills": (
@@ -670,6 +675,8 @@ def unknown_option_args(command_name: str, option: str) -> list[str]:
         return ["version", option]
     if command_name == "doctor":
         return ["doctor", option]
+    if command_name == "learn":
+        return ["learn", option]
     raise SystemExit(f"unsupported unknown option smoke command: {command_name}")
 
 
@@ -3326,10 +3333,14 @@ def passing_main_help_output() -> str:
         "  search <query> [--dir kind] [--limit N] [--json]                       Search the local markdown corpus",
         "  show <file[:line]> [--lines N:M] [--context N] [--json]                Print a corpus file or line range",
         "  route <brief|--from-file file|--stdin|--list> [--limit N]              Recommend commands, skills, and knowledge; add --explain",
-        "  prompt <brief|--from-file file|--stdin> [--route id] [--out file]      Generate a ready-to-use agent prompt",
-        "  pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]     Generate prompt plus bounded context with summary",
+        "  prompt <brief|--from-file file|--stdin> [--route id] [--with-learning] [--out file]",
+        "    Generate a ready-to-use agent prompt",
+        "  pack <brief|--from-file file|--stdin> [--route id] [--with-learning] [--max-bytes N]",
+        "    Generate prompt plus bounded context with summary",
         "  check <artifact.md|--stdin|--examples> [--route id|--all-routes]       Check generated Markdown artifact quality; add --issues-only",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
+        "  learn [--remember text|--from-file file|--stdin|--list|--export] [--json]",
+        "    Manage local learning preferences for prompt personalization",
         "",
         "Environment overrides:",
         "Quickstart:",

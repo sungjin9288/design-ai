@@ -20,6 +20,7 @@ const PACK_OPTIONS = [
   "--force",
   "--max-bytes",
   "--route",
+  "--with-learning",
 ];
 
 export function parsePackArgs(args) {
@@ -32,6 +33,7 @@ export function parsePackArgs(args) {
     json: false,
     outPath: "",
     force: false,
+    withLearning: false,
     help: false,
   };
 
@@ -41,6 +43,8 @@ export function parsePackArgs(args) {
       out.help = true;
     } else if (arg === "--json") {
       out.json = true;
+    } else if (arg === "--with-learning") {
+      out.withLearning = true;
     } else {
       out.index = i;
       if (parseBriefSourceFlag(args, out) || parseOutputFlags(args, out)) {
@@ -134,8 +138,23 @@ function buildContextWarnings({ files, maxBytes, usedBytes }) {
   return warnings;
 }
 
-export function buildPromptPack({ brief, sourceRoot, prefix = SYMLINK_PREFIX, maxBytes = DEFAULT_MAX_BYTES, routeId = "" }) {
-  const plan = buildPromptPlan({ brief, sourceRoot, prefix, routeId });
+export function buildPromptPack({
+  brief,
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  maxBytes = DEFAULT_MAX_BYTES,
+  routeId = "",
+  withLearning = false,
+  learningFilePath = "",
+}) {
+  const plan = buildPromptPlan({
+    brief,
+    sourceRoot,
+    prefix,
+    routeId,
+    withLearning,
+    learningFilePath,
+  });
   const files = [];
   let usedBytes = 0;
 

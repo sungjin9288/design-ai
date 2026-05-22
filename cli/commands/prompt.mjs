@@ -7,14 +7,15 @@ import { buildPromptPlan, formatPromptJson, parsePromptArgs } from "../lib/promp
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai prompt <brief> [--route id] [--json] [--out file] [--force]");
-  console.log("        design-ai prompt --from-file brief.md [--route id] [--json] [--out file] [--force]");
-  console.log("        cat brief.md | design-ai prompt --stdin [--route id] [--json]\n");
+  console.log("Usage:  design-ai prompt <brief> [--route id] [--with-learning] [--json] [--out file] [--force]");
+  console.log("        design-ai prompt --from-file brief.md [--route id] [--with-learning] [--json] [--out file] [--force]");
+  console.log("        cat brief.md | design-ai prompt --stdin [--route id] [--with-learning] [--json]\n");
   console.log("Builds a ready-to-use prompt from route recommendations and required design-ai files.\n");
   console.log("Options:");
   console.log("  --from-file file  Read the task brief from a markdown/text file");
   console.log("  --stdin           Read the task brief from standard input");
   console.log("  --route id        Force a route id from `design-ai route --json`");
+  console.log("  --with-learning   Include local learning preferences from `design-ai learn`");
   console.log("  --json            Emit machine-readable prompt plan");
   console.log("  --out file        Write output to a file instead of stdout");
   console.log("  --force           Overwrite an existing --out file");
@@ -56,6 +57,7 @@ export async function runPrompt(args) {
     sourceRoot: DESIGN_AI_HOME,
     prefix: SYMLINK_PREFIX,
     routeId: parsed.routeId,
+    withLearning: parsed.withLearning,
   });
 
   const content = parsed.json ? `${formatPromptJson(plan)}\n` : `${plan.prompt}\n`;

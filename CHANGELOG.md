@@ -94,6 +94,7 @@ Help, list, and version JSON smoke assertions now verify command-discovery key s
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+`design-ai learn` now stores local learning preferences and `prompt`/`pack --with-learning` can inject them into generated agent context without model training.
 Product readiness docs now clarify that core design consulting workflows are locally release-ready while AI model training is outside shipped scope.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
@@ -130,6 +131,27 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 175 — Local learning profile MVP
+
+#### Changed
+- Added `design-ai learn` for explicit local preference memory with `--remember`, `--list`, `--export`, `--from-file`, `--stdin`, `--category`, `--file`, and `--json` support.
+- Added opt-in `--with-learning` support to `design-ai prompt` and `design-ai pack`, injecting the learned-context block only when requested.
+- Added `docs/AI-LEARNING.md`, updated product readiness docs, README command references, MkDocs navigation, and CLI help discovery for the new learning surface.
+- Wrapped long top-level help rows so `prompt`, `pack`, and `learn` usage stays readable after adding learning options.
+- Expanded unit and smoke assertion coverage for learning profile parsing, persistence, prompt/pack injection, help topic discovery, and unknown-option suggestion behavior.
+
+#### Impact
+- design-ai now ships a privacy-safe local personalization layer while keeping model training, fine-tuning, embeddings, and feedback learning outside the shipped scope.
+- Existing route selection, prompt/pack output without `--with-learning`, slash-command inventory, install lifecycle, and package manifest counts remain unchanged.
+
+#### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- All 8 audits pass.
+- Learning profile prompt/pack smoke passed with a temporary profile file.
+- `npm run release:metadata`
+- `npm run release:check`
 
 ### Phase 174 — Product readiness scope boundary documented
 

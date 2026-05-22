@@ -61,6 +61,7 @@ test("parsePromptArgs supports brief and json", () => {
     json: true,
     outPath: "prompt.json",
     force: true,
+    withLearning: false,
     help: false,
     index: undefined,
   });
@@ -76,6 +77,7 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     json: false,
     outPath: "prompt.md",
     force: false,
+    withLearning: false,
     help: false,
     index: undefined,
   });
@@ -89,9 +91,18 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     json: true,
     outPath: "",
     force: false,
+    withLearning: false,
     help: false,
     index: undefined,
   });
+});
+
+test("parsePromptArgs supports explicit learning context", () => {
+  const parsed = parsePromptArgs(["spec", "Button", "--with-learning", "--json"]);
+
+  assert.equal(parsed.withLearning, true);
+  assert.equal(parsed.brief, "spec Button");
+  assert.equal(parsed.json, true);
 });
 
 test("parsePromptArgs rejects unknown options", () => {

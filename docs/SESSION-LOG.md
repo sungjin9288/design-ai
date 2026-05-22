@@ -169,6 +169,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 172)** — Hardened status JSON smoke assertions for exact install-state section labels and Claude-home target directory contracts.
 - **v4.13 (Phase 173)** — Hardened lifecycle JSON smoke assertions for source/target context separation across install, update dry-run, status, and uninstall reports.
 - **v4.13 (Phase 174)** — Documented product readiness boundaries: core design consulting workflows are locally release-ready, while AI model training and personalization remain outside shipped scope.
+- **v4.13 (Phase 175)** — Added local learning profile MVP: `design-ai learn` stores explicit local preferences, and `prompt`/`pack --with-learning` inject them only when requested.
 
 ## Patterns that didn't work
 

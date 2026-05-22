@@ -301,6 +301,7 @@ nav:
   - Reference:
       - Using design-ai: docs/USING.md
       - Product readiness: docs/PRODUCT-READINESS.md
+      - AI learning: docs/AI-LEARNING.md
       - Contributing: docs/CONTRIBUTING.md
       - Roadmap: docs/ROADMAP.md
       - Dogfood findings: docs/DOGFOOD-FINDINGS.md

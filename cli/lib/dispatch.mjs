@@ -9,6 +9,7 @@ import { runAudit } from "../commands/audit.mjs";
 import { runCheck } from "../commands/check.mjs";
 import { runDoctor } from "../commands/doctor.mjs";
 import { runExamples } from "../commands/examples.mjs";
+import { runLearn } from "../commands/learn.mjs";
 import { runSearch } from "../commands/search.mjs";
 import { runShow } from "../commands/show.mjs";
 import { runRoute } from "../commands/route.mjs";
@@ -41,6 +42,7 @@ const commands = {
   examples: runExamples,
   example: runExamples,
   ex: runExamples,
+  learn: runLearn,
   search: runSearch,
   find: runSearch,
   show: runShow,
@@ -75,6 +77,7 @@ export const CANONICAL_COMMANDS = [
   "audit",
   "doctor",
   "examples",
+  "learn",
   "version",
   "help",
 ];

@@ -11,6 +11,7 @@ import { runCheck } from "./check.mjs";
 import { runDoctor } from "./doctor.mjs";
 import { runExamples } from "./examples.mjs";
 import { runInstall } from "./install.mjs";
+import { runLearn } from "./learn.mjs";
 import { runList } from "./list.mjs";
 import { runPack } from "./pack.mjs";
 import { runPrompt } from "./prompt.mjs";
@@ -32,12 +33,13 @@ export const HELP_COMMANDS = [
   { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
   { topic: "route", usage: "route <brief|--from-file file|--stdin|--list> [--limit N]", description: "Recommend commands, skills, and knowledge; add --explain" },
   { topic: "routes", usage: "routes [--json]", description: "List available route ids" },
-  { topic: "prompt", usage: "prompt <brief|--from-file file|--stdin> [--route id] [--out file]", description: "Generate a ready-to-use agent prompt" },
-  { topic: "pack", usage: "pack <brief|--from-file file|--stdin> [--route id] [--max-bytes N]", description: "Generate prompt plus bounded context with summary" },
+  { topic: "prompt", usage: "prompt <brief|--from-file file|--stdin> [--route id] [--with-learning] [--out file]", description: "Generate a ready-to-use agent prompt" },
+  { topic: "pack", usage: "pack <brief|--from-file file|--stdin> [--route id] [--with-learning] [--max-bytes N]", description: "Generate prompt plus bounded context with summary" },
   { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes]", description: "Check generated Markdown artifact quality; add --issues-only" },
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
+  { topic: "learn", usage: "learn [--remember text|--from-file file|--stdin|--list|--export] [--json]", description: "Manage local learning preferences for prompt personalization" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];
@@ -79,6 +81,7 @@ const HELP_RUNNERS = {
   audit: () => runAudit(["--help"]),
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),
+  learn: () => runLearn(["--help"]),
   version: () => runVersion(["--help"]),
   help: printHelpHelp,
 };
@@ -183,6 +186,12 @@ function printMainHelp() {
   console.log(`        design-ai help [command|--json]\n`);
 
   for (const { usage, description } of HELP_COMMANDS) {
+    if (usage.length > 68) {
+      console.log(`  ${usage}`);
+      console.log(`    ${dim(description)}`);
+      continue;
+    }
+
     console.log(`  ${usage.padEnd(70)} ${dim(description)}`);
   }
 
@@ -208,6 +217,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);
+  console.log(`  ${dim("$")} design-ai learn --remember "Prefer dense Korean product UI"`);
   console.log(`  ${dim("$")} design-ai doctor`);
   console.log(`  ${dim("$")} design-ai audit --strict`);
   console.log(`  ${dim("$")} design-ai list skills`);

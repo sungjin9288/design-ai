@@ -63,6 +63,7 @@ test("parsePackArgs supports brief, max bytes, and json", () => {
     json: true,
     outPath: "pack.json",
     force: true,
+    withLearning: false,
     help: false,
     index: undefined,
   });
@@ -79,6 +80,7 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     json: false,
     outPath: "pack.md",
     force: false,
+    withLearning: false,
     help: false,
     index: undefined,
   });
@@ -93,9 +95,18 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     json: true,
     outPath: "",
     force: false,
+    withLearning: false,
     help: false,
     index: undefined,
   });
+});
+
+test("parsePackArgs supports explicit learning context", () => {
+  const parsed = parsePackArgs(["spec", "Button", "--with-learning", "--max-bytes", "2000"]);
+
+  assert.equal(parsed.withLearning, true);
+  assert.equal(parsed.brief, "spec Button");
+  assert.equal(parsed.maxBytes, 2000);
 });
 
 test("parsePackArgs rejects invalid options", () => {

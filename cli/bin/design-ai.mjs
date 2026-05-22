@@ -17,6 +17,7 @@
 //   check                Check generated Markdown artifact quality
 //   doctor               Diagnose source, runtime, and install state
 //   examples             Find worked examples by query or route
+//   learn                Manage local learning preferences for prompt personalization
 //   version [--json]     Show CLI + plugin versions
 //   help                 Show help
 

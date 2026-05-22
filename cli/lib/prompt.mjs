@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
 import { listExamples } from "./examples.mjs";
+import { buildLearningContext } from "./learn.mjs";
 import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { readRouteManifestVersion, routeBrief, routeById } from "./route.mjs";
@@ -19,6 +20,7 @@ const PROMPT_OPTIONS = [
   "--stdin",
   "--out",
   "--force",
+  "--with-learning",
 ];
 
 export function parsePromptArgs(args) {
@@ -30,6 +32,7 @@ export function parsePromptArgs(args) {
     json: false,
     outPath: "",
     force: false,
+    withLearning: false,
     help: false,
   };
 
@@ -40,6 +43,8 @@ export function parsePromptArgs(args) {
       out.help = true;
     } else if (arg === "--json") {
       out.json = true;
+    } else if (arg === "--with-learning") {
+      out.withLearning = true;
     } else if (arg === "--route") {
       const routeId = args[i + 1];
       if (!routeId || routeId.startsWith("--")) throw new Error("--route expects a route id");
@@ -139,7 +144,14 @@ function checklistForRoute(route) {
   ]);
 }
 
-export function buildPromptPlan({ brief, sourceRoot, prefix = SYMLINK_PREFIX, routeId = "" }) {
+export function buildPromptPlan({
+  brief,
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  routeId = "",
+  withLearning = false,
+  learningFilePath = "",
+}) {
   const route = routeId
     ? routeById({ routeId, sourceRoot })
     : routeBrief({ brief, sourceRoot, limit: 1 })[0] || null;
@@ -165,6 +177,9 @@ export function buildPromptPlan({ brief, sourceRoot, prefix = SYMLINK_PREFIX, ro
 
   const checklist = checklistForRoute(route);
   const qualityCommand = qualityCommandForRoute(route.id);
+  const learningContext = withLearning
+    ? buildLearningContext({ filePath: learningFilePath || undefined })
+    : null;
 
   return {
     brief,
@@ -175,7 +190,17 @@ export function buildPromptPlan({ brief, sourceRoot, prefix = SYMLINK_PREFIX, ro
     filesToRead,
     checklist,
     qualityCommand,
-    prompt: renderPrompt({ brief, route, slashCommand, referenceExamples, filesToRead, checklist, qualityCommand }),
+    ...(learningContext ? { learningContext } : {}),
+    prompt: renderPrompt({
+      brief,
+      route,
+      slashCommand,
+      referenceExamples,
+      filesToRead,
+      checklist,
+      qualityCommand,
+      learningContext,
+    }),
   };
 }
 
@@ -191,6 +216,7 @@ export function renderPrompt({
   filesToRead,
   checklist = checklistForRoute(route),
   qualityCommand = qualityCommandForRoute(route.id),
+  learningContext = null,
 }) {
   const lines = [];
   lines.push("# design-ai task prompt");
@@ -226,6 +252,13 @@ export function renderPrompt({
     for (const example of referenceExamples) {
       lines.push(`- ${example.relPath} — ${example.title}`);
     }
+    lines.push("");
+  }
+
+  if (learningContext) {
+    lines.push("Learned design context:");
+    lines.push("");
+    lines.push(learningContext.markdown);
     lines.push("");
   }
 

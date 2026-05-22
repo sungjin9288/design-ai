@@ -47,10 +47,23 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
-  assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--out file\]/);
-  assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--max-bytes N\]/);
+  assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--out file\]/);
+  assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
+  assert.match(output, /learn \[--remember text\|--from-file file\|--stdin\|--list\|--export\] \[--json\]/);
+  assert.match(
+    output,
+    /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
+  );
+  assert.match(
+    output,
+    /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context with summary/,
+  );
+  assert.match(
+    output,
+    /learn \[--remember text\|--from-file file\|--stdin\|--list\|--export\] \[--json\]\n\s+Manage local learning preferences for prompt personalization/,
+  );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
     "top-level help should summarize plugin inventory from .claude-plugin/plugin.json",
@@ -78,6 +91,10 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "route").usage,
     "design-ai route <brief|--from-file file|--stdin|--list> [--limit N]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "learn").usage,
+    "design-ai learn [--remember text|--from-file file|--stdin|--list|--export] [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
 });
@@ -163,12 +180,16 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.doesNotMatch(routeOutput, /Environment overrides:/);
 
   const promptOutput = await captureStdout(() => runHelp(["prompt"]));
-  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--json\]/);
+  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--json\]/);
 
   const packOutput = await captureStdout(() => runHelp(["pack"]));
-  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--max-bytes N\] \[--json\]/);
+  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--max-bytes N\] \[--json\]/);
+
+  const learnOutput = await captureStdout(() => runHelp(["learn"]));
+  assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--json\]/);
+  assert.match(learnOutput, /local memory, not model training or fine-tuning/);
 
   const installOutput = await captureStdout(() => runHelp(["install"]));
   assert.match(installOutput, /Usage:\s+design-ai install \[--json\]/);

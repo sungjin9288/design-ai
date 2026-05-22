@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 175 — Local learning profile MVP (v4.13.0) ✓ shipped
+
+`design-ai learn` now stores local learning preferences and `prompt`/`pack --with-learning` can inject them into generated agent context without model training.
+
+### Changed
+- Added `design-ai learn` for explicit local preference memory with `--remember`, `--list`, `--export`, `--from-file`, `--stdin`, `--category`, `--file`, and `--json` support.
+- Added opt-in `--with-learning` support to `design-ai prompt` and `design-ai pack`, injecting the learned-context block only when requested.
+- Added `docs/AI-LEARNING.md`, updated product readiness docs, README command references, MkDocs navigation, and CLI help discovery for the new learning surface.
+- Wrapped long top-level help rows so `prompt`, `pack`, and `learn` usage stays readable after adding learning options.
+- Expanded unit and smoke assertion coverage for learning profile parsing, persistence, prompt/pack injection, help topic discovery, and unknown-option suggestion behavior.
+
+### Impact
+- design-ai now ships a privacy-safe local personalization layer while keeping model training, fine-tuning, embeddings, and feedback learning outside the shipped scope.
+- Existing route selection, prompt/pack output without `--with-learning`, slash-command inventory, install lifecycle, and package manifest counts remain unchanged.
+
+### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- All 8 audits pass.
+- Learning profile prompt/pack smoke passed with a temporary profile file.
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Users can make design-ai remember project or taste constraints locally, then explicitly include that context in prompt and pack generation.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 174 — Product readiness scope boundary documented (v4.13.0) ✓ shipped
 
 Product readiness docs now clarify that core design consulting workflows are locally release-ready while AI model training is outside shipped scope.
@@ -79,7 +114,7 @@ Product readiness docs now clarify that core design consulting workflows are loc
 - Real-CI verification (push these workflows; observe green).
 - External launch (held).
 - Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
-- Decide whether future AI learning means embeddings, persistent preference memory, feedback learning, or model fine-tuning.
+- Decide whether future AI learning means embeddings, feedback learning, or model fine-tuning.
 
 ## Phase 173 — Lifecycle JSON context path assertion hardening (v4.13.0) ✓ shipped
 
