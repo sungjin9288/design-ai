@@ -51,6 +51,35 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 173 — Lifecycle JSON context path assertion hardening (v4.13.0) ✓ shipped
+
+Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now validates lifecycle JSON context paths through a shared source/target guard for `design-ai install --json`, `design-ai update --dry-run --json`, `design-ai status --json`, and `design-ai uninstall --json`.
+- Lifecycle JSON assertions now reject `sourceRoot` and `claudeHome` when they are identical or nested inside each other, while preserving the existing key-order, prefix, count, plan, and install-state checks.
+- The smoke assertion self-test now covers install context equality, update source-inside-target drift, status target-inside-source drift, and uninstall target-inside-source drift fixtures.
+- CHANGELOG and SESSION-LOG now record the Phase 173 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when lifecycle JSON remains parseable and counts still match, but the reported source and Claude Code target roots no longer describe separate lifecycle contexts.
+- Existing CLI runtime behavior, lifecycle JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now validates lifecycle source/target separation before relying on lifecycle counts, update plan summaries, or status target directories.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 172 — Status JSON install-state target assertion hardening (v4.13.0) ✓ shipped
 
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.

@@ -3853,6 +3853,45 @@ def normalize_lifecycle_path(value: str) -> str:
     return value.replace("\\", "/").rstrip("/")
 
 
+def assert_lifecycle_context(
+    value: object,
+    *,
+    prefix: str,
+    context: str,
+    command_label: str,
+) -> dict[str, str]:
+    lifecycle_context = assert_lifecycle_json_keys(
+        value,
+        ["sourceRoot", "claudeHome", "prefix"],
+        label="context",
+        context=context,
+        command_label=command_label,
+    )
+    source_root = lifecycle_context.get("sourceRoot")
+    if not isinstance(source_root, str) or not source_root:
+        raise SystemExit(f"{command_label} after {context} sourceRoot is missing")
+    claude_home = lifecycle_context.get("claudeHome")
+    if not isinstance(claude_home, str) or not claude_home:
+        raise SystemExit(f"{command_label} after {context} claudeHome is missing")
+    if lifecycle_context.get("prefix") != prefix:
+        raise SystemExit(f"{command_label} after {context} prefix differs from expected {prefix}")
+
+    normalized_source_root = normalize_lifecycle_path(source_root)
+    normalized_claude_home = normalize_lifecycle_path(claude_home)
+    if normalized_source_root == normalized_claude_home:
+        raise SystemExit(f"{command_label} after {context} sourceRoot and claudeHome must differ")
+    if normalized_source_root.startswith(f"{normalized_claude_home}/"):
+        raise SystemExit(f"{command_label} after {context} sourceRoot is inside claudeHome")
+    if normalized_claude_home.startswith(f"{normalized_source_root}/"):
+        raise SystemExit(f"{command_label} after {context} claudeHome is inside sourceRoot")
+
+    return {
+        "sourceRoot": source_root,
+        "claudeHome": claude_home,
+        "prefix": prefix,
+    }
+
+
 def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 
@@ -3869,19 +3908,12 @@ def assert_install_json(raw: str, *, prefix: str, context: str, cmd: list[str]) 
         command_label="install JSON",
     )
 
-    install_context = assert_lifecycle_json_keys(
+    assert_lifecycle_context(
         payload.get("context"),
-        ["sourceRoot", "claudeHome", "prefix"],
-        label="context",
+        prefix=prefix,
         context=context,
         command_label="install JSON",
     )
-    if not isinstance(install_context.get("sourceRoot"), str) or not install_context["sourceRoot"]:
-        raise SystemExit(f"install JSON after {context} sourceRoot is missing")
-    if not isinstance(install_context.get("claudeHome"), str) or not install_context["claudeHome"]:
-        raise SystemExit(f"install JSON after {context} claudeHome is missing")
-    if install_context.get("prefix") != prefix:
-        raise SystemExit(f"install JSON after {context} prefix differs from expected {prefix}")
 
     result = assert_lifecycle_json_keys(
         payload.get("result"),
@@ -3938,19 +3970,12 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
         command_label="update dry-run JSON",
     )
 
-    update_context = assert_lifecycle_json_keys(
+    assert_lifecycle_context(
         payload.get("context"),
-        ["sourceRoot", "claudeHome", "prefix"],
-        label="context",
+        prefix=prefix,
         context=context,
         command_label="update dry-run JSON",
     )
-    if not isinstance(update_context.get("sourceRoot"), str) or not update_context["sourceRoot"]:
-        raise SystemExit(f"update dry-run JSON after {context} sourceRoot is missing")
-    if not isinstance(update_context.get("claudeHome"), str) or not update_context["claudeHome"]:
-        raise SystemExit(f"update dry-run JSON after {context} claudeHome is missing")
-    if update_context.get("prefix") != prefix:
-        raise SystemExit(f"update dry-run JSON after {context} prefix differs from expected {prefix}")
 
     plan = assert_lifecycle_json_keys(
         payload.get("plan"),
@@ -4038,19 +4063,12 @@ def assert_status_json(raw: str, *, prefix: str, context: str, cmd: list[str]) -
         command_label="status JSON",
     )
 
-    status_context = assert_lifecycle_json_keys(
+    status_context = assert_lifecycle_context(
         payload.get("context"),
-        ["sourceRoot", "claudeHome", "prefix"],
-        label="context",
+        prefix=prefix,
         context=context,
         command_label="status JSON",
     )
-    if not isinstance(status_context.get("sourceRoot"), str) or not status_context["sourceRoot"]:
-        raise SystemExit(f"status JSON after {context} sourceRoot is missing")
-    if not isinstance(status_context.get("claudeHome"), str) or not status_context["claudeHome"]:
-        raise SystemExit(f"status JSON after {context} claudeHome is missing")
-    if status_context.get("prefix") != prefix:
-        raise SystemExit(f"status JSON after {context} prefix differs from expected {prefix}")
 
     sections = payload.get("sections")
     if not isinstance(sections, list):
@@ -4149,19 +4167,12 @@ def assert_uninstall_json(raw: str, *, prefix: str, context: str, cmd: list[str]
         command_label="uninstall JSON",
     )
 
-    uninstall_context = assert_lifecycle_json_keys(
+    assert_lifecycle_context(
         payload.get("context"),
-        ["sourceRoot", "claudeHome", "prefix"],
-        label="context",
+        prefix=prefix,
         context=context,
         command_label="uninstall JSON",
     )
-    if not isinstance(uninstall_context.get("sourceRoot"), str) or not uninstall_context["sourceRoot"]:
-        raise SystemExit(f"uninstall JSON after {context} sourceRoot is missing")
-    if not isinstance(uninstall_context.get("claudeHome"), str) or not uninstall_context["claudeHome"]:
-        raise SystemExit(f"uninstall JSON after {context} claudeHome is missing")
-    if uninstall_context.get("prefix") != prefix:
-        raise SystemExit(f"uninstall JSON after {context} prefix differs from expected {prefix}")
 
     result = assert_lifecycle_json_keys(
         payload.get("result"),
@@ -6804,6 +6815,18 @@ def run_self_test() -> None:
         expected="top-level is not an object",
         scope="smoke assertions",
     )
+    install_payload_same_context = json.loads(passing_install_json("smoke-design-"))
+    install_payload_same_context["context"]["claudeHome"] = "/tmp/design-ai"
+    expect_self_test_failure(
+        lambda: assert_install_json(
+            json.dumps(install_payload_same_context),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*install_cmd, "--json"],
+        ),
+        expected="sourceRoot and claudeHome must differ",
+        scope="smoke assertions",
+    )
     install_payload_wrong_counts = json.loads(passing_install_json("smoke-design-"))
     install_payload_wrong_counts["result"]["installed"]["skills"] = 18
     install_payload_wrong_counts["result"]["installed"]["total"] = 38
@@ -6870,6 +6893,18 @@ def run_self_test() -> None:
             cmd=[*update_cmd, "--json"],
         ),
         expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    update_payload_source_inside_target = json.loads(passing_update_dry_run_json("smoke-design-"))
+    update_payload_source_inside_target["context"]["sourceRoot"] = "/tmp/claude-home/source"
+    expect_self_test_failure(
+        lambda: assert_update_dry_run_json(
+            json.dumps(update_payload_source_inside_target),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*update_cmd, "--json"],
+        ),
+        expected="sourceRoot is inside claudeHome",
         scope="smoke assertions",
     )
     update_plan_reordered = json.loads(passing_update_dry_run_json("smoke-design-"))
@@ -7029,6 +7064,18 @@ def run_self_test() -> None:
         expected="top-level is not an object",
         scope="smoke assertions",
     )
+    status_payload_target_inside_source = json.loads(passing_status_json("smoke-design-"))
+    status_payload_target_inside_source["context"]["claudeHome"] = "/tmp/design-ai/claude-home"
+    expect_self_test_failure(
+        lambda: assert_status_json(
+            json.dumps(status_payload_target_inside_source),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*status_cmd, "--json"],
+        ),
+        expected="claudeHome is inside sourceRoot",
+        scope="smoke assertions",
+    )
     status_payload_label_drift = json.loads(passing_status_json("smoke-design-"))
     status_payload_label_drift["sections"][0]["label"] = "Skill links"
     expect_self_test_failure(
@@ -7122,6 +7169,18 @@ def run_self_test() -> None:
             cmd=[*uninstall_cmd, "--json"],
         ),
         expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    uninstall_payload_target_inside_source = json.loads(passing_uninstall_json("smoke-design-"))
+    uninstall_payload_target_inside_source["context"]["claudeHome"] = "/tmp/design-ai/claude-home"
+    expect_self_test_failure(
+        lambda: assert_uninstall_json(
+            json.dumps(uninstall_payload_target_inside_source),
+            prefix="smoke-design-",
+            context=context,
+            cmd=[*uninstall_cmd, "--json"],
+        ),
+        expected="claudeHome is inside sourceRoot",
         scope="smoke assertions",
     )
     expect_self_test_failure(

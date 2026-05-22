@@ -93,6 +93,7 @@ Check JSON smoke assertions now verify artifact/stdin/example report key shape, 
 Help, list, and version JSON smoke assertions now verify command-discovery key shape, alias/topic order, catalog item contracts, and version metadata keys.
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
+Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -128,6 +129,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 173 — Lifecycle JSON context path assertion hardening
+
+#### Changed
+- `tools/audit/smoke_assertions.py` now validates lifecycle JSON context paths through a shared source/target guard for `design-ai install --json`, `design-ai update --dry-run --json`, `design-ai status --json`, and `design-ai uninstall --json`.
+- Lifecycle JSON assertions now reject `sourceRoot` and `claudeHome` when they are identical or nested inside each other, while keeping the existing key-order, prefix, count, plan, and install-state checks.
+- The smoke assertion self-test now covers install context equality, update source-inside-target drift, status target-inside-source drift, and uninstall target-inside-source drift fixtures.
+
+#### Impact
+- Package and registry smoke checks now fail when lifecycle JSON remains parseable and counts still match, but the reported source and Claude Code target roots no longer describe separate lifecycle contexts.
+- Existing CLI runtime behavior, lifecycle JSON formatter output, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check execution remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
 
 ### Phase 172 — Status JSON install-state target assertion hardening
 
