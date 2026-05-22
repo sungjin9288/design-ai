@@ -5,7 +5,7 @@ import { existsSync } from "node:fs";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
 import { listExamples } from "./examples.mjs";
-import { buildLearningContext } from "./learn.mjs";
+import { buildLearningContext, normalizeCategory, parseLearningLimit } from "./learn.mjs";
 import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { readRouteManifestVersion, routeBrief, routeById } from "./route.mjs";
@@ -21,6 +21,8 @@ const PROMPT_OPTIONS = [
   "--out",
   "--force",
   "--with-learning",
+  "--learning-category",
+  "--learning-limit",
 ];
 
 export function parsePromptArgs(args) {
@@ -33,6 +35,8 @@ export function parsePromptArgs(args) {
     outPath: "",
     force: false,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
   };
 
@@ -45,6 +49,20 @@ export function parsePromptArgs(args) {
       out.json = true;
     } else if (arg === "--with-learning") {
       out.withLearning = true;
+    } else if (arg === "--learning-category") {
+      const category = args[i + 1];
+      if (!category || category.startsWith("--")) throw new Error("--learning-category expects a category");
+      out.learningCategory = normalizeCategory(category);
+      i += 1;
+    } else if (arg === "--learning-limit") {
+      const limit = args[i + 1];
+      if (!limit || limit.startsWith("--")) throw new Error("--learning-limit expects an integer from 1 to 100");
+      try {
+        out.learningLimit = parseLearningLimit(limit);
+      } catch {
+        throw new Error("--learning-limit expects an integer from 1 to 100");
+      }
+      i += 1;
     } else if (arg === "--route") {
       const routeId = args[i + 1];
       if (!routeId || routeId.startsWith("--")) throw new Error("--route expects a route id");
@@ -59,6 +77,10 @@ export function parsePromptArgs(args) {
     } else {
       out.briefParts.push(arg);
     }
+  }
+
+  if ((out.learningCategory || out.learningLimit) && !out.withLearning) {
+    throw new Error("--learning-category and --learning-limit require --with-learning");
   }
 
   return {
@@ -151,6 +173,8 @@ export function buildPromptPlan({
   routeId = "",
   withLearning = false,
   learningFilePath = "",
+  learningCategory = "",
+  learningLimit = 0,
 }) {
   const route = routeId
     ? routeById({ routeId, sourceRoot })
@@ -178,7 +202,11 @@ export function buildPromptPlan({
   const checklist = checklistForRoute(route);
   const qualityCommand = qualityCommandForRoute(route.id);
   const learningContext = withLearning
-    ? buildLearningContext({ filePath: learningFilePath || undefined })
+    ? buildLearningContext({
+      filePath: learningFilePath || undefined,
+      category: learningCategory,
+      limit: learningLimit || 12,
+    })
     : null;
 
   return {

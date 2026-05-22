@@ -12,8 +12,8 @@ What ships in v4.13:
 - `design-ai learn --audit` inspects profile shape, duplicates, and possible sensitive content without changing the profile.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
-- `design-ai prompt --with-learning ...` injects the learned context into the generated task prompt.
-- `design-ai pack --with-learning ...` includes the same learned context in portable prompt packs.
+- `design-ai prompt --with-learning ...` injects the learned context into the generated task prompt, with optional `--learning-category` and `--learning-limit` scoping.
+- `design-ai pack --with-learning ...` includes the same learned context in portable prompt packs, with the same optional scoping controls.
 
 What does not ship:
 
@@ -88,12 +88,14 @@ Use learned context in a prompt:
 
 ```bash
 design-ai prompt "Audit this checkout UX" --with-learning
+design-ai prompt "Audit this checkout UX" --with-learning --learning-category korean --learning-limit 5
 ```
 
 Use learned context in a prompt pack:
 
 ```bash
 design-ai pack "Spec a pricing page for Korean SaaS" --with-learning --max-bytes 80000
+design-ai pack "Spec a pricing page for Korean SaaS" --with-learning --learning-category brand --learning-limit 3 --max-bytes 80000
 ```
 
 ## Categories
@@ -120,7 +122,7 @@ Learning entries are treated as preferences, not absolute instructions. They mus
 - Legal or policy constraints.
 - Checked knowledge files and route playbooks.
 
-Use `--with-learning` only when the saved context is relevant to the current task.
+Use `--with-learning` only when the saved context is relevant to the current task. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small recent subset should influence the prompt.
 
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries.
 

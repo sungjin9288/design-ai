@@ -47,18 +47,18 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
-  assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--out file\]/);
-  assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--max-bytes N\]/);
+  assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);
+  assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--remember text\|--list\|--export\|--audit\|--forget id\|--clear\] \[--json\]/);
   assert.match(
     output,
-    /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
+    /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
   );
   assert.match(
     output,
-    /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context with summary/,
+    /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context with summary/,
   );
   assert.match(
     output,
@@ -180,12 +180,16 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.doesNotMatch(routeOutput, /Environment overrides:/);
 
   const promptOutput = await captureStdout(() => runHelp(["prompt"]));
-  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--json\]/);
+  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\]/);
+  assert.match(promptOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
+  assert.match(promptOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
 
   const packOutput = await captureStdout(() => runHelp(["pack"]));
-  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--max-bytes N\] \[--json\]/);
+  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\]/);
+  assert.match(packOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
+  assert.match(packOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
 
   const learnOutput = await captureStdout(() => runHelp(["learn"]));
   assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--limit N\] \[--json\]/);

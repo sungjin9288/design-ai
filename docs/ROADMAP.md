@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 178 — Scoped learning prompt injection (v4.13.0) ✓ shipped
+
+`design-ai prompt` and `design-ai pack` now let users scope opt-in local learning context by category and entry count before injecting it into generated agent context.
+
+### Changed
+- Added `--learning-category` and `--learning-limit` to `design-ai prompt --with-learning`.
+- Added the same scoped learning controls to `design-ai pack --with-learning`, passing filters into the embedded prompt plan.
+- Kept scoped learning flags behind the existing `--with-learning` privacy boundary.
+- Updated CLI help discovery, smoke assertions, README command references, quickstart guidance, product readiness docs, and AI learning docs for scoped prompt injection.
+- Expanded prompt and pack unit coverage for parser contracts, invalid filter handling, and category/limit propagation.
+
+### Impact
+- Prompt personalization can now include only the relevant local learning category and a bounded number of entries.
+- Existing unfiltered `prompt`/`pack --with-learning`, local learning profile management, audit controls, and non-learning prompt/pack behavior remain unchanged.
+
+### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- Scoped learning prompt/pack smoke passed with a temporary profile file.
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Users can apply saved local preferences more safely to focused tasks without exposing unrelated profile entries to generated prompts or packs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 177 — Learning profile audit controls (v4.13.0) ✓ shipped
 
 `design-ai learn` now includes a non-mutating audit mode for local learning profiles before they are exported or injected into prompts.

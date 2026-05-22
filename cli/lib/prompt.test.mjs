@@ -62,6 +62,8 @@ test("parsePromptArgs supports brief and json", () => {
     outPath: "prompt.json",
     force: true,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
@@ -78,6 +80,8 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     outPath: "prompt.md",
     force: false,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
@@ -92,15 +96,28 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     outPath: "",
     force: false,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
 });
 
 test("parsePromptArgs supports explicit learning context", () => {
-  const parsed = parsePromptArgs(["spec", "Button", "--with-learning", "--json"]);
+  const parsed = parsePromptArgs([
+    "spec",
+    "Button",
+    "--with-learning",
+    "--learning-category",
+    "korean",
+    "--learning-limit",
+    "5",
+    "--json",
+  ]);
 
   assert.equal(parsed.withLearning, true);
+  assert.equal(parsed.learningCategory, "korean");
+  assert.equal(parsed.learningLimit, 5);
   assert.equal(parsed.brief, "spec Button");
   assert.equal(parsed.json, true);
 });
@@ -109,6 +126,9 @@ test("parsePromptArgs rejects unknown options", () => {
   assert.throws(() => parsePromptArgs(["spec", "--bad"]), /Unknown prompt option/);
   assert.throws(() => parsePromptArgs(["spec", "--rout", "component-spec"]), /Did you mean `--route`\?/);
   assert.throws(() => parsePromptArgs(["spec", "--route"]), /--route expects a route id/);
+  assert.throws(() => parsePromptArgs(["spec", "--learning-category", "korean"]), /require --with-learning/);
+  assert.throws(() => parsePromptArgs(["spec", "--with-learning", "--learning-category", "private"]), /category expects one of:/);
+  assert.throws(() => parsePromptArgs(["spec", "--with-learning", "--learning-limit", "0"]), /--learning-limit expects an integer from 1 to 100/);
 });
 
 test("buildPromptPlan creates a slash command prompt for component specs", () => {
@@ -184,6 +204,57 @@ test("formatPromptJson preserves prompt plan order and readable Korean brief", (
     assert.match(formatted, /"filesToRead": \[\n    "AGENTS\.md"/);
     assert.ok(formatted.includes("컴포넌트"));
     assert.ok(!formatted.includes("\\u"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildPromptPlan can filter explicit learning context", () => {
+  const root = makeFixture();
+  try {
+    const learningFilePath = path.join(root, "learning.json");
+    writeFileSync(learningFilePath, JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:02.000Z",
+      entries: [
+        {
+          id: "learn-brand",
+          category: "brand",
+          text: "Use quiet brand language",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:00.000Z",
+        },
+        {
+          id: "learn-korean-old",
+          category: "korean",
+          text: "Prefer Korean mobile density",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+        {
+          id: "learn-korean-new",
+          category: "korean",
+          text: "Use KakaoTalk-style consent copy",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:02.000Z",
+        },
+      ],
+    }), "utf8");
+
+    const plan = buildPromptPlan({
+      brief: "audit Korean checkout UX",
+      sourceRoot: root,
+      withLearning: true,
+      learningFilePath,
+      learningCategory: "korean",
+      learningLimit: 1,
+    });
+
+    assert.equal(plan.learningContext.category, "korean");
+    assert.equal(plan.learningContext.limit, 1);
+    assert.deepEqual(plan.learningContext.entries.map((entry) => entry.id), ["learn-korean-new"]);
+    assert.ok(plan.prompt.includes("[korean] Use KakaoTalk-style consent copy"));
+    assert.ok(!plan.prompt.includes("Use quiet brand language"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

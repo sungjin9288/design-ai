@@ -172,6 +172,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 175)** — Added local learning profile MVP: `design-ai learn` stores explicit local preferences, and `prompt`/`pack --with-learning` inject them only when requested.
 - **v4.13 (Phase 176)** — Added learning profile management controls: list/export filtering, confirmed single-entry forget, and confirmed full-profile clear.
 - **v4.13 (Phase 177)** — Added learning profile audit controls: read-only `learn --audit` inspection for profile shape, duplicates, timestamp gaps, long notes, and possible sensitive content.
+- **v4.13 (Phase 178)** — Added scoped learning prompt injection: `prompt`/`pack --with-learning` now accept category and limit filters before including local preferences.
 
 ## Patterns that didn't work
 

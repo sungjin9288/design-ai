@@ -64,6 +64,8 @@ test("parsePackArgs supports brief, max bytes, and json", () => {
     outPath: "pack.json",
     force: true,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
@@ -81,6 +83,8 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     outPath: "pack.md",
     force: false,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
@@ -96,15 +100,29 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     outPath: "",
     force: false,
     withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
     help: false,
     index: undefined,
   });
 });
 
 test("parsePackArgs supports explicit learning context", () => {
-  const parsed = parsePackArgs(["spec", "Button", "--with-learning", "--max-bytes", "2000"]);
+  const parsed = parsePackArgs([
+    "spec",
+    "Button",
+    "--with-learning",
+    "--learning-category",
+    "brand",
+    "--learning-limit",
+    "3",
+    "--max-bytes",
+    "2000",
+  ]);
 
   assert.equal(parsed.withLearning, true);
+  assert.equal(parsed.learningCategory, "brand");
+  assert.equal(parsed.learningLimit, 3);
   assert.equal(parsed.brief, "spec Button");
   assert.equal(parsed.maxBytes, 2000);
 });
@@ -114,6 +132,9 @@ test("parsePackArgs rejects invalid options", () => {
   assert.throws(() => parsePackArgs(["spec", "--route"]), /--route expects a route id/);
   assert.throws(() => parsePackArgs(["spec", "--bad"]), /Unknown pack option/);
   assert.throws(() => parsePackArgs(["spec", "--max-byets", "2000"]), /Did you mean `--max-bytes`\?/);
+  assert.throws(() => parsePackArgs(["spec", "--learning-limit", "2"]), /require --with-learning/);
+  assert.throws(() => parsePackArgs(["spec", "--with-learning", "--learning-category", "private"]), /category expects one of:/);
+  assert.throws(() => parsePackArgs(["spec", "--with-learning", "--learning-limit", "0"]), /--learning-limit expects an integer from 1 to 100/);
 });
 
 test("buildPromptPack includes prompt and context files", () => {
@@ -145,6 +166,51 @@ test("buildPromptPack includes prompt and context files", () => {
     assert.ok(pack.markdown.includes("Verification checklist:"));
     assert.ok(pack.markdown.includes("## Context Files"));
     assert.ok(pack.usedBytes > 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildPromptPack passes learning filters through to prompt plan", () => {
+  const root = makeFixture();
+  try {
+    const learningFilePath = path.join(root, "learning.json");
+    writeFileSync(learningFilePath, JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:01.000Z",
+      entries: [
+        {
+          id: "learn-brand",
+          category: "brand",
+          text: "Use quiet brand language",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:00.000Z",
+        },
+        {
+          id: "learn-korean",
+          category: "korean",
+          text: "Prefer Korean mobile density",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }), "utf8");
+
+    const pack = buildPromptPack({
+      brief: "audit Korean checkout UX",
+      sourceRoot: root,
+      maxBytes: 20_000,
+      withLearning: true,
+      learningFilePath,
+      learningCategory: "brand",
+      learningLimit: 1,
+    });
+
+    assert.equal(pack.plan.learningContext.category, "brand");
+    assert.equal(pack.plan.learningContext.limit, 1);
+    assert.deepEqual(pack.plan.learningContext.entries.map((entry) => entry.id), ["learn-brand"]);
+    assert.ok(pack.markdown.includes("[brand] Use quiet brand language"));
+    assert.ok(!pack.markdown.includes("Prefer Korean mobile density"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -88,7 +88,7 @@ export function normalizeCategory(rawCategory = "preference") {
   return category;
 }
 
-function parseLearningLimit(rawLimit) {
+export function parseLearningLimit(rawLimit) {
   const limit = Number(rawLimit);
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
     throw new Error("--limit expects an integer from 1 to 100");
