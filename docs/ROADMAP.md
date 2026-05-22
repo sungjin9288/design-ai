@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 165 — Audit JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
+
+Audit JSON smoke assertions now verify payload type, entry schema, numeric contracts, and summary/count consistency.
+
+### Changed
+- `tools/audit/smoke_assertions.py` now verifies the full `design-ai audit --strict --quiet --json` report contract: top-level payload type, context shape, audit entry keys, boolean/integer/numeric field contracts, strict args shape, and summary/count consistency.
+- Audit JSON smoke assertion self-tests now include fixtures for array top-level payloads, missing audit-entry keys, boolean numeric drift, non-boolean pass flags, and mismatched summary counts.
+- CHANGELOG and SESSION-LOG now record the Phase 165 hardening.
+
+### Impact
+- Package and registry smoke checks now fail when audit JSON remains parseable but drifts from the machine-readable repository-audit schema that automation consumes.
+- Existing CLI runtime behavior, audit JSON formatter output, audit runner execution, package smoke command coverage, registry smoke command coverage, release metadata execution, package contents check execution, local CI execution, and release check behavior remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/run-all.py --self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Release smoke automation now protects audit JSON as a stable machine-readable repository-audit contract, not only as valid JSON with passing audit names.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+
 ## Phase 164 — Doctor JSON smoke schema assertion hardening (v4.13.0) ✓ shipped
 
 Doctor JSON smoke assertions now verify schema shape, key order, and summary/count consistency.
