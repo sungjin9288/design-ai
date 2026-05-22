@@ -150,6 +150,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 153)** — Split show-lines output drift from route-explain output drift.
 - **v4.13 (Phase 154)** — Split unknown command, help-topic, list-domain, and search-dir failure drift.
 - **v4.13 (Phase 155)** — Split route-id suggestion, option suggestion, value suggestion, and numeric range failure drift.
+- **v4.13 (Phase 156)** — Split prompt JSON, prompt markdown, prompt from-file, prompt stdin, pack JSON, pack markdown, pack from-file, and pack stdin drift.
 
 ## Patterns that didn't work
 

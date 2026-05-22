@@ -519,10 +519,74 @@ RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
     ),
 )
 RELEASE_PROMPT_PACK_MODE_TERM_GROUPS = (
+    ("prompt/pack",),
     (
         "prompt/pack JSON/markdown/from-file/stdin",
         "prompt/pack JSON, markdown, from-file, and stdin",
+        (
+            "prompt JSON output, prompt markdown output, prompt from-file output, "
+            "prompt stdin output, pack JSON output, pack markdown output, "
+            "pack from-file output, and pack stdin output"
+        ),
+        (
+            "prompt JSON output, prompt markdown output, prompt from-file output, "
+            "prompt stdin output, pack JSON output, pack markdown output, "
+            "pack from-file output, pack stdin output"
+        ),
         "prompt/pack JSON/markdown/from-file/stdin 출력",
+        (
+            "prompt JSON 출력, prompt markdown 출력, prompt from-file 출력, "
+            "prompt stdin 출력, pack JSON 출력, pack markdown 출력, "
+            "pack from-file 출력, pack stdin 출력"
+        ),
+    ),
+)
+RELEASE_PROMPT_JSON_OUTPUT_TERM_GROUPS = (
+    (
+        "prompt JSON output",
+        "prompt JSON 출력",
+    ),
+)
+RELEASE_PROMPT_MARKDOWN_OUTPUT_TERM_GROUPS = (
+    (
+        "prompt markdown output",
+        "prompt markdown 출력",
+    ),
+)
+RELEASE_PROMPT_FROM_FILE_OUTPUT_TERM_GROUPS = (
+    (
+        "prompt from-file output",
+        "prompt from-file 출력",
+    ),
+)
+RELEASE_PROMPT_STDIN_OUTPUT_TERM_GROUPS = (
+    (
+        "prompt stdin output",
+        "prompt stdin 출력",
+    ),
+)
+RELEASE_PACK_JSON_OUTPUT_TERM_GROUPS = (
+    (
+        "pack JSON output",
+        "pack JSON 출력",
+    ),
+)
+RELEASE_PACK_MARKDOWN_OUTPUT_TERM_GROUPS = (
+    (
+        "pack markdown output",
+        "pack markdown 출력",
+    ),
+)
+RELEASE_PACK_FROM_FILE_OUTPUT_TERM_GROUPS = (
+    (
+        "pack from-file output",
+        "pack from-file 출력",
+    ),
+)
+RELEASE_PACK_STDIN_OUTPUT_TERM_GROUPS = (
+    (
+        "pack stdin output",
+        "pack stdin 출력",
     ),
 )
 RELEASE_CHECK_COMMAND_TERM_GROUPS = (
@@ -678,6 +742,14 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "unknown value suggestion phrase",
     "numeric range failure phrase",
     "prompt-pack mode smoke phrase",
+    "prompt JSON output phrase",
+    "prompt markdown output phrase",
+    "prompt from-file output phrase",
+    "prompt stdin output phrase",
+    "pack JSON output phrase",
+    "pack markdown output phrase",
+    "pack from-file output phrase",
+    "pack stdin output phrase",
     "prompt-pack output smoke phrase",
     "check command smoke phrase",
     "human install lifecycle phrase",
@@ -755,6 +827,14 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("unknown value suggestion phrase", RELEASE_UNKNOWN_VALUE_SUGGESTION_TERM_GROUPS),
     ("numeric range failure phrase", RELEASE_NUMERIC_RANGE_FAILURE_TERM_GROUPS),
     ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
+    ("prompt JSON output phrase", RELEASE_PROMPT_JSON_OUTPUT_TERM_GROUPS),
+    ("prompt markdown output phrase", RELEASE_PROMPT_MARKDOWN_OUTPUT_TERM_GROUPS),
+    ("prompt from-file output phrase", RELEASE_PROMPT_FROM_FILE_OUTPUT_TERM_GROUPS),
+    ("prompt stdin output phrase", RELEASE_PROMPT_STDIN_OUTPUT_TERM_GROUPS),
+    ("pack JSON output phrase", RELEASE_PACK_JSON_OUTPUT_TERM_GROUPS),
+    ("pack markdown output phrase", RELEASE_PACK_MARKDOWN_OUTPUT_TERM_GROUPS),
+    ("pack from-file output phrase", RELEASE_PACK_FROM_FILE_OUTPUT_TERM_GROUPS),
+    ("pack stdin output phrase", RELEASE_PACK_STDIN_OUTPUT_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
     ("check command smoke phrase", RELEASE_CHECK_COMMAND_TERM_GROUPS),
     ("human install lifecycle phrase", RELEASE_INSTALL_HUMAN_TERM_GROUPS),
@@ -1122,7 +1202,7 @@ route JSON output, route catalog output, and route stdin input,
 explicit `show --lines` output and `route --explain` output,
 unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure,
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
-prompt/pack JSON/markdown/from-file/stdin output,
+prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
 check examples/artifact/stdin/all-routes output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
@@ -1164,7 +1244,7 @@ route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
 명시적 `show --lines` 출력과 `route --explain` 출력도 확인해요.
 unknown command failure, unknown help-topic failure, unknown list-domain failure, unknown search-dir failure 검증도 확인해요.
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
-prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
+prompt JSON 출력, prompt markdown 출력, prompt from-file 출력, prompt stdin 출력, pack JSON 출력, pack markdown 출력, pack from-file 출력, pack stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
 check examples/artifact/stdin/all-routes 출력도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
@@ -2391,7 +2471,11 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "prompt/pack JSON/markdown/from-file/stdin",
+                (
+                    "prompt JSON output, prompt markdown output, prompt from-file output, "
+                    "prompt stdin output, pack JSON output, pack markdown output, "
+                    "pack from-file output, and pack stdin output"
+                ),
                 "prompt/pack output",
             ),
         },
@@ -2401,6 +2485,182 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing prompt-pack mode smoke phrase" in prompt_pack_mode_drift_errors,
         "release policy docs should mention prompt/pack mode smoke",
+    )
+
+    prompt_json_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "prompt JSON output",
+                "prompt output",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_json_output_drift_errors = "\n".join(prompt_json_output_drift["errors"])
+    assert_condition(
+        "README.md is missing prompt JSON output phrase" in prompt_json_output_drift_errors,
+        "release policy docs should mention prompt JSON output smoke",
+    )
+
+    prompt_markdown_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "prompt markdown output",
+                "prompt output",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_markdown_output_drift_errors = "\n".join(
+        prompt_markdown_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing prompt markdown output phrase"
+            in prompt_markdown_output_drift_errors
+        ),
+        "release policy docs should mention prompt markdown output smoke",
+    )
+
+    prompt_from_file_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "prompt from-file output",
+                "prompt file output",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_from_file_output_drift_errors = "\n".join(
+        prompt_from_file_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing prompt from-file output phrase"
+            in prompt_from_file_output_drift_errors
+        ),
+        "release policy docs should mention prompt from-file output smoke",
+    )
+
+    prompt_stdin_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "prompt stdin output",
+                "prompt input output",
+            ),
+        },
+        audit_count=8,
+    )
+    prompt_stdin_output_drift_errors = "\n".join(prompt_stdin_output_drift["errors"])
+    assert_condition(
+        "README.md is missing prompt stdin output phrase" in prompt_stdin_output_drift_errors,
+        "release policy docs should mention prompt stdin output smoke",
+    )
+
+    pack_json_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "pack JSON output",
+                "pack output",
+            ),
+        },
+        audit_count=8,
+    )
+    pack_json_output_drift_errors = "\n".join(pack_json_output_drift["errors"])
+    assert_condition(
+        "README.md is missing pack JSON output phrase" in pack_json_output_drift_errors,
+        "release policy docs should mention pack JSON output smoke",
+    )
+
+    pack_markdown_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "pack markdown output",
+                "pack output",
+            ),
+        },
+        audit_count=8,
+    )
+    pack_markdown_output_drift_errors = "\n".join(pack_markdown_output_drift["errors"])
+    assert_condition(
+        (
+            "README.md is missing pack markdown output phrase"
+            in pack_markdown_output_drift_errors
+        ),
+        "release policy docs should mention pack markdown output smoke",
+    )
+
+    pack_from_file_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "pack from-file output",
+                "pack file output",
+            ),
+        },
+        audit_count=8,
+    )
+    pack_from_file_output_drift_errors = "\n".join(pack_from_file_output_drift["errors"])
+    assert_condition(
+        (
+            "README.md is missing pack from-file output phrase"
+            in pack_from_file_output_drift_errors
+        ),
+        "release policy docs should mention pack from-file output smoke",
+    )
+
+    pack_stdin_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.ko.md": korean_policy_doc.replace(
+                "pack stdin 출력",
+                "pack 입력 출력",
+            ),
+        },
+        audit_count=8,
+    )
+    pack_stdin_output_drift_errors = "\n".join(pack_stdin_output_drift["errors"])
+    assert_condition(
+        "README.ko.md is missing pack stdin output phrase" in pack_stdin_output_drift_errors,
+        "release policy docs should mention pack stdin output smoke",
     )
 
     prompt_pack_output_drift = release_metadata_summary(
