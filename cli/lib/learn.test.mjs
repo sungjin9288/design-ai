@@ -7,6 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  auditLearningProfile,
   buildLearningContext,
   clearLearning,
   forgetLearning,
@@ -52,6 +53,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(forgetArgs.forgetTarget, "learn-a");
   assert.equal(forgetArgs.yes, true);
   assert.equal(forgetArgs.json, true);
+
+  const auditArgs = parseLearnArgs(["--audit", "--json"]);
+  assert.equal(auditArgs.action, "audit");
+  assert.equal(auditArgs.json, true);
 });
 
 test("parseLearnArgs rejects unsupported categories and unknown options", () => {
@@ -169,6 +174,71 @@ test("loadLearningProfile normalizes legacy entries without ids", () => withTemp
 
   assert.equal(profile.entries.length, 1);
   assert.match(profile.entries[0].id, /^learn-[a-f0-9]{10}$/);
+}));
+
+test("auditLearningProfile reports shape, duplicate, and sensitive-content issues", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "other",
+        text: "api_key: sk-test12345678901234567890",
+        source: "cli",
+        createdAt: "not-a-date",
+      },
+    ],
+  }), "utf8");
+
+  const audit = auditLearningProfile({ filePath });
+
+  assert.equal(audit.file, filePath);
+  assert.equal(audit.exists, true);
+  assert.equal(audit.count, 3);
+  assert.deepEqual(audit.categoryCounts, { brand: 2, other: 1 });
+  assert.equal(audit.summary.status, "warn");
+  assert.equal(audit.summary.failures, 0);
+  assert.ok(audit.summary.warnings >= 4);
+  assert.ok(audit.issues.some((issue) => issue.code === "duplicate-entry-text" && issue.entryId === "learn-b"));
+  assert.ok(audit.issues.some((issue) => issue.code === "invalid-created-at" && issue.entryId === "learn-c"));
+  assert.ok(audit.issues.some((issue) => issue.code === "sensitive-secret-assignment" && issue.entryId === "learn-c"));
+  assert.ok(audit.issues.some((issue) => issue.code === "sensitive-openai-secret-key" && issue.entryId === "learn-c"));
+}));
+
+test("auditLearningProfile reports invalid profiles without mutating files", () => withTempDir((dir) => {
+  const missingPath = path.join(dir, "missing.json");
+  const missing = auditLearningProfile({ filePath: missingPath });
+  assert.equal(missing.exists, false);
+  assert.equal(missing.summary.status, "pass");
+  assert.deepEqual(missing.issues, []);
+
+  const filePath = path.join(dir, "learning.json");
+  const invalidJson = "{ not json";
+  writeFileSync(filePath, invalidJson, "utf8");
+
+  const audit = auditLearningProfile({ filePath });
+
+  assert.equal(audit.exists, true);
+  assert.equal(audit.summary.status, "fail");
+  assert.equal(audit.summary.failures, 1);
+  assert.equal(audit.issues[0].code, "invalid-json");
+  assert.equal(readFileSync(filePath, "utf8"), invalidJson);
 }));
 
 test("selectLearningEntries filters by category and limit", () => {

@@ -94,6 +94,7 @@ Help, list, and version JSON smoke assertions now verify command-discovery key s
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+`design-ai learn --audit` now provides read-only local profile inspection for schema issues, duplicates, stale metadata, long notes, and possible sensitive content before prompt personalization.
 `design-ai learn` now supports local profile management with category/limit filters plus confirmed `--forget` and `--clear` deletion controls.
 `design-ai learn` now stores local learning preferences and `prompt`/`pack --with-learning` can inject them into generated agent context without model training.
 Product readiness docs now clarify that core design consulting workflows are locally release-ready while AI model training is outside shipped scope.
@@ -132,6 +133,27 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 177 — Learning profile audit controls
+
+#### Changed
+- Added `design-ai learn --audit` and `design-ai learn --audit --json` to inspect local profile existence, entry counts, category counts, schema issues, duplicate notes, timestamp gaps, long notes, and conservative sensitive-content patterns.
+- Kept audit mode advisory and read-only so users can inspect a profile before deciding whether to use `--with-learning`, `--forget`, or `--clear`.
+- Updated CLI help discovery, smoke assertions, README command references, quickstart guidance, product readiness docs, and AI learning docs for the audit surface.
+- Expanded learning unit coverage for audit parsing, missing-profile pass state, invalid JSON failure reporting, duplicate detection, timestamp warnings, and sensitive-content warnings.
+
+#### Impact
+- Local learning now has a safer inspection step before prompt personalization without adding telemetry, embeddings, model training, or background collection.
+- Existing `learn --remember`, list/export filtering, forget/clear retention controls, and prompt/pack `--with-learning` behavior remain unchanged.
+
+#### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- Learning audit smoke passed with temporary profile files.
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:metadata`
+- `npm run release:check`
 
 ### Phase 176 — Learning profile management controls
 

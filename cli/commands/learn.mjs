@@ -2,6 +2,8 @@
 
 import { resolveBriefInput } from "../lib/brief.mjs";
 import {
+  LEARNING_CATEGORIES,
+  auditLearningProfile,
   buildLearningContext,
   clearLearning,
   forgetLearning,
@@ -19,6 +21,7 @@ function printHelp() {
   console.log("        design-ai learn --from-file notes.md [--category kind] [--json]");
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
+  console.log("        design-ai learn --audit [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json]");
   console.log("        design-ai learn --clear --yes [--json]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
@@ -31,6 +34,7 @@ function printHelp() {
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
+  console.log("  --audit              Inspect profile shape and possible sensitive content without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -43,6 +47,7 @@ function printHelp() {
   console.log("Examples:");
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
   console.log("  design-ai learn --list --category korean --limit 5");
+  console.log("  design-ai learn --audit");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
@@ -90,6 +95,41 @@ function printList(payload) {
     const entry = payload.entries[i];
     console.log(`${i + 1}. [${entry.category}] ${entry.text}`);
     console.log(`   ${dim(`${entry.id} · ${entry.createdAt || "unknown time"}`)}`);
+  }
+}
+
+function formatCategoryCounts(categoryCounts) {
+  return LEARNING_CATEGORIES
+    .filter((category) => categoryCounts[category])
+    .map((category) => `${category} ${categoryCounts[category]}`)
+    .join(", ");
+}
+
+function printAudit(payload) {
+  header("design-ai learn", "Local learning profile audit");
+  info(`File: ${payload.file}`);
+  info(`Exists: ${payload.exists ? "yes" : "no"}`);
+  info(`Entries: ${payload.count}`);
+  info(`Status: ${payload.summary.status}`);
+  info(`Issues: ${payload.summary.failures} failure(s), ${payload.summary.warnings} warning(s)`);
+
+  const categories = formatCategoryCounts(payload.categoryCounts);
+  if (categories) info(`Categories: ${categories}`);
+  console.log();
+
+  if (!payload.exists) {
+    console.log("No local learning profile file exists yet.");
+    return;
+  }
+
+  if (payload.issues.length === 0) {
+    console.log("No learning profile issues found.");
+    return;
+  }
+
+  for (const issue of payload.issues) {
+    const entry = issue.entryId ? ` (${issue.entryId})` : "";
+    console.log(`${issue.level.toUpperCase()} ${issue.code}${entry}: ${issue.message}`);
   }
 }
 
@@ -157,6 +197,16 @@ export async function runLearn(args) {
       return;
     }
     printList(payload);
+    return;
+  }
+
+  if (parsed.action === "audit") {
+    const payload = auditLearningProfile({ filePath: parsed.filePath });
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+    printAudit(payload);
     return;
   }
 

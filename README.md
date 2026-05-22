@@ -69,7 +69,7 @@ Any of the three: you get all 19 skills, 16 commands, and 4 agents under `~/.cla
 /design-from-brief Korean fintech for freelancers
 ```
 
-CLI commands: `design-ai install [--json]`, `update [--dry-run] [--json]`, `uninstall [--json]`, `status [--json]`, `list [skills|commands|agents] [--json]`, `route <brief|--from-file file|--stdin|--list> [--limit N] [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--with-learning] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--with-learning] [--max-bytes N] [--json]`, `learn [--remember text|--list|--export|--forget id|--clear] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet] [--json]`, `doctor [--strict] [--json] [--fix]`, `version [--json]`, `help [command|--json]`.
+CLI commands: `design-ai install [--json]`, `update [--dry-run] [--json]`, `uninstall [--json]`, `status [--json]`, `list [skills|commands|agents] [--json]`, `route <brief|--from-file file|--stdin|--list> [--limit N] [--explain] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin> [--out file] [--route id] [--with-learning] [--json]`, `pack <brief|--from-file file|--stdin> [--out file] [--route id] [--with-learning] [--max-bytes N] [--json]`, `learn [--remember text|--list|--export|--audit|--forget id|--clear] [--json]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query> [--dir kind] [--limit N] [--json]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet] [--json]`, `doctor [--strict] [--json] [--fix]`, `version [--json]`, `help [command|--json]`.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 
@@ -206,7 +206,7 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.13.0** (DRAFT closure + 90% component coverage).
 
-Core design consulting workflows are locally release-ready. Local learning preferences are available through `design-ai learn` and opt-in `prompt`/`pack --with-learning`; AI model training or fine-tuning remains outside the shipped scope.
+Core design consulting workflows are locally release-ready. Local learning preferences are available through `design-ai learn`, read-only `learn --audit`, and opt-in `prompt`/`pack --with-learning`; AI model training or fine-tuning remains outside the shipped scope.
 
 The corpus has been audited under CI checks since v1.7. It currently runs 8 audits:
 - Frontmatter validity

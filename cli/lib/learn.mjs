@@ -23,6 +23,7 @@ const LEARN_OPTIONS = [
   "--stdin",
   "--list",
   "--export",
+  "--audit",
   "--forget",
   "--clear",
   "--category",
@@ -38,6 +39,34 @@ export const LEARNING_CATEGORIES = [
   "accessibility",
   "korean",
   "other",
+];
+const DEFAULT_AUDIT_MAX_ENTRY_CHARS = 800;
+const LEARNING_SENSITIVE_PATTERNS = [
+  {
+    code: "private-key",
+    label: "a private key block",
+    pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/i,
+  },
+  {
+    code: "secret-assignment",
+    label: "a secret-like assignment",
+    pattern: /\b(?:api[_-]?key|secret|token|password)\b\s*[:=]/i,
+  },
+  {
+    code: "openai-secret-key",
+    label: "an OpenAI-style secret key",
+    pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/,
+  },
+  {
+    code: "email-address",
+    label: "an email address",
+    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
+  },
+  {
+    code: "kr-phone-number",
+    label: "a Korean mobile phone number",
+    pattern: /\b01[016789]-?\d{3,4}-?\d{4}\b/,
+  },
 ];
 
 export function defaultLearningFile() {
@@ -97,6 +126,8 @@ export function parseLearnArgs(args) {
       setAction(out, "list");
     } else if (arg === "--export") {
       setAction(out, "export");
+    } else if (arg === "--audit") {
+      setAction(out, "audit");
     } else if (arg === "--forget") {
       setAction(out, "forget");
       const target = args[i + 1];
@@ -194,6 +225,234 @@ export function loadLearningProfile(filePath = defaultLearningFile()) {
   } catch (error) {
     throw new Error(`Learning profile is not valid JSON: ${filePath}`);
   }
+}
+
+function learningAuditIssue({ level = "warning", code, entryId = "", message }) {
+  return {
+    level,
+    code,
+    ...(entryId ? { entryId } : {}),
+    message,
+  };
+}
+
+function summarizeLearningAudit(issues) {
+  const failures = issues.filter((issue) => issue.level === "failure").length;
+  const warnings = issues.filter((issue) => issue.level === "warning").length;
+  return {
+    status: failures > 0 ? "fail" : warnings > 0 ? "warn" : "pass",
+    failures,
+    warnings,
+  };
+}
+
+function finalizeLearningAudit(payload) {
+  return {
+    ...payload,
+    summary: summarizeLearningAudit(payload.issues),
+  };
+}
+
+function entryAuditId(entry, index) {
+  return String(entry?.id || `entry-${index + 1}`).trim() || `entry-${index + 1}`;
+}
+
+function inspectLearningEntry({
+  entry,
+  index,
+  issues,
+  categoryCounts,
+  seenIds,
+  seenNotes,
+  maxEntryChars,
+}) {
+  const entryId = entryAuditId(entry, index);
+
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    issues.push(learningAuditIssue({
+      level: "failure",
+      code: "invalid-entry",
+      entryId,
+      message: "Entry must be an object with text, category, and metadata.",
+    }));
+    return;
+  }
+
+  if (!String(entry.id || "").trim()) {
+    issues.push(learningAuditIssue({
+      code: "missing-entry-id",
+      entryId,
+      message: "Entry is missing an id; list and export will generate one at runtime.",
+    }));
+  } else if (seenIds.has(entryId)) {
+    issues.push(learningAuditIssue({
+      code: "duplicate-entry-id",
+      entryId,
+      message: `Entry id duplicates ${seenIds.get(entryId)} and can make deletion ambiguous.`,
+    }));
+  } else {
+    seenIds.set(entryId, entryId);
+  }
+
+  const text = String(entry.text || "").trim();
+  if (!text) {
+    issues.push(learningAuditIssue({
+      level: "failure",
+      code: "empty-entry-text",
+      entryId,
+      message: "Entry text is empty and will be ignored by prompt personalization.",
+    }));
+    return;
+  }
+
+  const rawCategory = String(entry.category || "preference").trim().toLowerCase();
+  if (!LEARNING_CATEGORIES.includes(rawCategory)) {
+    issues.push(learningAuditIssue({
+      level: "failure",
+      code: "invalid-category",
+      entryId,
+      message: `Category must be one of: ${LEARNING_CATEGORIES.join(", ")}.`,
+    }));
+  } else {
+    categoryCounts[rawCategory] = (categoryCounts[rawCategory] || 0) + 1;
+  }
+
+  const noteKey = `${rawCategory}\n${cleanNoteText(text).toLowerCase()}`;
+  if (seenNotes.has(noteKey)) {
+    issues.push(learningAuditIssue({
+      code: "duplicate-entry-text",
+      entryId,
+      message: `Entry duplicates ${seenNotes.get(noteKey)} in the same category.`,
+    }));
+  } else {
+    seenNotes.set(noteKey, entryId);
+  }
+
+  const createdAt = String(entry.createdAt || "").trim();
+  if (!createdAt) {
+    issues.push(learningAuditIssue({
+      code: "missing-created-at",
+      entryId,
+      message: "Entry is missing createdAt metadata, so recency is unclear.",
+    }));
+  } else if (Number.isNaN(Date.parse(createdAt))) {
+    issues.push(learningAuditIssue({
+      code: "invalid-created-at",
+      entryId,
+      message: "Entry createdAt metadata is not a parseable date.",
+    }));
+  }
+
+  if (text.length > maxEntryChars) {
+    issues.push(learningAuditIssue({
+      code: "long-entry-text",
+      entryId,
+      message: `Entry is ${text.length} characters; keep learning notes under ${maxEntryChars} characters when possible.`,
+    }));
+  }
+
+  for (const sensitivePattern of LEARNING_SENSITIVE_PATTERNS) {
+    if (sensitivePattern.pattern.test(text)) {
+      issues.push(learningAuditIssue({
+        code: `sensitive-${sensitivePattern.code}`,
+        entryId,
+        message: `Entry may contain ${sensitivePattern.label}; remove or rewrite it before using --with-learning.`,
+      }));
+    }
+  }
+}
+
+export function auditLearningProfile({
+  filePath = defaultLearningFile(),
+  maxEntryChars = DEFAULT_AUDIT_MAX_ENTRY_CHARS,
+} = {}) {
+  const payload = {
+    file: filePath,
+    exists: existsSync(filePath),
+    version: null,
+    updatedAt: "",
+    count: 0,
+    categoryCounts: {},
+    issues: [],
+  };
+
+  if (!payload.exists) return finalizeLearningAudit(payload);
+
+  let rawText = "";
+  try {
+    rawText = readFileSync(filePath, "utf8");
+  } catch {
+    payload.issues.push(learningAuditIssue({
+      level: "failure",
+      code: "read-error",
+      message: "Learning profile could not be read from disk.",
+    }));
+    return finalizeLearningAudit(payload);
+  }
+
+  let rawProfile = null;
+  try {
+    rawProfile = JSON.parse(rawText);
+  } catch {
+    payload.issues.push(learningAuditIssue({
+      level: "failure",
+      code: "invalid-json",
+      message: "Learning profile is not valid JSON.",
+    }));
+    return finalizeLearningAudit(payload);
+  }
+
+  if (!rawProfile || typeof rawProfile !== "object" || Array.isArray(rawProfile)) {
+    payload.issues.push(learningAuditIssue({
+      level: "failure",
+      code: "invalid-profile",
+      message: "Learning profile root must be a JSON object.",
+    }));
+    return finalizeLearningAudit(payload);
+  }
+
+  payload.version = Number.isInteger(rawProfile.version) ? rawProfile.version : 1;
+  payload.updatedAt = String(rawProfile.updatedAt || "").trim();
+
+  if (rawProfile.version !== undefined && !Number.isInteger(rawProfile.version)) {
+    payload.issues.push(learningAuditIssue({
+      code: "invalid-version",
+      message: "Profile version is not an integer; version 1 will be assumed.",
+    }));
+  }
+
+  if (!Array.isArray(rawProfile.entries)) {
+    payload.issues.push(learningAuditIssue({
+      level: "failure",
+      code: "invalid-entries",
+      message: "Learning profile entries must be an array.",
+    }));
+    return finalizeLearningAudit(payload);
+  }
+
+  payload.count = rawProfile.entries.length;
+
+  const seenIds = new Map();
+  const seenNotes = new Map();
+  for (let index = 0; index < rawProfile.entries.length; index += 1) {
+    inspectLearningEntry({
+      entry: rawProfile.entries[index],
+      index,
+      issues: payload.issues,
+      categoryCounts: payload.categoryCounts,
+      seenIds,
+      seenNotes,
+      maxEntryChars,
+    });
+  }
+
+  payload.categoryCounts = Object.fromEntries(
+    LEARNING_CATEGORIES
+      .filter((category) => payload.categoryCounts[category])
+      .map((category) => [category, payload.categoryCounts[category]]),
+  );
+
+  return finalizeLearningAudit(payload);
 }
 
 function writeLearningProfile(filePath, profile) {
