@@ -94,6 +94,7 @@ Help, list, and version JSON smoke assertions now verify command-discovery key s
 Update dry-run JSON smoke assertions now verify exact git/install plan key order, boolean contracts, command arrays, and readiness reasons.
 Status JSON smoke assertions now verify exact install-state section labels and Claude-home target directory contracts.
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.
+Product readiness docs now clarify that core design consulting workflows are locally release-ready while AI model training is outside shipped scope.
 `design-ai help` now formats machine-readable help-topic catalogs through a self-tested JSON formatter with stable topic and alias order.
 Release metadata now guards release-facing docs against dropping the `design-ai help` command.
 Release metadata now guards release-facing docs against dropping top-level help smoke guidance.
@@ -129,6 +130,21 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 174 — Product readiness scope boundary documented
+
+#### Changed
+- `docs/PRODUCT-READINESS.md` now separates shipped design consulting capability, local release confidence, conversational AI design coverage, and non-shipped AI learning/model-training scope.
+- README status sections now link to the readiness boundary and clarify that design-ai is a corpus/routing/prompt-pack/QA layer rather than a model or fine-tune.
+- MkDocs navigation now exposes the readiness page under Reference so launch reviewers can find the current completion matrix.
+
+#### Impact
+- Product status is now explicit: core design consulting workflows are locally release-ready for v4.13, while Real-CI, external launch, registry smoke, and any future personalization/model-learning work remain separate decisions.
+- Existing CLI runtime behavior, package contents, release smoke assertions, knowledge corpus files, examples, and command coverage remain unchanged.
+
+#### Verified
+- All 8 audits pass.
+- `npm run release:metadata`
 
 ### Phase 173 — Lifecycle JSON context path assertion hardening
 

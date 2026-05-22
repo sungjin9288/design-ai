@@ -51,6 +51,36 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 174 — Product readiness scope boundary documented (v4.13.0) ✓ shipped
+
+Product readiness docs now clarify that core design consulting workflows are locally release-ready while AI model training is outside shipped scope.
+
+### Changed
+- `docs/PRODUCT-READINESS.md` now separates shipped design consulting capability, local release confidence, conversational AI design coverage, and non-shipped AI learning/model-training scope.
+- README status sections now link to the readiness boundary and clarify that design-ai is a corpus/routing/prompt-pack/QA layer rather than a model or fine-tune.
+- MkDocs navigation now exposes the readiness page under Reference so launch reviewers can find the current completion matrix.
+- CHANGELOG and SESSION-LOG now record the Phase 174 readiness boundary.
+
+### Impact
+- Product status is now explicit: core design consulting workflows are locally release-ready for v4.13, while Real-CI, external launch, registry smoke, and any future personalization/model-learning work remain separate decisions.
+- Existing CLI runtime behavior, package contents, release smoke assertions, knowledge corpus files, examples, and command coverage remain unchanged.
+
+### Verified
+- All 8 audits pass.
+- `npm run release:metadata`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The team can answer completion questions without conflating the shipped design consulting system with future AI learning or personalization products.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning means embeddings, persistent preference memory, feedback learning, or model fine-tuning.
+
 ## Phase 173 — Lifecycle JSON context path assertion hardening (v4.13.0) ✓ shipped
 
 Lifecycle JSON smoke assertions now verify source/target context separation across install, update dry-run, status, and uninstall reports.

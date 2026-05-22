@@ -204,7 +204,9 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log. Currently at **v4.13.0** (DRAFT closure + 90% component coverage).
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.13.0** (DRAFT closure + 90% component coverage).
+
+Core design consulting workflows are locally release-ready. AI model training or fine-tuning is intentionally not part of the shipped scope; design-ai is a structured corpus, routing, prompt-pack, and QA layer for general-purpose AI agents.
 
 The corpus has been audited under CI checks since v1.7. It currently runs 8 audits:
 - Frontmatter validity

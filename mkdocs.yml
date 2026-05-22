@@ -300,6 +300,7 @@ nav:
       - Plugin packaging: docs/PLUGIN-PACKAGING.md
   - Reference:
       - Using design-ai: docs/USING.md
+      - Product readiness: docs/PRODUCT-READINESS.md
       - Contributing: docs/CONTRIBUTING.md
       - Roadmap: docs/ROADMAP.md
       - Dogfood findings: docs/DOGFOOD-FINDINGS.md
