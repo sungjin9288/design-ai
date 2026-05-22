@@ -22,6 +22,7 @@ import {
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
+import { runLearn } from "../commands/learn.mjs";
 
 function withTempDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), "design-ai-learn-test-"));
@@ -30,6 +31,29 @@ function withTempDir(fn) {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+async function withTempDirAsync(fn) {
+  const dir = mkdtempSync(path.join(tmpdir(), "design-ai-learn-test-"));
+  try {
+    return await fn(dir);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+async function captureStdout(fn) {
+  const lines = [];
+  const originalLog = console.log;
+  console.log = (...args) => {
+    lines.push(args.join(" "));
+  };
+  try {
+    await fn();
+  } finally {
+    console.log = originalLog;
+  }
+  return lines.join("\n");
 }
 
 test("parseLearnArgs defaults to list and supports remember notes", () => {
@@ -224,6 +248,82 @@ test("auditLearningProfile reports shape, duplicate, and sensitive-content issue
   assert.ok(audit.issues.some((issue) => issue.code === "invalid-created-at" && issue.entryId === "learn-c"));
   assert.ok(audit.issues.some((issue) => issue.code === "sensitive-secret-assignment" && issue.entryId === "learn-c"));
   assert.ok(audit.issues.some((issue) => issue.code === "sensitive-openai-secret-key" && issue.entryId === "learn-c"));
+  assert.ok(audit.suggestions.some((suggestion) => (
+    suggestion.action === "remove-duplicate"
+    && suggestion.entryId === "learn-b"
+    && suggestion.commandArgs.includes("--forget")
+    && suggestion.command.includes("design-ai learn --file")
+  )));
+  assert.ok(audit.suggestions.some((suggestion) => (
+    suggestion.action === "remove-or-redact-sensitive-content"
+    && suggestion.entryId === "learn-c"
+    && suggestion.commandArgs.includes("learn-c")
+  )));
+}));
+
+test("runLearn audit prints suggested cleanup commands for warning profiles", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const output = await captureStdout(() => runLearn(["--audit", "--file", filePath]));
+
+  assert.match(output, /Suggested cleanup:/);
+  assert.match(output, /remove-duplicate \(learn-b\)/);
+  assert.match(output, /design-ai learn --file/);
+  assert.match(output, /--forget learn-b --yes/);
+}));
+
+test("auditLearningProfile avoids forget commands when entry ids are ambiguous", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    entries: [
+      {
+        id: "learn-shared",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-shared",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const audit = auditLearningProfile({ filePath });
+  const duplicateTextSuggestion = audit.suggestions.find((suggestion) => (
+    suggestion.issueCode === "duplicate-entry-text"
+    && suggestion.entryId === "learn-shared"
+  ));
+  const duplicateIdSuggestion = audit.suggestions.find((suggestion) => (
+    suggestion.issueCode === "duplicate-entry-id"
+    && suggestion.entryId === "learn-shared"
+  ));
+
+  assert.equal(duplicateTextSuggestion.command, undefined);
+  assert.equal(duplicateIdSuggestion.action, "manual-profile-edit");
 }));
 
 test("auditLearningProfile reports invalid profiles without mutating files", () => withTempDir((dir) => {

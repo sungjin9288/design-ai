@@ -36,7 +36,7 @@ function printHelp() {
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
-  console.log("  --audit              Inspect profile shape and possible sensitive content without changing it");
+  console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
@@ -134,6 +134,18 @@ function printAudit(payload) {
   for (const issue of payload.issues) {
     const entry = issue.entryId ? ` (${issue.entryId})` : "";
     console.log(`${issue.level.toUpperCase()} ${issue.code}${entry}: ${issue.message}`);
+  }
+
+  if (payload.suggestions.length > 0) {
+    console.log();
+    console.log("Suggested cleanup:");
+    for (const suggestion of payload.suggestions) {
+      const entry = suggestion.entryId ? ` (${suggestion.entryId})` : "";
+      console.log(`- ${suggestion.action}${entry}: ${suggestion.message}`);
+      if (suggestion.command) {
+        console.log(`  ${dim(suggestion.command)}`);
+      }
+    }
   }
 }
 

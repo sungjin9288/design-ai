@@ -77,6 +77,7 @@ Release metadata now guards release-facing docs against dropping prompt/pack JSO
 Release metadata now reports prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output drift separately.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
+`design-ai learn --audit` now includes cleanup suggestions and safe forget commands for warning-bearing learning profiles.
 Release metadata now guards release-facing docs against dropping check examples/artifact/stdin/all-routes smoke guidance.
 Release metadata now reports check examples, check artifact, check stdin, and check all-routes output drift separately.
 Release metadata now reports human install, human status, and human uninstall output drift separately.
@@ -136,6 +137,32 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 181 — Learning audit cleanup suggestions
+
+#### Changed
+- Added `suggestions` metadata to `design-ai learn --audit --json` payloads so duplicate, sensitive-content, long-note, and metadata warnings map to concrete cleanup actions.
+- Added safe `design-ai learn --file ... --forget ... --yes` command strings only when a warning has an unambiguous entry id.
+- Added manual repair suggestions for ambiguous duplicate ids, missing ids, invalid entries, and profile-level failures where deletion commands could target the wrong data.
+- Added a Suggested cleanup section to human `learn --audit` output.
+- Updated AI learning docs, quickstart guidance, product readiness docs, README status copy, roadmap, changelog, and session log for the cleanup-suggestion behavior.
+- Expanded learning tests for audit suggestion metadata and human cleanup output.
+
+#### Impact
+- Users can inspect, decide, and clean local learning profiles faster before exporting or injecting preferences.
+- Existing read-only audit behavior, issue reporting, confirmed deletion controls, prompt/pack learning injection, and storage format remain unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `node --test cli/lib/help-command.test.mjs`
+- Learning audit cleanup suggestion smoke passed with temporary profile files.
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run release:check`
 
 ### Phase 180 — Learned-context audit summaries
 

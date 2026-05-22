@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 181 — Learning audit cleanup suggestions (v4.13.0) ✓ shipped
+
+`design-ai learn --audit` now turns learning profile warnings into explicit cleanup guidance without mutating the local profile.
+
+### Changed
+- Added `suggestions` metadata to learning profile audit payloads, mapping each issue to a recommended cleanup action.
+- Added safe `design-ai learn --file ... --forget ... --yes` command suggestions for duplicate, sensitive-content, long-note, and metadata warnings when id-based deletion is unambiguous.
+- Added manual repair suggestions for ambiguous duplicate ids, missing ids, and profile-level failures where automatic deletion guidance would be unsafe.
+- Added a Suggested cleanup section to human `learn --audit` output.
+- Updated AI learning docs, quickstart guidance, product readiness docs, README status copy, changelog, and session log for audit cleanup suggestions.
+- Expanded learning tests for audit suggestion metadata and human cleanup output.
+
+### Impact
+- Users can move from audit warnings to concrete cleanup decisions faster while keeping `learn --audit` read-only.
+- Existing profile storage, `learn --forget` confirmation, `learn --clear` confirmation, prompt/pack learning injection, and audit issue reporting remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `node --test cli/lib/help-command.test.mjs`
+- Learning audit cleanup suggestion smoke passed with temporary profile files.
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local personalization profiles now have a safer inspect-and-clean loop before learned context enters generated prompts or packs.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 180 — Learned-context audit summaries (v4.13.0) ✓ shipped
 
 `design-ai learn --export`, `design-ai prompt --with-learning`, and `design-ai pack --with-learning` now carry learning profile audit status with the learned context they produce.

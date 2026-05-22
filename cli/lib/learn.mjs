@@ -249,10 +249,128 @@ function summarizeLearningAudit(issues) {
   };
 }
 
+function shellQuote(value) {
+  const text = String(value);
+  if (/^[A-Za-z0-9_/:=.,@%+-]+$/.test(text)) return text;
+  return `'${text.replace(/'/g, "'\\''")}'`;
+}
+
+function commandFromArgs(args) {
+  return args.map(shellQuote).join(" ");
+}
+
+function forgetCommand({ filePath, entryId }) {
+  return ["design-ai", "learn", "--file", filePath, "--forget", entryId, "--yes"];
+}
+
+function commandSuggestion({ issue, action, message, commandArgs = [] }) {
+  return {
+    issueCode: issue.code,
+    ...(issue.entryId ? { entryId: issue.entryId } : {}),
+    action,
+    message,
+    ...(commandArgs.length > 0 ? {
+      commandArgs,
+      command: commandFromArgs(commandArgs),
+    } : {}),
+  };
+}
+
+function learningAuditSuggestion(issue, filePath, { ambiguousEntryIds = new Set() } = {}) {
+  const hasStableEntryTarget = issue.entryId && ![
+    "missing-entry-id",
+    "duplicate-entry-id",
+    "invalid-entry",
+    "empty-entry-text",
+    "invalid-category",
+  ].includes(issue.code) && !ambiguousEntryIds.has(issue.entryId);
+  const commandArgs = hasStableEntryTarget
+    ? forgetCommand({ filePath, entryId: issue.entryId })
+    : [];
+
+  if (issue.code === "duplicate-entry-text") {
+    return commandSuggestion({
+      issue,
+      action: "remove-duplicate",
+      message: "Remove the duplicate entry, or rewrite it if it captures a distinct constraint.",
+      commandArgs,
+    });
+  }
+
+  if (issue.code.startsWith("sensitive-")) {
+    return commandSuggestion({
+      issue,
+      action: "remove-or-redact-sensitive-content",
+      message: "Remove this entry or re-add a redacted preference before using --with-learning.",
+      commandArgs,
+    });
+  }
+
+  if (issue.code === "long-entry-text") {
+    return commandSuggestion({
+      issue,
+      action: "split-or-rewrite",
+      message: "Split this note into smaller preference entries, or remove and re-add a focused version.",
+      commandArgs,
+    });
+  }
+
+  if (["missing-created-at", "invalid-created-at"].includes(issue.code)) {
+    return commandSuggestion({
+      issue,
+      action: "refresh-entry-metadata",
+      message: "Remove and re-add this entry if recency ordering matters for prompt personalization.",
+      commandArgs,
+    });
+  }
+
+  if (issue.code === "missing-entry-id") {
+    return commandSuggestion({
+      issue,
+      action: "re-add-for-stable-id",
+      message: "Re-add this note through `design-ai learn --remember` if you need a stable id for deletion and audit trails.",
+    });
+  }
+
+  if (issue.code === "duplicate-entry-id") {
+    return commandSuggestion({
+      issue,
+      action: "manual-profile-edit",
+      message: "Inspect the profile manually before deleting because duplicate ids make id-based deletion ambiguous.",
+    });
+  }
+
+  if (issue.level === "failure") {
+    return commandSuggestion({
+      issue,
+      action: "manual-profile-repair",
+      message: "Repair the local learning JSON manually, or clear the profile only after reviewing the file.",
+    });
+  }
+
+  return commandSuggestion({
+    issue,
+    action: "manual-review",
+    message: "Review this warning before exporting or injecting local learning context.",
+    commandArgs,
+  });
+}
+
+function learningAuditSuggestions(issues, { filePath }) {
+  const ambiguousEntryIds = new Set(
+    issues
+      .filter((issue) => issue.code === "duplicate-entry-id" && issue.entryId)
+      .map((issue) => issue.entryId),
+  );
+  return issues.map((issue) => learningAuditSuggestion(issue, filePath, { ambiguousEntryIds }));
+}
+
 function finalizeLearningAudit(payload) {
+  const summary = summarizeLearningAudit(payload.issues);
   return {
     ...payload,
-    summary: summarizeLearningAudit(payload.issues),
+    summary,
+    suggestions: learningAuditSuggestions(payload.issues, { filePath: payload.file }),
   };
 }
 

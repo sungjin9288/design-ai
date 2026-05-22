@@ -9,7 +9,7 @@ What ships in v4.13:
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
-- `design-ai learn --audit` inspects profile shape, duplicates, and possible sensitive content without changing the profile.
+- `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
@@ -73,7 +73,7 @@ design-ai learn --audit
 design-ai learn --audit --json
 ```
 
-The audit is advisory and non-mutating. It reports invalid JSON/profile shape failures plus warnings for duplicate entries, missing timestamps, long notes, and conservative sensitive-content patterns such as secret-like assignments, private key blocks, email addresses, and Korean mobile phone numbers.
+The audit is advisory and non-mutating. It reports invalid JSON/profile shape failures plus warnings for duplicate entries, missing timestamps, long notes, and conservative sensitive-content patterns such as secret-like assignments, private key blocks, email addresses, and Korean mobile phone numbers. JSON output includes `suggestions`; human output adds a Suggested cleanup section with safe `design-ai learn --file ... --forget ... --yes` commands only when id-based deletion is unambiguous.
 
 Summarize profile health and recency:
 
@@ -139,7 +139,7 @@ Learning entries are treated as preferences, not absolute instructions. They mus
 
 Use `--with-learning` only when the saved context is relevant to the current task. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small recent subset should influence the prompt.
 
-Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries.
+Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries. Follow the Suggested cleanup section when it recommends removal; rewrite and re-add entries when the issue is sensitive content or an overlong note that still contains useful preference signal.
 
 Use `design-ai learn --stats` when you need a quick read on profile size, category distribution, source distribution, latest entry, and audit status before deciding whether to run a detailed audit.
 
