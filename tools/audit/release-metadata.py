@@ -410,9 +410,47 @@ RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS = (
         "unknown command/help/list/search-dir failure",
         "unknown command/help/list/search-dir failures",
         "unknown command, help-topic, list-domain, and search-dir failures",
+        (
+            "unknown command failure, unknown help-topic failure, "
+            "unknown list-domain failure, and unknown search-dir failure"
+        ),
         "unknown command/help/list-domain/search-dir failure",
         "unknown command/help/list/search-dir failure 검증",
         "unknown command/help/list-domain/search-dir failure 검증",
+        (
+            "unknown command failure, unknown help-topic failure, "
+            "unknown list-domain failure, unknown search-dir failure"
+        ),
+    ),
+)
+RELEASE_UNKNOWN_COMMAND_ONLY_FAILURE_TERM_GROUPS = (
+    (
+        "unknown command failure",
+        "unknown command failures",
+    ),
+)
+RELEASE_UNKNOWN_HELP_TOPIC_FAILURE_TERM_GROUPS = (
+    (
+        "unknown help-topic failure",
+        "unknown help-topic failures",
+        "unknown help topic failure",
+        "unknown help topic failures",
+    ),
+)
+RELEASE_UNKNOWN_LIST_DOMAIN_FAILURE_TERM_GROUPS = (
+    (
+        "unknown list-domain failure",
+        "unknown list-domain failures",
+        "unknown list domain failure",
+        "unknown list domain failures",
+    ),
+)
+RELEASE_UNKNOWN_SEARCH_DIR_FAILURE_TERM_GROUPS = (
+    (
+        "unknown search-dir failure",
+        "unknown search-dir failures",
+        "unknown search dir failure",
+        "unknown search dir failures",
     ),
 )
 RELEASE_SUGGESTION_FAILURE_TERM_GROUPS = (
@@ -594,6 +632,10 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "show-lines output phrase",
     "route-explain output phrase",
     "unknown command failure smoke phrase",
+    "unknown command-only failure phrase",
+    "unknown help-topic failure phrase",
+    "unknown list-domain failure phrase",
+    "unknown search-dir failure phrase",
     "suggestion failure smoke phrase",
     "prompt-pack mode smoke phrase",
     "prompt-pack output smoke phrase",
@@ -663,6 +705,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("show-lines output phrase", RELEASE_SHOW_LINES_OUTPUT_TERM_GROUPS),
     ("route-explain output phrase", RELEASE_ROUTE_EXPLAIN_OUTPUT_TERM_GROUPS),
     ("unknown command failure smoke phrase", RELEASE_UNKNOWN_COMMAND_FAILURE_TERM_GROUPS),
+    ("unknown command-only failure phrase", RELEASE_UNKNOWN_COMMAND_ONLY_FAILURE_TERM_GROUPS),
+    ("unknown help-topic failure phrase", RELEASE_UNKNOWN_HELP_TOPIC_FAILURE_TERM_GROUPS),
+    ("unknown list-domain failure phrase", RELEASE_UNKNOWN_LIST_DOMAIN_FAILURE_TERM_GROUPS),
+    ("unknown search-dir failure phrase", RELEASE_UNKNOWN_SEARCH_DIR_FAILURE_TERM_GROUPS),
     ("suggestion failure smoke phrase", RELEASE_SUGGESTION_FAILURE_TERM_GROUPS),
     ("prompt-pack mode smoke phrase", RELEASE_PROMPT_PACK_MODE_TERM_GROUPS),
     ("prompt-pack output smoke phrase", RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS),
@@ -1030,7 +1076,7 @@ all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
 explicit `show --lines` output and `route --explain` output,
-unknown command/help/list/search-dir failures,
+unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure,
 unknown route-id/option/value suggestion and numeric range failures,
 prompt/pack JSON/markdown/from-file/stdin output,
 prompt/pack forced `--out` overwrites plus file-write confirmations,
@@ -1072,7 +1118,7 @@ command-specific help topic 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
 명시적 `show --lines` 출력과 `route --explain` 출력도 확인해요.
-unknown command/help/list/search-dir failure 검증도 확인해요.
+unknown command failure, unknown help-topic failure, unknown list-domain failure, unknown search-dir failure 검증도 확인해요.
 unknown route-id/option/value suggestion 및 numeric range failure도 확인해요.
 prompt/pack JSON/markdown/from-file/stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 file-write confirmation도 확인해요.
@@ -2067,7 +2113,10 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "unknown command/help/list/search-dir failures",
+                (
+                    "unknown command failure, unknown help-topic failure, "
+                    "unknown list-domain failure, and unknown search-dir failure"
+                ),
                 "unknown failures",
             ),
         },
@@ -2078,6 +2127,106 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing unknown command failure smoke phrase"
         in unknown_command_failure_drift_errors,
         "release policy docs should mention unknown command/help/list/search-dir failure smoke",
+    )
+
+    unknown_command_only_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown command failure",
+                "unknown failure",
+            ),
+        },
+        audit_count=8,
+    )
+    unknown_command_only_failure_drift_errors = "\n".join(
+        unknown_command_only_failure_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing unknown command-only failure phrase"
+            in unknown_command_only_failure_drift_errors
+        ),
+        "release policy docs should mention unknown command failure smoke",
+    )
+
+    unknown_help_topic_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown help-topic failure",
+                "unknown help failure",
+            ),
+        },
+        audit_count=8,
+    )
+    unknown_help_topic_failure_drift_errors = "\n".join(
+        unknown_help_topic_failure_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing unknown help-topic failure phrase"
+            in unknown_help_topic_failure_drift_errors
+        ),
+        "release policy docs should mention unknown help-topic failure smoke",
+    )
+
+    unknown_list_domain_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown list-domain failure",
+                "unknown list failure",
+            ),
+        },
+        audit_count=8,
+    )
+    unknown_list_domain_failure_drift_errors = "\n".join(
+        unknown_list_domain_failure_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing unknown list-domain failure phrase"
+            in unknown_list_domain_failure_drift_errors
+        ),
+        "release policy docs should mention unknown list-domain failure smoke",
+    )
+
+    unknown_search_dir_failure_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "unknown search-dir failure",
+                "unknown search failure",
+            ),
+        },
+        audit_count=8,
+    )
+    unknown_search_dir_failure_drift_errors = "\n".join(
+        unknown_search_dir_failure_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing unknown search-dir failure phrase"
+            in unknown_search_dir_failure_drift_errors
+        ),
+        "release policy docs should mention unknown search-dir failure smoke",
     )
 
     suggestion_failure_drift = release_metadata_summary(

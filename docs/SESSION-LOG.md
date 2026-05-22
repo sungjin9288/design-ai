@@ -148,6 +148,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 151)** — Split list JSON mode drift from list catalog domain drift.
 - **v4.13 (Phase 152)** — Split route JSON output, route catalog output, and route stdin input drift.
 - **v4.13 (Phase 153)** — Split show-lines output drift from route-explain output drift.
+- **v4.13 (Phase 154)** — Split unknown command, help-topic, list-domain, and search-dir failure drift.
 
 ## Patterns that didn't work
 
