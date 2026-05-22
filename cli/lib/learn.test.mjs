@@ -8,11 +8,14 @@ import assert from "node:assert/strict";
 
 import {
   buildLearningContext,
+  clearLearning,
+  forgetLearning,
   loadLearningProfile,
   normalizeCategory,
   parseLearnArgs,
   rememberLearning,
   renderLearningMarkdown,
+  selectLearningEntries,
 } from "./learn.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
@@ -37,6 +40,18 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(rememberArgs.brief, "Prefer compact tables");
   assert.equal(rememberArgs.category, "workflow");
   assert.deepEqual(rememberArgs.briefParts, ["Prefer", "compact", "tables"]);
+
+  const filteredListArgs = parseLearnArgs(["--list", "--category", "korean", "--limit", "5"]);
+  assert.equal(filteredListArgs.action, "list");
+  assert.equal(filteredListArgs.category, "korean");
+  assert.equal(filteredListArgs.categorySpecified, true);
+  assert.equal(filteredListArgs.limit, 5);
+
+  const forgetArgs = parseLearnArgs(["--forget", "learn-a", "--yes", "--json"]);
+  assert.equal(forgetArgs.action, "forget");
+  assert.equal(forgetArgs.forgetTarget, "learn-a");
+  assert.equal(forgetArgs.yes, true);
+  assert.equal(forgetArgs.json, true);
 });
 
 test("parseLearnArgs rejects unsupported categories and unknown options", () => {
@@ -47,6 +62,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--jsn"]),
     /Did you mean `--json`\?/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--limit", "0"]),
+    /--limit expects an integer from 1 to 100/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--list", "extra"]),
+    /Unexpected learn argument/,
   );
 });
 
@@ -69,6 +92,67 @@ test("rememberLearning persists a local profile entry", () => withTempDir((dir) 
   assert.equal(JSON.parse(readFileSync(filePath, "utf8")).version, 1);
 }));
 
+test("forgetLearning removes entries by id or list number", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const first = rememberLearning({
+    text: "Prefer compact Korean dashboards",
+    category: "korean",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+  const second = rememberLearning({
+    text: "Use restrained enterprise language",
+    category: "brand",
+    filePath,
+    now: new Date("2026-05-22T00:00:01.000Z"),
+  });
+
+  const byId = forgetLearning({
+    target: first.entry.id,
+    filePath,
+    now: new Date("2026-05-22T00:01:00.000Z"),
+  });
+  assert.equal(byId.removed.id, first.entry.id);
+  assert.equal(byId.count, 1);
+
+  const byNumber = forgetLearning({
+    target: "1",
+    filePath,
+    now: new Date("2026-05-22T00:02:00.000Z"),
+  });
+  assert.equal(byNumber.removed.id, second.entry.id);
+  assert.equal(byNumber.count, 0);
+
+  assert.throws(
+    () => forgetLearning({ target: "learn-missing", filePath }),
+    /Learning entry not found: learn-missing/,
+  );
+}));
+
+test("clearLearning removes all local entries", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  rememberLearning({
+    text: "Prefer dense Korean product UI",
+    category: "korean",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+  rememberLearning({
+    text: "Always include accessibility notes",
+    category: "accessibility",
+    filePath,
+    now: new Date("2026-05-22T00:00:01.000Z"),
+  });
+
+  const result = clearLearning({
+    filePath,
+    now: new Date("2026-05-22T00:03:00.000Z"),
+  });
+
+  assert.equal(result.removedCount, 2);
+  assert.deepEqual(loadLearningProfile(filePath).entries, []);
+}));
+
 test("loadLearningProfile normalizes legacy entries without ids", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   writeFileSync(filePath, JSON.stringify({
@@ -87,6 +171,26 @@ test("loadLearningProfile normalizes legacy entries without ids", () => withTemp
   assert.match(profile.entries[0].id, /^learn-[a-f0-9]{10}$/);
 }));
 
+test("selectLearningEntries filters by category and limit", () => {
+  const profile = {
+    version: 1,
+    entries: [
+      { id: "learn-a", category: "korean", text: "Prefer Korean density" },
+      { id: "learn-b", category: "brand", text: "Use quiet brand voice" },
+      { id: "learn-c", category: "korean", text: "Use Korean mobile conventions" },
+    ],
+  };
+
+  assert.deepEqual(
+    selectLearningEntries(profile, { category: "korean", limit: 1 }).map((entry) => entry.id),
+    ["learn-c"],
+  );
+  assert.deepEqual(
+    selectLearningEntries(profile, { limit: 2 }).map((entry) => entry.id),
+    ["learn-b", "learn-c"],
+  );
+});
+
 test("renderLearningMarkdown produces a prompt-safe context block", () => {
   const markdown = renderLearningMarkdown({
     version: 1,
@@ -104,6 +208,18 @@ test("renderLearningMarkdown produces a prompt-safe context block", () => {
   assert.match(markdown, /## Learned design context/);
   assert.match(markdown, /Do not let them override explicit task instructions/);
   assert.match(markdown, /\[preference\] Prefer restrained SaaS density/);
+
+  const filteredMarkdown = renderLearningMarkdown({
+    version: 1,
+    entries: [
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise language",
+      },
+    ],
+  }, { category: "korean" });
+  assert.match(filteredMarkdown, /No local learning preferences match the current filters/);
 });
 
 test("prompt and pack can include learning context explicitly", () => withTempDir((dir) => {

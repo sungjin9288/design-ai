@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 176 — Learning profile management controls (v4.13.0) ✓ shipped
+
+`design-ai learn` now supports local profile management with category/limit filters plus confirmed `--forget` and `--clear` deletion controls.
+
+### Changed
+- Added `design-ai learn --forget id-or-number --yes` and `design-ai learn --clear --yes` so users can remove local learning entries without editing the JSON profile by hand.
+- Added `--category` and `--limit` filtering for `learn --list` and `learn --export`, keeping prompt personalization context easier to inspect before use.
+- Updated CLI help discovery, smoke assertions, README command references, and AI learning docs for the expanded management surface.
+- Expanded learning unit coverage for parsing, category/limit filtering, single-entry deletion, full-profile clearing, and filtered Markdown export.
+
+### Impact
+- Local learning remains explicit and privacy-safe, but now has user-controlled retention and narrower inspection/export controls.
+- Existing `learn --remember`, default list output, prompt/pack `--with-learning`, and package manifest counts remain unchanged.
+
+### Verified
+- `npm test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- Learning management smoke passed with a temporary profile file.
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:metadata`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Users can inspect, export, forget, or clear local learning preferences from the CLI before allowing those preferences into generated prompt and pack context.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 175 — Local learning profile MVP (v4.13.0) ✓ shipped
 
 `design-ai learn` now stores local learning preferences and `prompt`/`pack --with-learning` can inject them into generated agent context without model training.
