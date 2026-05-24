@@ -24,6 +24,7 @@ const LEARN_OPTIONS = [
   "--stdin",
   "--list",
   "--export",
+  "--import",
   "--audit",
   "--stats",
   "--fix",
@@ -150,6 +151,8 @@ export function parseLearnArgs(args) {
       setAction(out, "list");
     } else if (arg === "--export") {
       setAction(out, "export");
+    } else if (arg === "--import") {
+      setAction(out, "import");
     } else if (arg === "--audit") {
       setAction(out, "audit");
     } else if (arg === "--stats") {
@@ -193,7 +196,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -217,11 +220,14 @@ export function parseLearnArgs(args) {
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
   }
-  if (out.dryRun && !out.fix) {
+  if (out.dryRun && !out.fix && out.action !== "import") {
     throw new Error("--dry-run requires --fix");
   }
   if (out.fix && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --audit --fix");
+  }
+  if (out.action === "import" && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --import");
   }
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
@@ -702,6 +708,130 @@ export function recordLearningFeedback({
     now,
     source: `feedback:${normalizedOutcome}`,
   });
+}
+
+function learningEntryMergeKey(entry) {
+  return `${entry.category}\n${cleanNoteText(entry.text).toLowerCase()}`;
+}
+
+function normalizeImportedLearningEntry(entry, index, now) {
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    throw new Error(`Learning import entry ${index + 1} must be an object`);
+  }
+
+  const text = cleanNoteText(entry.text);
+  if (!text) throw new Error(`Learning import entry ${index + 1} has empty text`);
+
+  const category = normalizeCategory(entry.category || "preference");
+  const rawCreatedAt = String(entry.createdAt || "").trim();
+  const createdAt = rawCreatedAt && !Number.isNaN(Date.parse(rawCreatedAt))
+    ? rawCreatedAt
+    : now.toISOString();
+  const rawSource = String(entry.source || "cli").trim() || "cli";
+  const source = rawSource.startsWith("import") ? rawSource : `import:${rawSource}`;
+  const rawId = String(entry.id || "").trim();
+
+  return {
+    id: rawId || `learn-${shortEntryId({ text, category, createdAt })}`,
+    category,
+    text,
+    source,
+    createdAt,
+  };
+}
+
+function uniqueImportedEntryId(entry, usedIds) {
+  if (entry.id && !usedIds.has(entry.id)) return entry.id;
+
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const suffix = attempt === 0 ? "" : `:${attempt}`;
+    const candidate = `learn-${shortEntryId({
+      text: entry.text,
+      category: entry.category,
+      createdAt: `${entry.createdAt}:${entry.source}${suffix}`,
+    })}`;
+    if (!usedIds.has(candidate)) return candidate;
+  }
+
+  throw new Error("Could not allocate a unique learning entry id during import");
+}
+
+function parseLearningImportEntries(importText, now) {
+  let payload = null;
+  try {
+    payload = JSON.parse(importText);
+  } catch (error) {
+    throw new Error("Learning import is not valid JSON");
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Learning import must be a JSON object with an entries array");
+  }
+  if (!Array.isArray(payload.entries)) {
+    throw new Error("Learning import must include an entries array");
+  }
+  if (payload.entries.length === 0) {
+    throw new Error("Learning import has no entries");
+  }
+
+  return payload.entries.map((entry, index) => normalizeImportedLearningEntry(entry, index, now));
+}
+
+export function importLearningProfile({
+  importText,
+  filePath = defaultLearningFile(),
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const importedEntries = parseLearningImportEntries(String(importText || ""), now);
+  const profile = loadLearningProfile(filePath);
+  const existingKeys = new Set(profile.entries.map(learningEntryMergeKey));
+  const usedIds = new Set(profile.entries.map((entry) => entry.id).filter(Boolean));
+  const added = [];
+  const skipped = [];
+
+  for (const importedEntry of importedEntries) {
+    const mergeKey = learningEntryMergeKey(importedEntry);
+    if (existingKeys.has(mergeKey)) {
+      skipped.push({
+        ...statsEntry(importedEntry),
+        reason: "duplicate-entry-text",
+      });
+      continue;
+    }
+
+    const entry = {
+      ...importedEntry,
+      id: uniqueImportedEntryId(importedEntry, usedIds),
+    };
+    usedIds.add(entry.id);
+    existingKeys.add(mergeKey);
+    added.push(entry);
+  }
+
+  const updatedAt = added.length > 0 ? now.toISOString() : profile.updatedAt;
+  const nextProfile = {
+    version: 1,
+    updatedAt,
+    entries: [...profile.entries, ...added],
+  };
+
+  if (!dryRun && added.length > 0) {
+    writeLearningProfile(filePath, nextProfile);
+  }
+
+  return {
+    file: filePath,
+    dryRun,
+    applied: !dryRun,
+    importedCount: importedEntries.length,
+    addedCount: added.length,
+    skippedCount: skipped.length,
+    added: added.map(statsEntry),
+    skipped,
+    count: nextProfile.entries.length,
+    profile: nextProfile,
+  };
 }
 
 function resolveLearningEntryTarget(profile, target) {

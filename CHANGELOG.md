@@ -144,6 +144,37 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+`design-ai learn --import` now merges portable learning profile JSON with dry-run preview and confirmed apply controls.
+Packed-tarball package smoke now verifies learn-import dry-run from `--from-file` and confirmed apply from `--stdin` in installed-bin and one-shot npm exec paths.
+Release metadata now guards release-facing docs against dropping `design-ai learn --import` dry-run/apply smoke guidance.
+
+### Phase 186 — Portable learning profile import
+
+#### Changed
+- Added `design-ai learn --import` for merging entries from a JSON learning profile or `learn --export --json` payload.
+- Added `--dry-run` preview and confirmed `--yes` apply behavior so profile imports stay explicit and reviewable.
+- Deduplicated imports by category+text, preserved valid imported timestamps, marked imported sources with `import:`, and reminted ids only when an imported id conflicts with an existing entry.
+- Expanded command help, top-level help JSON, smoke assertions, package smoke, and release metadata policy guards for the new import path.
+- Updated README, Korean README, AI learning docs, quickstart, distribution, release checklist, roadmap, and session log for portable learning profiles.
+
+#### Impact
+- Users can back up or move local learning preferences between machines without manually editing `~/.design-ai/learning.json`.
+- Confirmed imports are mutating and require `--yes`; dry-run remains non-mutating and reports added/skipped counts.
+- Existing remember, feedback, audit cleanup, stats, forget/clear, and prompt/pack learning injection flows remain unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
 
 ### Phase 185 — Feedback input source smoke coverage
 

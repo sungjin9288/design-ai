@@ -10,6 +10,7 @@ import {
   clearLearning,
   forgetLearning,
   formatLearningJson,
+  importLearningProfile,
   learningStats,
   loadLearningProfile,
   parseLearnArgs,
@@ -28,6 +29,8 @@ function printHelp() {
   console.log("        design-ai learn --from-file notes.md [--category kind] [--json]");
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
+  console.log("        design-ai learn --import --from-file learning.json --dry-run [--json]");
+  console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json]");
   console.log("        design-ai learn --audit [--json]");
   console.log("        design-ai learn --audit --fix --dry-run [--json]");
   console.log("        design-ai learn --audit --fix --yes [--json]");
@@ -46,6 +49,7 @@ function printHelp() {
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
+  console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --dry-run            Preview --audit --fix cleanup without changing the profile");
@@ -65,6 +69,7 @@ function printHelp() {
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
+  console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
   console.log("  design-ai learn --stats --json");
@@ -335,6 +340,43 @@ export async function runLearn(args) {
       return;
     }
     console.log(context.markdown);
+    return;
+  }
+
+  if (parsed.action === "import") {
+    if (!parsed.dryRun) assertConfirmed(parsed, "import");
+    const result = importLearningProfile({
+      importText: readLearningInput(parsed),
+      filePath: parsed.filePath,
+      dryRun: parsed.dryRun,
+    });
+    const payload = {
+      file: result.file,
+      dryRun: result.dryRun,
+      applied: result.applied,
+      importedCount: result.importedCount,
+      addedCount: result.addedCount,
+      skippedCount: result.skippedCount,
+      added: result.added,
+      skipped: result.skipped,
+      count: result.count,
+    };
+
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+
+    header("design-ai learn", result.dryRun ? "Learning import dry run" : "Learning import applied");
+    info(`File: ${result.file}`);
+    info(`Imported: ${result.importedCount}`);
+    info(`Added: ${result.addedCount}`);
+    info(`Skipped: ${result.skippedCount}`);
+    info(`Entries: ${result.count}`);
+    if (result.dryRun) {
+      console.log();
+      console.log("No changes made. Re-run with `--yes` instead of `--dry-run` to import new entries.");
+    }
     return;
   }
 

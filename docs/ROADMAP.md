@@ -51,6 +51,48 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 186 — Portable learning profile import (v4.13.0) ✓ shipped
+
+`design-ai learn` can now import portable learning JSON with preview-first safety.
+
+### Changed
+- Added `design-ai learn --import` for JSON objects that contain an `entries` array, including full local profiles and `learn --export --json` payloads.
+- Added `design-ai learn --import --from-file learning.json --dry-run` for non-mutating previews.
+- Added `cat learning.json | design-ai learn --import --stdin --yes` for confirmed imports from piped JSON.
+- Deduplicated imported entries by category+text, preserved valid imported timestamps, marked imported sources with `import:`, and reminted ids only when an imported id conflicts with an existing entry.
+- Expanded unit tests, help discovery assertions, smoke assertions, package smoke, release metadata policy guards, and adopter docs for the import path.
+
+### Impact
+- Local learning preferences can now be backed up, reviewed, and moved between machines without manual JSON editing.
+- Confirmed import remains explicit local memory only; no sync, telemetry, embeddings, model training, or fine-tuning was added.
+- Existing remember, feedback, audit, safe cleanup, stats, forget/clear, and prompt/pack learning injection behavior remains unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Teams can move explicit local learning preferences across dev machines or agents while preserving the same auditable, opt-in prompt injection boundary.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 185 — Feedback input source smoke coverage (v4.13.0) ✓ shipped
 
 `design-ai learn --feedback` now has covered input-source parity for inline, file, and stdin feedback.

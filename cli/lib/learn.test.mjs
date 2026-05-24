@@ -12,6 +12,7 @@ import {
   buildLearningContext,
   clearLearning,
   forgetLearning,
+  importLearningProfile,
   learningStats,
   loadLearningProfile,
   normalizeCategory,
@@ -103,6 +104,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(auditArgs.action, "audit");
   assert.equal(auditArgs.json, true);
 
+  const importArgs = parseLearnArgs(["--import", "--from-file", "learning.json", "--dry-run", "--json"]);
+  assert.equal(importArgs.action, "import");
+  assert.equal(importArgs.fromFile, "learning.json");
+  assert.equal(importArgs.dryRun, true);
+  assert.equal(importArgs.json, true);
+
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
   assert.equal(auditFixDryRunArgs.fix, true);
@@ -150,6 +157,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--audit", "--fix", "--dry-run", "--yes"]),
+    /Choose either --dry-run or --yes/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--import", "--dry-run", "--yes"]),
     /Choose either --dry-run or --yes/,
   );
   assert.throws(
@@ -266,6 +277,73 @@ test("clearLearning removes all local entries", () => withTempDir((dir) => {
 
   assert.equal(result.removedCount, 2);
   assert.deepEqual(loadLearningProfile(filePath).entries, []);
+}));
+
+test("importLearningProfile previews and applies portable learning profile entries", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-existing",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const importText = JSON.stringify({
+    file: "/other/learning.json",
+    entries: [
+      {
+        id: "learn-existing",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-existing",
+        category: "korean",
+        text: "Prefer dense Korean mobile layouts",
+        source: "feedback:improve",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  });
+
+  const dryRun = importLearningProfile({
+    importText,
+    filePath,
+    dryRun: true,
+    now: new Date("2026-05-22T00:01:00.000Z"),
+  });
+  assert.equal(dryRun.dryRun, true);
+  assert.equal(dryRun.applied, false);
+  assert.equal(dryRun.importedCount, 2);
+  assert.equal(dryRun.addedCount, 1);
+  assert.equal(dryRun.skippedCount, 1);
+  assert.equal(dryRun.count, 2);
+  assert.equal(dryRun.added[0].category, "korean");
+  assert.equal(dryRun.added[0].source, "import:feedback:improve");
+  assert.notEqual(dryRun.added[0].id, "learn-existing");
+  assert.equal(dryRun.skipped[0].reason, "duplicate-entry-text");
+  assert.equal(loadLearningProfile(filePath).entries.length, 1);
+
+  const applied = importLearningProfile({
+    importText,
+    filePath,
+    dryRun: false,
+    now: new Date("2026-05-22T00:02:00.000Z"),
+  });
+  assert.equal(applied.applied, true);
+  assert.equal(applied.addedCount, 1);
+  assert.equal(applied.skippedCount, 1);
+  assert.equal(loadLearningProfile(filePath).entries.length, 2);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.category), ["brand", "korean"]);
 }));
 
 test("loadLearningProfile normalizes legacy entries without ids", () => withTempDir((dir) => {
@@ -428,6 +506,71 @@ test("runLearn feedback stores structured feedback entries in human and JSON mod
   assert.equal(filePayload.entry.source, "feedback:improve");
   assert.equal(filePayload.entry.text, "Improve future outputs by: Prefer keyboard-first critique notes");
   assert.equal(filePayload.count, 3);
+}));
+
+test("runLearn import supports dry-run and confirmed JSON apply", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+  const importPath = path.join(dir, "portable-learning.json");
+  writeFileSync(importPath, JSON.stringify({
+    entries: [
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Keep audit findings evidence-led",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const dryRunOutput = await captureStdout(() => runLearn([
+    "--import",
+    "--from-file",
+    importPath,
+    "--dry-run",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const dryRunPayload = JSON.parse(dryRunOutput);
+  assert.equal(dryRunPayload.dryRun, true);
+  assert.equal(dryRunPayload.applied, false);
+  assert.equal(dryRunPayload.addedCount, 1);
+  assert.equal(loadLearningProfile(filePath).entries.length, 1);
+
+  await assert.rejects(
+    () => runLearn(["--import", "--from-file", importPath, "--file", filePath]),
+    /Refusing to import learning entries without --yes/,
+  );
+
+  const applyOutput = await captureStdout(() => runLearn([
+    "--import",
+    "--from-file",
+    importPath,
+    "--yes",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const payload = JSON.parse(applyOutput);
+  assert.equal(payload.applied, true);
+  assert.equal(payload.addedCount, 1);
+  assert.equal(payload.count, 2);
+  assert.equal(payload.added[0].source, "import:cli");
+  assert.equal(loadLearningProfile(filePath).entries.length, 2);
 }));
 
 test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {

@@ -980,6 +980,179 @@ def assert_learning_feedback_smoke(
     )
 
 
+def write_learning_import_target_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:00.000Z",
+                "entries": [
+                    {
+                        "id": "learn-existing",
+                        "category": "brand",
+                        "text": "Use quiet enterprise language",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def learning_import_payload_text() -> str:
+    return json.dumps(
+        {
+            "file": "/portable/learning.json",
+            "entries": [
+                {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+                {
+                    "id": "learn-existing",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+        },
+        indent=2,
+    )
+
+
+def assert_learning_import_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn import JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn import JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn import JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn import dry-run/apply flags changed",
+    )
+    require_package_smoke(payload.get("importedCount") == 2, context=context, cmd=cmd, message="learn import source count changed")
+    require_package_smoke(payload.get("addedCount") == 1, context=context, cmd=cmd, message="learn import added count changed")
+    require_package_smoke(payload.get("skippedCount") == 1, context=context, cmd=cmd, message="learn import skipped count changed")
+    require_package_smoke(payload.get("count") == 2, context=context, cmd=cmd, message="learn import final count changed")
+
+    added = payload.get("added")
+    skipped = payload.get("skipped")
+    require_package_smoke(isinstance(added, list) and len(added) == 1, context=context, cmd=cmd, message="learn import added list missing")
+    require_package_smoke(isinstance(skipped, list) and len(skipped) == 1, context=context, cmd=cmd, message="learn import skipped list missing")
+
+    added_entry = added[0]
+    skipped_entry = skipped[0]
+    require_package_smoke(
+        added_entry.get("category") == "korean"
+        and added_entry.get("source") == "import:cli"
+        and added_entry.get("id") != "learn-existing",
+        context=context,
+        cmd=cmd,
+        message="learn import added entry metadata changed",
+    )
+    require_package_smoke(
+        skipped_entry.get("reason") == "duplicate-entry-text"
+        and skipped_entry.get("category") == "brand",
+        context=context,
+        cmd=cmd,
+        message="learn import duplicate skip metadata changed",
+    )
+
+
+def assert_learning_import_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    import_file = profile_path.with_name(f"{profile_path.stem}-import.json")
+    import_file.write_text(f"{learning_import_payload_text()}\n", encoding="utf-8")
+
+    dry_run_cmd = command_factory(
+        "learn",
+        "--import",
+        "--from-file",
+        str(import_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    dry_run_result = run_plain(dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_import_json(
+        dry_run_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} from-file dry-run",
+        cmd=dry_run_cmd,
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(dry_run_profile.get("entries", [])) == 1,
+        context=f"{context} dry-run profile unchanged",
+        cmd=dry_run_cmd,
+        message="learn import dry-run should leave target profile unchanged",
+    )
+
+    apply_cmd = command_factory(
+        "learn",
+        "--import",
+        "--stdin",
+        "--yes",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    apply_result = run_plain_with_input(
+        apply_cmd,
+        input_text=learning_import_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_import_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        context=f"{context} stdin apply",
+        cmd=apply_cmd,
+    )
+    applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(applied_profile.get("entries", [])) == 2,
+        context=f"{context} apply profile",
+        cmd=apply_cmd,
+        message="learn import apply should persist the merged entry",
+    )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -1455,6 +1628,65 @@ def run_self_test() -> None:
             expected="learn feedback source should preserve the outcome",
             scope="package smoke",
         )
+
+        learn_import_cmd = [
+            "design-ai",
+            "learn",
+            "--import",
+            "--from-file",
+            str(Path(tmp) / "import.json"),
+            "--dry-run",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        learning_import_payload = {
+            "file": str(learning_profile_path),
+            "dryRun": True,
+            "applied": False,
+            "importedCount": 2,
+            "addedCount": 1,
+            "skippedCount": 1,
+            "added": [
+                {
+                    "id": "learn-new",
+                    "category": "korean",
+                    "source": "import:cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer dense Korean mobile layouts",
+                },
+            ],
+            "skipped": [
+                {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "source": "import:package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                    "reason": "duplicate-entry-text",
+                },
+            ],
+            "count": 2,
+        }
+        assert_learning_import_json(
+            json.dumps(learning_import_payload),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_import_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_import_json(
+                json.dumps({**learning_import_payload, "addedCount": 2}),
+                profile_path=learning_profile_path,
+                dry_run=True,
+                context=context,
+                cmd=learn_import_cmd,
+            ),
+            expected="learn import added count changed",
+            scope="package smoke",
+        )
+
         duplicate_command_args = [
             "design-ai",
             "learn",
@@ -2195,6 +2427,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn feedback",
         )
+        assert_learning_import_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-import-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn import",
+        )
         assert_learning_audit_cleanup_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-learning.json",
@@ -2798,6 +3036,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn feedback",
+        )
+        assert_learning_import_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-import-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn import",
         )
         assert_learning_audit_cleanup_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),
