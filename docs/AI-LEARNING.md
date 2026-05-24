@@ -12,6 +12,7 @@ What ships in v4.13:
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
 - `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted from the local profile, `--from-file`, or `--stdin`.
+- `design-ai learn --out file` writes JSON result artifacts, and `learn --export --out file` writes the Markdown context block, while `--force` controls overwrites.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
@@ -80,24 +81,25 @@ Export the learned context block:
 ```bash
 design-ai learn --export
 design-ai learn --export --category accessibility --limit 3
+design-ai learn --export --out learned-context.md
 ```
 
-The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings.
+The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings. `--out` writes the Markdown block for `--export`, and refuses to overwrite an existing file unless `--force` is provided.
 
 Back up the full local profile:
 
 ```bash
-design-ai learn --backup --json > learning-backup.json
+design-ai learn --backup --json --out learning-backup.json
 ```
 
-Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then imported on another machine with `design-ai learn --import`.
+Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then imported on another machine with `design-ai learn --import`. `--out` uses the same safe file-write rules as `prompt` and `pack`: existing files are rejected unless you add `--force`.
 
 Create a redacted portable profile before sharing:
 
 ```bash
-design-ai learn --redact --json > learning-redacted.json
-design-ai learn --redact --from-file learning-backup.json --json > learning-redacted.json
-cat learning-backup.json | design-ai learn --redact --stdin --json > learning-redacted.json
+design-ai learn --redact --json --out learning-redacted.json
+design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force
+cat learning-backup.json | design-ai learn --redact --stdin --json --out learning-redacted.json --force
 ```
 
 Redacted JSON keeps the same importable `entries` shape as a backup, but replaces conservative sensitive-content matches with `[REDACTED:<code>]` markers and includes `redactions`, `sourceAuditSummary`, and post-redaction `auditSummary` fields. It is read-only and does not change the source profile or source portable payload.
@@ -114,9 +116,9 @@ Verify mode parses the same `entries` payload accepted by import, normalizes imp
 Import a portable learning profile:
 
 ```bash
-design-ai learn --backup --json > learning-backup.json
-design-ai learn --redact --json > learning-redacted.json
-design-ai learn --redact --from-file learning-backup.json --json > learning-redacted.json
+design-ai learn --backup --json --out learning-backup.json
+design-ai learn --redact --json --out learning-redacted.json
+design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force
 design-ai learn --verify --from-file learning-backup.json
 design-ai learn --import --from-file learning-backup.json --dry-run
 cat learning-backup.json | design-ai learn --import --stdin --yes
@@ -209,11 +211,11 @@ Use `design-ai learn --feedback` only for durable preferences you want future pr
 
 Use `design-ai learn --verify --from-file` before reviewing or applying a profile from another machine or repository. It confirms the payload is importable without touching your current local profile.
 
-Use `design-ai learn --redact --json` before sending a local learning profile to another person, repository, or support channel. If you already have a portable backup artifact, use `design-ai learn --redact --from-file learning-backup.json --json` or pipe it through `design-ai learn --redact --stdin --json` so the original artifact remains unchanged. Review the resulting `redactions` list and then run `design-ai learn --verify --from-file learning-redacted.json` if the redacted profile will be imported elsewhere.
+Use `design-ai learn --redact --json --out learning-redacted.json` before sending a local learning profile to another person, repository, or support channel. If you already have a portable backup artifact, use `design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force` or pipe it through `design-ai learn --redact --stdin --json --out learning-redacted.json --force` so the original artifact remains unchanged. Review the resulting `redactions` list and then run `design-ai learn --verify --from-file learning-redacted.json` if the redacted profile will be imported elsewhere.
 
 Use `design-ai learn --import --dry-run` before applying a profile from another machine or repository. Audit the source first when it may include copied project notes, credentials, contact details, or stale entries.
 
-Use `design-ai learn --backup --json` before major cleanup or machine migration when you need a complete local copy. Unlike `learn --export`, backup is not limited to the default prompt-context subset.
+Use `design-ai learn --backup --json --out learning-backup.json` before major cleanup or machine migration when you need a complete local copy. Unlike `learn --export`, backup is not limited to the default prompt-context subset, and `--out` avoids accidental shell redirection overwrites unless `--force` is explicit.
 
 Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected. Use `--audit --fix --dry-run` first when you want to see which entries can be cleaned automatically.
 

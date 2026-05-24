@@ -11,6 +11,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
+import { parseOutputFlags } from "./output.mjs";
 import { expectedValueMessage, unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_LEARNING_FILE = path.join(homedir(), ".design-ai", "learning.json");
@@ -22,6 +23,9 @@ const LEARN_OPTIONS = [
   "--feedback",
   "--from-file",
   "--stdin",
+  "--out",
+  "--output",
+  "--force",
   "--list",
   "--export",
   "--import",
@@ -129,6 +133,8 @@ export function parseLearnArgs(args) {
     feedbackOutcome: "improve",
     outcomeSpecified: false,
     filePath: "",
+    outPath: "",
+    force: false,
     forgetTarget: "",
     limit: 0,
     fix: false,
@@ -209,6 +215,8 @@ export function parseLearnArgs(args) {
         setAction(out, "remember");
       }
       i = out.index;
+    } else if (parseOutputFlags(args, out)) {
+      i = out.index;
     } else if (arg.startsWith("--")) {
       throw new Error(unknownOptionMessage("learn", arg, LEARN_OPTIONS));
     } else {
@@ -240,6 +248,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
+  }
+  if (!out.help && out.outPath && out.action !== "export" && !out.json) {
+    throw new Error("--out requires --json for learn actions other than --export");
   }
 
   return {

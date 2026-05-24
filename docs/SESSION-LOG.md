@@ -185,6 +185,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 188)** — Added portable learning import verification: `learn --verify` validates backup/import JSON from `--from-file` or `--stdin` without touching the target profile, package smoke verifies verify JSON through installed-bin and npm exec tarball paths, and transient one-shot npm cache ENOENT failures retry with a fresh cache.
 - **v4.13 (Phase 189)** — Added redacted portable learning backup: `learn --redact --json` emits an import-compatible profile with sensitive-looking entry text replaced by redaction markers, and package smoke verifies redact JSON through installed-bin and npm exec tarball paths.
 - **v4.13 (Phase 190)** — Added redaction source portability: `learn --redact` can redact portable learning JSON from `--from-file` or `--stdin` without mutating the active local profile, and package smoke verifies local, file, and stdin redaction through installed-bin and npm exec tarball paths.
+- **v4.13 (Phase 191)** — Added safe learn output files: JSON-producing learn actions and export Markdown can write to `--out` with `--force` overwrite control, and package smoke covers backup/redact file-write paths through installed-bin and npm exec tarball paths.
 
 ## Patterns that didn't work
 

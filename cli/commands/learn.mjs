@@ -24,30 +24,31 @@ import {
   verifyLearningImportPayload,
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
+import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai learn [--list] [--category kind] [--limit N] [--json]");
-  console.log("        design-ai learn --remember text [--category kind] [--json]");
-  console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json]");
-  console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json]");
-  console.log("        cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json]");
-  console.log("        design-ai learn --from-file notes.md [--category kind] [--json]");
-  console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
-  console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
-  console.log("        design-ai learn --backup [--json]");
-  console.log("        design-ai learn --redact [--json]");
-  console.log("        design-ai learn --redact --from-file learning-backup.json [--json]");
-  console.log("        cat learning-backup.json | design-ai learn --redact --stdin [--json]");
-  console.log("        design-ai learn --verify --from-file learning.json [--json]");
-  console.log("        cat learning.json | design-ai learn --verify --stdin [--json]");
-  console.log("        design-ai learn --import --from-file learning.json --dry-run [--json]");
-  console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json]");
-  console.log("        design-ai learn --audit [--json]");
-  console.log("        design-ai learn --audit --fix --dry-run [--json]");
-  console.log("        design-ai learn --audit --fix --yes [--json]");
-  console.log("        design-ai learn --stats [--json]");
-  console.log("        design-ai learn --forget id-or-number --yes [--json]");
-  console.log("        design-ai learn --clear --yes [--json]\n");
+  console.log("Usage:  design-ai learn [--list] [--category kind] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
+  console.log("        cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --from-file notes.md [--category kind] [--json] [--out file] [--force]");
+  console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --export [--category kind] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --backup [--json] [--out file] [--force]");
+  console.log("        design-ai learn --redact [--json] [--out file] [--force]");
+  console.log("        design-ai learn --redact --from-file learning-backup.json [--json] [--out file] [--force]");
+  console.log("        cat learning-backup.json | design-ai learn --redact --stdin [--json] [--out file] [--force]");
+  console.log("        design-ai learn --verify --from-file learning.json [--json] [--out file] [--force]");
+  console.log("        cat learning.json | design-ai learn --verify --stdin [--json] [--out file] [--force]");
+  console.log("        design-ai learn --import --from-file learning.json --dry-run [--json] [--out file] [--force]");
+  console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json] [--out file] [--force]");
+  console.log("        design-ai learn --audit [--json] [--out file] [--force]");
+  console.log("        design-ai learn --audit --fix --dry-run [--json] [--out file] [--force]");
+  console.log("        design-ai learn --audit --fix --yes [--json] [--out file] [--force]");
+  console.log("        design-ai learn --stats [--json] [--out file] [--force]");
+  console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
+  console.log("        design-ai learn --clear --yes [--json] [--out file] [--force]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
   console.log("This is local memory, not model training or fine-tuning.\n");
   console.log("Options:");
@@ -73,6 +74,8 @@ function printHelp() {
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
   console.log("  --json               Emit machine-readable output");
+  console.log("  --out file           Write JSON output to a file, or export Markdown for --export");
+  console.log("  --force              Overwrite an existing --out file");
   console.log("");
   console.log("Environment:");
   console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json  Override the default profile path");
@@ -83,9 +86,9 @@ function printHelp() {
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
-  console.log("  design-ai learn --backup --json > learning-backup.json");
-  console.log("  design-ai learn --redact --json > learning-redacted.json");
-  console.log("  design-ai learn --redact --from-file learning-backup.json --json > learning-redacted.json");
+  console.log("  design-ai learn --backup --json --out learning-backup.json");
+  console.log("  design-ai learn --redact --json --out learning-redacted.json");
+  console.log("  design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force");
   console.log("  design-ai learn --verify --from-file learning-backup.json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
@@ -303,6 +306,24 @@ function assertConfirmed(parsed, action) {
   }
 }
 
+function printOrWriteContent(parsed, content) {
+  if (parsed.outPath) {
+    const written = writeOutputFile({
+      outPath: parsed.outPath,
+      content,
+      force: parsed.force,
+    });
+    success(`Wrote ${written}`);
+    return;
+  }
+
+  console.log(content.trimEnd());
+}
+
+function printOrWriteJson(parsed, payload) {
+  printOrWriteContent(parsed, `${formatLearningJson(payload)}\n`);
+}
+
 export async function runLearn(args) {
   const parsed = parseLearnArgs(args);
   if (parsed.help) {
@@ -325,7 +346,7 @@ export async function runLearn(args) {
     };
 
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -356,7 +377,7 @@ export async function runLearn(args) {
     };
 
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -374,11 +395,10 @@ export async function runLearn(args) {
       category: filter.category,
       limit: filter.limit || 12,
     });
-    if (parsed.json) {
-      console.log(formatLearningJson(context));
-      return;
-    }
-    console.log(context.markdown);
+    printOrWriteContent(
+      parsed,
+      parsed.json ? `${formatLearningJson(context)}\n` : `${context.markdown}\n`,
+    );
     return;
   }
 
@@ -402,7 +422,7 @@ export async function runLearn(args) {
     };
 
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -422,7 +442,7 @@ export async function runLearn(args) {
   if (parsed.action === "backup") {
     const payload = buildLearningBackup({ filePath: parsed.filePath });
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -432,7 +452,7 @@ export async function runLearn(args) {
     info(`Audit: ${payload.auditSummary.status} (${payload.auditSummary.failures} failure(s), ${payload.auditSummary.warnings} warning(s))`);
     info(`Exported: ${payload.exportedAt}`);
     console.log();
-    console.log("Run `design-ai learn --backup --json > learning-backup.json` to save a full portable JSON backup.");
+    console.log("Run `design-ai learn --backup --json --out learning-backup.json` to save a full portable JSON backup.");
     return;
   }
 
@@ -445,7 +465,7 @@ export async function runLearn(args) {
       })
       : buildRedactedLearningBackup({ filePath: parsed.filePath });
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -465,7 +485,7 @@ export async function runLearn(args) {
         console.log(`- ${redaction.entryId}: ${redaction.codes.join(", ")}`);
       }
       console.log();
-      console.log("No changes made. Run `design-ai learn --redact --json > learning-redacted.json` to save the redacted portable JSON.");
+      console.log("No changes made. Run `design-ai learn --redact --json --out learning-redacted.json` to save the redacted portable JSON.");
     }
     return;
   }
@@ -476,7 +496,7 @@ export async function runLearn(args) {
       source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
     });
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -487,7 +507,7 @@ export async function runLearn(args) {
   if (parsed.action === "list") {
     const payload = listPayload(parsed.filePath, parsed);
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
     printList(payload);
@@ -502,7 +522,7 @@ export async function runLearn(args) {
         dryRun: parsed.dryRun,
       });
       if (parsed.json) {
-        console.log(formatLearningJson(payload));
+        printOrWriteJson(parsed, payload);
         return;
       }
       printAuditFix(payload);
@@ -511,7 +531,7 @@ export async function runLearn(args) {
 
     const payload = auditLearningProfile({ filePath: parsed.filePath });
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
     printAudit(payload);
@@ -521,7 +541,7 @@ export async function runLearn(args) {
   if (parsed.action === "stats") {
     const payload = learningStats({ filePath: parsed.filePath });
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
     printStats(payload);
@@ -541,7 +561,7 @@ export async function runLearn(args) {
     };
 
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 
@@ -561,7 +581,7 @@ export async function runLearn(args) {
     };
 
     if (parsed.json) {
-      console.log(formatLearningJson(payload));
+      printOrWriteJson(parsed, payload);
       return;
     }
 

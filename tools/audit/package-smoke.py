@@ -1323,6 +1323,34 @@ def assert_learning_backup_smoke(
         cmd=cmd,
     )
 
+    out_path = profile_path.with_name(f"{profile_path.stem}-backup-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--backup",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    require_package_smoke(
+        "Wrote " in out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        message="learn backup --out should confirm the written file",
+    )
+    assert_learning_backup_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        expected_count=1,
+        expected_status="pass",
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+
 
 def assert_learning_redact_json(
     raw: str,
@@ -1492,6 +1520,34 @@ def assert_learning_redact_smoke(
         expected_redacted_count=1,
         context=f"{context} stdin",
         cmd=stdin_cmd,
+    )
+
+    out_path = profile_path.with_name(f"{profile_path.stem}-redacted-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--redact",
+        "--from-file",
+        str(source_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    require_package_smoke(
+        "Wrote " in out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        message="learn redact --out should confirm the written file",
+    )
+    assert_learning_redact_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=source_path,
+        expected_count=2,
+        expected_redacted_count=1,
+        context=f"{context} out file",
+        cmd=out_cmd,
     )
 
 

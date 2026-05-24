@@ -117,6 +117,17 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(backupArgs.action, "backup");
   assert.equal(backupArgs.json, true);
 
+  const backupOutArgs = parseLearnArgs(["--backup", "--json", "--out", "learning-backup.json", "--force"]);
+  assert.equal(backupOutArgs.action, "backup");
+  assert.equal(backupOutArgs.json, true);
+  assert.equal(backupOutArgs.outPath, "learning-backup.json");
+  assert.equal(backupOutArgs.force, true);
+
+  const exportOutArgs = parseLearnArgs(["--export", "--out", "learned-context.md"]);
+  assert.equal(exportOutArgs.action, "export");
+  assert.equal(exportOutArgs.outPath, "learned-context.md");
+  assert.equal(exportOutArgs.json, false);
+
   const redactArgs = parseLearnArgs(["--redact", "--json"]);
   assert.equal(redactArgs.action, "redact");
   assert.equal(redactArgs.json, true);
@@ -199,6 +210,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--feedback", "x", "--outcome", "mixed"]),
     /outcome expects one of:/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--backup", "--out", "learning-backup.json"]),
+    /--out requires --json/,
   );
 });
 
@@ -748,7 +763,7 @@ test("runLearn backup emits human summary and portable JSON payload", () => with
   const humanOutput = await captureStdout(() => runLearn(["--backup", "--file", filePath]));
   assert.match(humanOutput, /Learning profile backup/);
   assert.match(humanOutput, /Entries: 1/);
-  assert.match(humanOutput, /design-ai learn --backup --json > learning-backup\.json/);
+  assert.match(humanOutput, /design-ai learn --backup --json --out learning-backup\.json/);
 
   const jsonOutput = await captureStdout(() => runLearn(["--backup", "--file", filePath, "--json"]));
   const payload = JSON.parse(jsonOutput);
@@ -758,6 +773,18 @@ test("runLearn backup emits human summary and portable JSON payload", () => with
   assert.deepEqual(payload.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.equal(payload.entries[0].category, "korean");
   assert.equal(payload.entries[0].text, "Prefer compact Korean dashboards");
+
+  const outPath = path.join(dir, "learning-backup-out.json");
+  const wroteOutput = await captureStdout(() => runLearn(["--backup", "--file", filePath, "--json", "--out", outPath]));
+  assert.match(wroteOutput, /Wrote /);
+  const filePayload = JSON.parse(readFileSync(outPath, "utf8"));
+  assert.equal(filePayload.file, filePath);
+  assert.equal(filePayload.count, 1);
+
+  await assert.rejects(
+    () => runLearn(["--backup", "--file", filePath, "--json", "--out", outPath]),
+    /Output file already exists/,
+  );
 }));
 
 test("runLearn redact emits human summary and redacted portable JSON without mutating the profile", () => withTempDirAsync(async (dir) => {
@@ -813,6 +840,21 @@ test("runLearn redact emits human summary and redacted portable JSON without mut
   assert.doesNotMatch(filePayload.entries[0].text, /sk-test/);
   assert.match(filePayload.entries[0].text, /\[REDACTED:secret-assignment\]/);
   assert.match(readFileSync(portablePath, "utf8"), /sk-test12345678901234567890/);
+
+  const outPath = path.join(dir, "learning-redacted.json");
+  const wroteOutput = await captureStdout(() => runLearn([
+    "--redact",
+    "--from-file",
+    portablePath,
+    "--json",
+    "--out",
+    outPath,
+  ]));
+  assert.match(wroteOutput, /Wrote /);
+  const outPayload = JSON.parse(readFileSync(outPath, "utf8"));
+  assert.equal(outPayload.file, portablePath);
+  assert.equal(outPayload.redactedCount, 1);
+  assert.doesNotMatch(outPayload.entries[0].text, /sk-test/);
 }));
 
 test("runLearn verify validates portable learning JSON without mutating the target profile", () => withTempDirAsync(async (dir) => {

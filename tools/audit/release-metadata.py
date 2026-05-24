@@ -510,12 +510,12 @@ RELEASE_PROMPT_PACK_OUTPUT_TERM_GROUPS = (
         "강제 output-file",
     ),
     (
-        "file-write confirmation",
-        "file-write confirmations",
-        "`Wrote <path>` confirmation",
-        "`Wrote <path>` confirmations",
-        "output-file confirmation",
-        "output-file confirmations",
+        "prompt/pack file-write confirmation",
+        "prompt/pack file-write confirmations",
+        "prompt/pack `Wrote <path>` file-write confirmation",
+        "prompt/pack `Wrote <path>` file-write confirmations",
+        "prompt/pack output-file confirmation",
+        "prompt/pack output-file confirmations",
     ),
 )
 RELEASE_PROMPT_PACK_FORCED_OUTPUT_TERM_GROUPS = (
@@ -530,12 +530,12 @@ RELEASE_PROMPT_PACK_FORCED_OUTPUT_TERM_GROUPS = (
 RELEASE_PROMPT_PACK_FILE_WRITE_CONFIRMATION_TERM_GROUPS = (
     ("prompt/pack",),
     (
-        "file-write confirmation",
-        "file-write confirmations",
-        "`Wrote <path>` confirmation",
-        "`Wrote <path>` confirmations",
-        "output-file confirmation",
-        "output-file confirmations",
+        "prompt/pack file-write confirmation",
+        "prompt/pack file-write confirmations",
+        "prompt/pack `Wrote <path>` file-write confirmation",
+        "prompt/pack `Wrote <path>` file-write confirmations",
+        "prompt/pack output-file confirmation",
+        "prompt/pack output-file confirmations",
     ),
 )
 RELEASE_PROMPT_PACK_MODE_TERM_GROUPS = (
@@ -809,6 +809,15 @@ RELEASE_LEARN_REDACT_TERM_GROUPS = (
         "--redact --stdin",
     ),
 )
+RELEASE_LEARN_OUTPUT_FILE_TERM_GROUPS = (
+    (
+        "learn JSON `--out` file-write confirmation",
+        "learn JSON --out file-write confirmation",
+        "learn JSON `--out` file-write",
+        "learn JSON --out file-write",
+        "learn --out file-write",
+    ),
+)
 RELEASE_LEARN_VERIFY_TERM_GROUPS = (
     (
         "JSON `design-ai learn --verify` output",
@@ -963,6 +972,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn feedback smoke phrase",
     "learn backup smoke phrase",
     "learn redact smoke phrase",
+    "learn output file smoke phrase",
     "learn verify smoke phrase",
     "learn import smoke phrase",
     "learn audit cleanup smoke phrase",
@@ -1074,6 +1084,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn feedback smoke phrase", RELEASE_LEARN_FEEDBACK_TERM_GROUPS),
     ("learn backup smoke phrase", RELEASE_LEARN_BACKUP_TERM_GROUPS),
     ("learn redact smoke phrase", RELEASE_LEARN_REDACT_TERM_GROUPS),
+    ("learn output file smoke phrase", RELEASE_LEARN_OUTPUT_FILE_TERM_GROUPS),
     ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
@@ -1437,6 +1448,7 @@ human `design-ai audit --strict --quiet` output and
 JSON `design-ai learn --feedback` output,
 JSON `design-ai learn --backup` output,
 JSON `design-ai learn --redact` output including `design-ai learn --redact --from-file` and `design-ai learn --redact --stdin`,
+learn JSON `--out` file-write confirmation and forced overwrite coverage,
 JSON `design-ai learn --verify` output,
 JSON `design-ai learn --import` dry-run/apply output,
 human / JSON `design-ai learn --audit` cleanup suggestion output,
@@ -1486,6 +1498,7 @@ human `design-ai audit --strict --quiet` 출력도 smoke test하고,
 JSON `design-ai learn --feedback` output도 확인하며,
 JSON `design-ai learn --backup` output도 확인하며,
 JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`, `design-ai learn --redact --stdin`도 확인하며,
+learn JSON `--out` file-write confirmation과 forced overwrite coverage도 확인하며,
 JSON `design-ai learn --verify` output도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하며,
@@ -3454,6 +3467,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn redact smoke phrase"
         in learn_redact_drift_errors,
         "release policy docs should mention learn redact smoke",
+    )
+
+    learn_output_file_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "learn JSON `--out` file-write confirmation and forced overwrite coverage",
+                "learning artifact save behavior",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_output_file_drift_errors = "\n".join(
+        learn_output_file_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing learn output file smoke phrase"
+        in learn_output_file_drift_errors,
+        "release policy docs should mention learn output-file smoke",
     )
 
     learn_verify_drift = release_metadata_summary(

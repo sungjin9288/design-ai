@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 191 — Learning output file support (v4.13.0) ✓ shipped
+
+`design-ai learn` can now write JSON result artifacts, and `learn --export` Markdown, through `--out file` with `--force` overwrite control.
+
+### Changed
+- Added `--out file` / `--force` parsing to `design-ai learn`, reusing the shared output-file semantics already used by prompt and pack.
+- Allows JSON-producing learn actions to write their payload to a file, while keeping `learn --export --out` available for Markdown learned-context blocks.
+- Requires `--json` for `--out` on non-export learn actions so human summaries are not silently captured as machine artifacts.
+- Expanded help, unit tests, package smoke, release metadata guards, and release-facing docs for the new output path.
+
+### Impact
+- Users can save `learn --backup`, `learn --redact`, `learn --verify`, `learn --audit`, `learn --stats`, import dry-run/apply, and feedback result JSON without shell redirection.
+- Existing stdout behavior remains unchanged when `--out` is omitted.
+- Existing profile mutation, confirmation, privacy, and redaction boundaries remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs cli/lib/output.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `node cli/bin/design-ai.mjs learn --backup --json --out <tmp>/backup.json` plus overwrite refusal without `--force`
+- `node cli/bin/design-ai.mjs learn --export --out <tmp>/context.md`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Learning backup, redaction, verification, audit, stats, import, and feedback result artifacts can be saved with the same safe output-file UX as prompt and pack.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 190 — Portable learning redaction input sources (v4.13.0) ✓ shipped
 
 `design-ai learn --redact` can now redact an existing portable learning JSON artifact from `--from-file` or `--stdin`, not only the local profile file.

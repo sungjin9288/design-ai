@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]/);
+  assert.match(output, /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
@@ -62,7 +62,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]\s+Manage local learning preferences for prompt personalization/,
+    /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]\s+Manage local learning preferences for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
@@ -94,7 +94,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--remember text|--feedback text|--list|--export|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json]",
+    "design-ai learn [--remember text|--feedback text|--list|--export|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
 });
@@ -192,34 +192,36 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(packOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
 
   const learnOutput = await captureStdout(() => runHelp(["learn"]));
-  assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--limit N\] \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --feedback text \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --feedback --from-file notes\.md \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
-  assert.match(learnOutput, /cat notes\.md \| design-ai learn --feedback --stdin \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
+  assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --feedback text \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --feedback --from-file notes\.md \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /cat notes\.md \| design-ai learn --feedback --stdin \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--feedback text\s+Convert outcome feedback into a reusable local learning note/);
   assert.match(learnOutput, /--outcome kind\s+Feedback outcome: keep, improve, avoid\. Default: improve/);
-  assert.match(learnOutput, /design-ai learn --backup \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --backup \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--backup\s+Print a full portable learning-profile backup; use --json for importable JSON/);
-  assert.match(learnOutput, /design-ai learn --redact \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --redact --from-file learning-backup\.json \[--json\]/);
-  assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --redact --stdin \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --redact \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --redact --from-file learning-backup\.json \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --redact --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--redact\s+Print a portable JSON backup with sensitive-looking text redacted/);
   assert.match(learnOutput, /--from-file file\s+Read remember\/feedback text or import\/verify\/redact JSON from a file/);
-  assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\]/);
-  assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\]/);
+  assert.match(learnOutput, /--out file\s+Write JSON output to a file, or export Markdown for --export/);
+  assert.match(learnOutput, /--force\s+Overwrite an existing --out file/);
+  assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--verify\s+Validate a portable learning JSON payload without importing it/);
-  assert.match(learnOutput, /design-ai learn --import --from-file learning\.json --dry-run \[--json\]/);
-  assert.match(learnOutput, /cat learning\.json \| design-ai learn --import --stdin --yes \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --import --from-file learning\.json --dry-run \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /cat learning\.json \| design-ai learn --import --stdin --yes \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--import\s+Merge entries from a JSON learning profile or learn --export --json payload/);
-  assert.match(learnOutput, /design-ai learn --audit \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --audit --fix --yes \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --audit --fix --yes \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
   assert.match(learnOutput, /--dry-run\s+Preview --audit --fix cleanup without changing the profile/);
-  assert.match(learnOutput, /design-ai learn --stats \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --stats \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
-  assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\]/);
-  assert.match(learnOutput, /design-ai learn --clear --yes \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --clear --yes \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /local memory, not model training or fine-tuning/);
 
   const installOutput = await captureStdout(() => runHelp(["install"]));
