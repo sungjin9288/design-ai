@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 196 — Explainable learning list inspection (v4.13.0) ✓ shipped
+
+`design-ai learn --list` can now explain why query-filtered local learning entries matched.
+
+### Changed
+- Added `--explain` to `design-ai learn --list`.
+- Reused the same learning selection metadata shape already used by prompt/pack and export JSON.
+- Human list output can now show score, matched tokens, and selection reason for each selected entry.
+- JSON list output includes `selection` only when `--explain` is requested, preserving compact default list JSON output.
+- Packed-tarball smoke now verifies query-filtered `learn --list --explain --json` metadata through installed-bin and one-shot npm exec paths.
+- Updated help, unit tests, package smoke, AI learning docs, quickstart docs, product readiness, release docs, changelog, roadmap, and session log.
+
+### Impact
+- Users can inspect why a local preference matched before exporting it or injecting it into prompt/pack learned context.
+- This remains local and read-only; it does not add telemetry, embeddings, model training, automatic feedback capture, or profile schema changes.
+- Existing `learn --list`, `learn --export`, prompt/pack learning injection, and learning profile storage remain compatible.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local learning inspection now has the same explainability surface as learned-context injection.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 195 — Query-filtered learning inspection (v4.13.0) ✓ shipped
 
 `design-ai learn --list` and `learn --export` can now inspect local learning entries by query without recency fallback.

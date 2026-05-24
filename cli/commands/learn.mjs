@@ -20,14 +20,14 @@ import {
   parseLearnArgs,
   recordLearningFeedback,
   rememberLearning,
-  selectLearningEntries,
+  selectLearningEntrySet,
   verifyLearningImportPayload,
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--limit N] [--json] [--out file] [--force]");
+  console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
@@ -59,6 +59,7 @@ function printHelp() {
   console.log("  --stdin              Read remember/feedback text or import/verify/redact JSON from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
   console.log("  --query text         Filter list/export output to entries whose category or text matches the query");
+  console.log("  --explain            With --list, include selection score, matched tokens, and reason");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
@@ -87,7 +88,7 @@ function printHelp() {
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
-  console.log("  design-ai learn --list --query \"keyboard accessibility\" --json");
+  console.log("  design-ai learn --list --query \"keyboard accessibility\" --explain --json");
   console.log("  design-ai learn --export --query \"pricing page\" --limit 3");
   console.log("  design-ai learn --backup --json --out learning-backup.json");
   console.log("  design-ai learn --redact --json --out learning-redacted.json");
@@ -134,11 +135,11 @@ function learningFilter(parsed) {
 function listPayload(filePath, parsed) {
   const profile = loadLearningProfile(filePath);
   const filter = learningFilter(parsed);
-  const entries = selectLearningEntries(profile, {
+  const { entries, selection } = selectLearningEntrySet(profile, {
     ...filter,
     includeFallback: false,
   });
-  return {
+  const payload = {
     file: filePath,
     version: profile.version,
     updatedAt: profile.updatedAt,
@@ -149,6 +150,10 @@ function listPayload(filePath, parsed) {
     count: entries.length,
     totalCount: profile.entries.length,
   };
+  if (parsed.explain) {
+    payload.selection = selection;
+  }
+  return payload;
 }
 
 function printList(payload) {
@@ -158,6 +163,9 @@ function printList(payload) {
   if (payload.category) info(`Category: ${payload.category}`);
   if (payload.query) info(`Query: ${payload.query}`);
   if (payload.limit) info(`Limit: ${payload.limit}`);
+  if (payload.selection) {
+    info("Explain: selection score, matched tokens, and reason");
+  }
   console.log();
 
   if (payload.entries.length === 0) {
@@ -169,8 +177,15 @@ function printList(payload) {
 
   for (let i = 0; i < payload.entries.length; i += 1) {
     const entry = payload.entries[i];
+    const selected = payload.selection?.selected?.[i];
     console.log(`${i + 1}. [${entry.category}] ${entry.text}`);
     console.log(`   ${dim(`${entry.id} · ${entry.createdAt || "unknown time"}`)}`);
+    if (selected) {
+      const matched = selected.matchedTokens.length > 0
+        ? selected.matchedTokens.join(", ")
+        : "none";
+      console.log(`   ${dim(`score ${selected.score} · matched ${matched} · reason ${selected.reason}`)}`);
+    }
   }
 }
 

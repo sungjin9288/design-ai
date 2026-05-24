@@ -27,6 +27,7 @@ const LEARN_OPTIONS = [
   "--output",
   "--force",
   "--query",
+  "--explain",
   "--list",
   "--export",
   "--import",
@@ -137,6 +138,7 @@ export function parseLearnArgs(args) {
     outPath: "",
     force: false,
     query: "",
+    explain: false,
     forgetTarget: "",
     limit: 0,
     fix: false,
@@ -183,6 +185,8 @@ export function parseLearnArgs(args) {
       if (!query || query.startsWith("--")) throw new Error("--query expects search text");
       out.query = String(query).trim();
       i += 1;
+    } else if (arg === "--explain") {
+      out.explain = true;
     } else if (arg === "--outcome") {
       const outcome = args[i + 1];
       if (!outcome || outcome.startsWith("--")) throw new Error("--outcome expects keep, improve, or avoid");
@@ -258,6 +262,9 @@ export function parseLearnArgs(args) {
   }
   if (out.query && !["list", "export"].includes(out.action)) {
     throw new Error("--query can only be used with --list or --export");
+  }
+  if (out.explain && out.action !== "list") {
+    throw new Error("--explain can only be used with --list");
   }
   if (!out.help && out.outPath && out.action !== "export" && !out.json) {
     throw new Error("--out requires --json for learn actions other than --export");
@@ -1295,7 +1302,7 @@ function learningSelectionItem(item, mode) {
   };
 }
 
-function selectLearningEntrySet(profile, {
+export function selectLearningEntrySet(profile, {
   category = "",
   limit = 0,
   query = "",

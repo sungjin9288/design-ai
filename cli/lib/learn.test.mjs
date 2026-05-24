@@ -24,6 +24,7 @@ import {
   rememberLearning,
   renderLearningMarkdown,
   selectLearningEntries,
+  selectLearningEntrySet,
   verifyLearningImportPayload,
 } from "./learn.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
@@ -97,9 +98,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(filteredListArgs.categorySpecified, true);
   assert.equal(filteredListArgs.limit, 5);
 
-  const queryListArgs = parseLearnArgs(["--list", "--query", "keyboard accessibility", "--limit", "2"]);
+  const queryListArgs = parseLearnArgs(["--list", "--query", "keyboard accessibility", "--explain", "--limit", "2"]);
   assert.equal(queryListArgs.action, "list");
   assert.equal(queryListArgs.query, "keyboard accessibility");
+  assert.equal(queryListArgs.explain, true);
   assert.equal(queryListArgs.limit, 2);
 
   const queryDefaultArgs = parseLearnArgs(["--query", "pricing"]);
@@ -208,6 +210,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--remember", "x", "--query", "brand"]),
     /--query can only be used with --list or --export/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--export", "--explain"]),
+    /--explain can only be used with --list/,
   );
   assert.throws(
     () => parseLearnArgs(["--fix"]),
@@ -1156,12 +1162,15 @@ test("runLearn list and export filter learned entries by query without fallback"
     "--list",
     "--query",
     "keyboard accessibility",
+    "--explain",
     "--file",
     filePath,
   ]));
 
   assert.match(listOutput, /Query: keyboard accessibility/);
+  assert.match(listOutput, /Explain: selection score, matched tokens, and reason/);
   assert.match(listOutput, /\[accessibility\] Prioritize keyboard accessibility/);
+  assert.match(listOutput, /score \d+ .* matched keyboard, accessibility .* reason brief-match/);
   assert.doesNotMatch(listOutput, /dense Korean mobile/);
   assert.doesNotMatch(listOutput, /quiet enterprise brand/);
 
@@ -1169,6 +1178,7 @@ test("runLearn list and export filter learned entries by query without fallback"
     "--list",
     "--query",
     "keyboard accessibility",
+    "--explain",
     "--file",
     filePath,
     "--json",
@@ -1178,6 +1188,13 @@ test("runLearn list and export filter learned entries by query without fallback"
   assert.equal(listPayload.count, 1);
   assert.equal(listPayload.totalCount, 3);
   assert.deepEqual(listPayload.entries.map((entry) => entry.id), ["learn-a11y"]);
+  assert.equal(listPayload.selection.mode, "brief-relevance");
+  assert.equal(listPayload.selection.fallbackEnabled, false);
+  assert.equal(listPayload.selection.selectedCount, 1);
+  assert.equal(listPayload.selection.selected[0].id, "learn-a11y");
+  assert.equal(listPayload.selection.selected[0].reason, "brief-match");
+  assert.ok(listPayload.selection.selected[0].score > 0);
+  assert.deepEqual(listPayload.selection.selected[0].matchedTokens, ["keyboard", "accessibility"]);
 
   const exportJsonOutput = await captureStdout(() => runLearn([
     "--export",
@@ -1262,6 +1279,14 @@ test("selectLearningEntries filters by category and limit", () => {
     }).map((entry) => entry.id),
     [],
   );
+
+  const explained = selectLearningEntrySet(profile, {
+    query: "enterprise brand voice",
+    includeFallback: false,
+  });
+  assert.deepEqual(explained.entries.map((entry) => entry.id), ["learn-b"]);
+  assert.equal(explained.selection.selected[0].reason, "brief-match");
+  assert.deepEqual(explained.selection.selected[0].matchedTokens, ["brand", "voice"]);
 });
 
 test("renderLearningMarkdown produces a prompt-safe context block", () => {

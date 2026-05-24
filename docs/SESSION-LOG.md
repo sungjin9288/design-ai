@@ -190,6 +190,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 193)** — Added release metadata guard coverage for brief-relevant learning selection: release-facing docs now have a drift check so the prompt/pack learning relevance smoke guidance cannot silently disappear.
 - **v4.13 (Phase 194)** — Added explainable learning selection metadata: `prompt`/`pack --with-learning --json` now reports selected entry scores, matched tokens, and brief-match versus recency-fallback reasons, with package smoke coverage.
 - **v4.13 (Phase 195)** — Added query-filtered learning inspection: `learn --list --query` and `learn --export --query` return matching local preference entries without recency fallback, with package smoke coverage.
+- **v4.13 (Phase 196)** — Added explainable learning list inspection: `learn --list --query --explain --json` now reports selection score, matched tokens, and match reason before users export or inject learned context, with package smoke coverage.
 
 ## Patterns that didn't work
 

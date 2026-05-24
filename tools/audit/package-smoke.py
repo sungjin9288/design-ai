@@ -2216,6 +2216,44 @@ def assert_learning_query_json(
         cmd=cmd,
         message="learn query should return the Button accessibility entry",
     )
+    selection = payload.get("selection")
+    require_package_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learn query explain selection metadata missing",
+    )
+    require_package_smoke(
+        selection.get("fallbackEnabled") is False and selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should select exactly one entry without fallback",
+    )
+    selected = selection.get("selected")
+    require_package_smoke(
+        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query explain selected list should contain one entry",
+    )
+    require_package_smoke(
+        selected[0].get("id") == "learn-relevant"
+        and selected[0].get("reason") == "brief-match"
+        and isinstance(selected[0].get("score"), int)
+        and selected[0].get("score") > 0,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should include score and match reason",
+    )
+    matched_tokens = selected[0].get("matchedTokens")
+    require_package_smoke(
+        isinstance(matched_tokens, list)
+        and "keyboard" in matched_tokens
+        and "accessibility" in matched_tokens,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should include matched query tokens",
+    )
 
 
 def assert_learning_query_export_json(
@@ -2302,6 +2340,7 @@ def assert_learning_relevance_smoke(
         "--list",
         "--query",
         "keyboard accessibility",
+        "--explain",
         "--limit",
         "2",
         "--json",
@@ -2708,6 +2747,25 @@ def run_self_test() -> None:
             ],
             "count": 1,
             "totalCount": 3,
+            "selection": {
+                "mode": "brief-relevance",
+                "query": "keyboard accessibility",
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "queryTokenCount": 2,
+                "fallbackEnabled": False,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 4,
+                        "matchedTokens": ["keyboard", "accessibility"],
+                        "reason": "brief-match",
+                    },
+                ],
+            },
         }
         learn_query_cmd = [
             "design-ai",
@@ -2715,6 +2773,7 @@ def run_self_test() -> None:
             "--list",
             "--query",
             "keyboard accessibility",
+            "--explain",
             "--limit",
             "2",
             "--json",
@@ -2727,12 +2786,23 @@ def run_self_test() -> None:
         )
         expect_self_test_failure(
             lambda: assert_learning_query_json(
-                json.dumps({**learning_query_payload, "count": 2}),
+                json.dumps({
+                    **learning_query_payload,
+                    "selection": {
+                        **learning_query_payload["selection"],
+                        "selected": [
+                            {
+                                **learning_query_payload["selection"]["selected"][0],
+                                "matchedTokens": ["keyboard"],
+                            },
+                        ],
+                    },
+                }),
                 profile_path=learning_profile_path,
                 context=context,
                 cmd=learn_query_cmd,
             ),
-            expected="learn query should return only the matching entry",
+            expected="learn query explain should include matched query tokens",
             scope="package smoke",
         )
 
