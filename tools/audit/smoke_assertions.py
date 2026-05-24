@@ -128,6 +128,8 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "Usage:",
         "design-ai learn [--list] [--category kind] [--limit N] [--json]",
         "design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json]",
+        "design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json]",
+        "cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json]",
         "--feedback",
         "--outcome",
         "design-ai learn --audit [--json]",

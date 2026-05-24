@@ -79,6 +79,7 @@ Release metadata now guards release-facing docs against dropping prompt/pack for
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
 `design-ai learn --feedback` now records explicit keep/improve/avoid outcome feedback as local learning entries without model training.
 Packed-tarball package smoke now verifies learn-feedback JSON behavior in installed-bin and one-shot npm exec paths.
+`design-ai learn --feedback` help and package smoke now cover inline, `--from-file`, and `--stdin` feedback capture paths.
 `design-ai learn --audit --fix` now previews and applies safe learning-profile cleanup suggestions behind dry-run / confirmed apply controls.
 Packed-tarball package smoke now verifies learn-audit fix dry-run and confirmed apply JSON behavior.
 Packed-tarball package smoke now verifies `design-ai learn --audit` cleanup suggestions in installed-bin and one-shot npm exec paths.
@@ -143,6 +144,33 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 185 — Feedback input source smoke coverage
+
+#### Changed
+- Expanded `design-ai learn --feedback` help to show dedicated `--from-file` and `--stdin` feedback capture usage.
+- Added command-level tests so feedback parsing covers `--stdin` and `runLearn` stores `--from-file` feedback with the correct outcome/category/source metadata.
+- Expanded packed-tarball package smoke so installed-bin and one-shot npm exec paths record inline, `--from-file`, and `--stdin` feedback into the same learning profile.
+- Tightened learn-feedback JSON smoke assertions to verify the exact generated instruction for keep, improve, and avoid outcomes.
+- Updated AI learning and quickstart docs with file/stdin feedback capture examples.
+
+#### Impact
+- Longer reviewed-output feedback can be captured without shell quoting issues while preserving the explicit local-only privacy boundary.
+- Release smoke now exercises all supported feedback input sources instead of only the inline path.
+- Existing `learn --remember`, `learn --audit`, `learn --audit --fix`, and prompt/pack learning injection behavior remains unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
 
 ### Phase 184 — Explicit feedback learning loop
 

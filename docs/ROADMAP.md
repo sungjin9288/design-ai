@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 185 — Feedback input source smoke coverage (v4.13.0) ✓ shipped
+
+`design-ai learn --feedback` now has covered input-source parity for inline, file, and stdin feedback.
+
+### Changed
+- Expanded `design-ai learn --feedback` help to show dedicated `--from-file` and `--stdin` usage for feedback capture.
+- Added command-level coverage for feedback `--stdin` parsing and `--from-file` command execution.
+- Expanded package smoke so both packed-tarball installed-bin and one-shot npm exec paths record inline, `--from-file`, and `--stdin` feedback entries into the same profile.
+- Tightened feedback JSON smoke assertions to verify exact keep/improve/avoid instruction text, category, source, profile path, and count.
+- Updated AI learning and quickstart docs with file/stdin feedback examples.
+
+### Impact
+- Users can paste or pipe longer feedback without relying on shell-quoted inline strings.
+- The feedback loop remains explicit local memory only; no telemetry, background capture, embeddings, or model training were added.
+- Existing remember, audit, safe cleanup, stats, forget/clear, and prompt/pack learning injection flows remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The local feedback-learning loop now has the same source-input ergonomics as other long-form CLI workflows.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 184 — Explicit feedback learning loop (v4.13.0) ✓ shipped
 
 `design-ai learn` can now turn explicit reviewed-output feedback into durable local learning entries.

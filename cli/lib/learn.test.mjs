@@ -81,6 +81,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(feedbackFileArgs.fromFile, "notes.md");
   assert.equal(feedbackFileArgs.category, "accessibility");
 
+  const feedbackStdinArgs = parseLearnArgs(["--feedback", "--stdin", "--outcome", "avoid"]);
+  assert.equal(feedbackStdinArgs.action, "feedback");
+  assert.equal(feedbackStdinArgs.stdin, true);
+  assert.equal(feedbackStdinArgs.feedbackOutcome, "avoid");
+  assert.equal(feedbackStdinArgs.category, "workflow");
+
   const filteredListArgs = parseLearnArgs(["--list", "--category", "korean", "--limit", "5"]);
   assert.equal(filteredListArgs.action, "list");
   assert.equal(filteredListArgs.category, "korean");
@@ -400,6 +406,28 @@ test("runLearn feedback stores structured feedback entries in human and JSON mod
   assert.equal(payload.entry.source, "feedback:avoid");
   assert.equal(payload.entry.text, "Avoid in future outputs: decorative marketing language in enterprise dashboards");
   assert.equal(payload.count, 2);
+
+  const notePath = path.join(dir, "feedback.md");
+  writeFileSync(notePath, "Prefer keyboard-first critique notes\n", "utf8");
+  const fileOutput = await captureStdout(() => runLearn([
+    "--feedback",
+    "--from-file",
+    notePath,
+    "--outcome",
+    "improve",
+    "--category",
+    "accessibility",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const filePayload = JSON.parse(fileOutput);
+
+  assert.equal(filePayload.feedback.outcome, "improve");
+  assert.equal(filePayload.feedback.category, "accessibility");
+  assert.equal(filePayload.entry.source, "feedback:improve");
+  assert.equal(filePayload.entry.text, "Improve future outputs by: Prefer keyboard-first critique notes");
+  assert.equal(filePayload.count, 3);
 }));
 
 test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {

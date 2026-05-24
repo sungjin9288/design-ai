@@ -57,9 +57,11 @@ Record outcome feedback:
 ```bash
 design-ai learn --feedback "Keep audit findings short and evidence-led" --outcome keep
 design-ai learn --feedback "Avoid decorative marketing language in enterprise dashboards" --outcome avoid --category brand
+design-ai learn --feedback --from-file feedback.md --outcome improve --category workflow
+cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand
 ```
 
-Feedback is explicit local memory. `--outcome keep` stores a "repeat this" instruction, `--outcome improve` stores an "improve future outputs by..." instruction, and `--outcome avoid` stores an "avoid this" instruction. The default feedback category is `workflow`; use `--category` when feedback belongs to brand, accessibility, Korean-market behavior, or another scoped area.
+Feedback is explicit local memory. `--outcome keep` stores a "repeat this" instruction, `--outcome improve` stores an "improve future outputs by..." instruction, and `--outcome avoid` stores an "avoid this" instruction. The default feedback category is `workflow`; use `--category` when feedback belongs to brand, accessibility, Korean-market behavior, or another scoped area. Use `--from-file` or `--stdin` when the reviewed-output note is too long or already saved in another tool.
 
 List saved preferences:
 

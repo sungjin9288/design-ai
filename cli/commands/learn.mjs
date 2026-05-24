@@ -23,6 +23,8 @@ function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --remember text [--category kind] [--json]");
   console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json]");
+  console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json]");
+  console.log("        cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json]");
   console.log("        design-ai learn --from-file notes.md [--category kind] [--json]");
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
@@ -60,6 +62,8 @@ function printHelp() {
   console.log("Examples:");
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
   console.log("  design-ai learn --feedback \"Keep audit findings short and evidence-led\" --outcome keep");
+  console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
+  console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");

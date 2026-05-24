@@ -825,6 +825,7 @@ def assert_learning_feedback_json(
     profile_path: Path,
     outcome: str,
     category: str,
+    expected_instruction: str,
     expected_count: int,
     context: str,
     cmd: list[str],
@@ -882,7 +883,7 @@ def assert_learning_feedback_json(
     require_package_smoke(
         isinstance(feedback.get("instruction"), str)
         and feedback.get("instruction") == entry.get("text")
-        and feedback.get("instruction", "").startswith("Repeat in future outputs: "),
+        and feedback.get("instruction") == expected_instruction,
         context=context,
         cmd=cmd,
         message="learn feedback instruction text changed",
@@ -916,9 +917,66 @@ def assert_learning_feedback_smoke(
         profile_path=profile_path,
         outcome="keep",
         category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
         expected_count=1,
         context=context,
         cmd=cmd,
+    )
+
+    feedback_file = profile_path.with_name(f"{profile_path.stem}-feedback.md")
+    feedback_file.write_text("Prefer keyboard-first critique notes\n", encoding="utf-8")
+    file_cmd = command_factory(
+        "learn",
+        "--feedback",
+        "--from-file",
+        str(feedback_file),
+        "--outcome",
+        "improve",
+        "--category",
+        "accessibility",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    file_result = run_plain(file_cmd, cwd=cwd, env=env)
+    assert_learning_feedback_json(
+        file_result.stdout,
+        profile_path=profile_path,
+        outcome="improve",
+        category="accessibility",
+        expected_instruction="Improve future outputs by: Prefer keyboard-first critique notes",
+        expected_count=2,
+        context=f"{context} from-file",
+        cmd=file_cmd,
+    )
+
+    stdin_cmd = command_factory(
+        "learn",
+        "--feedback",
+        "--stdin",
+        "--outcome",
+        "avoid",
+        "--category",
+        "brand",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text="decorative launch-page language in enterprise dashboards",
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_feedback_json(
+        stdin_result.stdout,
+        profile_path=profile_path,
+        outcome="avoid",
+        category="brand",
+        expected_instruction="Avoid in future outputs: decorative launch-page language in enterprise dashboards",
+        expected_count=3,
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
     )
 
 
@@ -1372,6 +1430,7 @@ def run_self_test() -> None:
             profile_path=learning_profile_path,
             outcome="keep",
             category="workflow",
+            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
             expected_count=1,
             context=context,
             cmd=learn_feedback_cmd,
@@ -1388,6 +1447,7 @@ def run_self_test() -> None:
                 profile_path=learning_profile_path,
                 outcome="keep",
                 category="workflow",
+                expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
                 expected_count=1,
                 context=context,
                 cmd=learn_feedback_cmd,

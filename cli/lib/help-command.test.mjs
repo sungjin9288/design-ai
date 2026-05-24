@@ -194,6 +194,8 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const learnOutput = await captureStdout(() => runHelp(["learn"]));
   assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--limit N\] \[--json\]/);
   assert.match(learnOutput, /design-ai learn --feedback text \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --feedback --from-file notes\.md \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
+  assert.match(learnOutput, /cat notes\.md \| design-ai learn --feedback --stdin \[--outcome keep\|improve\|avoid\] \[--category kind\] \[--json\]/);
   assert.match(learnOutput, /--feedback text\s+Convert outcome feedback into a reusable local learning note/);
   assert.match(learnOutput, /--outcome kind\s+Feedback outcome: keep, improve, avoid\. Default: improve/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\]/);

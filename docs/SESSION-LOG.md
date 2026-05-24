@@ -179,6 +179,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 182)** — Added package smoke coverage for learning audit cleanup suggestions: packed-tarball installed-bin and one-shot npm exec paths now verify `learn --audit` JSON suggestions plus human Suggested cleanup output, and release metadata now guards the release-facing docs phrase.
 - **v4.13 (Phase 183)** — Added the learning audit safe fix loop: `learn --audit --fix --dry-run` previews unambiguous cleanup, `--fix --yes` applies only safe entry removals, and package smoke verifies dry-run/apply JSON behavior through installed-bin and npm exec tarball paths.
 - **v4.13 (Phase 184)** — Added explicit feedback learning: `learn --feedback` records keep/improve/avoid guidance as local learning entries, and package smoke verifies feedback JSON behavior through installed-bin and npm exec tarball paths.
+- **v4.13 (Phase 185)** — Added feedback input-source smoke coverage: `learn --feedback` help now documents file/stdin capture, and package smoke verifies inline, `--from-file`, and `--stdin` feedback entries through installed-bin and npm exec tarball paths.
 
 ## Patterns that didn't work
 
@@ -234,7 +235,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers learning feedback, learning audit cleanup, and safe fix behavior, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback, learning audit cleanup, and safe fix behavior, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **Real-CI verification** — push the branch, observe audit / unit / package / docs workflows green.
 2. **External launch** — publish only after CI and owner review; announcement drafts already exist under `docs/announcements/`.
