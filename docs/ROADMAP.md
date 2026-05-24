@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 194 — Explainable learning selection metadata (v4.13.0) ✓ shipped
+
+`prompt`/`pack --with-learning --json` now explain why each selected learning entry was included.
+
+### Changed
+- Added per-selected-entry learning selection metadata: `id`, `category`, relevance `score`, `matchedTokens`, and `reason`.
+- Added `selectedCount`, `fallbackCount`, and `queryTokenCount` to the learning selection summary.
+- Kept the existing ranking behavior and Markdown output compact; the expanded explanation is available in JSON output.
+- Expanded unit tests and packed-tarball smoke assertions to verify score, matched-token, and brief-match/fallback metadata.
+- Updated AI learning, product readiness, README, changelog, roadmap, and session docs for the explainable selection shape.
+
+### Impact
+- Users and maintainers can see whether a learned preference was selected because it matched the current brief or because recency fallback filled the remaining learning limit.
+- This does not add telemetry, embeddings, model training, or automatic feedback capture.
+- Existing `selectLearningEntries()` consumers still receive the same entry array shape.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/prompt.test.mjs cli/lib/pack.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Learning context remains opt-in while becoming inspectable enough for release smoke, debugging, and future UI surfaces.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 193 — Learning relevance release metadata guard (v4.13.0) ✓ shipped
 
 Release metadata now guards release-facing docs against dropping the brief-relevant prompt/pack learning selection smoke guidance added for `--with-learning`.

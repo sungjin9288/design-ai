@@ -21,8 +21,8 @@ What ships in v4.13:
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
-- `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping.
-- `design-ai pack --with-learning ...` includes the same brief-relevant learned context in portable prompt packs, with the same optional scoping controls.
+- `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.
+- `design-ai pack --with-learning ...` includes the same brief-relevant learned context in portable prompt packs, with the same optional scoping controls and selection scoring metadata.
 - Exported and injected learned context carries an audit summary; if the profile has warnings, the generated context includes a notice to run `design-ai learn --audit`.
 
 What does not ship:
@@ -168,7 +168,7 @@ design-ai prompt "Audit this checkout UX" --with-learning
 design-ai prompt "Audit this checkout UX" --with-learning --learning-category korean --learning-limit 5
 ```
 
-When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. The learned-context block includes selection metadata, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
+When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. JSON output includes `selection.selected[]` with each selected entry's `id`, `category`, relevance `score`, `matchedTokens`, and `reason` (`brief-match`, `recency-fallback`, or `recency`). The learned-context block includes a compact selection note, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
 
 Use learned context in a prompt pack:
 
@@ -201,7 +201,7 @@ Learning entries are treated as preferences, not absolute instructions. They mus
 - Legal or policy constraints.
 - Checked knowledge files and route playbooks.
 
-Use `--with-learning` only when saved context should influence the current task. The CLI prioritizes entries whose category/text match the current brief, then falls back to recent entries when the limit still has room. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small subset should influence the prompt.
+Use `--with-learning` only when saved context should influence the current task. The CLI prioritizes entries whose category/text match the current brief, then falls back to recent entries when the limit still has room. Inspect `learningContext.selection` in `--json` output when you need to confirm whether an entry was selected by brief match or recency fallback. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small subset should influence the prompt.
 
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries. Follow the Suggested cleanup section when it recommends removal; rewrite and re-add entries when the issue is sensitive content or an overlong note that still contains useful preference signal.
 

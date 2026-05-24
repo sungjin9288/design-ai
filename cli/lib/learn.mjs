@@ -1203,19 +1203,23 @@ function learningQueryTokens(query) {
   )).filter((token) => token.length >= 2);
 }
 
-function learningEntryRelevanceScore(entry, queryTokens) {
-  if (queryTokens.length === 0) return 0;
+function learningEntryRelevance(entry, queryTokens) {
+  if (queryTokens.length === 0) {
+    return { score: 0, matchedTokens: [] };
+  }
 
   const text = cleanNoteText(`${entry.category || ""} ${entry.text || ""}`).toLowerCase();
-  if (!text) return 0;
+  if (!text) return { score: 0, matchedTokens: [] };
 
   let score = 0;
+  const matchedTokens = [];
   for (const token of queryTokens) {
     if (text.includes(token)) {
       score += token.length >= 4 ? 2 : 1;
+      matchedTokens.push(token);
     }
   }
-  return score;
+  return { score, matchedTokens };
 }
 
 function learningEntryTime(entry) {
@@ -1225,20 +1229,26 @@ function learningEntryTime(entry) {
 
 function rankLearningEntries(entries, { query = "" } = {}) {
   const queryTokens = learningQueryTokens(query);
-  const ranked = entries.map((entry, index) => ({
-    entry,
-    index,
-    score: learningEntryRelevanceScore(entry, queryTokens),
-    time: learningEntryTime(entry),
-  }));
+  const ranked = entries.map((entry, index) => {
+    const relevance = learningEntryRelevance(entry, queryTokens);
+    return {
+      entry,
+      index,
+      score: relevance.score,
+      matchedTokens: relevance.matchedTokens,
+      time: learningEntryTime(entry),
+    };
+  });
 
   if (queryTokens.length === 0) {
     return {
       entries,
+      ranked,
       query: "",
       mode: "recency",
       candidateCount: entries.length,
       matchedCount: 0,
+      queryTokenCount: 0,
     };
   }
 
@@ -1250,10 +1260,27 @@ function rankLearningEntries(entries, { query = "" } = {}) {
 
   return {
     entries: ranked.map((item) => item.entry),
+    ranked,
     query: String(query || "").trim(),
     mode: "brief-relevance",
     candidateCount: entries.length,
     matchedCount: ranked.filter((item) => item.score > 0).length,
+    queryTokenCount: queryTokens.length,
+  };
+}
+
+function learningSelectionReason(item, mode) {
+  if (mode !== "brief-relevance") return "recency";
+  return item.score > 0 ? "brief-match" : "recency-fallback";
+}
+
+function learningSelectionItem(item, mode) {
+  return {
+    id: item.entry.id,
+    category: item.entry.category,
+    score: item.score,
+    matchedTokens: item.matchedTokens,
+    reason: learningSelectionReason(item, mode),
   };
 }
 
@@ -1263,11 +1290,12 @@ function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" 
     entry.text && (!normalizedCategory || entry.category === normalizedCategory)
   ));
   const ranked = rankLearningEntries(entries, { query });
-  const selected = Number.isInteger(limit) && limit > 0
+  const selectedItems = Number.isInteger(limit) && limit > 0
     ? ranked.mode === "brief-relevance"
-      ? ranked.entries.slice(0, limit)
-      : ranked.entries.slice(-limit)
-    : ranked.entries;
+      ? ranked.ranked.slice(0, limit)
+      : ranked.ranked.slice(-limit)
+    : ranked.ranked;
+  const selected = selectedItems.map((item) => item.entry);
 
   return {
     entries: selected,
@@ -1276,6 +1304,12 @@ function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" 
       query: ranked.query,
       candidateCount: ranked.candidateCount,
       matchedCount: ranked.matchedCount,
+      queryTokenCount: ranked.queryTokenCount,
+      selectedCount: selected.length,
+      fallbackCount: ranked.mode === "brief-relevance"
+        ? selectedItems.filter((item) => item.score === 0).length
+        : 0,
+      selected: selectedItems.map((item) => learningSelectionItem(item, ranked.mode)),
     },
   };
 }

@@ -254,6 +254,17 @@ test("buildPromptPlan can filter explicit learning context", () => {
     assert.equal(plan.learningContext.limit, 1);
     assert.equal(plan.learningContext.query, "audit Korean checkout UX");
     assert.equal(plan.learningContext.selection.mode, "brief-relevance");
+    assert.equal(plan.learningContext.selection.selectedCount, 1);
+    assert.equal(plan.learningContext.selection.fallbackCount, 0);
+    assert.deepEqual(plan.learningContext.selection.selected, [
+      {
+        id: "learn-korean-new",
+        category: "korean",
+        score: 2,
+        matchedTokens: ["korean"],
+        reason: "brief-match",
+      },
+    ]);
     assert.deepEqual(plan.learningContext.entries.map((entry) => entry.id), ["learn-korean-new"]);
     assert.ok(plan.prompt.includes("[korean] Use KakaoTalk-style consent copy"));
     assert.ok(plan.prompt.includes("Learning selection: brief relevance"));

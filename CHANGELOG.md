@@ -93,6 +93,8 @@ Release metadata now guards release-facing docs against dropping learn JSON `--o
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank local learning entries by brief relevance before falling back to recency, so limited learned context favors the current task.
 Packed-tarball package smoke now verifies brief-relevant learning selection in prompt and pack JSON outputs through installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping brief-relevant prompt/pack learning selection smoke guidance.
+`prompt`/`pack --with-learning --json` selection metadata now explains selected learning entries with score, matched brief tokens, and brief-match versus recency-fallback reason.
+Packed-tarball package smoke now verifies the explainable learning selection metadata for prompt and pack JSON outputs.
 `design-ai learn --verify` now validates portable learning JSON from `--from-file` or `--stdin` without mutating the local profile.
 Packed-tarball package smoke now verifies learn-verify JSON behavior in installed-bin and one-shot npm exec paths.
 Packed-tarball package smoke now retries transient one-shot `npm exec` cache ENOENT failures once with a fresh npm cache while preserving CLI assertion failures.

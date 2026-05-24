@@ -210,6 +210,17 @@ test("buildPromptPack passes learning filters through to prompt plan", () => {
     assert.equal(pack.plan.learningContext.limit, 1);
     assert.equal(pack.plan.learningContext.query, "audit Korean checkout UX");
     assert.equal(pack.plan.learningContext.selection.mode, "brief-relevance");
+    assert.equal(pack.plan.learningContext.selection.selectedCount, 1);
+    assert.equal(pack.plan.learningContext.selection.fallbackCount, 1);
+    assert.deepEqual(pack.plan.learningContext.selection.selected, [
+      {
+        id: "learn-brand",
+        category: "brand",
+        score: 0,
+        matchedTokens: [],
+        reason: "recency-fallback",
+      },
+    ]);
     assert.deepEqual(pack.plan.learningContext.entries.map((entry) => entry.id), ["learn-brand"]);
     assert.ok(pack.markdown.includes("[brand] Use quiet brand language"));
     assert.ok(pack.markdown.includes("Learning selection: brief relevance"));

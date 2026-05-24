@@ -1291,6 +1291,31 @@ test("buildLearningContext ranks learned entries by brief relevance with recency
   assert.equal(context.selection.mode, "brief-relevance");
   assert.equal(context.selection.candidateCount, 3);
   assert.equal(context.selection.matchedCount, 1);
+  assert.equal(context.selection.queryTokenCount, 4);
+  assert.equal(context.selection.selectedCount, 2);
+  assert.equal(context.selection.fallbackCount, 1);
+  assert.deepEqual(
+    context.selection.selected.map((entry) => ({
+      id: entry.id,
+      score: entry.score,
+      matchedTokens: entry.matchedTokens,
+      reason: entry.reason,
+    })),
+    [
+      {
+        id: "learn-korean",
+        score: 4,
+        matchedTokens: ["korean", "checkout"],
+        reason: "brief-match",
+      },
+      {
+        id: "learn-motion",
+        score: 0,
+        matchedTokens: [],
+        reason: "recency-fallback",
+      },
+    ],
+  );
   assert.deepEqual(context.entries.map((entry) => entry.id), ["learn-korean", "learn-motion"]);
   assert.match(context.markdown, /Learning selection: brief relevance \(1\/3 matched/);
   assert.match(context.markdown, /\[korean\] Prefer dense Korean checkout and payment layouts/);
@@ -1302,6 +1327,9 @@ test("buildLearningContext reports empty profiles without creating files", () =>
 
   assert.equal(context.empty, true);
   assert.deepEqual(context.entries, []);
+  assert.deepEqual(context.selection.selected, []);
+  assert.equal(context.selection.selectedCount, 0);
+  assert.equal(context.selection.fallbackCount, 0);
   assert.deepEqual(context.auditSummary, {
     status: "pass",
     failures: 0,

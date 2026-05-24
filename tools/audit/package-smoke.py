@@ -2083,10 +2083,60 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
         cmd=cmd,
         message="learningContext should report at least one relevant match",
     )
+    require_package_smoke(
+        selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learningContext should report the limited selected entry count",
+    )
+    require_package_smoke(
+        selection.get("fallbackCount") == 0,
+        context=context,
+        cmd=cmd,
+        message="learningContext should not use recency fallback when the relevant entry fits the limit",
+    )
+
+    selected = selection.get("selected")
+    require_package_smoke(
+        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext selection should explain the selected entry",
+    )
+    selected_entry = selected[0]
+    require_package_smoke(
+        selected_entry.get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should point at the relevant entry",
+    )
+    require_package_smoke(
+        selected_entry.get("reason") == "brief-match",
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should mark the relevant entry as a brief match",
+    )
+    require_package_smoke(
+        isinstance(selected_entry.get("score"), int) and selected_entry.get("score") > 0,
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should include a positive relevance score",
+    )
+    matched_tokens = selected_entry.get("matchedTokens")
+    require_package_smoke(
+        (
+            isinstance(matched_tokens, list)
+            and "button" in matched_tokens
+            and "accessibility" in matched_tokens
+        ),
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should include matched brief tokens",
+    )
 
     entries = learning_context.get("entries")
     require_package_smoke(
-        isinstance(entries, list) and len(entries) == 1,
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
         context=context,
         cmd=cmd,
         message="learningContext should include the single limited entry",
@@ -2498,6 +2548,17 @@ def run_self_test() -> None:
                     "query": EXPECTED_ROUTE_BRIEF,
                     "candidateCount": 3,
                     "matchedCount": 1,
+                    "selectedCount": 1,
+                    "fallbackCount": 0,
+                    "selected": [
+                        {
+                            "id": "learn-relevant",
+                            "category": "accessibility",
+                            "score": 10,
+                            "matchedTokens": ["button", "accessibility"],
+                            "reason": "brief-match",
+                        },
+                    ],
                 },
                 "entries": [
                     {
