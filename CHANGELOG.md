@@ -96,6 +96,8 @@ Packed-tarball package smoke now verifies query-filtered learn list/export JSON 
 Packed-tarball package smoke now verifies query-filtered `learn --list --explain --json` selection metadata in installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping query-filtered human learn list explanation and export JSON smoke guidance.
 Packed-tarball package smoke now verifies human query-filtered `learn --list --explain` output, including the explanation header, matched tokens, match reason, and exclusion of unrelated learning entries.
+Packed-tarball package smoke now verifies human and JSON `learn --stats` profile summary output, including counts, category/source distribution, audit status, and recency summaries.
+Release metadata now guards release-facing docs against dropping human / JSON `design-ai learn --stats` profile summary smoke guidance.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank local learning entries by brief relevance before falling back to recency, so limited learned context favors the current task.
 Packed-tarball package smoke now verifies brief-relevant learning selection in prompt and pack JSON outputs through installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping brief-relevant prompt/pack learning selection smoke guidance.

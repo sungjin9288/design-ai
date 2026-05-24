@@ -193,6 +193,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 196)** — Added explainable learning list inspection: `learn --list --query --explain --json` now reports selection score, matched tokens, and match reason before users export or inject learned context, with package smoke coverage.
 - **v4.13 (Phase 197)** — Added release metadata guard coverage for query-filtered learning explanation/export: release-facing docs now have a drift check so the `learn --list --explain` / `learn --export` smoke guidance cannot silently disappear.
 - **v4.13 (Phase 198)** — Added human output package smoke for query-filtered learning explanation: packed-tarball installed-bin and npm exec paths now verify `learn --list --query --explain` human output as well as JSON metadata.
+- **v4.13 (Phase 199)** — Added learning stats package smoke: packed-tarball installed-bin and npm exec paths now verify human and JSON `learn --stats` profile summaries plus release metadata wording.
 
 ## Patterns that didn't work
 

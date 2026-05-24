@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 199 — Learning stats package smoke (v4.13.0) ✓ shipped
+
+Packed-tarball package smoke now verifies `learn --stats` human and JSON output through both tarball execution paths.
+
+### Changed
+- Added a package-smoke learning stats fixture with category/source distribution and parseable recency metadata.
+- Added human and JSON assertions for `learn --stats`, including profile count, category counts, source counts, audit status, latest entry, and oldest entry summaries.
+- Wired the stats smoke into both installed-bin and one-shot `npm exec --package <tarball>` learning smoke paths.
+- Expanded package-smoke self-test fixtures for stats JSON and human output drift.
+- Added release metadata wording protection for human / JSON `design-ai learn --stats` profile summary output.
+- Updated release-facing docs, changelog, roadmap, and session log for the new stats smoke coverage.
+
+### Impact
+- The release smoke now catches packaging/runtime regressions in `learn --stats`, which previously had CLI and docs coverage but no dedicated packed-tarball smoke assertion.
+- This does not change CLI runtime behavior, local learning profile storage, audit logic, or prompt/pack learned-context injection.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local learning overview health checks now have the same package-level release confidence as feedback, backup, redact, verify, import, query inspection, audit cleanup, and prompt/pack learning selection flows.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 198 — Human learning query explanation package smoke (v4.13.0) ✓ shipped
 
 Packed-tarball package smoke now verifies the human `learn --list --query --explain` output, not only the JSON selection metadata.
