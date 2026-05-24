@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 198 — Human learning query explanation package smoke (v4.13.0) ✓ shipped
+
+Packed-tarball package smoke now verifies the human `learn --list --query --explain` output, not only the JSON selection metadata.
+
+### Changed
+- Added a package-smoke assertion for human query-filtered learn list explanation output.
+- The new assertion checks the explanation header, filtered entry count, query/limit display, matched tokens, `brief-match` reason, and exclusion of unrelated learning entries.
+- Wired the human list check into both installed-bin and one-shot `npm exec --package <tarball>` learning relevance smoke paths.
+- Expanded package-smoke self-test fixtures for the new human assertion.
+- Updated release-facing docs wording so the smoke scope now names human learn list explanation output alongside export JSON output.
+- Updated changelog, roadmap, and session log for the new package smoke hardening.
+
+### Impact
+- The release smoke now catches regressions in the user-facing `learn --list --query --explain` output, not just machine-readable JSON.
+- This does not change CLI runtime behavior, local learning profile storage, prompt/pack learned-context injection, or learning selection scoring.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Human and JSON learning inspection paths now have matching packed-tarball smoke coverage before Real-CI.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 197 — Learning query explanation release guard (v4.13.0) ✓ shipped
 
 Release metadata now guards the query-filtered learn list explanation/export smoke guidance added around local learning inspection.

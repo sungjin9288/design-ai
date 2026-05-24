@@ -2256,6 +2256,32 @@ def assert_learning_query_json(
     )
 
 
+def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Local learning profile",
+        "Entries: 1/3",
+        "Query: keyboard accessibility",
+        "Limit: 2",
+        "Explain: selection score, matched tokens, and reason",
+        "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+        "matched keyboard, accessibility",
+        "reason brief-match",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn query human output missing {expected!r}",
+        )
+    require_package_smoke(
+        "dense Korean mobile checkout" not in raw and "quiet enterprise brand voice" not in raw,
+        context=context,
+        cmd=cmd,
+        message="learn query human output should exclude unrelated profile entries",
+    )
+
+
 def assert_learning_query_export_json(
     raw: str,
     *,
@@ -2334,6 +2360,22 @@ def assert_learning_relevance_smoke(
     write_learning_relevance_fixture(profile_path)
     relevance_env = env.copy()
     relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    list_human_cmd = command_factory(
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+    )
+    list_human_result = run_plain(list_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_human(
+        list_human_result.stdout,
+        context=f"{context} learn query human list",
+        cmd=list_human_cmd,
+    )
 
     list_cmd = command_factory(
         "learn",
@@ -2803,6 +2845,50 @@ def run_self_test() -> None:
                 cmd=learn_query_cmd,
             ),
             expected="learn query explain should include matched query tokens",
+            scope="package smoke",
+        )
+        learn_query_human_cmd = [
+            "design-ai",
+            "learn",
+            "--list",
+            "--query",
+            "keyboard accessibility",
+            "--explain",
+            "--limit",
+            "2",
+        ]
+        assert_learning_query_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning profile",
+                f"File: {learning_profile_path}",
+                "Entries: 1/3",
+                "Query: keyboard accessibility",
+                "Limit: 2",
+                "Explain: selection score, matched tokens, and reason",
+                "",
+                "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                "   learn-relevant · 2026-05-22T00:00:01.000Z",
+                "   score 4 · matched keyboard, accessibility · reason brief-match",
+            ]),
+            context=context,
+            cmd=learn_query_human_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_human(
+                "\n".join([
+                    "Local learning profile",
+                    "Entries: 1/3",
+                    "Query: keyboard accessibility",
+                    "Limit: 2",
+                    "Explain: selection score, matched tokens, and reason",
+                    "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                    "matched keyboard, accessibility",
+                ]),
+                context=context,
+                cmd=learn_query_human_cmd,
+            ),
+            expected="learn query human output missing 'reason brief-match'",
             scope="package smoke",
         )
 

@@ -836,6 +836,7 @@ RELEASE_LEARN_IMPORT_TERM_GROUPS = (
 )
 RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS = (
     (
+        "query-filtered human learn list explanation and export JSON output",
         "query-filtered learn list explanation/export JSON output",
         "query-filtered learn list explanation/export JSON",
         "query-filtered `learn --list --explain` / `learn --export`",
