@@ -23,6 +23,7 @@ import {
   rememberLearning,
   renderLearningMarkdown,
   selectLearningEntries,
+  verifyLearningImportPayload,
 } from "./learn.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
@@ -114,6 +115,15 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   const backupArgs = parseLearnArgs(["--backup", "--json"]);
   assert.equal(backupArgs.action, "backup");
   assert.equal(backupArgs.json, true);
+
+  const verifyArgs = parseLearnArgs(["--verify", "--from-file", "learning-backup.json", "--json"]);
+  assert.equal(verifyArgs.action, "verify");
+  assert.equal(verifyArgs.fromFile, "learning-backup.json");
+  assert.equal(verifyArgs.json, true);
+
+  const verifyStdinArgs = parseLearnArgs(["--verify", "--stdin"]);
+  assert.equal(verifyStdinArgs.action, "verify");
+  assert.equal(verifyStdinArgs.stdin, true);
 
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
@@ -380,6 +390,38 @@ test("buildLearningBackup returns a full importable learning profile payload", (
   assert.equal(backup.entries[0].text, "Prefer dense Korean product UI");
 }));
 
+test("verifyLearningImportPayload validates portable learning JSON without importing", () => {
+  const payload = verifyLearningImportPayload({
+    source: "learning-backup.json",
+    now: new Date("2026-05-22T00:02:00.000Z"),
+    importText: JSON.stringify({
+      entries: [
+        {
+          id: "learn-a",
+          category: "brand",
+          text: "Use quiet enterprise language",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:00.000Z",
+        },
+        {
+          id: "learn-b",
+          category: "brand",
+          text: "Use quiet enterprise language",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.source, "learning-backup.json");
+  assert.equal(payload.importable, true);
+  assert.equal(payload.count, 2);
+  assert.deepEqual(payload.auditSummary, { status: "warn", failures: 0, warnings: 1 });
+  assert.equal(payload.entries[0].source, "import:cli");
+  assert.ok(payload.issues.some((issue) => issue.code === "duplicate-entry-text" && issue.entryId === "learn-b"));
+});
+
 test("loadLearningProfile normalizes legacy entries without ids", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   writeFileSync(filePath, JSON.stringify({
@@ -629,6 +671,44 @@ test("runLearn backup emits human summary and portable JSON payload", () => with
   assert.deepEqual(payload.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.equal(payload.entries[0].category, "korean");
   assert.equal(payload.entries[0].text, "Prefer compact Korean dashboards");
+}));
+
+test("runLearn verify validates portable learning JSON without mutating the target profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  rememberLearning({
+    text: "Existing local preference",
+    category: "preference",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+  const importPath = path.join(dir, "learning-backup.json");
+  writeFileSync(importPath, JSON.stringify({
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const humanOutput = await captureStdout(() => runLearn(["--verify", "--from-file", importPath, "--file", filePath]));
+  assert.match(humanOutput, /Learning import verification/);
+  assert.match(humanOutput, /Importable: yes/);
+  assert.match(humanOutput, /No learning import issues found\. No changes made\./);
+  assert.equal(loadLearningProfile(filePath).entries.length, 1);
+
+  const jsonOutput = await captureStdout(() => runLearn(["--verify", "--from-file", importPath, "--file", filePath, "--json"]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.source, importPath);
+  assert.equal(payload.importable, true);
+  assert.equal(payload.count, 1);
+  assert.deepEqual(payload.auditSummary, { status: "pass", failures: 0, warnings: 0 });
+  assert.equal(payload.entries[0].source, "import:cli");
+  assert.equal(loadLearningProfile(filePath).entries.length, 1);
 }));
 
 test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {

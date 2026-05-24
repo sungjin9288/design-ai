@@ -136,6 +136,45 @@ def npm_exec_shell_cmd(tarball: Path, script: str) -> list[str]:
     ]
 
 
+def is_npm_exec_cache_enoent(cmd: list[str], result: subprocess.CompletedProcess[str]) -> bool:
+    if len(cmd) < 2 or cmd[0] != "npm" or cmd[1] != "exec" or result.returncode == 0:
+        return False
+
+    output = f"{result.stdout}\n{result.stderr}"
+    return (
+        "Could not read package.json" in output
+        and "_cacache" in output
+        and "ENOENT" in output
+    )
+
+
+def retry_env_with_fresh_npm_cache(env: dict[str, str] | None) -> dict[str, str]:
+    retry_env = (env or os.environ).copy()
+    npm_cache = retry_env.get("npm_config_cache")
+    if npm_cache:
+        retry_env["npm_config_cache"] = f"{npm_cache}-retry"
+    return retry_env
+
+
+def retry_npm_exec_once(
+    cmd: list[str],
+    *,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+    input_text: str | None = None,
+) -> subprocess.CompletedProcess[str]:
+    retry_env = retry_env_with_fresh_npm_cache(env)
+    print("npm exec cache ENOENT detected; retrying once with a fresh npm cache", file=sys.stderr, flush=True)
+    return subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=retry_env,
+        input=input_text,
+        text=True,
+        capture_output=True,
+    )
+
+
 def run(
     cmd: list[str],
     *,
@@ -174,6 +213,13 @@ def run_plain(
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
 
+    if is_npm_exec_cache_enoent(cmd, result):
+        result = retry_npm_exec_once(cmd, cwd=cwd, env=env)
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+
     if result.returncode != 0:
         raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
 
@@ -204,6 +250,13 @@ def run_plain_with_input(
         print(result.stdout, end="")
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
+
+    if is_npm_exec_cache_enoent(cmd, result):
+        result = retry_npm_exec_once(cmd, cwd=cwd, env=env, input_text=input_text)
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
 
     if result.returncode != 0:
         raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
@@ -244,6 +297,13 @@ def run_expected_failure(
         print(result.stdout, end="")
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
+
+    if is_npm_exec_cache_enoent(cmd, result):
+        result = retry_npm_exec_once(cmd, cwd=cwd, env=env)
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
 
     assertion(
         f"{result.stdout}\n{result.stderr}",
@@ -1234,6 +1294,103 @@ def assert_learning_backup_smoke(
     )
 
 
+def assert_learning_verify_json(
+    raw: str,
+    *,
+    source: str,
+    expected_count: int,
+    expected_status: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn verify JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn verify JSON must be an object")
+    require_package_smoke(
+        payload.get("source") == source,
+        context=context,
+        cmd=cmd,
+        message="learn verify JSON source changed",
+    )
+    require_package_smoke(payload.get("importable") is True, context=context, cmd=cmd, message="learn verify importable flag changed")
+    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn verify count changed")
+
+    audit_summary = payload.get("auditSummary")
+    require_package_smoke(
+        isinstance(audit_summary, dict) and audit_summary.get("status") == expected_status,
+        context=context,
+        cmd=cmd,
+        message="learn verify audit summary changed",
+    )
+
+    entries = payload.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == expected_count,
+        context=context,
+        cmd=cmd,
+        message="learn verify entries list changed",
+    )
+    require_package_smoke(
+        all(isinstance(entry, dict) and entry.get("source", "").startswith("import:") for entry in entries),
+        context=context,
+        cmd=cmd,
+        message="learn verify entries should be normalized as import entries",
+    )
+
+
+def assert_learning_verify_smoke(
+    command_factory,
+    source_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    source_path.write_text(f"{learning_import_payload_text()}\n", encoding="utf-8")
+
+    from_file_cmd = command_factory(
+        "learn",
+        "--verify",
+        "--from-file",
+        str(source_path),
+        "--json",
+    )
+    from_file_result = run_plain(from_file_cmd, cwd=cwd, env=env)
+    assert_learning_verify_json(
+        from_file_result.stdout,
+        source=str(source_path),
+        expected_count=2,
+        expected_status="warn",
+        context=f"{context} from-file",
+        cmd=from_file_cmd,
+    )
+
+    stdin_cmd = command_factory(
+        "learn",
+        "--verify",
+        "--stdin",
+        "--json",
+    )
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text=learning_import_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_verify_json(
+        stdin_result.stdout,
+        source="stdin",
+        expected_count=2,
+        expected_status="warn",
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
+    )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -1808,6 +1965,48 @@ def run_self_test() -> None:
                 cmd=learn_backup_cmd,
             ),
             expected="learn backup entries list changed",
+            scope="package smoke",
+        )
+
+        learning_verify_payload = {
+            "source": str(Path(tmp) / "learning-backup.json"),
+            "importable": True,
+            "count": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "issues": [],
+            "entries": [
+                {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "source": "import:package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                },
+            ],
+        }
+        learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(Path(tmp) / "learning-backup.json"), "--json"]
+        assert_learning_verify_json(
+            json.dumps(learning_verify_payload),
+            source=str(Path(tmp) / "learning-backup.json"),
+            expected_count=1,
+            expected_status="pass",
+            context=context,
+            cmd=learn_verify_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_verify_json(
+                json.dumps({**learning_verify_payload, "importable": False}),
+                source=str(Path(tmp) / "learning-backup.json"),
+                expected_count=1,
+                expected_status="pass",
+                context=context,
+                cmd=learn_verify_cmd,
+            ),
+            expected="learn verify importable flag changed",
             scope="package smoke",
         )
 
@@ -2563,6 +2762,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn backup",
         )
+        assert_learning_verify_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-verify-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn verify",
+        )
         assert_learning_audit_cleanup_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-learning.json",
@@ -3180,6 +3385,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn backup",
+        )
+        assert_learning_verify_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-verify-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn verify",
         )
         assert_learning_audit_cleanup_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

@@ -1,5 +1,7 @@
 // `design-ai learn` — manage a local learning profile for prompt personalization.
 
+import path from "node:path";
+
 import { resolveBriefInput } from "../lib/brief.mjs";
 import {
   LEARNING_CATEGORIES,
@@ -18,6 +20,7 @@ import {
   recordLearningFeedback,
   rememberLearning,
   selectLearningEntries,
+  verifyLearningImportPayload,
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
 
@@ -31,6 +34,8 @@ function printHelp() {
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --backup [--json]");
+  console.log("        design-ai learn --verify --from-file learning.json [--json]");
+  console.log("        cat learning.json | design-ai learn --verify --stdin [--json]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json]");
   console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json]");
   console.log("        design-ai learn --audit [--json]");
@@ -45,13 +50,14 @@ function printHelp() {
   console.log("  --remember text      Remember an inline preference or project constraint");
   console.log("  --feedback text      Convert outcome feedback into a reusable local learning note");
   console.log(`  --outcome kind       Feedback outcome: ${LEARNING_FEEDBACK_OUTCOMES.join(", ")}. Default: improve`);
-  console.log("  --from-file file     Read remember/feedback text from a markdown/text file");
-  console.log("  --stdin              Read remember/feedback text from standard input");
+  console.log("  --from-file file     Read remember/feedback text or import/verify JSON from a file");
+  console.log("  --stdin              Read remember/feedback text or import/verify JSON from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
   console.log("  --backup             Print a full portable learning-profile backup; use --json for importable JSON");
+  console.log("  --verify             Validate a portable learning JSON payload without importing it");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
@@ -73,6 +79,7 @@ function printHelp() {
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --backup --json > learning-backup.json");
+  console.log("  design-ai learn --verify --from-file learning-backup.json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -80,6 +87,27 @@ function printHelp() {
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
+}
+
+function printLearningImportVerification(payload) {
+  header("design-ai learn", "Learning import verification");
+  info(`Source: ${payload.source}`);
+  info(`Importable: ${payload.importable ? "yes" : "no"}`);
+  info(`Entries: ${payload.count}`);
+  info(`Audit: ${payload.auditSummary.status} (${payload.auditSummary.failures} failure(s), ${payload.auditSummary.warnings} warning(s))`);
+  console.log();
+
+  if (payload.issues.length === 0) {
+    console.log("No learning import issues found. No changes made.");
+    return;
+  }
+
+  for (const issue of payload.issues) {
+    const entry = issue.entryId ? ` (${issue.entryId})` : "";
+    console.log(`${issue.level.toUpperCase()} ${issue.code}${entry}: ${issue.message}`);
+  }
+  console.log();
+  console.log("No changes made. Review warnings before importing or using learned context.");
 }
 
 function learningFilter(parsed) {
@@ -398,6 +426,20 @@ export async function runLearn(args) {
     info(`Exported: ${payload.exportedAt}`);
     console.log();
     console.log("Run `design-ai learn --backup --json > learning-backup.json` to save a full portable JSON backup.");
+    return;
+  }
+
+  if (parsed.action === "verify") {
+    const payload = verifyLearningImportPayload({
+      importText: readLearningInput(parsed),
+      source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
+    });
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+
+    printLearningImportVerification(payload);
     return;
   }
 

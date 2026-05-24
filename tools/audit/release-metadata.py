@@ -789,6 +789,14 @@ RELEASE_LEARN_BACKUP_TERM_GROUPS = (
         "learning backup",
     ),
 )
+RELEASE_LEARN_VERIFY_TERM_GROUPS = (
+    (
+        "JSON `design-ai learn --verify` output",
+        "design-ai learn --verify JSON output",
+        "learn verify JSON",
+        "learning import verification",
+    ),
+)
 RELEASE_LEARN_IMPORT_TERM_GROUPS = (
     (
         "`design-ai learn --import` dry-run/apply output",
@@ -934,6 +942,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "audit JSON repository-audit phrase",
     "learn feedback smoke phrase",
     "learn backup smoke phrase",
+    "learn verify smoke phrase",
     "learn import smoke phrase",
     "learn audit cleanup smoke phrase",
     "doctor strict smoke phrase",
@@ -1043,6 +1052,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("learn feedback smoke phrase", RELEASE_LEARN_FEEDBACK_TERM_GROUPS),
     ("learn backup smoke phrase", RELEASE_LEARN_BACKUP_TERM_GROUPS),
+    ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
@@ -1404,6 +1414,7 @@ human `design-ai audit --strict --quiet` output and
 `design-ai audit --strict --quiet --json` for machine-readable repository-audit output,
 JSON `design-ai learn --feedback` output,
 JSON `design-ai learn --backup` output,
+JSON `design-ai learn --verify` output,
 JSON `design-ai learn --import` dry-run/apply output,
 human / JSON `design-ai learn --audit` cleanup suggestion output,
 `design-ai help` top-level help output,
@@ -1451,6 +1462,7 @@ human `design-ai audit --strict --quiet` 출력도 smoke test하고,
 `design-ai audit --strict --quiet --json`으로 machine-readable repository-audit output도 확인하며,
 JSON `design-ai learn --feedback` output도 확인하며,
 JSON `design-ai learn --backup` output도 확인하며,
+JSON `design-ai learn --verify` output도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
@@ -3397,6 +3409,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn backup smoke phrase"
         in learn_backup_drift_errors,
         "release policy docs should mention learn backup smoke",
+    )
+
+    learn_verify_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "JSON `design-ai learn --verify` output",
+                "local learning validation",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_verify_drift_errors = "\n".join(learn_verify_drift["errors"])
+    assert_condition(
+        "README.md is missing learn verify smoke phrase"
+        in learn_verify_drift_errors,
+        "release policy docs should mention learn verify smoke",
     )
 
     learn_import_drift = release_metadata_summary(

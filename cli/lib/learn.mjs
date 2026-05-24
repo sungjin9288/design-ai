@@ -26,6 +26,7 @@ const LEARN_OPTIONS = [
   "--export",
   "--import",
   "--backup",
+  "--verify",
   "--audit",
   "--stats",
   "--fix",
@@ -156,6 +157,8 @@ export function parseLearnArgs(args) {
       setAction(out, "import");
     } else if (arg === "--backup") {
       setAction(out, "backup");
+    } else if (arg === "--verify") {
+      setAction(out, "verify");
     } else if (arg === "--audit") {
       setAction(out, "audit");
     } else if (arg === "--stats") {
@@ -199,7 +202,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -545,13 +548,14 @@ function inspectLearningEntry({
   }
 }
 
-export function auditLearningProfile({
+function auditLearningProfileObject(rawProfile, {
   filePath = defaultLearningFile(),
+  exists = true,
   maxEntryChars = DEFAULT_AUDIT_MAX_ENTRY_CHARS,
 } = {}) {
   const payload = {
     file: filePath,
-    exists: existsSync(filePath),
+    exists,
     version: null,
     updatedAt: "",
     count: 0,
@@ -560,30 +564,6 @@ export function auditLearningProfile({
   };
 
   if (!payload.exists) return finalizeLearningAudit(payload);
-
-  let rawText = "";
-  try {
-    rawText = readFileSync(filePath, "utf8");
-  } catch {
-    payload.issues.push(learningAuditIssue({
-      level: "failure",
-      code: "read-error",
-      message: "Learning profile could not be read from disk.",
-    }));
-    return finalizeLearningAudit(payload);
-  }
-
-  let rawProfile = null;
-  try {
-    rawProfile = JSON.parse(rawText);
-  } catch {
-    payload.issues.push(learningAuditIssue({
-      level: "failure",
-      code: "invalid-json",
-      message: "Learning profile is not valid JSON.",
-    }));
-    return finalizeLearningAudit(payload);
-  }
 
   if (!rawProfile || typeof rawProfile !== "object" || Array.isArray(rawProfile)) {
     payload.issues.push(learningAuditIssue({
@@ -636,6 +616,67 @@ export function auditLearningProfile({
   );
 
   return finalizeLearningAudit(payload);
+}
+
+export function auditLearningProfile({
+  filePath = defaultLearningFile(),
+  maxEntryChars = DEFAULT_AUDIT_MAX_ENTRY_CHARS,
+} = {}) {
+  if (!existsSync(filePath)) {
+    return auditLearningProfileObject(emptyLearningProfile(), {
+      filePath,
+      exists: false,
+      maxEntryChars,
+    });
+  }
+
+  let rawText = "";
+  try {
+    rawText = readFileSync(filePath, "utf8");
+  } catch {
+    return finalizeLearningAudit({
+      file: filePath,
+      exists: true,
+      version: null,
+      updatedAt: "",
+      count: 0,
+      categoryCounts: {},
+      issues: [
+        learningAuditIssue({
+          level: "failure",
+          code: "read-error",
+          message: "Learning profile could not be read from disk.",
+        }),
+      ],
+    });
+  }
+
+  let rawProfile = null;
+  try {
+    rawProfile = JSON.parse(rawText);
+  } catch {
+    return finalizeLearningAudit({
+      file: filePath,
+      exists: true,
+      version: null,
+      updatedAt: "",
+      count: 0,
+      categoryCounts: {},
+      issues: [
+        learningAuditIssue({
+          level: "failure",
+          code: "invalid-json",
+          message: "Learning profile is not valid JSON.",
+        }),
+      ],
+    });
+  }
+
+  return auditLearningProfileObject(rawProfile, {
+    filePath,
+    exists: true,
+    maxEntryChars,
+  });
 }
 
 function writeLearningProfile(filePath, profile) {
@@ -834,6 +875,32 @@ export function importLearningProfile({
     skipped,
     count: nextProfile.entries.length,
     profile: nextProfile,
+  };
+}
+
+export function verifyLearningImportPayload({
+  importText,
+  source = "input",
+  now = new Date(),
+} = {}) {
+  const importedEntries = parseLearningImportEntries(String(importText || ""), now);
+  const profile = {
+    version: 1,
+    updatedAt: "",
+    entries: importedEntries,
+  };
+  const audit = auditLearningProfileObject(profile, {
+    filePath: source,
+    exists: true,
+  });
+
+  return {
+    source,
+    importable: audit.summary.failures === 0,
+    count: importedEntries.length,
+    auditSummary: audit.summary,
+    issues: audit.issues,
+    entries: importedEntries.map(statsEntry),
   };
 }
 

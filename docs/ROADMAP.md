@@ -51,6 +51,48 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 188 — Portable learning import verification (v4.13.0) ✓ shipped
+
+`design-ai learn` can now validate portable learning JSON before import without touching the local profile.
+
+### Changed
+- Added `design-ai learn --verify --from-file learning.json [--json]` and `cat learning.json | design-ai learn --verify --stdin [--json]`.
+- Reused the import parser so verification checks the same JSON `entries` payload shape that `learn --import` accepts.
+- Added normalized-entry audit output so duplicate ids, duplicate notes, long notes, and sensitive-looking text stay visible before import.
+- Expanded top-level help, command-specific help, unit tests, smoke assertions, package smoke, release metadata policy guards, and adopter docs for the verification path.
+- Hardened package smoke so transient one-shot `npm exec` cache ENOENT failures retry once with a fresh npm cache while real CLI assertion failures still fail the gate.
+
+### Impact
+- Users can test a backup or imported profile artifact before `--dry-run` or confirmed import, while preserving the current local learning profile.
+- Verification is intentionally read-only and does not use `--yes`, `--dry-run`, or the target `--file` profile for mutation.
+- Existing remember, feedback, list/export/backup/import, audit/fix, stats, forget/clear, and prompt/pack learning injection behavior remains unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Teams can validate portable learning artifacts as a separate review step before merging local design preferences.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 187 — Portable learning profile backup (v4.13.0) ✓ shipped
 
 `design-ai learn` can now emit a full portable JSON backup before cleanup or migration.
