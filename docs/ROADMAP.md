@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 187 — Portable learning profile backup (v4.13.0) ✓ shipped
+
+`design-ai learn` can now emit a full portable JSON backup before cleanup or migration.
+
+### Changed
+- Added `design-ai learn --backup --json` for full learning-profile backups that include all normalized entries, profile metadata, an export timestamp, and audit summary.
+- Added human `design-ai learn --backup` summary output that points users to the JSON backup command.
+- Expanded top-level help, command-specific help, unit tests, smoke assertions, package smoke, release metadata policy guards, and adopter docs for the backup path.
+- Verified packed-tarball installed-bin and one-shot `npm exec --package <tarball>` paths for backup JSON output.
+
+### Impact
+- Users can create a complete local learning-profile backup before safe cleanup, machine migration, or import review.
+- Backup differs from `learn --export`: it is not limited to the default prompt-context subset and keeps the import-compatible `entries` array.
+- Existing remember, feedback, list/export/import, audit/fix, stats, forget/clear, and prompt/pack learning injection behavior remains unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Teams can now back up explicit local design preferences before moving, merging, or cleaning them up.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 186 — Portable learning profile import (v4.13.0) ✓ shipped
 
 `design-ai learn` can now import portable learning JSON with preview-first safety.

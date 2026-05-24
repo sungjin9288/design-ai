@@ -25,6 +25,7 @@ const LEARN_OPTIONS = [
   "--list",
   "--export",
   "--import",
+  "--backup",
   "--audit",
   "--stats",
   "--fix",
@@ -153,6 +154,8 @@ export function parseLearnArgs(args) {
       setAction(out, "export");
     } else if (arg === "--import") {
       setAction(out, "import");
+    } else if (arg === "--backup") {
+      setAction(out, "backup");
     } else if (arg === "--audit") {
       setAction(out, "audit");
     } else if (arg === "--stats") {
@@ -1059,6 +1062,20 @@ export function buildLearningContext({ filePath = defaultLearningFile(), limit =
     empty: entries.length === 0,
     auditSummary: audit.summary,
     markdown: renderLearningMarkdown(profile, { limit, category, auditSummary: audit.summary }),
+  };
+}
+
+export function buildLearningBackup({ filePath = defaultLearningFile(), now = new Date() } = {}) {
+  const audit = auditLearningProfile({ filePath });
+  const profile = loadLearningProfile(filePath);
+  return {
+    file: filePath,
+    version: profile.version,
+    updatedAt: profile.updatedAt,
+    exportedAt: now.toISOString(),
+    count: profile.entries.length,
+    auditSummary: audit.summary,
+    entries: profile.entries,
   };
 }
 

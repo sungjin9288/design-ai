@@ -10,6 +10,7 @@ import {
   applyLearningAuditFixes,
   auditLearningProfile,
   buildLearningContext,
+  buildLearningBackup,
   clearLearning,
   forgetLearning,
   importLearningProfile,
@@ -109,6 +110,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(importArgs.fromFile, "learning.json");
   assert.equal(importArgs.dryRun, true);
   assert.equal(importArgs.json, true);
+
+  const backupArgs = parseLearnArgs(["--backup", "--json"]);
+  assert.equal(backupArgs.action, "backup");
+  assert.equal(backupArgs.json, true);
 
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
@@ -346,6 +351,35 @@ test("importLearningProfile previews and applies portable learning profile entri
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.category), ["brand", "korean"]);
 }));
 
+test("buildLearningBackup returns a full importable learning profile payload", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  rememberLearning({
+    text: "Prefer dense Korean product UI",
+    category: "korean",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+  rememberLearning({
+    text: "Keep release notes evidence-led",
+    category: "workflow",
+    filePath,
+    now: new Date("2026-05-22T00:00:01.000Z"),
+  });
+
+  const backup = buildLearningBackup({
+    filePath,
+    now: new Date("2026-05-22T00:01:00.000Z"),
+  });
+
+  assert.equal(backup.file, filePath);
+  assert.equal(backup.version, 1);
+  assert.equal(backup.exportedAt, "2026-05-22T00:01:00.000Z");
+  assert.equal(backup.count, 2);
+  assert.deepEqual(backup.auditSummary, { status: "pass", failures: 0, warnings: 0 });
+  assert.deepEqual(backup.entries.map((entry) => entry.category), ["korean", "workflow"]);
+  assert.equal(backup.entries[0].text, "Prefer dense Korean product UI");
+}));
+
 test("loadLearningProfile normalizes legacy entries without ids", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   writeFileSync(filePath, JSON.stringify({
@@ -571,6 +605,30 @@ test("runLearn import supports dry-run and confirmed JSON apply", () => withTemp
   assert.equal(payload.count, 2);
   assert.equal(payload.added[0].source, "import:cli");
   assert.equal(loadLearningProfile(filePath).entries.length, 2);
+}));
+
+test("runLearn backup emits human summary and portable JSON payload", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  rememberLearning({
+    text: "Prefer compact Korean dashboards",
+    category: "korean",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+
+  const humanOutput = await captureStdout(() => runLearn(["--backup", "--file", filePath]));
+  assert.match(humanOutput, /Learning profile backup/);
+  assert.match(humanOutput, /Entries: 1/);
+  assert.match(humanOutput, /design-ai learn --backup --json > learning-backup\.json/);
+
+  const jsonOutput = await captureStdout(() => runLearn(["--backup", "--file", filePath, "--json"]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.count, 1);
+  assert.deepEqual(payload.auditSummary, { status: "pass", failures: 0, warnings: 0 });
+  assert.equal(payload.entries[0].category, "korean");
+  assert.equal(payload.entries[0].text, "Prefer compact Korean dashboards");
 }));
 
 test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {

@@ -80,6 +80,9 @@ Release metadata now reports prompt/pack forced output-file and prompt/pack file
 `design-ai learn --feedback` now records explicit keep/improve/avoid outcome feedback as local learning entries without model training.
 Packed-tarball package smoke now verifies learn-feedback JSON behavior in installed-bin and one-shot npm exec paths.
 `design-ai learn --feedback` help and package smoke now cover inline, `--from-file`, and `--stdin` feedback capture paths.
+`design-ai learn --backup --json` now emits a full portable learning-profile backup with all entries, export timestamp, and audit summary.
+Packed-tarball package smoke now verifies learn-backup JSON behavior in installed-bin and one-shot npm exec paths.
+Release metadata now guards release-facing docs against dropping JSON `design-ai learn --backup` smoke guidance.
 `design-ai learn --audit --fix` now previews and applies safe learning-profile cleanup suggestions behind dry-run / confirmed apply controls.
 Packed-tarball package smoke now verifies learn-audit fix dry-run and confirmed apply JSON behavior.
 Packed-tarball package smoke now verifies `design-ai learn --audit` cleanup suggestions in installed-bin and one-shot npm exec paths.

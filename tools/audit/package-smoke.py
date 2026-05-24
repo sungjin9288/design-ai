@@ -1153,6 +1153,87 @@ def assert_learning_import_smoke(
     )
 
 
+def assert_learning_backup_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    expected_count: int,
+    expected_status: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn backup JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn backup JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn backup JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(payload.get("version") == 1, context=context, cmd=cmd, message="learn backup version changed")
+    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn backup count changed")
+    require_package_smoke(
+        isinstance(payload.get("exportedAt"), str) and payload.get("exportedAt"),
+        context=context,
+        cmd=cmd,
+        message="learn backup exportedAt missing",
+    )
+
+    audit_summary = payload.get("auditSummary")
+    require_package_smoke(
+        isinstance(audit_summary, dict) and audit_summary.get("status") == expected_status,
+        context=context,
+        cmd=cmd,
+        message="learn backup audit summary changed",
+    )
+
+    entries = payload.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == expected_count,
+        context=context,
+        cmd=cmd,
+        message="learn backup entries list changed",
+    )
+    require_package_smoke(
+        all(isinstance(entry, dict) and isinstance(entry.get("text"), str) and entry.get("text") for entry in entries),
+        context=context,
+        cmd=cmd,
+        message="learn backup entries should preserve full text",
+    )
+
+
+def assert_learning_backup_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    cmd = command_factory(
+        "learn",
+        "--backup",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_backup_json(
+        result.stdout,
+        profile_path=profile_path,
+        expected_count=1,
+        expected_status="pass",
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -1684,6 +1765,49 @@ def run_self_test() -> None:
                 cmd=learn_import_cmd,
             ),
             expected="learn import added count changed",
+            scope="package smoke",
+        )
+
+        learning_backup_payload = {
+            "file": str(learning_profile_path),
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:00.000Z",
+            "exportedAt": "2026-05-22T00:01:00.000Z",
+            "count": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "entries": [
+                {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+            ],
+        }
+        learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_profile_path), "--json"]
+        assert_learning_backup_json(
+            json.dumps(learning_backup_payload),
+            profile_path=learning_profile_path,
+            expected_count=1,
+            expected_status="pass",
+            context=context,
+            cmd=learn_backup_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_backup_json(
+                json.dumps({**learning_backup_payload, "entries": []}),
+                profile_path=learning_profile_path,
+                expected_count=1,
+                expected_status="pass",
+                context=context,
+                cmd=learn_backup_cmd,
+            ),
+            expected="learn backup entries list changed",
             scope="package smoke",
         )
 
@@ -2433,6 +2557,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn import",
         )
+        assert_learning_backup_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-backup-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn backup",
+        )
         assert_learning_audit_cleanup_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-learning.json",
@@ -3043,6 +3173,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn import",
+        )
+        assert_learning_backup_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-backup-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn backup",
         )
         assert_learning_audit_cleanup_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

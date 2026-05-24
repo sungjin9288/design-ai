@@ -10,6 +10,7 @@ What ships in v4.13:
 - `design-ai learn --feedback ...` converts outcome feedback into reusable local learning notes.
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
+- `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
@@ -81,12 +82,20 @@ design-ai learn --export --category accessibility --limit 3
 
 The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings.
 
+Back up the full local profile:
+
+```bash
+design-ai learn --backup --json > learning-backup.json
+```
+
+Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then imported on another machine with `design-ai learn --import`.
+
 Import a portable learning profile:
 
 ```bash
-design-ai learn --export --json > learning-export.json
-design-ai learn --import --from-file learning-export.json --dry-run
-cat learning-export.json | design-ai learn --import --stdin --yes
+design-ai learn --backup --json > learning-backup.json
+design-ai learn --import --from-file learning-backup.json --dry-run
+cat learning-backup.json | design-ai learn --import --stdin --yes
 ```
 
 Import accepts JSON objects with an `entries` array, including full local profile files and `learn --export --json` output. `--dry-run` previews added and skipped entries without mutating the target profile. Confirmed import requires `--yes`, skips duplicate category+text pairs, preserves imported timestamps when valid, marks imported sources with `import:`, and remints ids only when an imported id conflicts with an existing entry.
@@ -175,6 +184,8 @@ Use `design-ai learn --stats` when you need a quick read on profile size, catego
 Use `design-ai learn --feedback` only for durable preferences you want future prompts to see. Do not store one-off task corrections, private project facts, credentials, contact details, or unresolved critique as feedback entries.
 
 Use `design-ai learn --import --dry-run` before applying a profile from another machine or repository. Audit the source first when it may include copied project notes, credentials, contact details, or stale entries.
+
+Use `design-ai learn --backup --json` before major cleanup or machine migration when you need a complete local copy. Unlike `learn --export`, backup is not limited to the default prompt-context subset.
 
 Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected. Use `--audit --fix --dry-run` first when you want to see which entries can be cleaned automatically.
 
