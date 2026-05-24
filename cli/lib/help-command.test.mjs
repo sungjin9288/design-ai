@@ -201,7 +201,10 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --backup \[--json\]/);
   assert.match(learnOutput, /--backup\s+Print a full portable learning-profile backup; use --json for importable JSON/);
   assert.match(learnOutput, /design-ai learn --redact \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --redact --from-file learning-backup\.json \[--json\]/);
+  assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --redact --stdin \[--json\]/);
   assert.match(learnOutput, /--redact\s+Print a portable JSON backup with sensitive-looking text redacted/);
+  assert.match(learnOutput, /--from-file file\s+Read remember\/feedback text or import\/verify\/redact JSON from a file/);
   assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\]/);
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\]/);
   assert.match(learnOutput, /--verify\s+Validate a portable learning JSON payload without importing it/);

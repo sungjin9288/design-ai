@@ -205,7 +205,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "redact"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -803,20 +803,26 @@ function uniqueImportedEntryId(entry, usedIds) {
   throw new Error("Could not allocate a unique learning entry id during import");
 }
 
-function parseLearningImportEntries(importText, now) {
+function parseLearningProfilePayload(importText, label = "Learning import") {
   let payload = null;
   try {
     payload = JSON.parse(importText);
   } catch (error) {
-    throw new Error("Learning import is not valid JSON");
+    throw new Error(`${label} is not valid JSON`);
   }
 
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
-    throw new Error("Learning import must be a JSON object with an entries array");
+    throw new Error(`${label} must be a JSON object with an entries array`);
   }
   if (!Array.isArray(payload.entries)) {
-    throw new Error("Learning import must include an entries array");
+    throw new Error(`${label} must include an entries array`);
   }
+
+  return payload;
+}
+
+function parseLearningImportEntries(importText, now) {
+  const payload = parseLearningProfilePayload(importText, "Learning import");
   if (payload.entries.length === 0) {
     throw new Error("Learning import has no entries");
   }
@@ -931,12 +937,12 @@ function redactLearningText(text) {
   };
 }
 
-export function buildRedactedLearningBackup({
-  filePath = defaultLearningFile(),
+function buildRedactedLearningPayload({
+  profile,
+  source,
+  sourceAudit,
   now = new Date(),
-} = {}) {
-  const sourceAudit = auditLearningProfile({ filePath });
-  const profile = loadLearningProfile(filePath);
+}) {
   const redactions = [];
   const entries = profile.entries.map((entry) => {
     const redacted = redactLearningText(entry.text);
@@ -960,12 +966,12 @@ export function buildRedactedLearningBackup({
     entries,
   };
   const redactedAudit = auditLearningProfileObject(redactedProfile, {
-    filePath,
+    filePath: source,
     exists: sourceAudit.exists,
   });
 
   return {
-    file: filePath,
+    file: source,
     version: profile.version,
     updatedAt: profile.updatedAt,
     exportedAt: now.toISOString(),
@@ -977,6 +983,40 @@ export function buildRedactedLearningBackup({
     redactions,
     entries,
   };
+}
+
+export function buildRedactedLearningBackup({
+  filePath = defaultLearningFile(),
+  importText,
+  source = "",
+  now = new Date(),
+} = {}) {
+  if (importText !== undefined) {
+    const sourceLabel = source || "input";
+    const rawProfile = parseLearningProfilePayload(String(importText || ""), "Learning redaction input");
+    const profile = normalizeLearningProfile(rawProfile);
+    const sourceAudit = auditLearningProfileObject(rawProfile, {
+      filePath: sourceLabel,
+      exists: true,
+    });
+
+    return buildRedactedLearningPayload({
+      profile,
+      source: sourceLabel,
+      sourceAudit,
+      now,
+    });
+  }
+
+  const sourceAudit = auditLearningProfile({ filePath });
+  const profile = loadLearningProfile(filePath);
+
+  return buildRedactedLearningPayload({
+    profile,
+    source: filePath,
+    sourceAudit,
+    now,
+  });
 }
 
 function resolveLearningEntryTarget(profile, target) {

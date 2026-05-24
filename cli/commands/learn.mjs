@@ -36,6 +36,8 @@ function printHelp() {
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --backup [--json]");
   console.log("        design-ai learn --redact [--json]");
+  console.log("        design-ai learn --redact --from-file learning-backup.json [--json]");
+  console.log("        cat learning-backup.json | design-ai learn --redact --stdin [--json]");
   console.log("        design-ai learn --verify --from-file learning.json [--json]");
   console.log("        cat learning.json | design-ai learn --verify --stdin [--json]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json]");
@@ -52,8 +54,8 @@ function printHelp() {
   console.log("  --remember text      Remember an inline preference or project constraint");
   console.log("  --feedback text      Convert outcome feedback into a reusable local learning note");
   console.log(`  --outcome kind       Feedback outcome: ${LEARNING_FEEDBACK_OUTCOMES.join(", ")}. Default: improve`);
-  console.log("  --from-file file     Read remember/feedback text or import/verify JSON from a file");
-  console.log("  --stdin              Read remember/feedback text or import/verify JSON from standard input");
+  console.log("  --from-file file     Read remember/feedback text or import/verify/redact JSON from a file");
+  console.log("  --stdin              Read remember/feedback text or import/verify/redact JSON from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
@@ -83,6 +85,7 @@ function printHelp() {
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --backup --json > learning-backup.json");
   console.log("  design-ai learn --redact --json > learning-redacted.json");
+  console.log("  design-ai learn --redact --from-file learning-backup.json --json > learning-redacted.json");
   console.log("  design-ai learn --verify --from-file learning-backup.json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
@@ -434,7 +437,13 @@ export async function runLearn(args) {
   }
 
   if (parsed.action === "redact") {
-    const payload = buildRedactedLearningBackup({ filePath: parsed.filePath });
+    const hasInputSource = parsed.fromFile || parsed.stdin;
+    const payload = hasInputSource
+      ? buildRedactedLearningBackup({
+        importText: readLearningInput(parsed),
+        source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
+      })
+      : buildRedactedLearningBackup({ filePath: parsed.filePath });
     if (parsed.json) {
       console.log(formatLearningJson(payload));
       return;

@@ -121,6 +121,15 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(redactArgs.action, "redact");
   assert.equal(redactArgs.json, true);
 
+  const redactFileArgs = parseLearnArgs(["--redact", "--from-file", "learning-backup.json", "--json"]);
+  assert.equal(redactFileArgs.action, "redact");
+  assert.equal(redactFileArgs.fromFile, "learning-backup.json");
+  assert.equal(redactFileArgs.json, true);
+
+  const redactStdinArgs = parseLearnArgs(["--redact", "--stdin"]);
+  assert.equal(redactStdinArgs.action, "redact");
+  assert.equal(redactStdinArgs.stdin, true);
+
   const verifyArgs = parseLearnArgs(["--verify", "--from-file", "learning-backup.json", "--json"]);
   assert.equal(verifyArgs.action, "verify");
   assert.equal(verifyArgs.fromFile, "learning-backup.json");
@@ -438,6 +447,36 @@ test("buildRedactedLearningBackup returns an importable profile with sensitive t
   assert.equal(loadLearningProfile(filePath).entries[0].text, "Never include api_key: sk-test12345678901234567890 in examples");
 }));
 
+test("buildRedactedLearningBackup redacts a portable JSON payload from text", () => {
+  const redacted = buildRedactedLearningBackup({
+    source: "learning-backup.json",
+    now: new Date("2026-05-22T00:02:00.000Z"),
+    importText: JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:01.000Z",
+      entries: [
+        {
+          id: "learn-a",
+          category: "constraint",
+          text: "Do not share password: sk-test12345678901234567890 in handoff notes",
+          source: "cli",
+          createdAt: "2026-05-22T00:00:00.000Z",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(redacted.file, "learning-backup.json");
+  assert.equal(redacted.exportedAt, "2026-05-22T00:02:00.000Z");
+  assert.equal(redacted.redactedCount, 1);
+  assert.equal(redacted.sourceAuditSummary.status, "warn");
+  assert.equal(redacted.auditSummary.status, "pass");
+  assert.deepEqual(redacted.redactions[0].codes, ["sensitive-secret-assignment", "sensitive-openai-secret-key"]);
+  assert.doesNotMatch(redacted.entries[0].text, /sk-test/);
+  assert.match(redacted.entries[0].text, /\[REDACTED:secret-assignment\]/);
+  assert.match(redacted.entries[0].text, /\[REDACTED:openai-secret-key\]/);
+});
+
 test("verifyLearningImportPayload validates portable learning JSON without importing", () => {
   const payload = verifyLearningImportPayload({
     source: "learning-backup.json",
@@ -753,6 +792,27 @@ test("runLearn redact emits human summary and redacted portable JSON without mut
   assert.doesNotMatch(payload.entries[0].text, /sk-test/);
   assert.match(payload.entries[0].text, /\[REDACTED:secret-assignment\]/);
   assert.equal(loadLearningProfile(filePath).entries[0].text, "Avoid storing token=sk-test12345678901234567890 in learning notes");
+
+  const portablePath = path.join(dir, "learning-backup.json");
+  writeFileSync(portablePath, JSON.stringify({
+    entries: [
+      {
+        id: "learn-portable",
+        category: "constraint",
+        text: "Never paste api_key: sk-test12345678901234567890 into examples",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const fileJsonOutput = await captureStdout(() => runLearn(["--redact", "--from-file", portablePath, "--json"]));
+  const filePayload = JSON.parse(fileJsonOutput);
+  assert.equal(filePayload.file, portablePath);
+  assert.equal(filePayload.redactedCount, 1);
+  assert.doesNotMatch(filePayload.entries[0].text, /sk-test/);
+  assert.match(filePayload.entries[0].text, /\[REDACTED:secret-assignment\]/);
+  assert.match(readFileSync(portablePath, "utf8"), /sk-test12345678901234567890/);
 }));
 
 test("runLearn verify validates portable learning JSON without mutating the target profile", () => withTempDirAsync(async (dir) => {

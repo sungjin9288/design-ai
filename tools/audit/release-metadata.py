@@ -796,6 +796,18 @@ RELEASE_LEARN_REDACT_TERM_GROUPS = (
         "learn redact JSON",
         "redacted learning backup",
     ),
+    (
+        "`design-ai learn --redact --from-file`",
+        "design-ai learn --redact --from-file",
+        "learn --redact --from-file",
+        "--redact --from-file",
+    ),
+    (
+        "`design-ai learn --redact --stdin`",
+        "design-ai learn --redact --stdin",
+        "learn --redact --stdin",
+        "--redact --stdin",
+    ),
 )
 RELEASE_LEARN_VERIFY_TERM_GROUPS = (
     (
@@ -1424,7 +1436,7 @@ human `design-ai audit --strict --quiet` output and
 `design-ai audit --strict --quiet --json` for machine-readable repository-audit output,
 JSON `design-ai learn --feedback` output,
 JSON `design-ai learn --backup` output,
-JSON `design-ai learn --redact` output,
+JSON `design-ai learn --redact` output including `design-ai learn --redact --from-file` and `design-ai learn --redact --stdin`,
 JSON `design-ai learn --verify` output,
 JSON `design-ai learn --import` dry-run/apply output,
 human / JSON `design-ai learn --audit` cleanup suggestion output,
@@ -1473,7 +1485,7 @@ human `design-ai audit --strict --quiet` 출력도 smoke test하고,
 `design-ai audit --strict --quiet --json`으로 machine-readable repository-audit output도 확인하며,
 JSON `design-ai learn --feedback` output도 확인하며,
 JSON `design-ai learn --backup` output도 확인하며,
-JSON `design-ai learn --redact` output도 확인하며,
+JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`, `design-ai learn --redact --stdin`도 확인하며,
 JSON `design-ai learn --verify` output도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하며,

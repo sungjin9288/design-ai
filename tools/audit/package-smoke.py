@@ -1447,6 +1447,53 @@ def assert_learning_redact_smoke(
         message="learn redact should not mutate the source profile",
     )
 
+    source_path = profile_path.with_name(f"{profile_path.stem}-portable.json")
+    write_learning_redaction_fixture(source_path)
+    from_file_cmd = command_factory(
+        "learn",
+        "--redact",
+        "--from-file",
+        str(source_path),
+        "--json",
+    )
+    from_file_result = run_plain(from_file_cmd, cwd=cwd, env=env)
+    assert_learning_redact_json(
+        from_file_result.stdout,
+        profile_path=source_path,
+        expected_count=2,
+        expected_redacted_count=1,
+        context=f"{context} from-file",
+        cmd=from_file_cmd,
+    )
+    source_payload = json.loads(source_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        "sk-test12345678901234567890" in source_payload["entries"][0]["text"],
+        context=f"{context} from-file source unchanged",
+        cmd=from_file_cmd,
+        message="learn redact --from-file should not mutate the source payload",
+    )
+
+    stdin_cmd = command_factory(
+        "learn",
+        "--redact",
+        "--stdin",
+        "--json",
+    )
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text=source_path.read_text(encoding="utf-8"),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_redact_json(
+        stdin_result.stdout,
+        profile_path=Path("stdin"),
+        expected_count=2,
+        expected_redacted_count=1,
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
+    )
+
 
 def assert_learning_verify_json(
     raw: str,

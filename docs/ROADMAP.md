@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 190 — Portable learning redaction input sources (v4.13.0) ✓ shipped
+
+`design-ai learn --redact` can now redact an existing portable learning JSON artifact from `--from-file` or `--stdin`, not only the local profile file.
+
+### Changed
+- Extended `design-ai learn --redact [--json]` so it keeps the existing local-profile behavior when no input source is supplied, and reads portable learning JSON from `--from-file` or `--stdin` when provided.
+- Reused the same redaction and audit pipeline for local profiles and portable input payloads, preserving import-compatible `entries`, `redactions`, `sourceAuditSummary`, and post-redaction `auditSummary`.
+- Updated help, unit tests, package smoke, release metadata phrase guards, README, quickstart, distribution, product-readiness, and AI learning docs for the new source modes.
+
+### Impact
+- Users can redact a `learn --backup --json` artifact after it has already been created, without pointing the command at or mutating the active local profile.
+- `--redact --stdin --json` supports shell pipelines and support handoff workflows where writing the unredacted artifact to another path is undesirable.
+- Existing local `--redact`, backup, verify, import, audit, stats, remember/feedback, and prompt/pack learning injection behavior remains unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `node cli/bin/design-ai.mjs learn --redact --stdin --json` with a portable JSON payload
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Teams can create a full backup once and then generate redacted shareable copies later from a file or pipeline without touching their active local learning profile.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 189 — Redacted portable learning backup (v4.13.0) ✓ shipped
 
 `design-ai learn` can now produce an importable portable profile with sensitive-looking entry text redacted before sharing.

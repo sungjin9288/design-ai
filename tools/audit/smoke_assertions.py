@@ -132,6 +132,8 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json]",
         "design-ai learn --backup [--json]",
         "design-ai learn --redact [--json]",
+        "design-ai learn --redact --from-file learning-backup.json [--json]",
+        "cat learning-backup.json | design-ai learn --redact --stdin [--json]",
         "design-ai learn --verify --from-file learning.json [--json]",
         "cat learning.json | design-ai learn --verify --stdin [--json]",
         "design-ai learn --import --from-file learning.json --dry-run [--json]",
