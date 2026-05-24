@@ -39,7 +39,7 @@ export const HELP_COMMANDS = [
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
-  { topic: "learn", usage: "learn [--remember text|--list|--export|--audit [--fix]|--stats|--forget id|--clear] [--json]", description: "Manage local learning preferences for prompt personalization" },
+  { topic: "learn", usage: "learn [--remember text|--feedback text|--list|--export|--audit [--fix]|--stats|--forget id|--clear] [--json]", description: "Manage local learning preferences for prompt personalization" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];
@@ -218,6 +218,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);
   console.log(`  ${dim("$")} design-ai learn --remember "Prefer dense Korean product UI"`);
+  console.log(`  ${dim("$")} design-ai learn --feedback "Keep audit findings short" --outcome keep`);
   console.log(`  ${dim("$")} design-ai learn --audit`);
   console.log(`  ${dim("$")} design-ai doctor`);
   console.log(`  ${dim("$")} design-ai audit --strict`);

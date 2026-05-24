@@ -77,6 +77,8 @@ Release metadata now guards release-facing docs against dropping prompt/pack JSO
 Release metadata now reports prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output drift separately.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
+`design-ai learn --feedback` now records explicit keep/improve/avoid outcome feedback as local learning entries without model training.
+Packed-tarball package smoke now verifies learn-feedback JSON behavior in installed-bin and one-shot npm exec paths.
 `design-ai learn --audit --fix` now previews and applies safe learning-profile cleanup suggestions behind dry-run / confirmed apply controls.
 Packed-tarball package smoke now verifies learn-audit fix dry-run and confirmed apply JSON behavior.
 Packed-tarball package smoke now verifies `design-ai learn --audit` cleanup suggestions in installed-bin and one-shot npm exec paths.
@@ -141,6 +143,33 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 184 — Explicit feedback learning loop
+
+#### Changed
+- Added `design-ai learn --feedback text` for recording durable outcome feedback into the local learning profile.
+- Added `--outcome keep|improve|avoid` so feedback becomes explicit repeat / improve / avoid guidance before prompt injection.
+- Defaulted feedback entries to the `workflow` category while preserving `--category` overrides for brand, accessibility, Korean-market, or other scoped feedback.
+- Added feedback JSON payloads with outcome, category, generated instruction text, persisted entry metadata, and count.
+- Updated CLI help discovery, smoke assertions, package smoke, quickstart, AI learning docs, product readiness docs, README status copy, changelog, roadmap, and session log for the feedback loop.
+
+#### Impact
+- Users can turn reviewed output quality signals into opt-in local personalization without automatic telemetry, embeddings, model training, or fine-tuning.
+- Existing `learn --remember`, `learn --audit`, `learn --audit --fix`, `learn --stats`, `learn --forget` / `--clear`, and `prompt` / `pack --with-learning` behavior remains unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
 
 ### Phase 183 — Learning audit safe fix loop
 

@@ -819,6 +819,109 @@ def assert_learning_audit_fix_json(
         )
 
 
+def assert_learning_feedback_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    outcome: str,
+    category: str,
+    expected_count: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn feedback JSON") from error
+
+    require_package_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON must be an object",
+    )
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("count") == expected_count,
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON count changed",
+    )
+    feedback = payload.get("feedback")
+    entry = payload.get("entry")
+    require_package_smoke(
+        isinstance(feedback, dict) and isinstance(entry, dict),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON should include feedback and entry objects",
+    )
+    require_package_smoke(
+        feedback.get("outcome") == outcome,
+        context=context,
+        cmd=cmd,
+        message="learn feedback outcome changed",
+    )
+    require_package_smoke(
+        feedback.get("category") == category and entry.get("category") == category,
+        context=context,
+        cmd=cmd,
+        message="learn feedback category changed",
+    )
+    require_package_smoke(
+        entry.get("source") == f"feedback:{outcome}",
+        context=context,
+        cmd=cmd,
+        message="learn feedback source should preserve the outcome",
+    )
+    require_package_smoke(
+        isinstance(feedback.get("instruction"), str)
+        and feedback.get("instruction") == entry.get("text")
+        and feedback.get("instruction", "").startswith("Repeat in future outputs: "),
+        context=context,
+        cmd=cmd,
+        message="learn feedback instruction text changed",
+    )
+
+
+def assert_learning_feedback_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    if profile_path.exists():
+        profile_path.unlink()
+
+    cmd = command_factory(
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_feedback_json(
+        result.stdout,
+        profile_path=profile_path,
+        outcome="keep",
+        category="workflow",
+        expected_count=1,
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -1237,6 +1340,61 @@ def run_self_test() -> None:
         )
 
         learning_profile_path = Path(tmp) / "learning.json"
+        learn_feedback_cmd = [
+            "design-ai",
+            "learn",
+            "--feedback",
+            "Keep audit findings short and evidence-led",
+            "--outcome",
+            "keep",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        learning_feedback_payload = {
+            "file": str(learning_profile_path),
+            "feedback": {
+                "outcome": "keep",
+                "category": "workflow",
+                "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
+            },
+            "entry": {
+                "id": "learn-feedback",
+                "category": "workflow",
+                "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
+                "source": "feedback:keep",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+            "count": 1,
+        }
+        assert_learning_feedback_json(
+            json.dumps(learning_feedback_payload),
+            profile_path=learning_profile_path,
+            outcome="keep",
+            category="workflow",
+            expected_count=1,
+            context=context,
+            cmd=learn_feedback_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_feedback_json(
+                json.dumps({
+                    **learning_feedback_payload,
+                    "entry": {
+                        **learning_feedback_payload["entry"],
+                        "source": "cli",
+                    },
+                }),
+                profile_path=learning_profile_path,
+                outcome="keep",
+                category="workflow",
+                expected_count=1,
+                context=context,
+                cmd=learn_feedback_cmd,
+            ),
+            expected="learn feedback source should preserve the outcome",
+            scope="package smoke",
+        )
         duplicate_command_args = [
             "design-ai",
             "learn",
@@ -1971,6 +2129,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin audit JSON",
         )
+        assert_learning_feedback_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-feedback-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn feedback",
+        )
         assert_learning_audit_cleanup_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-learning.json",
@@ -2567,6 +2731,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec audit JSON",
+        )
+        assert_learning_feedback_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-feedback-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn feedback",
         )
         assert_learning_audit_cleanup_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

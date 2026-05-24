@@ -10,9 +10,9 @@ This document separates shipped product scope from future product ideas so the r
 |---|---|---|---|
 | Design consulting skills | Complete for v4.13 | 19 skills across design systems, UX audit, critique, handoff, motion, illustration, print, video, game UI, conversational UI, and spatial design | Keep knowledge fresh through normal stability review |
 | Design agent workflows | Complete for v4.13 | 16 commands, 4 review agents, route/prompt/pack/check/search/show/examples CLI workflows | Real-CI verification before external launch |
-| Local release confidence | Complete for v4.13 | `npm run release:check` covers tests, audits, package contents, metadata, self-tests, and packed-tarball smoke including learning audit cleanup guidance | Public registry smoke after publish |
+| Local release confidence | Complete for v4.13 | `npm run release:check` covers tests, audits, package contents, metadata, self-tests, and packed-tarball smoke including learning feedback plus learning audit cleanup guidance | Public registry smoke after publish |
 | AI chat / conversational design consulting | Complete for v4.13 | `conversational-ui-designer`, `/conversational`, and conversational knowledge cover voice, chatbot, and AI chat UX | Keep Korean platform conventions current |
-| Local AI learning preferences | Complete for v4.13 | `design-ai learn`, filtered `prompt --with-learning` / `pack --with-learning`, confirmed `learn --forget`/`--clear`, non-mutating `learn --audit` cleanup suggestions / `learn --stats`, safe `learn --audit --fix --dry-run` previews plus confirmed `--fix --yes` cleanup, and learned-context audit summaries provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
+| Local AI learning preferences | Complete for v4.13 | `design-ai learn`, explicit `learn --feedback` keep/improve/avoid guidance, filtered `prompt --with-learning` / `pack --with-learning`, confirmed `learn --forget`/`--clear`, non-mutating `learn --audit` cleanup suggestions / `learn --stats`, safe `learn --audit --fix --dry-run` previews plus confirmed `--fix --yes` cleanup, and learned-context audit summaries provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
 | AI model training | Not shipped scope | README states fine-tuning is outside shipped scope | Define a separate product phase if embeddings or fine-tuning becomes a goal |
 | External launch | Not complete | Launch kit exists, but roadmap still marks external launch as held | Push, observe Real-CI, then publish/announce |
 
@@ -24,11 +24,11 @@ The shipped product is a model-agnostic design intelligence layer for AI coding 
 - Load the relevant design knowledge and examples.
 - Produce design-system, component, UX, motion, illustration, print, video, game UI, conversational, spatial, document, and slide-deck artifacts.
 - Check those artifacts for grounding, accessibility, responsive coverage, route-specific quality, and unresolved markers.
-- Store, filter, audit with cleanup suggestions, preview/apply safe audit cleanup, summarize, export, forget, and clear explicit local learning preferences, and inject scoped category/limit subsets into prompts/packs only when requested with audit-summary metadata attached.
+- Store, record explicit keep/improve/avoid feedback, filter, audit with cleanup suggestions, preview/apply safe audit cleanup, summarize, export, forget, and clear explicit local learning preferences, and inject scoped category/limit subsets into prompts/packs only when requested with audit-summary metadata attached.
 - Install, update, status-check, and uninstall through the packaged CLI.
 - Pass the release gate without relying on manual inspection.
 
-As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite, including packed-tarball checks for learning audit cleanup suggestions.
+As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite, including packed-tarball checks for learning feedback and learning audit cleanup suggestions.
 
 Local learning preferences are documented in [`AI-LEARNING.md`](AI-LEARNING.md).
 
@@ -41,7 +41,7 @@ Not shipped:
 - Fine-tuning a model.
 - Training a private model on user artifacts.
 - Embedding index generation for semantic retrieval.
-- Feedback loops that learn from accepted/rejected design recommendations.
+- Automatic feedback loops that learn from accepted/rejected design recommendations without explicit user action.
 
 These are valid future product ideas, but they are different from the current architecture. The current architecture is deterministic corpus routing, prompt packing, quality checking, scoped local preference injection, and release-smoked CLI distribution.
 
@@ -58,5 +58,5 @@ Only launch-readiness items remain in the active roadmap:
 The next product decision is scope, not another hardening pass:
 
 1. If the goal is to ship the current design consulting tool, run the push/Real-CI/public launch path.
-2. If the goal is a deeper AI learning product, open a new phase for retrieval memory, feedback learning, or fine-tuning, with explicit data boundaries and privacy constraints.
+2. If the goal is a deeper AI learning product, open a new phase for retrieval memory, automatic feedback capture, or fine-tuning, with explicit data boundaries and privacy constraints.
 3. If the goal is “best design tool” as a broader product, define whether the next surface is CLI, VS Code, web UI, Figma plugin, or agent SDK.

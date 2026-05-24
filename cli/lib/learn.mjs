@@ -19,6 +19,7 @@ const LEARN_OPTIONS = [
   "--help",
   "--json",
   "--remember",
+  "--feedback",
   "--from-file",
   "--stdin",
   "--list",
@@ -27,6 +28,7 @@ const LEARN_OPTIONS = [
   "--stats",
   "--fix",
   "--dry-run",
+  "--outcome",
   "--forget",
   "--clear",
   "--category",
@@ -42,6 +44,11 @@ export const LEARNING_CATEGORIES = [
   "accessibility",
   "korean",
   "other",
+];
+export const LEARNING_FEEDBACK_OUTCOMES = [
+  "keep",
+  "improve",
+  "avoid",
 ];
 const DEFAULT_AUDIT_MAX_ENTRY_CHARS = 800;
 const LEARNING_SENSITIVE_PATTERNS = [
@@ -91,6 +98,14 @@ export function normalizeCategory(rawCategory = "preference") {
   return category;
 }
 
+export function normalizeFeedbackOutcome(rawOutcome = "improve") {
+  const outcome = String(rawOutcome || "improve").trim().toLowerCase();
+  if (!LEARNING_FEEDBACK_OUTCOMES.includes(outcome)) {
+    throw new Error(expectedValueMessage("outcome", outcome, LEARNING_FEEDBACK_OUTCOMES));
+  }
+  return outcome;
+}
+
 export function parseLearningLimit(rawLimit) {
   const limit = Number(rawLimit);
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
@@ -107,6 +122,8 @@ export function parseLearnArgs(args) {
     stdin: false,
     category: "preference",
     categorySpecified: false,
+    feedbackOutcome: "improve",
+    outcomeSpecified: false,
     filePath: "",
     forgetTarget: "",
     limit: 0,
@@ -127,6 +144,8 @@ export function parseLearnArgs(args) {
       out.json = true;
     } else if (arg === "--remember") {
       setAction(out, "remember");
+    } else if (arg === "--feedback") {
+      setAction(out, "feedback");
     } else if (arg === "--list") {
       setAction(out, "list");
     } else if (arg === "--export") {
@@ -139,6 +158,12 @@ export function parseLearnArgs(args) {
       out.fix = true;
     } else if (arg === "--dry-run") {
       out.dryRun = true;
+    } else if (arg === "--outcome") {
+      const outcome = args[i + 1];
+      if (!outcome || outcome.startsWith("--")) throw new Error("--outcome expects keep, improve, or avoid");
+      out.feedbackOutcome = normalizeFeedbackOutcome(outcome);
+      out.outcomeSpecified = true;
+      i += 1;
     } else if (arg === "--forget") {
       setAction(out, "forget");
       const target = args[i + 1];
@@ -166,7 +191,11 @@ export function parseLearnArgs(args) {
       out.filePath = filePath;
       i += 1;
     } else if (parseBriefSourceFlag(args, out)) {
-      setAction(out, "remember");
+      if (!out.action) {
+        setAction(out, "remember");
+      } else if (!["remember", "feedback"].includes(out.action)) {
+        setAction(out, "remember");
+      }
       i = out.index;
     } else if (arg.startsWith("--")) {
       throw new Error(unknownOptionMessage("learn", arg, LEARN_OPTIONS));
@@ -179,8 +208,11 @@ export function parseLearnArgs(args) {
     out.action = out.noteParts.length > 0 ? "remember" : "list";
   }
 
-  if (out.action !== "remember" && out.noteParts.length > 0) {
+  if (!["remember", "feedback"].includes(out.action) && out.noteParts.length > 0) {
     throw new Error(`Unexpected learn argument for --${out.action}: ${out.noteParts[0]}`);
+  }
+  if (out.outcomeSpecified && out.action !== "feedback") {
+    throw new Error("--outcome can only be used with --feedback");
   }
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
@@ -191,6 +223,9 @@ export function parseLearnArgs(args) {
   if (out.fix && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --audit --fix");
   }
+  if (out.action === "feedback" && !out.categorySpecified) {
+    out.category = "workflow";
+  }
 
   return {
     ...out,
@@ -198,6 +233,7 @@ export function parseLearnArgs(args) {
     briefParts: out.noteParts,
     filePath: path.resolve(out.filePath || defaultLearningFile()),
     category: normalizeCategory(out.category),
+    feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),
     brief: out.noteParts.join(" ").trim(),
   };
 }
@@ -640,6 +676,32 @@ export function rememberLearning({
     entry,
     profile: nextProfile,
   };
+}
+
+function feedbackInstruction({ outcome, text }) {
+  if (outcome === "keep") return `Repeat in future outputs: ${text}`;
+  if (outcome === "avoid") return `Avoid in future outputs: ${text}`;
+  return `Improve future outputs by: ${text}`;
+}
+
+export function recordLearningFeedback({
+  text,
+  outcome = "improve",
+  category = "workflow",
+  filePath = defaultLearningFile(),
+  now = new Date(),
+}) {
+  const normalizedOutcome = normalizeFeedbackOutcome(outcome);
+  const feedbackText = cleanNoteText(text);
+  if (!feedbackText) throw new Error("Learning feedback is empty");
+
+  return rememberLearning({
+    text: feedbackInstruction({ outcome: normalizedOutcome, text: feedbackText }),
+    category,
+    filePath,
+    now,
+    source: `feedback:${normalizedOutcome}`,
+  });
 }
 
 function resolveLearningEntryTarget(profile, target) {

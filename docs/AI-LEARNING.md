@@ -7,6 +7,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 What ships in v4.13:
 
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
+- `design-ai learn --feedback ...` converts outcome feedback into reusable local learning notes.
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
@@ -25,7 +26,7 @@ What does not ship:
 - Private model training on user artifacts.
 - Automatic telemetry or background collection.
 - Semantic embedding index generation.
-- Feedback learning from accepted/rejected recommendations.
+- Automatic feedback capture from accepted/rejected recommendations.
 
 ## Storage
 
@@ -50,6 +51,15 @@ Remember a preference:
 ```bash
 design-ai learn --remember "Prefer dense Korean product UI with restrained enterprise styling" --category korean
 ```
+
+Record outcome feedback:
+
+```bash
+design-ai learn --feedback "Keep audit findings short and evidence-led" --outcome keep
+design-ai learn --feedback "Avoid decorative marketing language in enterprise dashboards" --outcome avoid --category brand
+```
+
+Feedback is explicit local memory. `--outcome keep` stores a "repeat this" instruction, `--outcome improve` stores an "improve future outputs by..." instruction, and `--outcome avoid` stores an "avoid this" instruction. The default feedback category is `workflow`; use `--category` when feedback belongs to brand, accessibility, Korean-market behavior, or another scoped area.
 
 List saved preferences:
 
@@ -148,6 +158,8 @@ Use `--with-learning` only when the saved context is relevant to the current tas
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries. Follow the Suggested cleanup section when it recommends removal; rewrite and re-add entries when the issue is sensitive content or an overlong note that still contains useful preference signal.
 
 Use `design-ai learn --stats` when you need a quick read on profile size, category distribution, source distribution, latest entry, and audit status before deciding whether to run a detailed audit.
+
+Use `design-ai learn --feedback` only for durable preferences you want future prompts to see. Do not store one-off task corrections, private project facts, credentials, contact details, or unresolved critique as feedback entries.
 
 Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected. Use `--audit --fix --dry-run` first when you want to see which entries can be cleaned automatically.
 

@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 184 — Explicit feedback learning loop (v4.13.0) ✓ shipped
+
+`design-ai learn` can now turn explicit reviewed-output feedback into durable local learning entries.
+
+### Changed
+- Added `design-ai learn --feedback text` for recording outcome feedback without model training, automatic telemetry, or background collection.
+- Added `--outcome keep|improve|avoid`, converting feedback into repeat / improve / avoid instructions before it enters prompt personalization.
+- Defaulted feedback entries to the `workflow` category while keeping `--category` overrides for scoped feedback.
+- Added machine-readable feedback payloads with outcome, category, generated instruction text, persisted entry metadata, source, and count.
+- Updated CLI help discovery, smoke assertions, package smoke, README command references, quickstart guidance, product readiness docs, AI learning docs, changelog, roadmap, and session log for the feedback loop.
+- Expanded package smoke coverage so packed-tarball installed-bin and one-shot npm exec paths verify learn-feedback JSON behavior.
+
+### Impact
+- Users can capture “keep this”, “improve this”, and “avoid this” guidance as explicit local memory that remains opt-in through `prompt` / `pack --with-learning`.
+- The feature keeps the current privacy boundary: no embeddings, no automatic recommendation tracking, no model fine-tuning, and no provider upload.
+- Existing `learn --remember`, audit cleanup, stats, forget/clear, and scoped prompt/pack learning injection remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local personalization now has a user-controlled feedback capture loop before any future retrieval-memory or fine-tuning scope is considered.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 183 — Learning audit safe fix loop (v4.13.0) ✓ shipped
 
 `design-ai learn --audit` can now turn safe cleanup suggestions into a dry-run plan or confirmed profile cleanup.

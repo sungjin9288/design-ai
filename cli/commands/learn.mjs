@@ -3,6 +3,7 @@
 import { resolveBriefInput } from "../lib/brief.mjs";
 import {
   LEARNING_CATEGORIES,
+  LEARNING_FEEDBACK_OUTCOMES,
   auditLearningProfile,
   applyLearningAuditFixes,
   buildLearningContext,
@@ -12,6 +13,7 @@ import {
   learningStats,
   loadLearningProfile,
   parseLearnArgs,
+  recordLearningFeedback,
   rememberLearning,
   selectLearningEntries,
 } from "../lib/learn.mjs";
@@ -20,6 +22,7 @@ import { dim, header, info, success } from "../lib/log.mjs";
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --remember text [--category kind] [--json]");
+  console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json]");
   console.log("        design-ai learn --from-file notes.md [--category kind] [--json]");
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
@@ -33,8 +36,10 @@ function printHelp() {
   console.log("This is local memory, not model training or fine-tuning.\n");
   console.log("Options:");
   console.log("  --remember text      Remember an inline preference or project constraint");
-  console.log("  --from-file file     Remember text from a markdown/text file");
-  console.log("  --stdin              Remember text from standard input");
+  console.log("  --feedback text      Convert outcome feedback into a reusable local learning note");
+  console.log(`  --outcome kind       Feedback outcome: ${LEARNING_FEEDBACK_OUTCOMES.join(", ")}. Default: improve`);
+  console.log("  --from-file file     Read remember/feedback text from a markdown/text file");
+  console.log("  --stdin              Read remember/feedback text from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
@@ -54,6 +59,7 @@ function printHelp() {
   console.log("");
   console.log("Examples:");
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
+  console.log("  design-ai learn --feedback \"Keep audit findings short and evidence-led\" --outcome keep");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -277,6 +283,38 @@ export async function runLearn(args) {
 
     success(`Remembered ${result.entry.id}`);
     info(`File: ${result.file}`);
+    info(`Category: ${result.entry.category}`);
+    return;
+  }
+
+  if (parsed.action === "feedback") {
+    const text = readLearningInput(parsed);
+    const result = recordLearningFeedback({
+      text,
+      outcome: parsed.feedbackOutcome,
+      category: parsed.category,
+      filePath: parsed.filePath,
+    });
+
+    const payload = {
+      file: result.file,
+      feedback: {
+        outcome: parsed.feedbackOutcome,
+        category: result.entry.category,
+        instruction: result.entry.text,
+      },
+      entry: result.entry,
+      count: result.profile.entries.length,
+    };
+
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+
+    success(`Recorded feedback ${result.entry.id}`);
+    info(`File: ${result.file}`);
+    info(`Outcome: ${parsed.feedbackOutcome}`);
     info(`Category: ${result.entry.category}`);
     return;
   }

@@ -15,7 +15,9 @@ import {
   learningStats,
   loadLearningProfile,
   normalizeCategory,
+  normalizeFeedbackOutcome,
   parseLearnArgs,
+  recordLearningFeedback,
   rememberLearning,
   renderLearningMarkdown,
   selectLearningEntries,
@@ -68,6 +70,17 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(rememberArgs.category, "workflow");
   assert.deepEqual(rememberArgs.briefParts, ["Prefer", "compact", "tables"]);
 
+  const feedbackArgs = parseLearnArgs(["--feedback", "Keep", "findings", "short", "--outcome", "keep"]);
+  assert.equal(feedbackArgs.action, "feedback");
+  assert.equal(feedbackArgs.brief, "Keep findings short");
+  assert.equal(feedbackArgs.category, "workflow");
+  assert.equal(feedbackArgs.feedbackOutcome, "keep");
+
+  const feedbackFileArgs = parseLearnArgs(["--feedback", "--from-file", "notes.md", "--category", "accessibility"]);
+  assert.equal(feedbackFileArgs.action, "feedback");
+  assert.equal(feedbackFileArgs.fromFile, "notes.md");
+  assert.equal(feedbackFileArgs.category, "accessibility");
+
   const filteredListArgs = parseLearnArgs(["--list", "--category", "korean", "--limit", "5"]);
   assert.equal(filteredListArgs.action, "list");
   assert.equal(filteredListArgs.category, "korean");
@@ -106,6 +119,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /category expects one of:/,
   );
   assert.throws(
+    () => normalizeFeedbackOutcome("mixed"),
+    /outcome expects one of:/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--jsn"]),
     /Did you mean `--json`\?/,
   );
@@ -129,6 +146,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     () => parseLearnArgs(["--audit", "--fix", "--dry-run", "--yes"]),
     /Choose either --dry-run or --yes/,
   );
+  assert.throws(
+    () => parseLearnArgs(["--remember", "x", "--outcome", "avoid"]),
+    /--outcome can only be used with --feedback/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--feedback", "x", "--outcome", "mixed"]),
+    /outcome expects one of:/,
+  );
 });
 
 test("rememberLearning persists a local profile entry", () => withTempDir((dir) => {
@@ -148,6 +173,32 @@ test("rememberLearning persists a local profile entry", () => withTempDir((dir) 
   assert.equal(profile.entries.length, 1);
   assert.equal(profile.entries[0].id, result.entry.id);
   assert.equal(JSON.parse(readFileSync(filePath, "utf8")).version, 1);
+}));
+
+test("recordLearningFeedback converts outcome feedback into a learning entry", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const result = recordLearningFeedback({
+    text: "Keep audit findings short and evidence-led",
+    outcome: "keep",
+    filePath,
+    now: new Date("2026-05-22T00:00:00.000Z"),
+  });
+
+  assert.equal(result.entry.category, "workflow");
+  assert.equal(result.entry.source, "feedback:keep");
+  assert.equal(result.entry.text, "Repeat in future outputs: Keep audit findings short and evidence-led");
+
+  const avoidResult = recordLearningFeedback({
+    text: "decorative marketing language in enterprise dashboards",
+    outcome: "avoid",
+    category: "brand",
+    filePath,
+    now: new Date("2026-05-22T00:00:01.000Z"),
+  });
+  assert.equal(avoidResult.entry.category, "brand");
+  assert.equal(avoidResult.entry.source, "feedback:avoid");
+  assert.equal(avoidResult.entry.text, "Avoid in future outputs: decorative marketing language in enterprise dashboards");
+  assert.equal(loadLearningProfile(filePath).entries.length, 2);
 }));
 
 test("forgetLearning removes entries by id or list number", () => withTempDir((dir) => {
@@ -314,6 +365,41 @@ test("runLearn audit prints suggested cleanup commands for warning profiles", ()
   assert.match(output, /remove-duplicate \(learn-b\)/);
   assert.match(output, /design-ai learn --file/);
   assert.match(output, /--forget learn-b --yes/);
+}));
+
+test("runLearn feedback stores structured feedback entries in human and JSON modes", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const humanOutput = await captureStdout(() => runLearn([
+    "--feedback",
+    "Keep release notes evidence-led",
+    "--outcome",
+    "keep",
+    "--file",
+    filePath,
+  ]));
+
+  assert.match(humanOutput, /Recorded feedback learn-/);
+  assert.match(humanOutput, /Outcome: keep/);
+  assert.match(humanOutput, /Category: workflow/);
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--feedback",
+    "decorative marketing language in enterprise dashboards",
+    "--outcome",
+    "avoid",
+    "--category",
+    "brand",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.feedback.outcome, "avoid");
+  assert.equal(payload.feedback.category, "brand");
+  assert.equal(payload.entry.source, "feedback:avoid");
+  assert.equal(payload.entry.text, "Avoid in future outputs: decorative marketing language in enterprise dashboards");
+  assert.equal(payload.count, 2);
 }));
 
 test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {
