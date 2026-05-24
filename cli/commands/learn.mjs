@@ -4,6 +4,7 @@ import { resolveBriefInput } from "../lib/brief.mjs";
 import {
   LEARNING_CATEGORIES,
   auditLearningProfile,
+  applyLearningAuditFixes,
   buildLearningContext,
   clearLearning,
   forgetLearning,
@@ -23,6 +24,8 @@ function printHelp() {
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --audit [--json]");
+  console.log("        design-ai learn --audit --fix --dry-run [--json]");
+  console.log("        design-ai learn --audit --fix --yes [--json]");
   console.log("        design-ai learn --stats [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json]");
   console.log("        design-ai learn --clear --yes [--json]\n");
@@ -37,6 +40,8 @@ function printHelp() {
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
+  console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
+  console.log("  --dry-run            Preview --audit --fix cleanup without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
@@ -51,6 +56,7 @@ function printHelp() {
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --audit");
+  console.log("  design-ai learn --audit --fix --dry-run");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
@@ -146,6 +152,43 @@ function printAudit(payload) {
         console.log(`  ${dim(suggestion.command)}`);
       }
     }
+  }
+}
+
+function printAuditFix(payload) {
+  header("design-ai learn", payload.dryRun ? "Learning audit cleanup dry run" : "Learning audit cleanup applied");
+  info(`File: ${payload.file}`);
+  info(`Before: ${payload.before.status} (${payload.before.failures} failure(s), ${payload.before.warnings} warning(s))`);
+  info(`Cleanup entries: ${payload.cleanupCount}`);
+  if (payload.after) {
+    info(`After: ${payload.after.status} (${payload.after.failures} failure(s), ${payload.after.warnings} warning(s))`);
+  }
+  console.log();
+
+  if (payload.cleanup.length === 0) {
+    console.log("No safe cleanup suggestions are available.");
+  } else {
+    console.log(payload.dryRun ? "Would remove:" : "Removed:");
+    for (const fix of payload.cleanup) {
+      console.log(`- ${fix.entryId}: ${fix.actions.join(", ")} (${fix.issueCodes.join(", ")})`);
+      if (fix.command) {
+        console.log(`  ${dim(fix.command)}`);
+      }
+    }
+  }
+
+  if (payload.skipped.length > 0) {
+    console.log();
+    console.log("Skipped:");
+    for (const skipped of payload.skipped) {
+      const entry = skipped.entryId ? ` (${skipped.entryId})` : "";
+      console.log(`- ${skipped.reason}${entry}: ${skipped.message}`);
+    }
+  }
+
+  if (payload.dryRun) {
+    console.log();
+    console.log("No changes made. Re-run with `--yes` instead of `--dry-run` to apply safe cleanup.");
   }
 }
 
@@ -264,6 +307,20 @@ export async function runLearn(args) {
   }
 
   if (parsed.action === "audit") {
+    if (parsed.fix) {
+      if (!parsed.dryRun) assertConfirmed(parsed, "apply audit cleanup fixes to");
+      const payload = applyLearningAuditFixes({
+        filePath: parsed.filePath,
+        dryRun: parsed.dryRun,
+      });
+      if (parsed.json) {
+        console.log(formatLearningJson(payload));
+        return;
+      }
+      printAuditFix(payload);
+      return;
+    }
+
     const payload = auditLearningProfile({ filePath: parsed.filePath });
     if (parsed.json) {
       console.log(formatLearningJson(payload));

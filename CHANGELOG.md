@@ -77,6 +77,8 @@ Release metadata now guards release-facing docs against dropping prompt/pack JSO
 Release metadata now reports prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output drift separately.
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
+`design-ai learn --audit --fix` now previews and applies safe learning-profile cleanup suggestions behind dry-run / confirmed apply controls.
+Packed-tarball package smoke now verifies learn-audit fix dry-run and confirmed apply JSON behavior.
 Packed-tarball package smoke now verifies `design-ai learn --audit` cleanup suggestions in installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping human/JSON `design-ai learn --audit` cleanup suggestion smoke guidance.
 `design-ai learn --audit` now includes cleanup suggestions and safe forget commands for warning-bearing learning profiles.
@@ -139,6 +141,33 @@ Release metadata now guards release-facing docs against dropping human install/s
 `design-ai update --dry-run` now previews git and reinstall actions, including a machine-readable JSON plan for package and registry smoke checks, without mutating source files or Claude home.
 Release metadata now guards release-facing docs against dropping human `design-ai update --dry-run`, JSON `design-ai update --dry-run --json`, and machine-readable update plan smoke guidance.
 Release metadata now reports update dry-run command, JSON command, and machine-readable update plan drift separately.
+
+### Phase 183 — Learning audit safe fix loop
+
+#### Changed
+- Added `design-ai learn --audit --fix --dry-run` to preview automatically fixable cleanup suggestions without mutating the profile.
+- Added `design-ai learn --audit --fix --yes` to remove only safe, unambiguous learning entries targeted by audit suggestions.
+- Added machine-readable cleanup payloads with before/after audit summaries, skipped manual-review suggestions, removed entry previews, and stable cleanup command metadata.
+- Updated learn command help, top-level help catalog, smoke assertions, AI learning docs, quickstart guidance, README status copy, product readiness docs, roadmap, changelog, and session log for the fix loop.
+- Expanded package smoke coverage so packed-tarball installed-bin and one-shot npm exec paths verify learn-audit fix dry-run and confirmed apply JSON behavior.
+
+#### Impact
+- Users can move from learning audit warnings to safe cleanup without manually copying each generated `--forget` command.
+- Ambiguous or unsafe cases still stay manual: invalid JSON, malformed entries, duplicate ids, and warnings without stable ids are skipped instead of being auto-deleted.
+- Existing `learn --audit` read-only behavior, `learn --forget` / `learn --clear` confirmation gates, prompt/pack learning injection, repository audits, and package contents checks remain unchanged.
+
+#### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
 
 ### Phase 182 — Learning audit package smoke coverage
 

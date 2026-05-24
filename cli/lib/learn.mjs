@@ -25,6 +25,8 @@ const LEARN_OPTIONS = [
   "--export",
   "--audit",
   "--stats",
+  "--fix",
+  "--dry-run",
   "--forget",
   "--clear",
   "--category",
@@ -108,6 +110,8 @@ export function parseLearnArgs(args) {
     filePath: "",
     forgetTarget: "",
     limit: 0,
+    fix: false,
+    dryRun: false,
     yes: false,
     json: false,
     help: false,
@@ -131,6 +135,10 @@ export function parseLearnArgs(args) {
       setAction(out, "audit");
     } else if (arg === "--stats") {
       setAction(out, "stats");
+    } else if (arg === "--fix") {
+      out.fix = true;
+    } else if (arg === "--dry-run") {
+      out.dryRun = true;
     } else if (arg === "--forget") {
       setAction(out, "forget");
       const target = args[i + 1];
@@ -173,6 +181,15 @@ export function parseLearnArgs(args) {
 
   if (out.action !== "remember" && out.noteParts.length > 0) {
     throw new Error(`Unexpected learn argument for --${out.action}: ${out.noteParts[0]}`);
+  }
+  if (out.fix && out.action !== "audit") {
+    throw new Error("--fix can only be used with --audit");
+  }
+  if (out.dryRun && !out.fix) {
+    throw new Error("--dry-run requires --fix");
+  }
+  if (out.fix && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --audit --fix");
   }
 
   return {
@@ -663,6 +680,109 @@ export function forgetLearning({
     removed: entry,
     count: nextProfile.entries.length,
     profile: nextProfile,
+  };
+}
+
+function fixableLearningSuggestions(audit) {
+  const byEntryId = new Map();
+  const skipped = [];
+
+  for (const suggestion of audit.suggestions || []) {
+    if (!suggestion.entryId || !Array.isArray(suggestion.commandArgs) || suggestion.commandArgs.length === 0) {
+      skipped.push({
+        issueCode: suggestion.issueCode,
+        ...(suggestion.entryId ? { entryId: suggestion.entryId } : {}),
+        action: suggestion.action,
+        reason: "manual-review-required",
+        message: suggestion.message,
+      });
+      continue;
+    }
+
+    if (!byEntryId.has(suggestion.entryId)) {
+      byEntryId.set(suggestion.entryId, {
+        entryId: suggestion.entryId,
+        issueCodes: [],
+        actions: [],
+        commandArgs: suggestion.commandArgs,
+        command: suggestion.command,
+      });
+    }
+
+    const fix = byEntryId.get(suggestion.entryId);
+    if (!fix.issueCodes.includes(suggestion.issueCode)) fix.issueCodes.push(suggestion.issueCode);
+    if (!fix.actions.includes(suggestion.action)) fix.actions.push(suggestion.action);
+  }
+
+  return {
+    fixes: [...byEntryId.values()],
+    skipped,
+  };
+}
+
+export function applyLearningAuditFixes({
+  filePath = defaultLearningFile(),
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const beforeAudit = auditLearningProfile({ filePath });
+  const { fixes, skipped } = fixableLearningSuggestions(beforeAudit);
+  const payload = {
+    file: filePath,
+    dryRun,
+    applied: !dryRun,
+    before: beforeAudit.summary,
+    cleanupCount: fixes.length,
+    cleanup: fixes,
+    skipped,
+    removed: [],
+    after: null,
+  };
+
+  if (dryRun || fixes.length === 0) {
+    return payload;
+  }
+
+  const targetIds = new Set(fixes.map((fix) => fix.entryId));
+  const profile = loadLearningProfile(filePath);
+  const removed = [];
+  const remaining = [];
+
+  for (const entry of profile.entries) {
+    if (targetIds.has(entry.id)) {
+      removed.push(statsEntry(entry));
+    } else {
+      remaining.push(entry);
+    }
+  }
+
+  const removedIds = new Set(removed.map((entry) => entry.id));
+  for (const fix of fixes) {
+    if (!removedIds.has(fix.entryId)) {
+      skipped.push({
+        entryId: fix.entryId,
+        action: fix.actions.join(","),
+        reason: "entry-not-found",
+        message: "The entry was not present when applying audit cleanup.",
+      });
+    }
+  }
+
+  const updatedAt = now.toISOString();
+  writeLearningProfile(filePath, {
+    version: 1,
+    updatedAt,
+    entries: remaining,
+  });
+
+  const afterAudit = auditLearningProfile({ filePath });
+  return {
+    ...payload,
+    cleanupCount: removed.length,
+    cleanup: fixes.filter((fix) => removedIds.has(fix.entryId)),
+    skipped,
+    removed,
+    after: afterAudit.summary,
   };
 }
 

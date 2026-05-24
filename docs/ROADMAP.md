@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 183 — Learning audit safe fix loop (v4.13.0) ✓ shipped
+
+`design-ai learn --audit` can now turn safe cleanup suggestions into a dry-run plan or confirmed profile cleanup.
+
+### Changed
+- Added `design-ai learn --audit --fix --dry-run` to preview automatically fixable cleanup suggestions without mutating the learning profile.
+- Added `design-ai learn --audit --fix --yes` to remove only safe, unambiguous entries targeted by audit suggestions.
+- Added machine-readable cleanup payloads with before/after audit summaries, skipped manual-review suggestions, removed entry previews, and stable cleanup command metadata.
+- Updated CLI help discovery, smoke assertions, README command references, quickstart guidance, product readiness docs, AI learning docs, changelog, and session log for the safe fix loop.
+- Expanded package smoke coverage so packed-tarball installed-bin and one-shot npm exec paths verify learn-audit fix dry-run and confirmed apply JSON behavior.
+
+### Impact
+- Users can move from audit warnings to safe cleanup without manually copying each suggested `--forget` command.
+- Ambiguous or unsafe cases still stay manual: invalid JSON, malformed entries, duplicate ids, and warnings without stable ids are skipped instead of auto-deleted.
+- Existing read-only `learn --audit`, confirmed `learn --forget` / `learn --clear`, prompt/pack learning injection, repository audits, package contents checks, and registry smoke remain unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The local learning workflow now has a closed inspect-preview-apply loop while preserving explicit confirmation for mutations.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, feedback learning, or model fine-tuning.
+
 ## Phase 182 — Learning audit package smoke coverage (v4.13.0) ✓ shipped
 
 Packed-tarball smoke now verifies the `learn --audit` cleanup guidance through both installed-bin and one-shot `npm exec --package <tarball>` execution paths.

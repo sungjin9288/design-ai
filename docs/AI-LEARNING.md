@@ -10,6 +10,8 @@ What ships in v4.13:
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
+- `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
+- `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
@@ -71,9 +73,13 @@ Audit the local profile before using it in prompts:
 ```bash
 design-ai learn --audit
 design-ai learn --audit --json
+design-ai learn --audit --fix --dry-run
+design-ai learn --audit --fix --yes
 ```
 
-The audit is advisory and non-mutating. It reports invalid JSON/profile shape failures plus warnings for duplicate entries, missing timestamps, long notes, and conservative sensitive-content patterns such as secret-like assignments, private key blocks, email addresses, and Korean mobile phone numbers. JSON output includes `suggestions`; human output adds a Suggested cleanup section with safe `design-ai learn --file ... --forget ... --yes` commands only when id-based deletion is unambiguous.
+The plain audit is advisory and non-mutating. It reports invalid JSON/profile shape failures plus warnings for duplicate entries, missing timestamps, long notes, and conservative sensitive-content patterns such as secret-like assignments, private key blocks, email addresses, and Korean mobile phone numbers. JSON output includes `suggestions`; human output adds a Suggested cleanup section with safe `design-ai learn --file ... --forget ... --yes` commands only when id-based deletion is unambiguous.
+
+`--audit --fix --dry-run` turns those safe suggestions into a cleanup plan without changing the file. `--audit --fix --yes` removes only entries that have stable, unambiguous ids and skips anything that still needs manual review, such as invalid JSON, duplicate ids, malformed entries, or warnings without a safe target.
 
 Summarize profile health and recency:
 
@@ -143,6 +149,6 @@ Run `design-ai learn --audit` before exporting or injecting a profile that may c
 
 Use `design-ai learn --stats` when you need a quick read on profile size, category distribution, source distribution, latest entry, and audit status before deciding whether to run a detailed audit.
 
-Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected.
+Treat any learned-context audit warning as a review prompt, not as permission to include risky data. Remove, rewrite, or scope entries before using `--with-learning` when audit warnings are not expected. Use `--audit --fix --dry-run` first when you want to see which entries can be cleaned automatically.
 
 Deletion actions require `--yes` because they mutate the local profile. Use `--list` first when you need the exact id or list number.

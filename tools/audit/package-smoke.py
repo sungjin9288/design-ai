@@ -714,6 +714,111 @@ def assert_learning_audit_cleanup_human(raw: str, *, context: str, cmd: list[str
         )
 
 
+def assert_learning_audit_fix_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn audit fix JSON") from error
+
+    require_package_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn audit fix JSON must be an object",
+    )
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn audit fix JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is dry_run,
+        context=context,
+        cmd=cmd,
+        message="learn audit fix dryRun flag changed",
+    )
+    require_package_smoke(
+        payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn audit fix applied flag changed",
+    )
+    require_package_smoke(
+        payload.get("cleanupCount") == 2,
+        context=context,
+        cmd=cmd,
+        message="learn audit fix cleanup count should cover duplicate and sensitive entries",
+    )
+
+    before = payload.get("before")
+    require_package_smoke(
+        isinstance(before, dict) and before.get("status") == "warn",
+        context=context,
+        cmd=cmd,
+        message="learn audit fix should start from a warning profile",
+    )
+
+    cleanup = payload.get("cleanup")
+    require_package_smoke(isinstance(cleanup, list), context=context, cmd=cmd, message="learn audit fix cleanup list missing")
+    cleanup_by_entry = {
+        item.get("entryId"): item
+        for item in cleanup
+        if isinstance(item, dict)
+    }
+    for entry_id, action in (
+        ("learn-b", "remove-duplicate"),
+        ("learn-c", "remove-or-redact-sensitive-content"),
+    ):
+        item = cleanup_by_entry.get(entry_id)
+        require_package_smoke(
+            item is not None,
+            context=context,
+            cmd=cmd,
+            message=f"learn audit fix cleanup entry missing: {entry_id}",
+        )
+        require_package_smoke(
+            action in item.get("actions", []),
+            context=context,
+            cmd=cmd,
+            message=f"learn audit fix cleanup action missing for {entry_id}",
+        )
+        require_package_smoke(
+            item.get("commandArgs") == ["design-ai", "learn", "--file", str(profile_path), "--forget", entry_id, "--yes"],
+            context=context,
+            cmd=cmd,
+            message=f"learn audit fix cleanup command args changed for {entry_id}",
+        )
+
+    removed = payload.get("removed")
+    if dry_run:
+        require_package_smoke(removed == [], context=context, cmd=cmd, message="learn audit fix dry run should not remove entries")
+        require_package_smoke(payload.get("after") is None, context=context, cmd=cmd, message="learn audit fix dry run should not include after summary")
+    else:
+        require_package_smoke(isinstance(removed, list), context=context, cmd=cmd, message="learn audit fix removed list missing")
+        require_package_smoke(
+            [item.get("id") for item in removed] == ["learn-b", "learn-c"],
+            context=context,
+            cmd=cmd,
+            message="learn audit fix removed entries changed",
+        )
+        after = payload.get("after")
+        require_package_smoke(
+            isinstance(after, dict) and after.get("status") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn audit fix should leave a passing profile",
+        )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -735,6 +840,33 @@ def assert_learning_audit_cleanup_smoke(
     human_cmd = command_factory("learn", "--audit", "--file", str(profile_path))
     human_result = run_plain(human_cmd, cwd=cwd, env=env)
     assert_learning_audit_cleanup_human(human_result.stdout, context=f"{context} human", cmd=human_cmd)
+
+    fix_dry_run_cmd = command_factory("learn", "--audit", "--fix", "--dry-run", "--file", str(profile_path), "--json")
+    fix_dry_run_result = run_plain(fix_dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_audit_fix_json(
+        fix_dry_run_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} fix dry-run JSON",
+        cmd=fix_dry_run_cmd,
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(dry_run_profile.get("entries", [])) == 3,
+        context=f"{context} fix dry-run profile unchanged",
+        cmd=fix_dry_run_cmd,
+        message="learn audit fix dry-run should leave profile entries unchanged",
+    )
+
+    fix_apply_cmd = command_factory("learn", "--audit", "--fix", "--yes", "--file", str(profile_path), "--json")
+    fix_apply_result = run_plain(fix_apply_cmd, cwd=cwd, env=env)
+    assert_learning_audit_fix_json(
+        fix_apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        context=f"{context} fix apply JSON",
+        cmd=fix_apply_cmd,
+    )
 
 
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1176,6 +1308,86 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_audit_cmd,
         )
+        learning_audit_fix_payload = {
+            "file": str(learning_profile_path),
+            "dryRun": True,
+            "applied": False,
+            "before": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 2,
+            },
+            "cleanupCount": 2,
+            "cleanup": [
+                {
+                    "entryId": "learn-b",
+                    "issueCodes": ["duplicate-entry-text"],
+                    "actions": ["remove-duplicate"],
+                    "commandArgs": duplicate_command_args,
+                    "command": " ".join(duplicate_command_args),
+                },
+                {
+                    "entryId": "learn-c",
+                    "issueCodes": ["sensitive-secret-assignment"],
+                    "actions": ["remove-or-redact-sensitive-content"],
+                    "commandArgs": sensitive_command_args,
+                    "command": " ".join(sensitive_command_args),
+                },
+            ],
+            "skipped": [],
+            "removed": [],
+            "after": None,
+        }
+        learn_audit_fix_cmd = [
+            "design-ai",
+            "learn",
+            "--audit",
+            "--fix",
+            "--dry-run",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        assert_learning_audit_fix_json(
+            json.dumps(learning_audit_fix_payload),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_audit_fix_cmd,
+        )
+        applied_learning_audit_fix_payload = {
+            **learning_audit_fix_payload,
+            "dryRun": False,
+            "applied": True,
+            "removed": [
+                {
+                    "id": "learn-b",
+                    "category": "workflow",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer release notes that state evidence before claims",
+                },
+                {
+                    "id": "learn-c",
+                    "category": "constraint",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                    "textPreview": "Never include api_key=redacted placeholders in prompt context",
+                },
+            ],
+            "after": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+        }
+        assert_learning_audit_fix_json(
+            json.dumps(applied_learning_audit_fix_payload),
+            profile_path=learning_profile_path,
+            dry_run=False,
+            context=context,
+            cmd=["design-ai", "learn", "--audit", "--fix", "--yes", "--file", str(learning_profile_path), "--json"],
+        )
         expect_self_test_failure(
             lambda: assert_learning_audit_cleanup_json(
                 json.dumps({**learning_audit_payload, "suggestions": []}),
@@ -1184,6 +1396,17 @@ def run_self_test() -> None:
                 cmd=learn_audit_cmd,
             ),
             expected="remove-duplicate suggestion missing",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_audit_fix_json(
+                json.dumps({**learning_audit_fix_payload, "cleanup": []}),
+                profile_path=learning_profile_path,
+                dry_run=True,
+                context=context,
+                cmd=learn_audit_fix_cmd,
+            ),
+            expected="learn audit fix cleanup entry missing: learn-b",
             scope="package smoke",
         )
         learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]

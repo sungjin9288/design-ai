@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--remember text\|--list\|--export\|--audit\|--stats\|--forget id\|--clear\] \[--json\]/);
+  assert.match(output, /learn \[--remember text\|--list\|--export\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
@@ -62,7 +62,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--remember text\|--list\|--export\|--audit\|--stats\|--forget id\|--clear\] \[--json\]\s+Manage local learning preferences for prompt personalization/,
+    /learn \[--remember text\|--list\|--export\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]\s+Manage local learning preferences for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
@@ -94,7 +94,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--remember text|--list|--export|--audit|--stats|--forget id|--clear] [--json]",
+    "design-ai learn [--remember text|--list|--export|--audit [--fix]|--stats|--forget id|--clear] [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
 });
@@ -194,6 +194,10 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const learnOutput = await captureStdout(() => runHelp(["learn"]));
   assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--limit N\] \[--json\]/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\]/);
+  assert.match(learnOutput, /design-ai learn --audit --fix --yes \[--json\]/);
+  assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
+  assert.match(learnOutput, /--dry-run\s+Preview --audit --fix cleanup without changing the profile/);
   assert.match(learnOutput, /design-ai learn --stats \[--json\]/);
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
   assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\]/);

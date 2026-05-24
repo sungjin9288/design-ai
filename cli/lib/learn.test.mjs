@@ -7,6 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  applyLearningAuditFixes,
   auditLearningProfile,
   buildLearningContext,
   clearLearning,
@@ -83,6 +84,17 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(auditArgs.action, "audit");
   assert.equal(auditArgs.json, true);
 
+  const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
+  assert.equal(auditFixDryRunArgs.action, "audit");
+  assert.equal(auditFixDryRunArgs.fix, true);
+  assert.equal(auditFixDryRunArgs.dryRun, true);
+  assert.equal(auditFixDryRunArgs.json, true);
+
+  const auditFixApplyArgs = parseLearnArgs(["--audit", "--fix", "--yes"]);
+  assert.equal(auditFixApplyArgs.action, "audit");
+  assert.equal(auditFixApplyArgs.fix, true);
+  assert.equal(auditFixApplyArgs.yes, true);
+
   const statsArgs = parseLearnArgs(["--stats", "--json"]);
   assert.equal(statsArgs.action, "stats");
   assert.equal(statsArgs.json, true);
@@ -104,6 +116,18 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--list", "extra"]),
     /Unexpected learn argument/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--fix"]),
+    /--fix can only be used with --audit/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--audit", "--dry-run"]),
+    /--dry-run requires --fix/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--audit", "--fix", "--dry-run", "--yes"]),
+    /Choose either --dry-run or --yes/,
   );
 });
 
@@ -290,6 +314,99 @@ test("runLearn audit prints suggested cleanup commands for warning profiles", ()
   assert.match(output, /remove-duplicate \(learn-b\)/);
   assert.match(output, /design-ai learn --file/);
   assert.match(output, /--forget learn-b --yes/);
+}));
+
+test("applyLearningAuditFixes previews and applies safe audit cleanup", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "workflow",
+        text: "Prefer release notes that state evidence before claims",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Prefer release notes that state evidence before claims",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "constraint",
+        text: "Never include api_key=redacted placeholders in prompt context",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const dryRun = applyLearningAuditFixes({ filePath, dryRun: true });
+  assert.equal(dryRun.dryRun, true);
+  assert.equal(dryRun.applied, false);
+  assert.equal(dryRun.before.status, "warn");
+  assert.equal(dryRun.cleanupCount, 2);
+  assert.deepEqual(dryRun.cleanup.map((fix) => fix.entryId), ["learn-b", "learn-c"]);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c"]);
+
+  const applied = applyLearningAuditFixes({
+    filePath,
+    dryRun: false,
+    now: new Date("2026-05-22T00:03:00.000Z"),
+  });
+  assert.equal(applied.dryRun, false);
+  assert.equal(applied.applied, true);
+  assert.equal(applied.cleanupCount, 2);
+  assert.deepEqual(applied.removed.map((entry) => entry.id), ["learn-b", "learn-c"]);
+  assert.equal(applied.after.status, "pass");
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
+}));
+
+test("runLearn audit fix supports dry-run and requires confirmation before applying", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const dryRunOutput = await captureStdout(() => runLearn(["--audit", "--fix", "--dry-run", "--file", filePath]));
+  assert.match(dryRunOutput, /Learning audit cleanup dry run/);
+  assert.match(dryRunOutput, /Would remove:/);
+  assert.match(dryRunOutput, /learn-b: remove-duplicate/);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b"]);
+
+  await assert.rejects(
+    () => runLearn(["--audit", "--fix", "--file", filePath]),
+    /Refusing to apply audit cleanup fixes to learning entries without --yes/,
+  );
+
+  const applyJsonOutput = await captureStdout(() => runLearn(["--audit", "--fix", "--yes", "--file", filePath, "--json"]));
+  const payload = JSON.parse(applyJsonOutput);
+  assert.equal(payload.applied, true);
+  assert.equal(payload.cleanupCount, 1);
+  assert.equal(payload.after.status, "pass");
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
 }));
 
 test("auditLearningProfile avoids forget commands when entry ids are ambiguous", () => withTempDir((dir) => {
