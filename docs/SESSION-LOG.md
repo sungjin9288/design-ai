@@ -187,6 +187,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 190)** — Added redaction source portability: `learn --redact` can redact portable learning JSON from `--from-file` or `--stdin` without mutating the active local profile, and package smoke verifies local, file, and stdin redaction through installed-bin and npm exec tarball paths.
 - **v4.13 (Phase 191)** — Added safe learn output files: JSON-producing learn actions and export Markdown can write to `--out` with `--force` overwrite control, and package smoke covers backup/redact file-write paths through installed-bin and npm exec tarball paths.
 - **v4.13 (Phase 192)** — Added brief-relevant learning selection: `prompt`/`pack --with-learning` rank local entries against the current brief before recency fallback, expose selection metadata, and package smoke verifies prompt/pack JSON behavior through installed-bin and npm exec tarball paths.
+- **v4.13 (Phase 193)** — Added release metadata guard coverage for brief-relevant learning selection: release-facing docs now have a drift check so the prompt/pack learning relevance smoke guidance cannot silently disappear.
 
 ## Patterns that didn't work
 

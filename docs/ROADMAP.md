@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 193 — Learning relevance release metadata guard (v4.13.0) ✓ shipped
+
+Release metadata now guards release-facing docs against dropping the brief-relevant prompt/pack learning selection smoke guidance added for `--with-learning`.
+
+### Changed
+- Added a `learn relevance smoke phrase` guard to `tools/audit/release-metadata.py`.
+- Expanded release metadata self-test fixtures with a drift case that fails when brief-relevant prompt/pack learning selection language disappears.
+- Updated release checklist and English/Korean distribution docs so the packed-tarball smoke scope explicitly includes brief-relevant prompt/pack learning selection.
+- Updated changelog, roadmap, and session log for the new release guard.
+
+### Impact
+- README, Korean README, release checklist, and English/Korean distribution docs cannot silently drop the learning relevance smoke guidance while the package smoke still depends on it.
+- This does not change CLI runtime behavior; it only hardens release policy verification and documentation drift detection.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- The Phase 192 learning relevance behavior remains represented in release-facing docs and is protected by the automated release metadata gate.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 192 — Brief-relevant learning injection (v4.13.0) ✓ shipped
 
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank saved local learning entries against the current task brief before applying the existing limit, then fall back to recency for ties or unmatched entries.
