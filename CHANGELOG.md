@@ -94,6 +94,7 @@ Release metadata now guards release-facing docs against dropping learn JSON `--o
 Packed-tarball package smoke now verifies query-filtered learn list/export JSON behavior in installed-bin and one-shot npm exec paths.
 `design-ai learn --list` now accepts `--explain` so query-filtered profile inspection can show selection score, matched tokens, and match reason before learned context is exported or injected.
 Packed-tarball package smoke now verifies query-filtered `learn --list --explain --json` selection metadata in installed-bin and one-shot npm exec paths.
+Release metadata now guards release-facing docs against dropping query-filtered learn list explanation/export JSON smoke guidance.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank local learning entries by brief relevance before falling back to recency, so limited learned context favors the current task.
 Packed-tarball package smoke now verifies brief-relevant learning selection in prompt and pack JSON outputs through installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping brief-relevant prompt/pack learning selection smoke guidance.
