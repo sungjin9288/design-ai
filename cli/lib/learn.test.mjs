@@ -1104,9 +1104,24 @@ test("selectLearningEntries filters by category and limit", () => {
   const profile = {
     version: 1,
     entries: [
-      { id: "learn-a", category: "korean", text: "Prefer Korean density" },
-      { id: "learn-b", category: "brand", text: "Use quiet brand voice" },
-      { id: "learn-c", category: "korean", text: "Use Korean mobile conventions" },
+      {
+        id: "learn-a",
+        category: "korean",
+        text: "Prefer Korean density",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet brand voice",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "korean",
+        text: "Use Korean mobile conventions",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
     ],
   };
 
@@ -1117,6 +1132,14 @@ test("selectLearningEntries filters by category and limit", () => {
   assert.deepEqual(
     selectLearningEntries(profile, { limit: 2 }).map((entry) => entry.id),
     ["learn-b", "learn-c"],
+  );
+  assert.deepEqual(
+    selectLearningEntries(profile, { limit: 1, query: "Korean mobile checkout UX" }).map((entry) => entry.id),
+    ["learn-c"],
+  );
+  assert.deepEqual(
+    selectLearningEntries(profile, { limit: 1, query: "enterprise brand voice" }).map((entry) => entry.id),
+    ["learn-b"],
   );
 });
 
@@ -1227,6 +1250,50 @@ test("buildLearningContext carries audit warnings into learned-context markdown"
   assert.ok(context.auditSummary.warnings >= 1);
   assert.match(context.markdown, /Learning profile audit: warn/);
   assert.match(context.markdown, /design-ai learn --audit/);
+}));
+
+test("buildLearningContext ranks learned entries by brief relevance with recency fallback", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise brand language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-korean",
+        category: "korean",
+        text: "Prefer dense Korean checkout and payment layouts",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-motion",
+        category: "workflow",
+        text: "Keep motion specs short",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const context = buildLearningContext({
+    filePath,
+    limit: 2,
+    query: "Audit Korean checkout UX",
+  });
+
+  assert.equal(context.selection.mode, "brief-relevance");
+  assert.equal(context.selection.candidateCount, 3);
+  assert.equal(context.selection.matchedCount, 1);
+  assert.deepEqual(context.entries.map((entry) => entry.id), ["learn-korean", "learn-motion"]);
+  assert.match(context.markdown, /Learning selection: brief relevance \(1\/3 matched/);
+  assert.match(context.markdown, /\[korean\] Prefer dense Korean checkout and payment layouts/);
 }));
 
 test("buildLearningContext reports empty profiles without creating files", () => withTempDir((dir) => {

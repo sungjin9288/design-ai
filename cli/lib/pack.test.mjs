@@ -208,8 +208,11 @@ test("buildPromptPack passes learning filters through to prompt plan", () => {
 
     assert.equal(pack.plan.learningContext.category, "brand");
     assert.equal(pack.plan.learningContext.limit, 1);
+    assert.equal(pack.plan.learningContext.query, "audit Korean checkout UX");
+    assert.equal(pack.plan.learningContext.selection.mode, "brief-relevance");
     assert.deepEqual(pack.plan.learningContext.entries.map((entry) => entry.id), ["learn-brand"]);
     assert.ok(pack.markdown.includes("[brand] Use quiet brand language"));
+    assert.ok(pack.markdown.includes("Learning selection: brief relevance"));
     assert.ok(!pack.markdown.includes("Prefer Korean mobile density"));
   } finally {
     rmSync(root, { recursive: true, force: true });

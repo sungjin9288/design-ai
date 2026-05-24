@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 192 — Brief-relevant learning injection (v4.13.0) ✓ shipped
+
+`design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank saved local learning entries against the current task brief before applying the existing limit, then fall back to recency for ties or unmatched entries.
+
+### Changed
+- Added lightweight local relevance scoring for learned entries using the current prompt/pack brief, without embeddings, telemetry, or model training.
+- Kept the existing explicit `--with-learning` privacy boundary and the existing `--learning-category` / `--learning-limit` controls.
+- Added learning selection metadata (`mode`, `query`, candidate count, matched count) to prompt/pack JSON output and a compact selection note in the learned-context Markdown block.
+- Expanded unit coverage and packed-tarball smoke so both installed-bin and one-shot `npm exec --package <tarball>` paths verify brief-relevant prompt/pack learning selection.
+- Updated AI learning, quickstart, product readiness, README, changelog, and session docs for the new selection behavior.
+
+### Impact
+- Limited learned context now favors entries that match the current design task, such as Button accessibility preferences for a Button spec, instead of blindly taking the newest saved note.
+- Existing `learn --export`, profile storage, backup/redact/verify/import/audit, and non-learning prompt/pack behavior remain unchanged.
+- When no entry matches the brief, recency remains the fallback so users still get predictable opt-in context.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/prompt.test.mjs cli/lib/pack.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local learning becomes more useful for mixed profiles because prompt/pack can keep the opt-in boundary while selecting the most task-relevant preference subset.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 191 — Learning output file support (v4.13.0) ✓ shipped
 
 `design-ai learn` can now write JSON result artifacts, and `learn --export` Markdown, through `--out file` with `--force` overwrite control.

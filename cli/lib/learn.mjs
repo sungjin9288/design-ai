@@ -1195,17 +1195,93 @@ export function clearLearning({
   };
 }
 
-export function selectLearningEntries(profile, { category = "", limit = 0 } = {}) {
+function learningQueryTokens(query) {
+  return Array.from(new Set(
+    String(query || "")
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu) || [],
+  )).filter((token) => token.length >= 2);
+}
+
+function learningEntryRelevanceScore(entry, queryTokens) {
+  if (queryTokens.length === 0) return 0;
+
+  const text = cleanNoteText(`${entry.category || ""} ${entry.text || ""}`).toLowerCase();
+  if (!text) return 0;
+
+  let score = 0;
+  for (const token of queryTokens) {
+    if (text.includes(token)) {
+      score += token.length >= 4 ? 2 : 1;
+    }
+  }
+  return score;
+}
+
+function learningEntryTime(entry) {
+  const time = Date.parse(entry.createdAt || "");
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function rankLearningEntries(entries, { query = "" } = {}) {
+  const queryTokens = learningQueryTokens(query);
+  const ranked = entries.map((entry, index) => ({
+    entry,
+    index,
+    score: learningEntryRelevanceScore(entry, queryTokens),
+    time: learningEntryTime(entry),
+  }));
+
+  if (queryTokens.length === 0) {
+    return {
+      entries,
+      query: "",
+      mode: "recency",
+      candidateCount: entries.length,
+      matchedCount: 0,
+    };
+  }
+
+  ranked.sort((a, b) => (
+    b.score - a.score
+    || b.time - a.time
+    || b.index - a.index
+  ));
+
+  return {
+    entries: ranked.map((item) => item.entry),
+    query: String(query || "").trim(),
+    mode: "brief-relevance",
+    candidateCount: entries.length,
+    matchedCount: ranked.filter((item) => item.score > 0).length,
+  };
+}
+
+function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" } = {}) {
   const normalizedCategory = category ? normalizeCategory(category) : "";
   const entries = [...profile.entries].filter((entry) => (
     entry.text && (!normalizedCategory || entry.category === normalizedCategory)
   ));
+  const ranked = rankLearningEntries(entries, { query });
+  const selected = Number.isInteger(limit) && limit > 0
+    ? ranked.mode === "brief-relevance"
+      ? ranked.entries.slice(0, limit)
+      : ranked.entries.slice(-limit)
+    : ranked.entries;
 
-  if (Number.isInteger(limit) && limit > 0) {
-    return entries.slice(-limit);
-  }
+  return {
+    entries: selected,
+    selection: {
+      mode: ranked.mode,
+      query: ranked.query,
+      candidateCount: ranked.candidateCount,
+      matchedCount: ranked.matchedCount,
+    },
+  };
+}
 
-  return entries;
+export function selectLearningEntries(profile, { category = "", limit = 0, query = "" } = {}) {
+  return selectLearningEntrySet(profile, { category, limit, query }).entries;
 }
 
 export function recentLearningEntries(profile, limit = 12, options = {}) {
@@ -1220,8 +1296,18 @@ function learningAuditNotice(auditSummary) {
   return `Learning profile audit: ${auditSummary.status} (${auditSummary.failures} failure(s), ${auditSummary.warnings} warning(s)). Run \`design-ai learn --audit\` before relying on this context.`;
 }
 
-export function renderLearningMarkdown(profile, { limit = 12, category = "", auditSummary = null } = {}) {
-  const entries = recentLearningEntries(profile, limit, { category });
+function learningSelectionNotice(selection) {
+  if (!selection || selection.mode !== "brief-relevance") return "";
+  return `Learning selection: brief relevance (${selection.matchedCount}/${selection.candidateCount} matched; recency fallback for ties).`;
+}
+
+export function renderLearningMarkdown(profile, {
+  limit = 12,
+  category = "",
+  query = "",
+  auditSummary = null,
+} = {}) {
+  const { entries, selection } = selectLearningEntrySet(profile, { category, limit, query });
   const lines = ["## Learned design context", ""];
 
   if (entries.length === 0) {
@@ -1236,6 +1322,10 @@ export function renderLearningMarkdown(profile, { limit = 12, category = "", aud
   if (auditNotice) {
     lines.push(auditNotice);
   }
+  const selectionNotice = learningSelectionNotice(selection);
+  if (selectionNotice) {
+    lines.push(selectionNotice);
+  }
   lines.push("");
   for (const entry of entries) {
     lines.push(`- [${entry.category}] ${entry.text}`);
@@ -1243,18 +1333,30 @@ export function renderLearningMarkdown(profile, { limit = 12, category = "", aud
   return lines.join("\n");
 }
 
-export function buildLearningContext({ filePath = defaultLearningFile(), limit = 12, category = "" } = {}) {
+export function buildLearningContext({
+  filePath = defaultLearningFile(),
+  limit = 12,
+  category = "",
+  query = "",
+} = {}) {
   const audit = auditLearningProfile({ filePath });
   const profile = loadLearningProfile(filePath);
-  const entries = recentLearningEntries(profile, limit, { category });
+  const { entries, selection } = selectLearningEntrySet(profile, { category, limit, query });
   return {
     file: filePath,
     category,
     limit,
+    query: String(query || "").trim(),
+    selection,
     entries,
     empty: entries.length === 0,
     auditSummary: audit.summary,
-    markdown: renderLearningMarkdown(profile, { limit, category, auditSummary: audit.summary }),
+    markdown: renderLearningMarkdown(profile, {
+      limit,
+      category,
+      query,
+      auditSummary: audit.summary,
+    }),
   };
 }
 

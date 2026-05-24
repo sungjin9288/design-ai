@@ -252,8 +252,11 @@ test("buildPromptPlan can filter explicit learning context", () => {
 
     assert.equal(plan.learningContext.category, "korean");
     assert.equal(plan.learningContext.limit, 1);
+    assert.equal(plan.learningContext.query, "audit Korean checkout UX");
+    assert.equal(plan.learningContext.selection.mode, "brief-relevance");
     assert.deepEqual(plan.learningContext.entries.map((entry) => entry.id), ["learn-korean-new"]);
     assert.ok(plan.prompt.includes("[korean] Use KakaoTalk-style consent copy"));
+    assert.ok(plan.prompt.includes("Learning selection: brief relevance"));
     assert.ok(!plan.prompt.includes("Use quiet brand language"));
   } finally {
     rmSync(root, { recursive: true, force: true });

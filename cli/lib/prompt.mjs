@@ -206,6 +206,7 @@ export function buildPromptPlan({
       filePath: learningFilePath || undefined,
       category: learningCategory,
       limit: learningLimit || 12,
+      query: brief,
     })
     : null;
 

@@ -15,7 +15,7 @@ function printHelp() {
   console.log("  --from-file file  Read the task brief from a markdown/text file");
   console.log("  --stdin           Read the task brief from standard input");
   console.log("  --route id        Force a route id from `design-ai route --json`");
-  console.log("  --with-learning   Include local learning preferences from `design-ai learn`");
+  console.log("  --with-learning   Include brief-relevant local learning preferences from `design-ai learn`");
   console.log("  --learning-category kind  Include only one learning category; requires --with-learning");
   console.log("  --learning-limit N        Limit included learning entries, 1-100; requires --with-learning");
   console.log("  --max-bytes N     Maximum context bytes to include, 1000-1000000. Default: 120000");

@@ -2012,6 +2012,165 @@ def assert_pack_stdin_smoke(
     )
 
 
+def write_learning_relevance_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:02.000Z",
+                "entries": [
+                    {
+                        "id": "learn-brand",
+                        "category": "brand",
+                        "text": "Use quiet enterprise brand language",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                    {
+                        "id": "learn-unrelated-newer",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile checkout layout",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:02.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def assert_learning_relevance_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
+    learning_context = payload.get("learningContext")
+    require_package_smoke(
+        isinstance(learning_context, dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext should be present when --with-learning is used",
+    )
+
+    selection = learning_context.get("selection")
+    require_package_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext selection metadata missing",
+    )
+    require_package_smoke(
+        selection.get("mode") == "brief-relevance",
+        context=context,
+        cmd=cmd,
+        message="learningContext should use brief-relevance selection",
+    )
+    require_package_smoke(
+        selection.get("candidateCount") == 3,
+        context=context,
+        cmd=cmd,
+        message="learningContext candidate count changed",
+    )
+    require_package_smoke(
+        selection.get("matchedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learningContext should report at least one relevant match",
+    )
+
+    entries = learning_context.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == 1,
+        context=context,
+        cmd=cmd,
+        message="learningContext should include the single limited entry",
+    )
+    require_package_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="brief relevance should pick the Button accessibility entry over the newer unrelated entry",
+    )
+
+    prompt = payload.get("prompt")
+    require_package_smoke(isinstance(prompt, str), context=context, cmd=cmd, message="prompt should be a string")
+    require_package_smoke(
+        "Learning selection: brief relevance" in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should disclose brief-relevance learning selection",
+    )
+    require_package_smoke(
+        "Prioritize keyboard accessibility details" in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should include the relevant learning entry",
+    )
+    require_package_smoke(
+        "dense Korean mobile checkout" not in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should exclude the newer unrelated learning entry when limit is 1",
+    )
+
+
+def assert_learning_relevance_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_relevance_fixture(profile_path)
+    relevance_env = env.copy()
+    relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    prompt_cmd = command_factory(
+        "prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-learning",
+        "--learning-limit",
+        "1",
+        "--json",
+    )
+    prompt_result = run_plain(prompt_cmd, cwd=cwd, env=relevance_env)
+    try:
+        prompt_payload = json.loads(prompt_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse prompt learning relevance JSON") from error
+    assert_learning_relevance_context(prompt_payload, context=f"{context} prompt", cmd=prompt_cmd)
+
+    pack_cmd = command_factory(
+        "pack",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-learning",
+        "--learning-limit",
+        "1",
+        "--max-bytes",
+        str(EXPECTED_PACK_MAX_BYTES),
+        "--json",
+    )
+    pack_result = run_plain(pack_cmd, cwd=cwd, env=relevance_env)
+    try:
+        pack_payload = json.loads(pack_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse pack learning relevance JSON") from error
+    plan = pack_payload.get("plan")
+    require_package_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
+    assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
@@ -2329,6 +2488,55 @@ def run_self_test() -> None:
                 cmd=learn_verify_cmd,
             ),
             expected="learn verify importable flag changed",
+            scope="package smoke",
+        )
+
+        learning_relevance_payload = {
+            "learningContext": {
+                "selection": {
+                    "mode": "brief-relevance",
+                    "query": EXPECTED_ROUTE_BRIEF,
+                    "candidateCount": 3,
+                    "matchedCount": 1,
+                },
+                "entries": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                    },
+                ],
+            },
+            "prompt": (
+                "Learning selection: brief relevance\n"
+                "Prioritize keyboard accessibility details for Button component API specs"
+            ),
+        }
+        learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
+        assert_learning_relevance_context(
+            learning_relevance_payload,
+            context=context,
+            cmd=learning_relevance_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_relevance_context(
+                {
+                    **learning_relevance_payload,
+                    "learningContext": {
+                        **learning_relevance_payload["learningContext"],
+                        "entries": [
+                            {
+                                "id": "learn-unrelated-newer",
+                                "category": "korean",
+                                "text": "Prefer dense Korean mobile checkout layout",
+                            },
+                        ],
+                    },
+                },
+                context=context,
+                cmd=learning_relevance_cmd,
+            ),
+            expected="brief relevance should pick the Button accessibility entry",
             scope="package smoke",
         )
 
@@ -3102,6 +3310,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn audit cleanup",
         )
+        assert_learning_relevance_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-learning-relevance.json",
+            env=smoke_env,
+            context="package smoke installed bin learning relevance",
+        )
         assert_update_dry_run_smoke(
             [str(bin_path), "update", "--dry-run"],
             env=smoke_env,
@@ -3734,6 +3948,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn audit cleanup",
+        )
+        assert_learning_relevance_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-learning-relevance.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learning relevance",
         )
         assert_update_dry_run_smoke(
             npm_exec_cmd(tarball, "update", "--dry-run"),
