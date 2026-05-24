@@ -90,6 +90,8 @@ Release metadata now guards release-facing docs against dropping JSON `design-ai
 `design-ai learn` JSON outputs and `learn --export` Markdown now support `--out file` with `--force` overwrite control, so learning artifacts can be written without shell redirection.
 Packed-tarball package smoke now verifies learn JSON `--out` file-write confirmations and forced overwrite behavior for backup/redact outputs in installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping learn JSON `--out` file-write guidance.
+`design-ai learn --list` and `learn --export` now accept `--query text` so users can inspect matching local learning entries without recency fallback.
+Packed-tarball package smoke now verifies query-filtered learn list/export JSON behavior in installed-bin and one-shot npm exec paths.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank local learning entries by brief relevance before falling back to recency, so limited learned context favors the current task.
 Packed-tarball package smoke now verifies brief-relevant learning selection in prompt and pack JSON outputs through installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping brief-relevant prompt/pack learning selection smoke guidance.

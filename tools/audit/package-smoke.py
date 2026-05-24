@@ -2170,6 +2170,121 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
     )
 
 
+def assert_learning_query_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn query JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn query file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("query") == "keyboard accessibility",
+        context=context,
+        cmd=cmd,
+        message="learn query text changed",
+    )
+    require_package_smoke(
+        payload.get("count") == 1 and payload.get("totalCount") == 3,
+        context=context,
+        cmd=cmd,
+        message="learn query should return only the matching entry while reporting total profile size",
+    )
+
+    entries = payload.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query entries list should contain exactly one matching entry",
+    )
+    require_package_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learn query should return the Button accessibility entry",
+    )
+
+
+def assert_learning_query_export_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn query export JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query export JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn query export file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("query") == "keyboard accessibility",
+        context=context,
+        cmd=cmd,
+        message="learn query export text changed",
+    )
+    selection = payload.get("selection")
+    require_package_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learn query export selection metadata missing",
+    )
+    require_package_smoke(
+        selection.get("fallbackEnabled") is False and selection.get("fallbackCount") == 0,
+        context=context,
+        cmd=cmd,
+        message="learn query export should not use recency fallback",
+    )
+    require_package_smoke(
+        selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn query export should select one matching entry",
+    )
+    entries = payload.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query export entries list should contain exactly one matching entry",
+    )
+    require_package_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learn query export should return the Button accessibility entry",
+    )
+    markdown = payload.get("markdown")
+    require_package_smoke(
+        isinstance(markdown, str) and "no recency fallback" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn query export markdown should disclose that fallback is disabled",
+    )
+
+
 def assert_learning_relevance_smoke(
     command_factory,
     profile_path: Path,
@@ -2181,6 +2296,40 @@ def assert_learning_relevance_smoke(
     write_learning_relevance_fixture(profile_path)
     relevance_env = env.copy()
     relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    list_cmd = command_factory(
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--limit",
+        "2",
+        "--json",
+    )
+    list_result = run_plain(list_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_json(
+        list_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} learn query list",
+        cmd=list_cmd,
+    )
+
+    export_cmd = command_factory(
+        "learn",
+        "--export",
+        "--query",
+        "keyboard accessibility",
+        "--limit",
+        "2",
+        "--json",
+    )
+    export_result = run_plain(export_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_export_json(
+        export_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} learn query export",
+        cmd=export_cmd,
+    )
 
     prompt_cmd = command_factory(
         "prompt",
@@ -2538,6 +2687,118 @@ def run_self_test() -> None:
                 cmd=learn_verify_cmd,
             ),
             expected="learn verify importable flag changed",
+            scope="package smoke",
+        )
+
+        learning_query_payload = {
+            "file": str(learning_profile_path),
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:02.000Z",
+            "category": "",
+            "query": "keyboard accessibility",
+            "limit": 2,
+            "entries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "text": "Prioritize keyboard accessibility details for Button component API specs",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+            "count": 1,
+            "totalCount": 3,
+        }
+        learn_query_cmd = [
+            "design-ai",
+            "learn",
+            "--list",
+            "--query",
+            "keyboard accessibility",
+            "--limit",
+            "2",
+            "--json",
+        ]
+        assert_learning_query_json(
+            json.dumps(learning_query_payload),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_query_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_json(
+                json.dumps({**learning_query_payload, "count": 2}),
+                profile_path=learning_profile_path,
+                context=context,
+                cmd=learn_query_cmd,
+            ),
+            expected="learn query should return only the matching entry",
+            scope="package smoke",
+        )
+
+        learning_query_export_payload = {
+            "file": str(learning_profile_path),
+            "category": "",
+            "limit": 2,
+            "query": "keyboard accessibility",
+            "selection": {
+                "mode": "brief-relevance",
+                "query": "keyboard accessibility",
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "queryTokenCount": 2,
+                "fallbackEnabled": False,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 4,
+                        "matchedTokens": ["keyboard", "accessibility"],
+                        "reason": "brief-match",
+                    },
+                ],
+            },
+            "entries": learning_query_payload["entries"],
+            "empty": False,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
+        }
+        learn_query_export_cmd = [
+            "design-ai",
+            "learn",
+            "--export",
+            "--query",
+            "keyboard accessibility",
+            "--limit",
+            "2",
+            "--json",
+        ]
+        assert_learning_query_export_json(
+            json.dumps(learning_query_export_payload),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_query_export_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_export_json(
+                json.dumps({
+                    **learning_query_export_payload,
+                    "selection": {
+                        **learning_query_export_payload["selection"],
+                        "fallbackEnabled": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                context=context,
+                cmd=learn_query_export_cmd,
+            ),
+            expected="learn query export should not use recency fallback",
             scope="package smoke",
         )
 

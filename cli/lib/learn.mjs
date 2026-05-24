@@ -26,6 +26,7 @@ const LEARN_OPTIONS = [
   "--out",
   "--output",
   "--force",
+  "--query",
   "--list",
   "--export",
   "--import",
@@ -135,6 +136,7 @@ export function parseLearnArgs(args) {
     filePath: "",
     outPath: "",
     force: false,
+    query: "",
     forgetTarget: "",
     limit: 0,
     fix: false,
@@ -176,6 +178,11 @@ export function parseLearnArgs(args) {
       out.fix = true;
     } else if (arg === "--dry-run") {
       out.dryRun = true;
+    } else if (arg === "--query") {
+      const query = args[i + 1];
+      if (!query || query.startsWith("--")) throw new Error("--query expects search text");
+      out.query = String(query).trim();
+      i += 1;
     } else if (arg === "--outcome") {
       const outcome = args[i + 1];
       if (!outcome || outcome.startsWith("--")) throw new Error("--outcome expects keep, improve, or avoid");
@@ -249,6 +256,9 @@ export function parseLearnArgs(args) {
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
   }
+  if (out.query && !["list", "export"].includes(out.action)) {
+    throw new Error("--query can only be used with --list or --export");
+  }
   if (!out.help && out.outPath && out.action !== "export" && !out.json) {
     throw new Error("--out requires --json for learn actions other than --export");
   }
@@ -260,6 +270,7 @@ export function parseLearnArgs(args) {
     filePath: path.resolve(out.filePath || defaultLearningFile()),
     category: normalizeCategory(out.category),
     feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),
+    query: out.query,
     brief: out.noteParts.join(" ").trim(),
   };
 }
@@ -1284,17 +1295,25 @@ function learningSelectionItem(item, mode) {
   };
 }
 
-function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" } = {}) {
+function selectLearningEntrySet(profile, {
+  category = "",
+  limit = 0,
+  query = "",
+  includeFallback = true,
+} = {}) {
   const normalizedCategory = category ? normalizeCategory(category) : "";
   const entries = [...profile.entries].filter((entry) => (
     entry.text && (!normalizedCategory || entry.category === normalizedCategory)
   ));
   const ranked = rankLearningEntries(entries, { query });
+  const rankedItems = ranked.mode === "brief-relevance" && !includeFallback
+    ? ranked.ranked.filter((item) => item.score > 0)
+    : ranked.ranked;
   const selectedItems = Number.isInteger(limit) && limit > 0
     ? ranked.mode === "brief-relevance"
-      ? ranked.ranked.slice(0, limit)
-      : ranked.ranked.slice(-limit)
-    : ranked.ranked;
+      ? rankedItems.slice(0, limit)
+      : rankedItems.slice(-limit)
+    : rankedItems;
   const selected = selectedItems.map((item) => item.entry);
 
   return {
@@ -1305,6 +1324,7 @@ function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" 
       candidateCount: ranked.candidateCount,
       matchedCount: ranked.matchedCount,
       queryTokenCount: ranked.queryTokenCount,
+      fallbackEnabled: ranked.mode === "brief-relevance" ? includeFallback : false,
       selectedCount: selected.length,
       fallbackCount: ranked.mode === "brief-relevance"
         ? selectedItems.filter((item) => item.score === 0).length
@@ -1314,8 +1334,18 @@ function selectLearningEntrySet(profile, { category = "", limit = 0, query = "" 
   };
 }
 
-export function selectLearningEntries(profile, { category = "", limit = 0, query = "" } = {}) {
-  return selectLearningEntrySet(profile, { category, limit, query }).entries;
+export function selectLearningEntries(profile, {
+  category = "",
+  limit = 0,
+  query = "",
+  includeFallback = true,
+} = {}) {
+  return selectLearningEntrySet(profile, {
+    category,
+    limit,
+    query,
+    includeFallback,
+  }).entries;
 }
 
 export function recentLearningEntries(profile, limit = 12, options = {}) {
@@ -1332,20 +1362,29 @@ function learningAuditNotice(auditSummary) {
 
 function learningSelectionNotice(selection) {
   if (!selection || selection.mode !== "brief-relevance") return "";
-  return `Learning selection: brief relevance (${selection.matchedCount}/${selection.candidateCount} matched; recency fallback for ties).`;
+  const fallback = selection.fallbackEnabled
+    ? "recency fallback for ties"
+    : "no recency fallback";
+  return `Learning selection: brief relevance (${selection.matchedCount}/${selection.candidateCount} matched; ${fallback}).`;
 }
 
 export function renderLearningMarkdown(profile, {
   limit = 12,
   category = "",
   query = "",
+  includeFallback = true,
   auditSummary = null,
 } = {}) {
-  const { entries, selection } = selectLearningEntrySet(profile, { category, limit, query });
+  const { entries, selection } = selectLearningEntrySet(profile, {
+    category,
+    limit,
+    query,
+    includeFallback,
+  });
   const lines = ["## Learned design context", ""];
 
   if (entries.length === 0) {
-    lines.push(category
+    lines.push(category || query
       ? "No local learning preferences match the current filters."
       : "No local learning preferences are stored yet.");
     return lines.join("\n");
@@ -1372,10 +1411,16 @@ export function buildLearningContext({
   limit = 12,
   category = "",
   query = "",
+  includeFallback = true,
 } = {}) {
   const audit = auditLearningProfile({ filePath });
   const profile = loadLearningProfile(filePath);
-  const { entries, selection } = selectLearningEntrySet(profile, { category, limit, query });
+  const { entries, selection } = selectLearningEntrySet(profile, {
+    category,
+    limit,
+    query,
+    includeFallback,
+  });
   return {
     file: filePath,
     category,
@@ -1389,6 +1434,7 @@ export function buildLearningContext({
       limit,
       category,
       query,
+      includeFallback,
       auditSummary: audit.summary,
     }),
   };

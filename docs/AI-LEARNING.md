@@ -8,7 +8,7 @@ What ships in v4.13:
 
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
 - `design-ai learn --feedback ...` converts outcome feedback into reusable local learning notes.
-- `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
+- `design-ai learn --list` shows saved entries, with optional `--category`, `--query`, and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
 - `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted from the local profile, `--from-file`, or `--stdin`.
@@ -74,6 +74,7 @@ List saved preferences:
 design-ai learn --list
 design-ai learn --list --json
 design-ai learn --list --category korean --limit 5
+design-ai learn --list --query "keyboard accessibility" --json
 ```
 
 Export the learned context block:
@@ -81,10 +82,11 @@ Export the learned context block:
 ```bash
 design-ai learn --export
 design-ai learn --export --category accessibility --limit 3
+design-ai learn --export --query "pricing page" --limit 3
 design-ai learn --export --out learned-context.md
 ```
 
-The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings. `--out` writes the Markdown block for `--export`, and refuses to overwrite an existing file unless `--force` is provided.
+`--query` filters list/export output to entries whose category or text matches the query tokens. Unlike prompt/pack learning injection, query-filtered list/export does not fill remaining limit slots with recency fallback entries, so it is safe for profile inspection. The exported block includes profile audit metadata in JSON mode. Human Markdown stays compact when the profile passes audit, and includes a warning notice when the profile has audit warnings. `--out` writes the Markdown block for `--export`, and refuses to overwrite an existing file unless `--force` is provided.
 
 Back up the full local profile:
 
@@ -201,7 +203,7 @@ Learning entries are treated as preferences, not absolute instructions. They mus
 - Legal or policy constraints.
 - Checked knowledge files and route playbooks.
 
-Use `--with-learning` only when saved context should influence the current task. The CLI prioritizes entries whose category/text match the current brief, then falls back to recent entries when the limit still has room. Inspect `learningContext.selection` in `--json` output when you need to confirm whether an entry was selected by brief match or recency fallback. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small subset should influence the prompt.
+Use `--with-learning` only when saved context should influence the current task. The CLI prioritizes entries whose category/text match the current brief, then falls back to recent entries when the limit still has room. Inspect `learningContext.selection` in `--json` output when you need to confirm whether an entry was selected by brief match or recency fallback. Add `--learning-category <kind>` and `--learning-limit <N>` when only one category or a small subset should influence the prompt. Use `design-ai learn --list --query <text>` or `design-ai learn --export --query <text>` when you want to inspect matching local preferences without recency fallback.
 
 Run `design-ai learn --audit` before exporting or injecting a profile that may contain copied project notes, credentials, contact details, or stale entries. Follow the Suggested cleanup section when it recommends removal; rewrite and re-add entries when the issue is sensitive content or an overlong note that still contains useful preference signal.
 

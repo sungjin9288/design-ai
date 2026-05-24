@@ -97,6 +97,20 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(filteredListArgs.categorySpecified, true);
   assert.equal(filteredListArgs.limit, 5);
 
+  const queryListArgs = parseLearnArgs(["--list", "--query", "keyboard accessibility", "--limit", "2"]);
+  assert.equal(queryListArgs.action, "list");
+  assert.equal(queryListArgs.query, "keyboard accessibility");
+  assert.equal(queryListArgs.limit, 2);
+
+  const queryDefaultArgs = parseLearnArgs(["--query", "pricing"]);
+  assert.equal(queryDefaultArgs.action, "list");
+  assert.equal(queryDefaultArgs.query, "pricing");
+
+  const queryExportArgs = parseLearnArgs(["--export", "--query", "brand voice", "--json"]);
+  assert.equal(queryExportArgs.action, "export");
+  assert.equal(queryExportArgs.query, "brand voice");
+  assert.equal(queryExportArgs.json, true);
+
   const forgetArgs = parseLearnArgs(["--forget", "learn-a", "--yes", "--json"]);
   assert.equal(forgetArgs.action, "forget");
   assert.equal(forgetArgs.forgetTarget, "learn-a");
@@ -184,8 +198,16 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /--limit expects an integer from 1 to 100/,
   );
   assert.throws(
+    () => parseLearnArgs(["--query"]),
+    /--query expects search text/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--list", "extra"]),
     /Unexpected learn argument/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--remember", "x", "--query", "brand"]),
+    /--query can only be used with --list or --export/,
   );
   assert.throws(
     () => parseLearnArgs(["--fix"]),
@@ -1100,6 +1122,90 @@ test("learningStats reports missing and invalid profiles without mutating files"
   assert.equal(readFileSync(filePath, "utf8"), invalidJson);
 }));
 
+test("runLearn list and export filter learned entries by query without fallback", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise brand language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility in Button specs",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-korean",
+        category: "korean",
+        text: "Prefer dense Korean mobile layouts",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const listOutput = await captureStdout(() => runLearn([
+    "--list",
+    "--query",
+    "keyboard accessibility",
+    "--file",
+    filePath,
+  ]));
+
+  assert.match(listOutput, /Query: keyboard accessibility/);
+  assert.match(listOutput, /\[accessibility\] Prioritize keyboard accessibility/);
+  assert.doesNotMatch(listOutput, /dense Korean mobile/);
+  assert.doesNotMatch(listOutput, /quiet enterprise brand/);
+
+  const listJsonOutput = await captureStdout(() => runLearn([
+    "--list",
+    "--query",
+    "keyboard accessibility",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const listPayload = JSON.parse(listJsonOutput);
+  assert.equal(listPayload.query, "keyboard accessibility");
+  assert.equal(listPayload.count, 1);
+  assert.equal(listPayload.totalCount, 3);
+  assert.deepEqual(listPayload.entries.map((entry) => entry.id), ["learn-a11y"]);
+
+  const exportJsonOutput = await captureStdout(() => runLearn([
+    "--export",
+    "--query",
+    "keyboard accessibility",
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const exportPayload = JSON.parse(exportJsonOutput);
+  assert.equal(exportPayload.query, "keyboard accessibility");
+  assert.equal(exportPayload.selection.mode, "brief-relevance");
+  assert.equal(exportPayload.selection.fallbackEnabled, false);
+  assert.equal(exportPayload.selection.fallbackCount, 0);
+  assert.equal(exportPayload.selection.selectedCount, 1);
+  assert.deepEqual(exportPayload.entries.map((entry) => entry.id), ["learn-a11y"]);
+  assert.match(exportPayload.markdown, /no recency fallback/);
+
+  const emptyExport = await captureStdout(() => runLearn([
+    "--export",
+    "--query",
+    "pricing page",
+    "--file",
+    filePath,
+  ]));
+  assert.match(emptyExport, /No local learning preferences match the current filters/);
+}));
+
 test("selectLearningEntries filters by category and limit", () => {
   const profile = {
     version: 1,
@@ -1140,6 +1246,21 @@ test("selectLearningEntries filters by category and limit", () => {
   assert.deepEqual(
     selectLearningEntries(profile, { limit: 1, query: "enterprise brand voice" }).map((entry) => entry.id),
     ["learn-b"],
+  );
+  assert.deepEqual(
+    selectLearningEntries(profile, {
+      limit: 2,
+      query: "enterprise brand voice",
+      includeFallback: false,
+    }).map((entry) => entry.id),
+    ["learn-b"],
+  );
+  assert.deepEqual(
+    selectLearningEntries(profile, {
+      query: "pricing page",
+      includeFallback: false,
+    }).map((entry) => entry.id),
+    [],
   );
 });
 

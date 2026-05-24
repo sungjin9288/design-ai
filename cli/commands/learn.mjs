@@ -27,14 +27,14 @@ import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai learn [--list] [--category kind] [--limit N] [--json] [--out file] [--force]");
+  console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
   console.log("        cat notes.md | design-ai learn --feedback --stdin [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --from-file notes.md [--category kind] [--json] [--out file] [--force]");
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --export [--category kind] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --export [--category kind] [--query text] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --backup [--json] [--out file] [--force]");
   console.log("        design-ai learn --redact [--json] [--out file] [--force]");
   console.log("        design-ai learn --redact --from-file learning-backup.json [--json] [--out file] [--force]");
@@ -58,6 +58,7 @@ function printHelp() {
   console.log("  --from-file file     Read remember/feedback text or import/verify/redact JSON from a file");
   console.log("  --stdin              Read remember/feedback text or import/verify/redact JSON from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
+  console.log("  --query text         Filter list/export output to entries whose category or text matches the query");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
@@ -86,6 +87,8 @@ function printHelp() {
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
+  console.log("  design-ai learn --list --query \"keyboard accessibility\" --json");
+  console.log("  design-ai learn --export --query \"pricing page\" --limit 3");
   console.log("  design-ai learn --backup --json --out learning-backup.json");
   console.log("  design-ai learn --redact --json --out learning-redacted.json");
   console.log("  design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force");
@@ -124,18 +127,23 @@ function learningFilter(parsed) {
   return {
     category: parsed.categorySpecified ? parsed.category : "",
     limit: parsed.limit,
+    query: parsed.query,
   };
 }
 
 function listPayload(filePath, parsed) {
   const profile = loadLearningProfile(filePath);
   const filter = learningFilter(parsed);
-  const entries = selectLearningEntries(profile, filter);
+  const entries = selectLearningEntries(profile, {
+    ...filter,
+    includeFallback: false,
+  });
   return {
     file: filePath,
     version: profile.version,
     updatedAt: profile.updatedAt,
     category: filter.category,
+    query: filter.query,
     limit: filter.limit || null,
     entries,
     count: entries.length,
@@ -148,11 +156,12 @@ function printList(payload) {
   info(`File: ${payload.file}`);
   info(`Entries: ${payload.count}/${payload.totalCount}`);
   if (payload.category) info(`Category: ${payload.category}`);
+  if (payload.query) info(`Query: ${payload.query}`);
   if (payload.limit) info(`Limit: ${payload.limit}`);
   console.log();
 
   if (payload.entries.length === 0) {
-    console.log(payload.category || payload.limit
+    console.log(payload.category || payload.query || payload.limit
       ? "No local learning preferences match the current filters."
       : "No local learning preferences are stored yet.");
     return;
@@ -393,7 +402,9 @@ export async function runLearn(args) {
     const context = buildLearningContext({
       filePath: parsed.filePath,
       category: filter.category,
+      query: filter.query,
       limit: filter.limit || 12,
+      includeFallback: false,
     });
     printOrWriteContent(
       parsed,

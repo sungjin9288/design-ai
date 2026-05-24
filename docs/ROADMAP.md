@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 195 — Query-filtered learning inspection (v4.13.0) ✓ shipped
+
+`design-ai learn --list` and `learn --export` can now inspect local learning entries by query without recency fallback.
+
+### Changed
+- Added `--query text` to `design-ai learn --list` and `design-ai learn --export`.
+- Reused the existing lightweight learning relevance scorer so query-filtered inspection ranks matching entries by category/text relevance.
+- Disabled recency fallback for query-filtered list/export so profile inspection only returns entries that actually match the query.
+- Kept prompt/pack `--with-learning` behavior unchanged: prompt injection still ranks by brief relevance and can use recency fallback when the learning limit has room.
+- Updated help, unit tests, package smoke, AI learning docs, quickstart docs, product readiness, changelog, roadmap, and session log for the new query-filtered learning inspection path.
+
+### Impact
+- Users can search a growing local learning profile before deciding whether to export, clean up, or inject preferences into a prompt.
+- The feature remains local and read-only for list/export; it does not add telemetry, embeddings, model training, or automatic feedback capture.
+- Existing category/limit filters, prompt/pack learning injection, and learning profile storage remain compatible.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local learning remains explicit and inspectable as profiles grow beyond a handful of entries.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 194 — Explainable learning selection metadata (v4.13.0) ✓ shipped
 
 `prompt`/`pack --with-learning --json` now explain why each selected learning entry was included.
