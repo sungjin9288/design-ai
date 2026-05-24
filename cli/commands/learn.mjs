@@ -10,6 +10,7 @@ import {
   applyLearningAuditFixes,
   buildLearningBackup,
   buildLearningContext,
+  buildRedactedLearningBackup,
   clearLearning,
   forgetLearning,
   formatLearningJson,
@@ -34,6 +35,7 @@ function printHelp() {
   console.log("        cat notes.md | design-ai learn --stdin [--category kind] [--json]");
   console.log("        design-ai learn --export [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --backup [--json]");
+  console.log("        design-ai learn --redact [--json]");
   console.log("        design-ai learn --verify --from-file learning.json [--json]");
   console.log("        cat learning.json | design-ai learn --verify --stdin [--json]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json]");
@@ -57,6 +59,7 @@ function printHelp() {
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
   console.log("  --backup             Print a full portable learning-profile backup; use --json for importable JSON");
+  console.log("  --redact             Print a portable JSON backup with sensitive-looking text redacted");
   console.log("  --verify             Validate a portable learning JSON payload without importing it");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
@@ -79,6 +82,7 @@ function printHelp() {
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --backup --json > learning-backup.json");
+  console.log("  design-ai learn --redact --json > learning-redacted.json");
   console.log("  design-ai learn --verify --from-file learning-backup.json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
@@ -426,6 +430,34 @@ export async function runLearn(args) {
     info(`Exported: ${payload.exportedAt}`);
     console.log();
     console.log("Run `design-ai learn --backup --json > learning-backup.json` to save a full portable JSON backup.");
+    return;
+  }
+
+  if (parsed.action === "redact") {
+    const payload = buildRedactedLearningBackup({ filePath: parsed.filePath });
+    if (parsed.json) {
+      console.log(formatLearningJson(payload));
+      return;
+    }
+
+    header("design-ai learn", "Redacted learning profile backup");
+    info(`File: ${payload.file}`);
+    info(`Entries: ${payload.count}`);
+    info(`Redacted entries: ${payload.redactedCount}`);
+    info(`Source audit: ${payload.sourceAuditSummary.status} (${payload.sourceAuditSummary.failures} failure(s), ${payload.sourceAuditSummary.warnings} warning(s))`);
+    info(`Redacted audit: ${payload.auditSummary.status} (${payload.auditSummary.failures} failure(s), ${payload.auditSummary.warnings} warning(s))`);
+    info(`Exported: ${payload.exportedAt}`);
+    console.log();
+    if (payload.redactions.length === 0) {
+      console.log("No sensitive-looking learning text was redacted. No changes made.");
+    } else {
+      console.log("Redacted:");
+      for (const redaction of payload.redactions) {
+        console.log(`- ${redaction.entryId}: ${redaction.codes.join(", ")}`);
+      }
+      console.log();
+      console.log("No changes made. Run `design-ai learn --redact --json > learning-redacted.json` to save the redacted portable JSON.");
+    }
     return;
   }
 

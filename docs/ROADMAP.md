@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 189 — Redacted portable learning backup (v4.13.0) ✓ shipped
+
+`design-ai learn` can now produce an importable portable profile with sensitive-looking entry text redacted before sharing.
+
+### Changed
+- Added `design-ai learn --redact [--json]` as a read-only export path for shareable learning-profile backups.
+- Reused the learning audit sensitive-content patterns so private key blocks, secret-like assignments, OpenAI-style keys, email addresses, and Korean mobile phone numbers are replaced with `[REDACTED:<code>]` markers in exported entries.
+- Added redaction metadata: `redacted`, `redactedCount`, `sourceAuditSummary`, post-redaction `auditSummary`, and per-entry `redactions`.
+- Expanded help, unit tests, package smoke, release metadata policy guards, README, quickstart, distribution, and AI learning docs for the redacted export path.
+
+### Impact
+- Users can create a safer portable profile for support, team review, or repository handoff without mutating the source local profile.
+- Redacted output keeps the same `entries` shape as backup/import payloads, so it can be verified with `learn --verify` before import.
+- Existing remember, feedback, list/export/backup/verify/import, audit/fix, stats, forget/clear, and prompt/pack learning injection behavior remains unchanged.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run release:check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Teams can share learning profiles with a first-pass privacy guard before manual review and import verification.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 188 — Portable learning import verification (v4.13.0) ✓ shipped
 
 `design-ai learn` can now validate portable learning JSON before import without touching the local profile.

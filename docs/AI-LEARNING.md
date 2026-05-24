@@ -11,6 +11,7 @@ What ships in v4.13:
 - `design-ai learn --list` shows saved entries, with optional `--category` and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
+- `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
@@ -91,6 +92,14 @@ design-ai learn --backup --json > learning-backup.json
 
 Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then imported on another machine with `design-ai learn --import`.
 
+Create a redacted portable profile before sharing:
+
+```bash
+design-ai learn --redact --json > learning-redacted.json
+```
+
+Redacted JSON keeps the same importable `entries` shape as a backup, but replaces conservative sensitive-content matches with `[REDACTED:<code>]` markers and includes `redactions`, `sourceAuditSummary`, and post-redaction `auditSummary` fields. It is read-only and does not change the source profile.
+
 Verify a portable learning payload before importing:
 
 ```bash
@@ -104,6 +113,7 @@ Import a portable learning profile:
 
 ```bash
 design-ai learn --backup --json > learning-backup.json
+design-ai learn --redact --json > learning-redacted.json
 design-ai learn --verify --from-file learning-backup.json
 design-ai learn --import --from-file learning-backup.json --dry-run
 cat learning-backup.json | design-ai learn --import --stdin --yes
@@ -195,6 +205,8 @@ Use `design-ai learn --stats` when you need a quick read on profile size, catego
 Use `design-ai learn --feedback` only for durable preferences you want future prompts to see. Do not store one-off task corrections, private project facts, credentials, contact details, or unresolved critique as feedback entries.
 
 Use `design-ai learn --verify --from-file` before reviewing or applying a profile from another machine or repository. It confirms the payload is importable without touching your current local profile.
+
+Use `design-ai learn --redact --json` before sending a learning profile to another person, repository, or support channel. Review the resulting `redactions` list and then run `design-ai learn --verify --from-file learning-redacted.json` if the redacted profile will be imported elsewhere.
 
 Use `design-ai learn --import --dry-run` before applying a profile from another machine or repository. Audit the source first when it may include copied project notes, credentials, contact details, or stale entries.
 

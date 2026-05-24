@@ -11,6 +11,7 @@ import {
   auditLearningProfile,
   buildLearningContext,
   buildLearningBackup,
+  buildRedactedLearningBackup,
   clearLearning,
   forgetLearning,
   importLearningProfile,
@@ -115,6 +116,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   const backupArgs = parseLearnArgs(["--backup", "--json"]);
   assert.equal(backupArgs.action, "backup");
   assert.equal(backupArgs.json, true);
+
+  const redactArgs = parseLearnArgs(["--redact", "--json"]);
+  assert.equal(redactArgs.action, "redact");
+  assert.equal(redactArgs.json, true);
 
   const verifyArgs = parseLearnArgs(["--verify", "--from-file", "learning-backup.json", "--json"]);
   assert.equal(verifyArgs.action, "verify");
@@ -388,6 +393,49 @@ test("buildLearningBackup returns a full importable learning profile payload", (
   assert.deepEqual(backup.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.deepEqual(backup.entries.map((entry) => entry.category), ["korean", "workflow"]);
   assert.equal(backup.entries[0].text, "Prefer dense Korean product UI");
+}));
+
+test("buildRedactedLearningBackup returns an importable profile with sensitive text redacted", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "constraint",
+        text: "Never include api_key: sk-test12345678901234567890 in examples",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "korean",
+        text: "Prefer compact Korean mobile layouts",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const redacted = buildRedactedLearningBackup({
+    filePath,
+    now: new Date("2026-05-22T00:02:00.000Z"),
+  });
+
+  assert.equal(redacted.file, filePath);
+  assert.equal(redacted.exportedAt, "2026-05-22T00:02:00.000Z");
+  assert.equal(redacted.redacted, true);
+  assert.equal(redacted.count, 2);
+  assert.equal(redacted.redactedCount, 1);
+  assert.equal(redacted.sourceAuditSummary.status, "warn");
+  assert.equal(redacted.auditSummary.status, "pass");
+  assert.deepEqual(redacted.redactions[0].codes, ["sensitive-secret-assignment", "sensitive-openai-secret-key"]);
+  assert.match(redacted.entries[0].text, /\[REDACTED:secret-assignment\]/);
+  assert.match(redacted.entries[0].text, /\[REDACTED:openai-secret-key\]/);
+  assert.doesNotMatch(redacted.entries[0].text, /sk-test/);
+  assert.equal(redacted.entries[1].text, "Prefer compact Korean mobile layouts");
+  assert.equal(loadLearningProfile(filePath).entries[0].text, "Never include api_key: sk-test12345678901234567890 in examples");
 }));
 
 test("verifyLearningImportPayload validates portable learning JSON without importing", () => {
@@ -671,6 +719,40 @@ test("runLearn backup emits human summary and portable JSON payload", () => with
   assert.deepEqual(payload.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.equal(payload.entries[0].category, "korean");
   assert.equal(payload.entries[0].text, "Prefer compact Korean dashboards");
+}));
+
+test("runLearn redact emits human summary and redacted portable JSON without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "constraint",
+        text: "Avoid storing token=sk-test12345678901234567890 in learning notes",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const humanOutput = await captureStdout(() => runLearn(["--redact", "--file", filePath]));
+  assert.match(humanOutput, /Redacted learning profile backup/);
+  assert.match(humanOutput, /Redacted entries: 1/);
+  assert.match(humanOutput, /learn-a: sensitive-secret-assignment, sensitive-openai-secret-key/);
+  assert.match(humanOutput, /No changes made/);
+
+  const jsonOutput = await captureStdout(() => runLearn(["--redact", "--file", filePath, "--json"]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.redacted, true);
+  assert.equal(payload.redactedCount, 1);
+  assert.equal(payload.auditSummary.status, "pass");
+  assert.doesNotMatch(payload.entries[0].text, /sk-test/);
+  assert.match(payload.entries[0].text, /\[REDACTED:secret-assignment\]/);
+  assert.equal(loadLearningProfile(filePath).entries[0].text, "Avoid storing token=sk-test12345678901234567890 in learning notes");
 }));
 
 test("runLearn verify validates portable learning JSON without mutating the target profile", () => withTempDirAsync(async (dir) => {

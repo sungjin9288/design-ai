@@ -83,6 +83,9 @@ Packed-tarball package smoke now verifies learn-feedback JSON behavior in instal
 `design-ai learn --backup --json` now emits a full portable learning-profile backup with all entries, export timestamp, and audit summary.
 Packed-tarball package smoke now verifies learn-backup JSON behavior in installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping JSON `design-ai learn --backup` smoke guidance.
+`design-ai learn --redact --json` now emits a portable learning-profile backup with sensitive-looking entry text replaced by redaction markers.
+Packed-tarball package smoke now verifies learn-redact JSON behavior in installed-bin and one-shot npm exec paths.
+Release metadata now guards release-facing docs against dropping JSON `design-ai learn --redact` smoke guidance.
 `design-ai learn --verify` now validates portable learning JSON from `--from-file` or `--stdin` without mutating the local profile.
 Packed-tarball package smoke now verifies learn-verify JSON behavior in installed-bin and one-shot npm exec paths.
 Packed-tarball package smoke now retries transient one-shot `npm exec` cache ENOENT failures once with a fresh npm cache while preserving CLI assertion failures.

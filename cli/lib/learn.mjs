@@ -27,6 +27,7 @@ const LEARN_OPTIONS = [
   "--import",
   "--backup",
   "--verify",
+  "--redact",
   "--audit",
   "--stats",
   "--fix",
@@ -159,6 +160,8 @@ export function parseLearnArgs(args) {
       setAction(out, "backup");
     } else if (arg === "--verify") {
       setAction(out, "verify");
+    } else if (arg === "--redact") {
+      setAction(out, "redact");
     } else if (arg === "--audit") {
       setAction(out, "audit");
     } else if (arg === "--stats") {
@@ -901,6 +904,78 @@ export function verifyLearningImportPayload({
     auditSummary: audit.summary,
     issues: audit.issues,
     entries: importedEntries.map(statsEntry),
+  };
+}
+
+function globalSensitivePattern(pattern) {
+  const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
+  return new RegExp(pattern.source, flags);
+}
+
+function redactLearningText(text) {
+  let redactedText = String(text || "");
+  const codes = [];
+
+  for (const sensitivePattern of LEARNING_SENSITIVE_PATTERNS) {
+    const pattern = globalSensitivePattern(sensitivePattern.pattern);
+    if (!pattern.test(redactedText)) continue;
+
+    codes.push(`sensitive-${sensitivePattern.code}`);
+    redactedText = redactedText.replace(pattern, `[REDACTED:${sensitivePattern.code}]`);
+  }
+
+  return {
+    text: redactedText,
+    codes,
+    redacted: codes.length > 0,
+  };
+}
+
+export function buildRedactedLearningBackup({
+  filePath = defaultLearningFile(),
+  now = new Date(),
+} = {}) {
+  const sourceAudit = auditLearningProfile({ filePath });
+  const profile = loadLearningProfile(filePath);
+  const redactions = [];
+  const entries = profile.entries.map((entry) => {
+    const redacted = redactLearningText(entry.text);
+    if (!redacted.redacted) return entry;
+
+    const nextEntry = {
+      ...entry,
+      text: redacted.text,
+    };
+    redactions.push({
+      entryId: entry.id,
+      category: entry.category,
+      codes: redacted.codes,
+      textPreview: previewText(nextEntry.text),
+    });
+    return nextEntry;
+  });
+  const redactedProfile = {
+    version: profile.version,
+    updatedAt: profile.updatedAt,
+    entries,
+  };
+  const redactedAudit = auditLearningProfileObject(redactedProfile, {
+    filePath,
+    exists: sourceAudit.exists,
+  });
+
+  return {
+    file: filePath,
+    version: profile.version,
+    updatedAt: profile.updatedAt,
+    exportedAt: now.toISOString(),
+    redacted: true,
+    count: entries.length,
+    redactedCount: redactions.length,
+    sourceAuditSummary: sourceAudit.summary,
+    auditSummary: redactedAudit.summary,
+    redactions,
+    entries,
   };
 }
 

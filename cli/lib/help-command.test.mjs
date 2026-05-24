@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]/);
+  assert.match(output, /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
@@ -62,7 +62,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]\s+Manage local learning preferences for prompt personalization/,
+    /learn \[--remember text\|--feedback text\|--list\|--export\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\]\s+Manage local learning preferences for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
@@ -94,7 +94,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--remember text|--feedback text|--list|--export|--backup|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json]",
+    "design-ai learn [--remember text|--feedback text|--list|--export|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
 });
@@ -200,6 +200,8 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--outcome kind\s+Feedback outcome: keep, improve, avoid\. Default: improve/);
   assert.match(learnOutput, /design-ai learn --backup \[--json\]/);
   assert.match(learnOutput, /--backup\s+Print a full portable learning-profile backup; use --json for importable JSON/);
+  assert.match(learnOutput, /design-ai learn --redact \[--json\]/);
+  assert.match(learnOutput, /--redact\s+Print a portable JSON backup with sensitive-looking text redacted/);
   assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\]/);
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\]/);
   assert.match(learnOutput, /--verify\s+Validate a portable learning JSON payload without importing it/);

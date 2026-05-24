@@ -1063,6 +1063,36 @@ def write_learning_import_target_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_redaction_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:01.000Z",
+                "entries": [
+                    {
+                        "id": "learn-sensitive",
+                        "category": "constraint",
+                        "text": "Never include api_key: sk-test12345678901234567890 in shared learning profiles",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "learn-clean",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile layouts",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def learning_import_payload_text() -> str:
     return json.dumps(
         {
@@ -1291,6 +1321,130 @@ def assert_learning_backup_smoke(
         expected_status="pass",
         context=context,
         cmd=cmd,
+    )
+
+
+def assert_learning_redact_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    expected_count: int,
+    expected_redacted_count: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn redact JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn redact JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn redact JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(payload.get("redacted") is True, context=context, cmd=cmd, message="learn redact marker missing")
+    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn redact count changed")
+    require_package_smoke(
+        payload.get("redactedCount") == expected_redacted_count,
+        context=context,
+        cmd=cmd,
+        message="learn redact redactedCount changed",
+    )
+
+    source_audit = payload.get("sourceAuditSummary")
+    require_package_smoke(
+        isinstance(source_audit, dict) and source_audit.get("status") == "warn",
+        context=context,
+        cmd=cmd,
+        message="learn redact source audit should warn for the fixture",
+    )
+    audit_summary = payload.get("auditSummary")
+    require_package_smoke(
+        isinstance(audit_summary, dict) and audit_summary.get("status") == "pass",
+        context=context,
+        cmd=cmd,
+        message="learn redact redacted audit should pass for the fixture",
+    )
+
+    redactions = payload.get("redactions")
+    require_package_smoke(
+        isinstance(redactions, list) and len(redactions) == expected_redacted_count,
+        context=context,
+        cmd=cmd,
+        message="learn redact redactions list changed",
+    )
+    require_package_smoke(
+        redactions and redactions[0].get("entryId") == "learn-sensitive",
+        context=context,
+        cmd=cmd,
+        message="learn redact should report the sensitive entry id",
+    )
+    require_package_smoke(
+        set(redactions[0].get("codes", [])) >= {"sensitive-secret-assignment", "sensitive-openai-secret-key"},
+        context=context,
+        cmd=cmd,
+        message="learn redact should report sensitive pattern codes",
+    )
+
+    entries = payload.get("entries")
+    require_package_smoke(
+        isinstance(entries, list) and len(entries) == expected_count,
+        context=context,
+        cmd=cmd,
+        message="learn redact entries list changed",
+    )
+    sensitive_entry = next((entry for entry in entries if entry.get("id") == "learn-sensitive"), None)
+    require_package_smoke(isinstance(sensitive_entry, dict), context=context, cmd=cmd, message="learn redact sensitive entry missing")
+    redacted_text = sensitive_entry.get("text", "")
+    require_package_smoke(
+        "[REDACTED:secret-assignment]" in redacted_text and "[REDACTED:openai-secret-key]" in redacted_text,
+        context=context,
+        cmd=cmd,
+        message="learn redact did not include redaction markers",
+    )
+    require_package_smoke(
+        "sk-test" not in redacted_text and "api_key" not in redacted_text,
+        context=context,
+        cmd=cmd,
+        message="learn redact leaked sensitive-looking text",
+    )
+
+
+def assert_learning_redact_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_redaction_fixture(profile_path)
+    cmd = command_factory(
+        "learn",
+        "--redact",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_redact_json(
+        result.stdout,
+        profile_path=profile_path,
+        expected_count=2,
+        expected_redacted_count=1,
+        context=context,
+        cmd=cmd,
+    )
+    source_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        "sk-test12345678901234567890" in source_profile["entries"][0]["text"],
+        context=f"{context} source profile unchanged",
+        cmd=cmd,
+        message="learn redact should not mutate the source profile",
     )
 
 
@@ -1965,6 +2119,71 @@ def run_self_test() -> None:
                 cmd=learn_backup_cmd,
             ),
             expected="learn backup entries list changed",
+            scope="package smoke",
+        )
+
+        learning_redact_payload = {
+            "file": str(learning_profile_path),
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:01.000Z",
+            "exportedAt": "2026-05-24T00:00:00.000Z",
+            "redacted": True,
+            "count": 2,
+            "redactedCount": 1,
+            "sourceAuditSummary": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 2,
+            },
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "redactions": [
+                {
+                    "entryId": "learn-sensitive",
+                    "category": "constraint",
+                    "codes": ["sensitive-secret-assignment", "sensitive-openai-secret-key"],
+                    "textPreview": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared...",
+                },
+            ],
+            "entries": [
+                {
+                    "id": "learn-sensitive",
+                    "category": "constraint",
+                    "text": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared learning profiles",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+                {
+                    "id": "learn-clean",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+        }
+        learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_profile_path), "--json"]
+        assert_learning_redact_json(
+            json.dumps(learning_redact_payload),
+            profile_path=learning_profile_path,
+            expected_count=2,
+            expected_redacted_count=1,
+            context=context,
+            cmd=learn_redact_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_redact_json(
+                json.dumps({**learning_redact_payload, "redactedCount": 0}),
+                profile_path=learning_profile_path,
+                expected_count=2,
+                expected_redacted_count=1,
+                context=context,
+                cmd=learn_redact_cmd,
+            ),
+            expected="learn redact redactedCount changed",
             scope="package smoke",
         )
 
@@ -2762,6 +2981,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn backup",
         )
+        assert_learning_redact_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-redact-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn redact",
+        )
         assert_learning_verify_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-verify-learning.json",
@@ -3385,6 +3610,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn backup",
+        )
+        assert_learning_redact_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-redact-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn redact",
         )
         assert_learning_verify_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),
