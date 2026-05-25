@@ -789,6 +789,14 @@ RELEASE_LEARN_BACKUP_TERM_GROUPS = (
         "learning backup",
     ),
 )
+RELEASE_REGISTRY_LEARN_BACKUP_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --backup` output",
+        "public registry design-ai learn --backup JSON output",
+        "public registry learn backup JSON output",
+        "registry learn backup JSON output",
+    ),
+)
 RELEASE_LEARN_REDACT_TERM_GROUPS = (
     (
         "JSON `design-ai learn --redact` output",
@@ -1014,6 +1022,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "audit JSON repository-audit phrase",
     "learn feedback smoke phrase",
     "learn backup smoke phrase",
+    "registry learn backup smoke phrase",
     "learn redact smoke phrase",
     "learn output file smoke phrase",
     "learn verify smoke phrase",
@@ -1130,6 +1139,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("learn feedback smoke phrase", RELEASE_LEARN_FEEDBACK_TERM_GROUPS),
     ("learn backup smoke phrase", RELEASE_LEARN_BACKUP_TERM_GROUPS),
+    ("registry learn backup smoke phrase", RELEASE_REGISTRY_LEARN_BACKUP_TERM_GROUPS),
     ("learn redact smoke phrase", RELEASE_LEARN_REDACT_TERM_GROUPS),
     ("learn output file smoke phrase", RELEASE_LEARN_OUTPUT_FILE_TERM_GROUPS),
     ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
@@ -1488,6 +1498,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
+public registry JSON `design-ai learn --backup` output,
 public registry human / JSON `design-ai learn --stats` profile summary output,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
@@ -1542,6 +1553,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
+public registry JSON `design-ai learn --backup` output도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
@@ -1853,6 +1865,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry smoke command phrase"
         in registry_smoke_command_drift_errors,
         "release policy docs should mention registry:smoke command guidance",
+    )
+
+    registry_learn_backup_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --backup` output",
+                "public registry learning backup overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_backup_drift_errors = "\n".join(registry_learn_backup_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn backup smoke phrase"
+        in registry_learn_backup_drift_errors,
+        "release policy docs should mention public registry learn backup smoke",
     )
 
     registry_learn_stats_drift = release_metadata_summary(

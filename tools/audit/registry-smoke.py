@@ -338,6 +338,153 @@ def write_learning_stats_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_backup_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:01.000Z",
+                "entries": [
+                    {
+                        "id": "registry-backup-brand",
+                        "category": "brand",
+                        "text": "Use quiet enterprise language",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "registry-backup-korean",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile layouts",
+                        "source": "feedback:keep",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def assert_learning_backup_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn backup JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn backup JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn backup JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("version") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn backup version changed",
+    )
+    require_registry_smoke(
+        payload.get("updatedAt") == "2026-05-22T00:00:01.000Z",
+        context=context,
+        cmd=cmd,
+        message="learn backup updatedAt changed",
+    )
+    require_registry_smoke(
+        payload.get("count") == 2,
+        context=context,
+        cmd=cmd,
+        message="learn backup count changed",
+    )
+    require_registry_smoke(
+        isinstance(payload.get("exportedAt"), str) and payload.get("exportedAt"),
+        context=context,
+        cmd=cmd,
+        message="learn backup exportedAt missing",
+    )
+
+    audit_summary = payload.get("auditSummary")
+    require_registry_smoke(
+        isinstance(audit_summary, dict)
+        and audit_summary.get("status") == "pass"
+        and audit_summary.get("failures") == 0
+        and audit_summary.get("warnings") == 0,
+        context=context,
+        cmd=cmd,
+        message="learn backup audit summary changed",
+    )
+
+    entries = payload.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 2,
+        context=context,
+        cmd=cmd,
+        message="learn backup entries list changed",
+    )
+    require_registry_smoke(
+        all(
+            isinstance(entry, dict)
+            and isinstance(entry.get("text"), str)
+            and entry.get("text")
+            for entry in entries
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn backup entries should preserve full text",
+    )
+
+    entry_by_id = {entry.get("id"): entry for entry in entries if isinstance(entry, dict)}
+    first_entry = entry_by_id.get("registry-backup-brand")
+    second_entry = entry_by_id.get("registry-backup-korean")
+    require_registry_smoke(
+        isinstance(first_entry, dict)
+        and first_entry.get("category") == "brand"
+        and first_entry.get("text") == "Use quiet enterprise language"
+        and first_entry.get("source") == "registry-smoke",
+        context=context,
+        cmd=cmd,
+        message="learn backup first entry changed",
+    )
+    require_registry_smoke(
+        isinstance(second_entry, dict)
+        and second_entry.get("category") == "korean"
+        and second_entry.get("text") == "Prefer dense Korean mobile layouts"
+        and second_entry.get("source") == "feedback:keep",
+        context=context,
+        cmd=cmd,
+        message="learn backup second entry changed",
+    )
+
+
+def assert_learning_backup_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_backup_fixture(profile_path)
+    cmd = command_factory("learn", "--backup", "--file", str(profile_path), "--json")
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_backup_json(result.stdout, profile_path=profile_path, context=context, cmd=cmd)
+
+
 def assert_learning_stats_json(
     raw: str,
     *,
@@ -1561,6 +1708,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec audit JSON",
         )
+        assert_learning_backup_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-backup-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn backup",
+        )
         assert_learning_stats_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
             npx_root / "registry-stats-learning.json",
@@ -1649,6 +1803,72 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
             expected="failed to read registry smoke doctor JSON",
+            scope="registry smoke",
+        )
+
+        learning_backup_path = tmp_root / "learning-backup.json"
+        learning_backup_payload = {
+            "file": str(learning_backup_path),
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:01.000Z",
+            "exportedAt": "2026-05-22T00:01:00.000Z",
+            "count": 2,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "entries": [
+                {
+                    "id": "registry-backup-brand",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+                {
+                    "id": "registry-backup-korean",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "feedback:keep",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+        }
+        learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_backup_path), "--json"]
+        assert_learning_backup_json(
+            json.dumps(learning_backup_payload),
+            profile_path=learning_backup_path,
+            context="registry smoke self-test",
+            cmd=learn_backup_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_backup_json(
+                json.dumps({**learning_backup_payload, "entries": []}),
+                profile_path=learning_backup_path,
+                context="registry smoke self-test",
+                cmd=learn_backup_cmd,
+            ),
+            expected="learn backup entries list changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_backup_json(
+                json.dumps({
+                    **learning_backup_payload,
+                    "entries": [
+                        {
+                            **learning_backup_payload["entries"][0],
+                            "text": "",
+                        },
+                        learning_backup_payload["entries"][1],
+                    ],
+                }),
+                profile_path=learning_backup_path,
+                context="registry smoke self-test",
+                cmd=learn_backup_cmd,
+            ),
+            expected="learn backup entries should preserve full text",
             scope="registry smoke",
         )
 
