@@ -296,6 +296,202 @@ def read_help_topics(cmd: list[str], *, env: dict[str, str], cwd: Path | None = 
     return parse_help_topics(result.stdout, context="registry smoke help catalog", cmd=cmd)
 
 
+def require_registry_smoke(condition: bool, *, context: str, cmd: list[str], message: str) -> None:
+    if not condition:
+        raise SystemExit(f"{context}: {message}: {format_cmd(cmd)}")
+
+
+def write_learning_stats_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:03.000Z",
+                "entries": [
+                    {
+                        "id": "registry-brand",
+                        "category": "brand",
+                        "text": "Use quiet enterprise brand language",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "registry-a11y",
+                        "category": "accessibility",
+                        "text": "Prefer keyboard-first critique notes",
+                        "source": "feedback:keep",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                    {
+                        "id": "registry-korean",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile layouts with compact controls",
+                        "source": "import:cli",
+                        "createdAt": "2026-05-22T00:00:03.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def assert_learning_stats_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn stats JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn stats JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn stats JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("exists") is True,
+        context=context,
+        cmd=cmd,
+        message="learn stats profile should exist",
+    )
+    require_registry_smoke(
+        payload.get("version") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn stats version changed",
+    )
+    require_registry_smoke(
+        payload.get("updatedAt") == "2026-05-22T00:00:03.000Z",
+        context=context,
+        cmd=cmd,
+        message="learn stats updatedAt changed",
+    )
+    require_registry_smoke(
+        payload.get("count") == 3,
+        context=context,
+        cmd=cmd,
+        message="learn stats entry count changed",
+    )
+
+    category_counts = payload.get("categoryCounts")
+    require_registry_smoke(
+        isinstance(category_counts, dict)
+        and category_counts.get("brand") == 1
+        and category_counts.get("accessibility") == 1
+        and category_counts.get("korean") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn stats category distribution changed",
+    )
+    source_counts = payload.get("sourceCounts")
+    require_registry_smoke(
+        isinstance(source_counts, dict)
+        and source_counts.get("registry-smoke") == 1
+        and source_counts.get("feedback:keep") == 1
+        and source_counts.get("import:cli") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn stats source distribution changed",
+    )
+
+    audit_summary = payload.get("auditSummary")
+    require_registry_smoke(
+        isinstance(audit_summary, dict)
+        and audit_summary.get("status") == "pass"
+        and audit_summary.get("failures") == 0
+        and audit_summary.get("warnings") == 0,
+        context=context,
+        cmd=cmd,
+        message="learn stats audit summary changed",
+    )
+
+    latest = payload.get("latestEntry")
+    oldest = payload.get("oldestEntry")
+    require_registry_smoke(
+        isinstance(latest, dict)
+        and latest.get("id") == "registry-korean"
+        and latest.get("category") == "korean"
+        and latest.get("source") == "import:cli"
+        and latest.get("textPreview") == "Prefer dense Korean mobile layouts with compact controls",
+        context=context,
+        cmd=cmd,
+        message="learn stats latest entry summary changed",
+    )
+    require_registry_smoke(
+        isinstance(oldest, dict)
+        and oldest.get("id") == "registry-brand"
+        and oldest.get("category") == "brand"
+        and oldest.get("source") == "registry-smoke",
+        context=context,
+        cmd=cmd,
+        message="learn stats oldest entry summary changed",
+    )
+
+
+def assert_learning_stats_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Local learning profile stats",
+        "Exists: yes",
+        "Entries: 3",
+        "Updated: 2026-05-22T00:00:03.000Z",
+        "Audit: pass (0 failure(s), 0 warning(s))",
+        "Categories: brand 1, accessibility 1, korean 1",
+        "Sources: registry-smoke 1, feedback:keep 1, import:cli 1",
+        "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+        "registry-korean",
+        "Oldest: [brand] Use quiet enterprise brand language",
+        "registry-brand",
+        "2026-05-22T00:00:00.000Z",
+        "2026-05-22T00:00:03.000Z",
+    ):
+        require_registry_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn stats human output missing {expected!r}",
+        )
+
+
+def assert_learning_stats_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_stats_fixture(profile_path)
+
+    human_cmd = command_factory("learn", "--stats", "--file", str(profile_path))
+    human_result = run_plain(human_cmd, cwd=cwd, env=env)
+    assert_learning_stats_human(human_result.stdout, context=f"{context} human", cmd=human_cmd)
+
+    json_cmd = command_factory("learn", "--stats", "--file", str(profile_path), "--json")
+    json_result = run_plain(json_cmd, cwd=cwd, env=env)
+    assert_learning_stats_json(
+        json_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} JSON",
+        cmd=json_cmd,
+    )
+
+
 def assert_help_topic_smoke(
     cmd: list[str],
     *,
@@ -1365,6 +1561,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec audit JSON",
         )
+        assert_learning_stats_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-stats-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn stats",
+        )
         assert_update_dry_run_smoke(
             npm_exec_cmd(package_spec, "update", "--dry-run"),
             cwd=npx_root,
@@ -1446,6 +1649,110 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
             expected="failed to read registry smoke doctor JSON",
+            scope="registry smoke",
+        )
+
+        learning_profile_path = tmp_root / "learning-stats.json"
+        learning_stats_payload = {
+            "file": str(learning_profile_path),
+            "exists": True,
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:03.000Z",
+            "count": 3,
+            "categoryCounts": {
+                "brand": 1,
+                "accessibility": 1,
+                "korean": 1,
+            },
+            "sourceCounts": {
+                "registry-smoke": 1,
+                "feedback:keep": 1,
+                "import:cli": 1,
+            },
+            "oldestEntry": {
+                "id": "registry-brand",
+                "category": "brand",
+                "source": "registry-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+                "textPreview": "Use quiet enterprise brand language",
+            },
+            "latestEntry": {
+                "id": "registry-korean",
+                "category": "korean",
+                "source": "import:cli",
+                "createdAt": "2026-05-22T00:00:03.000Z",
+                "textPreview": "Prefer dense Korean mobile layouts with compact controls",
+            },
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+        }
+        learn_stats_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path), "--json"]
+        assert_learning_stats_json(
+            json.dumps(learning_stats_payload),
+            profile_path=learning_profile_path,
+            context="registry smoke self-test",
+            cmd=learn_stats_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_stats_json(
+                json.dumps({
+                    **learning_stats_payload,
+                    "sourceCounts": {
+                        "registry-smoke": 3,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                context="registry smoke self-test",
+                cmd=learn_stats_cmd,
+            ),
+            expected="learn stats source distribution changed",
+            scope="registry smoke",
+        )
+        learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
+        assert_learning_stats_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning profile stats",
+                f"File: {learning_profile_path}",
+                "Exists: yes",
+                "Entries: 3",
+                "Updated: 2026-05-22T00:00:03.000Z",
+                "Audit: pass (0 failure(s), 0 warning(s))",
+                "Categories: brand 1, accessibility 1, korean 1",
+                "Sources: registry-smoke 1, feedback:keep 1, import:cli 1",
+                "",
+                "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+                "        registry-korean - 2026-05-22T00:00:03.000Z",
+                "Oldest: [brand] Use quiet enterprise brand language",
+                "        registry-brand - 2026-05-22T00:00:00.000Z",
+            ]),
+            context="registry smoke self-test",
+            cmd=learn_stats_human_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_stats_human(
+                "\n".join([
+                    "design-ai learn",
+                    "Local learning profile stats",
+                    f"File: {learning_profile_path}",
+                    "Exists: yes",
+                    "Entries: 3",
+                    "Updated: 2026-05-22T00:00:03.000Z",
+                    "Audit: pass (0 failure(s), 0 warning(s))",
+                    "Categories: brand 1, accessibility 1, korean 1",
+                    "",
+                    "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+                    "        registry-korean - 2026-05-22T00:00:03.000Z",
+                    "Oldest: [brand] Use quiet enterprise brand language",
+                    "        registry-brand - 2026-05-22T00:00:00.000Z",
+                ]),
+                context="registry smoke self-test",
+                cmd=learn_stats_human_cmd,
+            ),
+            expected="learn stats human output missing 'Sources: registry-smoke 1, feedback:keep 1, import:cli 1'",
             scope="registry smoke",
         )
 

@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 200 — Public registry learning stats smoke (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now verifies `learn --stats` human and JSON output from the published npm package path.
+
+### Changed
+- Added a registry-smoke learning stats fixture with category/source distribution and deterministic recency metadata.
+- Added human and JSON assertions for `learn --stats`, including profile count, category counts, source counts, audit status, latest entry, and oldest entry summaries.
+- Wired the stats smoke into the public `npm exec --package @design-ai/cli@<version>` registry path.
+- Expanded registry-smoke self-test fixtures for stats JSON and human output drift.
+- Added release metadata wording protection for public registry human / JSON `design-ai learn --stats` profile summary output.
+- Updated release-facing docs, changelog, roadmap, and session log for the new registry smoke coverage.
+
+### Impact
+- The post-publish smoke now catches registry-only packaging/runtime regressions in `learn --stats`, not only version/help/catalog/audit/install lifecycle regressions.
+- This does not change CLI runtime behavior, local learning profile storage, audit logic, package smoke commands, or prompt/pack learned-context injection.
+
+### Verified
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Local learning overview health checks now have both packed-tarball and public-registry release confidence before external launch.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 199 — Learning stats package smoke (v4.13.0) ✓ shipped
 
 Packed-tarball package smoke now verifies `learn --stats` human and JSON output through both tarball execution paths.

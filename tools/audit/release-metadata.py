@@ -842,6 +842,14 @@ RELEASE_LEARN_STATS_TERM_GROUPS = (
         "learning stats profile summary",
     ),
 )
+RELEASE_REGISTRY_LEARN_STATS_TERM_GROUPS = (
+    (
+        "public registry human / JSON `design-ai learn --stats` profile summary output",
+        "public registry human / JSON design-ai learn --stats profile summary output",
+        "public registry learn stats profile summary output",
+        "registry learn stats profile summary output",
+    ),
+)
 RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS = (
     (
         "query-filtered human learn list explanation and export JSON output",
@@ -1011,6 +1019,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn verify smoke phrase",
     "learn import smoke phrase",
     "learn stats smoke phrase",
+    "registry learn stats smoke phrase",
     "learn query explain smoke phrase",
     "learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
@@ -1126,6 +1135,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
     ("learn stats smoke phrase", RELEASE_LEARN_STATS_TERM_GROUPS),
+    ("registry learn stats smoke phrase", RELEASE_REGISTRY_LEARN_STATS_TERM_GROUPS),
     ("learn query explain smoke phrase", RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS),
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
@@ -1478,6 +1488,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
+public registry human / JSON `design-ai learn --stats` profile summary output,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
 `npm test` CLI unit tests,
@@ -1531,6 +1542,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
+public registry human / JSON `design-ai learn --stats` profile summary output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
 `npm test` CLI unit test 실행도 확인하고,
@@ -1841,6 +1853,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry smoke command phrase"
         in registry_smoke_command_drift_errors,
         "release policy docs should mention registry:smoke command guidance",
+    )
+
+    registry_learn_stats_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry human / JSON `design-ai learn --stats` profile summary output",
+                "public registry learning profile overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_stats_drift_errors = "\n".join(registry_learn_stats_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn stats smoke phrase"
+        in registry_learn_stats_drift_errors,
+        "release policy docs should mention public registry learn stats smoke",
     )
 
     package_contents_command_drift = release_metadata_summary(
