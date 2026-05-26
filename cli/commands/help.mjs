@@ -35,7 +35,7 @@ export const HELP_COMMANDS = [
   { topic: "routes", usage: "routes [--json]", description: "List available route ids" },
   { topic: "prompt", usage: "prompt <brief|--from-file file|--stdin> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--out file]", description: "Generate a ready-to-use agent prompt" },
   { topic: "pack", usage: "pack <brief|--from-file file|--stdin> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--max-bytes N]", description: "Generate prompt plus bounded context with summary" },
-  { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes]", description: "Check generated Markdown artifact quality; add --issues-only" },
+  { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]", description: "Check generated Markdown artifact quality; add --issues-only or --learn" },
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
@@ -214,6 +214,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
+  console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);

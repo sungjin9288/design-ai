@@ -3,21 +3,26 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  buildCheckLearningCapture,
   checkAllExampleArtifacts,
   checkArtifactContent,
   checkExampleArtifacts,
   formatCheckJson,
   parseCheckArgs,
 } from "./check.mjs";
+import { loadLearningProfile } from "./learn.mjs";
+import { PACKAGE_ROOT } from "./paths.mjs";
 import { runCheck } from "../commands/check.mjs";
 
 const GOOD_ARTIFACT = `
@@ -86,6 +91,9 @@ test("parseCheckArgs supports file, stdin, strict, and json", () => {
     strict: true,
     routeId: "",
     json: true,
+    learn: false,
+    yes: false,
+    learningFilePath: "",
     help: false,
   });
 
@@ -99,10 +107,28 @@ test("parseCheckArgs supports file, stdin, strict, and json", () => {
     strict: false,
     routeId: "",
     json: false,
+    learn: false,
+    yes: false,
+    learningFilePath: "",
     help: false,
   });
 
   assert.equal(parseCheckArgs(["artifact.md", "--route", "component-spec"]).routeId, "component-spec");
+  assert.deepEqual(parseCheckArgs(["artifact.md", "--learn", "--yes", "--learning-file", "learning.json"]), {
+    target: "artifact.md",
+    stdin: false,
+    examples: false,
+    allRoutes: false,
+    issuesOnly: false,
+    limit: 3,
+    strict: false,
+    routeId: "",
+    json: false,
+    learn: true,
+    yes: true,
+    learningFilePath: "learning.json",
+    help: false,
+  });
   assert.deepEqual(parseCheckArgs(["--examples", "--route", "component-spec", "--limit", "5"]).examples, true);
   assert.deepEqual(parseCheckArgs(["--examples", "--route", "component-spec", "--limit", "5"]).limit, 5);
   assert.deepEqual(parseCheckArgs(["--examples", "--all-routes", "--limit", "2"]).allRoutes, true);
@@ -119,6 +145,10 @@ test("parseCheckArgs rejects invalid argument combinations", () => {
   assert.throws(() => parseCheckArgs(["artifact.md", "--route"]), /--route expects a route id/);
   assert.throws(() => parseCheckArgs(["artifact.md", "--limit", "2"]), /--limit is only supported with --examples/);
   assert.throws(() => parseCheckArgs(["--examples", "--route", "component-spec", "--limit", "26"]), /--limit expects/);
+  assert.throws(() => parseCheckArgs(["--examples", "--route", "component-spec", "--learn"]), /--learn is only supported/);
+  assert.throws(() => parseCheckArgs(["artifact.md", "--yes"]), /--yes requires --learn/);
+  assert.throws(() => parseCheckArgs(["artifact.md", "--learning-file", "learning.json"]), /--learning-file requires --learn/);
+  assert.throws(() => parseCheckArgs(["artifact.md", "--learn", "--learning-file"]), /--learning-file expects a path/);
   assert.throws(() => parseCheckArgs(["--bad"]), /Unknown check option/);
   assert.throws(() => parseCheckArgs(["--examples", "--rout", "component-spec"]), /Did you mean `--route`\?/);
 });
@@ -224,6 +254,198 @@ test("runCheck strict treats warning reports as a failing exit code", async () =
     assert.equal(report.status, "warn");
     assert.equal(report.failures, 0);
     assert.equal(exitCode, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("check learning capture previews warning and failure entries without mutating the profile", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-learn-preview-"));
+  try {
+    const artifactPath = path.join(root, "warn.md");
+    const learningPath = path.join(root, "learning.json");
+    writeFileSync(artifactPath, WARNING_ARTIFACT);
+
+    const { stdout, exitCode } = await captureConsole(() => runCheck([
+      artifactPath,
+      "--learn",
+      "--learning-file",
+      learningPath,
+    ]));
+
+    assert.match(stdout, /Learning capture preview/);
+    assert.match(stdout, /No changes made\. Add --yes/);
+    assert.equal(exitCode, undefined);
+    assert.equal(existsSync(learningPath), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("check learning capture applies route-scoped entries and skips duplicates", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-learn-apply-"));
+  try {
+    const artifactPath = path.join(root, "palette.md");
+    const learningPath = path.join(root, "learning.json");
+    writeFileSync(artifactPath, GOOD_ARTIFACT);
+
+    const first = await captureConsole(() => runCheck([
+      artifactPath,
+      "--route",
+      "palette-from-brand",
+      "--learn",
+      "--yes",
+      "--learning-file",
+      learningPath,
+      "--json",
+    ]));
+    const firstPayload = JSON.parse(first.stdout);
+
+    assert.equal(firstPayload.learningCapture.source, "check:palette-from-brand");
+    assert.equal(firstPayload.learningCapture.dryRun, false);
+    assert.equal(firstPayload.learningCapture.applied, true);
+    assert.equal(firstPayload.learningCapture.candidateCount, 1);
+    assert.equal(firstPayload.learningCapture.addedCount, 1);
+    assert.equal(firstPayload.learningCapture.skippedCount, 0);
+    assert.equal(firstPayload.learningCapture.entries[0].category, "workflow");
+    assert.match(firstPayload.learningCapture.entries[0].text, /Improve future outputs by addressing Route: Palette token contract/);
+
+    const profile = loadLearningProfile(learningPath);
+    assert.equal(profile.entries.length, 1);
+    assert.equal(profile.entries[0].source, "check:palette-from-brand");
+
+    const second = await captureConsole(() => runCheck([
+      artifactPath,
+      "--route",
+      "palette-from-brand",
+      "--learn",
+      "--yes",
+      "--learning-file",
+      learningPath,
+      "--json",
+    ]));
+    const secondPayload = JSON.parse(second.stdout);
+
+    assert.equal(secondPayload.learningCapture.addedCount, 0);
+    assert.equal(secondPayload.learningCapture.skippedCount, 1);
+    assert.equal(secondPayload.learningCapture.skipped[0].reason, "duplicate-entry-text");
+    assert.equal(loadLearningProfile(learningPath).entries.length, 1);
+    assert.equal(first.exitCode, undefined);
+    assert.equal(second.exitCode, undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("check learning capture supports stdin with stable source and file reporting", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-learn-stdin-"));
+  try {
+    const learningPath = path.join(root, "learning.json");
+    const cliPath = path.join(PACKAGE_ROOT, "cli/bin/design-ai.mjs");
+    const result = spawnSync(
+      process.execPath,
+      [
+        cliPath,
+        "check",
+        "--stdin",
+        "--learn",
+        "--yes",
+        "--learning-file",
+        learningPath,
+        "--json",
+      ],
+      {
+        input: WARNING_ARTIFACT,
+        encoding: "utf8",
+        env: { ...process.env },
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.filePath, "stdin");
+    assert.equal(payload.learningCapture.file, learningPath);
+    assert.equal(payload.learningCapture.source, "check:artifact");
+    assert.equal(payload.learningCapture.addedCount > 0, true);
+    assert.equal(loadLearningProfile(learningPath).entries[0].source, "check:artifact");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("check learning capture reports pass-only artifacts without creating entries", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-learn-empty-"));
+  try {
+    const artifactPath = path.join(root, "good.md");
+    const learningPath = path.join(root, "learning.json");
+    writeFileSync(artifactPath, GOOD_ARTIFACT);
+
+    const { stdout, exitCode } = await captureConsole(() => runCheck([
+      artifactPath,
+      "--learn",
+      "--yes",
+      "--learning-file",
+      learningPath,
+      "--json",
+    ]));
+    const payload = JSON.parse(stdout);
+
+    assert.equal(payload.status, "pass");
+    assert.equal(payload.learningCapture.candidateCount, 0);
+    assert.equal(payload.learningCapture.addedCount, 0);
+    assert.deepEqual(payload.learningCapture.entries, []);
+    assert.equal(existsSync(learningPath), false);
+    assert.equal(exitCode, undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildCheckLearningCapture maps check result ids to learning categories", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-check-learn-map-"));
+  try {
+    const capture = buildCheckLearningCapture({
+      filePath: "artifact.md",
+      results: [
+        {
+          id: "keyboard-focus",
+          title: "Keyboard and focus behavior",
+          level: "warn",
+          message: "No keyboard or focus behavior note detected.",
+        },
+        {
+          id: "screen-reader",
+          title: "Screen-reader semantics",
+          level: "warn",
+          message: "No screen-reader or ARIA behavior note detected.",
+        },
+        {
+          id: "korean-context",
+          title: "Korean context when relevant",
+          level: "warn",
+          message: "Korean text is present without Korean-specific UX, copy, or market consideration.",
+        },
+        {
+          id: "route-component-spec-component-contract",
+          title: "Route: Component contract coverage",
+          level: "warn",
+          message: "Route-specific requirement is missing expected evidence.",
+          evidence: "Missing: API or props",
+        },
+      ],
+    }, {
+      filePath: path.join(root, "learning.json"),
+      dryRun: true,
+      now: new Date("2026-05-22T00:00:00.000Z"),
+    });
+
+    assert.deepEqual(capture.entries.map((entry) => entry.category), [
+      "accessibility",
+      "accessibility",
+      "korean",
+      "workflow",
+    ]);
+    assert.match(capture.entries[3].text, /Evidence: Missing: API or props/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -51,6 +51,50 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 203 — Auto feedback capture for local AI learning (v4.13.0) ✓ shipped
+
+`design-ai check` can now turn local artifact QA warnings and failures into explicit learning entries after user confirmation.
+
+### Changed
+- Added `design-ai check <artifact.md|--stdin> --learn` as a read-only learning capture preview for non-pass check results.
+- Added `--learn --yes` and `--learning-file path` so warning/failure results can be written to the selected local `learning.json` profile.
+- Mapped check results to existing learning categories without changing the learning schema: accessibility checks become `accessibility`, Korean-context checks become `korean`, and remaining artifact/route checks become `workflow`.
+- Added duplicate detection by `category + normalized text`, with skipped entries reported in both human and JSON output.
+- Added `learningCapture` to check JSON reports while preserving pass-only reports with zero candidates.
+- Extended package smoke to verify check learning capture output and persisted profile entries in both installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added release metadata wording protection for check learning capture output.
+- Updated check help, README command references, AI learning docs, product-readiness docs, distribution docs, release checklist, changelog, roadmap, and session log.
+
+### Impact
+- Local AI learning now has a deterministic feedback loop from artifact QA to future prompt guidance.
+- The feature remains opt-in and local: `check` stays read-only unless `--learn --yes` is present.
+- This does not add external AI APIs, embeddings, fine-tuning export, telemetry, new dependencies, or a learning profile schema change.
+
+### Verified
+- `node --test cli/lib/check.test.mjs cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Design QA findings can now become durable local learning guidance without leaving the machine or changing the explicit prompt/pack learning boundary.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Public registry smoke coverage for check learning capture.
+- Decide whether future AI learning should expand into embeddings or model fine-tuning.
+
 ## Phase 202 — Public registry learning verify smoke (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now verifies `learn --verify --json` portable profile validation from the published npm package path.

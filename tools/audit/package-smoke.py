@@ -1935,6 +1935,140 @@ def write_check_artifact(artifact_path: Path) -> None:
     artifact_path.write_text(passing_check_artifact_content(), encoding="utf-8")
 
 
+def check_learning_capture_artifact_content() -> str:
+    return "\n".join([
+        "# Design note",
+        "",
+        (
+            "This output cites knowledge/PRINCIPLES.md and gives a concise "
+            "recommendation with enough implementation detail for review. "
+            "It includes a contrast note for the main foreground and background pair."
+        ),
+        "",
+        (
+            "The artifact intentionally leaves several delivery details out so "
+            "package smoke can verify check learning capture without producing "
+            "a failing check report."
+        ),
+    ])
+
+
+def write_check_learning_capture_artifact(artifact_path: Path) -> None:
+    artifact_path.write_text(check_learning_capture_artifact_content(), encoding="utf-8")
+
+
+def assert_check_learning_capture_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    expected_file_suffix: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse check learning capture JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="check learning capture JSON must be an object")
+    require_package_smoke(
+        isinstance(payload.get("filePath"), str) and payload["filePath"].endswith(expected_file_suffix),
+        context=context,
+        cmd=cmd,
+        message="check learning capture file path changed",
+    )
+    require_package_smoke(payload.get("status") == "warn", context=context, cmd=cmd, message="check learning capture status should warn")
+    require_package_smoke(payload.get("failures") == 0, context=context, cmd=cmd, message="check learning capture fixture should not fail")
+
+    capture = payload.get("learningCapture")
+    require_package_smoke(isinstance(capture, dict), context=context, cmd=cmd, message="check learningCapture object missing")
+    require_package_smoke(
+        list(capture) == [
+            "file",
+            "dryRun",
+            "applied",
+            "source",
+            "candidateCount",
+            "addedCount",
+            "skippedCount",
+            "count",
+            "entries",
+            "skipped",
+        ],
+        context=context,
+        cmd=cmd,
+        message="check learningCapture keys changed",
+    )
+    require_package_smoke(
+        capture.get("file") == str(profile_path)
+        and capture.get("dryRun") is False
+        and capture.get("applied") is True
+        and capture.get("source") == "check:artifact",
+        context=context,
+        cmd=cmd,
+        message="check learning capture metadata changed",
+    )
+    require_package_smoke(
+        capture.get("candidateCount") == 4
+        and capture.get("addedCount") == 4
+        and capture.get("skippedCount") == 0
+        and capture.get("count") == 4,
+        context=context,
+        cmd=cmd,
+        message="check learning capture counts changed",
+    )
+
+    entries = capture.get("entries")
+    require_package_smoke(isinstance(entries, list) and len(entries) == 4, context=context, cmd=cmd, message="check learning capture entries changed")
+    require_package_smoke(capture.get("skipped") == [], context=context, cmd=cmd, message="check learning capture should not skip fresh entries")
+    categories = [entry.get("category") for entry in entries if isinstance(entry, dict)]
+    require_package_smoke(
+        categories.count("accessibility") == 2 and categories.count("workflow") == 2,
+        context=context,
+        cmd=cmd,
+        message="check learning capture categories changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(entry, dict)
+            and isinstance(entry.get("id"), str)
+            and entry["id"].startswith("learn-")
+            and entry.get("source") == "check:artifact"
+            and isinstance(entry.get("createdAt"), str)
+            and isinstance(entry.get("text"), str)
+            and entry["text"].startswith("Improve future outputs by addressing ")
+            for entry in entries
+        ),
+        context=context,
+        cmd=cmd,
+        message="check learning capture entry schema changed",
+    )
+    require_package_smoke(
+        any("Keyboard and focus behavior" in entry.get("text", "") for entry in entries)
+        and any("Screen-reader semantics" in entry.get("text", "") for entry in entries)
+        and any("Responsive behavior" in entry.get("text", "") for entry in entries)
+        and any("Misuse guidance" in entry.get("text", "") for entry in entries),
+        context=context,
+        cmd=cmd,
+        message="check learning capture entry text changed",
+    )
+
+    try:
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"{context}: failed to read check learning capture profile") from error
+    profile_entries = profile.get("entries")
+    require_package_smoke(
+        isinstance(profile_entries, list)
+        and len(profile_entries) == 4
+        and [entry.get("text") for entry in profile_entries] == [entry.get("text") for entry in entries],
+        context=context,
+        cmd=cmd,
+        message="check learning capture did not persist captured entries",
+    )
+
+
 def assert_check_artifact_smoke(
     cmd: list[str],
     *,
@@ -1960,6 +2094,25 @@ def assert_check_stdin_smoke(
         env=env,
     )
     assert_check_stdin_json_component_spec(result.stdout, context=context, cmd=cmd)
+
+
+def assert_check_learning_capture_smoke(
+    cmd: list[str],
+    *,
+    profile_path: Path,
+    expected_file_suffix: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_check_learning_capture_json(
+        result.stdout,
+        profile_path=profile_path,
+        expected_file_suffix=expected_file_suffix,
+        context=context,
+        cmd=cmd,
+    )
 
 
 def read_output_file(output_path: Path, *, context: str, label: str) -> str:
@@ -2665,6 +2818,123 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: assert_doctor_report_file(Path(tmp) / "missing.json", context=context),
             expected="failed to read doctor JSON",
+            scope="package smoke",
+        )
+
+        check_learning_profile_path = Path(tmp) / "check-learning.json"
+        check_learning_entries = [
+            {
+                "id": "learn-check-keyboard",
+                "category": "accessibility",
+                "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+                "source": "check:artifact",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+            {
+                "id": "learn-check-responsive",
+                "category": "workflow",
+                "text": "Improve future outputs by addressing Responsive behavior: No mobile/desktop/responsive behavior note detected.",
+                "source": "check:artifact",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+            {
+                "id": "learn-check-screen-reader",
+                "category": "accessibility",
+                "text": "Improve future outputs by addressing Screen-reader semantics: No screen-reader or ARIA behavior note detected.",
+                "source": "check:artifact",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+            },
+            {
+                "id": "learn-check-misuse",
+                "category": "workflow",
+                "text": "Improve future outputs by addressing Misuse guidance: No Don't/avoid/anti-pattern guidance detected.",
+                "source": "check:artifact",
+                "createdAt": "2026-05-22T00:00:03.000Z",
+            },
+        ]
+        check_learning_profile_path.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "updatedAt": "2026-05-22T00:00:03.000Z",
+                    "entries": check_learning_entries,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        check_learning_cmd = [
+            "design-ai",
+            "check",
+            "check-learning.md",
+            "--learn",
+            "--yes",
+            "--learning-file",
+            str(check_learning_profile_path),
+            "--json",
+        ]
+        check_learning_payload = {
+            "filePath": "/tmp/check-learning.md",
+            "status": "warn",
+            "passes": 5,
+            "warnings": 4,
+            "failures": 0,
+            "total": 9,
+            "score": "5/9",
+            "results": [],
+            "learningCapture": {
+                "file": str(check_learning_profile_path),
+                "dryRun": False,
+                "applied": True,
+                "source": "check:artifact",
+                "candidateCount": 4,
+                "addedCount": 4,
+                "skippedCount": 0,
+                "count": 4,
+                "entries": check_learning_entries,
+                "skipped": [],
+            },
+        }
+        assert_check_learning_capture_json(
+            json.dumps(check_learning_payload),
+            profile_path=check_learning_profile_path,
+            expected_file_suffix="check-learning.md",
+            context=context,
+            cmd=check_learning_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_check_learning_capture_json(
+                json.dumps({
+                    **check_learning_payload,
+                    "learningCapture": {
+                        **check_learning_payload["learningCapture"],
+                        "addedCount": 3,
+                    },
+                }),
+                profile_path=check_learning_profile_path,
+                expected_file_suffix="check-learning.md",
+                context=context,
+                cmd=check_learning_cmd,
+            ),
+            expected="check learning capture counts changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_check_learning_capture_json(
+                json.dumps({
+                    **check_learning_payload,
+                    "learningCapture": {
+                        **check_learning_payload["learningCapture"],
+                        "source": "check:component-spec",
+                    },
+                }),
+                profile_path=check_learning_profile_path,
+                expected_file_suffix="check-learning.md",
+                context=context,
+                cmd=check_learning_cmd,
+            ),
+            expected="check learning capture metadata changed",
             scope="package smoke",
         )
 
@@ -4009,6 +4279,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin check stdin",
         )
+        installed_check_learning_artifact = tmp_root / "installed-check-learning.md"
+        installed_check_learning_profile = tmp_root / "installed-check-learning.json"
+        write_check_learning_capture_artifact(installed_check_learning_artifact)
+        assert_check_learning_capture_smoke(
+            [
+                str(bin_path),
+                "check",
+                str(installed_check_learning_artifact),
+                "--learn",
+                "--yes",
+                "--learning-file",
+                str(installed_check_learning_profile),
+                "--json",
+            ],
+            profile_path=installed_check_learning_profile,
+            expected_file_suffix=installed_check_learning_artifact.name,
+            env=smoke_env,
+            context="package smoke installed bin check learning capture",
+        )
         assert_audit_smoke(
             [str(bin_path), "audit", "--strict", "--quiet"],
             env=smoke_env,
@@ -4645,6 +4934,26 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec check stdin",
+        )
+        npx_check_learning_artifact = npx_root / "npx-check-learning.md"
+        npx_check_learning_profile = npx_root / "npx-check-learning.json"
+        write_check_learning_capture_artifact(npx_check_learning_artifact)
+        assert_check_learning_capture_smoke(
+            npm_exec_cmd(
+                tarball,
+                "check",
+                str(npx_check_learning_artifact),
+                "--learn",
+                "--yes",
+                "--learning-file",
+                str(npx_check_learning_profile),
+                "--json",
+            ),
+            profile_path=npx_check_learning_profile,
+            expected_file_suffix=npx_check_learning_artifact.name,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec check learning capture",
         )
         assert_audit_smoke(
             npm_exec_cmd(tarball, "audit", "--strict", "--quiet"),

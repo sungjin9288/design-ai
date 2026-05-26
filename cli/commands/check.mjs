@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import {
+  buildCheckLearningCapture,
   checkAllExampleArtifacts,
   checkArtifactContent,
   checkExampleArtifacts,
@@ -14,8 +15,8 @@ import { dim, error, header, info, red, success, warn } from "../lib/log.mjs";
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai check <artifact.md> [--strict] [--json] [--route id]");
-  console.log("        cat artifact.md | design-ai check --stdin [--strict] [--route id]");
+  console.log("Usage:  design-ai check <artifact.md> [--strict] [--json] [--route id] [--learn [--yes] [--learning-file path]]");
+  console.log("        cat artifact.md | design-ai check --stdin [--strict] [--route id] [--learn [--yes] [--learning-file path]]");
   console.log("        design-ai check --examples --route id [--limit N] [--issues-only] [--strict] [--json]");
   console.log("        design-ai check --examples --all-routes [--limit N] [--issues-only] [--strict] [--json]\n");
   console.log("Checks generated design-ai Markdown artifacts for grounding, accessibility, responsive, unresolved-marker, and route-specific requirements.\n");
@@ -27,6 +28,9 @@ function printHelp() {
   console.log("  --limit N   Number of route examples to check, 1-25. Default: 3");
   console.log("  --issues-only  In human output, show only warnings and failures");
   console.log("  --strict    Treat warnings as a failing exit code");
+  console.log("  --learn     Capture warning/failure checks as local learning entries");
+  console.log("  --yes       Apply --learn entries instead of previewing them");
+  console.log("  --learning-file path  Override the learning profile used by --learn");
   console.log("  --json      Emit machine-readable check results");
 }
 
@@ -88,6 +92,42 @@ function printRouteExampleSummary(routeReport, { issuesOnly = false } = {}) {
     if (firstIssue) {
       console.log(`   ${dim(`${firstIssue.id}: ${firstIssue.evidence || firstIssue.message}`)}`);
     }
+  }
+}
+
+function printLearningCapture(capture) {
+  console.log();
+  console.log(capture.applied ? "Learning capture applied" : "Learning capture preview");
+  info(`File: ${capture.file}`);
+  info(`Source: ${capture.source}`);
+  info(`Candidates: ${capture.candidateCount}`);
+  info(`Added: ${capture.addedCount}`);
+  info(`Skipped: ${capture.skippedCount}`);
+  console.log();
+
+  if (capture.candidateCount === 0) {
+    console.log("No warning or failure check results to capture.");
+    return;
+  }
+
+  if (capture.entries.length > 0) {
+    console.log(capture.applied ? "Saved entries:" : "Would save:");
+    for (const entry of capture.entries) {
+      console.log(`- [${entry.category}] ${entry.text}`);
+    }
+  }
+
+  if (capture.skipped.length > 0) {
+    if (capture.entries.length > 0) console.log();
+    console.log("Skipped:");
+    for (const entry of capture.skipped) {
+      console.log(`- [${entry.category}] ${entry.textPreview} (${entry.reason})`);
+    }
+  }
+
+  if (capture.dryRun) {
+    console.log();
+    console.log("No changes made. Add --yes to save these learning entries.");
   }
 }
 
@@ -153,9 +193,16 @@ export async function runCheck(args) {
   const filePath = parsed.stdin ? "stdin" : path.resolve(process.cwd(), parsed.target);
   const content = parsed.stdin ? readFileSync(0, "utf8") : readFileSync(filePath, "utf8");
   const report = checkArtifactContent({ content, filePath, routeId: parsed.routeId });
+  const learningCapture = parsed.learn
+    ? buildCheckLearningCapture(report, {
+      filePath: parsed.learningFilePath ? path.resolve(process.cwd(), parsed.learningFilePath) : "",
+      dryRun: !parsed.yes,
+    })
+    : null;
+  const outputReport = learningCapture ? { ...report, learningCapture } : report;
 
   if (parsed.json) {
-    console.log(formatCheckJson(report));
+    console.log(formatCheckJson(outputReport));
   } else {
     header("design-ai check", parsed.stdin ? "stdin" : parsed.target);
     if (parsed.routeId) info(`Route: ${parsed.routeId}`);
@@ -167,6 +214,9 @@ export async function runCheck(args) {
       : report.results;
     for (const item of resultsToPrint) {
       printResult(item);
+    }
+    if (learningCapture) {
+      printLearningCapture(learningCapture);
     }
   }
 

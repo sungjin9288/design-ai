@@ -612,15 +612,25 @@ RELEASE_PACK_STDIN_OUTPUT_TERM_GROUPS = (
 RELEASE_CHECK_COMMAND_TERM_GROUPS = (
     (
         "check examples/artifact/stdin/all-routes",
+        "check examples/artifact/stdin/all-routes/learning capture",
         "check examples, artifact, stdin, and all-routes",
         (
             "check examples output, check artifact output, check stdin output, "
             "and check all-routes output"
         ),
+        (
+            "check examples output, check artifact output, check stdin output, "
+            "check all-routes output, and check learning capture output"
+        ),
         "check examples/artifact/stdin/all-routes 출력",
+        "check examples/artifact/stdin/all-routes/learning capture 출력",
         (
             "check examples 출력, check artifact 출력, check stdin 출력, "
             "check all-routes 출력"
+        ),
+        (
+            "check examples 출력, check artifact 출력, check stdin 출력, "
+            "check all-routes 출력, check learning capture output"
         ),
     ),
 )
@@ -646,6 +656,12 @@ RELEASE_CHECK_ALL_ROUTES_OUTPUT_TERM_GROUPS = (
     (
         "check all-routes output",
         "check all-routes 출력",
+    ),
+)
+RELEASE_CHECK_LEARNING_CAPTURE_OUTPUT_TERM_GROUPS = (
+    (
+        "check learning capture output",
+        "check learning capture 출력",
     ),
 )
 RELEASE_INSTALL_HUMAN_TERM_GROUPS = (
@@ -1012,6 +1028,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "check artifact output phrase",
     "check stdin output phrase",
     "check all-routes output phrase",
+    "check learning capture output phrase",
     "human install lifecycle phrase",
     "human install output phrase",
     "install JSON command phrase",
@@ -1130,6 +1147,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("check artifact output phrase", RELEASE_CHECK_ARTIFACT_OUTPUT_TERM_GROUPS),
     ("check stdin output phrase", RELEASE_CHECK_STDIN_OUTPUT_TERM_GROUPS),
     ("check all-routes output phrase", RELEASE_CHECK_ALL_ROUTES_OUTPUT_TERM_GROUPS),
+    (
+        "check learning capture output phrase",
+        RELEASE_CHECK_LEARNING_CAPTURE_OUTPUT_TERM_GROUPS,
+    ),
     ("human install lifecycle phrase", RELEASE_INSTALL_HUMAN_TERM_GROUPS),
     ("human install output phrase", RELEASE_INSTALL_HUMAN_OUTPUT_TERM_GROUPS),
     ("install JSON command phrase", RELEASE_INSTALL_JSON_COMMAND_TERM_GROUPS),
@@ -1541,7 +1562,7 @@ unknown command failure, unknown help-topic failure, unknown list-domain failure
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
 prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output,
 prompt/pack forced `--out` overwrite and prompt/pack file-write confirmations,
-check examples output, check artifact output, check stdin output, and check all-routes output,
+check examples output, check artifact output, check stdin output, check all-routes output, and check learning capture output,
 `design-ai version --json` for machine-readable CLI/plugin version metadata,
 human `design-ai install` output plus `design-ai install --json`
 for machine-readable install lifecycle output, human `design-ai status` output plus JSON status output,
@@ -1597,7 +1618,7 @@ unknown command failure, unknown help-topic failure, unknown list-domain failure
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
 prompt JSON 출력, prompt markdown 출력, prompt from-file 출력, prompt stdin 출력, pack JSON 출력, pack markdown 출력, pack from-file 출력, pack stdin 출력도 확인해요.
 prompt/pack 강제 `--out` overwrite와 prompt/pack file-write confirmation도 확인해요.
-check examples 출력, check artifact 출력, check stdin 출력, check all-routes 출력도 확인해요.
+check examples 출력, check artifact 출력, check stdin 출력, check all-routes 출력, check learning capture output도 확인해요.
 `design-ai version --json`으로 machine-readable version metadata도 smoke test해요.
 human `design-ai install` 출력과 JSON `design-ai install --json`으로 machine-readable install lifecycle output을 확인하고,
 human `design-ai status` 출력과 JSON status 출력도 확인하며,
@@ -2295,7 +2316,8 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "docs/DISTRIBUTION.md": english_policy_doc.replace(
                 (
                     "check examples output, check artifact output, "
-                    "check stdin output, and check all-routes output"
+                    "check stdin output, check all-routes output, "
+                    "and check learning capture output"
                 ),
                 "check output",
             ),
@@ -2400,6 +2422,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in check_all_routes_output_drift_errors
         ),
         "release policy docs should mention check all-routes output smoke",
+    )
+
+    check_learning_capture_output_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "docs/DISTRIBUTION.md": english_policy_doc.replace(
+                "check learning capture output",
+                "check output",
+            ),
+        },
+        audit_count=8,
+    )
+    check_learning_capture_output_drift_errors = "\n".join(
+        check_learning_capture_output_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/DISTRIBUTION.md is missing check learning capture output phrase"
+            in check_learning_capture_output_drift_errors
+        ),
+        "release policy docs should mention check learning capture output smoke",
     )
 
     version_json_command_drift = release_metadata_summary(

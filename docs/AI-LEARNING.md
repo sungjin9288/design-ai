@@ -1,6 +1,6 @@
 # AI learning
 
-design-ai supports a local learning profile. This is not model training, fine-tuning, or automatic data collection. It is explicit local memory that you choose to include in generated prompts.
+design-ai supports a local learning profile. This is not model training, fine-tuning, or background data collection. It is explicit local memory that you choose to include in generated prompts; `check --learn` can derive entries from a local QA report only when you run it.
 
 ## Scope
 
@@ -8,6 +8,7 @@ What ships in v4.13:
 
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
 - `design-ai learn --feedback ...` converts outcome feedback into reusable local learning notes.
+- `design-ai check <artifact.md|--stdin> --learn` previews warning/failure QA results as local learning entries, and `--learn --yes` writes them to the selected profile.
 - `design-ai learn --list` shows saved entries, with optional `--category`, `--query`, `--explain`, and `--limit` filters.
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
@@ -31,7 +32,7 @@ What does not ship:
 - Private model training on user artifacts.
 - Automatic telemetry or background collection.
 - Semantic embedding index generation.
-- Automatic feedback capture from accepted/rejected recommendations.
+- Background learning from accepted/rejected recommendations without an explicit CLI command.
 
 ## Storage
 
@@ -67,6 +68,16 @@ cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category 
 ```
 
 Feedback is explicit local memory. `--outcome keep` stores a "repeat this" instruction, `--outcome improve` stores an "improve future outputs by..." instruction, and `--outcome avoid` stores an "avoid this" instruction. The default feedback category is `workflow`; use `--category` when feedback belongs to brand, accessibility, Korean-market behavior, or another scoped area. Use `--from-file` or `--stdin` when the reviewed-output note is too long or already saved in another tool.
+
+Capture artifact QA feedback:
+
+```bash
+design-ai check output.md --learn
+design-ai check output.md --learn --yes
+cat output.md | design-ai check --stdin --learn --yes --learning-file ./learning.json --json
+```
+
+`check --learn` is a preview and does not mutate the profile. Add `--yes` to save only warning/failure check results. The capture keeps the existing learning entry shape (`id`, `category`, `text`, `source`, `createdAt`), records source as `check:<routeId>` or `check:artifact`, maps keyboard/screen-reader findings to `accessibility`, Korean-context findings to `korean`, and all remaining check findings to `workflow`. Duplicate category+normalized text pairs are skipped and reported.
 
 List saved preferences:
 

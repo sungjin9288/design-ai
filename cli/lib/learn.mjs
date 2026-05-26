@@ -786,6 +786,83 @@ export function recordLearningFeedback({
   });
 }
 
+function offsetIsoDate(now, offsetMs) {
+  const base = now instanceof Date ? now : new Date(now);
+  return new Date(base.getTime() + offsetMs).toISOString();
+}
+
+export function captureLearningEntries({
+  entries = [],
+  source = "cli",
+  filePath = defaultLearningFile(),
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const profile = loadLearningProfile(filePath);
+  const existingKeys = new Set(profile.entries.map(learningEntryMergeKey));
+  const usedIds = new Set(profile.entries.map((entry) => entry.id).filter(Boolean));
+  const added = [];
+  const skipped = [];
+
+  const candidates = entries.map((entry, index) => {
+    const text = cleanNoteText(entry?.text);
+    if (!text) throw new Error(`Learning capture entry ${index + 1} has empty text`);
+    const category = normalizeCategory(entry?.category || "workflow");
+    const createdAt = offsetIsoDate(now, index);
+    const entrySource = String(entry?.source || source || "cli").trim() || "cli";
+    return {
+      id: `learn-${shortEntryId({ text, category, createdAt })}`,
+      category,
+      text,
+      source: entrySource,
+      createdAt,
+    };
+  });
+
+  for (const candidate of candidates) {
+    const mergeKey = learningEntryMergeKey(candidate);
+    if (existingKeys.has(mergeKey)) {
+      skipped.push({
+        ...statsEntry(candidate),
+        reason: "duplicate-entry-text",
+      });
+      continue;
+    }
+
+    const entry = {
+      ...candidate,
+      id: uniqueImportedEntryId(candidate, usedIds),
+    };
+    usedIds.add(entry.id);
+    existingKeys.add(mergeKey);
+    added.push(entry);
+  }
+
+  const updatedAt = added.length > 0 ? added[added.length - 1].createdAt : profile.updatedAt;
+  const nextProfile = {
+    version: 1,
+    updatedAt,
+    entries: [...profile.entries, ...added],
+  };
+
+  if (!dryRun && added.length > 0) {
+    writeLearningProfile(filePath, nextProfile);
+  }
+
+  return {
+    file: filePath,
+    dryRun,
+    applied: !dryRun,
+    source,
+    candidateCount: candidates.length,
+    addedCount: added.length,
+    skippedCount: skipped.length,
+    count: nextProfile.entries.length,
+    entries: added,
+    skipped,
+  };
+}
+
 function learningEntryMergeKey(entry) {
   return `${entry.category}\n${cleanNoteText(entry.text).toLowerCase()}`;
 }

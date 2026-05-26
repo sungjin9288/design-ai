@@ -6,6 +6,7 @@ import {
 import path from "node:path";
 
 import { listExamples } from "./examples.mjs";
+import { captureLearningEntries } from "./learn.mjs";
 import { assertKnownRouteId, ROUTES } from "./route.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
@@ -21,6 +22,9 @@ const CHECK_OPTIONS = [
   "--route",
   "--limit",
   "--json",
+  "--learn",
+  "--yes",
+  "--learning-file",
 ];
 
 export function parseCheckArgs(args) {
@@ -34,6 +38,9 @@ export function parseCheckArgs(args) {
     strict: false,
     routeId: "",
     json: false,
+    learn: false,
+    yes: false,
+    learningFilePath: "",
     help: false,
   };
 
@@ -51,6 +58,15 @@ export function parseCheckArgs(args) {
       out.issuesOnly = true;
     } else if (arg === "--strict") {
       out.strict = true;
+    } else if (arg === "--learn") {
+      out.learn = true;
+    } else if (arg === "--yes") {
+      out.yes = true;
+    } else if (arg === "--learning-file") {
+      const learningFilePath = args[i + 1];
+      if (!learningFilePath || learningFilePath.startsWith("--")) throw new Error("--learning-file expects a path");
+      out.learningFilePath = learningFilePath;
+      i += 1;
     } else if (arg === "--route") {
       const routeId = args[i + 1];
       if (!routeId || routeId.startsWith("--")) throw new Error("--route expects a route id");
@@ -80,6 +96,9 @@ export function parseCheckArgs(args) {
   if (out.examples && (out.target || out.stdin)) {
     throw new Error("Use --examples by itself, not with a file path or --stdin");
   }
+  if (out.examples && out.learn) {
+    throw new Error("--learn is only supported for a single artifact file or --stdin, not --examples");
+  }
   if (out.allRoutes && !out.examples) {
     throw new Error("--all-routes is only supported with --examples");
   }
@@ -91,6 +110,12 @@ export function parseCheckArgs(args) {
   }
   if (!out.examples && out.limit !== DEFAULT_EXAMPLE_LIMIT) {
     throw new Error("--limit is only supported with --examples");
+  }
+  if (out.yes && !out.learn) {
+    throw new Error("--yes requires --learn");
+  }
+  if (out.learningFilePath && !out.learn) {
+    throw new Error("--learning-file requires --learn");
   }
 
   return out;
@@ -458,6 +483,46 @@ export function checkArtifactContent({ content, filePath = "stdin", routeId = ""
     ...summarize(results),
     results,
   };
+}
+
+function learningCategoryForCheckResult(resultId) {
+  if (["keyboard-focus", "screen-reader"].includes(resultId)) return "accessibility";
+  if (resultId === "korean-context") return "korean";
+  return "workflow";
+}
+
+function compactEvidence(evidence, maxChars = 160) {
+  const text = String(evidence || "").trim().replace(/\s+/g, " ");
+  if (!text) return "";
+  return text.length <= maxChars ? text : `${text.slice(0, maxChars - 3)}...`;
+}
+
+function learningTextForCheckResult(item) {
+  const evidence = compactEvidence(item.evidence);
+  const evidenceSuffix = evidence ? ` Evidence: ${evidence}` : "";
+  return `Improve future outputs by addressing ${item.title}: ${item.message}${evidenceSuffix}`;
+}
+
+export function buildCheckLearningCapture(report, {
+  filePath = "",
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const source = report.routeId ? `check:${report.routeId}` : "check:artifact";
+  const entries = (report.results || [])
+    .filter((item) => item && item.level !== "pass")
+    .map((item) => ({
+      category: learningCategoryForCheckResult(item.id),
+      text: learningTextForCheckResult(item),
+    }));
+
+  return captureLearningEntries({
+    entries,
+    source,
+    filePath: filePath || undefined,
+    dryRun,
+    now,
+  });
 }
 
 function summarizeExampleReports(reports) {

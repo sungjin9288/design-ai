@@ -49,7 +49,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
   assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
-  assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\]/);
+  assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
   assert.match(
@@ -95,6 +95,10 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
     "design-ai learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "check").usage,
+    "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
 });
