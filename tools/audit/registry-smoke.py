@@ -368,6 +368,156 @@ def write_learning_backup_fixture(profile_path: Path) -> None:
     )
 
 
+def learning_verify_payload_text() -> str:
+    return json.dumps(
+        {
+            "file": "/portable/registry-learning.json",
+            "entries": [
+                {
+                    "id": "registry-verify-entry",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+                {
+                    "id": "registry-verify-entry",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+        },
+        indent=2,
+    )
+
+
+def assert_learning_verify_json(
+    raw: str,
+    *,
+    source: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn verify JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn verify JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("source") == source,
+        context=context,
+        cmd=cmd,
+        message="learn verify JSON source changed",
+    )
+    require_registry_smoke(
+        payload.get("importable") is True,
+        context=context,
+        cmd=cmd,
+        message="learn verify importable flag changed",
+    )
+    require_registry_smoke(
+        payload.get("count") == 2,
+        context=context,
+        cmd=cmd,
+        message="learn verify count changed",
+    )
+
+    audit_summary = payload.get("auditSummary")
+    require_registry_smoke(
+        isinstance(audit_summary, dict)
+        and audit_summary.get("status") == "warn"
+        and audit_summary.get("failures") == 0
+        and audit_summary.get("warnings") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn verify audit summary changed",
+    )
+
+    issues = payload.get("issues")
+    require_registry_smoke(
+        isinstance(issues, list)
+        and len(issues) == 1
+        and issues[0].get("code") == "duplicate-entry-id"
+        and issues[0].get("entryId") == "registry-verify-entry",
+        context=context,
+        cmd=cmd,
+        message="learn verify duplicate-id warning changed",
+    )
+
+    entries = payload.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 2,
+        context=context,
+        cmd=cmd,
+        message="learn verify entries list changed",
+    )
+    require_registry_smoke(
+        all(
+            isinstance(entry, dict)
+            and isinstance(entry.get("source"), str)
+            and entry["source"].startswith("import:")
+            for entry in entries
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn verify entries should be normalized as import entries",
+    )
+
+    categories = {entry.get("category") for entry in entries if isinstance(entry, dict)}
+    previews = {entry.get("textPreview") for entry in entries if isinstance(entry, dict)}
+    require_registry_smoke(
+        categories == {"brand", "korean"}
+        and "Use quiet enterprise language" in previews
+        and "Prefer dense Korean mobile layouts" in previews,
+        context=context,
+        cmd=cmd,
+        message="learn verify entry summaries changed",
+    )
+
+
+def assert_learning_verify_smoke(
+    command_factory,
+    source_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    source_path.write_text(f"{learning_verify_payload_text()}\n", encoding="utf-8")
+
+    from_file_cmd = command_factory("learn", "--verify", "--from-file", str(source_path), "--json")
+    from_file_result = run_plain(from_file_cmd, cwd=cwd, env=env)
+    assert_learning_verify_json(
+        from_file_result.stdout,
+        source=str(source_path),
+        context=f"{context} from-file",
+        cmd=from_file_cmd,
+    )
+
+    stdin_cmd = command_factory("learn", "--verify", "--stdin", "--json")
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text=learning_verify_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_verify_json(
+        stdin_result.stdout,
+        source="stdin",
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
+    )
+
+
 def assert_learning_backup_json(
     raw: str,
     *,
@@ -1708,6 +1858,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec audit JSON",
         )
+        assert_learning_verify_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-verify-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn verify",
+        )
         assert_learning_backup_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
             npx_root / "registry-backup-learning.json",
@@ -1803,6 +1960,77 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
             expected="failed to read registry smoke doctor JSON",
+            scope="registry smoke",
+        )
+
+        learning_verify_path = tmp_root / "learning-verify.json"
+        learning_verify_payload = {
+            "source": str(learning_verify_path),
+            "importable": True,
+            "count": 2,
+            "auditSummary": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 1,
+            },
+            "issues": [
+                {
+                    "level": "warning",
+                    "code": "duplicate-entry-id",
+                    "entryId": "registry-verify-entry",
+                    "message": "Entry id duplicates registry-verify-entry and can make deletion ambiguous.",
+                },
+            ],
+            "entries": [
+                {
+                    "id": "registry-verify-entry",
+                    "category": "brand",
+                    "source": "import:registry-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                },
+                {
+                    "id": "registry-verify-entry",
+                    "category": "korean",
+                    "source": "import:cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer dense Korean mobile layouts",
+                },
+            ],
+        }
+        learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(learning_verify_path), "--json"]
+        assert_learning_verify_json(
+            json.dumps(learning_verify_payload),
+            source=str(learning_verify_path),
+            context="registry smoke self-test",
+            cmd=learn_verify_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_verify_json(
+                json.dumps({**learning_verify_payload, "importable": False}),
+                source=str(learning_verify_path),
+                context="registry smoke self-test",
+                cmd=learn_verify_cmd,
+            ),
+            expected="learn verify importable flag changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_verify_json(
+                json.dumps({
+                    **learning_verify_payload,
+                    "issues": [
+                        {
+                            **learning_verify_payload["issues"][0],
+                            "code": "duplicate-entry-text",
+                        },
+                    ],
+                }),
+                source=str(learning_verify_path),
+                context="registry smoke self-test",
+                cmd=learn_verify_cmd,
+            ),
+            expected="learn verify duplicate-id warning changed",
             scope="registry smoke",
         )
 

@@ -51,6 +51,44 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 202 — Public registry learning verify smoke (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now verifies `learn --verify --json` portable profile validation from the published npm package path.
+
+### Changed
+- Added a registry-smoke portable learning verification fixture with duplicate-entry warning metadata.
+- Added JSON assertions for `learn --verify`, including source path/stdin identity, importable flag, count, warning audit summary, duplicate-id issue metadata, normalized import sources, and entry summaries.
+- Wired the verify smoke into the public `npm exec --package @design-ai/cli@<version>` registry path for both `--from-file` and `--stdin`.
+- Expanded registry-smoke self-test fixtures for importable flag drift and duplicate warning drift.
+- Added release metadata wording protection for public registry JSON `design-ai learn --verify` output.
+- Updated release-facing docs, changelog, roadmap, and session log for the new registry smoke coverage.
+
+### Impact
+- The post-publish smoke now catches registry-only regressions where the published package can run but cannot validate portable learning-profile JSON before import.
+- This does not change CLI runtime behavior, local learning profile storage, import mutation behavior, package smoke commands, or prompt/pack learned-context injection.
+
+### Verified
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
+### What this enables
+- Public registry verification now covers portable learning-profile validation before backup/export workflows are trusted after publish.
+
+### What's still ahead (4.x — incremental only)
+- Real-CI verification (push these workflows; observe green).
+- External launch (held).
+- Decide whether `refs/` source links should remain visible repo references or be normalized through generated reference pages.
+- Decide whether future AI learning should expand into embeddings, automatic feedback capture, or model fine-tuning.
+
 ## Phase 201 — Public registry learning backup smoke (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now verifies `learn --backup --json` portable profile output from the published npm package path.

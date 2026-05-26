@@ -102,6 +102,8 @@ Public registry smoke now verifies human and JSON `learn --stats` profile summar
 Release metadata now guards release-facing docs against dropping public registry human / JSON `design-ai learn --stats` profile summary smoke guidance.
 Public registry smoke now verifies JSON `learn --backup` portable profile output from the published npm package path.
 Release metadata now guards release-facing docs against dropping public registry JSON `design-ai learn --backup` smoke guidance.
+Public registry smoke now verifies JSON `learn --verify` portable profile validation from the published npm package path.
+Release metadata now guards release-facing docs against dropping public registry JSON `design-ai learn --verify` smoke guidance.
 `design-ai prompt --with-learning` and `design-ai pack --with-learning` now rank local learning entries by brief relevance before falling back to recency, so limited learned context favors the current task.
 Packed-tarball package smoke now verifies brief-relevant learning selection in prompt and pack JSON outputs through installed-bin and one-shot npm exec paths.
 Release metadata now guards release-facing docs against dropping brief-relevant prompt/pack learning selection smoke guidance.
