@@ -12,6 +12,7 @@ export const WORKSPACE_OPTIONS = [
   "-h",
   "--help",
   "--json",
+  "--strict",
   "--root",
   "--learning-file",
 ];
@@ -34,6 +35,7 @@ export function parseWorkspaceArgs(args) {
   const flags = {
     help: false,
     json: false,
+    strict: false,
     root: "",
     learningFilePath: "",
   };
@@ -46,6 +48,10 @@ export function parseWorkspaceArgs(args) {
     }
     if (arg === "--json") {
       flags.json = true;
+      continue;
+    }
+    if (arg === "--strict") {
+      flags.strict = true;
       continue;
     }
     if (arg === "--root") {
@@ -67,7 +73,7 @@ export function parseWorkspaceArgs(args) {
 
     throw new Error(
       `${unknownOptionMessage("workspace", arg, WORKSPACE_OPTIONS)}\n` +
-        "Usage: design-ai workspace [--root path] [--learning-file path] [--json]",
+        "Usage: design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
     );
   }
 
@@ -364,6 +370,10 @@ export function buildWorkspaceNextActions({ git, repository, learning, release }
     actions.push(action("warn", "Verify git remote points at the canonical design-ai repository before pushing.", "git remote -v"));
   }
 
+  if (release.missing.length > 0) {
+    actions.push(action("fail", `Restore required release script(s): ${release.missing.join(", ")}`));
+  }
+
   if (learning.error) {
     actions.push(action("fail", "Repair the local learning profile before relying on personalized prompt context.", "design-ai learn --audit"));
   } else if (learning.auditSummary.status !== "pass") {
@@ -383,6 +393,10 @@ export function buildWorkspaceNextActions({ git, repository, learning, release }
   }
 
   return actions;
+}
+
+export function hasWorkspaceStrictIssues(report) {
+  return (report?.nextActions || []).some((item) => item.level === "fail" || item.level === "warn");
 }
 
 export function collectWorkspaceReport({

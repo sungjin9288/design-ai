@@ -52,7 +52,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
-  assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--json\]/);
+  assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
@@ -103,7 +103,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "workspace").usage,
-    "design-ai workspace [--root path] [--learning-file path] [--json]",
+    "design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "workspace").aliases, ["ws"]);
@@ -228,8 +228,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --import --stdin --yes \[--json\] \[--out file\] \[--force\]/);
 
   const workspaceOutput = await captureStdout(() => runHelp(["workspace"]));
-  assert.match(workspaceOutput, /Usage:\s+design-ai workspace \[--root path\] \[--learning-file path\] \[--json\]/);
+  assert.match(workspaceOutput, /Usage:\s+design-ai workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
   assert.match(workspaceOutput, /--learning-file path\s+Inspect a specific learning profile/);
+  assert.match(workspaceOutput, /--strict\s+Exit non-zero when readiness warnings or failures are present/);
   assert.match(learnOutput, /--import\s+Merge entries from a JSON learning profile or learn --export --json payload/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);

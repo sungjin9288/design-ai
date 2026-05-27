@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 213 — Workspace strict readiness gate (v4.13.0) ✓ shipped
+
+`design-ai workspace` can now act as a blocking local readiness gate, not only a read-only status view.
+
+### Changed
+- Added `design-ai workspace --strict`, which exits non-zero when workspace next actions include `warn` or `fail` readiness items.
+- Kept normal and JSON workspace output unchanged so humans and automation see the same diagnostics before the exit code is applied.
+- Added a fail-level next action when required release scripts are missing from `package.json`.
+- Updated workspace help, top-level help, README command lists, distribution docs, AI learning docs, product readiness docs, smoke assertions, and session logs for the strict gate.
+- Added unit coverage for strict parsing, warn/fail readiness detection, strict success on info-only readiness, and strict failure on dirty git readiness.
+
+### Impact
+- Internal dogfood handoff can now run `design-ai workspace --strict` before commit/push/package sharing and fail on dirty state, repository drift, learning profile warnings, or missing release scripts.
+- The command remains read-only: it does not edit files, mutate learning profiles, run release scripts, commit, or push.
+
+### What this enables
+- Local automation can use the same readiness model shown to humans instead of re-implementing git/repository/learning checks.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm run release:check`
+- `git diff --check`
+- Full release gate passed: unit tests, strict audit, package contents, release metadata, release self-tests, and package smoke.
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 212 — Workspace repository alignment diagnostics (v4.13.0) ✓ shipped
 
 `design-ai workspace` now makes canonical repository readiness visible before internal dogfood users commit, push, package, or share a local build.

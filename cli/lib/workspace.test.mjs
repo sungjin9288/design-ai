@@ -12,6 +12,7 @@ import {
   collectRepositoryReport,
   collectWorkspaceReport,
   formatWorkspaceJson,
+  hasWorkspaceStrictIssues,
   normalizeRepositoryUrl,
   parseWorkspaceArgs,
 } from "./workspace.mjs";
@@ -62,24 +63,48 @@ function writeSourceMetadata(sourceRoot, scripts = {}) {
   );
 }
 
-async function captureStdout(fn) {
+function fullReleaseScripts() {
+  return {
+    test: "node --test cli/lib/*.test.mjs",
+    "audit:strict": "python3 -B tools/audit/run-all.py --strict",
+    "release:metadata": "python3 -B tools/audit/release-metadata.py",
+    "release:self-test": "npm run smoke:assertions:self-test",
+    "package:smoke": "python3 -B tools/audit/package-smoke.py --pack",
+    "release:check": "npm test && npm run audit:strict",
+    "ci:local": "python3 -B tools/audit/local-ci.py",
+  };
+}
+
+async function captureConsole(fn) {
   const lines = [];
   const originalLog = console.log;
+  const originalExitCode = process.exitCode;
   console.log = (...args) => {
     lines.push(args.join(" "));
   };
+  process.exitCode = undefined;
   try {
     await fn();
+    return {
+      stdout: lines.join("\n"),
+      exitCode: process.exitCode,
+    };
   } finally {
     console.log = originalLog;
+    process.exitCode = originalExitCode;
   }
-  return lines.join("\n");
 }
 
-test("parseWorkspaceArgs supports root, learning-file, json, and help", () => {
-  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--json"]), {
+async function captureStdout(fn) {
+  const { stdout } = await captureConsole(fn);
+  return stdout;
+}
+
+test("parseWorkspaceArgs supports root, learning-file, strict, json, and help", () => {
+  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--strict", "--json"]), {
     help: false,
     json: true,
+    strict: true,
     root: "repo",
     learningFilePath: "learning.json",
   });
@@ -158,6 +183,12 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.match(report.nextActions.map((item) => item.text).join("\n"), /Review local changes/);
   assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --audit/);
 }));
+
+test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failures", () => {
+  assert.equal(hasWorkspaceStrictIssues({ nextActions: [{ level: "pass" }, { level: "info" }] }), false);
+  assert.equal(hasWorkspaceStrictIssues({ nextActions: [{ level: "warn" }] }), true);
+  assert.equal(hasWorkspaceStrictIssues({ nextActions: [{ level: "fail" }] }), true);
+});
 
 test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
   const sourceRoot = path.join(dir, "source");
@@ -259,4 +290,61 @@ test("runWorkspace supports JSON output with injected collectors", async () => w
   assert.equal(payload.learning.file, learningFile);
   assert.equal(payload.release.available.includes("test"), true);
   assert.equal(payload.nextActions.some((item) => item.command === "npm test"), true);
+}));
+
+test("runWorkspace strict fails readiness warnings and passes info-only readiness", async () => withTempDir(async (dir) => {
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+
+  const cleanGitRunner = fakeGit({
+    "rev-parse --is-inside-work-tree": ok("true\n"),
+    "rev-parse --show-toplevel": ok(`${dir}\n`),
+    "branch --show-current": ok("main\n"),
+    "status --short": ok(""),
+    "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+    "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+    "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+    "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace strict\n"),
+  });
+  const learningStatsProvider = ({ filePath }) => ({
+    file: filePath,
+    exists: false,
+    count: 0,
+    categoryCounts: {},
+    sourceCounts: {},
+    latestEntry: null,
+    auditSummary: { status: "pass", failures: 0, warnings: 0 },
+  });
+
+  const cleanRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--strict", "--json"],
+    {
+      sourceRoot,
+      gitRunner: cleanGitRunner,
+      learningStatsProvider,
+    },
+  ));
+  assert.equal(cleanRun.exitCode, undefined);
+
+  const dirtyRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--strict", "--json"],
+    {
+      sourceRoot,
+      gitRunner: fakeGit({
+        "rev-parse --is-inside-work-tree": ok("true\n"),
+        "rev-parse --show-toplevel": ok(`${dir}\n`),
+        "branch --show-current": ok("main\n"),
+        "status --short": ok(" M README.md\n"),
+        "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+        "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+        "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+        "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace strict\n"),
+      }),
+      learningStatsProvider,
+    },
+  ));
+  assert.equal(dirtyRun.exitCode, 1);
+  assert.equal(JSON.parse(dirtyRun.stdout).nextActions.some((item) => item.level === "warn"), true);
 }));

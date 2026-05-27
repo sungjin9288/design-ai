@@ -3,16 +3,18 @@
 import {
   collectWorkspaceReport,
   formatWorkspaceJson,
+  hasWorkspaceStrictIssues,
   parseWorkspaceArgs,
 } from "../lib/workspace.mjs";
 import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai workspace [--root path] [--learning-file path] [--json]\n");
+  console.log("Usage:  design-ai workspace [--root path] [--learning-file path] [--strict] [--json]\n");
   console.log("Shows the current local dogfood workspace state without changing files.\n");
   console.log("Options:");
   console.log("  --root path           Inspect a specific git workspace root. Default: current directory");
   console.log("  --learning-file path  Inspect a specific learning profile. Default: DESIGN_AI_LEARNING_FILE or ~/.design-ai/learning.json");
+  console.log("  --strict              Exit non-zero when readiness warnings or failures are present");
   console.log("  --json                Emit machine-readable workspace diagnostics");
 }
 
@@ -116,5 +118,9 @@ export async function runWorkspace(args, deps = {}) {
     console.log(formatWorkspaceJson(report));
   } else {
     printWorkspaceReport(report);
+  }
+
+  if (flags.strict && hasWorkspaceStrictIssues(report)) {
+    process.exitCode = 1;
   }
 }
