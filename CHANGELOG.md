@@ -78,6 +78,7 @@ Release metadata now reports prompt JSON output, prompt markdown output, prompt 
 Release metadata now guards release-facing docs against dropping prompt/pack forced output-file smoke guidance.
 Release metadata now reports prompt/pack forced output-file and prompt/pack file-write confirmation drift separately.
 `design-ai learn --feedback` now records explicit keep/improve/avoid outcome feedback as local learning entries without model training.
+`design-ai learn --init` now previews starter local learning entries for dogfood use, and `--init --yes` writes them while skipping duplicates.
 `design-ai check --learn` now previews warning/failure QA feedback as local learning entries, and `--learn --yes` writes them to the selected local learning profile without embeddings, external AI calls, or schema changes.
 `design-ai workspace` now gives a read-only local dogfood readiness snapshot for git sync, learning profile audit state, release scripts, and next-action hints before solo or internal distribution work.
 Packed-tarball package smoke now verifies check learning capture output in both installed-bin and one-shot `npm exec --package <tarball>` paths.

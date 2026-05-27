@@ -199,6 +199,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 202)** — Added public registry learning verify smoke: post-publish `registry:smoke` now verifies JSON `learn --verify` portable profile validation from file and stdin input through the published npm package path, with release metadata wording protection.
 - **v4.13 (Phase 203)** — Added auto feedback capture for local AI learning: `design-ai check --learn --yes` now converts warning/failure artifact QA results into local learning entries, with installed-bin and one-shot package smoke coverage plus release metadata wording protection.
 - **v4.13 (Phase 204)** — Added internal dogfood workspace mode: `design-ai workspace` now reports read-only git, learning profile, release-script readiness, and next-action hints for solo/internal dogfood before repo cleanup or push.
+- **v4.13 (Phase 205)** — Added starter learning profile bootstrap: `design-ai learn --init` previews deterministic dogfood preference entries, while `--init --yes` writes them through the existing local learning schema and skips duplicates.
 
 ## Patterns that didn't work
 

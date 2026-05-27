@@ -6,6 +6,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 What ships in v4.13:
 
+- `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
 - `design-ai learn --feedback ...` converts outcome feedback into reusable local learning notes.
 - `design-ai check <artifact.md|--stdin> --learn` previews warning/failure QA results as local learning entries, and `--learn --yes` writes them to the selected profile.
@@ -61,6 +62,16 @@ design-ai workspace --learning-file ./learning.json
 This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
 
 ## Usage
+
+Bootstrap a starter profile:
+
+```bash
+design-ai learn --init
+design-ai learn --init --yes
+design-ai learn --init --yes --json
+```
+
+`learn --init` is preview-first and does not mutate the profile. Add `--yes` to save deterministic starter entries for recommendation style, implementation workflow, accessibility, Korean UX, brand language, and local data boundaries. Existing `category + normalized text` duplicates are skipped and reported, so re-running the command is safe.
 
 Remember a preference:
 

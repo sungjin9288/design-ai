@@ -1204,6 +1204,164 @@ def assert_learning_feedback_smoke(
     )
 
 
+def assert_learning_init_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    added_count: int,
+    skipped_count: int,
+    count: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn init JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn init JSON must be an object")
+    require_package_smoke(
+        list(payload) == [
+            "file",
+            "dryRun",
+            "applied",
+            "source",
+            "candidateCount",
+            "addedCount",
+            "skippedCount",
+            "count",
+            "entries",
+            "skipped",
+        ],
+        context=context,
+        cmd=cmd,
+        message="learn init JSON keys changed",
+    )
+    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn init file path changed")
+    require_package_smoke(payload.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn init dryRun flag changed")
+    require_package_smoke(payload.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn init applied flag changed")
+    require_package_smoke(payload.get("source") == "init:local-dogfood", context=context, cmd=cmd, message="learn init source changed")
+    require_package_smoke(payload.get("candidateCount") == 6, context=context, cmd=cmd, message="learn init candidate count changed")
+    require_package_smoke(payload.get("addedCount") == added_count, context=context, cmd=cmd, message="learn init added count changed")
+    require_package_smoke(payload.get("skippedCount") == skipped_count, context=context, cmd=cmd, message="learn init skipped count changed")
+    require_package_smoke(payload.get("count") == count, context=context, cmd=cmd, message="learn init profile count changed")
+
+    entries = payload.get("entries")
+    skipped = payload.get("skipped")
+    require_package_smoke(isinstance(entries, list) and len(entries) == added_count, context=context, cmd=cmd, message="learn init entries list changed")
+    require_package_smoke(isinstance(skipped, list) and len(skipped) == skipped_count, context=context, cmd=cmd, message="learn init skipped list changed")
+
+    if entries:
+        categories = [entry.get("category") for entry in entries if isinstance(entry, dict)]
+        require_package_smoke(
+            categories == ["preference", "workflow", "accessibility", "korean", "brand", "constraint"],
+            context=context,
+            cmd=cmd,
+            message="learn init entry categories changed",
+        )
+        require_package_smoke(
+            all(
+                isinstance(entry, dict)
+                and isinstance(entry.get("id"), str)
+                and entry["id"].startswith("learn-")
+                and entry.get("source") == "init:local-dogfood"
+                and isinstance(entry.get("createdAt"), str)
+                and isinstance(entry.get("text"), str)
+                for entry in entries
+            ),
+            context=context,
+            cmd=cmd,
+            message="learn init entry schema changed",
+        )
+        require_package_smoke(
+            "one best path" in entries[0].get("text", "")
+            and "repository context" in entries[1].get("text", "")
+            and "WCAG 2.1 AA" in entries[2].get("text", "")
+            and "Pretendard" in entries[3].get("text", "")
+            and "restrained product UI language" in entries[4].get("text", "")
+            and "external AI APIs" in entries[5].get("text", ""),
+            context=context,
+            cmd=cmd,
+            message="learn init entry text changed",
+        )
+
+    if skipped:
+        require_package_smoke(
+            all(item.get("reason") == "duplicate-entry-text" for item in skipped if isinstance(item, dict)),
+            context=context,
+            cmd=cmd,
+            message="learn init skipped reason changed",
+        )
+
+
+def assert_learning_init_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    if profile_path.exists():
+        profile_path.unlink()
+
+    preview_cmd = command_factory("learn", "--init", "--file", str(profile_path), "--json")
+    preview_result = run_plain(preview_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        preview_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context=f"{context} preview",
+        cmd=preview_cmd,
+    )
+    require_package_smoke(
+        not profile_path.exists(),
+        context=f"{context} preview",
+        cmd=preview_cmd,
+        message="learn init preview should not create a profile",
+    )
+
+    apply_cmd = command_factory("learn", "--init", "--yes", "--file", str(profile_path), "--json")
+    apply_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context=f"{context} apply",
+        cmd=apply_cmd,
+    )
+    try:
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"{context}: failed to read initialized learning profile") from error
+    require_package_smoke(
+        isinstance(profile.get("entries"), list) and len(profile["entries"]) == 6,
+        context=f"{context} apply",
+        cmd=apply_cmd,
+        message="learn init did not persist starter entries",
+    )
+
+    duplicate_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        duplicate_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        added_count=0,
+        skipped_count=6,
+        count=6,
+        context=f"{context} duplicate",
+        cmd=apply_cmd,
+    )
+
+
 def write_learning_import_target_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -2997,6 +3155,122 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        learn_init_cmd = [
+            "design-ai",
+            "learn",
+            "--init",
+            "--yes",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        learning_init_entries = [
+            {
+                "id": "learn-init-preference",
+                "category": "preference",
+                "text": "Prefer concise, evidence-led design recommendations with one best path and explicit tradeoffs.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+            {
+                "id": "learn-init-workflow",
+                "category": "workflow",
+                "text": "For implementation work, inspect repository context first, keep edits scoped, and run meaningful verification before handoff.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+            {
+                "id": "learn-init-a11y",
+                "category": "accessibility",
+                "text": "For non-trivial UI, include keyboard navigation, visible focus, screen-reader behavior, and WCAG 2.1 AA contrast notes.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+            },
+            {
+                "id": "learn-init-korean",
+                "category": "korean",
+                "text": "When Korean users or Korean copy are involved, use Pretendard, Korean typography line-height, dense mobile conventions, and a consistent honorific level.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:03.000Z",
+            },
+            {
+                "id": "learn-init-brand",
+                "category": "brand",
+                "text": "Use restrained product UI language for internal tools and avoid decorative marketing phrasing unless explicitly requested.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:04.000Z",
+            },
+            {
+                "id": "learn-init-constraint",
+                "category": "constraint",
+                "text": "Do not add external AI APIs, embeddings, telemetry, or fine-tuning behavior without explicit approval.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:05.000Z",
+            },
+        ]
+        learning_init_payload = {
+            "file": str(learning_profile_path),
+            "dryRun": False,
+            "applied": True,
+            "source": "init:local-dogfood",
+            "candidateCount": 6,
+            "addedCount": 6,
+            "skippedCount": 0,
+            "count": 6,
+            "entries": learning_init_entries,
+            "skipped": [],
+        }
+        assert_learning_init_json(
+            json.dumps(learning_init_payload),
+            profile_path=learning_profile_path,
+            dry_run=False,
+            added_count=6,
+            skipped_count=0,
+            count=6,
+            context=context,
+            cmd=learn_init_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_init_json(
+                json.dumps({
+                    **learning_init_payload,
+                    "source": "cli",
+                }),
+                profile_path=learning_profile_path,
+                dry_run=False,
+                added_count=6,
+                skipped_count=0,
+                count=6,
+                context=context,
+                cmd=learn_init_cmd,
+            ),
+            expected="learn init source changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_init_json(
+                json.dumps({
+                    **learning_init_payload,
+                    "entries": [
+                        {
+                            **learning_init_entries[0],
+                            "category": "workflow",
+                        },
+                        *learning_init_entries[1:],
+                    ],
+                }),
+                profile_path=learning_profile_path,
+                dry_run=False,
+                added_count=6,
+                skipped_count=0,
+                count=6,
+                context=context,
+                cmd=learn_init_cmd,
+            ),
+            expected="learn init entry categories changed",
+            scope="package smoke",
+        )
+
         learn_import_cmd = [
             "design-ai",
             "learn",
@@ -4314,6 +4588,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn feedback",
         )
+        assert_learning_init_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-init-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn init",
+        )
         assert_learning_import_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-import-learning.json",
@@ -4973,6 +5253,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn feedback",
+        )
+        assert_learning_init_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-init-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn init",
         )
         assert_learning_import_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

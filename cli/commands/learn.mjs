@@ -15,6 +15,7 @@ import {
   forgetLearning,
   formatLearningJson,
   importLearningProfile,
+  initializeLearningProfile,
   learningStats,
   loadLearningProfile,
   parseLearnArgs,
@@ -28,6 +29,7 @@ import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --init [--yes|--dry-run] [--json] [--out file] [--force]");
   console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback --from-file notes.md [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");
@@ -52,6 +54,7 @@ function printHelp() {
   console.log("Stores local design preferences for explicit prompt personalization.");
   console.log("This is local memory, not model training or fine-tuning.\n");
   console.log("Options:");
+  console.log("  --init               Preview or apply starter local learning entries for dogfood use");
   console.log("  --remember text      Remember an inline preference or project constraint");
   console.log("  --feedback text      Convert outcome feedback into a reusable local learning note");
   console.log(`  --outcome kind       Feedback outcome: ${LEARNING_FEEDBACK_OUTCOMES.join(", ")}. Default: improve`);
@@ -69,7 +72,7 @@ function printHelp() {
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
-  console.log("  --dry-run            Preview --audit --fix cleanup without changing the profile");
+  console.log("  --dry-run            Preview --init, --import, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
@@ -83,6 +86,8 @@ function printHelp() {
   console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json  Override the default profile path");
   console.log("");
   console.log("Examples:");
+  console.log("  design-ai learn --init");
+  console.log("  design-ai learn --init --yes --json");
   console.log("  design-ai learn --remember \"Prefer dense Korean product UI\" --category korean");
   console.log("  design-ai learn --feedback \"Keep audit findings short and evidence-led\" --outcome keep");
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
@@ -320,6 +325,38 @@ function printStats(payload) {
   }
 }
 
+function printInit(payload) {
+  header("design-ai learn", payload.dryRun ? "Learning profile init preview" : "Learning profile init applied");
+  info(`File: ${payload.file}`);
+  info(`Candidates: ${payload.candidateCount}`);
+  info(`Added: ${payload.addedCount}`);
+  info(`Skipped: ${payload.skippedCount}`);
+  info(`Entries: ${payload.count}`);
+  console.log();
+
+  if (payload.entries.length > 0) {
+    console.log(payload.dryRun ? "Would add:" : "Added:");
+    for (const entry of payload.entries) {
+      console.log(`- [${entry.category}] ${entry.text}`);
+    }
+  } else {
+    console.log("No starter learning entries to add.");
+  }
+
+  if (payload.skipped.length > 0) {
+    console.log();
+    console.log("Skipped:");
+    for (const skipped of payload.skipped) {
+      console.log(`- [${skipped.category}] ${skipped.reason}: ${skipped.textPreview}`);
+    }
+  }
+
+  if (payload.dryRun) {
+    console.log();
+    console.log("No changes made. Re-run with `--yes` to create the starter learning profile.");
+  }
+}
+
 function readLearningInput(parsed) {
   return resolveBriefInput(parsed);
 }
@@ -409,6 +446,21 @@ export async function runLearn(args) {
     info(`File: ${result.file}`);
     info(`Outcome: ${parsed.feedbackOutcome}`);
     info(`Category: ${result.entry.category}`);
+    return;
+  }
+
+  if (parsed.action === "init") {
+    const payload = initializeLearningProfile({
+      filePath: parsed.filePath,
+      dryRun: parsed.dryRun || !parsed.yes,
+    });
+
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+
+    printInit(payload);
     return;
   }
 

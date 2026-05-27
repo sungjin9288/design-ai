@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 205 — Starter learning profile bootstrap (v4.13.0) ✓ shipped
+
+`design-ai learn --init` gives solo/internal dogfood users a safe way to start with useful local learning preferences instead of an empty profile.
+
+### Changed
+- Added `design-ai learn --init` as a preview-first starter learning bootstrap.
+- Added `design-ai learn --init --yes` to write starter entries through the existing local learning profile schema.
+- Starter entries cover recommendation style, implementation workflow, accessibility, Korean UX, brand language, and local data boundaries.
+- Reuses the existing duplicate detection behavior: matching `category + normalized text` entries are skipped and reported.
+- Added JSON/human output, command help, top-level help catalog, CLI unit tests, smoke assertion help guards, README command references, AI learning docs, product-readiness docs, quickstart, distribution docs, changelog, roadmap, and session log coverage.
+
+### Impact
+- First dogfood runs can immediately include explicit local preference context without manually writing six separate `learn --remember` commands.
+- The command does not train a model, call external AI APIs, add embeddings, change the learning schema, or mutate the profile unless `--yes` is present.
+
+### What this enables
+- Solo and internal users can bootstrap a consistent baseline profile before using `prompt --with-learning`, `pack --with-learning`, or `check --learn`.
+- Company onboarding can start from deterministic local preferences while still allowing each user to add or remove personal/team-specific entries.
+
+### What's still ahead
+- Dogfood the starter entries through real design-tool sessions and adjust wording only if repeated outputs show drift.
+- Team-wide shared profile templates, hosted sync, embeddings, or fine-tuning remain separate future product decisions.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 204 — Internal dogfood workspace mode (v4.13.0) ✓ shipped
 
 `design-ai workspace` gives solo/internal users a read-only readiness snapshot before committing, pushing, or sharing local dogfood builds.

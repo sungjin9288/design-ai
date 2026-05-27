@@ -19,6 +19,7 @@ const LEARN_OPTIONS = [
   "-h",
   "--help",
   "--json",
+  "--init",
   "--remember",
   "--feedback",
   "--from-file",
@@ -59,6 +60,33 @@ export const LEARNING_FEEDBACK_OUTCOMES = [
   "keep",
   "improve",
   "avoid",
+];
+export const LEARNING_INIT_SOURCE = "init:local-dogfood";
+export const LEARNING_INIT_ENTRIES = [
+  {
+    category: "preference",
+    text: "Prefer concise, evidence-led design recommendations with one best path and explicit tradeoffs.",
+  },
+  {
+    category: "workflow",
+    text: "For implementation work, inspect repository context first, keep edits scoped, and run meaningful verification before handoff.",
+  },
+  {
+    category: "accessibility",
+    text: "For non-trivial UI, include keyboard navigation, visible focus, screen-reader behavior, and WCAG 2.1 AA contrast notes.",
+  },
+  {
+    category: "korean",
+    text: "When Korean users or Korean copy are involved, use Pretendard, Korean typography line-height, dense mobile conventions, and a consistent honorific level.",
+  },
+  {
+    category: "brand",
+    text: "Use restrained product UI language for internal tools and avoid decorative marketing phrasing unless explicitly requested.",
+  },
+  {
+    category: "constraint",
+    text: "Do not add external AI APIs, embeddings, telemetry, or fine-tuning behavior without explicit approval.",
+  },
 ];
 const DEFAULT_AUDIT_MAX_ENTRY_CHARS = 800;
 const LEARNING_SENSITIVE_PATTERNS = [
@@ -156,6 +184,8 @@ export function parseLearnArgs(args) {
       out.help = true;
     } else if (arg === "--json") {
       out.json = true;
+    } else if (arg === "--init") {
+      setAction(out, "init");
     } else if (arg === "--remember") {
       setAction(out, "remember");
     } else if (arg === "--feedback") {
@@ -248,7 +278,7 @@ export function parseLearnArgs(args) {
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
   }
-  if (out.dryRun && !out.fix && out.action !== "import") {
+  if (out.dryRun && !out.fix && !["import", "init"].includes(out.action)) {
     throw new Error("--dry-run requires --fix");
   }
   if (out.fix && out.dryRun && out.yes) {
@@ -256,6 +286,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "import" && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --import");
+  }
+  if (out.action === "init" && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --init");
   }
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
@@ -861,6 +894,20 @@ export function captureLearningEntries({
     entries: added,
     skipped,
   };
+}
+
+export function initializeLearningProfile({
+  filePath = defaultLearningFile(),
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  return captureLearningEntries({
+    entries: LEARNING_INIT_ENTRIES,
+    source: LEARNING_INIT_SOURCE,
+    filePath,
+    dryRun,
+    now,
+  });
 }
 
 function learningEntryMergeKey(entry) {

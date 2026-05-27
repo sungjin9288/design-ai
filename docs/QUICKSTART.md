@@ -39,6 +39,7 @@ design-ai check output.md --route component-spec --strict
 design-ai check --examples --route design-from-brief --limit 1
 design-ai check --examples --all-routes --issues-only
 design-ai examples --route component-spec --limit 5
+design-ai learn --init
 design-ai learn --remember "Prefer dense Korean product UI" --category korean
 design-ai learn --feedback "Keep audit findings short and evidence-led" --outcome keep
 cat feedback.md | design-ai learn --feedback --stdin --outcome improve --category workflow

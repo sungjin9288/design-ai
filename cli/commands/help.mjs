@@ -40,7 +40,7 @@ export const HELP_COMMANDS = [
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
-  { topic: "learn", usage: "learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
+  { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
   { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--json]", description: "Show read-only local dogfood readiness: git, learning, and release scripts" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
@@ -223,6 +223,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);
+  console.log(`  ${dim("$")} design-ai learn --init`);
   console.log(`  ${dim("$")} design-ai learn --remember "Prefer dense Korean product UI"`);
   console.log(`  ${dim("$")} design-ai learn --feedback "Keep audit findings short" --outcome keep`);
   console.log(`  ${dim("$")} design-ai learn --audit`);

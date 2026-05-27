@@ -15,6 +15,7 @@ import {
   clearLearning,
   forgetLearning,
   importLearningProfile,
+  initializeLearningProfile,
   learningStats,
   loadLearningProfile,
   normalizeCategory,
@@ -68,6 +69,15 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   const listArgs = parseLearnArgs([]);
   assert.equal(listArgs.action, "list");
   assert.equal(listArgs.category, "preference");
+
+  const initArgs = parseLearnArgs(["--init", "--yes", "--json"]);
+  assert.equal(initArgs.action, "init");
+  assert.equal(initArgs.yes, true);
+  assert.equal(initArgs.json, true);
+
+  const initDryRunArgs = parseLearnArgs(["--init", "--dry-run"]);
+  assert.equal(initDryRunArgs.action, "init");
+  assert.equal(initDryRunArgs.dryRun, true);
 
   const rememberArgs = parseLearnArgs(["--remember", "Prefer", "compact", "tables", "--category", "workflow"]);
   assert.equal(rememberArgs.action, "remember");
@@ -232,6 +242,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /Choose either --dry-run or --yes/,
   );
   assert.throws(
+    () => parseLearnArgs(["--init", "--dry-run", "--yes"]),
+    /Choose either --dry-run or --yes/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--remember", "x", "--outcome", "avoid"]),
     /--outcome can only be used with --feedback/,
   );
@@ -288,6 +302,39 @@ test("recordLearningFeedback converts outcome feedback into a learning entry", (
   assert.equal(avoidResult.entry.source, "feedback:avoid");
   assert.equal(avoidResult.entry.text, "Avoid in future outputs: decorative marketing language in enterprise dashboards");
   assert.equal(loadLearningProfile(filePath).entries.length, 2);
+}));
+
+test("initializeLearningProfile previews, applies, and skips duplicate starter entries", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const now = new Date("2026-05-22T00:00:00.000Z");
+  const preview = initializeLearningProfile({ filePath, dryRun: true, now });
+
+  assert.equal(preview.dryRun, true);
+  assert.equal(preview.applied, false);
+  assert.equal(preview.source, "init:local-dogfood");
+  assert.equal(preview.candidateCount, 6);
+  assert.equal(preview.addedCount, 6);
+  assert.equal(preview.skippedCount, 0);
+  assert.equal(preview.count, 6);
+  assert.equal(preview.entries[0].category, "preference");
+  assert.equal(preview.entries[0].source, "init:local-dogfood");
+  assert.equal(loadLearningProfile(filePath).entries.length, 0);
+
+  const applied = initializeLearningProfile({ filePath, dryRun: false, now });
+  assert.equal(applied.applied, true);
+  assert.equal(applied.addedCount, 6);
+  assert.equal(loadLearningProfile(filePath).entries.length, 6);
+
+  const duplicate = initializeLearningProfile({
+    filePath,
+    dryRun: false,
+    now: new Date("2026-05-22T00:01:00.000Z"),
+  });
+  assert.equal(duplicate.addedCount, 0);
+  assert.equal(duplicate.skippedCount, 6);
+  assert.equal(duplicate.count, 6);
+  assert.equal(duplicate.skipped[0].reason, "duplicate-entry-text");
+  assert.equal(loadLearningProfile(filePath).entries.length, 6);
 }));
 
 test("forgetLearning removes entries by id or list number", () => withTempDir((dir) => {
@@ -712,6 +759,37 @@ test("runLearn feedback stores structured feedback entries in human and JSON mod
   assert.equal(filePayload.entry.source, "feedback:improve");
   assert.equal(filePayload.entry.text, "Improve future outputs by: Prefer keyboard-first critique notes");
   assert.equal(filePayload.count, 3);
+}));
+
+test("runLearn init previews starter entries and applies only after confirmation", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const previewOutput = await captureStdout(() => runLearn(["--init", "--file", filePath]));
+
+  assert.match(previewOutput, /Learning profile init preview/);
+  assert.match(previewOutput, /Would add:/);
+  assert.match(previewOutput, /No changes made/);
+  assert.equal(loadLearningProfile(filePath).entries.length, 0);
+
+  const applyOutput = await captureStdout(() => runLearn(["--init", "--yes", "--file", filePath, "--json"]));
+  const payload = JSON.parse(applyOutput);
+
+  assert.equal(payload.applied, true);
+  assert.equal(payload.dryRun, false);
+  assert.equal(payload.source, "init:local-dogfood");
+  assert.equal(payload.candidateCount, 6);
+  assert.equal(payload.addedCount, 6);
+  assert.equal(payload.skippedCount, 0);
+  assert.equal(payload.count, 6);
+  assert.equal(payload.entries[2].category, "accessibility");
+  assert.equal(loadLearningProfile(filePath).entries.length, 6);
+
+  const duplicateOutput = await captureStdout(() => runLearn(["--init", "--yes", "--file", filePath, "--json"]));
+  const duplicatePayload = JSON.parse(duplicateOutput);
+
+  assert.equal(duplicatePayload.addedCount, 0);
+  assert.equal(duplicatePayload.skippedCount, 6);
+  assert.equal(duplicatePayload.count, 6);
+  assert.equal(loadLearningProfile(filePath).entries.length, 6);
 }));
 
 test("runLearn import supports dry-run and confirmed JSON apply", () => withTempDirAsync(async (dir) => {
