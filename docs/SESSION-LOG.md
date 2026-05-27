@@ -209,6 +209,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 212)** — Added workspace repository alignment diagnostics: `design-ai workspace` now reports canonical repository remote/package/plugin metadata alignment, with package smoke covering workspace JSON in installed-bin and one-shot npm exec paths.
 - **v4.13 (Phase 213)** — Added workspace strict readiness gating: `design-ai workspace --strict` now exits non-zero on readiness warnings/failures while keeping the command read-only.
 - **v4.13 (Phase 214)** — Added packed-tarball workspace strict smoke coverage: installed-bin and one-shot npm exec paths now verify strict JSON failure and clean-success readiness behavior.
+- **v4.13 (Phase 215)** — Added release metadata guard coverage for workspace strict package smoke guidance, preventing release-facing docs from dropping strict readiness failure/success coverage.
 
 ## Patterns that didn't work
 

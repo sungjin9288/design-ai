@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 215 — Workspace strict package smoke metadata guard (v4.13.0) ✓ shipped
+
+Release metadata now protects the workspace strict package smoke guidance added in Phase 214.
+
+### Changed
+- Added a release metadata phrase guard for `design-ai workspace --strict --json` package smoke guidance.
+- Required release-facing docs to keep the workspace strict failure/success readiness language alongside installed-bin and one-shot packed-tarball smoke paths.
+- Added a release metadata self-test drift fixture that fails when the workspace strict package smoke phrase disappears from a release policy doc.
+
+### Impact
+- README, Korean README, Release checklist, and English/Korean Distribution docs cannot silently drop the workspace strict package smoke contract while keeping generic package smoke wording.
+- Existing CLI runtime behavior, workspace command behavior, package smoke execution, registry smoke execution, package allowlist, and learning schema remain unchanged.
+
+### What this enables
+- Future edits to release docs will preserve the fact that packed tarballs verify strict readiness failure and clean-success behavior before internal/company sharing.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 214 — Workspace strict package smoke coverage (v4.13.0) ✓ shipped
 
 Packed-tarball smoke now proves the strict workspace readiness gate in the same install paths users exercise.

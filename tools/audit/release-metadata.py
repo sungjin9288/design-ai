@@ -104,6 +104,27 @@ RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS = (
         "one-shot npm exec",
     ),
 )
+RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai workspace --strict --json`",
+        "design-ai workspace --strict --json",
+        "workspace --strict --json",
+    ),
+    (
+        "workspace strict failure/success",
+        "workspace strict failure and success",
+        "strict failure/success readiness",
+        "strict failure and clean-success readiness",
+        "strict 실패/성공 readiness",
+        "strict 실패/성공",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -966,6 +987,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "release check command phrase",
     "packed tarball smoke phrase",
     "package smoke command phrase",
+    "workspace strict package smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -1079,6 +1101,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("release check command phrase", RELEASE_CHECK_GATE_TERM_GROUPS),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
+    (
+        "workspace strict package smoke phrase",
+        RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
     ("public registry npm exec smoke phrase", RELEASE_PUBLIC_REGISTRY_NPM_EXEC_TERM_GROUPS),
@@ -1590,6 +1616,7 @@ that allows only intentional `refs/` source-link warnings and caps refs-only
 warnings at the accepted baseline. It also smoke-tests human `design-ai version` output,
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 `npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
+including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
@@ -1646,6 +1673,7 @@ machine-readable diagnostics output from `design-ai doctor --json` before releas
 안에 있어야 해요. human `design-ai version` 출력도 smoke test하고,
 packed-tarball installed-bin 경로도 확인하고,
 `npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
+`design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
@@ -1926,6 +1954,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing package smoke command phrase" in package_smoke_command_drift_errors,
         "release policy docs should mention package:smoke command guidance",
+    )
+
+    workspace_strict_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai workspace --strict --json` workspace strict failure/success readiness checks",
+                "workspace readiness coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_strict_package_smoke_drift_errors = "\n".join(
+        workspace_strict_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace strict package smoke phrase"
+            in workspace_strict_package_smoke_drift_errors
+        ),
+        "release policy docs should mention workspace strict package smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
