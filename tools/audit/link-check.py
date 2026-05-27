@@ -25,6 +25,19 @@ ROOT = Path(__file__).resolve().parents[2]
 # the previous + quantifier silently skipped any link whose text was wrapped
 # in backticks, masking real broken links.
 LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+?)(?:#[^)]+)?\)")
+SKIP_PATH_MARKERS = (
+    "refs/",
+    ".claude/",
+    "site-src/",
+    "/site/",
+    "node_modules/",
+    "vscode-extension/.vscode-test/",
+)
+
+
+def is_skipped_repo_path(path: Path) -> bool:
+    path_text = path.as_posix()
+    return any(marker in path_text for marker in SKIP_PATH_MARKERS)
 
 
 def is_external(url: str) -> bool:
@@ -60,7 +73,7 @@ def find_similar(broken: Path) -> list[Path]:
     # Search anywhere in the repo
     candidates = []
     for p in ROOT.rglob(name):
-        if any(skip in str(p) for skip in ("refs/", ".claude/", "site-src/", "/site/", "node_modules/")):
+        if is_skipped_repo_path(p):
             continue
         candidates.append(p)
     return candidates[:3]
@@ -73,7 +86,7 @@ def main() -> None:
 
     files = [
         p for p in ROOT.rglob("*.md")
-        if not any(skip in str(p) for skip in ("refs/", ".claude/", "site-src/", "/site/", "node_modules/"))
+        if not is_skipped_repo_path(p)
     ]
 
     broken: list[tuple[Path, str, int]] = []  # (source, link, line)

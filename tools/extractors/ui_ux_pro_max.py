@@ -94,10 +94,11 @@ The token names map directly to **shadcn-ui / Tailwind CSS v4** conventions.
 """
     body_rows = []
     for r in rows:
+        notes = r.get('Notes', '').replace('|', r'\|')
         body_rows.append(
             f"| {r.get('No', '')} | {r.get('Product Type', '')} | "
             f"`{r.get('Primary', '')}` | `{r.get('Accent', '')}` | "
-            f"`{r.get('Background', '')}` | {r.get('Notes', '').replace('|', '\\|')} |"
+            f"`{r.get('Background', '')}` | {notes} |"
         )
 
     full_specs = ["\n## Full token specs\n"]
