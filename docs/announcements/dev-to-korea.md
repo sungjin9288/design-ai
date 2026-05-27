@@ -28,7 +28,7 @@ conventions.
 npx @design-ai/cli install
 ```
 
-GitHub: https://github.com/sungjin/design-ai · License: MIT
+GitHub: https://github.com/sungjin9288/design-ai · License: MIT
 
 ## What design-ai is
 
@@ -139,11 +139,11 @@ a regression class:
 npx @design-ai/cli install
 
 # Or git clone
-git clone https://github.com/sungjin/design-ai
+git clone https://github.com/sungjin9288/design-ai
 cd design-ai && ./install.sh
 
 # Or Homebrew (macOS)
-brew tap sungjin/design-ai
+brew tap sungjin9288/design-ai
 brew install design-ai
 ```
 
@@ -177,7 +177,7 @@ chat or follow the walkthrough.
 - GitHub Issues for bugs / feature requests / Korean convention
   additions.
 - Korean translation / content contributions welcome — see
-  [`docs/CONTRIBUTING.ko.md`](https://github.com/sungjin/design-ai/blob/main/docs/CONTRIBUTING.ko.md).
+  [`docs/CONTRIBUTING.ko.md`](https://github.com/sungjin9288/design-ai/blob/main/docs/CONTRIBUTING.ko.md).
 - Especially curious about: Cursor + Figma workflows, B2B SaaS team
   adoption patterns, non-Korean fintech market additions.
 

@@ -3392,7 +3392,7 @@ def passing_main_help_output() -> str:
         "",
         "Environment overrides:",
         "Quickstart:",
-        "Docs:    https://github.com/sungjin/design-ai",
+        "Docs:    https://github.com/sungjin9288/design-ai",
         f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY} (UI/UX, motion,",
     ])
 

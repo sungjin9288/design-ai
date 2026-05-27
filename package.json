@@ -55,11 +55,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sungjin/design-ai.git"
+    "url": "git+https://github.com/sungjin9288/design-ai.git"
   },
-  "homepage": "https://github.com/sungjin/design-ai#readme",
+  "homepage": "https://github.com/sungjin9288/design-ai#readme",
   "bugs": {
-    "url": "https://github.com/sungjin/design-ai/issues"
+    "url": "https://github.com/sungjin9288/design-ai/issues"
   },
   "files": [
     "cli/",

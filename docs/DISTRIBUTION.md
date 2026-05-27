@@ -22,7 +22,7 @@ After install, the CLI symlinks the bundled corpus into `~/.claude/skills/`, `~/
 ### B. Git clone (for contributors)
 
 ```bash
-git clone https://github.com/sungjin/design-ai.git
+git clone https://github.com/sungjin9288/design-ai.git
 cd design-ai
 ./install.sh
 ```
@@ -173,7 +173,7 @@ For users who don't want npm, the tag workflow attaches the same npm-packed tarb
 
 ```bash
 # After a v* tag release
-curl -LO https://github.com/sungjin/design-ai/releases/download/vX.Y.Z/design-ai-cli-X.Y.Z.tgz
+curl -LO https://github.com/sungjin9288/design-ai/releases/download/vX.Y.Z/design-ai-cli-X.Y.Z.tgz
 tar xzf design-ai-cli-X.Y.Z.tgz
 cd package
 ./install.sh

@@ -24,6 +24,9 @@ PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 ROADMAP = ROOT / "docs" / "ROADMAP.md"
 RUN_ALL = ROOT / "tools" / "audit" / "run-all.py"
+CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai"
+CANONICAL_REPOSITORY_URL = f"https://github.com/{CANONICAL_REPOSITORY_SLUG}"
+STALE_REPOSITORY_SLUG = "sungjin/design-ai"
 REQUIRED_RELEASE_POLICY_DOC_LABELS = (
     "README.md",
     "README.ko.md",
@@ -1319,6 +1322,57 @@ def audit_count_errors(label: str, entry: str, expected_count: int | None) -> li
     return errors
 
 
+def repository_metadata_errors(
+    package_json: dict,
+    plugin_json: dict,
+    release_policy_docs: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    expected_package_values = {
+        "package.json repository.url": f"git+{CANONICAL_REPOSITORY_URL}.git",
+        "package.json homepage": f"{CANONICAL_REPOSITORY_URL}#readme",
+        "package.json bugs.url": f"{CANONICAL_REPOSITORY_URL}/issues",
+    }
+    actual_package_values = {
+        "package.json repository.url": (
+            package_json.get("repository", {}).get("url")
+            if isinstance(package_json.get("repository"), dict)
+            else None
+        ),
+        "package.json homepage": package_json.get("homepage"),
+        "package.json bugs.url": (
+            package_json.get("bugs", {}).get("url")
+            if isinstance(package_json.get("bugs"), dict)
+            else None
+        ),
+    }
+    for label, expected in expected_package_values.items():
+        actual = actual_package_values.get(label)
+        if actual != expected:
+            errors.append(f"{label} mismatch: {actual!r} != {expected!r}")
+
+    expected_plugin_values = {
+        ".claude-plugin/plugin.json homepage": CANONICAL_REPOSITORY_URL,
+        ".claude-plugin/plugin.json repository": CANONICAL_REPOSITORY_URL,
+    }
+    actual_plugin_values = {
+        ".claude-plugin/plugin.json homepage": plugin_json.get("homepage"),
+        ".claude-plugin/plugin.json repository": plugin_json.get("repository"),
+    }
+    for label, expected in expected_plugin_values.items():
+        actual = actual_plugin_values.get(label)
+        if actual != expected:
+            errors.append(f"{label} mismatch: {actual!r} != {expected!r}")
+
+    for label, text in release_policy_docs.items():
+        if STALE_REPOSITORY_SLUG in text:
+            errors.append(
+                f"{label} contains stale repository slug: {STALE_REPOSITORY_SLUG}"
+            )
+
+    return errors
+
+
 def required_section_errors(label: str, entry: str, sections: tuple[str, ...]) -> list[str]:
     return [f"{label} is missing required section: {section}" for section in sections if section not in entry]
 
@@ -1403,6 +1457,7 @@ def release_metadata_summary(
         version = ""
     if plugin_version != version:
         errors.append(f"plugin manifest version mismatch: {plugin_version} != {version}")
+    errors.extend(repository_metadata_errors(package_json, plugin_json, release_policy_docs))
 
     changelog_match, changelog_entry = first_changelog_entry(changelog_text)
     changelog_version = changelog_match.group("version") if changelog_match else None
@@ -1485,8 +1540,17 @@ def format_json_summary(summary: dict) -> str:
 
 
 def run_self_test() -> int:
-    package_json = {"version": "1.2.3"}
-    plugin_json = {"version": "1.2.3"}
+    package_json = {
+        "version": "1.2.3",
+        "repository": {"url": f"git+{CANONICAL_REPOSITORY_URL}.git"},
+        "homepage": f"{CANONICAL_REPOSITORY_URL}#readme",
+        "bugs": {"url": f"{CANONICAL_REPOSITORY_URL}/issues"},
+    }
+    plugin_json = {
+        "version": "1.2.3",
+        "homepage": CANONICAL_REPOSITORY_URL,
+        "repository": CANONICAL_REPOSITORY_URL,
+    }
     changelog = """# Changelog
 
 ## v1.2.3 — Fixture release (2026-05)
@@ -1669,6 +1733,36 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         release_policy_phrase_table_errors() == [],
         "release policy phrase guard table should be well formed",
+    )
+    stale_repo_summary = release_metadata_summary(
+        package_json={
+            **package_json,
+            "repository": {"url": f"git+https://github.com/{STALE_REPOSITORY_SLUG}.git"},
+        },
+        plugin_json={
+            **plugin_json,
+            "repository": f"https://github.com/{STALE_REPOSITORY_SLUG}",
+        },
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc + f"\nhttps://github.com/{STALE_REPOSITORY_SLUG}\n",
+        },
+        audit_count=8,
+    )
+    stale_repo_errors = "\n".join(stale_repo_summary["errors"])
+    assert_condition(
+        "package.json repository.url mismatch" in stale_repo_errors,
+        "release metadata should fail stale package repository URLs",
+    )
+    assert_condition(
+        ".claude-plugin/plugin.json repository mismatch" in stale_repo_errors,
+        "release metadata should fail stale plugin repository URLs",
+    )
+    assert_condition(
+        "README.md contains stale repository slug" in stale_repo_errors,
+        "release metadata should fail stale release-policy repository slugs",
     )
     missing_phrase_table_errors = "\n".join(
         release_policy_phrase_table_errors(RELEASE_POLICY_PHRASE_CHECKS[:-1])

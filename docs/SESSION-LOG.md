@@ -205,6 +205,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 208)** — Added GitHub Actions Node 24 opt-in: audit, docs, publish, and release workflows now force the upcoming JavaScript action runtime, with local CI self-test coverage to prevent drift.
 - **v4.13 (Phase 209)** — Upgraded official GitHub Actions refs to Node 24-compatible major versions and added local CI action-ref drift coverage for stale or missing required action refs.
 - **v4.13 (Phase 210)** — Retired the temporary GitHub Actions Node 24 opt-in after official action refs reached Node 24-compatible major versions, leaving local CI to guard the actual workflow pins.
+- **v4.13 (Phase 211)** — Aligned public repository metadata and docs to `sungjin9288/design-ai`, with release metadata guards for stale package, plugin, and release-policy repository references.
 
 ## Patterns that didn't work
 
@@ -260,7 +261,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, canonical `sungjin9288/design-ai` repository metadata, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **External launch** — publish only after owner review; announcement drafts already exist under `docs/announcements/`.
 2. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.

@@ -7,7 +7,7 @@ This directory contains the Homebrew formula for `design-ai`, enabling installat
 ### Install via tap
 
 ```bash
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 brew install design-ai
 ```
 
@@ -34,7 +34,7 @@ design-ai update      # re-symlink the new version
 ```bash
 design-ai uninstall   # remove ~/.claude/ symlinks
 brew uninstall design-ai
-brew untap sungjin/design-ai
+brew untap sungjin9288/design-ai
 ```
 
 ## For maintainers — releasing a new version
@@ -57,7 +57,7 @@ brew untap sungjin/design-ai
 
 5. **Get tarball SHA256**:
    ```bash
-   curl -sL https://github.com/sungjin/design-ai/archive/refs/tags/v3.4.0.tar.gz | shasum -a 256
+   curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz | shasum -a 256
    ```
 
 6. **Update `Formula/design-ai.rb`**:

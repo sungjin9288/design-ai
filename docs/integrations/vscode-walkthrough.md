@@ -1,6 +1,6 @@
 # VS Code walkthrough
 
-How to use design-ai inside **VS Code** via the [design-ai-vscode extension](https://github.com/sungjin/design-ai/tree/main/vscode-extension). The extension surfaces the corpus as sidebar trees + quick-pick commands; pair with any AI assistant (Copilot Chat, Continue, Cursor, etc.) for full design-aware coding.
+How to use design-ai inside **VS Code** via the [design-ai-vscode extension](https://github.com/sungjin9288/design-ai/tree/main/vscode-extension). The extension surfaces the corpus as sidebar trees + quick-pick commands; pair with any AI assistant (Copilot Chat, Continue, Cursor, etc.) for full design-aware coding.
 
 ## Prerequisites
 
@@ -8,9 +8,9 @@ How to use design-ai inside **VS Code** via the [design-ai-vscode extension](htt
 # Install design-ai source (any one method)
 npx @design-ai/cli install
 # OR
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git && brew install design-ai
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git && brew install design-ai
 # OR
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
 
 # Install VS Code extension (when published to marketplace)
 # code --install-extension sungjin.design-ai-vscode
@@ -204,4 +204,4 @@ Check `design-ai.language` setting. The Korean variant must exist (`README.ko.md
 - [`docs/integrations/cursor-walkthrough.md`](cursor-walkthrough.md) — Cursor variant
 - [`docs/integrations/aider-walkthrough.md`](aider-walkthrough.md) — Aider variant
 - [`docs/integrations/sdk-walkthrough.md`](sdk-walkthrough.md) — Anthropic / OpenAI SDK
-- [VS Code extension source](https://github.com/sungjin/design-ai/tree/main/vscode-extension)
+- [VS Code extension source](https://github.com/sungjin9288/design-ai/tree/main/vscode-extension)

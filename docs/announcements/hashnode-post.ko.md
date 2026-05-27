@@ -32,7 +32,7 @@ Aider)를 시니어 프로덕트 디자이너처럼 동작하게 만드는 모�
 npx @design-ai/cli install
 ```
 
-GitHub: https://github.com/sungjin/design-ai
+GitHub: https://github.com/sungjin9288/design-ai
 라이선스: MIT.
 
 ## 동기 — 왜 만들었나
@@ -186,11 +186,11 @@ deprecation 정책: 4.x에서 deprecate → 4.x 동안 유지 → 5.0에서 제�
 npx @design-ai/cli install
 
 # 또는 git clone
-git clone https://github.com/sungjin/design-ai
+git clone https://github.com/sungjin9288/design-ai
 cd design-ai && ./install.sh
 
 # Homebrew (macOS)
-brew tap sungjin/design-ai
+brew tap sungjin9288/design-ai
 brew install design-ai
 ```
 

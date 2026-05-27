@@ -7,7 +7,7 @@
 ```bash
 # Cursor 설치 (cursor.sh)
 # design-ai 설치
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 ```
 
 ## 설치 (90초)

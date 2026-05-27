@@ -7,7 +7,7 @@ A concrete walkthrough of using design-ai with **Cursor IDE**. Picks up where [`
 ```bash
 # Install Cursor (cursor.sh)
 # Get design-ai
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 ```
 
 ## Setup (90 seconds)

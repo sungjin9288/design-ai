@@ -7,8 +7,8 @@ Ready-to-post announcement drafts for design-ai v4.0.0 launch. **Drafts only** â
 | File | Channel | Language | Length |
 |---|---|---|---|
 | [`press-kit.md`](press-kit.md) | Reusable assets (one-liner / stats / FAQ) | EN + KO | â€” |
-| [`okky-post.ko.md`](https://github.com/sungjin/design-ai/blob/main/docs/announcements/okky-post.ko.md) | OKKY (okky.kr) | KO long-form | ~600 words |
-| [`hashnode-post.ko.md`](https://github.com/sungjin/design-ai/blob/main/docs/announcements/hashnode-post.ko.md) | hashnode.com (KR tag) | KO blog | ~800 words |
+| [`okky-post.ko.md`](https://github.com/sungjin9288/design-ai/blob/main/docs/announcements/okky-post.ko.md) | OKKY (okky.kr) | KO long-form | ~600 words |
+| [`hashnode-post.ko.md`](https://github.com/sungjin9288/design-ai/blob/main/docs/announcements/hashnode-post.ko.md) | hashnode.com (KR tag) | KO blog | ~800 words |
 | [`dev-to-korea.md`](dev-to-korea.md) | dev.to (#korea + #design tags) | EN + bilingual examples | ~600 words |
 | [`show-hn.md`](show-hn.md) | Hacker News Show HN | EN concise | ~150 words title+body |
 | [`twitter-thread.md`](twitter-thread.md) | X / Twitter | EN + KO threads | 6-8 tweets each |

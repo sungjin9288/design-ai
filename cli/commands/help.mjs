@@ -231,7 +231,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai audit --strict`);
   console.log(`  ${dim("$")} design-ai list skills`);
 
-  console.log(`\nDocs:    https://github.com/sungjin/design-ai`);
+  console.log(`\nDocs:    https://github.com/sungjin9288/design-ai`);
   console.log(`Plugin:  ${pluginInventory} (UI/UX, motion,`);
   console.log(`         illustration, print, video, game UI, conversational, spatial)`);
 }

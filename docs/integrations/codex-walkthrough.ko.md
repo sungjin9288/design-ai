@@ -9,7 +9,7 @@
 npm install -g @openai/codex
 
 # design-ai 설치
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 # 또는
 npm install -g @design-ai/cli
 # (npm CLI는 Claude Code용 심볼릭 링크를 만들어요. Codex는 소스 디렉토리에서 직접 파일을 읽어요.)

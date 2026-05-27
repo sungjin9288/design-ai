@@ -1,6 +1,6 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin/design-ai/actions/workflows/audit.yml)
+[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-124-blue)](examples/README.md)
@@ -47,7 +47,7 @@ design-ai install
 ### B. Homebrew
 
 ```bash
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 brew install design-ai
 design-ai install
 ```
@@ -55,7 +55,7 @@ design-ai install
 ### C. Git clone (기여자용)
 
 ```bash
-git clone https://github.com/sungjin/design-ai.git
+git clone https://github.com/sungjin9288/design-ai.git
 cd design-ai
 ./install.sh
 ```
@@ -193,7 +193,7 @@ main 브랜치의 모든 커밋에서 8개 모두 통과해요.
 
 ## 라이선스
 
-MIT. [LICENSE](https://github.com/sungjin/design-ai/blob/main/LICENSE) 참조.
+MIT. [LICENSE](https://github.com/sungjin9288/design-ai/blob/main/LICENSE) 참조.
 
 ## 변경 이력
 

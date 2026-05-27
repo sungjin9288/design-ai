@@ -16,8 +16,8 @@ site_description: >-
 site_author: Sungjin Park
 site_url: https://sungjin9288.github.io/design-ai/
 
-repo_url: https://github.com/sungjin/design-ai
-repo_name: sungjin/design-ai
+repo_url: https://github.com/sungjin9288/design-ai
+repo_name: sungjin9288/design-ai
 edit_uri: edit/main/
 
 # mkdocs requires docs_dir to be a sibling or descendant of the config file,
@@ -155,7 +155,7 @@ extra:
       lang: ko
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/sungjin/design-ai
+      link: https://github.com/sungjin9288/design-ai
     - icon: fontawesome/brands/npm
       link: https://www.npmjs.com/package/@design-ai/cli
   generator: false

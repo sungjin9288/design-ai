@@ -208,7 +208,7 @@ Publisher account setup: <https://code.visualstudio.com/api/working-with-extensi
 ```bash
 # After GitHub release tarball is available:
 TAG=v3.12.0
-SHA=$(curl -sL "https://github.com/sungjin/design-ai/releases/download/$TAG/design-ai-cli-${TAG#v}.tgz" | shasum -a 256 | cut -d' ' -f1)
+SHA=$(curl -sL "https://github.com/sungjin9288/design-ai/releases/download/$TAG/design-ai-cli-${TAG#v}.tgz" | shasum -a 256 | cut -d' ' -f1)
 
 # Update Formula/design-ai.rb:
 # - url: GitHub Release asset URL

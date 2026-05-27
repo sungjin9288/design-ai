@@ -1,20 +1,20 @@
 # Homebrew formula for design-ai.
 #
 # Install via tap:
-#   brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+#   brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 #   brew install design-ai
 #
 # Or directly from this URL:
-#   brew install sungjin/design-ai/design-ai
+#   brew install sungjin9288/design-ai/design-ai
 #
 # Submitting to homebrew-core requires a stable release with downloadable
 # tarballs and a maintained URL. This formula targets the GitHub release
-# tarball pattern: https://github.com/sungjin/design-ai/archive/refs/tags/v3.4.0.tar.gz
+# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz
 
 class DesignAi < Formula
   desc "Senior product designer for any AI coding agent (Claude Code, Codex, Cursor, Aider)"
-  homepage "https://github.com/sungjin/design-ai"
-  url "https://github.com/sungjin/design-ai/archive/refs/tags/v3.4.0.tar.gz"
+  homepage "https://github.com/sungjin9288/design-ai"
+  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz"
   sha256 "REPLACE_WITH_ACTUAL_TARBALL_SHA256_AFTER_RELEASE"
   license "MIT"
   version "3.4.0"

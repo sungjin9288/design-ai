@@ -27,12 +27,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sungjin/design-ai.git",
+    "url": "https://github.com/sungjin9288/design-ai.git",
     "directory": "vscode-extension"
   },
-  "homepage": "https://github.com/sungjin/design-ai/tree/main/vscode-extension",
+  "homepage": "https://github.com/sungjin9288/design-ai/tree/main/vscode-extension",
   "bugs": {
-    "url": "https://github.com/sungjin/design-ai/issues"
+    "url": "https://github.com/sungjin9288/design-ai/issues"
   },
   "main": "./out/extension.js",
   "activationEvents": [

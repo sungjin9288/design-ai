@@ -6,7 +6,7 @@ A concrete walkthrough of using design-ai with **Aider**, the terminal-based AI 
 
 ```bash
 pip install aider-chat
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 ```
 
 Aider needs a model API key (Anthropic, OpenAI, etc.):

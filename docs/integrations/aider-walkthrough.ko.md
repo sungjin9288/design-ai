@@ -6,7 +6,7 @@
 
 ```bash
 pip install aider-chat
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 ```
 
 Aider는 모델 API 키 (Anthropic, OpenAI 등) 필요:

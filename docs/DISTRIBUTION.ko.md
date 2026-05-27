@@ -22,7 +22,7 @@ npm 패키지는 코퍼스(`knowledge/`, `examples/`, `skills/`, `agents/`, `com
 ### B. Homebrew (Mac)
 
 ```bash
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 brew install design-ai
 design-ai install
 ```
@@ -32,7 +32,7 @@ design-ai install
 ### C. Git clone (기여자용)
 
 ```bash
-git clone https://github.com/sungjin/design-ai.git
+git clone https://github.com/sungjin9288/design-ai.git
 cd design-ai
 ./install.sh
 ```
@@ -150,7 +150,7 @@ design-ai version --json
 
 ```bash
 # Tap 추가
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 
 # 설치
 brew install design-ai

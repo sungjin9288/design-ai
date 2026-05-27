@@ -1,6 +1,6 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin/design-ai/actions/workflows/audit.yml)
+[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-124-blue)](examples/README.md)
@@ -47,7 +47,7 @@ design-ai install
 ### Option B: Homebrew
 
 ```bash
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 brew install design-ai
 design-ai install
 ```
@@ -55,7 +55,7 @@ design-ai install
 ### Option C: Git clone (for contributors)
 
 ```bash
-git clone https://github.com/sungjin/design-ai.git
+git clone https://github.com/sungjin9288/design-ai.git
 cd design-ai
 ./install.sh
 ```
@@ -233,7 +233,7 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
 
 ## License
 
-MIT. See [LICENSE](https://github.com/sungjin/design-ai/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/sungjin9288/design-ai/blob/main/LICENSE).
 
 ## Changelog
 

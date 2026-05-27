@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext): void {
           vscode.commands.executeCommand("workbench.action.openSettings", "design-ai.path");
         } else if (choice === "Install guide") {
           vscode.env.openExternal(
-            vscode.Uri.parse("https://github.com/sungjin/design-ai#install-claude-code"),
+            vscode.Uri.parse("https://github.com/sungjin9288/design-ai#install-claude-code"),
           );
         }
       });

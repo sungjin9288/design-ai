@@ -110,7 +110,7 @@ Try it:
 
   npx @design-ai/cli install
 
-GitHub: https://github.com/sungjin/design-ai
+GitHub: https://github.com/sungjin9288/design-ai
 Docs: (mkdocs URL)
 License: MIT
 
@@ -224,7 +224,7 @@ adopter가 pin하고 믿을 수 있어요.
 
   npx @design-ai/cli install
 
-GitHub: https://github.com/sungjin/design-ai
+GitHub: https://github.com/sungjin9288/design-ai
 문서 (한국어): docs/USING.ko.md
 라이선스: MIT
 

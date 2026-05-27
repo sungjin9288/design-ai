@@ -6,7 +6,7 @@ How to use design-ai inside your own code via the Anthropic SDK or OpenAI SDK. F
 
 ```bash
 # Get design-ai (just the corpus; no CLI install needed for SDK use)
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 
 # Install your SDK of choice
 pip install anthropic   # or

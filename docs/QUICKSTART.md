@@ -5,7 +5,7 @@ Five minutes from clone to first design output.
 ## 1. Install (Claude Code)
 
 ```bash
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 cd ~/dev/design-ai
 ./install.sh
 ```

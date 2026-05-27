@@ -52,7 +52,7 @@ walkthrough completeness, stale-content (>12mo files fail CI).
 
     npx @design-ai/cli install
 
-GitHub: https://github.com/sungjin/design-ai
+GitHub: https://github.com/sungjin9288/design-ai
 License: MIT
 
 Questions, feedback, contributions welcome.
@@ -112,7 +112,7 @@ USING / CONTRIBUTING / ARCHITECTURE 모두 한국어 버전 있어요.
 
 설치: `npx @design-ai/cli install`
 
-GitHub: https://github.com/sungjin/design-ai · MIT 라이선스
+GitHub: https://github.com/sungjin9288/design-ai · MIT 라이선스
 
 ---
 
@@ -126,7 +126,7 @@ Plugs into Claude Code, Codex CLI, Cursor, Aider, or any LLM.
 
 Install: `npx @design-ai/cli install`
 
-GitHub: https://github.com/sungjin/design-ai · MIT
+GitHub: https://github.com/sungjin9288/design-ai · MIT
 ```
 
 ### r/korea rules check
@@ -171,7 +171,7 @@ slash commands and skill auto-loading just work.
   cover all states, satisfy a11y).
 - Korean fintech / SaaS conventions baked in for KR adopters.
 
-GitHub: https://github.com/sungjin/design-ai · MIT
+GitHub: https://github.com/sungjin9288/design-ai · MIT
 ```
 
 ## Don't (for all subs)

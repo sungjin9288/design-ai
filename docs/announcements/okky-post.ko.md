@@ -72,7 +72,7 @@ npx @design-ai/cli install
 스킬 자동 로딩이 바로 동작해요.
 
 수동 설치 / Cursor / Codex / Aider 가이드는 README에 있어요:
-https://github.com/sungjin/design-ai
+https://github.com/sungjin9288/design-ai
 
 한국어 문서:
 - README.ko.md

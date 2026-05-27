@@ -1,6 +1,6 @@
 # VS Code 워크스루
 
-[design-ai-vscode 확장](https://github.com/sungjin/design-ai/tree/main/vscode-extension)을 통해 **VS Code**에서 design-ai 사용. 확장은 코퍼스를 사이드바 트리 + 빠른 선택 명령어로 노출. 어떤 AI 어시스턴트 (Copilot Chat, Continue, Cursor 등)와도 페어링해서 완전한 디자인 인식 코딩.
+[design-ai-vscode 확장](https://github.com/sungjin9288/design-ai/tree/main/vscode-extension)을 통해 **VS Code**에서 design-ai 사용. 확장은 코퍼스를 사이드바 트리 + 빠른 선택 명령어로 노출. 어떤 AI 어시스턴트 (Copilot Chat, Continue, Cursor 등)와도 페어링해서 완전한 디자인 인식 코딩.
 
 ## 사전 준비
 
@@ -8,9 +8,9 @@
 # design-ai 소스 설치 (어떤 방법이든 하나)
 npx @design-ai/cli install
 # 또는
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git && brew install design-ai
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git && brew install design-ai
 # 또는
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
 
 # VS Code 확장 설치 (마켓플레이스 출시 후)
 # code --install-extension sungjin.design-ai-vscode
@@ -201,4 +201,4 @@ Cmd+Shift+P → "design-ai: Refresh tree"
 - [`docs/integrations/cursor-walkthrough.ko.md`](cursor-walkthrough.ko.md) — Cursor 변형
 - [`docs/integrations/aider-walkthrough.ko.md`](aider-walkthrough.ko.md) — Aider 변형
 - [`docs/integrations/sdk-walkthrough.ko.md`](sdk-walkthrough.ko.md) — Anthropic / OpenAI SDK
-- [VS Code 확장 소스](https://github.com/sungjin/design-ai/tree/main/vscode-extension)
+- [VS Code 확장 소스](https://github.com/sungjin9288/design-ai/tree/main/vscode-extension)

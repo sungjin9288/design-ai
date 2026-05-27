@@ -2,7 +2,7 @@
 
 Senior product designer for any AI coding agent — now inside VS Code.
 
-This extension surfaces the [design-ai](https://github.com/sungjin/design-ai) corpus directly in your editor:
+This extension surfaces the [design-ai](https://github.com/sungjin9288/design-ai) corpus directly in your editor:
 
 - **19 design skills** as searchable PLAYBOOKs (color palette, component spec, UX audit, motion, illustration, print, video, game UI, conversational UI, spatial design)
 - **142 worked component specs** synthesized from Ant Design + MUI + shadcn-ui
@@ -20,12 +20,12 @@ The extension needs the design-ai source to function. Pick one:
 npx @design-ai/cli install
 
 # Homebrew (macOS)
-brew tap sungjin/design-ai https://github.com/sungjin/design-ai.git
+brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
 brew install design-ai
 design-ai install
 
 # Git clone
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 cd ~/dev/design-ai
 ./install.sh
 ```
@@ -86,7 +86,7 @@ Set `design-ai.language` to `ko` to open Korean translations of README / QUICKST
 
 ## Repository
 
-[github.com/sungjin/design-ai](https://github.com/sungjin/design-ai) — corpus, skills, examples, and CLI live there. This extension is a thin VS Code wrapper.
+[github.com/sungjin9288/design-ai](https://github.com/sungjin9288/design-ai) — corpus, skills, examples, and CLI live there. This extension is a thin VS Code wrapper.
 
 ## License
 
@@ -98,4 +98,4 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Issues
 
-Bug reports + feature requests: [github.com/sungjin/design-ai/issues](https://github.com/sungjin/design-ai/issues).
+Bug reports + feature requests: [github.com/sungjin9288/design-ai/issues](https://github.com/sungjin9288/design-ai/issues).

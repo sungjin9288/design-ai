@@ -14,7 +14,7 @@ Alt titles (rotate if first doesn't catch):
 
 ## URL field
 
-`https://github.com/sungjin/design-ai`
+`https://github.com/sungjin9288/design-ai`
 
 ## Text field (Show HN body, optional but recommended)
 

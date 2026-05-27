@@ -9,7 +9,7 @@ A concrete walkthrough of using design-ai with **OpenAI Codex CLI**. Picks up wh
 npm install -g @openai/codex
 
 # Get design-ai
-git clone https://github.com/sungjin/design-ai.git ~/dev/design-ai
+git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai
 # OR
 npm install -g @design-ai/cli
 # (npm CLI symlinks for Claude Code; Codex reads files directly from the source dir)
