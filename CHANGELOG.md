@@ -23,6 +23,7 @@ Docs deployment now re-runs when Korean top-level site entries change.
 Local CI now also guards the docs workflow corpus directory path filters.
 MkDocs refs-only warnings are now capped at the accepted 632-warning baseline.
 Korean distribution guidance now describes the same MkDocs refs warning baseline cap as the English release docs.
+The GitHub Pages docs workflow now skips deployment when Pages is not enabled while still enforcing the MkDocs warning-policy build.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.

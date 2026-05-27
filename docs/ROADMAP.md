@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 207 — Pages-disabled docs workflow guard (v4.13.0) ✓ shipped
+
+The docs workflow now keeps MkDocs build verification green when GitHub Pages has not been enabled yet.
+
+### Changed
+- Added a GitHub Pages availability check to `.github/workflows/docs.yml`.
+- The workflow now calls the GitHub Pages API after the MkDocs warning-policy build.
+- When Pages is enabled, the Pages artifact upload and deploy job still run.
+- When Pages is disabled, artifact upload and deployment are skipped with a clear log message instead of failing the workflow.
+
+### Impact
+- Internal dogfood and pre-launch pushes can keep docs build verification active without forcing a public Pages deployment setting.
+- This preserves the local/CI MkDocs warning-policy gate while avoiding a false-negative deploy failure caused by repository settings.
+- No source content, CLI runtime behavior, package output, or learning profile behavior changes.
+
+### What this enables
+- The repo can stay private-to-internal in behavior until the owner deliberately enables GitHub Pages for external docs.
+- CI can distinguish a real docs build failure from a disabled deployment target.
+
+### What's still ahead
+- Enable GitHub Pages only when the owner is ready for public docs deployment.
+- External launch remains held until owner review.
+
+### Verified
+- `python3 -B tools/audit/local-ci.py --self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `python3 -B tools/audit/release-metadata.py`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 206 — Public registry check learning capture smoke (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now verifies `design-ai check --learn --yes --json` from the published npm package path.
