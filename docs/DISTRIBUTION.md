@@ -52,7 +52,7 @@ design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --f
 design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, --stdin, --max-bytes N, --json, or --route id
 design-ai learn      Manage local learning preferences; use --init for preview-first starter profile bootstrap, --query with list/export for matching profile inspection, --backup --json for a full portable profile backup, --redact --json / --redact --from-file / --redact --stdin for redacted shareable backups, --out file plus --force for safe artifact writes, and --import for confirmed profile merges
 design-ai check file  Check generated Markdown artifact quality; add --examples, --route id, --all-routes, --issues-only, --stdin, --strict, --learn, --yes, --learning-file path, or --json
-design-ai workspace   Show a read-only local dogfood readiness snapshot for git, learning, and release scripts; add --root path, --learning-file path, or --json
+design-ai workspace   Show a read-only local dogfood readiness snapshot for git, repository metadata, learning, and release scripts; add --root path, --learning-file path, or --json
 design-ai examples q Find worked examples; add --route id, --limit N, or --json
 design-ai search q    Search local corpus markdown; add --dir kind, --limit N, or --json
 design-ai show file   Print a corpus file or line range; add --lines N:M, --context N, or --json

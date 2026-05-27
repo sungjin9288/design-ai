@@ -9,8 +9,10 @@ import assert from "node:assert/strict";
 import { runWorkspace } from "../commands/workspace.mjs";
 import {
   collectGitReport,
+  collectRepositoryReport,
   collectWorkspaceReport,
   formatWorkspaceJson,
+  normalizeRepositoryUrl,
   parseWorkspaceArgs,
 } from "./workspace.mjs";
 
@@ -33,6 +35,31 @@ function withTempDir(fn) {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+function writeSourceMetadata(sourceRoot, scripts = {}) {
+  mkdirSync(path.join(sourceRoot, ".claude-plugin"), { recursive: true });
+  writeFileSync(
+    path.join(sourceRoot, "package.json"),
+    JSON.stringify({
+      name: "@design-ai/cli",
+      version: "4.13.0",
+      repository: { type: "git", url: "git+https://github.com/sungjin9288/design-ai.git" },
+      homepage: "https://github.com/sungjin9288/design-ai#readme",
+      bugs: { url: "https://github.com/sungjin9288/design-ai/issues" },
+      scripts,
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(sourceRoot, ".claude-plugin", "plugin.json"),
+    JSON.stringify({
+      version: "4.13.0",
+      homepage: "https://github.com/sungjin9288/design-ai",
+      repository: "https://github.com/sungjin9288/design-ai",
+    }),
+    "utf8",
+  );
 }
 
 async function captureStdout(fn) {
@@ -79,19 +106,11 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   const sourceRoot = path.join(dir, "source");
   const learningFile = path.join(dir, "learning.json");
   mkdirSync(sourceRoot, { recursive: true });
-  writeFileSync(
-    path.join(sourceRoot, "package.json"),
-    JSON.stringify({
-      name: "@design-ai/cli",
-      version: "4.13.0",
-      scripts: {
-        test: "node --test cli/lib/*.test.mjs",
-        "audit:strict": "python3 -B tools/audit/run-all.py --strict",
-        "package:smoke": "python3 -B tools/audit/package-smoke.py --pack",
-      },
-    }),
-    "utf8",
-  );
+  writeSourceMetadata(sourceRoot, {
+    test: "node --test cli/lib/*.test.mjs",
+    "audit:strict": "python3 -B tools/audit/run-all.py --strict",
+    "package:smoke": "python3 -B tools/audit/package-smoke.py --pack",
+  });
 
   const report = collectWorkspaceReport({
     root: repoRoot,
@@ -130,6 +149,9 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.equal(report.git.clean, false);
   assert.equal(report.git.ahead, 3);
   assert.equal(report.git.behind, 2);
+  assert.equal(report.repository.slug, "sungjin9288/design-ai");
+  assert.equal(report.repository.metadataAligned, true);
+  assert.equal(report.repository.remoteAligned, true);
   assert.equal(report.learning.count, 2);
   assert.equal(report.learning.auditSummary.status, "warn");
   assert.deepEqual(report.release.available, ["test", "audit:strict", "package:smoke"]);
@@ -137,17 +159,63 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --audit/);
 }));
 
+test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
+  const sourceRoot = path.join(dir, "source");
+  mkdirSync(path.join(sourceRoot, ".claude-plugin"), { recursive: true });
+  writeFileSync(
+    path.join(sourceRoot, "package.json"),
+    JSON.stringify({
+      name: "@design-ai/cli",
+      version: "4.13.0",
+      repository: { type: "git", url: "git+https://github.com/stale/design-ai.git" },
+      homepage: "https://github.com/stale/design-ai#readme",
+      bugs: { url: "https://github.com/sungjin9288/design-ai/issues" },
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(sourceRoot, ".claude-plugin", "plugin.json"),
+    JSON.stringify({
+      version: "4.13.0",
+      homepage: "https://github.com/sungjin9288/design-ai",
+      repository: "https://github.com/stale/design-ai",
+    }),
+    "utf8",
+  );
+
+  assert.equal(
+    normalizeRepositoryUrl("git@github.com:sungjin9288/design-ai.git"),
+    "https://github.com/sungjin9288/design-ai",
+  );
+
+  const report = collectRepositoryReport({
+    sourceRoot,
+    git: {
+      isRepo: true,
+      remote: "git@github.com:other/design-ai.git",
+    },
+  });
+
+  assert.equal(report.metadataAligned, false);
+  assert.equal(report.remoteSlug, "other/design-ai");
+  assert.equal(report.remoteAligned, false);
+  assert.match(report.issues.join("\n"), /package\.repository\.url mismatch/);
+  assert.match(report.issues.join("\n"), /plugin\.repository mismatch/);
+  assert.match(report.issues.join("\n"), /git remote origin points to other\/design-ai/);
+}));
+
 test("formatWorkspaceJson emits a stable machine-readable object", () => {
   const formatted = formatWorkspaceJson({
     context: { root: "/repo" },
     git: { isRepo: false },
+    repository: { slug: "sungjin9288/design-ai" },
     learning: { count: 0 },
     release: { available: [] },
     nextActions: [],
   });
   const payload = JSON.parse(formatted);
 
-  assert.deepEqual(Object.keys(payload), ["context", "git", "learning", "release", "nextActions"]);
+  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "release", "nextActions"]);
   assert.equal(payload.context.root, "/repo");
 });
 
@@ -155,11 +223,7 @@ test("runWorkspace supports JSON output with injected collectors", async () => w
   const sourceRoot = path.join(dir, "source");
   const learningFile = path.join(dir, "learning.json");
   mkdirSync(sourceRoot, { recursive: true });
-  writeFileSync(
-    path.join(sourceRoot, "package.json"),
-    JSON.stringify({ name: "@design-ai/cli", version: "4.13.0", scripts: { test: "node --test" } }),
-    "utf8",
-  );
+  writeSourceMetadata(sourceRoot, { test: "node --test" });
 
   const output = await captureStdout(() => runWorkspace(
     ["--root", dir, "--learning-file", learningFile, "--json"],
@@ -190,6 +254,8 @@ test("runWorkspace supports JSON output with injected collectors", async () => w
 
   assert.equal(payload.context.root, dir);
   assert.equal(payload.git.clean, true);
+  assert.equal(payload.repository.metadataAligned, true);
+  assert.equal(payload.repository.remoteAligned, true);
   assert.equal(payload.learning.file, learningFile);
   assert.equal(payload.release.available.includes("test"), true);
   assert.equal(payload.nextActions.some((item) => item.command === "npm test"), true);

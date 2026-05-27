@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 212 — Workspace repository alignment diagnostics (v4.13.0) ✓ shipped
+
+`design-ai workspace` now makes canonical repository readiness visible before internal dogfood users commit, push, package, or share a local build.
+
+### Changed
+- Added a repository section to workspace JSON and human output with canonical slug, canonical URL, expected remote URL, package repository/homepage/bugs metadata, plugin homepage/repository metadata, remote slug, metadata alignment, remote alignment, and drift issues.
+- Added next-action warnings for package/plugin repository metadata drift and git remote mismatch.
+- Added workspace unit coverage for canonical metadata, remote normalization, stale metadata drift, and stable JSON key order.
+- Added packed-tarball smoke coverage for `design-ai workspace --json` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated README, Korean README, distribution docs, product readiness docs, and AI learning docs to describe repository alignment as part of the internal dogfood readiness snapshot.
+
+### Impact
+- Solo/internal dogfood now catches wrong remotes or stale repository metadata before push or shared install testing.
+- Package smoke now verifies the workspace JSON contract in the same install paths users will exercise.
+- No learning schema, route behavior, artifact checker behavior, package allowlist, or external API behavior changes.
+
+### What this enables
+- Repository ownership drift can be caught from the user-facing workspace command, not only from release metadata checks.
+- Internal company rollout preparation has one more local preflight signal before sharing a build.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `NO_COLOR=1 node cli/bin/design-ai.mjs workspace`
+- `node cli/bin/design-ai.mjs workspace --json`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 211 — Canonical repository metadata alignment (v4.13.0) ✓ shipped
 
 Public-facing repository references now point to the actual GitHub repository, `sungjin9288/design-ai`, before broader internal or external distribution.

@@ -53,7 +53,7 @@ design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out fi
 design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--stdin/--max-bytes N/--json/--route id 지원
 design-ai learn      local learning preference 관리; --init으로 preview-first starter profile bootstrap을 하고, list/export에서 --query로 matching profile을 확인하고, --backup --json은 전체 portable profile backup, --redact --json / --redact --from-file / --redact --stdin은 공유용 redacted backup을 만들고, --out file과 --force로 안전한 artifact 저장을 지원하며, --import는 확인된 profile merge를 수행
 design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--route id/--all-routes/--issues-only/--stdin/--strict/--learn/--yes/--learning-file path/--json 지원
-design-ai workspace   git, learning, release script 상태를 보는 read-only local dogfood readiness snapshot; --root path/--learning-file path/--json 지원
+design-ai workspace   git, repository metadata, learning, release script 상태를 보는 read-only local dogfood readiness snapshot; --root path/--learning-file path/--json 지원
 design-ai examples q worked example 검색; --route id/--limit N/--json 지원
 design-ai search q    로컬 코퍼스 Markdown 검색; --dir kind/--limit N/--json 지원
 design-ai show file   코퍼스 파일 또는 line range 출력; --lines N:M/--context N/--json 지원

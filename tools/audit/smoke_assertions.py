@@ -604,6 +604,52 @@ EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS = [
     "examples",
 ]
 EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS = ["example", "report"]
+EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "release", "nextActions"]
+EXPECTED_WORKSPACE_CONTEXT_KEYS = ["cwd", "root", "sourceRoot", "packageName", "version"]
+EXPECTED_WORKSPACE_GIT_KEYS = [
+    "isRepo",
+    "root",
+    "branch",
+    "clean",
+    "upstream",
+    "ahead",
+    "behind",
+    "remote",
+    "lastCommit",
+    "statusShort",
+    "reason",
+]
+EXPECTED_WORKSPACE_REPOSITORY_KEYS = [
+    "slug",
+    "url",
+    "expectedRemoteUrl",
+    "packageRepositoryUrl",
+    "packageHomepage",
+    "packageBugsUrl",
+    "pluginHomepage",
+    "pluginRepository",
+    "metadataAligned",
+    "remoteUrl",
+    "remoteSlug",
+    "remoteAligned",
+    "issues",
+]
+EXPECTED_WORKSPACE_LEARNING_KEYS = [
+    "file",
+    "exists",
+    "count",
+    "categoryCounts",
+    "sourceCounts",
+    "latestEntry",
+    "auditSummary",
+    "error",
+]
+EXPECTED_WORKSPACE_RELEASE_KEYS = ["packageName", "version", "scripts", "available", "missing"]
+EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS = ["status", "failures", "warnings"]
+EXPECTED_WORKSPACE_ACTION_KEYS = ["level", "text"]
+EXPECTED_WORKSPACE_ACTION_KEYS_WITH_COMMAND = [*EXPECTED_WORKSPACE_ACTION_KEYS, "command"]
+EXPECTED_REPOSITORY_SLUG = "sungjin9288/design-ai"
+EXPECTED_REPOSITORY_URL = f"https://github.com/{EXPECTED_REPOSITORY_SLUG}"
 
 
 def format_cmd(cmd: list[str]) -> str:
@@ -3388,7 +3434,7 @@ def passing_main_help_output() -> str:
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences for prompt personalization",
-        "  workspace [--root path] [--learning-file path] [--json]                Show read-only local dogfood readiness: git, learning, and release scripts",
+        "  workspace [--root path] [--learning-file path] [--json]                Show read-only local dogfood readiness: git, repository, learning, and release scripts",
         "",
         "Environment overrides:",
         "Quickstart:",
@@ -3417,6 +3463,94 @@ def passing_version_json() -> str:
                 "plugin": "4.13.0",
                 "aligned": True,
             },
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
+def passing_workspace_json() -> str:
+    return json.dumps(
+        {
+            "context": {
+                "cwd": "/tmp/project",
+                "root": "/tmp/project",
+                "sourceRoot": "/tmp/design-ai",
+                "packageName": "@design-ai/cli",
+                "version": "4.13.0",
+            },
+            "git": {
+                "isRepo": False,
+                "root": "/tmp/project",
+                "branch": "",
+                "clean": True,
+                "upstream": "",
+                "ahead": 0,
+                "behind": 0,
+                "remote": "",
+                "lastCommit": None,
+                "statusShort": [],
+                "reason": "not a git repository",
+            },
+            "repository": {
+                "slug": EXPECTED_REPOSITORY_SLUG,
+                "url": EXPECTED_REPOSITORY_URL,
+                "expectedRemoteUrl": f"{EXPECTED_REPOSITORY_URL}.git",
+                "packageRepositoryUrl": f"git+{EXPECTED_REPOSITORY_URL}.git",
+                "packageHomepage": f"{EXPECTED_REPOSITORY_URL}#readme",
+                "packageBugsUrl": f"{EXPECTED_REPOSITORY_URL}/issues",
+                "pluginHomepage": EXPECTED_REPOSITORY_URL,
+                "pluginRepository": EXPECTED_REPOSITORY_URL,
+                "metadataAligned": True,
+                "remoteUrl": "",
+                "remoteSlug": "",
+                "remoteAligned": None,
+                "issues": [],
+            },
+            "learning": {
+                "file": "/tmp/learning.json",
+                "exists": False,
+                "count": 0,
+                "categoryCounts": {},
+                "sourceCounts": {},
+                "latestEntry": None,
+                "auditSummary": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+                "error": "",
+            },
+            "release": {
+                "packageName": "@design-ai/cli",
+                "version": "4.13.0",
+                "scripts": {
+                    "test": "node --test cli/lib/*.test.mjs",
+                    "audit:strict": "python3 -B tools/audit/run-all.py --strict",
+                    "release:metadata": "python3 -B tools/audit/release-metadata.py",
+                    "package:smoke": "python3 -B tools/audit/package-smoke.py --pack",
+                    "ci:local": "python3 -B tools/audit/local-ci.py",
+                },
+                "available": [
+                    "test",
+                    "audit:strict",
+                    "release:metadata",
+                    "package:smoke",
+                    "ci:local",
+                ],
+                "missing": [],
+            },
+            "nextActions": [
+                {
+                    "level": "warn",
+                    "text": "Open design-ai from a git workspace before preparing shared changes.",
+                },
+                {
+                    "level": "info",
+                    "text": "Run CLI unit tests before handing this phase off.",
+                    "command": "npm test",
+                },
+            ],
         },
         ensure_ascii=False,
         indent=2,
@@ -3861,6 +3995,141 @@ def assert_version_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"version JSON after {context} versions are not aligned")
     if versions["cli"] != versions["plugin"]:
         raise SystemExit(f"version JSON after {context} CLI and plugin versions differ")
+
+
+def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"workspace JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_WORKSPACE_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="workspace JSON",
+    )
+
+    workspace_context = assert_smoke_json_keys(
+        payload.get("context"),
+        EXPECTED_WORKSPACE_CONTEXT_KEYS,
+        label="context",
+        context=context,
+        command_label="workspace JSON",
+    )
+    if workspace_context.get("packageName") != "@design-ai/cli":
+        raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
+    if workspace_context.get("version") != "4.13.0":
+        raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
+    for key in ("cwd", "root", "sourceRoot"):
+        if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
+            raise SystemExit(f"workspace JSON after {context} context {key} is missing")
+
+    git = assert_smoke_json_keys(
+        payload.get("git"),
+        EXPECTED_WORKSPACE_GIT_KEYS,
+        label="git",
+        context=context,
+        command_label="workspace JSON",
+    )
+    if type(git.get("isRepo")) is not bool:
+        raise SystemExit(f"workspace JSON after {context} git isRepo is not boolean")
+    if type(git.get("clean")) is not bool:
+        raise SystemExit(f"workspace JSON after {context} git clean is not boolean")
+    for key in ("ahead", "behind"):
+        if not is_lifecycle_json_non_negative_int(git.get(key)):
+            raise SystemExit(f"workspace JSON after {context} git {key} is invalid")
+    if not isinstance(git.get("statusShort"), list):
+        raise SystemExit(f"workspace JSON after {context} git statusShort is not a list")
+
+    repository = assert_smoke_json_keys(
+        payload.get("repository"),
+        EXPECTED_WORKSPACE_REPOSITORY_KEYS,
+        label="repository",
+        context=context,
+        command_label="workspace JSON",
+    )
+    expected_repository_values = {
+        "slug": EXPECTED_REPOSITORY_SLUG,
+        "url": EXPECTED_REPOSITORY_URL,
+        "expectedRemoteUrl": f"{EXPECTED_REPOSITORY_URL}.git",
+        "packageRepositoryUrl": f"git+{EXPECTED_REPOSITORY_URL}.git",
+        "packageHomepage": f"{EXPECTED_REPOSITORY_URL}#readme",
+        "packageBugsUrl": f"{EXPECTED_REPOSITORY_URL}/issues",
+        "pluginHomepage": EXPECTED_REPOSITORY_URL,
+        "pluginRepository": EXPECTED_REPOSITORY_URL,
+    }
+    for key, expected in expected_repository_values.items():
+        if repository.get(key) != expected:
+            raise SystemExit(f"workspace JSON after {context} repository {key} differs from expected canonical value")
+    if repository.get("metadataAligned") is not True:
+        raise SystemExit(f"workspace JSON after {context} repository metadata is not aligned")
+    if repository.get("remoteAligned") not in (True, False, None):
+        raise SystemExit(f"workspace JSON after {context} repository remoteAligned is invalid")
+    if not isinstance(repository.get("issues"), list):
+        raise SystemExit(f"workspace JSON after {context} repository issues is not a list")
+
+    learning = assert_smoke_json_keys(
+        payload.get("learning"),
+        EXPECTED_WORKSPACE_LEARNING_KEYS,
+        label="learning",
+        context=context,
+        command_label="workspace JSON",
+    )
+    if not isinstance(learning.get("file"), str) or not learning["file"]:
+        raise SystemExit(f"workspace JSON after {context} learning file is missing")
+    if type(learning.get("exists")) is not bool:
+        raise SystemExit(f"workspace JSON after {context} learning exists is not boolean")
+    if not is_lifecycle_json_non_negative_int(learning.get("count")):
+        raise SystemExit(f"workspace JSON after {context} learning count is invalid")
+    assert_smoke_json_keys(
+        learning.get("auditSummary"),
+        EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS,
+        label="learning auditSummary",
+        context=context,
+        command_label="workspace JSON",
+    )
+
+    release = assert_smoke_json_keys(
+        payload.get("release"),
+        EXPECTED_WORKSPACE_RELEASE_KEYS,
+        label="release",
+        context=context,
+        command_label="workspace JSON",
+    )
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.13.0":
+        raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
+    if not isinstance(release.get("scripts"), dict):
+        raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
+    for required_script in ("test", "audit:strict", "release:metadata", "package:smoke", "ci:local"):
+        if required_script not in release.get("available", []):
+            raise SystemExit(f"workspace JSON after {context} release missing available script {required_script}")
+        if required_script not in release.get("scripts", {}):
+            raise SystemExit(f"workspace JSON after {context} release scripts missing {required_script}")
+    if not isinstance(release.get("missing"), list):
+        raise SystemExit(f"workspace JSON after {context} release missing is not a list")
+
+    next_actions = payload.get("nextActions")
+    if not isinstance(next_actions, list) or not next_actions:
+        raise SystemExit(f"workspace JSON after {context} nextActions is empty")
+    for action in next_actions:
+        if not isinstance(action, dict):
+            raise SystemExit(f"workspace JSON after {context} nextActions entry is not an object")
+        expected_keys = EXPECTED_WORKSPACE_ACTION_KEYS_WITH_COMMAND if "command" in action else EXPECTED_WORKSPACE_ACTION_KEYS
+        action = assert_smoke_json_keys(
+            action,
+            expected_keys,
+            label="nextActions entry",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if action.get("level") not in ("pass", "info", "warn", "fail"):
+            raise SystemExit(f"workspace JSON after {context} next action level is invalid")
+        if not isinstance(action.get("text"), str) or not action["text"]:
+            raise SystemExit(f"workspace JSON after {context} next action text is missing")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -6725,6 +6994,64 @@ def run_self_test() -> None:
             cmd=[*version_cmd, "--json"],
         ),
         expected="version differs from expected semver",
+        scope="smoke assertions",
+    )
+    workspace_cmd = ["design-ai", "workspace", "--json"]
+    assert_workspace_json(passing_workspace_json(), context=context, cmd=workspace_cmd)
+    expect_self_test_failure(
+        lambda: assert_workspace_json("\x1b[31m{}", context=context, cmd=workspace_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    reordered_workspace_payload = json.loads(passing_workspace_json())
+    reordered_workspace_payload = {
+        "git": reordered_workspace_payload["git"],
+        "context": reordered_workspace_payload["context"],
+        "repository": reordered_workspace_payload["repository"],
+        "learning": reordered_workspace_payload["learning"],
+        "release": reordered_workspace_payload["release"],
+        "nextActions": reordered_workspace_payload["nextActions"],
+    }
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(reordered_workspace_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    stale_workspace_payload = json.loads(passing_workspace_json())
+    stale_workspace_payload["repository"]["packageRepositoryUrl"] = "git+https://github.com/stale/design-ai.git"
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(stale_workspace_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="canonical value",
+        scope="smoke assertions",
+    )
+    unaligned_workspace_payload = json.loads(passing_workspace_json())
+    unaligned_workspace_payload["repository"]["metadataAligned"] = False
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(unaligned_workspace_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="metadata is not aligned",
+        scope="smoke assertions",
+    )
+    missing_workspace_script_payload = json.loads(passing_workspace_json())
+    missing_workspace_script_payload["release"]["available"].remove("ci:local")
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(missing_workspace_script_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="missing available script ci:local",
         scope="smoke assertions",
     )
     assert_command_alias_output(

@@ -21,7 +21,7 @@ What ships in v4.13:
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
 - `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
-- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, and audit status in a broader read-only dogfood readiness snapshot.
+- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.

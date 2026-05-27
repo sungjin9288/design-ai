@@ -72,6 +72,21 @@ function printWorkspaceReport(report) {
   }
   if (report.learning.error) warn(`Learning profile error: ${report.learning.error}`);
 
+  console.log("\nRepository:");
+  info(`Canonical: ${report.repository.slug} (${report.repository.url})`);
+  const remoteStatus = report.repository.remoteAligned === null
+    ? "not checked"
+    : report.repository.remoteAligned ? "aligned" : "mismatch";
+  info(`Remote: ${report.repository.remoteUrl || "none"} | ${remoteStatus}`);
+  if (report.repository.metadataAligned) {
+    success("Package/plugin metadata aligned.");
+  } else {
+    warn("Package/plugin metadata mismatch detected.");
+  }
+  for (const issue of report.repository.issues) {
+    warn(issue);
+  }
+
   console.log("\nRelease scripts:");
   info(`Available: ${report.release.available.join(", ") || "none"}`);
   if (report.release.missing.length > 0) {

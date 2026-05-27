@@ -92,6 +92,7 @@ from smoke_assertions import (
     assert_unknown_route_id_failure,
     assert_install_json,
     assert_version_json,
+    assert_workspace_json,
     assert_uninstall_json,
     assert_uninstall_output,
     assert_version_output,
@@ -437,6 +438,11 @@ def assert_version_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | Non
 def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_version_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_command_alias_smoke(
@@ -4084,6 +4090,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin version JSON",
         )
+        assert_workspace_json_smoke(
+            [str(bin_path), "workspace", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace JSON",
+        )
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -4704,6 +4716,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec version JSON",
+        )
+        assert_workspace_json_smoke(
+            npm_exec_cmd(tarball, "workspace", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

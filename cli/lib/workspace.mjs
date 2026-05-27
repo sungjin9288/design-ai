@@ -27,6 +27,8 @@ const RELEASE_SCRIPT_NAMES = [
 ];
 
 const UNIQUE_RELEASE_SCRIPT_NAMES = [...new Set(RELEASE_SCRIPT_NAMES)];
+const CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai";
+const CANONICAL_REPOSITORY_URL = `https://github.com/${CANONICAL_REPOSITORY_SLUG}`;
 
 export function parseWorkspaceArgs(args) {
   const flags = {
@@ -183,13 +185,20 @@ export function collectGitReport({ root = process.cwd(), gitRunner = runGitComma
   };
 }
 
-function safeReadPackageJson(sourceRoot) {
-  const packageJsonPath = path.join(sourceRoot, "package.json");
+function safeReadJsonFile(filePath) {
   try {
-    return JSON.parse(readFileSync(packageJsonPath, "utf8"));
+    return JSON.parse(readFileSync(filePath, "utf8"));
   } catch {
     return null;
   }
+}
+
+function safeReadPackageJson(sourceRoot) {
+  return safeReadJsonFile(path.join(sourceRoot, "package.json"));
+}
+
+function safeReadPluginJson(sourceRoot) {
+  return safeReadJsonFile(path.join(sourceRoot, ".claude-plugin", "plugin.json"));
 }
 
 export function collectReleaseScriptReport({ sourceRoot = DESIGN_AI_HOME } = {}) {
@@ -206,6 +215,92 @@ export function collectReleaseScriptReport({ sourceRoot = DESIGN_AI_HOME } = {})
     scripts: Object.fromEntries(available.map((name) => [name, scripts[name]])),
     available,
     missing,
+  };
+}
+
+export function normalizeRepositoryUrl(value) {
+  let text = String(value || "").trim();
+  if (!text) return "";
+  if (text.startsWith("git+")) text = text.slice(4);
+  text = text.replace(/\.git$/u, "");
+
+  const scpMatch = text.match(/^git@github\.com:(?<slug>[^/]+\/[^/]+)$/u);
+  if (scpMatch?.groups?.slug) return `https://github.com/${scpMatch.groups.slug}`;
+
+  const sshMatch = text.match(/^ssh:\/\/git@github\.com\/(?<slug>[^/]+\/[^/]+)$/u);
+  if (sshMatch?.groups?.slug) return `https://github.com/${sshMatch.groups.slug}`;
+
+  const httpsMatch = text.match(/^https?:\/\/github\.com\/(?<slug>[^/]+\/[^/]+)$/u);
+  if (httpsMatch?.groups?.slug) return `https://github.com/${httpsMatch.groups.slug}`;
+
+  return text;
+}
+
+export function repositorySlugFromUrl(value) {
+  const normalized = normalizeRepositoryUrl(value);
+  const match = normalized.match(/^https:\/\/github\.com\/(?<slug>[^/]+\/[^/]+)$/u);
+  return match?.groups?.slug || "";
+}
+
+export function collectRepositoryReport({
+  sourceRoot = DESIGN_AI_HOME,
+  git = null,
+} = {}) {
+  const packageJson = safeReadPackageJson(sourceRoot) || {};
+  const pluginJson = safeReadPluginJson(sourceRoot) || {};
+  const expectedPackageRepositoryUrl = `git+${CANONICAL_REPOSITORY_URL}.git`;
+  const expectedPackageHomepage = `${CANONICAL_REPOSITORY_URL}#readme`;
+  const expectedPackageBugsUrl = `${CANONICAL_REPOSITORY_URL}/issues`;
+  const expectedPluginUrl = CANONICAL_REPOSITORY_URL;
+
+  const packageRepositoryUrl = typeof packageJson.repository === "object" && packageJson.repository
+    ? packageJson.repository.url || ""
+    : "";
+  const packageHomepage = packageJson.homepage || "";
+  const packageBugsUrl = typeof packageJson.bugs === "object" && packageJson.bugs
+    ? packageJson.bugs.url || ""
+    : "";
+  const pluginHomepage = pluginJson.homepage || "";
+  const pluginRepository = pluginJson.repository || "";
+
+  const metadataChecks = [
+    ["package.repository.url", packageRepositoryUrl, expectedPackageRepositoryUrl],
+    ["package.homepage", packageHomepage, expectedPackageHomepage],
+    ["package.bugs.url", packageBugsUrl, expectedPackageBugsUrl],
+    ["plugin.homepage", pluginHomepage, expectedPluginUrl],
+    ["plugin.repository", pluginRepository, expectedPluginUrl],
+  ].map(([label, actual, expected]) => ({
+    label,
+    actual,
+    expected,
+    aligned: actual === expected,
+  }));
+
+  const issues = metadataChecks
+    .filter((check) => !check.aligned)
+    .map((check) => `${check.label} mismatch: ${check.actual || "missing"} != ${check.expected}`);
+
+  const remoteUrl = git?.remote || "";
+  const remoteSlug = repositorySlugFromUrl(remoteUrl);
+  const remoteAligned = git?.isRepo && remoteUrl ? remoteSlug === CANONICAL_REPOSITORY_SLUG : null;
+  if (remoteAligned === false) {
+    issues.push(`git remote origin points to ${remoteSlug || remoteUrl}, expected ${CANONICAL_REPOSITORY_SLUG}`);
+  }
+
+  return {
+    slug: CANONICAL_REPOSITORY_SLUG,
+    url: CANONICAL_REPOSITORY_URL,
+    expectedRemoteUrl: `${CANONICAL_REPOSITORY_URL}.git`,
+    packageRepositoryUrl,
+    packageHomepage,
+    packageBugsUrl,
+    pluginHomepage,
+    pluginRepository,
+    metadataAligned: metadataChecks.every((check) => check.aligned),
+    remoteUrl,
+    remoteSlug,
+    remoteAligned,
+    issues,
   };
 }
 
@@ -244,7 +339,7 @@ function action(level, text, command = "") {
   return command ? { level, text, command } : { level, text };
 }
 
-export function buildWorkspaceNextActions({ git, learning, release }) {
+export function buildWorkspaceNextActions({ git, repository, learning, release }) {
   const actions = [];
 
   if (!git.isRepo) {
@@ -261,6 +356,12 @@ export function buildWorkspaceNextActions({ git, learning, release }) {
     } else {
       actions.push(action("pass", "Git workspace is clean and synced."));
     }
+  }
+
+  if (repository && !repository.metadataAligned) {
+    actions.push(action("fail", "Fix package/plugin repository metadata before preparing shared dogfood builds.", "npm run release:metadata"));
+  } else if (repository?.remoteAligned === false) {
+    actions.push(action("warn", "Verify git remote points at the canonical design-ai repository before pushing.", "git remote -v"));
   }
 
   if (learning.error) {
@@ -299,7 +400,8 @@ export function collectWorkspaceReport({
     learningStatsProvider,
   });
   const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });
-  const nextActions = buildWorkspaceNextActions({ git, learning, release });
+  const repository = collectRepositoryReport({ sourceRoot: resolvedSourceRoot, git });
+  const nextActions = buildWorkspaceNextActions({ git, repository, learning, release });
 
   return {
     context: {
@@ -310,6 +412,7 @@ export function collectWorkspaceReport({
       version: release.version,
     },
     git,
+    repository,
     learning,
     release,
     nextActions,
