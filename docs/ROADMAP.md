@@ -51,6 +51,38 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 206 — Public registry check learning capture smoke (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now verifies `design-ai check --learn --yes --json` from the published npm package path.
+
+### Changed
+- Added a registry-smoke artifact fixture that intentionally produces warning-level artifact QA findings without failures.
+- Added JSON assertions for `learningCapture`, including file path, applied/dry-run flags, source, candidate/add/skip counts, category mapping, entry schema, and captured text shape.
+- Verified that the selected learning profile file is actually written with the captured entries.
+- Wired the smoke into the public `npm exec --package @design-ai/cli@<version>` registry path.
+- Added registry-smoke self-test drift fixtures for capture count and metadata regressions.
+
+### Impact
+- The public post-publish gate now matches the release-facing docs that already promised check learning capture coverage.
+- This closes the Phase 203 follow-up for public registry smoke coverage without changing CLI runtime behavior, learning schema, package smoke, or local profile defaults.
+- `check` remains read-only unless users explicitly pass `--learn --yes`.
+
+### What this enables
+- Post-publish verification now covers the same local QA-to-learning feedback loop that packed-tarball smoke already checks before release.
+- Registry-only regressions in check learning capture JSON shape, category mapping, or persisted profile writes will fail before launch confidence is claimed.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Future AI learning beyond deterministic local profile entries, such as embeddings or fine-tuning, remains a separate product decision.
+
+### Verified
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/registry-smoke.py`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 205 — Starter learning profile bootstrap (v4.13.0) ✓ shipped
 
 `design-ai learn --init` gives solo/internal dogfood users a safe way to start with useful local learning preferences instead of an empty profile.
@@ -171,10 +203,11 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - Design QA findings can now become durable local learning guidance without leaving the machine or changing the explicit prompt/pack learning boundary.
 
 ### What's still ahead (4.x — incremental only)
-- Real-CI verification (push these workflows; observe green).
 - External launch (held).
-- Public registry smoke coverage for check learning capture.
 - Decide whether future AI learning should expand into embeddings or model fine-tuning.
+
+### Resolved follow-up
+- Public registry smoke coverage for check learning capture was completed in Phase 206.
 
 ## Phase 202 — Public registry learning verify smoke (v4.13.0) ✓ shipped
 
