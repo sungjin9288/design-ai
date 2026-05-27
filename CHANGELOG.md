@@ -26,6 +26,7 @@ Korean distribution guidance now describes the same MkDocs refs warning baseline
 The GitHub Pages docs workflow now skips deployment when Pages is not enabled while still enforcing the MkDocs warning-policy build.
 GitHub Actions workflows now opt into the upcoming Node 24 JavaScript action runtime, and local CI self-test guards that opt-in across audit, docs, publish, and release workflows.
 GitHub Actions workflows now pin official actions to Node 24-compatible major refs, and local CI self-test guards against stale action ref drift.
+GitHub Actions workflows now remove the temporary Node 24 runtime opt-in after official action refs reached Node 24-compatible majors, leaving local CI to guard the actual action pins.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.

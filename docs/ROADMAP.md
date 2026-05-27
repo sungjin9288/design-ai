@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 210 — Retire temporary Node 24 workflow opt-in (v4.13.0) ✓ shipped
+
+The temporary GitHub Actions runtime opt-in is removed now that repository workflows use official action major refs that already target Node 24-compatible runtimes.
+
+### Changed
+- Removed `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` from audit, docs, publish, and release workflows.
+- Removed the dedicated local CI opt-in parser, failure path, and self-test fixtures.
+- Kept the action-ref drift guard introduced in Phase 209 as the source of truth for workflow runtime compatibility.
+
+### Impact
+- CI policy now checks the actual workflow dependency pins instead of a temporary environment override.
+- Workflow files are simpler and no longer depend on a platform migration escape hatch.
+- No CLI runtime, npm package contents, learning profile schema, docs corpus, or user-facing command behavior changes.
+
+### What this enables
+- Future workflow runtime maintenance can focus on explicit action refs and Real-CI evidence.
+- The local CI parity gate remains strict without carrying redundant opt-in state.
+
+### What's still ahead
+- Monitor Real-CI after push to confirm the opt-in removal stays annotation-free.
+- External launch remains held until owner review.
+
+### Verified
+- `python3 -B tools/audit/local-ci.py --self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/local-ci.py`
+- `npm run audit:strict`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 209 — GitHub Actions Node 24 action refs (v4.13.0) ✓ shipped
 
 Official GitHub Actions refs now target Node 24-compatible major versions where available, reducing hosted-runner deprecation noise while keeping the explicit runtime opt-in guard.
@@ -62,7 +95,7 @@ Official GitHub Actions refs now target Node 24-compatible major versions where 
 
 ### Impact
 - Audit, docs, publish, and release workflows now exercise the same Node 24-compatible action generation used by current official action releases.
-- The existing `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` guard remains in place as a compatibility backstop.
+- The temporary `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` guard was kept in this phase, then retired in Phase 210 after Real-CI returned zero annotations.
 - No CLI runtime, npm package contents, learning profile schema, docs corpus, or user-facing command behavior changes.
 
 ### What this enables
