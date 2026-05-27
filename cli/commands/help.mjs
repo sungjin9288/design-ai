@@ -22,6 +22,7 @@ import { runStatus } from "./status.mjs";
 import { runUninstall } from "./uninstall.mjs";
 import { runUpdate } from "./update.mjs";
 import { runVersion } from "./version.mjs";
+import { runWorkspace } from "./workspace.mjs";
 
 export const HELP_COMMANDS = [
   { topic: "install", usage: "install [--json]", description: "Symlink design-ai into Claude Code (~/.claude)" },
@@ -40,6 +41,7 @@ export const HELP_COMMANDS = [
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "learn", usage: "learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
+  { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--json]", description: "Show read-only local dogfood readiness: git, learning, and release scripts" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];
@@ -62,6 +64,7 @@ export const HELP_ALIASES = {
   diag: "doctor",
   example: "examples",
   ex: "examples",
+  ws: "workspace",
   v: "version",
 };
 
@@ -82,6 +85,7 @@ const HELP_RUNNERS = {
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),
   learn: () => runLearn(["--help"]),
+  workspace: () => runWorkspace(["--help"]),
   version: () => runVersion(["--help"]),
   help: printHelpHelp,
 };
@@ -215,6 +219,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);
+  console.log(`  ${dim("$")} design-ai workspace`);
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);

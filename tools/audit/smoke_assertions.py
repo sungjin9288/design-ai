@@ -64,6 +64,7 @@ EXPECTED_HELP_TOPICS = (
     "doctor",
     "examples",
     "learn",
+    "workspace",
     "version",
     "help",
 )
@@ -84,6 +85,7 @@ EXPECTED_HELP_ALIASES = {
     "diag": "doctor",
     "example": "examples",
     "ex": "examples",
+    "ws": "workspace",
     "v": "version",
 }
 EXPECTED_HELP_PAYLOAD_KEYS = ["usage", "topics", "aliases"]
@@ -105,6 +107,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
+    "workspace": "design-ai workspace [--root path] [--learning-file path] [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -155,6 +158,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]",
         "local memory, not model training or fine-tuning",
     ),
+    "workspace": (
+        "Usage:",
+        "design-ai workspace [--root path] [--learning-file path] [--json]",
+        "--learning-file path",
+        "without changing files",
+    ),
     "version": ("Usage:", "design-ai version [--json]"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
@@ -172,6 +181,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "check <artifact.md|--stdin|--examples>",
     "examples [query]",
     "learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear]",
+    "workspace [--root path] [--learning-file path] [--json]",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
@@ -260,6 +270,7 @@ EXPECTED_COMMAND_ALIAS_COMMANDS = (
     ("diag", "--help"),
     ("example", "--help"),
     ("ex", "--help"),
+    ("ws", "--help"),
     ("v", "--help"),
     ("--version",),
     ("-v",),
@@ -301,6 +312,7 @@ EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("version", "--jsn", "--json"),
     ("doctor", "--jsn", "--json"),
     ("learn", "--jsn", "--json"),
+    ("workspace", "--jsn", "--json"),
 )
 EXPECTED_LIST_CATALOG = {
     "skills": (
@@ -707,6 +719,8 @@ def unknown_option_args(command_name: str, option: str) -> list[str]:
         return ["doctor", option]
     if command_name == "learn":
         return ["learn", option]
+    if command_name == "workspace":
+        return ["workspace", option]
     raise SystemExit(f"unsupported unknown option smoke command: {command_name}")
 
 
@@ -3372,6 +3386,7 @@ def passing_main_help_output() -> str:
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
         "  learn [--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences for prompt personalization",
+        "  workspace [--root path] [--learning-file path] [--json]                Show read-only local dogfood readiness: git, learning, and release scripts",
         "",
         "Environment overrides:",
         "Quickstart:",
@@ -7292,6 +7307,7 @@ def run_self_test() -> None:
         "design-ai help diag && "
         "design-ai help example && "
         "design-ai help ex && "
+        "design-ai help ws && "
         "design-ai help v"
     )
     assert design_ai_command_script([("find", "route topic"), ("cat", "knowledge/PRINCIPLES.md:1")]) == (
@@ -7323,6 +7339,7 @@ def run_self_test() -> None:
         "design-ai diag --help && "
         "design-ai example --help && "
         "design-ai ex --help && "
+        "design-ai ws --help && "
         "design-ai v --help && "
         "design-ai --version && "
         "design-ai -v && "

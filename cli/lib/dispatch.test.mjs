@@ -57,6 +57,7 @@ const FUNCTIONAL_ALIAS_TARGETS = {
   example: "examples",
   ex: "examples",
   lint: "check",
+  ws: "workspace",
 };
 
 test("suggestCommand suggests close canonical command names", () => {
@@ -140,6 +141,12 @@ test("functional command aliases dispatch to canonical command behavior", async 
       command: "check",
       args: ["--examples", "--route", "component-spec", "--limit", "1", "--strict", "--json"],
       expected: [/"routeId": "component-spec"/, /"status": "pass"/],
+    },
+    {
+      alias: "ws",
+      command: "workspace",
+      args: ["--json"],
+      expected: [/"git": \{/, /"learning": \{/],
     },
   ];
 

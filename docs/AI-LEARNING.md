@@ -20,6 +20,7 @@ What ships in v4.13:
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
 - `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
+- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, and audit status in a broader read-only dogfood readiness snapshot.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.
@@ -49,6 +50,15 @@ DESIGN_AI_LEARNING_FILE=/path/to/learning.json design-ai learn --list
 ```
 
 The profile is local to the machine. It is not synced, uploaded, or sent to any provider by this CLI.
+
+For a broader local readiness check that includes git state, learning audit state, and release-script availability, run:
+
+```bash
+design-ai workspace --json
+design-ai workspace --learning-file ./learning.json
+```
+
+This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
 
 ## Usage
 

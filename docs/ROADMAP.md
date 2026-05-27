@@ -51,6 +51,48 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 204 — Internal dogfood workspace mode (v4.13.0) ✓ shipped
+
+`design-ai workspace` gives solo/internal users a read-only readiness snapshot before committing, pushing, or sharing local dogfood builds.
+
+### Changed
+- Added `design-ai workspace [--root path] [--learning-file path] [--json]`.
+- Reports git branch, cleanliness, upstream sync, remote, and last commit without changing repository state.
+- Reports local learning profile path, entry count, category counts, latest entry, and audit status through the existing local learning profile schema.
+- Reports available release scripts so dogfood users can see the relevant `npm test`, `npm run audit:strict`, and package smoke gates.
+- Adds deterministic next-action hints for dirty worktrees, missing upstream branches, behind/ahead branches, learning audit warnings, and release verification commands.
+- Added help catalog, command alias (`ws`), CLI unit tests, smoke assertion topic guards, README command references, AI learning docs, product-readiness docs, distribution docs, changelog, roadmap, and session log coverage.
+
+### Impact
+- Local dogfood flow now has a single read-only command for deciding whether to keep developing, run verification, capture learning feedback, or prepare a push.
+- This does not create git commits, push branches, modify learning profiles, run release scripts, call external services, or add dependencies.
+
+### What this enables
+- Solo and internal dogfood runs can start with one deterministic readiness check instead of manually checking git, learning profile health, and release-script availability.
+- Future web UI, VS Code, Figma, or SDK surfaces can reuse the same report shape as an internal status panel.
+
+### What's still ahead
+- Dogfood the command through normal solo development sessions and tune next-action wording based on repeated use.
+- Public launch, registry smoke, and any hosted/productized workspace dashboard remain separate follow-up decisions.
+
+### Verified
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `node --test cli/lib/*.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 203 — Auto feedback capture for local AI learning (v4.13.0) ✓ shipped
 
 `design-ai check` can now turn local artifact QA warnings and failures into explicit learning entries after user confirmation.

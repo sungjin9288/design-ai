@@ -1,0 +1,321 @@
+// Local dogfood workspace diagnostics for `design-ai workspace`.
+
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+import { defaultLearningFile, learningStats } from "./learn.mjs";
+import { DESIGN_AI_HOME } from "./paths.mjs";
+import { unknownOptionMessage } from "./suggest.mjs";
+
+export const WORKSPACE_OPTIONS = [
+  "-h",
+  "--help",
+  "--json",
+  "--root",
+  "--learning-file",
+];
+
+const RELEASE_SCRIPT_NAMES = [
+  "test",
+  "audit:strict",
+  "release:metadata",
+  "release:self-test",
+  "package:smoke",
+  "release:check",
+  "ci:local",
+];
+
+const UNIQUE_RELEASE_SCRIPT_NAMES = [...new Set(RELEASE_SCRIPT_NAMES)];
+
+export function parseWorkspaceArgs(args) {
+  const flags = {
+    help: false,
+    json: false,
+    root: "",
+    learningFilePath: "",
+  };
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "-h" || arg === "--help") {
+      flags.help = true;
+      continue;
+    }
+    if (arg === "--json") {
+      flags.json = true;
+      continue;
+    }
+    if (arg === "--root") {
+      const root = args[i + 1];
+      if (!root || root.startsWith("--")) throw new Error("--root expects a path");
+      flags.root = root;
+      i += 1;
+      continue;
+    }
+    if (arg === "--learning-file") {
+      const filePath = args[i + 1];
+      if (!filePath || filePath.startsWith("--")) {
+        throw new Error("--learning-file expects a path");
+      }
+      flags.learningFilePath = filePath;
+      i += 1;
+      continue;
+    }
+
+    throw new Error(
+      `${unknownOptionMessage("workspace", arg, WORKSPACE_OPTIONS)}\n` +
+        "Usage: design-ai workspace [--root path] [--learning-file path] [--json]",
+    );
+  }
+
+  return flags;
+}
+
+function runGitCommand(args, { cwd }) {
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  return {
+    ok: result.status === 0,
+    status: result.status,
+    stdout: result.stdout || "",
+    stderr: result.stderr || "",
+    error: result.error?.message || "",
+  };
+}
+
+function splitLines(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+}
+
+function trimOutput(result) {
+  return String(result?.stdout || "").trim();
+}
+
+function parseAheadBehind(text) {
+  const [behindRaw, aheadRaw] = String(text || "").trim().split(/\s+/);
+  const behind = Number(behindRaw);
+  const ahead = Number(aheadRaw);
+  return {
+    ahead: Number.isInteger(ahead) ? ahead : 0,
+    behind: Number.isInteger(behind) ? behind : 0,
+  };
+}
+
+function parseLastCommit(text) {
+  const trimmed = String(text || "").trim();
+  if (!trimmed) return null;
+  const [hash, ...subjectParts] = trimmed.split("\t");
+  return {
+    hash: hash || "",
+    subject: subjectParts.join("\t").trim(),
+  };
+}
+
+export function collectGitReport({ root = process.cwd(), gitRunner = runGitCommand } = {}) {
+  const resolvedRoot = path.resolve(root);
+  const base = {
+    isRepo: false,
+    root: resolvedRoot,
+    branch: "",
+    clean: true,
+    upstream: "",
+    ahead: 0,
+    behind: 0,
+    remote: "",
+    lastCommit: null,
+    statusShort: [],
+    reason: "",
+  };
+
+  const inside = gitRunner(["rev-parse", "--is-inside-work-tree"], { cwd: resolvedRoot });
+  if (!inside.ok || trimOutput(inside) !== "true") {
+    return {
+      ...base,
+      reason: inside.error || trimOutput(inside) || String(inside.stderr || "").trim() || "not a git repository",
+    };
+  }
+
+  const repoRootResult = gitRunner(["rev-parse", "--show-toplevel"], { cwd: resolvedRoot });
+  const repoRoot = repoRootResult.ok && trimOutput(repoRootResult)
+    ? trimOutput(repoRootResult)
+    : resolvedRoot;
+  const branchResult = gitRunner(["branch", "--show-current"], { cwd: repoRoot });
+  const statusResult = gitRunner(["status", "--short"], { cwd: repoRoot });
+  const upstreamResult = gitRunner(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], {
+    cwd: repoRoot,
+  });
+  const remoteResult = gitRunner(["config", "--get", "remote.origin.url"], { cwd: repoRoot });
+  const lastCommitResult = gitRunner(["log", "-1", "--pretty=%h%x09%s"], { cwd: repoRoot });
+
+  let ahead = 0;
+  let behind = 0;
+  if (upstreamResult.ok && trimOutput(upstreamResult)) {
+    const countsResult = gitRunner(["rev-list", "--left-right", "--count", "@{u}...HEAD"], {
+      cwd: repoRoot,
+    });
+    if (countsResult.ok) {
+      ({ ahead, behind } = parseAheadBehind(trimOutput(countsResult)));
+    }
+  }
+
+  const statusShort = statusResult.ok ? splitLines(statusResult.stdout) : [];
+
+  return {
+    ...base,
+    isRepo: true,
+    root: repoRoot,
+    branch: trimOutput(branchResult),
+    clean: statusShort.length === 0,
+    upstream: upstreamResult.ok ? trimOutput(upstreamResult) : "",
+    ahead,
+    behind,
+    remote: remoteResult.ok ? trimOutput(remoteResult) : "",
+    lastCommit: lastCommitResult.ok ? parseLastCommit(lastCommitResult.stdout) : null,
+    statusShort,
+    reason: "",
+  };
+}
+
+function safeReadPackageJson(sourceRoot) {
+  const packageJsonPath = path.join(sourceRoot, "package.json");
+  try {
+    return JSON.parse(readFileSync(packageJsonPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+export function collectReleaseScriptReport({ sourceRoot = DESIGN_AI_HOME } = {}) {
+  const packageJson = safeReadPackageJson(sourceRoot);
+  const scripts = packageJson?.scripts && typeof packageJson.scripts === "object"
+    ? packageJson.scripts
+    : {};
+  const available = UNIQUE_RELEASE_SCRIPT_NAMES.filter((name) => typeof scripts[name] === "string");
+  const missing = UNIQUE_RELEASE_SCRIPT_NAMES.filter((name) => typeof scripts[name] !== "string");
+
+  return {
+    packageName: packageJson?.name || "",
+    version: packageJson?.version || "",
+    scripts: Object.fromEntries(available.map((name) => [name, scripts[name]])),
+    available,
+    missing,
+  };
+}
+
+export function collectLearningReport({
+  filePath = defaultLearningFile(),
+  learningStatsProvider = learningStats,
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  try {
+    const stats = learningStatsProvider({ filePath: resolvedFile });
+    return {
+      file: stats.file || resolvedFile,
+      exists: Boolean(stats.exists),
+      count: Number.isInteger(stats.count) ? stats.count : 0,
+      categoryCounts: stats.categoryCounts || {},
+      sourceCounts: stats.sourceCounts || {},
+      latestEntry: stats.latestEntry || null,
+      auditSummary: stats.auditSummary || { status: "pass", failures: 0, warnings: 0 },
+      error: "",
+    };
+  } catch (error) {
+    return {
+      file: resolvedFile,
+      exists: existsSync(resolvedFile),
+      count: 0,
+      categoryCounts: {},
+      sourceCounts: {},
+      latestEntry: null,
+      auditSummary: { status: "fail", failures: 1, warnings: 0 },
+      error: error?.message || String(error),
+    };
+  }
+}
+
+function action(level, text, command = "") {
+  return command ? { level, text, command } : { level, text };
+}
+
+export function buildWorkspaceNextActions({ git, learning, release }) {
+  const actions = [];
+
+  if (!git.isRepo) {
+    actions.push(action("warn", "Open design-ai from a git workspace before preparing shared changes."));
+  } else {
+    if (!git.clean) {
+      actions.push(action("warn", "Review local changes before committing or pushing.", "git status --short"));
+    } else if (!git.upstream && git.branch) {
+      actions.push(action("warn", "Set an upstream branch before sharing dogfood work.", `git push -u origin ${git.branch}`));
+    } else if (git.behind > 0) {
+      actions.push(action("warn", "Rebase or merge remote changes before continuing release work.", "git pull --rebase"));
+    } else if (git.ahead > 0) {
+      actions.push(action("info", "Push committed local work when the current phase is ready.", "git push"));
+    } else {
+      actions.push(action("pass", "Git workspace is clean and synced."));
+    }
+  }
+
+  if (learning.error) {
+    actions.push(action("fail", "Repair the local learning profile before relying on personalized prompt context.", "design-ai learn --audit"));
+  } else if (learning.auditSummary.status !== "pass") {
+    actions.push(action("warn", "Review local learning profile audit warnings before dogfooding prompts.", "design-ai learn --audit"));
+  } else if (learning.count === 0) {
+    actions.push(action("info", "Capture reviewed feedback after checks to make dogfood runs improve over time.", "design-ai check artifact.md --learn --yes"));
+  }
+
+  if (release.available.includes("test")) {
+    actions.push(action("info", "Run CLI unit tests before handing this phase off.", "npm test"));
+  }
+  if (release.available.includes("audit:strict")) {
+    actions.push(action("info", "Run the strict repository audit before repo cleanup or team distribution.", "npm run audit:strict"));
+  }
+  if (release.available.includes("package:smoke")) {
+    actions.push(action("info", "Use package smoke before publishing or testing the packed install path.", "npm run package:smoke"));
+  }
+
+  return actions;
+}
+
+export function collectWorkspaceReport({
+  root = process.cwd(),
+  sourceRoot = DESIGN_AI_HOME,
+  learningFilePath = defaultLearningFile(),
+  gitRunner = runGitCommand,
+  learningStatsProvider = learningStats,
+} = {}) {
+  const resolvedRoot = path.resolve(root);
+  const resolvedSourceRoot = path.resolve(sourceRoot);
+  const git = collectGitReport({ root: resolvedRoot, gitRunner });
+  const learning = collectLearningReport({
+    filePath: learningFilePath,
+    learningStatsProvider,
+  });
+  const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });
+  const nextActions = buildWorkspaceNextActions({ git, learning, release });
+
+  return {
+    context: {
+      cwd: process.cwd(),
+      root: resolvedRoot,
+      sourceRoot: resolvedSourceRoot,
+      packageName: release.packageName,
+      version: release.version,
+    },
+    git,
+    learning,
+    release,
+    nextActions,
+  };
+}
+
+export function formatWorkspaceJson(report) {
+  return JSON.stringify(report, null, 2);
+}
