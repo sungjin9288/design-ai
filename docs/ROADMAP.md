@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 209 — GitHub Actions Node 24 action refs (v4.13.0) ✓ shipped
+
+Official GitHub Actions refs now target Node 24-compatible major versions where available, reducing hosted-runner deprecation noise while keeping the explicit runtime opt-in guard.
+
+### Changed
+- Upgraded workflow refs for `actions/checkout`, `actions/setup-node`, `actions/setup-python`, `actions/cache`, `actions/upload-pages-artifact`, `actions/deploy-pages`, and `softprops/action-gh-release`.
+- Added a local CI action-ref drift guard so stale major refs fail before push.
+- Added self-test fixtures for expected action refs, stale action refs, and missing required action refs.
+
+### Impact
+- Audit, docs, publish, and release workflows now exercise the same Node 24-compatible action generation used by current official action releases.
+- The existing `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` guard remains in place as a compatibility backstop.
+- No CLI runtime, npm package contents, learning profile schema, docs corpus, or user-facing command behavior changes.
+
+### What this enables
+- Future workflow edits cannot silently reintroduce older official action major refs.
+- Real-CI annotations should now focus on remaining platform issues instead of repository-owned action pin drift.
+
+### What's still ahead
+- Monitor Real-CI after push because action major updates can surface workflow-only compatibility issues.
+- External launch remains held until owner review.
+
+### Verified
+- `python3 -B tools/audit/local-ci.py --self-test`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/local-ci.py`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 208 — GitHub Actions Node 24 opt-in (v4.13.0) ✓ shipped
 
 All GitHub workflows now opt into the upcoming Node 24 JavaScript action runtime before GitHub changes the default.

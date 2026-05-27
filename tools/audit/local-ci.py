@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,19 @@ GITHUB_WORKFLOW_FILES = (
     ROOT / ".github" / "workflows" / "docs.yml",
     ROOT / ".github" / "workflows" / "publish.yml",
     ROOT / ".github" / "workflows" / "release.yml",
+)
+WORKFLOW_REQUIRED_ACTION_REFS = (
+    ("actions/checkout", "v6"),
+    ("actions/setup-node", "v6"),
+    ("actions/setup-python", "v6"),
+    ("actions/cache", "v5"),
+    ("actions/upload-pages-artifact", "v5"),
+    ("actions/deploy-pages", "v5"),
+    ("softprops/action-gh-release", "v3"),
+)
+WORKFLOW_USES_RE = re.compile(
+    r"^\s*-?\s*uses:\s*"
+    r"(?P<action>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@(?P<ref>[^\s#]+)"
 )
 DOCS_WORKFLOW_REQUIRED_PATHS = (
     "knowledge/**",
@@ -243,6 +257,57 @@ def run_workflow_node24_opt_in_check(paths: tuple[Path, ...] = GITHUB_WORKFLOW_F
     print("\nWorkflow Node 24 opt-in check passed", flush=True)
 
 
+def workflow_action_refs(text: str) -> list[tuple[int, str, str]]:
+    refs: list[tuple[int, str, str]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        match = WORKFLOW_USES_RE.match(line)
+        if match:
+            refs.append((line_number, match.group("action"), match.group("ref")))
+    return refs
+
+
+def workflow_action_ref_errors(
+    paths: tuple[Path, ...] = GITHUB_WORKFLOW_FILES,
+    expected_refs: tuple[tuple[str, str], ...] = WORKFLOW_REQUIRED_ACTION_REFS,
+) -> list[str]:
+    errors: list[str] = []
+    expected = dict(expected_refs)
+    found: set[str] = set()
+
+    for path in paths:
+        if not path.exists():
+            errors.append(f"workflow file is missing: {display_workflow_path(path)}")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for line_number, action, ref in workflow_action_refs(text):
+            expected_ref = expected.get(action)
+            if expected_ref is None:
+                continue
+            found.add(action)
+            if ref != expected_ref:
+                errors.append(
+                    f"{display_workflow_path(path)}:{line_number} uses {action}@{ref}; "
+                    f"expected {action}@{expected_ref}"
+                )
+
+    for action, expected_ref in expected_refs:
+        if action not in found:
+            errors.append(f"workflow action ref missing: {action}@{expected_ref}")
+
+    return errors
+
+
+def run_workflow_action_ref_check(paths: tuple[Path, ...] = GITHUB_WORKFLOW_FILES) -> None:
+    errors = workflow_action_ref_errors(paths)
+    if errors:
+        raise SystemExit(
+            "workflow action ref check failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
+    print("\nWorkflow action ref check passed", flush=True)
+
+
 def run_docs_workflow_policy_check(path: Path = DOCS_WORKFLOW) -> None:
     errors = docs_workflow_policy_errors(path.read_text(encoding="utf-8"))
     if errors:
@@ -425,6 +490,31 @@ def run_self_test() -> int:
             workflow_node24_opt_in_errors((node24_workflow,)) == [],
             "workflow Node 24 opt-in fixture should pass when env is present",
         )
+        action_ref_workflow = root / "action-refs.yml"
+        action_ref_workflow.write_text(
+            "\n".join(
+                [
+                    "name: Action refs",
+                    "jobs:",
+                    "  fixture:",
+                    "    steps:",
+                    *(f"      - uses: {action}@{ref}" for action, ref in WORKFLOW_REQUIRED_ACTION_REFS),
+                ]
+            ),
+            encoding="utf-8",
+        )
+        assert_condition(
+            workflow_action_refs(action_ref_workflow.read_text(encoding="utf-8"))[0] == (
+                5,
+                "actions/checkout",
+                "v6",
+            ),
+            "workflow action ref parser should read uses lines with line numbers",
+        )
+        assert_condition(
+            workflow_action_ref_errors((action_ref_workflow,)) == [],
+            "workflow action ref fixture should pass when expected refs are present",
+        )
 
         failing_workflow = "\n".join(
             [
@@ -448,7 +538,31 @@ def run_self_test() -> int:
             any(WORKFLOW_NODE24_OPT_IN in error for error in node24_errors),
             "workflow Node 24 opt-in failure should mention the required env var",
         )
+        bad_action_ref_workflow = root / "bad-action-refs.yml"
+        bad_action_ref_workflow.write_text(
+            "\n".join(
+                [
+                    "name: Bad action refs",
+                    "jobs:",
+                    "  fixture:",
+                    "    steps:",
+                    "      - uses: actions/checkout@v4",
+                    "      - uses: actions/setup-node@v6",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        action_ref_errors = workflow_action_ref_errors((bad_action_ref_workflow,))
+        assert_condition(
+            any("actions/checkout@v4" in error for error in action_ref_errors),
+            "workflow action ref failure should report stale action versions",
+        )
+        assert_condition(
+            any("actions/setup-python@v6" in error for error in action_ref_errors),
+            "workflow action ref failure should report missing required actions",
+        )
         run_workflow_node24_opt_in_check()
+        run_workflow_action_ref_check()
         run_docs_workflow_policy_check()
 
     print("Local CI self-test passed")
@@ -486,6 +600,7 @@ def main() -> int:
     run_python_compile()
     run_size_budget()
     run_workflow_node24_opt_in_check()
+    run_workflow_action_ref_check()
     run_docs_workflow_policy_check()
     if not args.skip_vscode:
         run_vscode_checks()
