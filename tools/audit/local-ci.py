@@ -27,6 +27,18 @@ LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
 MKDOCS_REFS_WARNING_BASELINE = 632
+WORKFLOW_NODE24_OPT_IN = "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24"
+WORKFLOW_NODE24_VALUES = {
+    f"{WORKFLOW_NODE24_OPT_IN}: true",
+    f"{WORKFLOW_NODE24_OPT_IN}: \"true\"",
+    f"{WORKFLOW_NODE24_OPT_IN}: 'true'",
+}
+GITHUB_WORKFLOW_FILES = (
+    ROOT / ".github" / "workflows" / "audit.yml",
+    ROOT / ".github" / "workflows" / "docs.yml",
+    ROOT / ".github" / "workflows" / "publish.yml",
+    ROOT / ".github" / "workflows" / "release.yml",
+)
 DOCS_WORKFLOW_REQUIRED_PATHS = (
     "knowledge/**",
     "examples/**",
@@ -199,6 +211,38 @@ def docs_workflow_policy_errors(text: str) -> list[str]:
     return errors
 
 
+def workflow_has_node24_opt_in(text: str) -> bool:
+    return any(line.strip() in WORKFLOW_NODE24_VALUES for line in text.splitlines())
+
+
+def display_workflow_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def workflow_node24_opt_in_errors(paths: tuple[Path, ...] = GITHUB_WORKFLOW_FILES) -> list[str]:
+    errors: list[str] = []
+    for path in paths:
+        if not path.exists():
+            errors.append(f"workflow file is missing: {display_workflow_path(path)}")
+            continue
+        if not workflow_has_node24_opt_in(path.read_text(encoding="utf-8")):
+            errors.append(f"workflow missing {WORKFLOW_NODE24_OPT_IN}=true opt-in: {display_workflow_path(path)}")
+    return errors
+
+
+def run_workflow_node24_opt_in_check(paths: tuple[Path, ...] = GITHUB_WORKFLOW_FILES) -> None:
+    errors = workflow_node24_opt_in_errors(paths)
+    if errors:
+        raise SystemExit(
+            "workflow Node 24 opt-in check failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
+    print("\nWorkflow Node 24 opt-in check passed", flush=True)
+
+
 def run_docs_workflow_policy_check(path: Path = DOCS_WORKFLOW) -> None:
     errors = docs_workflow_policy_errors(path.read_text(encoding="utf-8"))
     if errors:
@@ -364,6 +408,23 @@ def run_self_test() -> int:
             docs_workflow_policy_errors(passing_workflow) == [],
             "docs workflow fixture should pass when it uses docs-only policy",
         )
+        node24_workflow = root / "node24.yml"
+        node24_workflow.write_text(
+            "\n".join([
+                "name: Node 24 opt-in",
+                "env:",
+                f"  {WORKFLOW_NODE24_OPT_IN}: \"true\"",
+            ]),
+            encoding="utf-8",
+        )
+        assert_condition(
+            workflow_has_node24_opt_in(node24_workflow.read_text(encoding="utf-8")),
+            "workflow Node 24 opt-in parser should accept quoted true values",
+        )
+        assert_condition(
+            workflow_node24_opt_in_errors((node24_workflow,)) == [],
+            "workflow Node 24 opt-in fixture should pass when env is present",
+        )
 
         failing_workflow = "\n".join(
             [
@@ -380,6 +441,14 @@ def run_self_test() -> int:
             any("--docs-only" in error for error in workflow_errors),
             "docs workflow failure should mention docs-only policy",
         )
+        missing_node24_workflow = root / "missing-node24.yml"
+        missing_node24_workflow.write_text("name: Missing Node 24 opt-in\n", encoding="utf-8")
+        node24_errors = workflow_node24_opt_in_errors((missing_node24_workflow,))
+        assert_condition(
+            any(WORKFLOW_NODE24_OPT_IN in error for error in node24_errors),
+            "workflow Node 24 opt-in failure should mention the required env var",
+        )
+        run_workflow_node24_opt_in_check()
         run_docs_workflow_policy_check()
 
     print("Local CI self-test passed")
@@ -416,6 +485,7 @@ def main() -> int:
         run_release_check()
     run_python_compile()
     run_size_budget()
+    run_workflow_node24_opt_in_check()
     run_docs_workflow_policy_check()
     if not args.skip_vscode:
         run_vscode_checks()

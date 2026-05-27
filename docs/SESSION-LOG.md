@@ -202,6 +202,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 205)** — Added starter learning profile bootstrap: `design-ai learn --init` previews deterministic dogfood preference entries, while `--init --yes` writes them through the existing local learning schema and skips duplicates.
 - **v4.13 (Phase 206)** — Added public registry check learning capture smoke: post-publish `registry:smoke` now verifies `design-ai check --learn --yes --json` output and persisted learning profile entries from the published npm package path.
 - **v4.13 (Phase 207)** — Added a Pages-disabled docs workflow guard: MkDocs build verification still runs on pushes, but artifact upload and Pages deployment are skipped when GitHub Pages has not been enabled.
+- **v4.13 (Phase 208)** — Added GitHub Actions Node 24 opt-in: audit, docs, publish, and release workflows now force the upcoming JavaScript action runtime, with local CI self-test coverage to prevent drift.
 
 ## Patterns that didn't work
 
@@ -257,7 +258,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, a Pages-disabled docs workflow guard, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, a Pages-disabled docs workflow guard, GitHub Actions Node 24 opt-in, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **External launch** — publish only after owner review; announcement drafts already exist under `docs/announcements/`.
 2. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.

@@ -51,6 +51,39 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 208 — GitHub Actions Node 24 opt-in (v4.13.0) ✓ shipped
+
+All GitHub workflows now opt into the upcoming Node 24 JavaScript action runtime before GitHub changes the default.
+
+### Changed
+- Added `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` to audit, docs, publish, and release workflows.
+- Added a local CI guard that checks every repository workflow keeps the Node 24 opt-in.
+- Added self-test fixtures for present and missing Node 24 workflow opt-in behavior.
+
+### Impact
+- GitHub Actions warnings about Node.js 20 action runtime deprecation are converted into an explicit compatibility check before the platform default changes.
+- Release and publish workflows get the same opt-in as normal audit/docs pushes, even though they run less often.
+- No CLI runtime, npm package contents, learning profile schema, docs corpus, or user-facing command behavior changes.
+
+### What this enables
+- Real-CI now exercises the near-future GitHub Actions JavaScript runtime behavior instead of waiting for the hosted runner default to change.
+- Future workflow edits cannot silently drop the Node 24 opt-in without failing the local CI self-test.
+
+### What's still ahead
+- Monitor GitHub-hosted action version support when the platform fully switches defaults.
+- External launch remains held until owner review.
+
+### Verified
+- `python3 -B tools/audit/local-ci.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/local-ci.py`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 207 — Pages-disabled docs workflow guard (v4.13.0) ✓ shipped
 
 The docs workflow now keeps MkDocs build verification green when GitHub Pages has not been enabled yet.
