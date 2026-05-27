@@ -3557,6 +3557,46 @@ def passing_workspace_json() -> str:
     )
 
 
+def passing_workspace_strict_clean_json() -> str:
+    payload = json.loads(passing_workspace_json())
+    payload["git"] = {
+        "isRepo": True,
+        "root": "/tmp/workspace-strict-repo",
+        "branch": "main",
+        "clean": True,
+        "upstream": "origin/main",
+        "ahead": 0,
+        "behind": 0,
+        "remote": f"{EXPECTED_REPOSITORY_URL}.git",
+        "lastCommit": {
+            "hash": "abc1234",
+            "subject": "feat: workspace strict smoke fixture",
+        },
+        "statusShort": [],
+        "reason": "",
+    }
+    payload["repository"]["remoteUrl"] = f"{EXPECTED_REPOSITORY_URL}.git"
+    payload["repository"]["remoteSlug"] = EXPECTED_REPOSITORY_SLUG
+    payload["repository"]["remoteAligned"] = True
+    payload["nextActions"] = [
+        {
+            "level": "pass",
+            "text": "Git workspace is clean and synced.",
+        },
+        {
+            "level": "info",
+            "text": "Capture reviewed feedback after checks to make dogfood runs improve over time.",
+            "command": "design-ai check artifact.md --learn --yes",
+        },
+        {
+            "level": "info",
+            "text": "Run CLI unit tests before handing this phase off.",
+            "command": "npm test",
+        },
+    ]
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
 def passing_doctor_strict_output() -> str:
     return "\n".join([
         "",
@@ -4130,6 +4170,45 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
             raise SystemExit(f"workspace JSON after {context} next action level is invalid")
         if not isinstance(action.get("text"), str) or not action["text"]:
             raise SystemExit(f"workspace JSON after {context} next action text is missing")
+
+
+def assert_workspace_strict_success_json(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    if returncode != 0:
+        raise SystemExit(f"workspace strict JSON after {context} expected exit code 0, got {returncode}")
+    assert_workspace_json(raw, context=context, cmd=cmd)
+    payload = json.loads(raw)
+    strict_issues = [
+        action
+        for action in payload.get("nextActions", [])
+        if isinstance(action, dict) and action.get("level") in ("warn", "fail")
+    ]
+    if strict_issues:
+        raise SystemExit(f"workspace strict JSON after {context} contains readiness warnings/failures")
+
+
+def assert_workspace_strict_failure_json(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    if returncode != 1:
+        raise SystemExit(f"workspace strict JSON after {context} expected exit code 1, got {returncode}")
+    assert_workspace_json(raw, context=context, cmd=cmd)
+    payload = json.loads(raw)
+    has_strict_issue = any(
+        isinstance(action, dict) and action.get("level") in ("warn", "fail")
+        for action in payload.get("nextActions", [])
+    )
+    if not has_strict_issue:
+        raise SystemExit(f"workspace strict JSON after {context} is missing a strict readiness issue")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -6998,9 +7077,51 @@ def run_self_test() -> None:
     )
     workspace_cmd = ["design-ai", "workspace", "--json"]
     assert_workspace_json(passing_workspace_json(), context=context, cmd=workspace_cmd)
+    assert_workspace_strict_failure_json(
+        passing_workspace_json(),
+        returncode=1,
+        context=context,
+        cmd=["design-ai", "workspace", "--strict", "--json"],
+    )
+    assert_workspace_strict_success_json(
+        passing_workspace_strict_clean_json(),
+        returncode=0,
+        context=context,
+        cmd=["design-ai", "workspace", "--strict", "--json"],
+    )
     expect_self_test_failure(
         lambda: assert_workspace_json("\x1b[31m{}", context=context, cmd=workspace_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_workspace_strict_failure_json(
+            passing_workspace_json(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", "workspace", "--strict", "--json"],
+        ),
+        expected="expected exit code 1",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_workspace_strict_failure_json(
+            passing_workspace_strict_clean_json(),
+            returncode=1,
+            context=context,
+            cmd=["design-ai", "workspace", "--strict", "--json"],
+        ),
+        expected="missing a strict readiness issue",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_workspace_strict_success_json(
+            passing_workspace_json(),
+            returncode=0,
+            context=context,
+            cmd=["design-ai", "workspace", "--strict", "--json"],
+        ),
+        expected="readiness warnings/failures",
         scope="smoke assertions",
     )
     reordered_workspace_payload = json.loads(passing_workspace_json())

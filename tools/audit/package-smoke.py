@@ -34,6 +34,7 @@ from smoke_assertions import (
     EXPECTED_HELP_ALIASES,
     EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
+    EXPECTED_REPOSITORY_URL,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
     EXPECTED_UNKNOWN_COMMAND,
@@ -93,6 +94,8 @@ from smoke_assertions import (
     assert_install_json,
     assert_version_json,
     assert_workspace_json,
+    assert_workspace_strict_failure_json,
+    assert_workspace_strict_success_json,
     assert_uninstall_json,
     assert_uninstall_output,
     assert_version_output,
@@ -445,6 +448,33 @@ def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Pat
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_workspace_strict_success_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_strict_success_json(result.stdout, returncode=result.returncode, context=context, cmd=cmd)
+
+
+def assert_workspace_strict_failure_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=assert_workspace_strict_failure_json,
+    )
+
+
 def assert_command_alias_smoke(
     cmd: list[str],
     *,
@@ -614,6 +644,32 @@ def assert_list_json_smoke(
 
 def write_smoke_brief(brief_path: Path) -> None:
     brief_path.write_text(f"{EXPECTED_ROUTE_BRIEF}\n", encoding="utf-8")
+
+
+def run_fixture_git(repo: Path, *args: str) -> None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        output = f"{result.stdout}\n{result.stderr}".strip()
+        raise SystemExit(f"failed to prepare workspace strict git fixture: git {' '.join(args)}\n{output}")
+
+
+def prepare_workspace_strict_repo(repo: Path) -> None:
+    repo.mkdir(parents=True, exist_ok=True)
+    run_fixture_git(repo, "init", "-q")
+    run_fixture_git(repo, "checkout", "-b", "main")
+    run_fixture_git(repo, "config", "user.email", "package-smoke@example.com")
+    run_fixture_git(repo, "config", "user.name", "Package Smoke")
+    (repo / "README.md").write_text("# workspace strict fixture\n", encoding="utf-8")
+    run_fixture_git(repo, "add", "README.md")
+    run_fixture_git(repo, "commit", "-m", "feat: workspace strict fixture")
+    run_fixture_git(repo, "remote", "add", "origin", f"{EXPECTED_REPOSITORY_URL}.git")
+    run_fixture_git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
 
 
 def write_learning_audit_fixture(profile_path: Path) -> None:
@@ -4048,8 +4104,12 @@ def smoke_tarball(tarball: Path) -> None:
         npx_root = tmp_root / "npx-project"
         npx_claude_home = tmp_root / "npx-claude-home"
         npm_cache = tmp_root / "npm-cache"
+        installed_workspace_strict_root = tmp_root / "installed-workspace-strict"
+        npx_workspace_strict_root = tmp_root / "npx-workspace-strict"
         install_root.mkdir()
         npx_root.mkdir()
+        prepare_workspace_strict_repo(installed_workspace_strict_root)
+        prepare_workspace_strict_repo(npx_workspace_strict_root)
 
         base_env = os.environ.copy()
         base_env.update({
@@ -4095,6 +4155,27 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin workspace JSON",
+        )
+        assert_workspace_strict_failure_smoke(
+            [str(bin_path), "workspace", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace strict JSON failure",
+        )
+        assert_workspace_strict_success_smoke(
+            [
+                str(bin_path),
+                "workspace",
+                "--root",
+                str(installed_workspace_strict_root),
+                "--learning-file",
+                str(tmp_root / "installed-workspace-strict-learning.json"),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace strict JSON success",
         )
         assert_main_help_smoke(
             [str(bin_path), "help"],
@@ -4722,6 +4803,27 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec workspace JSON",
+        )
+        assert_workspace_strict_failure_smoke(
+            npm_exec_cmd(tarball, "workspace", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace strict JSON failure",
+        )
+        assert_workspace_strict_success_smoke(
+            npm_exec_cmd(
+                tarball,
+                "workspace",
+                "--root",
+                str(npx_workspace_strict_root),
+                "--learning-file",
+                str(tmp_root / "npx-workspace-strict-learning.json"),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace strict JSON success",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

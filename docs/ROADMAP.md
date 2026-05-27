@@ -51,6 +51,40 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 214 — Workspace strict package smoke coverage (v4.13.0) ✓ shipped
+
+Packed-tarball smoke now proves the strict workspace readiness gate in the same install paths users exercise.
+
+### Changed
+- Added package smoke assertions for `design-ai workspace --strict --json` failure behavior when the command runs in a non-git temp project.
+- Added clean temporary git fixtures with canonical `origin/main` tracking so package smoke also verifies strict success behavior with no readiness warnings or failures.
+- Covered both packed-tarball installed-bin and one-shot `npm exec --package <tarball>` execution paths.
+- Added smoke assertion self-test fixtures for strict success/failure exit codes and readiness issue drift.
+
+### Impact
+- Internal/company dogfood builds now verify the `workspace --strict` gate after packaging, not only through unit tests and source-tree execution.
+- The new git fixtures are local temp repositories only; they do not fetch, push, mutate the real repo, change learning schemas, or add dependencies.
+
+### What this enables
+- A shared packed tarball can fail fast if strict readiness JSON behavior drifts before the tool reaches another developer's machine.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 213 — Workspace strict readiness gate (v4.13.0) ✓ shipped
 
 `design-ai workspace` can now act as a blocking local readiness gate, not only a read-only status view.
