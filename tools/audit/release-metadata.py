@@ -1022,6 +1022,12 @@ RELEASE_REGISTRY_LEARN_STATS_TERM_GROUPS = (
         "public registry learn stats profile summary output",
         "registry learn stats profile summary output",
     ),
+    (
+        "public registry learn stats `--out` file-write confirmation",
+        "public registry design-ai learn --stats --out file-write confirmation",
+        "public registry learn stats --out file-write confirmation",
+        "registry learn stats --out file-write confirmation",
+    ),
 )
 RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS = (
     (
@@ -1794,7 +1800,7 @@ public registry JSON `design-ai learn --verify` output plus public registry lear
 public registry JSON `design-ai learn --backup` output plus public registry learn backup `--out` file-write confirmation,
 public registry JSON `design-ai learn --import` dry-run/apply output,
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
-public registry human / JSON `design-ai learn --stats` profile summary output,
+public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
 public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output,
@@ -1860,7 +1866,7 @@ public registry JSON `design-ai learn --verify` output과 public registry learn 
 public registry JSON `design-ai learn --backup` output과 public registry learn backup `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --import` dry-run/apply output도 확인하고,
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
-public registry human / JSON `design-ai learn --stats` profile summary output도 확인하고,
+public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
 public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하고,
@@ -2446,6 +2452,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn stats smoke phrase"
         in registry_learn_stats_drift_errors,
         "release policy docs should mention public registry learn stats smoke",
+    )
+
+    registry_learn_stats_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry learn stats `--out` file-write confirmation",
+                "public registry learning stats saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_stats_out_drift_errors = "\n".join(registry_learn_stats_out_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn stats smoke phrase"
+        in registry_learn_stats_out_drift_errors,
+        "release policy docs should mention public registry learn stats --out smoke",
     )
 
     registry_learn_query_explain_drift = release_metadata_summary(

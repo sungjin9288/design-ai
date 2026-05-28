@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 225 — Public registry learning stats output-file smoke coverage (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now proves learning stats JSON output-file persistence from the published npm package path.
+
+### Changed
+- Added public registry smoke coverage for `design-ai learn --stats --file <file> --json --out <file> --force`.
+- Added assertion coverage that the registry smoke command prints a file-write confirmation and that the written file contains the expected profile stats JSON payload.
+- Added registry smoke self-test coverage for stats output-file confirmation drift.
+- Added release metadata phrase protection so release-facing docs keep the public registry learning stats output-file guidance.
+
+### Impact
+- After publish, `npm run registry:smoke` now checks that stats JSON can be persisted to disk from the public npm execution path.
+- The smoke fixture writes only temporary profile/output files and does not read or mutate the real learning profile, change schema, add dependencies, or call external AI APIs.
+
+### What this enables
+- A published package can fail post-publish verification if `learn --stats --out --force` stops confirming or writing a valid profile summary JSON artifact.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `npm run registry:smoke:self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 224 — Packed-tarball learning stats output-file smoke coverage (v4.13.0) ✓ shipped
 
 Packed-tarball package smoke now proves learning stats JSON output-file persistence before publish in both installed-bin and one-shot npm exec paths.
@@ -70,7 +107,6 @@ Packed-tarball package smoke now proves learning stats JSON output-file persiste
 
 ### What's still ahead
 - External launch remains held until owner review.
-- Public registry `learn --stats --out` output-file smoke can be added as a follow-up if post-publish stats artifact persistence needs the same guard.
 - Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
 
 ### Verified

@@ -1671,6 +1671,32 @@ def assert_learning_stats_smoke(
         cmd=json_cmd,
     )
 
+    out_path = profile_path.with_name(f"{profile_path.stem}-stats-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--stats",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_stats_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+
 
 def assert_learning_audit_cleanup_json(
     raw: str,
@@ -4682,6 +4708,41 @@ def run_self_test() -> None:
                 cmd=learn_stats_cmd,
             ),
             expected="learn stats source distribution changed",
+            scope="registry smoke",
+        )
+        learning_stats_out_path = Path(tmp) / "registry-learning-stats-out.json"
+        learning_stats_out_path.write_text(json.dumps(learning_stats_payload), encoding="utf-8")
+        learn_stats_out_cmd = [
+            "design-ai",
+            "learn",
+            "--stats",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+            "--out",
+            str(learning_stats_out_path),
+            "--force",
+        ]
+        assert_output_write_success(
+            f"Wrote {learning_stats_out_path}\n",
+            context="registry smoke self-test stats out",
+            cmd=learn_stats_out_cmd,
+            expected_path=str(learning_stats_out_path),
+        )
+        assert_learning_stats_json(
+            learning_stats_out_path.read_text(encoding="utf-8"),
+            profile_path=learning_profile_path,
+            context="registry smoke self-test stats out file",
+            cmd=learn_stats_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_output_write_success(
+                "Wrote different-stats.json\n",
+                context="registry smoke self-test stats out",
+                cmd=learn_stats_out_cmd,
+                expected_path=str(learning_stats_out_path),
+            ),
+            expected="output write success",
             scope="registry smoke",
         )
         learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
