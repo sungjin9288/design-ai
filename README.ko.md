@@ -189,6 +189,7 @@ main 브랜치의 모든 커밋에서 8개 모두 통과해요.
 - Registry smoke는 public registry JSON `design-ai learn --feedback` output, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`, public registry JSON `design-ai learn --init` preview/apply output, public registry learn init duplicate-skip output도 확인해요.
 - Registry smoke는 public registry JSON `design-ai learn --import` dry-run/apply output과 public registry JSON `design-ai learn --redact` output, public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인해요.
 - Registry smoke는 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry `design-ai learn --audit --fix --dry-run` cleanup preview 및 confirmed apply output도 확인해요.
+- Registry smoke는 public registry query-filtered learn list explanation/export JSON output과 public registry brief-relevant prompt/pack learning selection, public registry prompt/pack --with-learning도 확인해요.
 - 손으로 쓴 지식 파일은 `<!-- hand-written -->` 마커 사용.
 - 스킬 PLAYBOOK은 verification phase 체크리스트 포함.
 - 한국어 문자열은 한국어로 직접 작성 (기계 번역 금지).

@@ -229,6 +229,7 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
 - Registry smoke also verifies public registry JSON `design-ai learn --feedback` output, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`, public registry JSON `design-ai learn --init` preview/apply output, and public registry learn init duplicate-skip output.
 - Registry smoke also verifies public registry JSON `design-ai learn --import` dry-run/apply output plus public registry JSON `design-ai learn --redact` output, public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation.
 - Registry smoke also verifies public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output.
+- Registry smoke also verifies public registry query-filtered learn list explanation/export JSON output plus public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.
 - Skill PLAYBOOKs include a verification phase checklist.
 - Korean strings spelled out in Korean (no machine translation passing through).

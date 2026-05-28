@@ -107,6 +107,7 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 - Public registry learning bootstrap coverage는 public registry JSON `design-ai learn --feedback` output, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`, public registry JSON `design-ai learn --init` preview/apply output, public registry learn init duplicate-skip output도 확인해요.
 - Public registry portable learning coverage는 public registry JSON `design-ai learn --import` dry-run/apply output과 public registry JSON `design-ai learn --redact` output, public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인해요.
 - Public registry learning cleanup coverage는 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry `design-ai learn --audit --fix --dry-run` cleanup preview 및 confirmed apply output도 확인해요.
+- Public registry learning relevance coverage는 public registry query-filtered learn list explanation/export JSON output과 public registry brief-relevant prompt/pack learning selection, public registry prompt/pack --with-learning도 확인해요.
 - GitHub Release에는 같은 `npm pack` allowlist로 만든 tarball을 첨부.
 
 로컬에서 태그를 만들기 전에는 먼저 다음 core gate를 실행하세요:

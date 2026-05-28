@@ -108,6 +108,7 @@ The workflow:
 - Public registry learning bootstrap coverage includes public registry JSON `design-ai learn --feedback` output, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`, public registry JSON `design-ai learn --init` preview/apply output, and public registry learn init duplicate-skip output.
 - Public registry portable learning coverage includes public registry JSON `design-ai learn --import` dry-run/apply output plus public registry JSON `design-ai learn --redact` output, public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation.
 - Public registry learning cleanup coverage includes public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output.
+- Public registry learning relevance coverage includes public registry query-filtered learn list explanation/export JSON output plus public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning.
 
 ## NPM package contents
 

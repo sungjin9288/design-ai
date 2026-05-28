@@ -344,6 +344,43 @@ def write_learning_stats_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_relevance_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:02.000Z",
+                "entries": [
+                    {
+                        "id": "learn-brand",
+                        "category": "brand",
+                        "text": "Use quiet enterprise brand language",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                    {
+                        "id": "learn-unrelated-newer",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile checkout layout",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:02.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_learning_audit_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -2614,6 +2651,410 @@ def assert_pack_stdin_smoke(
     )
 
 
+def assert_learning_relevance_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
+    learning_context = payload.get("learningContext")
+    require_registry_smoke(
+        isinstance(learning_context, dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext should be present when --with-learning is used",
+    )
+
+    selection = learning_context.get("selection")
+    require_registry_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext selection metadata missing",
+    )
+    require_registry_smoke(
+        selection.get("mode") == "brief-relevance",
+        context=context,
+        cmd=cmd,
+        message="learningContext should use brief-relevance selection",
+    )
+    require_registry_smoke(
+        selection.get("candidateCount") == 3,
+        context=context,
+        cmd=cmd,
+        message="learningContext candidate count changed",
+    )
+    require_registry_smoke(
+        selection.get("matchedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learningContext should report at least one relevant match",
+    )
+    require_registry_smoke(
+        selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learningContext should report the limited selected entry count",
+    )
+    require_registry_smoke(
+        selection.get("fallbackCount") == 0,
+        context=context,
+        cmd=cmd,
+        message="learningContext should not use recency fallback when the relevant entry fits the limit",
+    )
+
+    selected = selection.get("selected")
+    require_registry_smoke(
+        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext selection should explain the selected entry",
+    )
+    selected_entry = selected[0]
+    require_registry_smoke(
+        selected_entry.get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should point at the relevant entry",
+    )
+    require_registry_smoke(
+        selected_entry.get("reason") == "brief-match",
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should mark the relevant entry as a brief match",
+    )
+    require_registry_smoke(
+        isinstance(selected_entry.get("score"), int) and selected_entry.get("score") > 0,
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should include a positive relevance score",
+    )
+    matched_tokens = selected_entry.get("matchedTokens")
+    require_registry_smoke(
+        (
+            isinstance(matched_tokens, list)
+            and "button" in matched_tokens
+            and "accessibility" in matched_tokens
+        ),
+        context=context,
+        cmd=cmd,
+        message="learning selection explanation should include matched brief tokens",
+    )
+
+    entries = learning_context.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learningContext should include the single limited entry",
+    )
+    require_registry_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="brief relevance should pick the Button accessibility entry over the newer unrelated entry",
+    )
+
+    prompt = payload.get("prompt")
+    require_registry_smoke(isinstance(prompt, str), context=context, cmd=cmd, message="prompt should be a string")
+    require_registry_smoke(
+        "Learning selection: brief relevance" in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should disclose brief-relevance learning selection",
+    )
+    require_registry_smoke(
+        "Prioritize keyboard accessibility details" in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should include the relevant learning entry",
+    )
+    require_registry_smoke(
+        "dense Korean mobile checkout" not in prompt,
+        context=context,
+        cmd=cmd,
+        message="prompt markdown should exclude the newer unrelated learning entry when limit is 1",
+    )
+
+
+def assert_learning_query_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn query JSON") from error
+
+    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query JSON must be an object")
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn query file path differs from the smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("query") == "keyboard accessibility",
+        context=context,
+        cmd=cmd,
+        message="learn query text changed",
+    )
+    require_registry_smoke(
+        payload.get("count") == 1 and payload.get("totalCount") == 3,
+        context=context,
+        cmd=cmd,
+        message="learn query should return only the matching entry while reporting total profile size",
+    )
+
+    entries = payload.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query entries list should contain exactly one matching entry",
+    )
+    require_registry_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learn query should return the Button accessibility entry",
+    )
+    selection = payload.get("selection")
+    require_registry_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learn query explain selection metadata missing",
+    )
+    require_registry_smoke(
+        selection.get("fallbackEnabled") is False and selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should select exactly one entry without fallback",
+    )
+    selected = selection.get("selected")
+    require_registry_smoke(
+        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query explain selected list should contain one entry",
+    )
+    require_registry_smoke(
+        selected[0].get("id") == "learn-relevant"
+        and selected[0].get("reason") == "brief-match"
+        and isinstance(selected[0].get("score"), int)
+        and selected[0].get("score") > 0,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should include score and match reason",
+    )
+    matched_tokens = selected[0].get("matchedTokens")
+    require_registry_smoke(
+        isinstance(matched_tokens, list)
+        and "keyboard" in matched_tokens
+        and "accessibility" in matched_tokens,
+        context=context,
+        cmd=cmd,
+        message="learn query explain should include matched query tokens",
+    )
+
+
+def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Local learning profile",
+        "Entries: 1/3",
+        "Query: keyboard accessibility",
+        "Limit: 2",
+        "Explain: selection score, matched tokens, and reason",
+        "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+        "matched keyboard, accessibility",
+        "reason brief-match",
+    ):
+        require_registry_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn query human output missing {expected!r}",
+        )
+    require_registry_smoke(
+        "dense Korean mobile checkout" not in raw
+        and "quiet enterprise brand language" not in raw
+        and "quiet enterprise brand voice" not in raw,
+        context=context,
+        cmd=cmd,
+        message="learn query human output should exclude unrelated profile entries",
+    )
+
+
+def assert_learning_query_export_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn query export JSON") from error
+
+    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query export JSON must be an object")
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn query export file path differs from the smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("query") == "keyboard accessibility",
+        context=context,
+        cmd=cmd,
+        message="learn query export text changed",
+    )
+    selection = payload.get("selection")
+    require_registry_smoke(
+        isinstance(selection, dict),
+        context=context,
+        cmd=cmd,
+        message="learn query export selection metadata missing",
+    )
+    require_registry_smoke(
+        selection.get("fallbackEnabled") is False and selection.get("fallbackCount") == 0,
+        context=context,
+        cmd=cmd,
+        message="learn query export should not use recency fallback",
+    )
+    require_registry_smoke(
+        selection.get("selectedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn query export should select one matching entry",
+    )
+    entries = payload.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
+        context=context,
+        cmd=cmd,
+        message="learn query export entries list should contain exactly one matching entry",
+    )
+    require_registry_smoke(
+        entries[0].get("id") == "learn-relevant",
+        context=context,
+        cmd=cmd,
+        message="learn query export should return the Button accessibility entry",
+    )
+    markdown = payload.get("markdown")
+    require_registry_smoke(
+        isinstance(markdown, str) and "no recency fallback" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn query export markdown should disclose that fallback is disabled",
+    )
+
+
+def assert_learning_relevance_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_relevance_fixture(profile_path)
+    relevance_env = env.copy()
+    relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    list_human_cmd = command_factory(
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+    )
+    list_human_result = run_plain(list_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_human(
+        list_human_result.stdout,
+        context=f"{context} learn query human list",
+        cmd=list_human_cmd,
+    )
+
+    list_cmd = command_factory(
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+        "--json",
+    )
+    list_result = run_plain(list_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_json(
+        list_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} learn query list",
+        cmd=list_cmd,
+    )
+
+    export_cmd = command_factory(
+        "learn",
+        "--export",
+        "--query",
+        "keyboard accessibility",
+        "--limit",
+        "2",
+        "--json",
+    )
+    export_result = run_plain(export_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_query_export_json(
+        export_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} learn query export",
+        cmd=export_cmd,
+    )
+
+    prompt_cmd = command_factory(
+        "prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-learning",
+        "--learning-limit",
+        "1",
+        "--json",
+    )
+    prompt_result = run_plain(prompt_cmd, cwd=cwd, env=relevance_env)
+    try:
+        prompt_payload = json.loads(prompt_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse prompt learning relevance JSON") from error
+    assert_learning_relevance_context(prompt_payload, context=f"{context} prompt", cmd=prompt_cmd)
+
+    pack_cmd = command_factory(
+        "pack",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-learning",
+        "--learning-limit",
+        "1",
+        "--max-bytes",
+        str(EXPECTED_PACK_MAX_BYTES),
+        "--json",
+    )
+    pack_result = run_plain(pack_cmd, cwd=cwd, env=relevance_env)
+    try:
+        pack_payload = json.loads(pack_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse pack learning relevance JSON") from error
+    plan = pack_payload.get("plan")
+    require_registry_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
+    assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+
+
 def wait_for_registry_package(
     package_spec: str,
     *,
@@ -3299,6 +3740,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec learn audit cleanup",
+        )
+        assert_learning_relevance_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-relevance-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learning relevance",
         )
         assert_update_dry_run_smoke(
             npm_exec_cmd(package_spec, "update", "--dry-run"),
@@ -4156,6 +4604,255 @@ def run_self_test() -> None:
                 cmd=learn_stats_human_cmd,
             ),
             expected="learn stats human output missing 'Sources: registry-smoke 1, feedback:keep 1, import:cli 1'",
+            scope="registry smoke",
+        )
+
+        learning_relevance_path = tmp_root / "learning-relevance.json"
+        learning_query_payload = {
+            "file": str(learning_relevance_path),
+            "exists": True,
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:02.000Z",
+            "category": "",
+            "query": "keyboard accessibility",
+            "limit": 2,
+            "entries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "text": "Prioritize keyboard accessibility details for Button component API specs",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+            "count": 1,
+            "totalCount": 3,
+            "selection": {
+                "mode": "brief-relevance",
+                "query": "keyboard accessibility",
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "queryTokenCount": 2,
+                "fallbackEnabled": False,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 4,
+                        "matchedTokens": ["keyboard", "accessibility"],
+                        "reason": "brief-match",
+                    },
+                ],
+            },
+        }
+        learn_query_cmd = [
+            "design-ai",
+            "learn",
+            "--list",
+            "--query",
+            "keyboard accessibility",
+            "--explain",
+            "--limit",
+            "2",
+            "--json",
+        ]
+        assert_learning_query_json(
+            json.dumps(learning_query_payload),
+            profile_path=learning_relevance_path,
+            context="registry smoke self-test",
+            cmd=learn_query_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_json(
+                json.dumps({
+                    **learning_query_payload,
+                    "selection": {
+                        **learning_query_payload["selection"],
+                        "selected": [
+                            {
+                                **learning_query_payload["selection"]["selected"][0],
+                                "matchedTokens": ["keyboard"],
+                            },
+                        ],
+                    },
+                }),
+                profile_path=learning_relevance_path,
+                context="registry smoke self-test",
+                cmd=learn_query_cmd,
+            ),
+            expected="learn query explain should include matched query tokens",
+            scope="registry smoke",
+        )
+        learn_query_human_cmd = [
+            "design-ai",
+            "learn",
+            "--list",
+            "--query",
+            "keyboard accessibility",
+            "--explain",
+            "--limit",
+            "2",
+        ]
+        assert_learning_query_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning profile",
+                f"File: {learning_relevance_path}",
+                "Entries: 1/3",
+                "Query: keyboard accessibility",
+                "Limit: 2",
+                "Explain: selection score, matched tokens, and reason",
+                "",
+                "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                "   learn-relevant · 2026-05-22T00:00:01.000Z",
+                "   score 4 · matched keyboard, accessibility · reason brief-match",
+            ]),
+            context="registry smoke self-test",
+            cmd=learn_query_human_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_human(
+                "\n".join([
+                    "Local learning profile",
+                    "Entries: 1/3",
+                    "Query: keyboard accessibility",
+                    "Limit: 2",
+                    "Explain: selection score, matched tokens, and reason",
+                    "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                    "matched keyboard, accessibility",
+                ]),
+                context="registry smoke self-test",
+                cmd=learn_query_human_cmd,
+            ),
+            expected="learn query human output missing 'reason brief-match'",
+            scope="registry smoke",
+        )
+
+        learning_query_export_payload = {
+            "file": str(learning_relevance_path),
+            "category": "",
+            "limit": 2,
+            "query": "keyboard accessibility",
+            "selection": {
+                "mode": "brief-relevance",
+                "query": "keyboard accessibility",
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "queryTokenCount": 2,
+                "fallbackEnabled": False,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 4,
+                        "matchedTokens": ["keyboard", "accessibility"],
+                        "reason": "brief-match",
+                    },
+                ],
+            },
+            "entries": learning_query_payload["entries"],
+            "empty": False,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
+        }
+        learn_query_export_cmd = [
+            "design-ai",
+            "learn",
+            "--export",
+            "--query",
+            "keyboard accessibility",
+            "--limit",
+            "2",
+            "--json",
+        ]
+        assert_learning_query_export_json(
+            json.dumps(learning_query_export_payload),
+            profile_path=learning_relevance_path,
+            context="registry smoke self-test",
+            cmd=learn_query_export_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_query_export_json(
+                json.dumps({
+                    **learning_query_export_payload,
+                    "selection": {
+                        **learning_query_export_payload["selection"],
+                        "fallbackEnabled": True,
+                    },
+                }),
+                profile_path=learning_relevance_path,
+                context="registry smoke self-test",
+                cmd=learn_query_export_cmd,
+            ),
+            expected="learn query export should not use recency fallback",
+            scope="registry smoke",
+        )
+
+        learning_relevance_payload = {
+            "learningContext": {
+                "selection": {
+                    "mode": "brief-relevance",
+                    "query": EXPECTED_ROUTE_BRIEF,
+                    "candidateCount": 3,
+                    "matchedCount": 1,
+                    "selectedCount": 1,
+                    "fallbackCount": 0,
+                    "selected": [
+                        {
+                            "id": "learn-relevant",
+                            "category": "accessibility",
+                            "score": 10,
+                            "matchedTokens": ["button", "accessibility"],
+                            "reason": "brief-match",
+                        },
+                    ],
+                },
+                "entries": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                    },
+                ],
+            },
+            "prompt": (
+                "Learning selection: brief relevance\n"
+                "Prioritize keyboard accessibility details for Button component API specs"
+            ),
+        }
+        learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
+        assert_learning_relevance_context(
+            learning_relevance_payload,
+            context="registry smoke self-test",
+            cmd=learning_relevance_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_relevance_context(
+                {
+                    **learning_relevance_payload,
+                    "learningContext": {
+                        **learning_relevance_payload["learningContext"],
+                        "entries": [
+                            {
+                                "id": "learn-unrelated-newer",
+                                "category": "korean",
+                                "text": "Prefer dense Korean mobile checkout layout",
+                            },
+                        ],
+                    },
+                },
+                context="registry smoke self-test",
+                cmd=learning_relevance_cmd,
+            ),
+            expected="brief relevance should pick the Button accessibility entry",
             scope="registry smoke",
         )
 
