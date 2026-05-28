@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 223 — Packed-tarball learning verify output-file smoke coverage (v4.13.0) ✓ shipped
+
+Packed-tarball package smoke now proves portable learning verify output-file persistence before publish in both installed-bin and one-shot npm exec paths.
+
+### Changed
+- Added packed-tarball package smoke coverage for `design-ai learn --verify --from-file <file> --json --out <file> --force`.
+- Added assertion coverage that the smoke command prints a file-write confirmation and that the written file contains the expected non-mutating learning verification JSON payload.
+- Added package smoke self-test coverage for verify output-file confirmation drift.
+- Added release metadata phrase protection so release-facing docs keep the packed-tarball learning verify output-file guidance.
+
+### Impact
+- Before publish, `npm run package:smoke` now checks that verify JSON can be persisted to disk from both install paths.
+- The smoke fixture writes only temporary source/output files and does not read or mutate the real learning profile, change schema, add dependencies, or call external AI APIs.
+
+### What this enables
+- A packed tarball can fail pre-publish verification if `learn --verify --out --force` stops confirming or writing a valid portable verification JSON artifact.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 222 — Public registry learning verify output-file smoke coverage (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now proves portable learning verify output-file persistence from the published npm package path.

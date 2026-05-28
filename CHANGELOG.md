@@ -38,6 +38,7 @@ Public registry smoke now verifies JSON `design-ai learn --import` dry-run/apply
 Public registry smoke now verifies JSON `design-ai learn --feedback` inline/file/stdin capture and JSON `design-ai learn --init` preview/apply/duplicate-skip bootstrap behavior from the published npm package path, with release metadata guarding that guidance.
 Public registry smoke now verifies query-filtered learn list/export output and brief-relevant prompt/pack learning selection from the published npm package path, with release metadata guarding that guidance.
 Public registry smoke now verifies `design-ai learn --backup --json --out --force` output-file persistence from the published npm package path, with release metadata guarding that guidance.
+Packed-tarball package smoke now verifies `design-ai learn --verify --from-file --json --out --force` output-file persistence from installed-bin and one-shot `npm exec --package <tarball>` paths, with release metadata guarding that guidance.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.

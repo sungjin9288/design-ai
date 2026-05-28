@@ -967,6 +967,11 @@ RELEASE_LEARN_VERIFY_TERM_GROUPS = (
         "learn verify JSON",
         "learning import verification",
     ),
+    (
+        "learn verify `--out` file-write confirmation",
+        "design-ai learn --verify --out file-write confirmation",
+        "learn verify --out file-write confirmation",
+    ),
 )
 RELEASE_REGISTRY_LEARN_VERIFY_TERM_GROUPS = (
     (
@@ -1801,7 +1806,7 @@ JSON `design-ai learn --feedback` output,
 JSON `design-ai learn --backup` output,
 JSON `design-ai learn --redact` output including `design-ai learn --redact --from-file` and `design-ai learn --redact --stdin`,
 learn JSON `--out` file-write confirmation and forced overwrite coverage,
-JSON `design-ai learn --verify` output,
+JSON `design-ai learn --verify` output plus learn verify `--out` file-write confirmation,
 JSON `design-ai learn --import` dry-run/apply output,
 human / JSON `design-ai learn --stats` profile summary output,
 query-filtered learn list explanation/export JSON output,
@@ -1867,7 +1872,7 @@ JSON `design-ai learn --feedback` output도 확인하며,
 JSON `design-ai learn --backup` output도 확인하며,
 JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`, `design-ai learn --redact --stdin`도 확인하며,
 learn JSON `--out` file-write confirmation과 forced overwrite coverage도 확인하며,
-JSON `design-ai learn --verify` output도 확인하며,
+JSON `design-ai learn --verify` output과 learn verify `--out` file-write confirmation도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
@@ -4228,6 +4233,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn verify smoke phrase"
         in learn_verify_drift_errors,
         "release policy docs should mention learn verify smoke",
+    )
+
+    learn_verify_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "learn verify `--out` file-write confirmation",
+                "learning validation saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_verify_out_drift_errors = "\n".join(learn_verify_out_drift["errors"])
+    assert_condition(
+        "README.md is missing learn verify smoke phrase"
+        in learn_verify_out_drift_errors,
+        "release policy docs should mention learn verify --out smoke",
     )
 
     learn_import_drift = release_metadata_summary(
