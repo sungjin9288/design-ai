@@ -52,6 +52,8 @@ This also checks that the current CHANGELOG and ROADMAP entries mention the same
 
 It also protects public registry JSON `design-ai learn --import` dry-run/apply output plus public registry JSON `design-ai learn --redact` output, public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation in release-facing docs.
 
+It also protects public registry JSON `design-ai learn --feedback` output, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`, public registry JSON `design-ai learn --init` preview/apply output, and public registry learn init duplicate-skip output in release-facing docs.
+
 ### 3. CHANGELOG
 
 ```bash

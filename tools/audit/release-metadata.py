@@ -852,6 +852,39 @@ RELEASE_LEARN_FEEDBACK_TERM_GROUPS = (
         "learning feedback",
     ),
 )
+RELEASE_REGISTRY_LEARN_FEEDBACK_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --feedback` output",
+        "public registry design-ai learn --feedback JSON output",
+        "public registry learn feedback JSON output",
+        "registry learn feedback JSON output",
+    ),
+    (
+        "public registry `design-ai learn --feedback --from-file`",
+        "public registry design-ai learn --feedback --from-file",
+        "public registry learn feedback from-file",
+        "registry learn feedback from-file",
+    ),
+    (
+        "public registry `design-ai learn --feedback --stdin`",
+        "public registry design-ai learn --feedback --stdin",
+        "public registry learn feedback stdin",
+        "registry learn feedback stdin",
+    ),
+)
+RELEASE_REGISTRY_LEARN_INIT_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --init` preview/apply output",
+        "public registry design-ai learn --init preview/apply output",
+        "public registry learn init preview/apply output",
+        "registry learn init preview/apply output",
+    ),
+    (
+        "public registry learn init duplicate-skip output",
+        "registry learn init duplicate-skip output",
+        "public registry learn init duplicate skip output",
+    ),
+)
 RELEASE_LEARN_BACKUP_TERM_GROUPS = (
     (
         "JSON `design-ai learn --backup` output",
@@ -1136,6 +1169,8 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "audit JSON command phrase",
     "audit JSON repository-audit phrase",
     "learn feedback smoke phrase",
+    "registry learn feedback smoke phrase",
+    "registry learn init smoke phrase",
     "learn backup smoke phrase",
     "registry learn backup smoke phrase",
     "learn redact smoke phrase",
@@ -1269,6 +1304,8 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("audit JSON command phrase", RELEASE_AUDIT_JSON_COMMAND_TERM_GROUPS),
     ("audit JSON repository-audit phrase", RELEASE_AUDIT_JSON_OUTPUT_TERM_GROUPS),
     ("learn feedback smoke phrase", RELEASE_LEARN_FEEDBACK_TERM_GROUPS),
+    ("registry learn feedback smoke phrase", RELEASE_REGISTRY_LEARN_FEEDBACK_TERM_GROUPS),
+    ("registry learn init smoke phrase", RELEASE_REGISTRY_LEARN_INIT_TERM_GROUPS),
     ("learn backup smoke phrase", RELEASE_LEARN_BACKUP_TERM_GROUPS),
     ("registry learn backup smoke phrase", RELEASE_REGISTRY_LEARN_BACKUP_TERM_GROUPS),
     ("learn redact smoke phrase", RELEASE_LEARN_REDACT_TERM_GROUPS),
@@ -1699,6 +1736,8 @@ the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
+public registry JSON `design-ai learn --feedback` output including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
+public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
 public registry JSON `design-ai learn --verify` output,
 public registry JSON `design-ai learn --backup` output,
 public registry JSON `design-ai learn --import` dry-run/apply output,
@@ -1761,6 +1800,8 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
+public registry JSON `design-ai learn --feedback` output과 public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
+public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
 public registry JSON `design-ai learn --verify` output도 확인하고,
 public registry JSON `design-ai learn --backup` output도 확인하고,
 public registry JSON `design-ai learn --import` dry-run/apply output도 확인하고,
@@ -2158,6 +2199,48 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry smoke command phrase"
         in registry_smoke_command_drift_errors,
         "release policy docs should mention registry:smoke command guidance",
+    )
+
+    registry_learn_feedback_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --feedback` output",
+                "public registry learning feedback overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_feedback_drift_errors = "\n".join(registry_learn_feedback_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn feedback smoke phrase"
+        in registry_learn_feedback_drift_errors,
+        "release policy docs should mention public registry learn feedback smoke",
+    )
+
+    registry_learn_init_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --init` preview/apply output",
+                "public registry learning init overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_init_drift_errors = "\n".join(registry_learn_init_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn init smoke phrase"
+        in registry_learn_init_drift_errors,
+        "release policy docs should mention public registry learn init smoke",
     )
 
     registry_learn_verify_drift = release_metadata_summary(

@@ -35,6 +35,7 @@ Release metadata now guards release-facing docs against dropping workspace stric
 Public registry smoke now verifies `design-ai workspace --strict --json` failure and clean-success readiness behavior from the published npm package path, with release metadata guarding that guidance.
 Public registry smoke now verifies human/JSON `design-ai learn --audit` cleanup suggestions plus dry-run and confirmed safe cleanup from the published npm package path, with release metadata guarding that guidance.
 Public registry smoke now verifies JSON `design-ai learn --import` dry-run/apply behavior and JSON `design-ai learn --redact` file/stdin/output-file redaction behavior from the published npm package path, with release metadata guarding that guidance.
+Public registry smoke now verifies JSON `design-ai learn --feedback` inline/file/stdin capture and JSON `design-ai learn --init` preview/apply/duplicate-skip bootstrap behavior from the published npm package path, with release metadata guarding that guidance.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.

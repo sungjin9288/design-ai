@@ -489,6 +489,360 @@ def learning_import_payload_text() -> str:
     )
 
 
+def assert_learning_feedback_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    outcome: str,
+    category: str,
+    expected_instruction: str,
+    expected_count: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn feedback JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("count") == expected_count,
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON count changed",
+    )
+
+    feedback = payload.get("feedback")
+    entry = payload.get("entry")
+    require_registry_smoke(
+        isinstance(feedback, dict) and isinstance(entry, dict),
+        context=context,
+        cmd=cmd,
+        message="learn feedback JSON should include feedback and entry objects",
+    )
+    require_registry_smoke(
+        feedback.get("outcome") == outcome,
+        context=context,
+        cmd=cmd,
+        message="learn feedback outcome changed",
+    )
+    require_registry_smoke(
+        feedback.get("category") == category and entry.get("category") == category,
+        context=context,
+        cmd=cmd,
+        message="learn feedback category changed",
+    )
+    require_registry_smoke(
+        entry.get("source") == f"feedback:{outcome}",
+        context=context,
+        cmd=cmd,
+        message="learn feedback source should preserve the outcome",
+    )
+    require_registry_smoke(
+        isinstance(feedback.get("instruction"), str)
+        and feedback.get("instruction") == entry.get("text")
+        and feedback.get("instruction") == expected_instruction,
+        context=context,
+        cmd=cmd,
+        message="learn feedback instruction text changed",
+    )
+
+
+def assert_learning_feedback_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    if profile_path.exists():
+        profile_path.unlink()
+
+    cmd = command_factory(
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_feedback_json(
+        result.stdout,
+        profile_path=profile_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+        expected_count=1,
+        context=context,
+        cmd=cmd,
+    )
+
+    feedback_file = profile_path.with_name(f"{profile_path.stem}-feedback.md")
+    feedback_file.write_text("Prefer keyboard-first critique notes\n", encoding="utf-8")
+    file_cmd = command_factory(
+        "learn",
+        "--feedback",
+        "--from-file",
+        str(feedback_file),
+        "--outcome",
+        "improve",
+        "--category",
+        "accessibility",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    file_result = run_plain(file_cmd, cwd=cwd, env=env)
+    assert_learning_feedback_json(
+        file_result.stdout,
+        profile_path=profile_path,
+        outcome="improve",
+        category="accessibility",
+        expected_instruction="Improve future outputs by: Prefer keyboard-first critique notes",
+        expected_count=2,
+        context=f"{context} from-file",
+        cmd=file_cmd,
+    )
+
+    stdin_cmd = command_factory(
+        "learn",
+        "--feedback",
+        "--stdin",
+        "--outcome",
+        "avoid",
+        "--category",
+        "brand",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text="decorative launch-page language in enterprise dashboards",
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_feedback_json(
+        stdin_result.stdout,
+        profile_path=profile_path,
+        outcome="avoid",
+        category="brand",
+        expected_instruction="Avoid in future outputs: decorative launch-page language in enterprise dashboards",
+        expected_count=3,
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
+    )
+
+
+def assert_learning_init_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    added_count: int,
+    skipped_count: int,
+    count: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn init JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn init JSON must be an object",
+    )
+    require_registry_smoke(
+        list(payload) == [
+            "file",
+            "dryRun",
+            "applied",
+            "source",
+            "candidateCount",
+            "addedCount",
+            "skippedCount",
+            "count",
+            "entries",
+            "skipped",
+        ],
+        context=context,
+        cmd=cmd,
+        message="learn init JSON keys changed",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn init file path changed",
+    )
+    require_registry_smoke(
+        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn init dryRun/apply flags changed",
+    )
+    require_registry_smoke(
+        payload.get("source") == "init:local-dogfood",
+        context=context,
+        cmd=cmd,
+        message="learn init source changed",
+    )
+    require_registry_smoke(
+        payload.get("candidateCount") == 6
+        and payload.get("addedCount") == added_count
+        and payload.get("skippedCount") == skipped_count
+        and payload.get("count") == count,
+        context=context,
+        cmd=cmd,
+        message="learn init counts changed",
+    )
+
+    entries = payload.get("entries")
+    skipped = payload.get("skipped")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == added_count,
+        context=context,
+        cmd=cmd,
+        message="learn init entries list changed",
+    )
+    require_registry_smoke(
+        isinstance(skipped, list) and len(skipped) == skipped_count,
+        context=context,
+        cmd=cmd,
+        message="learn init skipped list changed",
+    )
+
+    if entries:
+        categories = [entry.get("category") for entry in entries if isinstance(entry, dict)]
+        require_registry_smoke(
+            categories == ["preference", "workflow", "accessibility", "korean", "brand", "constraint"],
+            context=context,
+            cmd=cmd,
+            message="learn init entry categories changed",
+        )
+        require_registry_smoke(
+            all(
+                isinstance(entry, dict)
+                and isinstance(entry.get("id"), str)
+                and entry["id"].startswith("learn-")
+                and entry.get("source") == "init:local-dogfood"
+                and isinstance(entry.get("createdAt"), str)
+                and isinstance(entry.get("text"), str)
+                for entry in entries
+            ),
+            context=context,
+            cmd=cmd,
+            message="learn init entry schema changed",
+        )
+        require_registry_smoke(
+            "one best path" in entries[0].get("text", "")
+            and "repository context" in entries[1].get("text", "")
+            and "WCAG 2.1 AA" in entries[2].get("text", "")
+            and "Pretendard" in entries[3].get("text", "")
+            and "restrained product UI language" in entries[4].get("text", "")
+            and "external AI APIs" in entries[5].get("text", ""),
+            context=context,
+            cmd=cmd,
+            message="learn init entry text changed",
+        )
+
+    if skipped:
+        require_registry_smoke(
+            all(item.get("reason") == "duplicate-entry-text" for item in skipped if isinstance(item, dict)),
+            context=context,
+            cmd=cmd,
+            message="learn init skipped reason changed",
+        )
+
+
+def assert_learning_init_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    if profile_path.exists():
+        profile_path.unlink()
+
+    preview_cmd = command_factory("learn", "--init", "--file", str(profile_path), "--json")
+    preview_result = run_plain(preview_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        preview_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context=f"{context} preview",
+        cmd=preview_cmd,
+    )
+    require_registry_smoke(
+        not profile_path.exists(),
+        context=f"{context} preview",
+        cmd=preview_cmd,
+        message="learn init preview should not create a profile",
+    )
+
+    apply_cmd = command_factory("learn", "--init", "--yes", "--file", str(profile_path), "--json")
+    apply_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context=f"{context} apply",
+        cmd=apply_cmd,
+    )
+    try:
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"{context}: failed to read initialized learning profile") from error
+    require_registry_smoke(
+        isinstance(profile.get("entries"), list) and len(profile["entries"]) == 6,
+        context=f"{context} apply",
+        cmd=apply_cmd,
+        message="learn init did not persist starter entries",
+    )
+
+    duplicate_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_learning_init_json(
+        duplicate_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        added_count=0,
+        skipped_count=6,
+        count=6,
+        context=f"{context} duplicate",
+        cmd=apply_cmd,
+    )
+
+
 def learning_verify_payload_text() -> str:
     return json.dumps(
         {
@@ -2890,6 +3244,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec audit JSON",
         )
+        assert_learning_feedback_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-feedback-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn feedback",
+        )
+        assert_learning_init_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-init-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn init",
+        )
         assert_learning_verify_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
             npx_root / "registry-verify-learning.json",
@@ -3170,6 +3538,211 @@ def run_self_test() -> None:
                 cmd=check_learning_cmd,
             ),
             expected="check learning capture metadata changed",
+            scope="registry smoke",
+        )
+
+        learning_feedback_path = tmp_root / "learning-feedback.json"
+        learning_feedback_payload = {
+            "file": str(learning_feedback_path),
+            "count": 1,
+            "feedback": {
+                "outcome": "keep",
+                "category": "workflow",
+                "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
+            },
+            "entry": {
+                "id": "registry-feedback-entry",
+                "category": "workflow",
+                "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
+                "source": "feedback:keep",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+        }
+        learn_feedback_cmd = [
+            "design-ai",
+            "learn",
+            "--feedback",
+            "Keep audit findings short and evidence-led",
+            "--outcome",
+            "keep",
+            "--file",
+            str(learning_feedback_path),
+            "--json",
+        ]
+        assert_learning_feedback_json(
+            json.dumps(learning_feedback_payload),
+            profile_path=learning_feedback_path,
+            outcome="keep",
+            category="workflow",
+            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+            expected_count=1,
+            context="registry smoke self-test",
+            cmd=learn_feedback_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_feedback_json(
+                json.dumps({
+                    **learning_feedback_payload,
+                    "feedback": {
+                        **learning_feedback_payload["feedback"],
+                        "outcome": "avoid",
+                    },
+                }),
+                profile_path=learning_feedback_path,
+                outcome="keep",
+                category="workflow",
+                expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+                expected_count=1,
+                context="registry smoke self-test",
+                cmd=learn_feedback_cmd,
+            ),
+            expected="learn feedback outcome changed",
+            scope="registry smoke",
+        )
+
+        learning_init_path = tmp_root / "learning-init.json"
+        learning_init_entries = [
+            {
+                "id": "learn-init-preference",
+                "category": "preference",
+                "text": "Recommend one best path instead of broad options.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+            {
+                "id": "learn-init-workflow",
+                "category": "workflow",
+                "text": "Read repository context before changing files.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+            {
+                "id": "learn-init-accessibility",
+                "category": "accessibility",
+                "text": "Keep WCAG 2.1 AA checks explicit.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+            },
+            {
+                "id": "learn-init-korean",
+                "category": "korean",
+                "text": "Prefer Pretendard for Korean product UI.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:03.000Z",
+            },
+            {
+                "id": "learn-init-brand",
+                "category": "brand",
+                "text": "Use restrained product UI language.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:04.000Z",
+            },
+            {
+                "id": "learn-init-constraint",
+                "category": "constraint",
+                "text": "Do not call external AI APIs during local learning.",
+                "source": "init:local-dogfood",
+                "createdAt": "2026-05-22T00:00:05.000Z",
+            },
+        ]
+        learning_init_payload = {
+            "file": str(learning_init_path),
+            "dryRun": True,
+            "applied": False,
+            "source": "init:local-dogfood",
+            "candidateCount": 6,
+            "addedCount": 6,
+            "skippedCount": 0,
+            "count": 6,
+            "entries": learning_init_entries,
+            "skipped": [],
+        }
+        learn_init_cmd = ["design-ai", "learn", "--init", "--file", str(learning_init_path), "--json"]
+        assert_learning_init_json(
+            json.dumps(learning_init_payload),
+            profile_path=learning_init_path,
+            dry_run=True,
+            added_count=6,
+            skipped_count=0,
+            count=6,
+            context="registry smoke self-test",
+            cmd=learn_init_cmd,
+        )
+        assert_learning_init_json(
+            json.dumps({
+                **learning_init_payload,
+                "dryRun": False,
+                "applied": True,
+            }),
+            profile_path=learning_init_path,
+            dry_run=False,
+            added_count=6,
+            skipped_count=0,
+            count=6,
+            context="registry smoke self-test",
+            cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
+        )
+        duplicate_init_payload = {
+            **learning_init_payload,
+            "dryRun": False,
+            "applied": True,
+            "addedCount": 0,
+            "skippedCount": 6,
+            "entries": [],
+            "skipped": [
+                {
+                    "reason": "duplicate-entry-text",
+                    "category": entry["category"],
+                    "textPreview": entry["text"],
+                }
+                for entry in learning_init_entries
+            ],
+        }
+        assert_learning_init_json(
+            json.dumps(duplicate_init_payload),
+            profile_path=learning_init_path,
+            dry_run=False,
+            added_count=0,
+            skipped_count=6,
+            count=6,
+            context="registry smoke self-test",
+            cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_init_json(
+                json.dumps({**learning_init_payload, "candidateCount": 5}),
+                profile_path=learning_init_path,
+                dry_run=True,
+                added_count=6,
+                skipped_count=0,
+                count=6,
+                context="registry smoke self-test",
+                cmd=learn_init_cmd,
+            ),
+            expected="learn init counts changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_init_json(
+                json.dumps({
+                    **learning_init_payload,
+                    "entries": [
+                        {
+                            **learning_init_entries[0],
+                            "category": "workflow",
+                        },
+                        *learning_init_entries[1:],
+                    ],
+                }),
+                profile_path=learning_init_path,
+                dry_run=True,
+                added_count=6,
+                skipped_count=0,
+                count=6,
+                context="registry smoke self-test",
+                cmd=learn_init_cmd,
+            ),
+            expected="learn init entry categories changed",
             scope="registry smoke",
         )
 
