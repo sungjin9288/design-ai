@@ -1009,6 +1009,11 @@ RELEASE_LEARN_STATS_TERM_GROUPS = (
         "learn stats profile summary output",
         "learning stats profile summary",
     ),
+    (
+        "learn stats `--out` file-write confirmation",
+        "design-ai learn --stats --out file-write confirmation",
+        "learn stats --out file-write confirmation",
+    ),
 )
 RELEASE_REGISTRY_LEARN_STATS_TERM_GROUPS = (
     (
@@ -1808,7 +1813,7 @@ JSON `design-ai learn --redact` output including `design-ai learn --redact --fro
 learn JSON `--out` file-write confirmation and forced overwrite coverage,
 JSON `design-ai learn --verify` output plus learn verify `--out` file-write confirmation,
 JSON `design-ai learn --import` dry-run/apply output,
-human / JSON `design-ai learn --stats` profile summary output,
+human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection,
 human / JSON `design-ai learn --audit` cleanup suggestion output,
@@ -1874,7 +1879,7 @@ JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`
 learn JSON `--out` file-write confirmation과 forced overwrite coverage도 확인하며,
 JSON `design-ai learn --verify` output과 learn verify `--out` file-write confirmation도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output도 확인하며,
-human / JSON `design-ai learn --stats` profile summary output도 확인하며,
+human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하며,
@@ -4296,6 +4301,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn stats smoke phrase"
         in learn_stats_drift_errors,
         "release policy docs should mention learn stats smoke",
+    )
+
+    learn_stats_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "learn stats `--out` file-write confirmation",
+                "learning stats saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_stats_out_drift_errors = "\n".join(learn_stats_out_drift["errors"])
+    assert_condition(
+        "README.md is missing learn stats smoke phrase"
+        in learn_stats_out_drift_errors,
+        "release policy docs should mention learn stats --out smoke",
     )
 
     learn_query_explain_drift = release_metadata_summary(
