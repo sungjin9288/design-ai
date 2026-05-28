@@ -975,6 +975,11 @@ RELEASE_REGISTRY_LEARN_VERIFY_TERM_GROUPS = (
         "public registry learn verify JSON output",
         "registry learn verify JSON output",
     ),
+    (
+        "public registry learn verify `--out` file-write confirmation",
+        "public registry learn verify --out file-write confirmation",
+        "registry learn verify --out file-write confirmation",
+    ),
 )
 RELEASE_LEARN_IMPORT_TERM_GROUPS = (
     (
@@ -1775,7 +1780,7 @@ including public registry `design-ai workspace --strict --json` workspace strict
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
-public registry JSON `design-ai learn --verify` output,
+public registry JSON `design-ai learn --verify` output plus public registry learn verify `--out` file-write confirmation,
 public registry JSON `design-ai learn --backup` output plus public registry learn backup `--out` file-write confirmation,
 public registry JSON `design-ai learn --import` dry-run/apply output,
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
@@ -1841,7 +1846,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
-public registry JSON `design-ai learn --verify` output도 확인하고,
+public registry JSON `design-ai learn --verify` output과 public registry learn verify `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --backup` output과 public registry learn backup `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --import` dry-run/apply output도 확인하고,
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
@@ -2303,6 +2308,28 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn verify smoke phrase"
         in registry_learn_verify_drift_errors,
         "release policy docs should mention public registry learn verify smoke",
+    )
+    registry_learn_verify_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry learn verify `--out` file-write confirmation",
+                "public registry learning verification saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_verify_out_drift_errors = "\n".join(
+        registry_learn_verify_out_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing registry learn verify smoke phrase"
+        in registry_learn_verify_out_drift_errors,
+        "release policy docs should mention public registry learn verify --out smoke",
     )
 
     registry_learn_backup_drift = release_metadata_summary(

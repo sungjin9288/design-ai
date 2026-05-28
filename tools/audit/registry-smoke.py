@@ -1015,6 +1015,32 @@ def assert_learning_verify_smoke(
         cmd=from_file_cmd,
     )
 
+    out_path = source_path.with_name(f"{source_path.stem}-verify-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--verify",
+        "--from-file",
+        str(source_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_verify_json(
+        out_path.read_text(encoding="utf-8"),
+        source=str(source_path),
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+
     stdin_cmd = command_factory("learn", "--verify", "--stdin", "--json")
     stdin_result = run_plain_with_input(
         stdin_cmd,
@@ -4288,6 +4314,41 @@ def run_self_test() -> None:
                 cmd=learn_verify_cmd,
             ),
             expected="learn verify duplicate-id warning changed",
+            scope="registry smoke",
+        )
+        learning_verify_out_path = tmp_root / "learning-verify-out.json"
+        learn_verify_out_cmd = [
+            "design-ai",
+            "learn",
+            "--verify",
+            "--from-file",
+            str(learning_verify_path),
+            "--json",
+            "--out",
+            str(learning_verify_out_path),
+            "--force",
+        ]
+        learning_verify_out_path.write_text(json.dumps(learning_verify_payload), encoding="utf-8")
+        assert_output_write_success(
+            f"Wrote {learning_verify_out_path}\n",
+            context="registry smoke self-test verify out",
+            cmd=learn_verify_out_cmd,
+            expected_path=str(learning_verify_out_path),
+        )
+        assert_learning_verify_json(
+            learning_verify_out_path.read_text(encoding="utf-8"),
+            source=str(learning_verify_path),
+            context="registry smoke self-test verify out file",
+            cmd=learn_verify_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_output_write_success(
+                "Wrote different-verify.json\n",
+                context="registry smoke self-test verify out",
+                cmd=learn_verify_out_cmd,
+                expected_path=str(learning_verify_out_path),
+            ),
+            expected="output write success",
             scope="registry smoke",
         )
 
