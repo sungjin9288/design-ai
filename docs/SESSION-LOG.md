@@ -211,6 +211,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 214)** — Added packed-tarball workspace strict smoke coverage: installed-bin and one-shot npm exec paths now verify strict JSON failure and clean-success readiness behavior.
 - **v4.13 (Phase 215)** — Added release metadata guard coverage for workspace strict package smoke guidance, preventing release-facing docs from dropping strict readiness failure/success coverage.
 - **v4.13 (Phase 216)** — Added public registry workspace strict smoke coverage: post-publish registry smoke now verifies strict JSON failure and clean-success readiness behavior from the published package path.
+- **v4.13 (Phase 217)** — Added public registry learning audit cleanup smoke coverage: post-publish registry smoke now verifies learn audit cleanup suggestions, dry-run cleanup previews, and confirmed cleanup persistence from the published package path.
 
 ## Patterns that didn't work
 

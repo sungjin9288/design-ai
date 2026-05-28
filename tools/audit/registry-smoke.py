@@ -344,6 +344,43 @@ def write_learning_stats_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_audit_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:03.000Z",
+                "entries": [
+                    {
+                        "id": "registry-audit-a",
+                        "category": "workflow",
+                        "text": "Prefer release notes that state evidence before claims",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "registry-audit-b",
+                        "category": "workflow",
+                        "text": "Prefer release notes that state evidence before claims",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                    {
+                        "id": "registry-audit-c",
+                        "category": "constraint",
+                        "text": "Never include api_key=redacted placeholders in prompt context",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:02.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_learning_backup_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -792,6 +829,301 @@ def assert_learning_stats_smoke(
         profile_path=profile_path,
         context=f"{context} JSON",
         cmd=json_cmd,
+    )
+
+
+def assert_learning_audit_cleanup_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn audit JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn audit JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn audit JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("exists") is True and payload.get("count") == 3,
+        context=context,
+        cmd=cmd,
+        message="learn audit profile metadata changed",
+    )
+
+    summary = payload.get("summary")
+    require_registry_smoke(
+        isinstance(summary, dict)
+        and summary.get("status") == "warn"
+        and summary.get("failures") == 0
+        and isinstance(summary.get("warnings"), int)
+        and not isinstance(summary.get("warnings"), bool)
+        and summary["warnings"] >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn audit warning summary changed",
+    )
+
+    issues = payload.get("issues")
+    require_registry_smoke(
+        isinstance(issues, list)
+        and any(
+            issue.get("code") == "duplicate-entry-text" and issue.get("entryId") == "registry-audit-b"
+            for issue in issues
+            if isinstance(issue, dict)
+        )
+        and any(
+            issue.get("code") == "sensitive-secret-assignment" and issue.get("entryId") == "registry-audit-c"
+            for issue in issues
+            if isinstance(issue, dict)
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn audit issues changed",
+    )
+
+    suggestions = payload.get("suggestions")
+    require_registry_smoke(
+        isinstance(suggestions, list),
+        context=context,
+        cmd=cmd,
+        message="learn audit suggestions missing",
+    )
+    duplicate_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(profile_path),
+        "--forget",
+        "registry-audit-b",
+        "--yes",
+    ]
+    sensitive_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(profile_path),
+        "--forget",
+        "registry-audit-c",
+        "--yes",
+    ]
+    duplicate_suggestion = next(
+        (
+            suggestion for suggestion in suggestions
+            if (
+                isinstance(suggestion, dict)
+                and suggestion.get("action") == "remove-duplicate"
+                and suggestion.get("entryId") == "registry-audit-b"
+            )
+        ),
+        None,
+    )
+    sensitive_suggestion = next(
+        (
+            suggestion for suggestion in suggestions
+            if (
+                isinstance(suggestion, dict)
+                and suggestion.get("action") == "remove-or-redact-sensitive-content"
+                and suggestion.get("entryId") == "registry-audit-c"
+            )
+        ),
+        None,
+    )
+    require_registry_smoke(
+        isinstance(duplicate_suggestion, dict)
+        and duplicate_suggestion.get("commandArgs") == duplicate_command_args
+        and "--forget registry-audit-b --yes" in duplicate_suggestion.get("command", ""),
+        context=context,
+        cmd=cmd,
+        message="learn audit duplicate cleanup suggestion changed",
+    )
+    require_registry_smoke(
+        isinstance(sensitive_suggestion, dict)
+        and sensitive_suggestion.get("commandArgs") == sensitive_command_args
+        and "--forget registry-audit-c --yes" in sensitive_suggestion.get("command", ""),
+        context=context,
+        cmd=cmd,
+        message="learn audit sensitive cleanup suggestion changed",
+    )
+
+
+def assert_learning_audit_cleanup_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Local learning profile audit",
+        "Status: warn",
+        "Suggested cleanup:",
+        "remove-duplicate (registry-audit-b)",
+        "remove-or-redact-sensitive-content (registry-audit-c)",
+        "--forget registry-audit-b --yes",
+        "--forget registry-audit-c --yes",
+    ):
+        require_registry_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn audit human output missing {expected!r}",
+        )
+
+
+def assert_learning_audit_fix_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn audit fix JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn audit fix JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path)
+        and payload.get("dryRun") is dry_run
+        and payload.get("applied") is (not dry_run)
+        and payload.get("cleanupCount") == 2,
+        context=context,
+        cmd=cmd,
+        message="learn audit fix metadata changed",
+    )
+    before = payload.get("before")
+    require_registry_smoke(
+        isinstance(before, dict) and before.get("status") == "warn",
+        context=context,
+        cmd=cmd,
+        message="learn audit fix should start from a warning profile",
+    )
+
+    cleanup = payload.get("cleanup")
+    require_registry_smoke(
+        isinstance(cleanup, list),
+        context=context,
+        cmd=cmd,
+        message="learn audit fix cleanup list missing",
+    )
+    cleanup_by_entry = {
+        item.get("entryId"): item
+        for item in cleanup
+        if isinstance(item, dict)
+    }
+    for entry_id, action in (
+        ("registry-audit-b", "remove-duplicate"),
+        ("registry-audit-c", "remove-or-redact-sensitive-content"),
+    ):
+        item = cleanup_by_entry.get(entry_id)
+        require_registry_smoke(
+            isinstance(item, dict)
+            and action in item.get("actions", [])
+            and item.get("commandArgs")
+            == ["design-ai", "learn", "--file", str(profile_path), "--forget", entry_id, "--yes"],
+            context=context,
+            cmd=cmd,
+            message=f"learn audit fix cleanup entry changed: {entry_id}",
+        )
+
+    removed = payload.get("removed")
+    if dry_run:
+        require_registry_smoke(
+            removed == [] and payload.get("after") is None,
+            context=context,
+            cmd=cmd,
+            message="learn audit fix dry run should not remove entries",
+        )
+    else:
+        require_registry_smoke(
+            isinstance(removed, list)
+            and [item.get("id") for item in removed if isinstance(item, dict)]
+            == ["registry-audit-b", "registry-audit-c"],
+            context=context,
+            cmd=cmd,
+            message="learn audit fix removed entries changed",
+        )
+        after = payload.get("after")
+        require_registry_smoke(
+            isinstance(after, dict) and after.get("status") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn audit fix should leave a passing profile",
+        )
+
+
+def assert_learning_audit_cleanup_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_audit_fixture(profile_path)
+
+    json_cmd = command_factory("learn", "--audit", "--file", str(profile_path), "--json")
+    json_result = run_plain(json_cmd, cwd=cwd, env=env)
+    assert_learning_audit_cleanup_json(
+        json_result.stdout,
+        profile_path=profile_path,
+        context=f"{context} JSON",
+        cmd=json_cmd,
+    )
+
+    human_cmd = command_factory("learn", "--audit", "--file", str(profile_path))
+    human_result = run_plain(human_cmd, cwd=cwd, env=env)
+    assert_learning_audit_cleanup_human(human_result.stdout, context=f"{context} human", cmd=human_cmd)
+
+    fix_dry_run_cmd = command_factory("learn", "--audit", "--fix", "--dry-run", "--file", str(profile_path), "--json")
+    fix_dry_run_result = run_plain(fix_dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_audit_fix_json(
+        fix_dry_run_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} fix dry-run JSON",
+        cmd=fix_dry_run_cmd,
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(dry_run_profile.get("entries", [])) == 3,
+        context=f"{context} fix dry-run profile unchanged",
+        cmd=fix_dry_run_cmd,
+        message="learn audit fix dry-run should leave profile entries unchanged",
+    )
+
+    fix_apply_cmd = command_factory("learn", "--audit", "--fix", "--yes", "--file", str(profile_path), "--json")
+    fix_apply_result = run_plain(fix_apply_cmd, cwd=cwd, env=env)
+    assert_learning_audit_fix_json(
+        fix_apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        context=f"{context} fix apply JSON",
+        cmd=fix_apply_cmd,
+    )
+    applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        [entry.get("id") for entry in applied_profile.get("entries", [])] == ["registry-audit-a"],
+        context=f"{context} fix apply profile",
+        cmd=fix_apply_cmd,
+        message="learn audit fix apply should persist only the clean entry",
     )
 
 
@@ -2182,6 +2514,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec learn stats",
         )
+        assert_learning_audit_cleanup_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-audit-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn audit cleanup",
+        )
         assert_update_dry_run_smoke(
             npm_exec_cmd(package_spec, "update", "--dry-run"),
             cwd=npx_root,
@@ -2661,6 +3000,212 @@ def run_self_test() -> None:
                 cmd=learn_stats_human_cmd,
             ),
             expected="learn stats human output missing 'Sources: registry-smoke 1, feedback:keep 1, import:cli 1'",
+            scope="registry smoke",
+        )
+
+        learning_audit_path = tmp_root / "learning-audit.json"
+        duplicate_command_args = [
+            "design-ai",
+            "learn",
+            "--file",
+            str(learning_audit_path),
+            "--forget",
+            "registry-audit-b",
+            "--yes",
+        ]
+        sensitive_command_args = [
+            "design-ai",
+            "learn",
+            "--file",
+            str(learning_audit_path),
+            "--forget",
+            "registry-audit-c",
+            "--yes",
+        ]
+        learning_audit_payload = {
+            "file": str(learning_audit_path),
+            "exists": True,
+            "count": 3,
+            "categoryCounts": {
+                "workflow": 2,
+                "constraint": 1,
+            },
+            "summary": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 2,
+            },
+            "issues": [
+                {
+                    "level": "warning",
+                    "code": "duplicate-entry-text",
+                    "entryId": "registry-audit-b",
+                    "message": "Entry duplicates registry-audit-a in the same category.",
+                },
+                {
+                    "level": "warning",
+                    "code": "sensitive-secret-assignment",
+                    "entryId": "registry-audit-c",
+                    "message": "Entry may contain a secret-like assignment.",
+                },
+            ],
+            "suggestions": [
+                {
+                    "issueCode": "duplicate-entry-text",
+                    "entryId": "registry-audit-b",
+                    "action": "remove-duplicate",
+                    "message": "Remove the duplicate entry.",
+                    "commandArgs": duplicate_command_args,
+                    "command": " ".join(duplicate_command_args),
+                },
+                {
+                    "issueCode": "sensitive-secret-assignment",
+                    "entryId": "registry-audit-c",
+                    "action": "remove-or-redact-sensitive-content",
+                    "message": "Remove this entry or re-add a redacted preference.",
+                    "commandArgs": sensitive_command_args,
+                    "command": " ".join(sensitive_command_args),
+                },
+            ],
+        }
+        learn_audit_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path), "--json"]
+        assert_learning_audit_cleanup_json(
+            json.dumps(learning_audit_payload),
+            profile_path=learning_audit_path,
+            context="registry smoke self-test",
+            cmd=learn_audit_cmd,
+        )
+        learning_audit_fix_payload = {
+            "file": str(learning_audit_path),
+            "dryRun": True,
+            "applied": False,
+            "before": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 2,
+            },
+            "cleanupCount": 2,
+            "cleanup": [
+                {
+                    "entryId": "registry-audit-b",
+                    "issueCodes": ["duplicate-entry-text"],
+                    "actions": ["remove-duplicate"],
+                    "commandArgs": duplicate_command_args,
+                    "command": " ".join(duplicate_command_args),
+                },
+                {
+                    "entryId": "registry-audit-c",
+                    "issueCodes": ["sensitive-secret-assignment"],
+                    "actions": ["remove-or-redact-sensitive-content"],
+                    "commandArgs": sensitive_command_args,
+                    "command": " ".join(sensitive_command_args),
+                },
+            ],
+            "skipped": [],
+            "removed": [],
+            "after": None,
+        }
+        learn_audit_fix_cmd = [
+            "design-ai",
+            "learn",
+            "--audit",
+            "--fix",
+            "--dry-run",
+            "--file",
+            str(learning_audit_path),
+            "--json",
+        ]
+        assert_learning_audit_fix_json(
+            json.dumps(learning_audit_fix_payload),
+            profile_path=learning_audit_path,
+            dry_run=True,
+            context="registry smoke self-test",
+            cmd=learn_audit_fix_cmd,
+        )
+        assert_learning_audit_fix_json(
+            json.dumps({
+                **learning_audit_fix_payload,
+                "dryRun": False,
+                "applied": True,
+                "removed": [
+                    {
+                        "id": "registry-audit-b",
+                        "category": "workflow",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                        "textPreview": "Prefer release notes that state evidence before claims",
+                    },
+                    {
+                        "id": "registry-audit-c",
+                        "category": "constraint",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:02.000Z",
+                        "textPreview": "Never include api_key=redacted placeholders in prompt context",
+                    },
+                ],
+                "after": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+            }),
+            profile_path=learning_audit_path,
+            dry_run=False,
+            context="registry smoke self-test",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--audit",
+                "--fix",
+                "--yes",
+                "--file",
+                str(learning_audit_path),
+                "--json",
+            ],
+        )
+        learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path)]
+        assert_learning_audit_cleanup_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning profile audit",
+                "Status: warn",
+                "Suggested cleanup:",
+                "- remove-duplicate (registry-audit-b): Remove the duplicate entry.",
+                "  design-ai learn --file /tmp/learning.json --forget registry-audit-b --yes",
+                "- remove-or-redact-sensitive-content (registry-audit-c): Remove sensitive content.",
+                "  design-ai learn --file /tmp/learning.json --forget registry-audit-c --yes",
+            ]),
+            context="registry smoke self-test",
+            cmd=learn_audit_human_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_audit_cleanup_json(
+                json.dumps({**learning_audit_payload, "suggestions": []}),
+                profile_path=learning_audit_path,
+                context="registry smoke self-test",
+                cmd=learn_audit_cmd,
+            ),
+            expected="learn audit duplicate cleanup suggestion changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_audit_fix_json(
+                json.dumps({**learning_audit_fix_payload, "cleanup": []}),
+                profile_path=learning_audit_path,
+                dry_run=True,
+                context="registry smoke self-test",
+                cmd=learn_audit_fix_cmd,
+            ),
+            expected="learn audit fix cleanup entry changed: registry-audit-b",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_audit_cleanup_human(
+                "Local learning profile audit\nStatus: warn\n",
+                context="registry smoke self-test",
+                cmd=learn_audit_human_cmd,
+            ),
+            expected="learn audit human output missing 'Suggested cleanup:'",
             scope="registry smoke",
         )
 

@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 217 — Public registry learning audit cleanup smoke coverage (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now proves the safe learning audit cleanup loop from the published npm package path.
+
+### Changed
+- Added public registry smoke coverage for human and JSON `design-ai learn --audit` cleanup suggestions.
+- Added public registry smoke coverage for `design-ai learn --audit --fix --dry-run --json` cleanup previews.
+- Added public registry smoke coverage for confirmed `design-ai learn --audit --fix --yes --json` cleanup application and persisted profile cleanup.
+- Added registry smoke self-test fixtures for audit suggestions, cleanup metadata, human cleanup output, dry-run drift, and apply drift.
+- Added release metadata phrase protection so release-facing docs keep the public registry learning audit cleanup smoke guidance.
+
+### Impact
+- After publish, `npm run registry:smoke` now checks the same safe learning audit cleanup contract that packed-tarball smoke already checks before publish.
+- The registry smoke fixture is local to a temp profile; it does not read or mutate the real user learning profile, change the learning schema, add dependencies, or call external AI APIs.
+
+### What this enables
+- A published package can fail post-publish verification if learning audit cleanup suggestions, dry-run behavior, or confirmed cleanup persistence drift in the public npm execution path.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `npm run registry:smoke:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 216 — Public registry workspace strict smoke coverage (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now proves the strict workspace readiness gate from the published npm package path.

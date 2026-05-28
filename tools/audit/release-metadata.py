@@ -830,6 +830,20 @@ RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS = (
         "learning audit cleanup guidance",
     ),
 )
+RELEASE_REGISTRY_LEARN_AUDIT_CLEANUP_TERM_GROUPS = (
+    (
+        "public registry human / JSON `design-ai learn --audit` cleanup suggestion output",
+        "public registry human / JSON design-ai learn --audit cleanup suggestion output",
+        "public registry learn audit cleanup suggestion output",
+        "registry learn audit cleanup suggestion output",
+    ),
+    (
+        "public registry `design-ai learn --audit --fix --dry-run`",
+        "public registry design-ai learn --audit --fix --dry-run",
+        "public registry learn audit fix dry-run",
+        "registry learn audit fix dry-run",
+    ),
+)
 RELEASE_LEARN_FEEDBACK_TERM_GROUPS = (
     (
         "`design-ai learn --feedback` output",
@@ -1101,6 +1115,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn query explain smoke phrase",
     "learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
+    "registry learn audit cleanup smoke phrase",
     "doctor strict smoke phrase",
     "doctor strict command phrase",
     "doctor human diagnostics phrase",
@@ -1231,6 +1246,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn query explain smoke phrase", RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS),
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
+    (
+        "registry learn audit cleanup smoke phrase",
+        RELEASE_REGISTRY_LEARN_AUDIT_CLEANUP_TERM_GROUPS,
+    ),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
     ("doctor strict command phrase", RELEASE_DOCTOR_STRICT_COMMAND_TERM_GROUPS),
     ("doctor human diagnostics phrase", RELEASE_DOCTOR_HUMAN_DIAGNOSTICS_TERM_GROUPS),
@@ -1646,6 +1665,8 @@ and after npm publish completes, `npm run registry:smoke` verifies the public in
 public registry JSON `design-ai learn --verify` output,
 public registry JSON `design-ai learn --backup` output,
 public registry human / JSON `design-ai learn --stats` profile summary output,
+public registry human / JSON `design-ai learn --audit` cleanup suggestion output,
+public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
 `npm test` CLI unit tests,
@@ -1704,6 +1725,8 @@ npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 �
 public registry JSON `design-ai learn --verify` output도 확인하고,
 public registry JSON `design-ai learn --backup` output도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output도 확인하고,
+public registry human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하고,
+public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
 `npm test` CLI unit test 실행도 확인하고,
@@ -4009,6 +4032,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn audit cleanup smoke phrase"
         in learn_audit_cleanup_drift_errors,
         "release policy docs should mention learn audit cleanup suggestion smoke",
+    )
+
+    registry_learn_audit_cleanup_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry human / JSON `design-ai learn --audit` cleanup suggestion output",
+                "public registry learning cleanup overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_audit_cleanup_drift_errors = "\n".join(
+        registry_learn_audit_cleanup_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing registry learn audit cleanup smoke phrase"
+            in registry_learn_audit_cleanup_drift_errors
+        ),
+        "release policy docs should mention public registry learn audit cleanup smoke",
     )
 
     doctor_strict_drift = release_metadata_summary(
