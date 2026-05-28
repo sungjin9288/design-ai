@@ -888,6 +888,31 @@ RELEASE_LEARN_REDACT_TERM_GROUPS = (
         "--redact --stdin",
     ),
 )
+RELEASE_REGISTRY_LEARN_REDACT_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --redact` output",
+        "public registry design-ai learn --redact JSON output",
+        "public registry learn redact JSON output",
+        "registry learn redact JSON output",
+    ),
+    (
+        "public registry `design-ai learn --redact --from-file`",
+        "public registry design-ai learn --redact --from-file",
+        "public registry learn redact from-file",
+        "registry learn redact from-file",
+    ),
+    (
+        "public registry `design-ai learn --redact --stdin`",
+        "public registry design-ai learn --redact --stdin",
+        "public registry learn redact stdin",
+        "registry learn redact stdin",
+    ),
+    (
+        "public registry learn redact `--out` file-write confirmation",
+        "public registry learn redact --out file-write confirmation",
+        "registry learn redact --out file-write confirmation",
+    ),
+)
 RELEASE_LEARN_OUTPUT_FILE_TERM_GROUPS = (
     (
         "learn JSON `--out` file-write confirmation",
@@ -919,6 +944,14 @@ RELEASE_LEARN_IMPORT_TERM_GROUPS = (
         "design-ai learn --import dry-run/apply output",
         "learn import dry-run/apply output",
         "learning import",
+    ),
+)
+RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --import` dry-run/apply output",
+        "public registry design-ai learn --import dry-run/apply output",
+        "public registry learn import dry-run/apply output",
+        "registry learn import dry-run/apply output",
     ),
 )
 RELEASE_LEARN_STATS_TERM_GROUPS = (
@@ -1106,10 +1139,12 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn backup smoke phrase",
     "registry learn backup smoke phrase",
     "learn redact smoke phrase",
+    "registry learn redact smoke phrase",
     "learn output file smoke phrase",
     "learn verify smoke phrase",
     "registry learn verify smoke phrase",
     "learn import smoke phrase",
+    "registry learn import smoke phrase",
     "learn stats smoke phrase",
     "registry learn stats smoke phrase",
     "learn query explain smoke phrase",
@@ -1237,10 +1272,12 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn backup smoke phrase", RELEASE_LEARN_BACKUP_TERM_GROUPS),
     ("registry learn backup smoke phrase", RELEASE_REGISTRY_LEARN_BACKUP_TERM_GROUPS),
     ("learn redact smoke phrase", RELEASE_LEARN_REDACT_TERM_GROUPS),
+    ("registry learn redact smoke phrase", RELEASE_REGISTRY_LEARN_REDACT_TERM_GROUPS),
     ("learn output file smoke phrase", RELEASE_LEARN_OUTPUT_FILE_TERM_GROUPS),
     ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
     ("registry learn verify smoke phrase", RELEASE_REGISTRY_LEARN_VERIFY_TERM_GROUPS),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
+    ("registry learn import smoke phrase", RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS),
     ("learn stats smoke phrase", RELEASE_LEARN_STATS_TERM_GROUPS),
     ("registry learn stats smoke phrase", RELEASE_REGISTRY_LEARN_STATS_TERM_GROUPS),
     ("learn query explain smoke phrase", RELEASE_LEARN_QUERY_EXPLAIN_TERM_GROUPS),
@@ -1664,6 +1701,8 @@ including public registry `design-ai workspace --strict --json` workspace strict
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --verify` output,
 public registry JSON `design-ai learn --backup` output,
+public registry JSON `design-ai learn --import` dry-run/apply output,
+public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
 public registry human / JSON `design-ai learn --stats` profile summary output,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
@@ -1724,6 +1763,8 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --verify` output도 확인하고,
 public registry JSON `design-ai learn --backup` output도 확인하고,
+public registry JSON `design-ai learn --import` dry-run/apply output도 확인하고,
+public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
@@ -2159,6 +2200,48 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn backup smoke phrase"
         in registry_learn_backup_drift_errors,
         "release policy docs should mention public registry learn backup smoke",
+    )
+
+    registry_learn_import_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --import` dry-run/apply output",
+                "public registry learning import overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_import_drift_errors = "\n".join(registry_learn_import_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn import smoke phrase"
+        in registry_learn_import_drift_errors,
+        "release policy docs should mention public registry learn import smoke",
+    )
+
+    registry_learn_redact_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --redact` output",
+                "public registry learning redaction overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_redact_drift_errors = "\n".join(registry_learn_redact_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn redact smoke phrase"
+        in registry_learn_redact_drift_errors,
+        "release policy docs should mention public registry learn redact smoke",
     )
 
     registry_learn_stats_drift = release_metadata_summary(

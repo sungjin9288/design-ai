@@ -411,6 +411,84 @@ def write_learning_backup_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_import_target_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:00.000Z",
+                "entries": [
+                    {
+                        "id": "registry-import-existing",
+                        "category": "brand",
+                        "text": "Use quiet enterprise language",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_learning_redaction_fixture(profile_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:01.000Z",
+                "entries": [
+                    {
+                        "id": "registry-sensitive",
+                        "category": "constraint",
+                        "text": "Never include api_key: sk-test12345678901234567890 in shared learning profiles",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                    },
+                    {
+                        "id": "registry-clean",
+                        "category": "korean",
+                        "text": "Prefer dense Korean mobile layouts",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def learning_import_payload_text() -> str:
+    return json.dumps(
+        {
+            "file": "/portable/registry-learning.json",
+            "entries": [
+                {
+                    "id": "registry-import-existing",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                },
+                {
+                    "id": "registry-import-existing",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+            ],
+        },
+        indent=2,
+    )
+
+
 def learning_verify_payload_text() -> str:
     return json.dumps(
         {
@@ -676,6 +754,325 @@ def assert_learning_backup_smoke(
     cmd = command_factory("learn", "--backup", "--file", str(profile_path), "--json")
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_learning_backup_json(result.stdout, profile_path=profile_path, context=context, cmd=cmd)
+
+
+def assert_learning_import_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn import JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn import JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn import JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn import dry-run/apply flags changed",
+    )
+    require_registry_smoke(
+        payload.get("importedCount") == 2
+        and payload.get("addedCount") == 1
+        and payload.get("skippedCount") == 1
+        and payload.get("count") == 2,
+        context=context,
+        cmd=cmd,
+        message="learn import counts changed",
+    )
+
+    added = payload.get("added")
+    skipped = payload.get("skipped")
+    require_registry_smoke(
+        isinstance(added, list) and len(added) == 1,
+        context=context,
+        cmd=cmd,
+        message="learn import added list missing",
+    )
+    require_registry_smoke(
+        isinstance(skipped, list) and len(skipped) == 1,
+        context=context,
+        cmd=cmd,
+        message="learn import skipped list missing",
+    )
+
+    added_entry = added[0]
+    skipped_entry = skipped[0]
+    require_registry_smoke(
+        isinstance(added_entry, dict)
+        and added_entry.get("category") == "korean"
+        and added_entry.get("source") == "import:cli"
+        and added_entry.get("id") != "registry-import-existing",
+        context=context,
+        cmd=cmd,
+        message="learn import added entry metadata changed",
+    )
+    require_registry_smoke(
+        isinstance(skipped_entry, dict)
+        and skipped_entry.get("reason") == "duplicate-entry-text"
+        and skipped_entry.get("category") == "brand",
+        context=context,
+        cmd=cmd,
+        message="learn import duplicate skip metadata changed",
+    )
+
+
+def assert_learning_import_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    import_file = profile_path.with_name(f"{profile_path.stem}-import.json")
+    import_file.write_text(f"{learning_import_payload_text()}\n", encoding="utf-8")
+
+    dry_run_cmd = command_factory(
+        "learn",
+        "--import",
+        "--from-file",
+        str(import_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    dry_run_result = run_plain(dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_import_json(
+        dry_run_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} from-file dry-run",
+        cmd=dry_run_cmd,
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(dry_run_profile.get("entries", [])) == 1,
+        context=f"{context} dry-run profile unchanged",
+        cmd=dry_run_cmd,
+        message="learn import dry-run should leave target profile unchanged",
+    )
+
+    apply_cmd = command_factory(
+        "learn",
+        "--import",
+        "--stdin",
+        "--yes",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    apply_result = run_plain_with_input(
+        apply_cmd,
+        input_text=learning_import_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_import_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        context=f"{context} stdin apply",
+        cmd=apply_cmd,
+    )
+    applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(applied_profile.get("entries", [])) == 2,
+        context=f"{context} apply profile",
+        cmd=apply_cmd,
+        message="learn import apply should persist the merged entry",
+    )
+
+
+def assert_learning_redact_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn redact JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict),
+        context=context,
+        cmd=cmd,
+        message="learn redact JSON must be an object",
+    )
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn redact JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(
+        payload.get("redacted") is True
+        and payload.get("count") == 2
+        and payload.get("redactedCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn redact metadata changed",
+    )
+
+    source_audit = payload.get("sourceAuditSummary")
+    audit_summary = payload.get("auditSummary")
+    require_registry_smoke(
+        isinstance(source_audit, dict) and source_audit.get("status") == "warn",
+        context=context,
+        cmd=cmd,
+        message="learn redact source audit should warn for the fixture",
+    )
+    require_registry_smoke(
+        isinstance(audit_summary, dict) and audit_summary.get("status") == "pass",
+        context=context,
+        cmd=cmd,
+        message="learn redact redacted audit should pass for the fixture",
+    )
+
+    redactions = payload.get("redactions")
+    require_registry_smoke(
+        isinstance(redactions, list)
+        and len(redactions) == 1
+        and redactions[0].get("entryId") == "registry-sensitive"
+        and set(redactions[0].get("codes", [])) >= {
+            "sensitive-secret-assignment",
+            "sensitive-openai-secret-key",
+        },
+        context=context,
+        cmd=cmd,
+        message="learn redact redactions changed",
+    )
+
+    entries = payload.get("entries")
+    require_registry_smoke(
+        isinstance(entries, list) and len(entries) == 2,
+        context=context,
+        cmd=cmd,
+        message="learn redact entries list changed",
+    )
+    sensitive_entry = next((entry for entry in entries if entry.get("id") == "registry-sensitive"), None)
+    require_registry_smoke(
+        isinstance(sensitive_entry, dict),
+        context=context,
+        cmd=cmd,
+        message="learn redact sensitive entry missing",
+    )
+    redacted_text = sensitive_entry.get("text", "")
+    require_registry_smoke(
+        "[REDACTED:secret-assignment]" in redacted_text
+        and "[REDACTED:openai-secret-key]" in redacted_text,
+        context=context,
+        cmd=cmd,
+        message="learn redact did not include redaction markers",
+    )
+    require_registry_smoke(
+        "sk-test" not in redacted_text and "api_key" not in redacted_text,
+        context=context,
+        cmd=cmd,
+        message="learn redact leaked sensitive-looking text",
+    )
+
+
+def assert_learning_redact_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_redaction_fixture(profile_path)
+    cmd = command_factory("learn", "--redact", "--file", str(profile_path), "--json")
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_redact_json(result.stdout, profile_path=profile_path, context=context, cmd=cmd)
+    source_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        "sk-test12345678901234567890" in source_profile["entries"][0]["text"],
+        context=f"{context} source profile unchanged",
+        cmd=cmd,
+        message="learn redact should not mutate the source profile",
+    )
+
+    source_path = profile_path.with_name(f"{profile_path.stem}-portable.json")
+    write_learning_redaction_fixture(source_path)
+    from_file_cmd = command_factory("learn", "--redact", "--from-file", str(source_path), "--json")
+    from_file_result = run_plain(from_file_cmd, cwd=cwd, env=env)
+    assert_learning_redact_json(
+        from_file_result.stdout,
+        profile_path=source_path,
+        context=f"{context} from-file",
+        cmd=from_file_cmd,
+    )
+    source_payload = json.loads(source_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        "sk-test12345678901234567890" in source_payload["entries"][0]["text"],
+        context=f"{context} from-file source unchanged",
+        cmd=from_file_cmd,
+        message="learn redact --from-file should not mutate the source payload",
+    )
+
+    stdin_cmd = command_factory("learn", "--redact", "--stdin", "--json")
+    stdin_result = run_plain_with_input(
+        stdin_cmd,
+        input_text=source_path.read_text(encoding="utf-8"),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_redact_json(
+        stdin_result.stdout,
+        profile_path=Path("stdin"),
+        context=f"{context} stdin",
+        cmd=stdin_cmd,
+    )
+
+    out_path = profile_path.with_name(f"{profile_path.stem}-redacted-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--redact",
+        "--from-file",
+        str(source_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    require_registry_smoke(
+        "Wrote " in out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        message="learn redact --out should confirm the written file",
+    )
+    assert_learning_redact_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=source_path,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
 
 
 def assert_learning_stats_json(
@@ -2507,6 +2904,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec learn backup",
         )
+        assert_learning_import_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-import-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn import",
+        )
+        assert_learning_redact_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-redact-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn redact",
+        )
         assert_learning_stats_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
             npx_root / "registry-stats-learning.json",
@@ -2896,6 +3307,178 @@ def run_self_test() -> None:
                 cmd=learn_backup_cmd,
             ),
             expected="learn backup entries should preserve full text",
+            scope="registry smoke",
+        )
+
+        learning_import_path = tmp_root / "learning-import.json"
+        learning_import_payload = {
+            "file": str(learning_import_path),
+            "dryRun": True,
+            "applied": False,
+            "importedCount": 2,
+            "addedCount": 1,
+            "skippedCount": 1,
+            "count": 2,
+            "added": [
+                {
+                    "id": "registry-import-generated",
+                    "category": "korean",
+                    "source": "import:cli",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer dense Korean mobile layouts",
+                },
+            ],
+            "skipped": [
+                {
+                    "reason": "duplicate-entry-text",
+                    "category": "brand",
+                    "textPreview": "Use quiet enterprise language",
+                },
+            ],
+        }
+        learn_import_cmd = [
+            "design-ai",
+            "learn",
+            "--import",
+            "--from-file",
+            str(tmp_root / "registry-import-source.json"),
+            "--dry-run",
+            "--file",
+            str(learning_import_path),
+            "--json",
+        ]
+        assert_learning_import_json(
+            json.dumps(learning_import_payload),
+            profile_path=learning_import_path,
+            dry_run=True,
+            context="registry smoke self-test",
+            cmd=learn_import_cmd,
+        )
+        assert_learning_import_json(
+            json.dumps({**learning_import_payload, "dryRun": False, "applied": True}),
+            profile_path=learning_import_path,
+            dry_run=False,
+            context="registry smoke self-test",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--import",
+                "--stdin",
+                "--yes",
+                "--file",
+                str(learning_import_path),
+                "--json",
+            ],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_import_json(
+                json.dumps({**learning_import_payload, "addedCount": 2}),
+                profile_path=learning_import_path,
+                dry_run=True,
+                context="registry smoke self-test",
+                cmd=learn_import_cmd,
+            ),
+            expected="learn import counts changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_import_json(
+                json.dumps({
+                    **learning_import_payload,
+                    "skipped": [
+                        {
+                            **learning_import_payload["skipped"][0],
+                            "reason": "duplicate-entry-id",
+                        },
+                    ],
+                }),
+                profile_path=learning_import_path,
+                dry_run=True,
+                context="registry smoke self-test",
+                cmd=learn_import_cmd,
+            ),
+            expected="learn import duplicate skip metadata changed",
+            scope="registry smoke",
+        )
+
+        learning_redact_path = tmp_root / "learning-redact.json"
+        learning_redact_payload = {
+            "file": str(learning_redact_path),
+            "redacted": True,
+            "count": 2,
+            "redactedCount": 1,
+            "sourceAuditSummary": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 1,
+            },
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "redactions": [
+                {
+                    "entryId": "registry-sensitive",
+                    "codes": [
+                        "sensitive-secret-assignment",
+                        "sensitive-openai-secret-key",
+                    ],
+                },
+            ],
+            "entries": [
+                {
+                    "id": "registry-sensitive",
+                    "category": "constraint",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "text": (
+                        "Never include [REDACTED:secret-assignment]: "
+                        "[REDACTED:openai-secret-key] in shared learning profiles"
+                    ),
+                },
+                {
+                    "id": "registry-clean",
+                    "category": "korean",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "text": "Prefer dense Korean mobile layouts",
+                },
+            ],
+        }
+        learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_redact_path), "--json"]
+        assert_learning_redact_json(
+            json.dumps(learning_redact_payload),
+            profile_path=learning_redact_path,
+            context="registry smoke self-test",
+            cmd=learn_redact_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_redact_json(
+                json.dumps({**learning_redact_payload, "redactedCount": 0}),
+                profile_path=learning_redact_path,
+                context="registry smoke self-test",
+                cmd=learn_redact_cmd,
+            ),
+            expected="learn redact metadata changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_redact_json(
+                json.dumps({
+                    **learning_redact_payload,
+                    "redactions": [
+                        {
+                            "entryId": "registry-sensitive",
+                            "codes": ["sensitive-secret-assignment"],
+                        },
+                    ],
+                }),
+                profile_path=learning_redact_path,
+                context="registry smoke self-test",
+                cmd=learn_redact_cmd,
+            ),
+            expected="learn redact redactions changed",
             scope="registry smoke",
         )
 

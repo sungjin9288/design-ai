@@ -30,7 +30,7 @@ The shipped product is a model-agnostic design intelligence layer for AI coding 
 - Install, update, status-check, and uninstall through the packaged CLI.
 - Pass the release gate without relying on manual inspection.
 
-As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite, including packed-tarball checks for workspace strict failure/success readiness behavior, public registry checks for the same workspace strict contract after publish, check learning capture, learning feedback, backup, redaction, learn JSON `--out` file-write confirmation and forced overwrite coverage, verify, import, query-filtered learn list explanation/export, brief-relevant prompt/pack learning selection, and learning audit cleanup suggestions. Public registry smoke also verifies learning audit cleanup suggestions and safe cleanup dry-run/apply behavior after publish.
+As of v4.13, these are covered by the manifest, commands, skills, agents, examples, and release smoke suite, including packed-tarball checks for workspace strict failure/success readiness behavior, public registry checks for the same workspace strict contract after publish, check learning capture, learning feedback, backup, redaction, learn JSON `--out` file-write confirmation and forced overwrite coverage, verify, import, query-filtered learn list explanation/export, brief-relevant prompt/pack learning selection, and learning audit cleanup suggestions. Public registry smoke also verifies portable learning import/redact behavior plus learning audit cleanup suggestions and safe cleanup dry-run/apply behavior after publish.
 
 Local learning preferences are documented in [`AI-LEARNING.md`](AI-LEARNING.md).
 

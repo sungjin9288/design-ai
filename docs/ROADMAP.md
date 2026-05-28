@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 218 — Public registry portable learning import/redact smoke coverage (v4.13.0) ✓ shipped
+
+Post-publish registry smoke now proves portable learning import and redaction behavior from the published npm package path.
+
+### Changed
+- Added public registry smoke coverage for JSON `design-ai learn --import` dry-run output from portable files.
+- Added public registry smoke coverage for confirmed JSON `design-ai learn --import --stdin --yes` application and persisted profile merge behavior.
+- Added public registry smoke coverage for JSON `design-ai learn --redact` from the local profile, `--from-file`, `--stdin`, and `--out --force` file-write paths.
+- Added registry smoke self-test fixtures for import counts, duplicate skip metadata, redaction summaries, sensitive entry ids, redaction marker output, and redaction code drift.
+- Added release metadata phrase protection so release-facing docs keep the public registry portable learning import/redact smoke guidance.
+
+### Impact
+- After publish, `npm run registry:smoke` now checks the same portable learning import and redaction contracts that packed-tarball smoke already checks before publish.
+- The registry smoke fixtures are local to temporary profiles and portable JSON files; they do not read or mutate the real user learning profile, change the learning schema, add dependencies, or call external AI APIs.
+
+### What this enables
+- A published package can fail post-publish verification if learning import dry-run/apply behavior, duplicate skipping, redaction safety, stdin handling, or redacted output-file writing drifts in the public npm execution path.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `npm run registry:smoke:self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 217 — Public registry learning audit cleanup smoke coverage (v4.13.0) ✓ shipped
 
 Post-publish registry smoke now proves the safe learning audit cleanup loop from the published npm package path.

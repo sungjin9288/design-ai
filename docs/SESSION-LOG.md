@@ -212,6 +212,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 215)** — Added release metadata guard coverage for workspace strict package smoke guidance, preventing release-facing docs from dropping strict readiness failure/success coverage.
 - **v4.13 (Phase 216)** — Added public registry workspace strict smoke coverage: post-publish registry smoke now verifies strict JSON failure and clean-success readiness behavior from the published package path.
 - **v4.13 (Phase 217)** — Added public registry learning audit cleanup smoke coverage: post-publish registry smoke now verifies learn audit cleanup suggestions, dry-run cleanup previews, and confirmed cleanup persistence from the published package path.
+- **v4.13 (Phase 218)** — Added public registry portable learning import/redact smoke coverage: post-publish registry smoke now verifies learn import dry-run/apply behavior plus learn redact file/stdin/output-file redaction behavior from the published package path.
 
 ## Patterns that didn't work
 
@@ -267,7 +268,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback plus workspace JSON readiness, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, canonical `sungjin9288/design-ai` repository metadata, workspace repository alignment diagnostics, `workspace --strict` readiness gating, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13 leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback plus workspace JSON readiness, portable learning backup/redact/verify/import, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, public registry smoke coverage for check learning capture, portable learning import/redact, and learning audit cleanup, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, canonical `sungjin9288/design-ai` repository metadata, workspace repository alignment diagnostics, `workspace --strict` readiness gating, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **External launch** — publish only after owner review; announcement drafts already exist under `docs/announcements/`.
 2. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.
