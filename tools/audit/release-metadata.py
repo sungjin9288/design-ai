@@ -125,6 +125,23 @@ RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS = (
+    (
+        "public registry `design-ai workspace --strict --json`",
+        "public registry design-ai workspace --strict --json",
+        "public registry workspace strict",
+        "공개 npm registry `design-ai workspace --strict --json`",
+        "registry `design-ai workspace --strict --json`",
+    ),
+    (
+        "workspace strict failure/success",
+        "workspace strict failure and success",
+        "strict failure/success readiness",
+        "strict failure and clean-success readiness",
+        "strict 실패/성공 readiness",
+        "strict 실패/성공",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -988,6 +1005,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "packed tarball smoke phrase",
     "package smoke command phrase",
     "workspace strict package smoke phrase",
+    "workspace strict registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -1104,6 +1122,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace strict package smoke phrase",
         RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace strict registry smoke phrase",
+        RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS,
     ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -1619,6 +1641,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
+including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --verify` output,
 public registry JSON `design-ai learn --backup` output,
@@ -1676,6 +1699,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
+공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --verify` output도 확인하고,
 public registry JSON `design-ai learn --backup` output도 확인하고,
@@ -1979,6 +2003,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in workspace_strict_package_smoke_drift_errors
         ),
         "release policy docs should mention workspace strict package smoke",
+    )
+
+    workspace_strict_registry_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks",
+                "public registry workspace readiness checks",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_strict_registry_smoke_drift_errors = "\n".join(
+        workspace_strict_registry_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace strict registry smoke phrase"
+            in workspace_strict_registry_smoke_drift_errors
+        ),
+        "release policy docs should mention public registry workspace strict smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(

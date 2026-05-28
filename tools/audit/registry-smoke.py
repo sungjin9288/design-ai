@@ -39,6 +39,7 @@ from smoke_assertions import (
     EXPECTED_HELP_ALIASES,
     EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
+    EXPECTED_REPOSITORY_URL,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
     EXPECTED_UNKNOWN_COMMAND,
@@ -95,6 +96,9 @@ from smoke_assertions import (
     assert_uninstall_json,
     assert_version_json,
     assert_version_output,
+    assert_workspace_json,
+    assert_workspace_strict_failure_json,
+    assert_workspace_strict_success_json,
     command_alias_script,
     doctor_report_json_missing,
     expect_self_test_failure,
@@ -104,6 +108,8 @@ from smoke_assertions import (
     parse_help_topics,
     passing_doctor_report_json,
     passing_check_artifact_content,
+    passing_workspace_json,
+    passing_workspace_strict_clean_json,
     seed_force_overwrite_target,
     unknown_option_args,
 )
@@ -816,6 +822,43 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
     assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_workspace_strict_success_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_strict_success_json(
+        result.stdout,
+        returncode=result.returncode,
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_workspace_strict_failure_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=assert_workspace_strict_failure_json,
+    )
+
+
 def assert_command_alias_smoke(
     cmd: list[str],
     *,
@@ -961,6 +1004,34 @@ def assert_list_json_smoke(
 
 def write_smoke_brief(brief_path: Path) -> None:
     brief_path.write_text(f"{EXPECTED_ROUTE_BRIEF}\n", encoding="utf-8")
+
+
+def run_fixture_git(repo: Path, *args: str) -> None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        output = f"{result.stdout}\n{result.stderr}".strip()
+        raise SystemExit(
+            f"failed to prepare registry workspace strict git fixture: git {' '.join(args)}\n{output}"
+        )
+
+
+def prepare_workspace_strict_repo(repo: Path) -> None:
+    repo.mkdir(parents=True, exist_ok=True)
+    run_fixture_git(repo, "init", "-q")
+    run_fixture_git(repo, "checkout", "-b", "main")
+    run_fixture_git(repo, "config", "user.email", "registry-smoke@example.com")
+    run_fixture_git(repo, "config", "user.name", "Registry Smoke")
+    (repo / "README.md").write_text("# registry workspace strict fixture\n", encoding="utf-8")
+    run_fixture_git(repo, "add", "README.md")
+    run_fixture_git(repo, "commit", "-m", "feat: registry workspace strict fixture")
+    run_fixture_git(repo, "remote", "add", "origin", f"{EXPECTED_REPOSITORY_URL}.git")
+    run_fixture_git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
 
 
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -1500,7 +1571,9 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         npx_root = tmp_root / "npx-project"
         claude_home = tmp_root / "claude-home"
         npm_cache = tmp_root / "npm-cache"
+        workspace_strict_root = tmp_root / "registry-workspace-strict"
         npx_root.mkdir()
+        prepare_workspace_strict_repo(workspace_strict_root)
 
         env = os.environ.copy()
         env.update({
@@ -1525,6 +1598,33 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec version JSON",
+        )
+        assert_workspace_json_smoke(
+            npm_exec_cmd(package_spec, "workspace", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec workspace JSON",
+        )
+        assert_workspace_strict_failure_smoke(
+            npm_exec_cmd(package_spec, "workspace", "--strict", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec workspace strict JSON failure",
+        )
+        assert_workspace_strict_success_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "workspace",
+                "--root",
+                str(workspace_strict_root),
+                "--learning-file",
+                str(tmp_root / "registry-workspace-strict-learning.json"),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec workspace strict JSON success",
         )
         assert_main_help_smoke(
             npm_exec_cmd(package_spec, "help"),
@@ -2163,6 +2263,46 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
             expected="failed to read registry smoke doctor JSON",
+            scope="registry smoke",
+        )
+
+        workspace_cmd = ["design-ai", "workspace", "--json"]
+        workspace_strict_cmd = ["design-ai", "workspace", "--strict", "--json"]
+        assert_workspace_json(
+            passing_workspace_json(),
+            context="registry smoke self-test",
+            cmd=workspace_cmd,
+        )
+        assert_workspace_strict_failure_json(
+            passing_workspace_json(),
+            returncode=1,
+            context="registry smoke self-test",
+            cmd=workspace_strict_cmd,
+        )
+        assert_workspace_strict_success_json(
+            passing_workspace_strict_clean_json(),
+            returncode=0,
+            context="registry smoke self-test",
+            cmd=workspace_strict_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_workspace_strict_failure_json(
+                passing_workspace_strict_clean_json(),
+                returncode=1,
+                context="registry smoke self-test",
+                cmd=workspace_strict_cmd,
+            ),
+            expected="missing a strict readiness issue",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_workspace_strict_success_json(
+                passing_workspace_json(),
+                returncode=0,
+                context="registry smoke self-test",
+                cmd=workspace_strict_cmd,
+            ),
+            expected="readiness warnings/failures",
             scope="registry smoke",
         )
 

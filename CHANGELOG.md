@@ -32,6 +32,7 @@ Repository metadata, CLI help, docs, launch drafts, Homebrew examples, docs site
 `design-ai workspace --strict` now turns readiness warnings/failures into a non-zero exit code so local dogfood handoff checks can block dirty git state, repository drift, learning-profile warnings, or missing release scripts.
 Packed-tarball package smoke now verifies `design-ai workspace --strict --json` failure and clean-success readiness behavior in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 Release metadata now guards release-facing docs against dropping workspace strict package smoke guidance.
+Public registry smoke now verifies `design-ai workspace --strict --json` failure and clean-success readiness behavior from the published npm package path, with release metadata guarding that guidance.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.
