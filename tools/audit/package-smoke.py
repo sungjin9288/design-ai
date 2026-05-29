@@ -1291,6 +1291,48 @@ def assert_learning_feedback_smoke(
         cmd=stdin_cmd,
     )
 
+    out_path = profile_path.with_name(f"{profile_path.stem}-feedback-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--feedback",
+        "Keep evidence labels attached to design QA findings",
+        "--outcome",
+        "keep",
+        "--category",
+        "workflow",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_feedback_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep evidence labels attached to design QA findings",
+        expected_count=4,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+    out_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(out_profile.get("entries", [])) == 4,
+        context=f"{context} out profile",
+        cmd=out_cmd,
+        message="learn feedback --out should still persist the feedback entry",
+    )
+
 
 def assert_learning_init_json(
     raw: str,
@@ -3313,6 +3355,38 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_feedback_cmd,
         )
+        learning_feedback_out_path = Path(tmp) / "learning-feedback-out.json"
+        learning_feedback_out_path.write_text(json.dumps(learning_feedback_payload), encoding="utf-8")
+        learn_feedback_out_cmd = [
+            "design-ai",
+            "learn",
+            "--feedback",
+            "Keep audit findings short and evidence-led",
+            "--outcome",
+            "keep",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+            "--out",
+            str(learning_feedback_out_path),
+            "--force",
+        ]
+        assert_output_write_success(
+            f"Wrote {learning_feedback_out_path}\n",
+            context=f"{context} feedback out",
+            cmd=learn_feedback_out_cmd,
+            expected_path=str(learning_feedback_out_path),
+        )
+        assert_learning_feedback_json(
+            learning_feedback_out_path.read_text(encoding="utf-8"),
+            profile_path=learning_profile_path,
+            outcome="keep",
+            category="workflow",
+            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+            expected_count=1,
+            context=f"{context} feedback out file",
+            cmd=learn_feedback_out_cmd,
+        )
         expect_self_test_failure(
             lambda: assert_learning_feedback_json(
                 json.dumps({
@@ -3331,6 +3405,16 @@ def run_self_test() -> None:
                 cmd=learn_feedback_cmd,
             ),
             expected="learn feedback source should preserve the outcome",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_output_write_success(
+                "Wrote different-feedback.json\n",
+                context=f"{context} feedback out",
+                cmd=learn_feedback_out_cmd,
+                expected_path=str(learning_feedback_out_path),
+            ),
+            expected="output write success",
             scope="package smoke",
         )
 

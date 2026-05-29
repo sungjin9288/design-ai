@@ -43,6 +43,7 @@ Packed-tarball package smoke now verifies `design-ai learn --stats --json --out 
 Public registry smoke now verifies `design-ai learn --stats --json --out --force` output-file persistence from the published npm package path, with release metadata guarding that guidance.
 Packed-tarball package smoke and public registry smoke now verify `design-ai learn --audit --json --out --force` output-file persistence, with release metadata guarding both local and post-publish guidance.
 Packed-tarball package smoke and public registry smoke now verify `design-ai learn --import --dry-run --json --out --force` output-file persistence, with release metadata guarding both local and post-publish guidance.
+Packed-tarball package smoke and public registry smoke now verify `design-ai learn --feedback --json --out --force` output-file persistence while preserving feedback profile writes, with release metadata guarding both local and post-publish guidance.
 Release metadata now checks that English and Korean distribution docs keep the MkDocs warning-policy baseline language.
 Release metadata now accepts Korean equivalents for the MkDocs warning-policy phrase guard.
 Release metadata now covers README, release checklist, and Distribution docs for MkDocs warning-policy drift.

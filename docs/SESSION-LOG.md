@@ -222,6 +222,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 225)** — Added public registry learning stats output-file smoke coverage: post-publish registry smoke now verifies `learn --stats --json --out --force` confirmation and persisted profile summary JSON from the published npm package path.
 - **v4.13 (Phase 226)** — Added learning audit output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --audit --json --out --force` confirmation and persisted cleanup-suggestion JSON artifacts.
 - **v4.13 (Phase 227)** — Added learning import output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --import --dry-run --json --out --force` confirmation and persisted import preview JSON artifacts.
+- **v4.13 (Phase 228)** — Added learning feedback output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --feedback --json --out --force` confirmation, persisted feedback JSON artifacts, and the matching profile write.
 
 ## Patterns that didn't work
 

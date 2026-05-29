@@ -51,6 +51,46 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 228 — Learning feedback output-file smoke coverage (v4.13.0) ✓ shipped
+
+Learning feedback reports now have explicit output-file persistence coverage in both pre-publish and post-publish smoke paths, while still proving that the feedback entry is saved to the target profile.
+
+### Changed
+- Added packed-tarball package smoke coverage for `design-ai learn --feedback <text> --outcome keep --file <profile> --json --out <file> --force`.
+- Added public registry smoke coverage for the same learning feedback output-file path.
+- Reused the existing feedback JSON assertions against the written output file, so outcome, category, instruction text, source, count, and profile path must survive both stdout and file artifact paths.
+- Added release metadata phrase protection so release-facing docs keep both local package and public registry learning feedback `--out` guidance.
+
+### Impact
+- Before publish, `npm run package:smoke` now checks that feedback JSON can be persisted to disk from installed-bin and one-shot `npm exec --package <tarball>` paths.
+- After publish, `npm run registry:smoke` now checks the same feedback output-file persistence contract from the public npm execution path.
+- The smoke fixtures use only temporary learning profiles/output files and do not mutate the real local learning profile, change schema, add dependencies, or call external AI APIs.
+
+### What this enables
+- A packed tarball or published package can fail verification if `learn --feedback --out --force` stops confirming the write, stops producing a valid feedback JSON artifact, or writes the artifact without persisting the feedback entry.
+
+### What's still ahead
+- External launch remains held until owner review.
+- Homebrew publishing still needs a real release tag and checksum update when an external release is approved.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `npm run package:smoke:self-test`
+- `npm run registry:smoke:self-test`
+- `npm test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: remains 4.13.0.
+
 ## Phase 227 — Learning import output-file smoke coverage (v4.13.0) ✓ shipped
 
 Learning import preview reports now have explicit output-file persistence coverage in both pre-publish and post-publish smoke paths.

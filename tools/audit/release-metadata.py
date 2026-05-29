@@ -866,6 +866,10 @@ RELEASE_LEARN_FEEDBACK_TERM_GROUPS = (
         "learn feedback JSON",
         "learning feedback",
     ),
+    (
+        "JSON `design-ai learn --feedback` output plus learn feedback `--out` file-write confirmation",
+        "JSON `design-ai learn --feedback` output과 learn feedback `--out` file-write confirmation",
+    ),
 )
 RELEASE_REGISTRY_LEARN_FEEDBACK_TERM_GROUPS = (
     (
@@ -885,6 +889,10 @@ RELEASE_REGISTRY_LEARN_FEEDBACK_TERM_GROUPS = (
         "public registry design-ai learn --feedback --stdin",
         "public registry learn feedback stdin",
         "registry learn feedback stdin",
+    ),
+    (
+        "public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation",
+        "public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation",
     ),
 )
 RELEASE_REGISTRY_LEARN_INIT_TERM_GROUPS = (
@@ -1824,7 +1832,7 @@ the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
-public registry JSON `design-ai learn --feedback` output including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
+public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
 public registry JSON `design-ai learn --verify` output plus public registry learn verify `--out` file-write confirmation,
 public registry JSON `design-ai learn --backup` output plus public registry learn backup `--out` file-write confirmation,
@@ -1843,7 +1851,7 @@ and `npm run package:check` package contents check,
 `npm run release:self-test` release assertion self-tests,
 human `design-ai audit --strict --quiet` output and
 `design-ai audit --strict --quiet --json` for machine-readable repository-audit output,
-JSON `design-ai learn --feedback` output,
+JSON `design-ai learn --feedback` output plus learn feedback `--out` file-write confirmation,
 JSON `design-ai learn --backup` output,
 JSON `design-ai learn --redact` output including `design-ai learn --redact --from-file` and `design-ai learn --redact --stdin`,
 learn JSON `--out` file-write confirmation and forced overwrite coverage,
@@ -1890,7 +1898,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
-public registry JSON `design-ai learn --feedback` output과 public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
+public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
 public registry JSON `design-ai learn --verify` output과 public registry learn verify `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --backup` output과 public registry learn backup `--out` file-write confirmation도 확인하고,
@@ -1909,7 +1917,7 @@ public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 con
 `npm run release:self-test` release self-test 검증도 확인하고,
 human `design-ai audit --strict --quiet` 출력도 smoke test하고,
 `design-ai audit --strict --quiet --json`으로 machine-readable repository-audit output도 확인하며,
-JSON `design-ai learn --feedback` output도 확인하며,
+JSON `design-ai learn --feedback` output과 learn feedback `--out` file-write confirmation도 확인하며,
 JSON `design-ai learn --backup` output도 확인하며,
 JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`, `design-ai learn --redact --stdin`도 확인하며,
 learn JSON `--out` file-write confirmation과 forced overwrite coverage도 확인하며,
@@ -2312,6 +2320,28 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn feedback smoke phrase"
         in registry_learn_feedback_drift_errors,
         "release policy docs should mention public registry learn feedback smoke",
+    )
+    registry_learn_feedback_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus public registry learn feedback `--out` file-write confirmation",
+                "plus public registry learning feedback saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_feedback_out_drift_errors = "\n".join(
+        registry_learn_feedback_out_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing registry learn feedback smoke phrase"
+        in registry_learn_feedback_out_drift_errors,
+        "release policy docs should mention public registry learn feedback --out smoke",
     )
 
     registry_learn_init_drift = release_metadata_summary(
@@ -4231,6 +4261,26 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn feedback smoke phrase"
         in learn_feedback_drift_errors,
         "release policy docs should mention learn feedback smoke",
+    )
+    learn_feedback_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus learn feedback `--out` file-write confirmation",
+                "plus local feedback saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_feedback_out_drift_errors = "\n".join(learn_feedback_out_drift["errors"])
+    assert_condition(
+        "README.md is missing learn feedback smoke phrase"
+        in learn_feedback_out_drift_errors,
+        "release policy docs should mention learn feedback --out smoke",
     )
 
     learn_backup_drift = release_metadata_summary(
