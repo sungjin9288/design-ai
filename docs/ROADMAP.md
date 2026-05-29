@@ -51,6 +51,47 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 229 — Website Improvement Control Tower Web App (v4.14.0) ✓ shipped
+
+Website improvement is now a first-class design-ai workflow: a local static Web App coordinates Site Profiles, audit checklists, MCP readiness, refactor tasks, prompt generation, and handoff reports without owning or mutating the target website source repo.
+
+### Changed
+- Added `docs/website-console/` as a zero-dependency static Web App with localStorage persistence, JSON export/import, sample Korean SaaS Site Profile data, dense dashboard styling, and keyboard-reachable controls.
+- Added `docs/WEBSITE-IMPROVEMENT.md` / `.ko.md` plus MkDocs navigation so the control tower is documented alongside the existing product docs.
+- Added `skills/website-improvement/`, `commands/website-improvement.md`, and `examples/website-improvement-report.md`.
+- Added the `website-improvement` CLI route, route-aware prompt checklist, and `design-ai check --route website-improvement` quality requirements.
+- Updated package/plugin metadata to `4.14.0` and 20 skills / 17 commands / 4 agents.
+
+### Impact
+- Solo and internal operators can prepare website improvement work from one local dashboard before handing implementation prompts to Codex in the target website repo.
+- Claude remains positioned for design review, copy/UX critique, competitor research, and alternative proposals; MCPs remain readiness/status inputs in MVP rather than external write actions.
+- The Web App state schema can later be promoted to API storage or reused in a VS Code Webview without changing the core workspace shape.
+
+### What this enables
+- Future phases can add `design-ai site ...` CLI validation/report generation, Browser/Playwright/Figma/GitHub/Sentry/Vercel connection checks, and target-repo handoff automation.
+
+### What's still ahead
+- Automatic crawling, Lighthouse, axe, visual diff, screenshot capture, backend sync, auth, multi-user collaboration, and real MCP writes remain out of MVP scope.
+- External launch remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check docs/website-console/app.js`
+- `node --test cli/lib/route.test.mjs cli/lib/prompt.test.mjs cli/lib/check.test.mjs`
+- `python3 -m py_compile tools/audit/*.py`
+- `npm test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- Browser smoke for sample load, profile edit, checklist update, MCP status change, task generation, prompt/report generation, export/import roundtrip, and mobile overflow.
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.13.0 → 4.14.0.
+
 ## Phase 228 — Learning feedback output-file smoke coverage (v4.13.0) ✓ shipped
 
 Learning feedback reports now have explicit output-file persistence coverage in both pre-publish and post-publish smoke paths, while still proving that the feedback entry is saved to the target profile.

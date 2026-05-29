@@ -2,9 +2,9 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-91-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-124-blue)](examples/README.md)
-[![Skills](https://img.shields.io/badge/skills-19-blue)](skills/README.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
+[![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
+[![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
 > 🇺🇸 English / [🇰🇷 한국어](https://sungjin9288.github.io/design-ai/ko/)
 
@@ -19,6 +19,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | Components (Ant + MUI + shadcn synthesis) | ✓ | 47 specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
 | Documentation (Diátaxis, slide deck, report, email) | ✓ | ✓ | `document-author`, `slide-deck-author` |
 | **Motion** (CSS / Framer / GSAP / Lottie / Rive) | ✓ | 4 specs | `motion-designer` |
@@ -60,12 +61,13 @@ cd design-ai
 ./install.sh
 ```
 
-Any of the three: you get all 19 skills, 16 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+Any of the three: you get all 20 skills, 17 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
 /design-motion-design landing hero loop
 /design-spatial Vision Pro productivity app
+/design-website-improvement Korean SaaS homepage conversion and SEO control tower
 /design-from-brief Korean fintech for freelancers
 ```
 
@@ -100,7 +102,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-cloned upstream sources (gitignored)
 │
-├── knowledge/               # 91 hand-written + extracted knowledge files
+├── knowledge/               # 92 hand-written + extracted knowledge files
 │   ├── design-tokens/       # Token systems (W3C DTCG, OKLCH, HCT)
 │   ├── components/          # Component synthesis (Ant + MUI + shadcn)
 │   ├── patterns/            # Auth, pricing, landing hero, brand, email, ...
@@ -118,9 +120,9 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 99 worked outputs (what "good" looks like)
+├── examples/                # 223 worked outputs (what "good" looks like)
 │
-├── skills/                  # 19 reusable playbooks (task-focused)
+├── skills/                  # 20 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/
 │   ├── component-spec-writer/   print-designer/
 │   ├── color-palette/           video-designer/
@@ -128,18 +130,20 @@ design-ai/
 │   ├── design-critique/         conversational-ui-designer/
 │   ├── handoff-spec/            spatial-designer/
 │   ├── design-system-qa/        document-author/
-│   ├── design-pr-review/        slide-deck-author/
-│   ├── figma-token-sync/        motion-designer/
+│   ├── design-pr-review/        website-improvement/
+│   ├── figma-token-sync/        slide-deck-author/
+│   ├── motion-designer/
 │   └── design-broadcast/
 │
 ├── agents/                  # 4 sub-agents (parallel reviews)
 │   ├── design-critic.md         a11y-reviewer.md
 │   ├── component-architect.md   token-extractor.md
 │
-├── commands/                # 16 slash commands
+├── commands/                # 17 slash commands
 │   ├── design-from-brief.md     motion-design.md
 │   ├── component-spec.md        illustration.md
-│   ├── design-review.md         print.md
+│   ├── design-review.md         website-improvement.md
+│   ├── print.md
 │   ├── palette-from-brand.md    video.md
 │   ├── document-from-brief.md   game-ui.md
 │   ├── slide-deck.md            conversational.md
@@ -204,9 +208,9 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.13.0** (DRAFT closure + 90% component coverage).
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.14.0** (website improvement control tower + 90% component coverage).
 
-Core design consulting workflows are locally release-ready. Local learning preferences are available through `design-ai learn`, starter profile bootstrap via preview-first `learn --init`, explicit `learn --feedback` keep/improve/avoid guidance, explicit `check --learn --yes` capture for local QA warning/failure results, read-only `design-ai workspace` dogfood readiness snapshots for git, canonical repository remote/metadata alignment, learning, and release-script state with `--strict` readiness gating, full portable `learn --backup --json` profile export with safe `--out` file output and `--force` overwrite control, redacted portable `learn --redact --json` profile export for sharing from the local profile or portable JSON via `--from-file` / `--stdin`, non-mutating `learn --verify` import validation, portable `learn --import` dry-run/confirmed profile merge, query-filtered `learn --list --explain` / `learn --export` inspection without recency fallback, read-only `learn --audit` cleanup suggestions / `learn --stats`, safe `learn --audit --fix --dry-run` previews plus confirmed `--fix --yes` cleanup, and opt-in `prompt`/`pack --with-learning` with brief-relevance ranking, category/limit scoping, selection scoring metadata, and learned-context audit summaries; AI model training or fine-tuning remains outside the shipped scope.
+Core design consulting workflows are locally release-ready. The website improvement control tower is available as a zero-dependency static Web App at [`docs/website-console/index.html`](docs/website-console/index.html), plus a `website-improvement` route/skill/command for Site Profiles, audit checklists, MCP readiness, refactor prompts, and handoff reports. Local learning preferences are available through `design-ai learn`, starter profile bootstrap via preview-first `learn --init`, explicit `learn --feedback` keep/improve/avoid guidance, explicit `check --learn --yes` capture for local QA warning/failure results, read-only `design-ai workspace` dogfood readiness snapshots for git, canonical repository remote/metadata alignment, learning, and release-script state with `--strict` readiness gating, full portable `learn --backup --json` profile export with safe `--out` file output and `--force` overwrite control, redacted portable `learn --redact --json` profile export for sharing from the local profile or portable JSON via `--from-file` / `--stdin`, non-mutating `learn --verify` import validation, portable `learn --import` dry-run/confirmed profile merge, query-filtered `learn --list --explain` / `learn --export` inspection without recency fallback, read-only `learn --audit` cleanup suggestions / `learn --stats`, safe `learn --audit --fix --dry-run` previews plus confirmed `--fix --yes` cleanup, and opt-in `prompt`/`pack --with-learning` with brief-relevance ranking, category/limit scoping, selection scoring metadata, and learned-context audit summaries; AI model training or fine-tuning remains outside the shipped scope.
 
 The corpus has been audited under CI checks since v1.7. It currently runs 8 audits:
 - Frontmatter validity

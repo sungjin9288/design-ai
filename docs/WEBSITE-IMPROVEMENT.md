@@ -1,0 +1,35 @@
+# Website Improvement Console
+
+The Website Improvement Console is a local control tower for improving an existing website without storing that site's source code in this repository.
+
+Open the MVP app:
+
+[Open Website Improvement Console](website-console/index.html)
+
+## What It Does
+
+- Tracks a Site Profile with live URL, target repo reference, Figma link, pages, user flows, platform notes, and viewport coverage.
+- Manages an Audit Pipeline across visual design, UX flow, responsive QA, accessibility, performance, SEO, technical quality, runtime issues, and content quality.
+- Classifies MCP readiness as `required`, `optional`, `unused`, or `unavailable`.
+- Converts audit findings into starter refactor tasks with impact, effort, priority, MCP recommendations, Codex prompts, verification steps, and risks.
+- Generates prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
+- Drafts a Markdown handoff report for before/after status and verification evidence.
+
+## Boundaries
+
+The console does not crawl pages, run Lighthouse, run axe, capture screenshots, call external AI APIs, connect directly to MCP tools, or modify target website repos. It stores state in browser `localStorage` and supports JSON export/import so the same workspace can be moved later to a server-backed store.
+
+Actual code changes happen in the target website repository. Use the generated Codex prompts there, then paste verification evidence back into the handoff report.
+
+## MVP Workflow
+
+1. Fill or import a Site Profile.
+2. Review the Audit Checklist and record findings.
+3. Set the MCP Readiness Matrix so prompts include realistic tool assumptions.
+4. Generate starter refactor tasks from findings.
+5. Copy a Codex or Claude prompt and run it in the right tool.
+6. Export the handoff report after implementation and verification.
+
+## Accessibility And Responsive Notes
+
+The app is desktop-first because the primary user is an operator planning website improvements, but controls remain usable on mobile. Interactive controls are keyboard reachable, focus-visible, and use text labels. Status and priority values are not represented by color alone; each status is printed as text.

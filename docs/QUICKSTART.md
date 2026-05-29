@@ -10,7 +10,7 @@ cd ~/dev/design-ai
 ./install.sh
 ```
 
-That symlinks 19 skills, 16 commands, and 4 review agents under `~/.claude/`. Restart Claude Code (or open a new session) to pick them up.
+That symlinks 20 skills, 17 commands, and 4 review agents under `~/.claude/`. Restart Claude Code (or open a new session) to pick them up.
 
 Verify:
 
@@ -18,7 +18,7 @@ Verify:
 ./install.sh --status
 ```
 
-Should show 19 skills, 4 agents, 16 commands installed.
+Should show 20 skills, 4 agents, 17 commands installed.
 
 ```bash
 design-ai doctor

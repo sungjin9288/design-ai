@@ -1,25 +1,25 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.13 (mature, dogfooded, 90%+ canonical coverage). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.14 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.13 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.14 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
-| Worked examples | 83 | 160 | 220 |
-| Skills | 12 | 19 | 19 |
-| Slash commands | 8 | 15 | 16 |
+| Worked examples | 83 | 160 | 223 |
+| Skills | 12 | 19 | 20 |
+| Slash commands | 8 | 15 | 17 |
 | Review agents | 4 | 4 | 4 |
 | Component coverage | ~24% | 55.3% | 90.5% |
 | Distribution channels | 1 (manual) | 4 | 4 (npm / Homebrew / git / VS Code) |
 | Integration walkthroughs | 0 | 5 (EN+KO) | 5 (EN+KO) |
 | Site languages | 0 | 2 | 2 (EN+KO) |
 | CI audits | 4 | 6 | 8 |
-| CLI / extension unit tests | 0 | 0 | 170 |
+| CLI / extension unit tests | 0 | 0 | 170+ |
 | VS Code integration tests | 0 | 0 | 8 (e2e infra) |
 | Dogfood findings docs | 1 | 1 | 5 |
 
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.14 — Website improvement control tower
+
+- **v4.14 (Phase 229)** — Added a zero-dependency static Web App under `docs/website-console/` for Site Profile management, audit checklist tracking, MCP readiness, refactor task generation, eight Codex/Claude prompt templates, JSON export/import, and Markdown handoff reports. Added `website-improvement` as a route, skill, slash command, docs page, and worked example while keeping target website repo edits, external MCP writes, crawling, Lighthouse/axe, visual diff, embeddings, fine-tuning, backend sync, and new dependencies outside MVP scope.
 
 ### v2.x — Domain expansion
 

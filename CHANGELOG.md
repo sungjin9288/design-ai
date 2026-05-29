@@ -2,6 +2,38 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.14.0 — Website Improvement Control Tower Web App (2026-05)
+
+Added a zero-dependency static Website Improvement Control Tower under `docs/website-console/` with localStorage persistence, JSON export/import, a sample Korean SaaS Site Profile, audit checklist, MCP readiness matrix, refactor task generation, eight prompt templates, and Markdown handoff report export.
+Added `website-improvement` as a route, skill, slash command, docs page, and worked example so `design-ai route`, `prompt`, `pack`, `check`, and example QA can treat professional website improvement work as a first-class workflow.
+The MVP keeps the target website source outside this repo, does not call external MCPs, does not crawl pages, does not run Lighthouse/axe/visual diff, and does not introduce embeddings, fine-tuning, backend storage, auth, React, Vite, Next, or new package dependencies.
+Package and plugin metadata now report 20 skills, 17 commands, 4 agents, and version `4.14.0`.
+Docs navigation, README/Quickstart/Using/Product Readiness/Roadmap/Session Log references now include the website improvement surface and its local/operator boundary.
+
+### What this enables
+
+Website improvement work can now start in design-ai as a structured local planning workspace, then move to Codex in the target website repo with generated prompts and verification guidance.
+
+### Verified
+
+- `node --check docs/website-console/app.js`
+- `node --test cli/lib/route.test.mjs cli/lib/prompt.test.mjs cli/lib/check.test.mjs`
+- `python3 -m py_compile tools/audit/*.py`
+- `npm test`
+- `npm run audit:strict`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- Browser smoke for sample load, profile edit, checklist update, MCP status change, task generation, prompt/report generation, export/import roundtrip, and mobile overflow.
+- `git diff --check`
+- All 8 audits pass.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.13.0 → 4.14.0.
+
 ## v4.13.0 — Close DRAFT spec debt, reach 90% coverage, and reconciliation auto-apply (2026-05)
 
 22 DRAFT → 0 DRAFT. 22 v2-extracted scaffolds promoted to full polished specs (when-to-use / anatomy / API / states / tokens / a11y / edge cases / code example / don't / Korean considerations).

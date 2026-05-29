@@ -130,6 +130,11 @@ const ROUTE_CHECKLIST = {
     "Separate UX, visual design, and accessibility findings.",
     "Provide concrete fixes rather than broad design advice.",
   ],
+  "website-improvement": [
+    "Include Site Profile, Audit Checklist, MCP Readiness Matrix, Refactor Plan, Prompt Generator, and Handoff Report sections.",
+    "State that implementation happens in the target website repo, not in design-ai.",
+    "Cover accessibility, responsive QA, SEO/performance, runtime issues, and verification evidence.",
+  ],
   "design-from-brief": [
     "Produce foundations, tokens, component baseline, and handoff guidance.",
     "Include light/dark behavior when color tokens are introduced.",

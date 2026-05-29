@@ -90,11 +90,11 @@ Goal: find the right knowledge file fast.
 Cmd+Shift+P → "design-ai: Open knowledge file..."
 ```
 
-A quick-pick lists all 91 knowledge files with their paths. Filter by typing — "korean", "motion", "spatial", "typography", etc. Hit Enter to open.
+A quick-pick lists all 92 knowledge files with their paths. Filter by typing — "korean", "motion", "spatial", "typography", etc. Hit Enter to open.
 
 Same pattern for:
 - "design-ai: Open component spec..." → 142 specs
-- "design-ai: Open skill PLAYBOOK..." → 19 skills
+- "design-ai: Open skill PLAYBOOK..." → 20 skills
 - "design-ai: Open integration walkthrough..." → 4 walkthroughs
 
 ## Walkthrough 5: Multi-file design system bootstrap

@@ -33,7 +33,7 @@ test("parseUninstallArgs rejects unknown options with json suggestions", () => {
 });
 
 test("parseRemovedCount extracts removed symlink count from installer output", () => {
-  assert.equal(parseRemovedCount("Removed 39 design-ai symlinks"), 39);
+  assert.equal(parseRemovedCount("Removed 41 design-ai symlinks"), 41);
   assert.equal(parseRemovedCount("\n✓  Removed 0 design-ai symlinks\n"), 0);
   assert.throws(
     () => parseRemovedCount("Done without a count"),
@@ -46,7 +46,7 @@ test("formatUninstallJson preserves key order and readable localized paths", () 
     sourceRoot: "/tmp/디자인",
     claudeHome: "/tmp/클로드",
     prefix: "디자인-",
-    removed: 39,
+    removed: 41,
   }));
   const parsed = JSON.parse(formatted);
 
@@ -56,7 +56,7 @@ test("formatUninstallJson preserves key order and readable localized paths", () 
   assert.equal(parsed.context.sourceRoot, "/tmp/디자인");
   assert.equal(parsed.context.claudeHome, "/tmp/클로드");
   assert.equal(parsed.context.prefix, "디자인-");
-  assert.equal(parsed.result.removed, 39);
+  assert.equal(parsed.result.removed, 41);
   assert.ok(formatted.includes("디자인-"));
   assert.ok(!formatted.includes("\\u"));
 });

@@ -18,7 +18,7 @@ cd ~/dev/design-ai
 ./install.sh --status
 ```
 
-19 skills, 4 agents, 16 commands가 설치되었다고 나와야 해요.
+20 skills, 4 agents, 17 commands가 설치되었다고 나와야 해요.
 
 ```bash
 design-ai doctor

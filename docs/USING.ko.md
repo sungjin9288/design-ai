@@ -128,6 +128,7 @@ code --install-extension design-ai-*.vsix
 | 컴포넌트 스펙 | `AGENTS.md`, `skills/component-spec-writer/PLAYBOOK.md`, `knowledge/components/INDEX.md`, `knowledge/a11y/keyboard-and-focus.md` |
 | UX 감사 | `AGENTS.md`, `skills/ux-audit/PLAYBOOK.md`, `knowledge/patterns/ux-guidelines.md`, `knowledge/a11y/contrast.md`, `knowledge/a11y/keyboard-and-focus.md` |
 | 디자인 시스템 부트스트랩 | `AGENTS.md`, `skills/design-system-builder/PLAYBOOK.md`, `knowledge/colors/color-theory.md`, `knowledge/typography/type-scale-fundamentals.md`, `knowledge/layout/spacing-and-grid.md` |
+| 웹사이트 개선 컨트롤 타워 | `AGENTS.md`, `skills/website-improvement/PLAYBOOK.md`, `docs/WEBSITE-IMPROVEMENT.md`, `knowledge/patterns/dashboard-composition.md`, `knowledge/patterns/report-design.md`, `knowledge/patterns/ux-guidelines.md`, `knowledge/a11y/keyboard-and-focus.md` |
 
 이 정도면 한 작업당 30K 토큰 미만이라 캐싱 전이라도 대부분 모델의 컨텍스트 윈도우에 넉넉히 들어가요.
 

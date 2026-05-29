@@ -9,7 +9,7 @@ users install the package by name.
 
 Usage:
   python3 tools/audit/registry-smoke.py
-  python3 tools/audit/registry-smoke.py @design-ai/cli@4.13.0
+  python3 tools/audit/registry-smoke.py @design-ai/cli@4.14.0
   python3 tools/audit/registry-smoke.py --retries 18 --delay 10
 """
 from __future__ import annotations

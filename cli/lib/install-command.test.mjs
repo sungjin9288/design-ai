@@ -35,19 +35,19 @@ test("parseInstallArgs rejects unknown options with json suggestions", () => {
 test("parseInstalledCounts extracts install counts from installer output", () => {
   assert.deepEqual(
     parseInstalledCounts([
-      "Installed 19 skills (prefix: smoke-design-)",
+      "Installed 20 skills (prefix: smoke-design-)",
       "Installed 4 agents (prefix: smoke-design-)",
-      "Installed 16 slash commands (prefix: /smoke-design-)",
+      "Installed 17 slash commands (prefix: /smoke-design-)",
     ].join("\n")),
     {
-      skills: 19,
+      skills: 20,
       agents: 4,
-      commands: 16,
-      total: 39,
+      commands: 17,
+      total: 41,
     },
   );
   assert.throws(
-    () => parseInstalledCounts("Installed 19 skills"),
+    () => parseInstalledCounts("Installed 20 skills"),
     /missing installed agents count/,
   );
 });
@@ -58,10 +58,10 @@ test("formatInstallJson preserves key order and readable localized paths", () =>
     claudeHome: "/tmp/클로드",
     prefix: "디자인-",
     installed: {
-      skills: 19,
+      skills: 20,
       agents: 4,
-      commands: 16,
-      total: 39,
+      commands: 17,
+      total: 41,
     },
   }));
   const parsed = JSON.parse(formatted);
@@ -74,10 +74,10 @@ test("formatInstallJson preserves key order and readable localized paths", () =>
   assert.equal(parsed.context.claudeHome, "/tmp/클로드");
   assert.equal(parsed.context.prefix, "디자인-");
   assert.deepEqual(parsed.result.installed, {
-    skills: 19,
+    skills: 20,
     agents: 4,
-    commands: 16,
-    total: 39,
+    commands: 17,
+    total: 41,
   });
   assert.ok(formatted.includes("디자인-"));
   assert.ok(!formatted.includes("\\u"));

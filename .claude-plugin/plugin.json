@@ -1,7 +1,7 @@
 {
   "name": "design-ai",
-  "version": "4.13.0",
-  "description": "Senior product designer for any AI coding agent. 19 skills, 16 commands, 4 review agents covering UI/UX, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
+  "version": "4.14.0",
+  "description": "Senior product designer for any AI coding agent. 20 skills, 17 commands, 4 review agents covering UI/UX, website improvement, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
   "author": {
     "name": "Sungjin Park",
     "email": "sungjin9288@gmail.com"
@@ -17,6 +17,9 @@
     "design-tokens",
     "components",
     "accessibility",
+    "website",
+    "seo",
+    "performance",
     "korean",
     "motion",
     "illustration",
@@ -68,6 +71,11 @@
       "name": "design-pr-review",
       "path": "skills/design-pr-review/SKILL.md",
       "description": "Review a GitHub PR for design system compliance. Uses GitHub MCP."
+    },
+    {
+      "name": "website-improvement",
+      "path": "skills/website-improvement/SKILL.md",
+      "description": "Plan website audits, Site Profiles, MCP readiness, refactor tasks, prompts, and handoff reports."
     },
     {
       "name": "figma-token-sync",
@@ -131,6 +139,7 @@
     { "name": "document-from-brief", "path": "commands/document-from-brief.md", "description": "Generate documentation from a brief." },
     { "name": "slide-deck", "path": "commands/slide-deck.md", "description": "Generate a slide deck outline from a brief." },
     { "name": "design-review", "path": "commands/design-review.md", "description": "Run UX audit + a11y review + design critique in parallel and combine." },
+    { "name": "website-improvement", "path": "commands/website-improvement.md", "description": "Plan a website improvement project with profile, audits, MCP readiness, prompts, and handoff." },
     { "name": "palette-from-brand", "path": "commands/palette-from-brand.md", "description": "Generate a full palette from a brand input." },
     { "name": "component-spec", "path": "commands/component-spec.md", "description": "Spec a single component using the component-spec-writer skill." },
     { "name": "extract-tokens", "path": "commands/extract-tokens.md", "description": "Run the token extractor pipeline." },

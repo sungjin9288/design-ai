@@ -26,10 +26,12 @@ function makeFixture() {
   const files = [
     ".claude-plugin/plugin.json",
     "commands/design-review.md",
+    "commands/website-improvement.md",
     "commands/component-spec.md",
     "commands/design-from-brief.md",
     "skills/ux-audit/SKILL.md",
     "skills/design-critique/SKILL.md",
+    "skills/website-improvement/SKILL.md",
     "skills/component-spec-writer/SKILL.md",
     "skills/color-palette/SKILL.md",
     "skills/design-system-builder/SKILL.md",
@@ -41,6 +43,10 @@ function makeFixture() {
     "knowledge/patterns/ux-guidelines.md",
     "knowledge/a11y/contrast.md",
     "knowledge/a11y/keyboard-and-focus.md",
+    "knowledge/layout/spacing-and-grid.md",
+    "knowledge/patterns/report-design.md",
+    "docs/MCP-INTEGRATION.md",
+    "docs/WEBSITE-IMPROVEMENT.md",
     "knowledge/components/INDEX.md",
     "knowledge/components/shadcn-registry.md",
     "knowledge/patterns/ui-reasoning.md",
@@ -153,6 +159,22 @@ test("routeBrief recommends design review for audit briefs", () => {
     assert.ok(routes[0].explanation.summary.includes("Matched"));
     assert.equal(routes[0].explanation.scoreBreakdown[0].value, routes[0].score);
     assert.equal(routes[0].explanation.referenceCoverage.total.total > 0, true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief recommends website improvement for site optimization briefs", () => {
+  const root = makeFixture();
+  try {
+    const routes = routeBrief({
+      brief: "Improve our website homepage SEO performance and MCP refactor plan",
+      sourceRoot: root,
+    });
+
+    assert.equal(routes[0].id, "website-improvement");
+    assert.ok(routes[0].matchedKeywords.includes("website"));
+    assert.equal(routes[0].command.exists, true);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

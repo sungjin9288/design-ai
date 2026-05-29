@@ -214,7 +214,9 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai show knowledge/PRINCIPLES.md:29`);
   console.log(`  ${dim("$")} design-ai routes`);
   console.log(`  ${dim("$")} design-ai route "audit a Figma signup flow" --explain`);
+  console.log(`  ${dim("$")} design-ai route "improve homepage conversion and SEO" --explain`);
   console.log(`  ${dim("$")} design-ai prompt --from-file brief.md --route design-review --out prompt.md`);
+  console.log(`  ${dim("$")} design-ai prompt "improve homepage conversion" --route website-improvement`);
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
@@ -232,7 +234,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai list skills`);
 
   console.log(`\nDocs:    https://github.com/sungjin9288/design-ai`);
-  console.log(`Plugin:  ${pluginInventory} (UI/UX, motion,`);
+  console.log(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`);
   console.log(`         illustration, print, video, game UI, conversational, spatial)`);
 }
 

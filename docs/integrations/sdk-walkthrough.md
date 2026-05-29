@@ -306,7 +306,7 @@ For a Slack bot / Discord bot / web chat: wrap `ask()` in your platform's HTTP h
 ### Cost control
 
 - **Cache the corpus**: 90% cost reduction on repeat calls.
-- **Load only what's needed**: don't include all 91 knowledge files. Per-task selection (3-7 files) is plenty.
+- **Load only what's needed**: don't include all 92 knowledge files. Per-task selection (3-7 files) is plenty.
 - **Use Haiku for simpler tasks**: color-palette generation works fine on Haiku (5× cheaper). Reserve Sonnet/Opus for design-system-builder, ux-audit (complex synthesis).
 
 ### Output structure

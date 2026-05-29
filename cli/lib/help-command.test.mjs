@@ -66,7 +66,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
     /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]\s+Manage local learning preferences for prompt personalization/,
   );
   assert.ok(
-    output.includes(`Plugin:  ${pluginInventory} (UI/UX, motion,`),
+    output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
     "top-level help should summarize plugin inventory from .claude-plugin/plugin.json",
   );
 });

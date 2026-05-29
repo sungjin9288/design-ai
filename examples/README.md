@@ -2,6 +2,12 @@
 
 Worked outputs from each skill — what "good" looks like. Use as reference when invoking the skill on your own task.
 
+### Website improvement
+
+| File | Skill | Input | What it demonstrates |
+| --- | --- | --- | --- |
+| [website-improvement-report.md](website-improvement-report.md) | `website-improvement` | Korean SaaS marketing site improvement control tower | Site Profile, audit summary, MCP readiness, refactor plan, prompt/report handoff, and MVP boundary that keeps target repo changes outside design-ai |
+
 ### Color & tokens
 
 | File | Skill | Input | What it demonstrates |

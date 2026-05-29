@@ -46,6 +46,23 @@ export const ROUTES = [
     keywords: ["audit", "review", "critique", "figma", "screenshot", "ux", "a11y", "accessibility", "리뷰", "감사", "평가", "비평", "접근성", "스크린샷"],
   },
   {
+    id: "website-improvement",
+    label: "Website improvement",
+    command: "commands/website-improvement.md",
+    skills: ["skills/website-improvement/SKILL.md", "skills/ux-audit/SKILL.md", "skills/handoff-spec/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md", "agents/design-critic.md"],
+    knowledge: [
+      "knowledge/patterns/ux-guidelines.md",
+      "knowledge/a11y/contrast.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+      "knowledge/layout/spacing-and-grid.md",
+      "knowledge/patterns/report-design.md",
+      "docs/MCP-INTEGRATION.md",
+      "docs/WEBSITE-IMPROVEMENT.md",
+    ],
+    keywords: ["website", "webpage", "homepage", "landing", "seo", "performance", "lighthouse", "core web vitals", "mcp", "refactor plan", "handoff report", "site profile", "웹사이트", "홈페이지", "랜딩", "성능", "검색엔진", "개선", "리팩터"],
+  },
+  {
     id: "design-from-brief",
     label: "Design system from brief",
     command: "commands/design-from-brief.md",

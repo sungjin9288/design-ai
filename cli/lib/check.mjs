@@ -152,6 +152,28 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "website-improvement": [
+    {
+      id: "website-control-tower",
+      title: "Website improvement control tower coverage",
+      required: [
+        { label: "Site Profile", patterns: [/\bsite profile\b/i, /사이트.*프로필/] },
+        { label: "Audit Checklist", patterns: [/\baudit checklist\b|\baudit summary\b/i, /감사.*체크리스트|진단.*요약/] },
+        { label: "MCP readiness", patterns: [/\bmcp\b.*\b(required|optional|unused|unavailable|readiness)\b/i, /MCP.*(필수|선택|미사용|불가|준비)/] },
+        { label: "Refactor Plan", patterns: [/\brefactor plan\b|\bpriority improvement plan\b/i, /리팩터.*계획|개선.*계획/] },
+        { label: "Handoff Report", patterns: [/\bhandoff report\b|\bverification results\b/i, /핸드오프.*리포트|검증.*결과/] },
+      ],
+    },
+    {
+      id: "website-mvp-boundary",
+      title: "Website improvement MVP boundary",
+      required: [
+        { label: "target repo boundary", patterns: [/\btarget (website )?repo(?:sitory)?\b|\bnot in design-ai\b/i, /대상.*레포|design-ai.*수정.*아님/] },
+        { label: "no automatic crawling or external writes", patterns: [/\b(no|not|without).*(crawl|external writes|mcp writes|automatic)/i, /자동.*크롤|외부.*쓰기|MCP.*쓰기/] },
+        { label: "no model training", patterns: [/\b(no|not|without).*(model training|fine-tuning|embeddings)\b/i, /모델.*학습|파인튜닝|임베딩/] },
+      ],
+    },
+  ],
   "design-from-brief": [
     {
       id: "design-system-foundation",

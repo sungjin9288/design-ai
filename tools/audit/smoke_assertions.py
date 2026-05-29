@@ -178,7 +178,9 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "search <query>",
     "show <file[:line]>",
     "route <brief|--from-file file|--stdin|--list>",
+    "improve homepage conversion and SEO",
     "prompt <brief|--from-file file|--stdin>",
+    "--route website-improvement",
     "pack <brief|--from-file file|--stdin>",
     "check <artifact.md|--stdin|--examples>",
     "examples [query]",
@@ -192,7 +194,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.13.0",
+    "4.14.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -201,9 +203,9 @@ EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Installing from:",
-    "Installed 19 skills",
+    "Installed 20 skills",
     "Installed 4 agents",
-    "Installed 16 slash commands",
+    "Installed 17 slash commands",
     "Installed. Restart Claude Code",
     "design-ai status",
 )
@@ -221,9 +223,9 @@ EXPECTED_STATUS_OUTPUT_FRAGMENTS = (
     "Source:",
     "Target:",
     "Prefix:",
-    "Skills: 19 installed",
+    "Skills: 20 installed",
     "Agents: 4 installed",
-    "Slash commands: 16 installed",
+    "Slash commands: 17 installed",
 )
 EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "design-ai doctor",
@@ -232,8 +234,8 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.13.0",
-    "Manifest paths: 39 referenced artifact(s) exist",
+    "Version alignment: 4.14.0",
+    "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
     "Audit runner: tools/audit/run-all.py found",
@@ -244,15 +246,15 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Package contents check: tools/audit/package-contents.py found",
     "Package smoke check: tools/audit/package-smoke.py found",
     "Registry smoke check: tools/audit/registry-smoke.py found",
-    "Installed skills: 19/19 installed",
+    "Installed skills: 20/20 installed",
     "Installed agents: 4/4 installed",
-    "Installed slash commands: 16/16 installed",
+    "Installed slash commands: 17/17 installed",
     f"Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
 )
 EXPECTED_UNINSTALL_OUTPUT_FRAGMENTS = (
     "design-ai uninstaller",
     "Uninstalling design-ai from",
-    "Removed 39 design-ai symlinks",
+    "Removed 41 design-ai symlinks",
     "Done. To remove the design-ai source",
     "Source location:",
 )
@@ -326,6 +328,7 @@ EXPECTED_LIST_CATALOG = {
         "handoff-spec",
         "design-system-qa",
         "design-pr-review",
+        "website-improvement",
         "figma-token-sync",
         "design-broadcast",
         "document-author",
@@ -344,6 +347,7 @@ EXPECTED_LIST_CATALOG = {
         "document-from-brief",
         "slide-deck",
         "design-review",
+        "website-improvement",
         "palette-from-brand",
         "component-spec",
         "extract-tokens",
@@ -428,6 +432,7 @@ EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
 )
 EXPECTED_ROUTE_CATALOG_IDS = (
     "design-review",
+    "website-improvement",
     "design-from-brief",
     "component-spec",
     "palette-from-brand",
@@ -778,7 +783,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.13.0",
+        "Plugin: design-ai v4.14.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -810,7 +815,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.13.0",
+            "version": "4.14.0",
             "kind": kind,
             "sections": [
                 {
@@ -1231,7 +1236,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.13.0",
+        "version": "4.14.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1305,7 +1310,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.13.0",
+        "Corpus version: 4.14.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1394,7 +1399,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.13.0",
+        "version": "4.14.0",
         "routes": routes,
     })
 
@@ -1402,7 +1407,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.13.0",
+        "version": "4.14.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1507,7 +1512,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.13.0",
+        "Corpus version: 4.14.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1533,7 +1538,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.13.0",
+        "version": "4.14.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1581,7 +1586,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.13.0",
+        "Corpus version: 4.14.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3438,15 +3443,17 @@ def passing_main_help_output() -> str:
         "",
         "Environment overrides:",
         "Quickstart:",
+        "  $ design-ai route \"improve homepage conversion and SEO\" --explain",
+        "  $ design-ai prompt \"improve homepage conversion\" --route website-improvement",
         "Docs:    https://github.com/sungjin9288/design-ai",
-        f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY} (UI/UX, motion,",
+        f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY} (UI/UX, website improvement, motion,",
     ])
 
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.13.0",
-        "Plugin / corpus:  4.13.0",
+        "design-ai CLI:    4.14.0",
+        "Plugin / corpus:  4.14.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3459,8 +3466,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.13.0",
-                "plugin": "4.13.0",
+                "cli": "4.14.0",
+                "plugin": "4.14.0",
                 "aligned": True,
             },
         },
@@ -3477,7 +3484,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.13.0",
+                "version": "4.14.0",
             },
             "git": {
                 "isRepo": False,
@@ -3523,7 +3530,7 @@ def passing_workspace_json() -> str:
             },
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.13.0",
+                "version": "4.14.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -3608,8 +3615,8 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.13.0",
-        "✓  Manifest paths: 39 referenced artifact(s) exist",
+        "✓  Version alignment: 4.14.0",
+        "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
         "✓  Audit runner: tools/audit/run-all.py found",
@@ -3620,9 +3627,9 @@ def passing_doctor_strict_output() -> str:
         "✓  Package contents check: tools/audit/package-contents.py found",
         "✓  Package smoke check: tools/audit/package-smoke.py found",
         "✓  Registry smoke check: tools/audit/registry-smoke.py found",
-        "✓  Installed skills: 19/19 installed",
+        "✓  Installed skills: 20/20 installed",
         "✓  Installed agents: 4/4 installed",
-        "✓  Installed slash commands: 16/16 installed",
+        "✓  Installed slash commands: 17/17 installed",
         "",
         f"ℹ  Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
         "",
@@ -3633,7 +3640,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.13.0",
+        "  v4.14.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -3644,9 +3651,9 @@ def passing_install_output() -> str:
         "Installing from: /tmp/design-ai",
         "Target:          /tmp/claude-home",
         "Symlink prefix:  smoke-design-",
-        "Installed 19 skills (prefix: smoke-design-)",
+        "Installed 20 skills (prefix: smoke-design-)",
         "Installed 4 agents (prefix: smoke-design-)",
-        "Installed 16 slash commands (prefix: /smoke-design-)",
+        "Installed 17 slash commands (prefix: /smoke-design-)",
         "Done. Restart Claude Code (or open a new session) to pick up changes.",
         "Installed. Restart Claude Code (or open a new session) to pick up changes.",
         "Or: design-ai status",
@@ -3740,9 +3747,9 @@ def passing_status_output() -> str:
         "Target: /tmp/claude-home",
         "Prefix: smoke-design-",
         "",
-        "Skills: 19 installed",
+        "Skills: 20 installed",
         "Agents: 4 installed",
-        "Slash commands: 16 installed",
+        "Slash commands: 17 installed",
         "",
     ])
 
@@ -3783,7 +3790,7 @@ def passing_status_json(prefix: str = "smoke-design-") -> str:
             },
             "sections": sections,
             "summary": {
-                "installed": 39,
+                "installed": 41,
                 "missingSections": 0,
                 "emptySections": 0,
             },
@@ -3801,7 +3808,7 @@ def passing_uninstall_output() -> str:
         "design-ai installer",
         "Senior product designer for Claude Code",
         "Uninstalling design-ai from /tmp/claude-home",
-        "Removed 39 design-ai symlinks",
+        "Removed 41 design-ai symlinks",
         "Done. To remove the design-ai source, delete its directory manually.",
         "Source location: /tmp/design-ai",
         "",
@@ -4062,7 +4069,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.13.0":
+    if workspace_context.get("version") != "4.14.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -4140,7 +4147,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.13.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.14.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -4443,7 +4450,7 @@ def assert_update_dry_run_json(raw: str, *, prefix: str, context: str, cmd: list
 
 def assert_status_output(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
-    if "0 installed" in raw or "target dir does not exist" in raw:
+    if re.search(r"\b(?:Skills|Agents|Slash commands):\s+0 installed\b", raw) or "target dir does not exist" in raw:
         raise SystemExit(f"status output after {context} reported missing installed symlinks")
 
     assert_contains_fragments(
@@ -5095,7 +5102,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_list_catalog_json(
-            passing_list_catalog_json("skills").replace('"count": 19', '"count": 18'),
+            passing_list_catalog_json("skills").replace('"count": 20', '"count": 19'),
             kind="skills",
             context=context,
             cmd=[*list_cmd, "--json"],
@@ -5139,7 +5146,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_list_catalog_output(
-            passing_list_catalog_output("skills").replace("skills (19)", "skills (18)"),
+            passing_list_catalog_output("skills").replace("skills (20)", "skills (19)"),
             kind="skills",
             context=context,
             cmd=list_cmd,
@@ -7068,7 +7075,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.13.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.14.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -7221,7 +7228,7 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_doctor_strict_output(
             passing_doctor_strict_output().replace(
-                "Installed slash commands: 16/16 installed",
+                "Installed slash commands: 17/17 installed",
                 "Installed slash commands: 15/16 installed; 1 missing",
             ),
             context=context,
@@ -7269,7 +7276,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_install_output(
-            passing_install_output().replace("Installed 19 skills", "Installed 18 skills"),
+            passing_install_output().replace("Installed 20 skills", "Installed 19 skills"),
             context=context,
             cmd=install_cmd,
         ),
@@ -7292,7 +7299,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_install_json(
-            passing_install_json("smoke-design-").replace('"total": 39', '"total": 38'),
+            passing_install_json("smoke-design-").replace('"total": 41', '"total": 40'),
             prefix="smoke-design-",
             context=context,
             cmd=[*install_cmd, "--json"],
@@ -7335,8 +7342,8 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     install_payload_wrong_counts = json.loads(passing_install_json("smoke-design-"))
-    install_payload_wrong_counts["result"]["installed"]["skills"] = 18
-    install_payload_wrong_counts["result"]["installed"]["total"] = 38
+    install_payload_wrong_counts["result"]["installed"]["skills"] = 19
+    install_payload_wrong_counts["result"]["installed"]["commands"] = 18
     expect_self_test_failure(
         lambda: assert_install_json(
             json.dumps(install_payload_wrong_counts),
@@ -7501,7 +7508,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_output(
-            passing_status_output().replace("Skills: 19 installed", "Skills: 0 installed"),
+            passing_status_output().replace("Skills: 20 installed", "Skills: 0 installed"),
             context=context,
             cmd=status_cmd,
         ),
@@ -7510,7 +7517,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_output(
-            passing_status_output().replace("Slash commands: 16 installed", "Slash commands: 15 installed"),
+            passing_status_output().replace("Slash commands: 17 installed", "Slash commands: 15 installed"),
             context=context,
             cmd=status_cmd,
         ),
@@ -7529,7 +7536,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_json(
-            passing_status_json("smoke-design-").replace('"installed": 39', '"installed": 38'),
+            passing_status_json("smoke-design-").replace('"installed": 41', '"installed": 40'),
             prefix="smoke-design-",
             context=context,
             cmd=[*status_cmd, "--json"],
@@ -7639,7 +7646,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_uninstall_output(
-            passing_uninstall_output().replace("Removed 39 design-ai symlinks", "Removed 38 design-ai symlinks"),
+            passing_uninstall_output().replace("Removed 41 design-ai symlinks", "Removed 40 design-ai symlinks"),
             context=context,
             cmd=uninstall_cmd,
         ),
@@ -7648,7 +7655,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_uninstall_json(
-            passing_uninstall_json("smoke-design-").replace('"removed": 39', '"removed": 38'),
+            passing_uninstall_json("smoke-design-").replace('"removed": 41', '"removed": 40'),
             prefix="smoke-design-",
             context=context,
             cmd=[*uninstall_cmd, "--json"],
