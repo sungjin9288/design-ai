@@ -1315,6 +1315,43 @@ def assert_learning_import_smoke(
         message="learn import dry-run should leave target profile unchanged",
     )
 
+    out_path = profile_path.with_name(f"{profile_path.stem}-import-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--import",
+        "--from-file",
+        str(import_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_import_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+    out_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(out_profile.get("entries", [])) == 1,
+        context=f"{context} out profile unchanged",
+        cmd=out_cmd,
+        message="learn import --out dry-run should leave target profile unchanged",
+    )
+
     apply_cmd = command_factory(
         "learn",
         "--import",
@@ -4549,6 +4586,35 @@ def run_self_test() -> None:
             context="registry smoke self-test",
             cmd=learn_import_cmd,
         )
+        learning_import_out_path = tmp_root / "registry-learning-import-out.json"
+        learning_import_out_path.write_text(json.dumps(learning_import_payload), encoding="utf-8")
+        learn_import_out_cmd = [
+            "design-ai",
+            "learn",
+            "--import",
+            "--from-file",
+            str(tmp_root / "registry-import-source.json"),
+            "--dry-run",
+            "--file",
+            str(learning_import_path),
+            "--json",
+            "--out",
+            str(learning_import_out_path),
+            "--force",
+        ]
+        assert_output_write_success(
+            f"Wrote {learning_import_out_path}\n",
+            context="registry smoke self-test import out",
+            cmd=learn_import_out_cmd,
+            expected_path=str(learning_import_out_path),
+        )
+        assert_learning_import_json(
+            learning_import_out_path.read_text(encoding="utf-8"),
+            profile_path=learning_import_path,
+            dry_run=True,
+            context="registry smoke self-test import out file",
+            cmd=learn_import_out_cmd,
+        )
         assert_learning_import_json(
             json.dumps({**learning_import_payload, "dryRun": False, "applied": True}),
             profile_path=learning_import_path,
@@ -4574,6 +4640,16 @@ def run_self_test() -> None:
                 cmd=learn_import_cmd,
             ),
             expected="learn import counts changed",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_output_write_success(
+                "Wrote different-import.json\n",
+                context="registry smoke self-test import out",
+                cmd=learn_import_out_cmd,
+                expected_path=str(learning_import_out_path),
+            ),
+            expected="output write success",
             scope="registry smoke",
         )
         expect_self_test_failure(

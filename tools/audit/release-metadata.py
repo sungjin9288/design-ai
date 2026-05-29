@@ -1008,6 +1008,10 @@ RELEASE_LEARN_IMPORT_TERM_GROUPS = (
         "learn import dry-run/apply output",
         "learning import",
     ),
+    (
+        "JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` file-write confirmation",
+        "JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` file-write confirmation",
+    ),
 )
 RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS = (
     (
@@ -1015,6 +1019,10 @@ RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS = (
         "public registry design-ai learn --import dry-run/apply output",
         "public registry learn import dry-run/apply output",
         "registry learn import dry-run/apply output",
+    ),
+    (
+        "public registry JSON `design-ai learn --import` dry-run/apply output plus public registry learn import `--out` file-write confirmation",
+        "public registry JSON `design-ai learn --import` dry-run/apply output과 public registry learn import `--out` file-write confirmation",
     ),
 )
 RELEASE_LEARN_STATS_TERM_GROUPS = (
@@ -1820,7 +1828,7 @@ public registry JSON `design-ai learn --feedback` output including public regist
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
 public registry JSON `design-ai learn --verify` output plus public registry learn verify `--out` file-write confirmation,
 public registry JSON `design-ai learn --backup` output plus public registry learn backup `--out` file-write confirmation,
-public registry JSON `design-ai learn --import` dry-run/apply output,
+public registry JSON `design-ai learn --import` dry-run/apply output plus public registry learn import `--out` file-write confirmation,
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
@@ -1840,7 +1848,7 @@ JSON `design-ai learn --backup` output,
 JSON `design-ai learn --redact` output including `design-ai learn --redact --from-file` and `design-ai learn --redact --stdin`,
 learn JSON `--out` file-write confirmation and forced overwrite coverage,
 JSON `design-ai learn --verify` output plus learn verify `--out` file-write confirmation,
-JSON `design-ai learn --import` dry-run/apply output,
+JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` file-write confirmation,
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection,
@@ -1886,7 +1894,7 @@ public registry JSON `design-ai learn --feedback` output과 public registry `des
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
 public registry JSON `design-ai learn --verify` output과 public registry learn verify `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --backup` output과 public registry learn backup `--out` file-write confirmation도 확인하고,
-public registry JSON `design-ai learn --import` dry-run/apply output도 확인하고,
+public registry JSON `design-ai learn --import` dry-run/apply output과 public registry learn import `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
@@ -1906,7 +1914,7 @@ JSON `design-ai learn --backup` output도 확인하며,
 JSON `design-ai learn --redact` output과 `design-ai learn --redact --from-file`, `design-ai learn --redact --stdin`도 확인하며,
 learn JSON `--out` file-write confirmation과 forced overwrite coverage도 확인하며,
 JSON `design-ai learn --verify` output과 learn verify `--out` file-write confirmation도 확인하며,
-JSON `design-ai learn --import` dry-run/apply output도 확인하며,
+JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection도 확인하며,
@@ -2432,6 +2440,28 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn import smoke phrase"
         in registry_learn_import_drift_errors,
         "release policy docs should mention public registry learn import smoke",
+    )
+    registry_learn_import_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus public registry learn import `--out` file-write confirmation",
+                "plus public registry learning import saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_import_out_drift_errors = "\n".join(
+        registry_learn_import_out_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing registry learn import smoke phrase"
+        in registry_learn_import_out_drift_errors,
+        "release policy docs should mention public registry learn import --out smoke",
     )
 
     registry_learn_redact_drift = release_metadata_summary(
@@ -4329,6 +4359,26 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn import smoke phrase"
         in learn_import_drift_errors,
         "release policy docs should mention learn import smoke",
+    )
+    learn_import_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus learn import `--out` file-write confirmation",
+                "plus local learning import saved artifact",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_import_out_drift_errors = "\n".join(learn_import_out_drift["errors"])
+    assert_condition(
+        "README.md is missing learn import smoke phrase"
+        in learn_import_out_drift_errors,
+        "release policy docs should mention learn import --out smoke",
     )
 
     learn_stats_drift = release_metadata_summary(
