@@ -1954,6 +1954,32 @@ def assert_learning_audit_cleanup_smoke(
         cmd=json_cmd,
     )
 
+    out_path = profile_path.with_name(f"{profile_path.stem}-audit-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--audit",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_audit_cleanup_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+
     human_cmd = command_factory("learn", "--audit", "--file", str(profile_path))
     human_result = run_plain(human_cmd, cwd=cwd, env=env)
     assert_learning_audit_cleanup_human(human_result.stdout, context=f"{context} human", cmd=human_cmd)

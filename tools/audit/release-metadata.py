@@ -830,6 +830,13 @@ RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS = (
         "learning audit cleanup guidance",
     ),
 )
+RELEASE_LEARN_AUDIT_OUT_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation",
+        "human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation",
+        "design-ai learn --audit cleanup suggestion output plus learn audit --out file-write confirmation",
+    ),
+)
 RELEASE_REGISTRY_LEARN_AUDIT_CLEANUP_TERM_GROUPS = (
     (
         "public registry human / JSON `design-ai learn --audit` cleanup suggestion output",
@@ -842,6 +849,14 @@ RELEASE_REGISTRY_LEARN_AUDIT_CLEANUP_TERM_GROUPS = (
         "public registry design-ai learn --audit --fix --dry-run",
         "public registry learn audit fix dry-run",
         "registry learn audit fix dry-run",
+    ),
+)
+RELEASE_REGISTRY_LEARN_AUDIT_OUT_TERM_GROUPS = (
+    (
+        "public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation",
+        "public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation",
+        "public registry design-ai learn --audit cleanup suggestion output plus public registry learn audit --out file-write confirmation",
+        "registry learn audit cleanup suggestion output plus registry learn audit --out file-write confirmation",
     ),
 )
 RELEASE_LEARN_FEEDBACK_TERM_GROUPS = (
@@ -1235,7 +1250,9 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn relevance smoke phrase",
     "registry learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
+    "learn audit out smoke phrase",
     "registry learn audit cleanup smoke phrase",
+    "registry learn audit out smoke phrase",
     "doctor strict smoke phrase",
     "doctor strict command phrase",
     "doctor human diagnostics phrase",
@@ -1378,9 +1395,14 @@ RELEASE_POLICY_PHRASE_CHECKS = (
         RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS,
     ),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
+    ("learn audit out smoke phrase", RELEASE_LEARN_AUDIT_OUT_TERM_GROUPS),
     (
         "registry learn audit cleanup smoke phrase",
         RELEASE_REGISTRY_LEARN_AUDIT_CLEANUP_TERM_GROUPS,
+    ),
+    (
+        "registry learn audit out smoke phrase",
+        RELEASE_REGISTRY_LEARN_AUDIT_OUT_TERM_GROUPS,
     ),
     ("doctor strict smoke phrase", RELEASE_DOCTOR_STRICT_TERM_GROUPS),
     ("doctor strict command phrase", RELEASE_DOCTOR_STRICT_COMMAND_TERM_GROUPS),
@@ -1803,7 +1825,7 @@ public registry JSON `design-ai learn --redact` output including public registry
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
 public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning,
-public registry human / JSON `design-ai learn --audit` cleanup suggestion output,
+public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
@@ -1822,7 +1844,7 @@ JSON `design-ai learn --import` dry-run/apply output,
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection,
-human / JSON `design-ai learn --audit` cleanup suggestion output,
+human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
 command alias help and functional alias output,
@@ -1869,7 +1891,7 @@ public registry JSON `design-ai learn --redact` output과 public registry `desig
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
 public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning도 확인하고,
-public registry human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하고,
+public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
@@ -1888,7 +1910,7 @@ JSON `design-ai learn --import` dry-run/apply output도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection도 확인하며,
-human / JSON `design-ai learn --audit` cleanup suggestion output도 확인하며,
+human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
@@ -4418,6 +4440,27 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "release policy docs should mention learn audit cleanup suggestion smoke",
     )
 
+    learn_audit_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus learn audit `--out` file-write confirmation",
+                "without audit output artifact wording",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_audit_out_drift_errors = "\n".join(learn_audit_out_drift["errors"])
+    assert_condition(
+        "README.md is missing learn audit out smoke phrase"
+        in learn_audit_out_drift_errors,
+        "release policy docs should mention learn audit --out smoke",
+    )
+
     registry_learn_audit_cleanup_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -4441,6 +4484,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in registry_learn_audit_cleanup_drift_errors
         ),
         "release policy docs should mention public registry learn audit cleanup smoke",
+    )
+
+    registry_learn_audit_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "plus public registry learn audit `--out` file-write confirmation",
+                "without registry audit output artifact wording",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_audit_out_drift_errors = "\n".join(
+        registry_learn_audit_out_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing registry learn audit out smoke phrase"
+            in registry_learn_audit_out_drift_errors
+        ),
+        "release policy docs should mention public registry learn audit --out smoke",
     )
 
     doctor_strict_drift = release_metadata_summary(
