@@ -55,6 +55,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     sample: false,
     tasks: false,
     promptTemplate: "",
+    taskSelector: "",
     json: true,
     strict: true,
     report: false,
@@ -70,6 +71,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     sample: false,
     tasks: false,
     promptTemplate: "",
+    taskSelector: "",
     json: false,
     strict: false,
     report: true,
@@ -82,6 +84,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--help"]).help, true);
   assert.equal(parseSiteArgs(["workspace.json", "--prompts"]).prompts, true);
   assert.equal(parseSiteArgs(["workspace.json", "--prompt", "codex-implementation"]).promptTemplate, "codex-implementation");
+  assert.equal(parseSiteArgs(["workspace.json", "--prompt", "codex-implementation", "--task", "task-accessibility"]).taskSelector, "task-accessibility");
   assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
 });
@@ -102,6 +105,9 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt"]), /--prompt requires a template id/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "bad-template"]), /--prompt must be one of/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--task"]), /--task requires a refactor task id/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--task", "task-homepage-cta"]), /Use --task only with --prompt/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "claude-design-review", "--task", "task-homepage-cta"]), /Use --task only with --prompt codex-implementation/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
   assert.throws(() => parseSiteArgs(["workspace.json", "extra.json"]), /Unexpected argument/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--jsn"]), /Did you mean `--json`\?/);
@@ -202,8 +208,16 @@ test("formatSiteJson preserves summary payload order and readable Korean text", 
 
 test("buildSiteHandoffReport and prompt bundle include operational boundaries", () => {
   const workspace = createSampleSiteWorkspace();
+  const generatedWorkspace = generateSiteRefactorTasks(workspace).workspace;
   const report = buildSiteHandoffReport(workspace);
   const prompt = buildSitePrompt(workspace, "codex-implementation");
+  const selectedPrompt = buildSitePrompt(generatedWorkspace, "codex-implementation", { taskSelector: "task-accessibility" });
+  const selectedByNumberPrompt = buildSitePrompt(generatedWorkspace, "codex-implementation", { taskSelector: "2" });
+  const numericIdWorkspace = {
+    ...generatedWorkspace,
+    refactorTasks: generatedWorkspace.refactorTasks.map((task, index) => (index === 0 ? { ...task, id: "2" } : task)),
+  };
+  const selectedByExactNumericIdPrompt = buildSitePrompt(numericIdWorkspace, "codex-implementation", { taskSelector: "2" });
   const prompts = buildSitePromptBundle(workspace);
 
   assert.match(report, /# Website improvement handoff: Korean SaaS marketing site/);
@@ -212,7 +226,18 @@ test("buildSiteHandoffReport and prompt bundle include operational boundaries", 
   assert.match(report, /Not recorded in this MVP/);
   assert.match(prompt, /# Codex implementation prompt/);
   assert.match(prompt, /Selected task:/);
+  assert.match(prompt, /Task ID: task-homepage-cta/);
   assert.match(prompt, /Work in the target website repository, not in this design-ai repository/);
+  assert.match(selectedPrompt, /Task ID: task-accessibility/);
+  assert.match(selectedPrompt, /Resolve Accessibility finding/);
+  assert.doesNotMatch(selectedPrompt, /Clarify homepage CTA hierarchy/);
+  assert.match(selectedByNumberPrompt, /Task ID: task-homepage-cta/);
+  assert.match(selectedByExactNumericIdPrompt, /Task ID: 2/);
+  assert.match(selectedByExactNumericIdPrompt, /Clarify homepage CTA hierarchy/);
+  assert.throws(
+    () => buildSitePrompt(generatedWorkspace, "codex-implementation", { taskSelector: "missing-task" }),
+    /Unknown refactor task: missing-task/,
+  );
   assert.match(prompts, /# Website improvement prompt bundle: Korean SaaS marketing site/);
   assert.match(prompts, /## codex-repo-intake/);
   assert.match(prompts, /## claude-competitor/);
@@ -255,9 +280,10 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.match(promptsOutput.stdout, /Wrote /);
     assert.match(readFileSync(prompts, "utf8"), /Website improvement prompt bundle/);
 
-    const promptOutput = await captureConsole(() => runSite([file, "--prompt", "codex-implementation", "--out", singlePrompt]));
+    const promptOutput = await captureConsole(() => runSite([file, "--prompt", "codex-implementation", "--task", "1", "--out", singlePrompt]));
     assert.match(promptOutput.stdout, /Wrote /);
     assert.match(readFileSync(singlePrompt, "utf8"), /# Codex implementation prompt/);
+    assert.match(readFileSync(singlePrompt, "utf8"), /Task ID: task-homepage-cta/);
     assert.doesNotMatch(readFileSync(singlePrompt, "utf8"), /Website improvement prompt bundle/);
   });
 });
@@ -330,10 +356,11 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
-  assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(output.stdout, /--prompt id Generate one Markdown prompt template/);
+  assert.match(output.stdout, /--task id\s+Select a refactor task by id or 1-based top-task number/);
 });

@@ -14,6 +14,7 @@ export const SITE_OPTIONS = [
   "--sample",
   "--tasks",
   "--prompt",
+  "--task",
   "--strict",
   "--report",
   "--prompts",
@@ -137,6 +138,7 @@ export function parseSiteArgs(args) {
     sample: false,
     tasks: false,
     promptTemplate: "",
+    taskSelector: "",
     json: false,
     strict: false,
     report: false,
@@ -170,6 +172,13 @@ export function parseSiteArgs(args) {
       }
       out.promptTemplate = value;
       i += 1;
+    } else if (arg === "--task") {
+      const value = args[i + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--task requires a refactor task id or 1-based task number");
+      }
+      out.taskSelector = value;
+      i += 1;
     } else if (arg === "--strict") {
       out.strict = true;
     } else if (arg === "--report") {
@@ -202,6 +211,12 @@ export function parseSiteArgs(args) {
   }
   if (out.sample && out.strict) {
     throw new Error("Use --sample without --strict; validate the generated file in a separate command");
+  }
+  if (out.taskSelector && !out.promptTemplate) {
+    throw new Error("Use --task only with --prompt");
+  }
+  if (out.taskSelector && out.promptTemplate !== "codex-implementation") {
+    throw new Error("Use --task only with --prompt codex-implementation");
   }
   if (out.tasks && (out.json || out.report || out.prompts)) {
     throw new Error("Use --tasks without --json, --report, or --prompts; validate the generated file in a separate command");
@@ -837,6 +852,7 @@ function taskBlock(task) {
   if (!task) return "No refactor task selected. Use the Refactor Plan section first.";
   return [
     "Selected task:",
+    `- Task ID: ${task.id}`,
     `- Title: ${task.title}`,
     `- Category: ${categoryById(task.category).label}`,
     `- Problem: ${task.problem}`,
@@ -856,16 +872,42 @@ function taskBlock(task) {
 }
 
 function primaryTask(workspace) {
-  return workspace.refactorTasks
-    .slice()
-    .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))[0] || null;
+  return orderedRefactorTasks(workspace)[0] || null;
 }
 
-export function buildSitePrompt(workspace, templateId) {
+function orderedRefactorTasks(workspace) {
+  return workspace.refactorTasks
+    .map((task, index) => ({ task, index }))
+    .sort((a, b) => {
+      const priorityDelta = PRIORITY_OPTIONS.indexOf(a.task.priority) - PRIORITY_OPTIONS.indexOf(b.task.priority);
+      if (priorityDelta !== 0) return priorityDelta;
+      return a.index - b.index;
+    })
+    .map((item) => item.task);
+}
+
+export function resolveSitePromptTask(workspace, selector = "") {
+  const tasks = orderedRefactorTasks(workspace);
+  const trimmed = String(selector || "").trim();
+  if (!trimmed) return tasks[0] || null;
+
+  const byId = workspace.refactorTasks.find((task) => task.id === trimmed);
+  if (byId) return byId;
+
+  if (/^[1-9]\d*$/.test(trimmed)) {
+    const index = Number.parseInt(trimmed, 10) - 1;
+    if (tasks[index]) return tasks[index];
+  }
+
+  const ids = tasks.map((task, index) => `${index + 1}:${task.id}`).join(", ");
+  throw new Error(`Unknown refactor task: ${trimmed}. Use one of: ${ids || "no tasks available"}`);
+}
+
+export function buildSitePrompt(workspace, templateId, { taskSelector = "" } = {}) {
   const profile = profileBlock(workspace);
   const audit = auditBlock(workspace);
   const mcp = mcpBlock(workspace);
-  const task = taskBlock(primaryTask(workspace));
+  const task = taskBlock(resolveSitePromptTask(workspace, taskSelector));
   const commonRules = [
     "Rules:",
     "- Work in the target website repository, not in this design-ai repository.",

@@ -20,7 +20,7 @@ function printHelp() {
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --prompt template-id [--out file] [--force]\n");
+  console.log("        design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]\n");
   console.log("Validates Website Improvement Console JSON exports and turns them into local handoff artifacts.\n");
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
@@ -32,6 +32,7 @@ function printHelp() {
   console.log("  --prompts   Generate a Markdown bundle of Codex and Claude prompts");
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
+  console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
   console.log("  --out file  Write --json, --sample, --tasks, --report, --prompts, or --prompt output to a file");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
@@ -42,6 +43,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
   console.log("  design-ai site website-workspace.json --prompt codex-implementation --out codex-implementation.md");
+  console.log("  design-ai site website-workspace.json --prompt codex-implementation --task task-accessibility --out task-accessibility.md");
 }
 
 function printIssue(issue) {
@@ -74,15 +76,15 @@ function printHumanSummary(summary) {
   if (summary.topTasks.length === 0) {
     console.log(dim("No refactor tasks yet. Generate them in the Website Improvement Console."));
   } else {
-    for (const task of summary.topTasks) {
-      console.log(`- [${task.priority}] ${task.title} ${dim(`(${task.category}, impact ${task.impact}, effort ${task.effort})`)}`);
+    for (const [index, task] of summary.topTasks.entries()) {
+      console.log(`${index + 1}. [${task.priority}] ${task.title} ${dim(`(${task.id}; ${task.category}, impact ${task.impact}, effort ${task.effort})`)}`);
     }
   }
 
   console.log("\nNext:");
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --report --out website-handoff.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompts --out website-prompts.md`);
-  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --out codex-implementation.md`);
+  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --task 1 --out codex-implementation.md`);
 }
 
 function shouldFail(summary, strict) {
@@ -131,7 +133,7 @@ export async function runSite(args) {
   } else if (parsed.prompts) {
     content = `${buildSitePromptBundle(workspace)}\n`;
   } else if (parsed.promptTemplate) {
-    content = `${buildSitePrompt(workspace, parsed.promptTemplate)}\n`;
+    content = `${buildSitePrompt(workspace, parsed.promptTemplate, { taskSelector: parsed.taskSelector })}\n`;
   } else if (parsed.tasks) {
     content = `${JSON.stringify(generateSiteRefactorTasks(workspace).workspace, null, 2)}\n`;
   } else if (parsed.json) {

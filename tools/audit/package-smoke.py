@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.18.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.19.0.tgz
 """
 from __future__ import annotations
 
@@ -4681,10 +4681,10 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin site tasks JSON",
         )
         assert_site_prompt_markdown_smoke(
-            [str(bin_path), "site", "--stdin", "--prompt", "codex-implementation"],
+            [str(bin_path), "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"],
             cwd=install_root,
             env=smoke_env,
-            context="package smoke installed bin site prompt markdown",
+            context="package smoke installed bin site task-selected prompt markdown",
         )
         assert_main_help_smoke(
             [str(bin_path), "help"],
@@ -5353,10 +5353,10 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec site tasks JSON",
         )
         assert_site_prompt_markdown_smoke(
-            npm_exec_cmd(tarball, "site", "--stdin", "--prompt", "codex-implementation"),
+            npm_exec_cmd(tarball, "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"),
             cwd=npx_root,
             env=npx_env,
-            context="package smoke npm exec site prompt markdown",
+            context="package smoke npm exec site task-selected prompt markdown",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

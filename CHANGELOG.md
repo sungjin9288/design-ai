@@ -2,6 +2,40 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.19.0 — Website Improvement Prompt Task Selection (2026-06)
+
+Added `design-ai site --prompt codex-implementation --task <id-or-number>` so Website Improvement workspace JSON can export a Codex implementation prompt for a specific refactor task.
+The generated prompt now includes the selected Task ID, and the human `design-ai site` summary lists top tasks with stable numbers and ids for easier handoff.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the task-selected prompt path.
+Packed-tarball package smoke verifies `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can generate task-specific implementation prompts from a multi-task Website Improvement workspace without manually editing the prompt or reordering the refactor plan.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run package:smoke`
+- Manual CLI smoke for `design-ai site --sample` → `--tasks` → `--prompt codex-implementation --task task-accessibility`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.18.0 → 4.19.0.
+
 ## v4.18.0 — Website Improvement Single Prompt CLI Export (2026-06)
 
 Added `design-ai site --prompt <template-id>` so Website Improvement workspace JSON can export one Codex or Claude prompt without generating the full prompt bundle.
