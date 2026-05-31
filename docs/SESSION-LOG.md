@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.15 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.16 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.15 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.16 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.16 — Website improvement CLI bootstrap
+
+- **v4.16 (Phase 231)** — Added `design-ai site --sample` so Website Improvement workspace JSON can be generated from the CLI before opening the static console. The sample mode supports stdout and safe `--out` / `--force` file writing, and package smoke now verifies the path from installed-bin and one-shot `npm exec --package <tarball>`. The command preserves the local/operator boundary: no target repo mutation, external MCP calls, backend storage, embeddings, fine-tuning, or new dependencies.
 
 ### v4.15 — Website improvement CLI handoff
 

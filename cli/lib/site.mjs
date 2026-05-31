@@ -11,6 +11,7 @@ export const SITE_OPTIONS = [
   "--help",
   "--json",
   "--stdin",
+  "--sample",
   "--strict",
   "--report",
   "--prompts",
@@ -131,6 +132,7 @@ export function parseSiteArgs(args) {
   const out = {
     target: "",
     stdin: false,
+    sample: false,
     json: false,
     strict: false,
     report: false,
@@ -150,6 +152,8 @@ export function parseSiteArgs(args) {
       out.json = true;
     } else if (arg === "--stdin") {
       out.stdin = true;
+    } else if (arg === "--sample") {
+      out.sample = true;
     } else if (arg === "--strict") {
       out.strict = true;
     } else if (arg === "--report") {
@@ -171,14 +175,23 @@ export function parseSiteArgs(args) {
   if (sources.length > 1) {
     throw new Error("Use either a workspace JSON file path or --stdin, not both");
   }
+  if (out.sample && sources.length > 0) {
+    throw new Error("Use --sample without a workspace JSON file path or --stdin");
+  }
+  if (out.sample && (out.report || out.prompts)) {
+    throw new Error("Use --sample without --report or --prompts");
+  }
+  if (out.sample && out.strict) {
+    throw new Error("Use --sample without --strict; validate the generated file in a separate command");
+  }
   if (out.report && out.prompts) {
     throw new Error("Use only one output mode: --report or --prompts");
   }
   if (out.json && (out.report || out.prompts)) {
     throw new Error("--json is only supported for the site summary; use --out with --report or --prompts for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts)) {
-    throw new Error("--out requires --json, --report, or --prompts");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.sample)) {
+    throw new Error("--out requires --json, --report, --prompts, or --sample");
   }
 
   const { index, ...parsed } = out;

@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 231 — Website Improvement Sample Workspace Bootstrap (v4.16.0) ✓ shipped
+
+Website improvement work can now start from the CLI without first opening the static console. `design-ai site --sample` emits a valid Website Improvement workspace JSON that can be saved, shared, validated, and converted into handoff artifacts.
+
+### Changed
+- Added `design-ai site --sample [--out file] [--force]` as a standalone sample workspace mode.
+- Updated `parseSiteArgs` and `runSite` so sample generation does not require a workspace input and cannot be mixed with validation/report/prompt modes.
+- Added unit coverage for sample parsing, invalid combinations, stdout output, output-file writing, and command-specific help.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.16.0`.
+
+### Impact
+- Operators can bootstrap a Website Improvement workspace from a terminal, then run `design-ai site website-workspace.json --json`, `--report`, or `--prompts` after editing.
+- The command remains local and deterministic: no target repo mutation, no external MCP calls, no backend storage, no embeddings, no fine-tuning, and no new dependencies.
+- Packed-tarball smoke now verifies sample workspace JSON from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### What this enables
+- File-first internal pilots can keep workspace JSON in a local project folder or internal repo before opening the Web App.
+- Future CLI subcommands can reuse the same workspace bootstrap path for schema validation, MCP connection checks, and target-repo handoff automation.
+
+### What's still ahead
+- Real MCP connection checks, target-repo automation, Lighthouse/axe/visual diff, and hosted multi-user storage remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- All 8 audits pass.
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.15.0 → 4.16.0.
+
 ## Phase 230 — Website Improvement Workspace CLI (v4.15.0) ✓ shipped
 
 Website Improvement Console exports now have a CLI handoff path. `design-ai site` validates exported workspace JSON, summarizes readiness, and generates Markdown artifacts without leaving the local/operator boundary.

@@ -145,6 +145,26 @@ RELEASE_SITE_JSON_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --sample`",
+        "design-ai site --sample",
+        "site --sample",
+    ),
+    (
+        "Website Console sample workspace",
+        "Website Improvement sample workspace",
+        "site sample workspace",
+        "Website Console sample JSON",
+        "Website Console sample workspace 생성",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS = (
     (
         "public registry `design-ai workspace --strict --json`",
@@ -1185,6 +1205,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "package smoke command phrase",
     "workspace strict package smoke phrase",
     "site JSON package smoke phrase",
+    "site sample package smoke phrase",
     "workspace strict registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
@@ -1315,6 +1336,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site JSON package smoke phrase",
         RELEASE_SITE_JSON_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site sample package smoke phrase",
+        RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "workspace strict registry smoke phrase",
@@ -1854,6 +1879,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 `npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 `design-ai site --stdin --json` Website Console export validation,
+`design-ai site --sample` Website Console sample workspace coverage,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
@@ -1921,6 +1947,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 `design-ai site --stdin --json` Website Console export validation도 확인하고,
+`design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,

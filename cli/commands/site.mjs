@@ -4,6 +4,7 @@ import {
   buildSiteHandoffReport,
   buildSitePromptBundle,
   buildSiteReport,
+  createSampleSiteWorkspace,
   formatSiteJson,
   parseSiteArgs,
 } from "../lib/site.mjs";
@@ -13,11 +14,13 @@ import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
+  console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]\n");
   console.log("Validates Website Improvement Console JSON exports and turns them into local handoff artifacts.\n");
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
+  console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
@@ -26,6 +29,7 @@ function printHelp() {
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
+  console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
@@ -81,6 +85,21 @@ export async function runSite(args) {
   const parsed = parseSiteArgs(args);
   if (parsed.help) {
     printHelp();
+    return;
+  }
+
+  if (parsed.sample) {
+    const content = `${JSON.stringify(createSampleSiteWorkspace(), null, 2)}\n`;
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
     return;
   }
 

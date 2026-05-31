@@ -50,6 +50,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.deepEqual(parseSiteArgs(["workspace.json", "--strict", "--json"]), {
     target: "workspace.json",
     stdin: false,
+    sample: false,
     json: true,
     strict: true,
     report: false,
@@ -62,6 +63,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.deepEqual(parseSiteArgs(["--stdin", "--report", "--out", "handoff.md", "--force"]), {
     target: "",
     stdin: true,
+    sample: false,
     json: false,
     strict: false,
     report: true,
@@ -73,10 +75,15 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
 
   assert.equal(parseSiteArgs(["--help"]).help, true);
   assert.equal(parseSiteArgs(["workspace.json", "--prompts"]).prompts, true);
+  assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--stdin"]), /either a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report or --prompts/);
+  assert.throws(() => parseSiteArgs(["--sample", "--strict"]), /Use --sample without --strict/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
@@ -211,6 +218,26 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
   });
 });
 
+test("runSite emits and writes a valid sample workspace", async () => {
+  await withTempDir(async (dir) => {
+    const outFile = path.join(dir, "website-workspace.json");
+
+    const sampleOutput = await captureConsole(() => runSite(["--sample"]));
+    const sample = JSON.parse(sampleOutput.stdout);
+    assert.equal(sample.version, 1);
+    assert.equal(sample.siteProfile.name, "Korean SaaS marketing site");
+    assert.deepEqual(sample.siteProfile.viewports, ["desktop", "tablet", "mobile"]);
+    assert.equal(sampleOutput.exitCode, undefined);
+
+    const writeOutput = await captureConsole(() => runSite(["--sample", "--out", outFile]));
+    assert.match(writeOutput.stdout, /Wrote /);
+
+    const report = buildSiteReport({ target: outFile });
+    assert.equal(report.summary.status, "pass");
+    assert.equal(report.summary.counts.refactorTasks, 1);
+  });
+});
+
 test("runSite strict exits non-zero on warnings", async () => {
   await withTempDir(async (dir) => {
     const raw = createSampleSiteWorkspace();
@@ -232,6 +259,8 @@ test("runSite strict exits non-zero on warnings", async () => {
 test("runSite prints command-specific help", async () => {
   const output = await captureConsole(() => runSite(["--help"]));
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
+  assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
 });

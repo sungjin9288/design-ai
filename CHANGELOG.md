@@ -2,6 +2,33 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.16.0 — Website Improvement Sample Workspace Bootstrap (2026-06)
+
+Added `design-ai site --sample` so operators can generate a valid Website Improvement workspace JSON without opening the browser console first.
+The sample mode supports stdout and safe `--out` / `--force` file writing, while keeping validation/report/prompt generation as separate follow-up commands.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, and Website Improvement docs now describe the sample bootstrap path.
+Packed-tarball package smoke verifies `design-ai site --sample` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can start a file-first website improvement workflow with one command, commit/share the generated workspace JSON, then validate it or produce handoff artifacts with the existing `design-ai site` modes.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- All 8 audits pass.
+- `git diff --check`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.15.0 → 4.16.0.
+
 ## v4.15.0 — Website Improvement Workspace CLI (2026-05)
 
 Added `design-ai site` so Website Improvement Console JSON exports can be validated outside the browser and converted into Markdown handoff reports or Codex/Claude prompt bundles.

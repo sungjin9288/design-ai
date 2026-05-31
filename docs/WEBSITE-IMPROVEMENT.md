@@ -35,13 +35,14 @@ Actual code changes happen in the target website repository. Use the generated C
 Use `design-ai site` when a Website Improvement Console JSON export needs to leave the browser and become an operator artifact:
 
 ```bash
+design-ai site --sample --out website-workspace.json
 design-ai site website-workspace.json --json
 design-ai site website-workspace.json --report --out website-handoff.md
 design-ai site website-workspace.json --prompts --out website-prompts.md
 cat website-workspace.json | design-ai site --stdin --strict --json
 ```
 
-The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports or prompt bundles. It still does not modify the target website repo or call external MCPs.
+`design-ai site --sample` creates a valid starter workspace JSON for file-first workflows. The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports or prompt bundles. It still does not modify the target website repo or call external MCPs.
 
 ## Accessibility And Responsive Notes
 
