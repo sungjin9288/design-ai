@@ -6,6 +6,7 @@ import {
   buildSiteReport,
   createSampleSiteWorkspace,
   formatSiteJson,
+  generateSiteRefactorTasks,
   parseSiteArgs,
 } from "../lib/site.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
@@ -15,21 +16,24 @@ function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --sample [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]\n");
   console.log("Validates Website Improvement Console JSON exports and turns them into local handoff artifacts.\n");
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
   console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
+  console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
   console.log("  --prompts   Generate a Markdown bundle of Codex and Claude prompts");
-  console.log("  --out file  Write --json, --report, or --prompts output to a file");
+  console.log("  --out file  Write --json, --sample, --tasks, --report, or --prompts output to a file");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai site --sample --out website-workspace.json");
+  console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
@@ -120,6 +124,8 @@ export async function runSite(args) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {
     content = `${buildSitePromptBundle(workspace)}\n`;
+  } else if (parsed.tasks) {
+    content = `${JSON.stringify(generateSiteRefactorTasks(workspace).workspace, null, 2)}\n`;
   } else if (parsed.json) {
     content = `${formatSiteJson(summary)}\n`;
   }
@@ -131,7 +137,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.report || parsed.prompts || parsed.json) {
+  } else if (parsed.report || parsed.prompts || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);

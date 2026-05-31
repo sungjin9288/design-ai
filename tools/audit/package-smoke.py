@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.16.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.17.0.tgz
 """
 from __future__ import annotations
 
@@ -85,6 +85,7 @@ from smoke_assertions import (
     assert_status_output,
     assert_site_json,
     assert_site_sample_json,
+    assert_site_tasks_json,
     assert_search_dir_value_failure,
     assert_update_dry_run_json,
     assert_update_dry_run_output,
@@ -585,6 +586,22 @@ def assert_site_sample_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_site_sample_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_tasks_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_workspace_strict_success_smoke(
@@ -4640,6 +4657,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site sample JSON",
         )
+        assert_site_tasks_json_smoke(
+            [str(bin_path), "site", "--stdin", "--tasks"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site tasks JSON",
+        )
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -5299,6 +5322,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site sample JSON",
+        )
+        assert_site_tasks_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site tasks JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

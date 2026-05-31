@@ -14,6 +14,7 @@ import {
   buildSiteReport,
   createSampleSiteWorkspace,
   formatSiteJson,
+  generateSiteRefactorTasks,
   parseSiteArgs,
 } from "./site.mjs";
 
@@ -51,6 +52,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     target: "workspace.json",
     stdin: false,
     sample: false,
+    tasks: false,
     json: true,
     strict: true,
     report: false,
@@ -64,6 +66,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     target: "",
     stdin: true,
     sample: false,
+    tasks: false,
     json: false,
     strict: false,
     report: true,
@@ -76,6 +79,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--help"]).help, true);
   assert.equal(parseSiteArgs(["workspace.json", "--prompts"]).prompts, true);
   assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
@@ -83,12 +87,33 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report or --prompts/);
+  assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
   assert.throws(() => parseSiteArgs(["--sample", "--strict"]), /Use --sample without --strict/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--json"]), /Use --tasks without --json/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--report"]), /Use --tasks without --json/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
   assert.throws(() => parseSiteArgs(["workspace.json", "extra.json"]), /Unexpected argument/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--jsn"]), /Did you mean `--json`\?/);
+});
+
+test("generateSiteRefactorTasks adds deterministic starter tasks from audit findings", () => {
+  const workspace = createSampleSiteWorkspace();
+  const result = generateSiteRefactorTasks(workspace);
+
+  assert.equal(result.created.length, 2);
+  assert.deepEqual(result.created.map((task) => task.id), ["task-accessibility", "task-content-quality"]);
+  assert.equal(result.workspace.refactorTasks.length, 3);
+  assert.equal(result.workspace.refactorTasks[1].priority, "p0");
+  assert.equal(result.workspace.refactorTasks[1].impact, "high");
+  assert.deepEqual(result.workspace.refactorTasks[1].recommendedMcp, ["browser", "chromeDevtools"]);
+  assert.match(result.workspace.refactorTasks[1].codexPrompt, /target website repo, not in design-ai/);
+  assert.match(result.workspace.refactorTasks[2].problem, /Pricing page does not explain plan fit/);
+
+  const duplicateRun = generateSiteRefactorTasks(result.workspace);
+  assert.equal(duplicateRun.created.length, 0);
+  assert.equal(duplicateRun.workspace.refactorTasks.length, 3);
 });
 
 test("analyzeSiteWorkspace summarizes a valid Website Improvement Console export", () => {
@@ -238,6 +263,31 @@ test("runSite emits and writes a valid sample workspace", async () => {
   });
 });
 
+test("runSite emits and writes workspace JSON with generated refactor tasks", async () => {
+  await withTempDir(async (dir) => {
+    const file = path.join(dir, "workspace.json");
+    const outFile = path.join(dir, "workspace.tasks.json");
+    writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
+
+    const tasksOutput = await captureConsole(() => runSite([file, "--tasks"]));
+    const generated = JSON.parse(tasksOutput.stdout);
+    assert.equal(generated.refactorTasks.length, 3);
+    assert.deepEqual(generated.refactorTasks.map((task) => task.id), [
+      "task-homepage-cta",
+      "task-accessibility",
+      "task-content-quality",
+    ]);
+    assert.equal(tasksOutput.exitCode, undefined);
+
+    const writeOutput = await captureConsole(() => runSite([file, "--tasks", "--out", outFile]));
+    assert.match(writeOutput.stdout, /Wrote /);
+
+    const report = buildSiteReport({ target: outFile });
+    assert.equal(report.summary.status, "pass");
+    assert.equal(report.summary.counts.refactorTasks, 3);
+  });
+});
+
 test("runSite strict exits non-zero on warnings", async () => {
   await withTempDir(async (dir) => {
     const raw = createSampleSiteWorkspace();
@@ -260,7 +310,9 @@ test("runSite prints command-specific help", async () => {
   const output = await captureConsole(() => runSite(["--help"]));
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
+  assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
 });

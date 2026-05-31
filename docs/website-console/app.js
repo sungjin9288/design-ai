@@ -751,16 +751,19 @@
   function generateTasksFromFindings() {
     var workspace = appState.workspace;
     var existingIds = new Set(workspace.refactorTasks.map(function (task) { return task.id; }));
+    var existingCategories = new Set(workspace.refactorTasks.map(function (task) { return task.category; }));
     var created = [];
     auditCategories.forEach(function (category) {
+      if (existingCategories.has(category.id)) return;
       var row = workspace.auditChecklist[category.id];
-      var findings = row.findings.length ? row.findings : row.notes ? [row.notes] : [];
+      var findings = row.findings;
       if (findings.length === 0) return;
       var id = "task-" + category.id;
       if (existingIds.has(id)) return;
       var task = taskFromCategory(category, findings[0]);
       created.push(task);
       existingIds.add(id);
+      existingCategories.add(category.id);
     });
     workspace.refactorTasks = workspace.refactorTasks.concat(created);
     saveWorkspace();

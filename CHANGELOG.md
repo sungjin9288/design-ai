@@ -2,6 +2,33 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.17.0 — Website Improvement Refactor Task CLI Generation (2026-06)
+
+Added `design-ai site --tasks` so Website Improvement workspace JSON can be expanded with deterministic starter refactor tasks from audit findings.
+The task generator mirrors the Website Console's local Refactor Plan behavior, skips categories that already have tasks, and emits updated workspace JSON to stdout or safe `--out` / `--force` file output.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the task-generation path.
+Packed-tarball package smoke verifies `design-ai site --stdin --tasks` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can run a file-first workflow: generate a sample workspace, edit audit findings, generate starter refactor tasks, then produce prompt bundles and handoff reports without opening the Web App.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs docs/website-console/app.js`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- All 8 audits pass.
+- `git diff --check`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.16.0 → 4.17.0.
+
 ## v4.16.0 — Website Improvement Sample Workspace Bootstrap (2026-06)
 
 Added `design-ai site --sample` so operators can generate a valid Website Improvement workspace JSON without opening the browser console first.
