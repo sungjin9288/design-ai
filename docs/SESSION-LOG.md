@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.14 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.15 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.14 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.15 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.15 — Website improvement CLI handoff
+
+- **v4.15 (Phase 230)** — Added `design-ai site` for Website Improvement Console JSON exports, including schema/readiness validation, `--strict` gating, machine-readable `--json` summaries, Markdown handoff report generation, Codex/Claude prompt bundle generation, and packed-tarball smoke coverage for installed-bin plus one-shot `npm exec --package <tarball>` paths. The command preserves the v4.14 MVP boundary: no target repo mutation, external MCP calls, backend storage, embeddings, fine-tuning, or new dependencies.
 
 ### v4.14 — Website improvement control tower
 

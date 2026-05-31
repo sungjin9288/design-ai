@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.14.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.15.0.tgz
 """
 from __future__ import annotations
 
@@ -83,6 +83,7 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_status_json,
     assert_status_output,
+    assert_site_json,
     assert_search_dir_value_failure,
     assert_update_dry_run_json,
     assert_update_dry_run_output,
@@ -446,6 +447,132 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
 def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
+
+
+def site_workspace_fixture_json() -> str:
+    return json.dumps(
+        {
+            "version": 1,
+            "updatedAt": "2026-05-30T00:00:00.000Z",
+            "siteProfile": {
+                "id": "sample-korean-saas",
+                "name": "Korean SaaS marketing site",
+                "liveUrl": "https://example.com",
+                "repoUrl": "https://github.com/acme/korean-saas-site",
+                "localPath": "/Users/you/dev/korean-saas-site",
+                "figmaUrl": "https://figma.com/file/example",
+                "brandNotes": "Quiet B2B SaaS tone, Pretendard typography, dense but readable Korean product copy, indigo accent only for action and focus.",
+                "deployProvider": "vercel",
+                "sentryProject": "acme/korean-saas-web",
+                "cms": "sanity",
+                "database": "none",
+                "pages": ["/", "/pricing", "/signup", "/docs"],
+                "userFlows": [
+                    "Visitor compares pricing and starts signup",
+                    "Existing customer finds feature proof before contacting sales",
+                ],
+                "viewports": ["desktop", "tablet", "mobile"],
+            },
+            "auditChecklist": {
+                "visual-design": {
+                    "status": "in-progress",
+                    "notes": "Hero hierarchy and CTA contrast need review before company pilot.",
+                    "findings": ["Primary CTA competes with secondary link on the homepage"],
+                },
+                "ux-flow": {
+                    "status": "todo",
+                    "notes": "Map visitor path from landing page to pricing and signup.",
+                    "findings": [],
+                },
+                "responsive": {
+                    "status": "todo",
+                    "notes": "Check 1440, 1024, 390, and 360 width layouts.",
+                    "findings": [],
+                },
+                "accessibility": {
+                    "status": "todo",
+                    "notes": "Keyboard and focus audit required for nav, pricing toggle, and forms.",
+                    "findings": ["Focus state is not yet documented for the mobile menu"],
+                },
+                "performance": {
+                    "status": "todo",
+                    "notes": "Run Lighthouse after visual pass.",
+                    "findings": [],
+                },
+                "seo": {
+                    "status": "todo",
+                    "notes": "Inspect title, description, heading order, canonical, OG.",
+                    "findings": [],
+                },
+                "technical-quality": {
+                    "status": "todo",
+                    "notes": "Confirm component reuse before editing target repo.",
+                    "findings": [],
+                },
+                "runtime-issues": {
+                    "status": "todo",
+                    "notes": "Open console/network once preview deploy is available.",
+                    "findings": [],
+                },
+                "content-quality": {
+                    "status": "in-progress",
+                    "notes": "Copy should lead with proof and reduce generic SaaS phrasing.",
+                    "findings": ["Pricing page does not explain plan fit in the first viewport"],
+                },
+            },
+            "mcpReadiness": {
+                "github": "required",
+                "figma": "optional",
+                "browser": "required",
+                "chromeDevtools": "optional",
+                "deploy": "required",
+                "sentry": "optional",
+                "database": "unused",
+                "cms": "optional",
+                "collaboration": "optional",
+                "research": "optional",
+            },
+            "refactorTasks": [
+                {
+                    "id": "task-homepage-cta",
+                    "title": "Clarify homepage CTA hierarchy",
+                    "category": "visual-design",
+                    "problem": "Primary and secondary actions compete in the hero, which weakens the visitor's first decision.",
+                    "evidence": "Sample finding: Primary CTA competes with secondary link on the homepage.",
+                    "impact": "high",
+                    "effort": "medium",
+                    "priority": "p1",
+                    "pages": ["/"],
+                    "recommendedMcp": ["browser", "figma"],
+                    "codexPrompt": "Inspect the target homepage implementation, preserve existing design system patterns, and revise the hero CTA hierarchy so the primary signup action is visually dominant while the secondary action remains available.",
+                    "verification": [
+                        "Run target repo lint/build",
+                        "Verify desktop/tablet/mobile hero layout",
+                        "Confirm focus indicators and text contrast",
+                    ],
+                    "risks": ["Could change conversion copy without stakeholder approval"],
+                },
+            ],
+            "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
+        },
+        ensure_ascii=False,
+    )
+
+
+def assert_site_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_workspace_strict_success_smoke(
@@ -4489,6 +4616,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin workspace strict JSON success",
         )
+        assert_site_json_smoke(
+            [str(bin_path), "site", "--stdin", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site JSON",
+        )
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -5136,6 +5269,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec workspace strict JSON success",
+        )
+        assert_site_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

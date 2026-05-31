@@ -18,6 +18,7 @@ import { runPrompt } from "./prompt.mjs";
 import { runRoute } from "./route.mjs";
 import { runSearch } from "./search.mjs";
 import { runShow } from "./show.mjs";
+import { runSite } from "./site.mjs";
 import { runStatus } from "./status.mjs";
 import { runUninstall } from "./uninstall.mjs";
 import { runUpdate } from "./update.mjs";
@@ -42,6 +43,7 @@ export const HELP_COMMANDS = [
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
   { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning, and release scripts" },
+  { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--report|--prompts] [--out file]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];
@@ -86,6 +88,7 @@ const HELP_RUNNERS = {
   examples: () => runExamples(["--help"]),
   learn: () => runLearn(["--help"]),
   workspace: () => runWorkspace(["--help"]),
+  site: () => runSite(["--help"]),
   version: () => runVersion(["--help"]),
   help: printHelpHelp,
 };
@@ -222,6 +225,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);
   console.log(`  ${dim("$")} design-ai workspace --strict`);
+  console.log(`  ${dim("$")} design-ai site examples/website-improvement-workspace.json --json`);
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);
   console.log(`  ${dim("$")} design-ai examples --route component-spec`);

@@ -30,6 +30,19 @@ Actual code changes happen in the target website repository. Use the generated C
 5. Copy a Codex or Claude prompt and run it in the right tool.
 6. Export the handoff report after implementation and verification.
 
+## CLI Export Workflow
+
+Use `design-ai site` when a Website Improvement Console JSON export needs to leave the browser and become an operator artifact:
+
+```bash
+design-ai site website-workspace.json --json
+design-ai site website-workspace.json --report --out website-handoff.md
+design-ai site website-workspace.json --prompts --out website-prompts.md
+cat website-workspace.json | design-ai site --stdin --strict --json
+```
+
+The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports or prompt bundles. It still does not modify the target website repo or call external MCPs.
+
 ## Accessibility And Responsive Notes
 
 The app is desktop-first because the primary user is an operator planning website improvements, but controls remain usable on mobile. Interactive controls are keyboard reachable, focus-visible, and use text labels. Status and priority values are not represented by color alone; each status is printed as text.

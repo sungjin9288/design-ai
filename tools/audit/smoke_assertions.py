@@ -65,6 +65,7 @@ EXPECTED_HELP_TOPICS = (
     "examples",
     "learn",
     "workspace",
+    "site",
     "version",
     "help",
 )
@@ -108,6 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--report|--prompts] [--out file]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -166,6 +168,14 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--learning-file path",
         "without changing files",
     ),
+    "site": (
+        "Usage:",
+        "design-ai site <workspace.json> [--strict] [--json]",
+        "cat workspace.json | design-ai site --stdin [--strict] [--json]",
+        "--report",
+        "--prompts",
+        "--out file",
+    ),
     "version": ("Usage:", "design-ai version [--json]"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
@@ -186,6 +196,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear]",
     "workspace [--root path] [--learning-file path] [--strict] [--json]",
+    "site <workspace.json|--stdin>",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
@@ -194,7 +205,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.14.0",
+    "4.15.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -234,7 +245,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.14.0",
+    "Version alignment: 4.15.0",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -317,6 +328,7 @@ EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("doctor", "--jsn", "--json"),
     ("learn", "--jsn", "--json"),
     ("workspace", "--jsn", "--json"),
+    ("site", "--jsn", "--json"),
 )
 EXPECTED_LIST_CATALOG = {
     "skills": (
@@ -653,6 +665,45 @@ EXPECTED_WORKSPACE_RELEASE_KEYS = ["packageName", "version", "scripts", "availab
 EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS = ["status", "failures", "warnings"]
 EXPECTED_WORKSPACE_ACTION_KEYS = ["level", "text"]
 EXPECTED_WORKSPACE_ACTION_KEYS_WITH_COMMAND = [*EXPECTED_WORKSPACE_ACTION_KEYS, "command"]
+EXPECTED_SITE_PAYLOAD_KEYS = [
+    "filePath",
+    "valid",
+    "status",
+    "site",
+    "counts",
+    "auditStatusCounts",
+    "mcpStatusCounts",
+    "taskPriorityCounts",
+    "requiredMcp",
+    "topTasks",
+    "issues",
+]
+EXPECTED_SITE_PROFILE_KEYS = [
+    "id",
+    "name",
+    "liveUrl",
+    "repoUrl",
+    "localPath",
+    "deployProvider",
+    "cms",
+    "database",
+    "pages",
+    "userFlows",
+    "viewports",
+]
+EXPECTED_SITE_COUNTS_KEYS = [
+    "pages",
+    "userFlows",
+    "viewports",
+    "auditCategories",
+    "auditFindings",
+    "refactorTasks",
+    "requiredMcp",
+    "optionalMcp",
+    "unavailableMcp",
+]
+EXPECTED_SITE_TOP_TASK_KEYS = ["id", "title", "priority", "category", "impact", "effort", "pages"]
+EXPECTED_SITE_ISSUE_KEYS = ["level", "id", "message"]
 EXPECTED_REPOSITORY_SLUG = "sungjin9288/design-ai"
 EXPECTED_REPOSITORY_URL = f"https://github.com/{EXPECTED_REPOSITORY_SLUG}"
 
@@ -774,6 +825,8 @@ def unknown_option_args(command_name: str, option: str) -> list[str]:
         return ["learn", option]
     if command_name == "workspace":
         return ["workspace", option]
+    if command_name == "site":
+        return ["site", "workspace.json", option]
     raise SystemExit(f"unsupported unknown option smoke command: {command_name}")
 
 
@@ -783,7 +836,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.14.0",
+        "Plugin: design-ai v4.15.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -815,7 +868,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.14.0",
+            "version": "4.15.0",
             "kind": kind,
             "sections": [
                 {
@@ -1236,7 +1289,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.14.0",
+        "version": "4.15.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1310,7 +1363,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.14.0",
+        "Corpus version: 4.15.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1399,7 +1452,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.14.0",
+        "version": "4.15.0",
         "routes": routes,
     })
 
@@ -1407,7 +1460,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.14.0",
+        "version": "4.15.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1512,7 +1565,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.14.0",
+        "Corpus version: 4.15.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1538,7 +1591,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.14.0",
+        "version": "4.15.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1586,7 +1639,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.14.0",
+        "Corpus version: 4.15.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3440,6 +3493,8 @@ def passing_main_help_output() -> str:
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--strict] [--json]     Show read-only local dogfood readiness: git, repository, learning, and release scripts",
+        "  site <workspace.json|--stdin> [--strict] [--json|--report|--prompts] [--out file]",
+        "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
         "Quickstart:",
@@ -3452,8 +3507,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.14.0",
-        "Plugin / corpus:  4.14.0",
+        "design-ai CLI:    4.15.0",
+        "Plugin / corpus:  4.15.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3466,8 +3521,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.14.0",
-                "plugin": "4.14.0",
+                "cli": "4.15.0",
+                "plugin": "4.15.0",
                 "aligned": True,
             },
         },
@@ -3484,7 +3539,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.14.0",
+                "version": "4.15.0",
             },
             "git": {
                 "isRepo": False,
@@ -3530,7 +3585,7 @@ def passing_workspace_json() -> str:
             },
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.14.0",
+                "version": "4.15.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -3556,6 +3611,82 @@ def passing_workspace_json() -> str:
                     "level": "info",
                     "text": "Run CLI unit tests before handing this phase off.",
                     "command": "npm test",
+                },
+            ],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
+def passing_site_json() -> str:
+    return json.dumps(
+        {
+            "filePath": "stdin",
+            "valid": True,
+            "status": "pass",
+            "site": {
+                "id": "sample-korean-saas",
+                "name": "Korean SaaS marketing site",
+                "liveUrl": "https://example.com",
+                "repoUrl": "https://github.com/acme/korean-saas-site",
+                "localPath": "/Users/you/dev/korean-saas-site",
+                "deployProvider": "vercel",
+                "cms": "sanity",
+                "database": "none",
+                "pages": ["/", "/pricing", "/signup", "/docs"],
+                "userFlows": [
+                    "Visitor compares pricing and starts signup",
+                    "Existing customer finds feature proof before contacting sales",
+                ],
+                "viewports": ["desktop", "tablet", "mobile"],
+            },
+            "counts": {
+                "pages": 4,
+                "userFlows": 2,
+                "viewports": 3,
+                "auditCategories": 9,
+                "auditFindings": 3,
+                "refactorTasks": 1,
+                "requiredMcp": 3,
+                "optionalMcp": 6,
+                "unavailableMcp": 0,
+            },
+            "auditStatusCounts": {
+                "todo": 7,
+                "in-progress": 2,
+                "done": 0,
+                "blocked": 0,
+            },
+            "mcpStatusCounts": {
+                "required": 3,
+                "optional": 6,
+                "unused": 1,
+                "unavailable": 0,
+            },
+            "taskPriorityCounts": {
+                "p0": 0,
+                "p1": 1,
+                "p2": 0,
+                "p3": 0,
+            },
+            "requiredMcp": ["github", "browser", "deploy"],
+            "topTasks": [
+                {
+                    "id": "task-homepage-cta",
+                    "title": "Clarify homepage CTA hierarchy",
+                    "priority": "p1",
+                    "category": "visual-design",
+                    "impact": "high",
+                    "effort": "medium",
+                    "pages": ["/"],
+                },
+            ],
+            "issues": [
+                {
+                    "level": "pass",
+                    "id": "workspace-ready",
+                    "message": "Workspace is ready for report and prompt generation",
                 },
             ],
         },
@@ -3615,7 +3746,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.14.0",
+        "✓  Version alignment: 4.15.0",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -3640,7 +3771,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.14.0",
+        "  v4.15.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -4069,7 +4200,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.14.0":
+    if workspace_context.get("version") != "4.15.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -4147,7 +4278,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.14.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.15.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -4216,6 +4347,107 @@ def assert_workspace_strict_failure_json(
     )
     if not has_strict_issue:
         raise SystemExit(f"workspace strict JSON after {context} is missing a strict readiness issue")
+
+
+def assert_site_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site JSON",
+    )
+    if payload.get("valid") is not True or payload.get("status") != "pass":
+        raise SystemExit(f"site JSON after {context} expected pass-valid summary")
+    if not isinstance(payload.get("filePath"), str) or not payload["filePath"]:
+        raise SystemExit(f"site JSON after {context} filePath is missing")
+
+    site = assert_smoke_json_keys(
+        payload.get("site"),
+        EXPECTED_SITE_PROFILE_KEYS,
+        label="site",
+        context=context,
+        command_label="site JSON",
+    )
+    expected_site = {
+        "id": "sample-korean-saas",
+        "name": "Korean SaaS marketing site",
+        "liveUrl": "https://example.com",
+        "repoUrl": "https://github.com/acme/korean-saas-site",
+        "localPath": "/Users/you/dev/korean-saas-site",
+        "deployProvider": "vercel",
+        "cms": "sanity",
+        "database": "none",
+    }
+    for key, expected in expected_site.items():
+        if site.get(key) != expected:
+            raise SystemExit(f"site JSON after {context} site {key} differs from expected sample workspace")
+    if site.get("pages") != ["/", "/pricing", "/signup", "/docs"]:
+        raise SystemExit(f"site JSON after {context} pages differ from expected sample workspace")
+    if site.get("viewports") != ["desktop", "tablet", "mobile"]:
+        raise SystemExit(f"site JSON after {context} viewports differ from expected sample workspace")
+    if not isinstance(site.get("userFlows"), list) or len(site["userFlows"]) != 2:
+        raise SystemExit(f"site JSON after {context} userFlows differ from expected sample workspace")
+
+    counts = assert_smoke_json_keys(
+        payload.get("counts"),
+        EXPECTED_SITE_COUNTS_KEYS,
+        label="counts",
+        context=context,
+        command_label="site JSON",
+    )
+    expected_counts = {
+        "pages": 4,
+        "userFlows": 2,
+        "viewports": 3,
+        "auditCategories": 9,
+        "auditFindings": 3,
+        "refactorTasks": 1,
+        "requiredMcp": 3,
+        "optionalMcp": 6,
+        "unavailableMcp": 0,
+    }
+    for key, expected in expected_counts.items():
+        if counts.get(key) != expected:
+            raise SystemExit(f"site JSON after {context} count {key} differs from expected sample workspace")
+
+    if payload.get("requiredMcp") != ["github", "browser", "deploy"]:
+        raise SystemExit(f"site JSON after {context} requiredMcp differs from expected sample workspace")
+
+    top_tasks = payload.get("topTasks")
+    if not isinstance(top_tasks, list) or len(top_tasks) != 1:
+        raise SystemExit(f"site JSON after {context} topTasks must contain one sample task")
+    top_task = assert_smoke_json_keys(
+        top_tasks[0],
+        EXPECTED_SITE_TOP_TASK_KEYS,
+        label="topTasks entry",
+        context=context,
+        command_label="site JSON",
+    )
+    if top_task.get("title") != "Clarify homepage CTA hierarchy" or top_task.get("priority") != "p1":
+        raise SystemExit(f"site JSON after {context} top task differs from expected sample workspace")
+    if top_task.get("pages") != ["/"]:
+        raise SystemExit(f"site JSON after {context} top task pages differ from expected sample workspace")
+
+    issues = payload.get("issues")
+    if not isinstance(issues, list) or len(issues) != 1:
+        raise SystemExit(f"site JSON after {context} issues must contain one pass issue")
+    issue = assert_smoke_json_keys(
+        issues[0],
+        EXPECTED_SITE_ISSUE_KEYS,
+        label="issues entry",
+        context=context,
+        command_label="site JSON",
+    )
+    if issue.get("level") != "pass" or issue.get("id") != "workspace-ready":
+        raise SystemExit(f"site JSON after {context} pass issue differs from expected workspace-ready issue")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -7075,7 +7307,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.14.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.15.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -7180,6 +7412,63 @@ def run_self_test() -> None:
             cmd=workspace_cmd,
         ),
         expected="missing available script ci:local",
+        scope="smoke assertions",
+    )
+    site_cmd = ["design-ai", "site", "--stdin", "--json"]
+    assert_site_json(passing_site_json(), context=context, cmd=site_cmd)
+    expect_self_test_failure(
+        lambda: assert_site_json("\x1b[31m{}", context=context, cmd=site_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_json(json.dumps([]), context=context, cmd=site_cmd),
+        expected="top-level is not an object",
+        scope="smoke assertions",
+    )
+    reordered_site_payload = json.loads(passing_site_json())
+    reordered_site_payload = {
+        "status": reordered_site_payload["status"],
+        "valid": reordered_site_payload["valid"],
+        "filePath": reordered_site_payload["filePath"],
+        "site": reordered_site_payload["site"],
+        "counts": reordered_site_payload["counts"],
+        "auditStatusCounts": reordered_site_payload["auditStatusCounts"],
+        "mcpStatusCounts": reordered_site_payload["mcpStatusCounts"],
+        "taskPriorityCounts": reordered_site_payload["taskPriorityCounts"],
+        "requiredMcp": reordered_site_payload["requiredMcp"],
+        "topTasks": reordered_site_payload["topTasks"],
+        "issues": reordered_site_payload["issues"],
+    }
+    expect_self_test_failure(
+        lambda: assert_site_json(
+            json.dumps(reordered_site_payload),
+            context=context,
+            cmd=site_cmd,
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    stale_site_payload = json.loads(passing_site_json())
+    stale_site_payload["site"]["name"] = "Different site"
+    expect_self_test_failure(
+        lambda: assert_site_json(
+            json.dumps(stale_site_payload),
+            context=context,
+            cmd=site_cmd,
+        ),
+        expected="sample workspace",
+        scope="smoke assertions",
+    )
+    missing_site_task_payload = json.loads(passing_site_json())
+    missing_site_task_payload["topTasks"] = []
+    expect_self_test_failure(
+        lambda: assert_site_json(
+            json.dumps(missing_site_task_payload),
+            context=context,
+            cmd=site_cmd,
+        ),
+        expected="one sample task",
         scope="smoke assertions",
     )
     assert_command_alias_output(

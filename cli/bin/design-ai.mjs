@@ -20,6 +20,7 @@
 //   learn                Manage local learning preferences for prompt personalization
 //   workspace            Show read-only dogfood readiness: git, repository, learning, release scripts
 //                        Add --strict to fail on readiness warnings/failures
+//   site                 Validate Website Improvement Console exports and generate handoff artifacts
 //   version [--json]     Show CLI + plugin versions
 //   help                 Show help
 

@@ -2,6 +2,39 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.15.0 — Website Improvement Workspace CLI (2026-05)
+
+Added `design-ai site` so Website Improvement Console JSON exports can be validated outside the browser and converted into Markdown handoff reports or Codex/Claude prompt bundles.
+The command supports file and stdin input, `--strict` readiness gating, machine-readable `--json` summaries, `--report`, `--prompts`, and safe `--out` / `--force` output-file writing.
+Added a reusable sample workspace JSON fixture under `examples/website-improvement-workspace.json`.
+Packed-tarball package smoke now verifies `design-ai site --stdin --json` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can start in the zero-dependency Website Improvement Console, export the local workspace, then use the CLI to produce stable artifacts for target-repo Codex work and internal handoff.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- All 8 audits pass.
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.14.0 → 4.15.0.
+
 ## v4.14.0 — Website Improvement Control Tower Web App (2026-05)
 
 Added a zero-dependency static Website Improvement Control Tower under `docs/website-console/` with localStorage persistence, JSON export/import, a sample Korean SaaS Site Profile, audit checklist, MCP readiness matrix, refactor task generation, eight prompt templates, and Markdown handoff report export.

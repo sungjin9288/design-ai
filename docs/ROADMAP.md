@@ -51,6 +51,49 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 230 — Website Improvement Workspace CLI (v4.15.0) ✓ shipped
+
+Website Improvement Console exports now have a CLI handoff path. `design-ai site` validates exported workspace JSON, summarizes readiness, and generates Markdown artifacts without leaving the local/operator boundary.
+
+### Changed
+- Added `design-ai site <workspace.json|--stdin>` with `--json`, `--strict`, `--report`, `--prompts`, `--out`, and `--force`.
+- Added `cli/lib/site.mjs`, `cli/commands/site.mjs`, and unit coverage for parser validation, schema summaries, stdin input, strict warnings, handoff report generation, prompt bundle generation, and output-file writing.
+- Added `examples/website-improvement-workspace.json` as a portable sample export fixture.
+- Updated CLI dispatch/help catalog and package smoke so installed-bin and one-shot `npm exec --package <tarball>` paths verify `design-ai site --stdin --json`.
+- Updated package/plugin metadata to `4.15.0`.
+
+### Impact
+- Operators can move from the static Web App to durable Markdown handoff artifacts without manually copying every prompt/report section.
+- The command keeps the MVP boundary intact: no target website repo mutation, no external MCP calls, no backend storage, no embeddings, no fine-tuning, and no new dependencies.
+- Future Playwright/Figma/GitHub/Sentry/Vercel connection checks can attach to the same workspace schema.
+
+### What this enables
+- Website improvement work now has a browser-to-CLI handoff: localStorage workspace → JSON export → validated Markdown report/prompt artifacts.
+- Internal company pilots can store reviewable handoff artifacts without introducing hosted storage or changing the target website repo.
+
+### What's still ahead
+- Real MCP connection checks, target-repo automation, Lighthouse/axe/visual diff, and hosted multi-user storage remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs cli/lib/dispatch.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- All 8 audits pass.
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.14.0 → 4.15.0.
+
 ## Phase 229 — Website Improvement Control Tower Web App (v4.14.0) ✓ shipped
 
 Website improvement is now a first-class design-ai workflow: a local static Web App coordinates Site Profiles, audit checklists, MCP readiness, refactor tasks, prompt generation, and handoff reports without owning or mutating the target website source repo.

@@ -35,7 +35,12 @@ MVP에서 하지 않는 것:
 design-ai route "improve website UX SEO performance" --json
 design-ai prompt "improve homepage conversion" --route website-improvement --json
 design-ai check examples/website-improvement-report.md --route website-improvement --strict
+design-ai site website-workspace.json --json
+design-ai site website-workspace.json --report --out website-handoff.md
+design-ai site website-workspace.json --prompts --out website-prompts.md
 ```
+
+`design-ai site`는 Website Console에서 export한 JSON을 검증하고, audit/MCP/task readiness summary, Markdown handoff report, Codex/Claude prompt bundle을 생성합니다. 대상 웹사이트 repo를 수정하거나 외부 MCP를 호출하지 않습니다.
 
 Claude Code에서는 `/design-website-improvement` 명령이나 `website-improvement` skill을 사용할 수 있습니다.
 
