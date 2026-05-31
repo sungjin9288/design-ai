@@ -165,6 +165,26 @@ RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_PROMPT_LIST_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --prompt-list --json`",
+        "design-ai site --prompt-list --json",
+        "site --prompt-list --json",
+    ),
+    (
+        "Website Console prompt template listing",
+        "Website Improvement prompt template listing",
+        "site prompt template listing",
+        "Website Console prompt template catalog",
+        "Website Console prompt template 목록",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --tasks`",
@@ -1248,6 +1268,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "workspace strict package smoke phrase",
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
+    "site prompt-list package smoke phrase",
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
@@ -1384,6 +1405,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site sample package smoke phrase",
         RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site prompt-list package smoke phrase",
+        RELEASE_SITE_PROMPT_LIST_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site tasks package smoke phrase",
@@ -1932,6 +1957,7 @@ the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 `design-ai site --stdin --json` Website Console export validation,
 `design-ai site --sample` Website Console sample workspace coverage,
+`design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2002,6 +2028,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 `design-ai site --stdin --json` Website Console export validation도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
+`design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
@@ -3416,7 +3443,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("human/JSON 출력", "human 출력"),
+            "README.ko.md": korean_policy_doc
+            .replace("human/JSON 출력", "human 출력")
+            .replace("site --prompt-list --json", "site prompt template listing"),
         },
         audit_count=8,
     )
@@ -3433,7 +3462,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("human/JSON 출력", "human 출력"),
+            "README.ko.md": korean_policy_doc
+            .replace("human/JSON 출력", "human 출력")
+            .replace("site --prompt-list --json", "site prompt template listing"),
         },
         audit_count=8,
     )

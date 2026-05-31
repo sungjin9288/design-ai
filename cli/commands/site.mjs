@@ -7,6 +7,8 @@ import {
   buildSiteReport,
   createSampleSiteWorkspace,
   formatSiteJson,
+  formatSitePromptTemplatesHuman,
+  formatSitePromptTemplatesJson,
   generateSiteRefactorTasks,
   parseSiteArgs,
 } from "../lib/site.mjs";
@@ -17,6 +19,7 @@ function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --sample [--out file] [--force]");
+  console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
@@ -25,6 +28,8 @@ function printHelp() {
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
   console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
+  console.log("  --prompt-list");
+  console.log("              List Website Improvement prompt template ids and intended use");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
@@ -33,11 +38,12 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --tasks, --report, --prompts, or --prompt output to a file");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --tasks, --report, --prompts, or --prompt output to a file");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai site --sample --out website-workspace.json");
+  console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
@@ -102,6 +108,21 @@ export async function runSite(args) {
 
   if (parsed.sample) {
     const content = `${JSON.stringify(createSampleSiteWorkspace(), null, 2)}\n`;
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
+    return;
+  }
+
+  if (parsed.promptList) {
+    const content = `${parsed.json ? formatSitePromptTemplatesJson() : formatSitePromptTemplatesHuman()}\n`;
     if (parsed.outPath) {
       const written = writeOutputFile({
         outPath: parsed.outPath,

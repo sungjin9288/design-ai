@@ -51,6 +51,54 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 235 — Website Improvement Prompt Template Listing (v4.20.0) ✓ shipped
+
+Website improvement prompt templates can now be discovered directly from the CLI. `design-ai site --prompt-list [--json]` lists the eight Codex/Claude template ids with agent, output type, description, and task-selection support before operators export a single prompt.
+
+### Changed
+- Added `--prompt-list` for `design-ai site` as a workspace-free, read-only mode.
+- Added human and JSON prompt template listing output.
+- Added template metadata for id, label, agent, output, description, and `taskSelectable`.
+- Kept `--task` scoped to `codex-implementation`, while making that capability visible in the template listing.
+- Added unit coverage for parser validation, human/JSON listing output, output-file writing, command-specific help, and release-facing help catalog usage.
+- Added packed-tarball smoke coverage for prompt template listing in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.20.0`.
+
+### Impact
+- Operators can choose `codex-repo-intake`, `codex-implementation`, `claude-design-review`, or another Website Improvement template without opening docs or generating the full prompt bundle.
+- The command remains local and deterministic: no target repo mutation, no external MCP calls, no backend storage, no embeddings, no fine-tuning, and no new dependencies.
+- Packed-tarball smoke now verifies prompt template listing JSON output from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### What this enables
+- Internal pilots can keep a terminal-first Website Improvement workflow and discover prompt ids before exporting a single handoff prompt.
+- Future phases can add real MCP readiness checks while preserving the same prompt template catalog contract.
+
+### What's still ahead
+- Real MCP connection checks, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py tools/audit/registry-smoke.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --prompt-list` and `design-ai site --prompt-list --json`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.19.0 → 4.20.0.
+
 ## Phase 234 — Website Improvement Prompt Task Selection (v4.19.0) ✓ shipped
 
 Website improvement implementation prompts can now target a specific refactor task. `design-ai site --prompt codex-implementation --task <id-or-number>` reads Website Improvement workspace JSON and emits a Markdown implementation prompt for that selected task instead of always using the top-priority task.

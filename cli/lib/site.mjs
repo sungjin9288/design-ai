@@ -13,6 +13,7 @@ export const SITE_OPTIONS = [
   "--stdin",
   "--sample",
   "--tasks",
+  "--prompt-list",
   "--prompt",
   "--task",
   "--strict",
@@ -131,12 +132,84 @@ export const SITE_PROMPT_TEMPLATE_IDS = [
   "handoff-report",
 ];
 
+export const SITE_PROMPT_TEMPLATES = [
+  {
+    id: "codex-repo-intake",
+    label: "Codex repo intake",
+    agent: "codex",
+    output: "Repository inspection plan",
+    description: "Inspect the target website repo and return structure, likely touch points, risks, and verification commands.",
+    taskSelectable: false,
+  },
+  {
+    id: "codex-implementation",
+    label: "Codex implementation",
+    agent: "codex",
+    output: "Focused implementation prompt",
+    description: "Implement the selected website improvement task in the target repo with scoped verification.",
+    taskSelectable: true,
+  },
+  {
+    id: "codex-visual-qa",
+    label: "Codex visual QA",
+    agent: "codex",
+    output: "Browser/Playwright QA checklist",
+    description: "Verify priority pages across configured viewports for layout, focus, console, and asset issues.",
+    taskSelectable: false,
+  },
+  {
+    id: "codex-deployment",
+    label: "Codex deployment verification",
+    agent: "codex",
+    output: "Deployment verification prompt",
+    description: "Check preview or production deployment, logs, metadata, user flows, and remaining launch risks.",
+    taskSelectable: false,
+  },
+  {
+    id: "claude-design-review",
+    label: "Claude design review",
+    agent: "claude",
+    output: "Senior design critique",
+    description: "Review visual hierarchy, layout rhythm, typography, CTA clarity, responsive behavior, and accessibility concerns.",
+    taskSelectable: false,
+  },
+  {
+    id: "claude-competitor",
+    label: "Claude competitor research",
+    agent: "claude",
+    output: "Competitor opportunity map",
+    description: "Compare relevant peer sites for structure, conversion path, proof, pricing, tone, content, and SEO positioning.",
+    taskSelectable: false,
+  },
+  {
+    id: "claude-copy-ux",
+    label: "Claude copy/UX critique",
+    agent: "claude",
+    output: "Copy and UX improvement notes",
+    description: "Critique copy, information architecture, trust signals, CTA language, and conversion flow.",
+    taskSelectable: false,
+  },
+  {
+    id: "handoff-report",
+    label: "Final handoff report",
+    agent: "codex-or-claude",
+    output: "Final handoff report prompt",
+    description: "Generate a final report covering target site info, audit summary, recommendations, executed work, verification, risks, and next actions.",
+    taskSelectable: false,
+  },
+];
+
+if (SITE_PROMPT_TEMPLATE_IDS.join("\n") !== SITE_PROMPT_TEMPLATES.map((template) => template.id).join("\n")) {
+  throw new Error("SITE_PROMPT_TEMPLATES must match SITE_PROMPT_TEMPLATE_IDS order");
+}
+
 export function parseSiteArgs(args) {
   const out = {
     target: "",
     stdin: false,
     sample: false,
     tasks: false,
+    promptList: false,
     promptTemplate: "",
     taskSelector: "",
     json: false,
@@ -162,6 +235,8 @@ export function parseSiteArgs(args) {
       out.sample = true;
     } else if (arg === "--tasks") {
       out.tasks = true;
+    } else if (arg === "--prompt-list") {
+      out.promptList = true;
     } else if (arg === "--prompt") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -203,8 +278,14 @@ export function parseSiteArgs(args) {
   if (out.sample && sources.length > 0) {
     throw new Error("Use --sample without a workspace JSON file path or --stdin");
   }
+  if (out.promptList && sources.length > 0) {
+    throw new Error("Use --prompt-list without a workspace JSON file path or --stdin");
+  }
   if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --sample without --report, --prompts, or --prompt");
+  }
+  if (out.promptList && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --report, --prompts, --prompt, or --strict");
   }
   if (out.sample && out.tasks) {
     throw new Error("Use only one generated workspace mode: --sample or --tasks");
@@ -231,8 +312,8 @@ export function parseSiteArgs(args) {
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("--json is only supported for the site summary; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, or --tasks");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.promptList)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, or --prompt-list");
   }
 
   const { index, ...parsed } = out;
@@ -799,6 +880,32 @@ export function buildSiteReport({
 
 export function formatSiteJson(report) {
   return JSON.stringify(report, null, 2);
+}
+
+export function formatSitePromptTemplatesJson() {
+  return JSON.stringify({
+    count: SITE_PROMPT_TEMPLATES.length,
+    templates: SITE_PROMPT_TEMPLATES,
+  }, null, 2);
+}
+
+export function formatSitePromptTemplatesHuman() {
+  return [
+    "Website Improvement prompt templates",
+    "",
+    ...SITE_PROMPT_TEMPLATES.flatMap((template, index) => [
+      `${index + 1}. ${template.id}`,
+      `   Label: ${template.label}`,
+      `   Agent: ${template.agent}`,
+      `   Output: ${template.output}`,
+      `   Task selectable: ${template.taskSelectable ? "yes" : "no"}`,
+      `   ${template.description}`,
+    ]),
+    "",
+    "Use:",
+    "  design-ai site <workspace.json> --prompt <template-id>",
+    "  design-ai site <workspace.json> --prompt codex-implementation --task <id-or-number>",
+  ].join("\n");
 }
 
 function markdownList(items, fallback) {
