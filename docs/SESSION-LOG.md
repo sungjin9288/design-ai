@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.20 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.21 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.20 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.21 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.21 — Website improvement MCP readiness check
+
+- **v4.21 (Phase 236)** — Added `design-ai site --mcp-check [--strict] [--json]` so Website Improvement workspace JSON can be checked for local MCP readiness evidence and task/MCP gaps before implementation handoff. Package smoke now verifies MCP readiness JSON output through installed-bin and one-shot `npm exec --package <tarball>` paths while preserving the local/operator boundary.
 
 ### v4.20 — Website improvement prompt template listing
 

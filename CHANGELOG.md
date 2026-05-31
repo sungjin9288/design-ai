@@ -2,6 +2,41 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.21.0 — Website Improvement MCP Readiness Check (2026-06)
+
+Added `design-ai site <workspace.json|--stdin> --mcp-check [--strict] [--json]` so Website Improvement workspace exports can be checked for local MCP readiness evidence and task/MCP gaps before handoff.
+The check is deterministic and read-only: it evaluates the existing Site Profile, MCP readiness matrix, workspace validation issues, and refactor task recommendations without calling external MCP tools or mutating a target website repository.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the MCP readiness check path.
+Packed-tarball package smoke verifies `design-ai site --stdin --mcp-check --json` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No backend storage, hosted sync, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, target repo mutation, or new dependencies were added.
+
+### What this enables
+
+Operators can run a terminal-first readiness gate before moving a Website Improvement plan into Codex, Claude, or a target website repo, and can fail `--strict` when required MCP evidence is missing.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --mcp-check`, `design-ai site --mcp-check --json`, and `design-ai help site`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.20.0 → 4.21.0.
+
 ## v4.20.0 — Website Improvement Prompt Template Listing (2026-06)
 
 Added `design-ai site --prompt-list [--json]` so operators can discover the eight Website Improvement prompt template ids before exporting a single Codex or Claude prompt.

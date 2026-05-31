@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -174,10 +174,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "cat workspace.json | design-ai site --stdin [--strict] [--json]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site --prompt-list [--json] [--out file] [--force]",
+        "design-ai site <workspace.json> --mcp-check [--strict] [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --tasks [--out file] [--force]",
         "design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]",
         "--sample",
         "--prompt-list",
+        "--mcp-check",
         "--tasks",
         "--report",
         "--prompts",
@@ -208,7 +210,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "site <workspace.json|--stdin>",
     "site --sample",
     "site --prompt-list",
-    "[--json|--tasks|--report|--prompts|--prompt id [--task id]]",
+    "[--json|--mcp-check|--tasks|--report|--prompts|--prompt id [--task id]]",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
@@ -217,7 +219,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.20.0",
+    "4.21.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -257,7 +259,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.20.0",
+    "Version alignment: 4.21.0",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -775,6 +777,38 @@ EXPECTED_SITE_PROMPT_TEMPLATE_IDS = [
     "claude-copy-ux",
     "handoff-report",
 ]
+EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS = [
+    "filePath",
+    "status",
+    "workspaceStatus",
+    "site",
+    "counts",
+    "items",
+    "taskGaps",
+    "workspaceIssues",
+    "nextActions",
+]
+EXPECTED_SITE_MCP_CHECK_SITE_KEYS = ["name", "liveUrl", "repoUrl", "localPath"]
+EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS = [
+    "total",
+    "required",
+    "optional",
+    "ready",
+    "missing",
+    "unused",
+    "unavailable",
+    "taskGaps",
+]
+EXPECTED_SITE_MCP_CHECK_ITEM_KEYS = [
+    "key",
+    "label",
+    "requestedStatus",
+    "state",
+    "level",
+    "evidence",
+    "actions",
+]
+EXPECTED_SITE_MCP_CHECK_TASK_GAP_KEYS = ["taskId", "title", "mcp", "status", "level", "message"]
 EXPECTED_REPOSITORY_SLUG = "sungjin9288/design-ai"
 EXPECTED_REPOSITORY_URL = f"https://github.com/{EXPECTED_REPOSITORY_SLUG}"
 
@@ -907,7 +941,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.20.0",
+        "Plugin: design-ai v4.21.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -939,7 +973,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.20.0",
+            "version": "4.21.0",
             "kind": kind,
             "sections": [
                 {
@@ -1360,7 +1394,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.20.0",
+        "version": "4.21.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1434,7 +1468,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.20.0",
+        "Corpus version: 4.21.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1523,7 +1557,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.20.0",
+        "version": "4.21.0",
         "routes": routes,
     })
 
@@ -1531,7 +1565,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.20.0",
+        "version": "4.21.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1636,7 +1670,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.20.0",
+        "Corpus version: 4.21.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1662,7 +1696,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.20.0",
+        "version": "4.21.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1710,7 +1744,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.20.0",
+        "Corpus version: 4.21.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3564,7 +3598,7 @@ def passing_main_help_output() -> str:
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--strict] [--json]     Show read-only local dogfood readiness: git, repository, learning, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -3578,8 +3612,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.20.0",
-        "Plugin / corpus:  4.20.0",
+        "design-ai CLI:    4.21.0",
+        "Plugin / corpus:  4.21.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3592,8 +3626,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.20.0",
-                "plugin": "4.20.0",
+                "cli": "4.21.0",
+                "plugin": "4.21.0",
                 "aligned": True,
             },
         },
@@ -3610,7 +3644,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.20.0",
+                "version": "4.21.0",
             },
             "git": {
                 "isRepo": False,
@@ -3656,7 +3690,7 @@ def passing_workspace_json() -> str:
             },
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.20.0",
+                "version": "4.21.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -4033,6 +4067,133 @@ def passing_site_prompt_templates_json() -> str:
     return json.dumps({"count": len(templates), "templates": templates}, ensure_ascii=False, indent=2)
 
 
+def passing_site_mcp_check_json() -> str:
+    items = [
+        {
+            "key": "github",
+            "label": "GitHub",
+            "requestedStatus": "required",
+            "state": "ready",
+            "level": "pass",
+            "evidence": [
+                "repoUrl: https://github.com/acme/korean-saas-site",
+                "localPath: /Users/you/dev/korean-saas-site",
+            ],
+            "actions": [],
+        },
+        {
+            "key": "figma",
+            "label": "Figma",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["figmaUrl: https://figma.com/file/example"],
+            "actions": [],
+        },
+        {
+            "key": "browser",
+            "label": "Browser/Playwright",
+            "requestedStatus": "required",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["liveUrl: https://example.com", "viewports: desktop, tablet, mobile"],
+            "actions": [],
+        },
+        {
+            "key": "chromeDevtools",
+            "label": "Chrome DevTools",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["liveUrl: https://example.com"],
+            "actions": [],
+        },
+        {
+            "key": "deploy",
+            "label": "Deploy",
+            "requestedStatus": "required",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["deployProvider: vercel", "liveUrl: https://example.com"],
+            "actions": [],
+        },
+        {
+            "key": "sentry",
+            "label": "Sentry",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["sentryProject: acme/korean-saas-web"],
+            "actions": [],
+        },
+        {
+            "key": "database",
+            "label": "Database",
+            "requestedStatus": "unused",
+            "state": "unused",
+            "level": "pass",
+            "evidence": ["Marked unused in mcpReadiness."],
+            "actions": [],
+        },
+        {
+            "key": "cms",
+            "label": "CMS",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["cms: sanity"],
+            "actions": [],
+        },
+        {
+            "key": "collaboration",
+            "label": "Collaboration",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["Optional collaboration is tracked in handoff notes for this local MVP."],
+            "actions": [],
+        },
+        {
+            "key": "research",
+            "label": "Research",
+            "requestedStatus": "optional",
+            "state": "ready",
+            "level": "pass",
+            "evidence": ["liveUrl: https://example.com"],
+            "actions": [],
+        },
+    ]
+    return json.dumps(
+        {
+            "filePath": "stdin",
+            "status": "pass",
+            "workspaceStatus": "pass",
+            "site": {
+                "name": "Korean SaaS marketing site",
+                "liveUrl": "https://example.com",
+                "repoUrl": "https://github.com/acme/korean-saas-site",
+                "localPath": "/Users/you/dev/korean-saas-site",
+            },
+            "counts": {
+                "total": 10,
+                "required": 3,
+                "optional": 6,
+                "ready": 9,
+                "missing": 0,
+                "unused": 1,
+                "unavailable": 0,
+                "taskGaps": 0,
+            },
+            "items": items,
+            "taskGaps": [],
+            "workspaceIssues": [],
+            "nextActions": [],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_workspace_strict_clean_json() -> str:
     payload = json.loads(passing_workspace_json())
     payload["git"] = {
@@ -4084,7 +4245,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.20.0",
+        "✓  Version alignment: 4.21.0",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -4109,7 +4270,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.20.0",
+        "  v4.21.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -4538,7 +4699,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.20.0":
+    if workspace_context.get("version") != "4.21.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -4616,7 +4777,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.20.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.21.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -4997,6 +5158,95 @@ def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str])
         raise SystemExit(f"site prompt templates JSON after {context} codex-implementation must remain task selectable")
     if implementation.get("agent") != "codex":
         raise SystemExit(f"site prompt templates JSON after {context} codex-implementation agent changed")
+
+
+def assert_site_mcp_check_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site mcp-check JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site mcp-check JSON",
+    )
+    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass":
+        raise SystemExit(f"site mcp-check JSON after {context} should pass for the sample workspace")
+
+    site = assert_smoke_json_keys(
+        payload.get("site"),
+        EXPECTED_SITE_MCP_CHECK_SITE_KEYS,
+        label="site",
+        context=context,
+        command_label="site mcp-check JSON",
+    )
+    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
+        raise SystemExit(f"site mcp-check JSON after {context} sample site identity changed")
+
+    counts = assert_smoke_json_keys(
+        payload.get("counts"),
+        EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS,
+        label="counts",
+        context=context,
+        command_label="site mcp-check JSON",
+    )
+    expected_counts = {
+        "total": 10,
+        "required": 3,
+        "optional": 6,
+        "ready": 9,
+        "missing": 0,
+        "unused": 1,
+        "unavailable": 0,
+        "taskGaps": 0,
+    }
+    for key, value in expected_counts.items():
+        if counts.get(key) != value:
+            raise SystemExit(f"site mcp-check JSON after {context} count {key} changed")
+
+    items = payload.get("items")
+    if not isinstance(items, list) or len(items) != 10:
+        raise SystemExit(f"site mcp-check JSON after {context} should include ten MCP items")
+    item_keys = []
+    for item in items:
+        checked = assert_smoke_json_keys(
+            item,
+            EXPECTED_SITE_MCP_CHECK_ITEM_KEYS,
+            label="items entry",
+            context=context,
+            command_label="site mcp-check JSON",
+        )
+        item_keys.append(checked.get("key"))
+        if checked.get("level") != "pass":
+            raise SystemExit(f"site mcp-check JSON after {context} sample item should pass: {checked.get('key')}")
+        if not isinstance(checked.get("evidence"), list) or not isinstance(checked.get("actions"), list):
+            raise SystemExit(f"site mcp-check JSON after {context} item evidence/actions must be arrays")
+
+    if item_keys != [key for key, _label in (
+        ("github", "GitHub"),
+        ("figma", "Figma"),
+        ("browser", "Browser/Playwright"),
+        ("chromeDevtools", "Chrome DevTools"),
+        ("deploy", "Deploy"),
+        ("sentry", "Sentry"),
+        ("database", "Database"),
+        ("cms", "CMS"),
+        ("collaboration", "Collaboration"),
+        ("research", "Research"),
+    )]:
+        raise SystemExit(f"site mcp-check JSON after {context} MCP item order changed")
+
+    if not isinstance(payload.get("taskGaps"), list) or payload["taskGaps"]:
+        raise SystemExit(f"site mcp-check JSON after {context} should not report sample task gaps")
+    if not isinstance(payload.get("workspaceIssues"), list) or payload["workspaceIssues"]:
+        raise SystemExit(f"site mcp-check JSON after {context} should not report sample workspace issues")
+    if not isinstance(payload.get("nextActions"), list):
+        raise SystemExit(f"site mcp-check JSON after {context} nextActions must be an array")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -7856,7 +8106,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.20.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.21.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -7973,6 +8223,8 @@ def run_self_test() -> None:
     assert_site_prompt_markdown(passing_site_prompt_markdown(), context=context, cmd=site_prompt_cmd)
     site_prompt_templates_cmd = ["design-ai", "site", "--prompt-list", "--json"]
     assert_site_prompt_templates_json(passing_site_prompt_templates_json(), context=context, cmd=site_prompt_templates_cmd)
+    site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
+    assert_site_mcp_check_json(passing_site_mcp_check_json(), context=context, cmd=site_mcp_check_cmd)
     expect_self_test_failure(
         lambda: assert_site_json("\x1b[31m{}", context=context, cmd=site_cmd),
         expected="ANSI escape",
@@ -7995,6 +8247,11 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_site_prompt_templates_json("\x1b[31m{}", context=context, cmd=site_prompt_templates_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_json("\x1b[31m{}", context=context, cmd=site_mcp_check_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -8133,6 +8390,39 @@ def run_self_test() -> None:
             cmd=site_prompt_templates_cmd,
         ),
         expected="task selectable",
+        scope="smoke assertions",
+    )
+    reordered_site_mcp_check_payload = json.loads(passing_site_mcp_check_json())
+    reordered_site_mcp_check_payload = {
+        "status": reordered_site_mcp_check_payload["status"],
+        "filePath": reordered_site_mcp_check_payload["filePath"],
+        "workspaceStatus": reordered_site_mcp_check_payload["workspaceStatus"],
+        "site": reordered_site_mcp_check_payload["site"],
+        "counts": reordered_site_mcp_check_payload["counts"],
+        "items": reordered_site_mcp_check_payload["items"],
+        "taskGaps": reordered_site_mcp_check_payload["taskGaps"],
+        "workspaceIssues": reordered_site_mcp_check_payload["workspaceIssues"],
+        "nextActions": reordered_site_mcp_check_payload["nextActions"],
+    }
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_json(
+            json.dumps(reordered_site_mcp_check_payload),
+            context=context,
+            cmd=site_mcp_check_cmd,
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_check_payload = json.loads(passing_site_mcp_check_json())
+    stale_site_mcp_check_payload["items"][1]["state"] = "missing"
+    stale_site_mcp_check_payload["items"][1]["level"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_json(
+            json.dumps(stale_site_mcp_check_payload),
+            context=context,
+            cmd=site_mcp_check_cmd,
+        ),
+        expected="sample item should pass",
         scope="smoke assertions",
     )
     assert_command_alias_output(

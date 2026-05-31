@@ -38,6 +38,7 @@ Use `design-ai site` when a Website Improvement Console JSON export needs to lea
 design-ai site --sample --out website-workspace.json
 design-ai site website-workspace.json --tasks --out website-workspace.tasks.json
 design-ai site website-workspace.json --json
+design-ai site website-workspace.json --mcp-check --strict --json
 design-ai site website-workspace.json --report --out website-handoff.md
 design-ai site website-workspace.json --prompts --out website-prompts.md
 design-ai site website-workspace.json --prompt codex-implementation --out codex-implementation.md
@@ -45,7 +46,7 @@ design-ai site website-workspace.json --prompt codex-implementation --task task-
 cat website-workspace.json | design-ai site --stdin --strict --json
 ```
 
-`design-ai site --sample` creates a valid starter workspace JSON for file-first workflows. `design-ai site --prompt-list --json` lists the available prompt template ids before you choose one. `design-ai site --tasks` expands audit findings into deterministic starter refactor tasks. `design-ai site --prompt <template-id>` exports one prompt template when you want to paste only the next Codex or Claude instruction into another tool. For implementation prompts, add `--task <id-or-number>` to target a specific refactor task instead of the default top-priority task. The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports or prompt bundles. It still does not modify the target website repo or call external MCPs.
+`design-ai site --sample` creates a valid starter workspace JSON for file-first workflows. `design-ai site --prompt-list --json` lists the available prompt template ids before you choose one. `design-ai site --mcp-check --json` checks local MCP readiness evidence and task/MCP gaps without calling external MCPs; add `--strict` to fail when required readiness evidence is missing. `design-ai site --tasks` expands audit findings into deterministic starter refactor tasks. `design-ai site --prompt <template-id>` exports one prompt template when you want to paste only the next Codex or Claude instruction into another tool. For implementation prompts, add `--task <id-or-number>` to target a specific refactor task instead of the default top-priority task. The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports or prompt bundles. It still does not modify the target website repo or call external MCPs.
 
 ## Accessibility And Responsive Notes
 

@@ -14,6 +14,7 @@ export const SITE_OPTIONS = [
   "--sample",
   "--tasks",
   "--prompt-list",
+  "--mcp-check",
   "--prompt",
   "--task",
   "--strict",
@@ -210,6 +211,7 @@ export function parseSiteArgs(args) {
     sample: false,
     tasks: false,
     promptList: false,
+    mcpCheck: false,
     promptTemplate: "",
     taskSelector: "",
     json: false,
@@ -237,6 +239,8 @@ export function parseSiteArgs(args) {
       out.tasks = true;
     } else if (arg === "--prompt-list") {
       out.promptList = true;
+    } else if (arg === "--mcp-check") {
+      out.mcpCheck = true;
     } else if (arg === "--prompt") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -284,8 +288,11 @@ export function parseSiteArgs(args) {
   if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --sample without --report, --prompts, or --prompt");
   }
-  if (out.promptList && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.mcpCheck || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --mcp-check, --report, --prompts, --prompt, or --strict");
+  }
+  if (out.mcpCheck && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-check without --sample, --tasks, --report, --prompts, or --prompt");
   }
   if (out.sample && out.tasks) {
     throw new Error("Use only one generated workspace mode: --sample or --tasks");
@@ -305,15 +312,15 @@ export function parseSiteArgs(args) {
   if (out.tasks && out.promptTemplate) {
     throw new Error("Use --tasks without --prompt; generate tasks in a separate command first");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one Markdown output mode: --report, --prompts, or --prompt");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, or --mcp-check");
   }
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("--json is only supported for the site summary; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.promptList)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, or --prompt-list");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.promptList || out.mcpCheck)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --prompt-list, or --mcp-check");
   }
 
   const { index, ...parsed } = out;
@@ -905,6 +912,271 @@ export function formatSitePromptTemplatesHuman() {
     "Use:",
     "  design-ai site <workspace.json> --prompt <template-id>",
     "  design-ai site <workspace.json> --prompt codex-implementation --task <id-or-number>",
+  ].join("\n");
+}
+
+function isLikelyHttpUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return false;
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function mcpReadinessEvidence(workspace, key) {
+  const profile = workspace.siteProfile;
+  const hasRepo = Boolean(profile.repoUrl || profile.localPath);
+  const hasLiveUrl = isLikelyHttpUrl(profile.liveUrl);
+
+  const map = {
+    github: {
+      ready: hasRepo,
+      evidence: [
+        profile.repoUrl ? `repoUrl: ${profile.repoUrl}` : "",
+        profile.localPath ? `localPath: ${profile.localPath}` : "",
+      ].filter(Boolean),
+      actions: ["Add siteProfile.repoUrl or siteProfile.localPath before Codex implementation handoff."],
+    },
+    figma: {
+      ready: Boolean(profile.figmaUrl),
+      evidence: profile.figmaUrl ? [`figmaUrl: ${profile.figmaUrl}`] : [],
+      actions: ["Add siteProfile.figmaUrl or mark Figma unused for this site."],
+    },
+    browser: {
+      ready: hasLiveUrl && profile.viewports.length > 0,
+      evidence: [
+        hasLiveUrl ? `liveUrl: ${profile.liveUrl}` : "",
+        profile.viewports.length ? `viewports: ${profile.viewports.join(", ")}` : "",
+      ].filter(Boolean),
+      actions: ["Add a valid siteProfile.liveUrl and at least one viewport for Browser/Playwright QA."],
+    },
+    chromeDevtools: {
+      ready: hasLiveUrl,
+      evidence: hasLiveUrl ? [`liveUrl: ${profile.liveUrl}`] : [],
+      actions: ["Add a valid siteProfile.liveUrl before Chrome DevTools debugging."],
+    },
+    deploy: {
+      ready: profile.deployProvider !== "none" && hasLiveUrl,
+      evidence: [
+        `deployProvider: ${profile.deployProvider}`,
+        hasLiveUrl ? `liveUrl: ${profile.liveUrl}` : "",
+      ].filter(Boolean),
+      actions: ["Set siteProfile.deployProvider and liveUrl before deployment verification."],
+    },
+    sentry: {
+      ready: Boolean(profile.sentryProject),
+      evidence: profile.sentryProject ? [`sentryProject: ${profile.sentryProject}`] : [],
+      actions: ["Add siteProfile.sentryProject or mark Sentry unused until production errors are in scope."],
+    },
+    database: {
+      ready: profile.database !== "none",
+      evidence: [`database: ${profile.database}`],
+      actions: ["Set siteProfile.database to supabase, neon, postgres, or other when DB access is required."],
+    },
+    cms: {
+      ready: profile.cms !== "none",
+      evidence: [`cms: ${profile.cms}`],
+      actions: ["Set siteProfile.cms to sanity, contentful, wordpress, shopify, or other when content access is required."],
+    },
+    collaboration: {
+      ready: false,
+      evidence: [],
+      actions: ["Keep Collaboration optional/unused, or record the active Notion/Slack/Linear/Jira destination in reportNotes for handoff."],
+    },
+    research: {
+      ready: hasLiveUrl,
+      evidence: hasLiveUrl ? [`liveUrl: ${profile.liveUrl}`] : [],
+      actions: ["Add siteProfile.liveUrl before competitor or external research prompts."],
+    },
+  };
+
+  return map[key] || {
+    ready: false,
+    evidence: [],
+    actions: [`Add readiness evidence for ${key}.`],
+  };
+}
+
+function mcpItemReport(workspace, key, label) {
+  const requestedStatus = workspace.mcpReadiness[key];
+  const check = mcpReadinessEvidence(workspace, key);
+
+  if (requestedStatus === "unused") {
+    return {
+      key,
+      label,
+      requestedStatus,
+      state: "unused",
+      level: "pass",
+      evidence: ["Marked unused in mcpReadiness."],
+      actions: [],
+    };
+  }
+
+  if (requestedStatus === "unavailable") {
+    return {
+      key,
+      label,
+      requestedStatus,
+      state: "unavailable",
+      level: "pass",
+      evidence: ["Marked unavailable in mcpReadiness; generated prompts should not assume this MCP."],
+      actions: [],
+    };
+  }
+
+  if (key === "collaboration" && requestedStatus === "optional") {
+    return {
+      key,
+      label,
+      requestedStatus,
+      state: "ready",
+      level: "pass",
+      evidence: ["Optional collaboration is tracked in handoff notes for this local MVP."],
+      actions: [],
+    };
+  }
+
+  if (check.ready) {
+    return {
+      key,
+      label,
+      requestedStatus,
+      state: "ready",
+      level: "pass",
+      evidence: check.evidence,
+      actions: [],
+    };
+  }
+
+  return {
+    key,
+    label,
+    requestedStatus,
+    state: "missing",
+    level: requestedStatus === "required" ? "fail" : "warn",
+    evidence: check.evidence,
+    actions: check.actions,
+  };
+}
+
+function normalizeMcpKey(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const canonical = {
+    chrome: "chromeDevtools",
+    chromeDevTools: "chromeDevtools",
+    devtools: "chromeDevtools",
+    playwright: "browser",
+    browserplaywright: "browser",
+    github: "github",
+    figma: "figma",
+    browser: "browser",
+    chromeDevtools: "chromeDevtools",
+    deploy: "deploy",
+    sentry: "sentry",
+    database: "database",
+    cms: "cms",
+    collaboration: "collaboration",
+    research: "research",
+  };
+  return canonical[raw] || canonical[raw.replace(/[^a-zA-Z]/g, "")] || raw;
+}
+
+function mcpTaskGaps(workspace) {
+  return workspace.refactorTasks.flatMap((task) => normalizeStringArray(task.recommendedMcp).flatMap((rawMcp) => {
+    const key = normalizeMcpKey(rawMcp);
+    if (!key || !workspace.mcpReadiness[key]) return [];
+    const status = workspace.mcpReadiness[key];
+    if (status !== "unused" && status !== "unavailable") return [];
+    return [{
+      taskId: task.id,
+      title: task.title,
+      mcp: key,
+      status,
+      level: "warn",
+      message: `Task '${task.title}' recommends ${key}, but mcpReadiness marks it ${status}.`,
+    }];
+  }));
+}
+
+function siteMcpCheckStatus(items, taskGaps, workspaceIssues) {
+  if (workspaceIssues.some((issue) => issue.level === "fail")) return "fail";
+  if (items.some((item) => item.level === "fail")) return "fail";
+  if (workspaceIssues.some((issue) => issue.level === "warn")) return "warn";
+  if (items.some((item) => item.level === "warn") || taskGaps.length > 0) return "warn";
+  return "pass";
+}
+
+export function buildSiteMcpCheckReport(workspace, summary = {}) {
+  const items = MCP_ITEMS.map(([key, label]) => mcpItemReport(workspace, key, label));
+  const taskGaps = mcpTaskGaps(workspace);
+  const workspaceIssues = (summary.issues || []).filter((issue) => issue.level !== "pass");
+  const status = siteMcpCheckStatus(items, taskGaps, workspaceIssues);
+  const nextActions = [
+    ...items.flatMap((item) => item.actions),
+    ...taskGaps.map((gap) => `Align task '${gap.taskId}' recommendedMcp with mcpReadiness.${gap.mcp}.`),
+  ];
+
+  return {
+    filePath: summary.filePath || "workspace.json",
+    status,
+    workspaceStatus: summary.status || "unknown",
+    site: {
+      name: workspace.siteProfile.name,
+      liveUrl: workspace.siteProfile.liveUrl,
+      repoUrl: workspace.siteProfile.repoUrl,
+      localPath: workspace.siteProfile.localPath,
+    },
+    counts: {
+      total: items.length,
+      required: items.filter((item) => item.requestedStatus === "required").length,
+      optional: items.filter((item) => item.requestedStatus === "optional").length,
+      ready: items.filter((item) => item.state === "ready").length,
+      missing: items.filter((item) => item.state === "missing").length,
+      unused: items.filter((item) => item.state === "unused").length,
+      unavailable: items.filter((item) => item.state === "unavailable").length,
+      taskGaps: taskGaps.length,
+    },
+    items,
+    taskGaps,
+    workspaceIssues,
+    nextActions,
+  };
+}
+
+export function formatSiteMcpCheckJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteMcpCheckHuman(report) {
+  return [
+    `Website Improvement MCP readiness: ${report.site.name}`,
+    "",
+    `Status: ${report.status}`,
+    `Workspace status: ${report.workspaceStatus}`,
+    `Required MCP: ${report.counts.required}`,
+    `Ready: ${report.counts.ready}`,
+    `Missing: ${report.counts.missing}`,
+    `Task gaps: ${report.counts.taskGaps}`,
+    "",
+    "MCP checks:",
+    ...report.items.map((item) => {
+      const evidence = item.evidence.length ? item.evidence.join("; ") : "no evidence";
+      const action = item.actions.length ? `\n   Next: ${item.actions.join(" ")}` : "";
+      return `- [${item.level}] ${item.label} (${item.requestedStatus}) -> ${item.state}\n   Evidence: ${evidence}${action}`;
+    }),
+    "",
+    "Task MCP gaps:",
+    ...(report.taskGaps.length
+      ? report.taskGaps.map((gap) => `- [${gap.level}] ${gap.taskId}: ${gap.message}`)
+      : ["- none"]),
+    "",
+    "Next actions:",
+    ...(report.nextActions.length ? report.nextActions.map((action) => `- ${action}`) : ["- none"]),
   ].join("\n");
 }
 

@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.20.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.21.0.tgz
 """
 from __future__ import annotations
 
@@ -84,6 +84,7 @@ from smoke_assertions import (
     assert_status_json,
     assert_status_output,
     assert_site_json,
+    assert_site_mcp_check_json,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
     assert_site_sample_json,
@@ -631,6 +632,22 @@ def assert_site_prompt_templates_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_site_prompt_templates_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_check_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_workspace_strict_success_smoke(
@@ -4692,6 +4709,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site prompt template listing JSON",
         )
+        assert_site_mcp_check_json_smoke(
+            [str(bin_path), "site", "--stdin", "--mcp-check", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check JSON",
+        )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
             cwd=install_root,
@@ -5369,6 +5392,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site prompt template listing JSON",
+        )
+        assert_site_mcp_check_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check JSON",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
