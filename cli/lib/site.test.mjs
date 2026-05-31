@@ -10,6 +10,7 @@ import { runSite } from "../commands/site.mjs";
 import {
   analyzeSiteWorkspace,
   buildSiteHandoffReport,
+  buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
   createSampleSiteWorkspace,
@@ -53,6 +54,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     stdin: false,
     sample: false,
     tasks: false,
+    promptTemplate: "",
     json: true,
     strict: true,
     report: false,
@@ -67,6 +69,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     stdin: true,
     sample: false,
     tasks: false,
+    promptTemplate: "",
     json: false,
     strict: false,
     report: true,
@@ -78,6 +81,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
 
   assert.equal(parseSiteArgs(["--help"]).help, true);
   assert.equal(parseSiteArgs(["workspace.json", "--prompts"]).prompts, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--prompt", "codex-implementation"]).promptTemplate, "codex-implementation");
   assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
 });
@@ -86,13 +90,18 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--stdin"]), /either a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
-  assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report or --prompts/);
+  assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, or --prompt/);
+  assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
   assert.throws(() => parseSiteArgs(["--sample", "--strict"]), /Use --sample without --strict/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--json"]), /Use --tasks without --json/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--report"]), /Use --tasks without --json/);
-  assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--prompt", "codex-implementation"]), /Use --tasks without --prompt/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one Markdown output mode/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--prompts", "--prompt", "codex-implementation"]), /only one Markdown output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--prompt"]), /--prompt requires a template id/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "bad-template"]), /--prompt must be one of/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
   assert.throws(() => parseSiteArgs(["workspace.json", "extra.json"]), /Unexpected argument/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--jsn"]), /Did you mean `--json`\?/);
@@ -194,12 +203,16 @@ test("formatSiteJson preserves summary payload order and readable Korean text", 
 test("buildSiteHandoffReport and prompt bundle include operational boundaries", () => {
   const workspace = createSampleSiteWorkspace();
   const report = buildSiteHandoffReport(workspace);
+  const prompt = buildSitePrompt(workspace, "codex-implementation");
   const prompts = buildSitePromptBundle(workspace);
 
   assert.match(report, /# Website improvement handoff: Korean SaaS marketing site/);
   assert.match(report, /## MCP Readiness/);
   assert.match(report, /Clarify homepage CTA hierarchy/);
   assert.match(report, /Not recorded in this MVP/);
+  assert.match(prompt, /# Codex implementation prompt/);
+  assert.match(prompt, /Selected task:/);
+  assert.match(prompt, /Work in the target website repository, not in this design-ai repository/);
   assert.match(prompts, /# Website improvement prompt bundle: Korean SaaS marketing site/);
   assert.match(prompts, /## codex-repo-intake/);
   assert.match(prompts, /## claude-competitor/);
@@ -226,6 +239,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const file = path.join(dir, "workspace.json");
     const handoff = path.join(dir, "out", "handoff.md");
     const prompts = path.join(dir, "out", "prompts.md");
+    const singlePrompt = path.join(dir, "out", "codex-implementation.md");
     writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
 
     const jsonOutput = await captureConsole(() => runSite([file, "--json"]));
@@ -240,6 +254,11 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptsOutput = await captureConsole(() => runSite([file, "--prompts", "--out", prompts]));
     assert.match(promptsOutput.stdout, /Wrote /);
     assert.match(readFileSync(prompts, "utf8"), /Website improvement prompt bundle/);
+
+    const promptOutput = await captureConsole(() => runSite([file, "--prompt", "codex-implementation", "--out", singlePrompt]));
+    assert.match(promptOutput.stdout, /Wrote /);
+    assert.match(readFileSync(singlePrompt, "utf8"), /# Codex implementation prompt/);
+    assert.doesNotMatch(readFileSync(singlePrompt, "utf8"), /Website improvement prompt bundle/);
   });
 });
 
@@ -311,8 +330,10 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
+  assert.match(output.stdout, /--prompt id Generate one Markdown prompt template/);
 });

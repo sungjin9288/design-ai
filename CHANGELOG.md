@@ -2,6 +2,33 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.18.0 — Website Improvement Single Prompt CLI Export (2026-06)
+
+Added `design-ai site --prompt <template-id>` so Website Improvement workspace JSON can export one Codex or Claude prompt without generating the full prompt bundle.
+The command validates template ids, supports stdin/file input, writes Markdown through safe `--out` / `--force`, and keeps `--sample`, `--tasks`, `--json`, `--report`, and `--prompts` as separate modes.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the single-prompt export path.
+Packed-tarball package smoke verifies `design-ai site --stdin --prompt codex-implementation` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can move from a generated workspace and refactor plan directly to the next implementation prompt for the target website repo without manually extracting a section from the full prompt bundle.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs docs/website-console/app.js`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- All 8 audits pass.
+- `git diff --check`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.17.0 → 4.18.0.
+
 ## v4.17.0 — Website Improvement Refactor Task CLI Generation (2026-06)
 
 Added `design-ai site --tasks` so Website Improvement workspace JSON can be expanded with deterministic starter refactor tasks from audit findings.

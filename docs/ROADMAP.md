@@ -51,6 +51,45 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 233 — Website Improvement Single Prompt CLI Export (v4.18.0) ✓ shipped
+
+Website improvement work can now export one Codex or Claude prompt from the CLI. `design-ai site --prompt <template-id>` reads a Website Improvement workspace JSON and emits a single Markdown prompt for the next handoff step.
+
+### Changed
+- Added `design-ai site <workspace.json|--stdin> --prompt <template-id> [--out file] [--force]` as a single-prompt Markdown mode.
+- Added prompt template id validation for the eight Website Improvement templates.
+- Kept generated workspace, summary, report, full prompt bundle, and single prompt output modes separate to avoid ambiguous CLI output.
+- Added unit coverage for parser validation, selected prompt generation, output-file writing, and command-specific help.
+- Added packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.18.0`.
+
+### Impact
+- Operators can use a file-first flow: `design-ai site --sample`, edit findings, `design-ai site workspace.json --tasks`, then export only `--prompt codex-implementation` for the target repo.
+- The command remains local and deterministic: no target repo mutation, no external MCP calls, no backend storage, no embeddings, no fine-tuning, and no new dependencies.
+- Packed-tarball smoke now verifies single-prompt Markdown output from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### What this enables
+- Internal pilots can paste a focused next-step prompt into Codex or Claude without manually cutting a section out of the full prompt bundle.
+- Future phases can add task selection, prompt-template listing, and real MCP readiness checks on top of the same workspace schema.
+
+### What's still ahead
+- Real MCP connection checks, target-repo automation, Lighthouse/axe/visual diff, and hosted multi-user storage remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs docs/website-console/app.js`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- All 8 audits pass.
+- `git diff --check`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.17.0 → 4.18.0.
+
 ## Phase 232 — Website Improvement Refactor Task CLI Generation (v4.17.0) ✓ shipped
 
 Website improvement work can now generate starter refactor tasks from the CLI. `design-ai site --tasks` reads a Website Improvement workspace JSON, converts audit findings into deterministic task entries, and emits updated workspace JSON for later validation, prompt generation, or handoff reporting.

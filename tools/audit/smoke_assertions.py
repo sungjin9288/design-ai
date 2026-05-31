@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts] [--out file] | site --sample [--out file]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts|--prompt id] [--out file] | site --sample [--out file]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -174,10 +174,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "cat workspace.json | design-ai site --stdin [--strict] [--json]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site <workspace.json> --tasks [--out file] [--force]",
+        "design-ai site <workspace.json> --prompt template-id [--out file] [--force]",
         "--sample",
         "--tasks",
         "--report",
         "--prompts",
+        "--prompt id",
         "--out file",
     ),
     "version": ("Usage:", "design-ai version [--json]"),
@@ -202,7 +204,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "workspace [--root path] [--learning-file path] [--strict] [--json]",
     "site <workspace.json|--stdin>",
     "site --sample",
-    "[--json|--tasks|--report|--prompts]",
+    "[--json|--tasks|--report|--prompts|--prompt id]",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
@@ -211,7 +213,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.17.0",
+    "4.18.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -251,7 +253,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.17.0",
+    "Version alignment: 4.18.0",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -882,7 +884,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.17.0",
+        "Plugin: design-ai v4.18.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -914,7 +916,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.17.0",
+            "version": "4.18.0",
             "kind": kind,
             "sections": [
                 {
@@ -1335,7 +1337,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.17.0",
+        "version": "4.18.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1409,7 +1411,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.17.0",
+        "Corpus version: 4.18.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1498,7 +1500,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.17.0",
+        "version": "4.18.0",
         "routes": routes,
     })
 
@@ -1506,7 +1508,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.17.0",
+        "version": "4.18.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1611,7 +1613,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.17.0",
+        "Corpus version: 4.18.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1637,7 +1639,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.17.0",
+        "version": "4.18.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1685,7 +1687,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.17.0",
+        "Corpus version: 4.18.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3539,7 +3541,7 @@ def passing_main_help_output() -> str:
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--strict] [--json]     Show read-only local dogfood readiness: git, repository, learning, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts] [--out file] | site --sample [--out file]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--tasks|--report|--prompts|--prompt id] [--out file] | site --sample [--out file]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -3553,8 +3555,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.17.0",
-        "Plugin / corpus:  4.17.0",
+        "design-ai CLI:    4.18.0",
+        "Plugin / corpus:  4.18.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3567,8 +3569,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.17.0",
-                "plugin": "4.17.0",
+                "cli": "4.18.0",
+                "plugin": "4.18.0",
                 "aligned": True,
             },
         },
@@ -3585,7 +3587,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.17.0",
+                "version": "4.18.0",
             },
             "git": {
                 "isRepo": False,
@@ -3631,7 +3633,7 @@ def passing_workspace_json() -> str:
             },
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.17.0",
+                "version": "4.18.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -3880,6 +3882,63 @@ def passing_site_tasks_json() -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
+def passing_site_prompt_markdown() -> str:
+    return """# Codex implementation prompt
+Site profile:
+- Name: Korean SaaS marketing site
+- Live URL: https://example.com
+- Repo URL: https://github.com/acme/korean-saas-site
+- Local path: /Users/you/dev/korean-saas-site
+- Figma URL: https://figma.com/file/example
+- Deploy: vercel
+- Sentry: acme/korean-saas-web
+- CMS: sanity
+- Database: none
+- Viewports: desktop, tablet, mobile
+
+Priority pages:
+- /
+- /pricing
+- /signup
+- /docs
+
+User flows:
+- Visitor compares pricing and starts signup
+- Existing customer finds feature proof before contacting sales
+
+Brand/design notes:
+Quiet B2B SaaS tone, Pretendard typography, dense but readable Korean product copy, indigo accent only for action and focus.
+
+Selected task:
+- Title: Clarify homepage CTA hierarchy
+- Category: Visual Design
+- Problem: Primary and secondary actions compete in the hero, which weakens the visitor's first decision.
+- Evidence: Sample finding: Primary CTA competes with secondary link on the homepage.
+- Impact: high
+- Effort: medium
+- Priority: p1
+- Pages: /
+- Recommended MCP: browser, figma
+
+Verification:
+- Run target repo lint/build
+- Verify desktop/tablet/mobile hero layout
+- Confirm focus indicators and text contrast
+
+Risks:
+- Could change conversion copy without stakeholder approval
+
+Rules:
+- Work in the target website repository, not in this design-ai repository.
+- Inspect existing architecture, components, state, styling, and design tokens before editing.
+- Keep changes scoped and avoid new dependencies unless clearly justified.
+- Preserve accessibility: keyboard reachability, visible focus, semantic HTML, screen-reader labels, and WCAG 2.1 AA contrast.
+- Verify desktop, tablet, and mobile layouts.
+
+Implement the smallest safe fix. After editing, run the target repo's most relevant lint/typecheck/build/test command and summarize changed files plus verification.
+"""
+
+
 def passing_workspace_strict_clean_json() -> str:
     payload = json.loads(passing_workspace_json())
     payload["git"] = {
@@ -3931,7 +3990,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.17.0",
+        "✓  Version alignment: 4.18.0",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -3956,7 +4015,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.17.0",
+        "  v4.18.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -4385,7 +4444,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.17.0":
+    if workspace_context.get("version") != "4.18.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -4463,7 +4522,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.17.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.18.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -4768,6 +4827,36 @@ def assert_site_tasks_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if content.get("category") != "content-quality" or content.get("priority") != "p1":
         raise SystemExit(f"site tasks JSON after {context} content task differs from expected generated task")
+
+
+def assert_site_prompt_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    stripped = raw.lstrip()
+    if stripped.startswith("{") or stripped.startswith("["):
+        raise SystemExit(f"site prompt markdown after {context} looks like JSON output")
+    assert_contains_fragments(
+        raw,
+        (
+            "# Codex implementation prompt",
+            "Site profile:",
+            "Korean SaaS marketing site",
+            "Selected task:",
+            "Clarify homepage CTA hierarchy",
+            "Work in the target website repository, not in this design-ai repository.",
+            "Verify desktop, tablet, and mobile layouts.",
+            "lint/typecheck/build/test",
+        ),
+        context=context,
+        label="site prompt markdown",
+    )
+    forbidden_fragments = (
+        "# Website improvement prompt bundle",
+        "## codex-repo-intake",
+        "## claude-competitor",
+    )
+    for fragment in forbidden_fragments:
+        if fragment in raw:
+            raise SystemExit(f"site prompt markdown after {context} unexpectedly contains bundle fragment: {fragment}")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -7627,7 +7716,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.17.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.18.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -7740,6 +7829,8 @@ def run_self_test() -> None:
     assert_site_sample_json(passing_site_sample_json(), context=context, cmd=site_sample_cmd)
     site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
     assert_site_tasks_json(passing_site_tasks_json(), context=context, cmd=site_tasks_cmd)
+    site_prompt_cmd = ["design-ai", "site", "--stdin", "--prompt", "codex-implementation"]
+    assert_site_prompt_markdown(passing_site_prompt_markdown(), context=context, cmd=site_prompt_cmd)
     expect_self_test_failure(
         lambda: assert_site_json("\x1b[31m{}", context=context, cmd=site_cmd),
         expected="ANSI escape",
@@ -7752,6 +7843,11 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_site_tasks_json("\x1b[31m{}", context=context, cmd=site_tasks_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_prompt_markdown("\x1b[31m# Codex implementation prompt", context=context, cmd=site_prompt_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -7847,6 +7943,24 @@ def run_self_test() -> None:
             cmd=site_tasks_cmd,
         ),
         expected="target repo boundary",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_prompt_markdown(
+            passing_site_prompt_markdown().replace("Work in the target website repository, not in this design-ai repository.", "Work in this repo."),
+            context=context,
+            cmd=site_prompt_cmd,
+        ),
+        expected="target website repository",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_prompt_markdown(
+            f"# Website improvement prompt bundle\n\n{passing_site_prompt_markdown()}",
+            context=context,
+            cmd=site_prompt_cmd,
+        ),
+        expected="bundle fragment",
         scope="smoke assertions",
     )
     assert_command_alias_output(

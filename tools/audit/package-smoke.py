@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.17.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.18.0.tgz
 """
 from __future__ import annotations
 
@@ -84,6 +84,7 @@ from smoke_assertions import (
     assert_status_json,
     assert_status_output,
     assert_site_json,
+    assert_site_prompt_markdown,
     assert_site_sample_json,
     assert_site_tasks_json,
     assert_search_dir_value_failure,
@@ -602,6 +603,22 @@ def assert_site_tasks_json_smoke(
         env=env,
     )
     assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_prompt_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_prompt_markdown(result.stdout, context=context, cmd=cmd)
 
 
 def assert_workspace_strict_success_smoke(
@@ -4663,6 +4680,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site tasks JSON",
         )
+        assert_site_prompt_markdown_smoke(
+            [str(bin_path), "site", "--stdin", "--prompt", "codex-implementation"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site prompt markdown",
+        )
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -5328,6 +5351,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site tasks JSON",
+        )
+        assert_site_prompt_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--prompt", "codex-implementation"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site prompt markdown",
         )
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),

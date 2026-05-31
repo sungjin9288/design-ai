@@ -40,9 +40,10 @@ design-ai site website-workspace.json --tasks --out website-workspace.tasks.json
 design-ai site website-workspace.json --json
 design-ai site website-workspace.json --report --out website-handoff.md
 design-ai site website-workspace.json --prompts --out website-prompts.md
+design-ai site website-workspace.json --prompt codex-implementation --out codex-implementation.md
 ```
 
-`design-ai site --sample`은 파일 기반 workflow를 바로 시작할 수 있는 유효한 starter workspace JSON을 생성합니다. `design-ai site --tasks`는 audit finding를 deterministic starter refactor task로 확장합니다. `design-ai site`는 Website Console에서 export한 JSON을 검증하고, audit/MCP/task readiness summary, Markdown handoff report, Codex/Claude prompt bundle을 생성합니다. 대상 웹사이트 repo를 수정하거나 외부 MCP를 호출하지 않습니다.
+`design-ai site --sample`은 파일 기반 workflow를 바로 시작할 수 있는 유효한 starter workspace JSON을 생성합니다. `design-ai site --tasks`는 audit finding를 deterministic starter refactor task로 확장합니다. `design-ai site --prompt <template-id>`는 다른 도구에 붙여넣을 다음 Codex 또는 Claude instruction만 필요할 때 단일 prompt template을 export합니다. `design-ai site`는 Website Console에서 export한 JSON을 검증하고, audit/MCP/task readiness summary, Markdown handoff report, Codex/Claude prompt bundle을 생성합니다. 대상 웹사이트 repo를 수정하거나 외부 MCP를 호출하지 않습니다.
 
 Claude Code에서는 `/design-website-improvement` 명령이나 `website-improvement` skill을 사용할 수 있습니다.
 

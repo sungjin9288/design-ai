@@ -2,6 +2,7 @@
 
 import {
   buildSiteHandoffReport,
+  buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
   createSampleSiteWorkspace,
@@ -18,7 +19,8 @@ function printHelp() {
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]\n");
+  console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --prompt template-id [--out file] [--force]\n");
   console.log("Validates Website Improvement Console JSON exports and turns them into local handoff artifacts.\n");
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
@@ -28,7 +30,9 @@ function printHelp() {
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
   console.log("  --prompts   Generate a Markdown bundle of Codex and Claude prompts");
-  console.log("  --out file  Write --json, --sample, --tasks, --report, or --prompts output to a file");
+  console.log("  --prompt id Generate one Markdown prompt template");
+  console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
+  console.log("  --out file  Write --json, --sample, --tasks, --report, --prompts, or --prompt output to a file");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
@@ -37,6 +41,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
+  console.log("  design-ai site website-workspace.json --prompt codex-implementation --out codex-implementation.md");
 }
 
 function printIssue(issue) {
@@ -77,6 +82,7 @@ function printHumanSummary(summary) {
   console.log("\nNext:");
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --report --out website-handoff.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompts --out website-prompts.md`);
+  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --out codex-implementation.md`);
 }
 
 function shouldFail(summary, strict) {
@@ -124,6 +130,8 @@ export async function runSite(args) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {
     content = `${buildSitePromptBundle(workspace)}\n`;
+  } else if (parsed.promptTemplate) {
+    content = `${buildSitePrompt(workspace, parsed.promptTemplate)}\n`;
   } else if (parsed.tasks) {
     content = `${JSON.stringify(generateSiteRefactorTasks(workspace).workspace, null, 2)}\n`;
   } else if (parsed.json) {
@@ -137,7 +145,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.report || parsed.prompts || parsed.tasks || parsed.json) {
+  } else if (parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);
