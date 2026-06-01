@@ -53,7 +53,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
-  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
+  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
@@ -108,7 +108,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "workspace").aliases, ["ws"]);
@@ -162,7 +162,7 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.match(formatted, /"topics": \[\n    \{\n      "topic": "install",/);
 });
@@ -250,17 +250,19 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-plan \[--strict\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(siteOutput, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(siteOutput, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
   assert.match(siteOutput, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
+  assert.match(siteOutput, /--bundle\s+Write a complete local handoff bundle directory/);
   assert.match(siteOutput, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(siteOutput, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(siteOutput, /--prompt id Generate one Markdown prompt template/);
   assert.match(siteOutput, /--task id\s+Select a refactor task by id or 1-based top-task number/);
-  assert.match(siteOutput, /--out file\s+Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --report, --prompts, or --prompt output to a file/);
+  assert.match(siteOutput, /--out file\s+Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --report, --prompts, or --prompt output to a file or directory/);
   assert.match(learnOutput, /--import\s+Merge entries from a JSON learning profile or learn --export --json payload/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);

@@ -2,6 +2,41 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.23.0 — Website Improvement Handoff Bundle Export (2026-06)
+
+Added `design-ai site <workspace.json|--stdin> --bundle --out <dir> [--strict] [--force]` so Website Improvement workspaces can be exported as a complete local handoff bundle before target-repo implementation.
+The bundle writes `README.md`, `summary.json`, `website-workspace.tasks.json`, `mcp-check.json`, `mcp-action-plan.md`, `website-handoff.md`, `website-prompts.md`, and `codex-implementation.md` with deterministic task generation, readiness evidence, prompts, and local/operator boundaries.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the handoff bundle path.
+Packed-tarball package smoke verifies `design-ai site --stdin --bundle --out <dir>` from both installed-bin and one-shot `npm exec --package <tarball>` paths, including bundle file creation and summary/task/profile roundtrip checks.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can package the Website Improvement workspace, generated tasks, MCP readiness check, MCP action plan, full prompt set, focused Codex implementation prompt, and handoff report into one portable directory for solo/internal use.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs cli/lib/output.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --bundle --out`, `design-ai site --stdin --bundle --out`, and `design-ai help site`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.22.0 → 4.23.0.
+
 ## v4.22.0 — Website Improvement MCP Action Plan Export (2026-06)
 
 Added `design-ai site <workspace.json|--stdin> --mcp-plan [--strict] [--out file]` so Website Improvement MCP readiness results can be exported as a Markdown action plan before target-repo implementation.

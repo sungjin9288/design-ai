@@ -49,3 +49,53 @@ export function writeOutputFile({ outPath, content, force = false, cwd = process
   writeFileSync(absolute, content, "utf8");
   return absolute;
 }
+
+function assertSafeRelativePath(relPath) {
+  const normalized = path.normalize(String(relPath || ""));
+  if (!normalized || normalized === ".") {
+    throw new Error("Output bundle file path is empty");
+  }
+  if (path.isAbsolute(normalized) || normalized.startsWith("..") || normalized.includes(`${path.sep}..${path.sep}`)) {
+    throw new Error(`Output bundle file path must stay inside the output directory: ${relPath}`);
+  }
+  return normalized;
+}
+
+export function writeOutputFiles({ outPath, files, force = false, cwd = process.cwd() }) {
+  if (!outPath) throw new Error("Missing output directory");
+  if (!Array.isArray(files) || files.length === 0) throw new Error("No output files provided");
+
+  const absolute = path.resolve(cwd, outPath);
+  if (exists(absolute) && !statSync(absolute).isDirectory()) {
+    throw new Error(`Output path is not a directory: ${absolute}`);
+  }
+
+  const planned = files.map((file) => {
+    const relativePath = assertSafeRelativePath(file.path);
+    const target = path.join(absolute, relativePath);
+    if (exists(target)) {
+      if (statSync(target).isDirectory()) {
+        throw new Error(`Output bundle file path is a directory: ${target}`);
+      }
+      if (!force) {
+        throw new Error(`Output bundle file already exists: ${target}. Use --force to overwrite.`);
+      }
+    }
+    return {
+      relativePath,
+      target,
+      content: String(file.content ?? ""),
+    };
+  });
+
+  mkdirSync(absolute, { recursive: true });
+  for (const file of planned) {
+    mkdirSync(path.dirname(file.target), { recursive: true });
+    writeFileSync(file.target, file.content, "utf8");
+  }
+
+  return {
+    directory: absolute,
+    files: planned.map((file) => file.target),
+  };
+}

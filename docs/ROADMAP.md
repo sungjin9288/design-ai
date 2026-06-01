@@ -51,6 +51,53 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 238 — Website Improvement Handoff Bundle Export (v4.23.0) ✓ shipped
+
+Website improvement work can now be packaged as a complete local handoff bundle. `design-ai site <workspace.json|--stdin> --bundle --out <dir> [--strict] [--force]` writes a portable directory containing generated tasks, MCP readiness, MCP action plan, handoff report, prompt bundle, and a focused Codex implementation prompt.
+
+### Changed
+- Added `--bundle --out <dir>` for `design-ai site` as a directory output mode for workspace/stdin inputs.
+- Added bundle artifact generation for `README.md`, `summary.json`, `website-workspace.tasks.json`, `mcp-check.json`, `mcp-action-plan.md`, `website-handoff.md`, `website-prompts.md`, and `codex-implementation.md`.
+- Reused deterministic local task generation, MCP readiness, action plan, report, and prompt builders; no external MCP calls, target repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+- Added safe directory output writing with collision checks and `--force` overwrite behavior.
+- Added unit coverage for parser validation, bundle file manifest, generated implementation prompt, output directory writing, command-specific help, and help JSON catalog usage.
+- Added packed-tarball smoke coverage for `design-ai site --stdin --bundle --out <dir>` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.23.0`.
+
+### Impact
+- Operators can move from Website Console JSON to a single handoff directory that includes both machine-readable evidence and human-readable execution docs.
+- Solo/internal pilots can attach the bundle to a target-repo Codex session without copying multiple ad hoc artifacts by hand.
+
+### What this enables
+- Internal pilots can keep `--mcp-check --strict --json` as the automated gate, `--mcp-plan --out mcp-action-plan.md` as the operator checklist, and `--bundle --out website-handoff-bundle` as the portable handoff package.
+- Future real MCP connection probes can reuse the same bundle manifest while replacing local readiness evidence with live probe results.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs cli/lib/output.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --bundle --out`, `design-ai site --stdin --bundle --out`, and `design-ai help site`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.22.0 → 4.23.0.
+
 ## Phase 237 — Website Improvement MCP Action Plan Export (v4.22.0) ✓ shipped
 
 Website improvement readiness checks can now become an operator-facing action plan. `design-ai site <workspace.json|--stdin> --mcp-plan [--strict] [--out file]` exports a Markdown plan that translates MCP readiness evidence, workspace issues, and task/MCP gaps into blocking items, warnings, task alignment, execution sequence, and follow-up commands.

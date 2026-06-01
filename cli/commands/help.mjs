@@ -43,7 +43,7 @@ export const HELP_COMMANDS = [
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
   { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning, and release scripts" },
-  { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
+  { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
 ];

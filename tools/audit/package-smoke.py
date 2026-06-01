@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.22.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.23.0.tgz
 """
 from __future__ import annotations
 
@@ -665,6 +665,69 @@ def assert_site_mcp_plan_markdown_smoke(
         env=env,
     )
     assert_site_mcp_plan_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    expected_files = [
+        "README.md",
+        "summary.json",
+        "website-workspace.tasks.json",
+        "mcp-check.json",
+        "mcp-action-plan.md",
+        "website-handoff.md",
+        "website-prompts.md",
+        "codex-implementation.md",
+    ]
+    for name in expected_files:
+        target = out_dir / name
+        if not target.is_file():
+            raise SystemExit(f"site bundle after {context} missing {target}")
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    if summary.get("status") != "pass":
+        raise SystemExit(f"site bundle after {context} summary status changed: {summary.get('status')!r}")
+    if summary.get("taskGeneration", {}).get("totalTasks") != 3:
+        raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
+    if summary.get("files") != expected_files:
+        raise SystemExit(f"site bundle after {context} file manifest changed")
+
+    tasks = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
+    task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
+    if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
+        raise SystemExit(f"site bundle after {context} task ids changed: {task_ids!r}")
+
+    mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
+    assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
+    assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
+    implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
+    assert_no_ansi(implementation_prompt, cmd)
+    for fragment in (
+        "# Codex implementation prompt",
+        "Task ID: task-accessibility",
+        "Focus state is not yet documented for the mobile menu",
+        "Work in the target website repository, not in this design-ai repository.",
+    ):
+        if fragment not in implementation_prompt:
+            raise SystemExit(f"site bundle after {context} implementation prompt missing fragment: {fragment!r}")
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
+        raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
 
 
 def assert_workspace_strict_success_smoke(
@@ -4738,6 +4801,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-plan markdown",
         )
+        installed_site_bundle_dir = install_root / "installed-site-handoff-bundle"
+        assert_site_bundle_smoke(
+            [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_bundle_dir)],
+            out_dir=installed_site_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site handoff bundle",
+        )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
             cwd=install_root,
@@ -5427,6 +5498,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-plan markdown",
+        )
+        npx_site_bundle_dir = npx_root / "npx-site-handoff-bundle"
+        assert_site_bundle_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_bundle_dir)),
+            out_dir=npx_site_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site handoff bundle",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
