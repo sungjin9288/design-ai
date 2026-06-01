@@ -2,6 +2,26 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.37.0 — Public Registry Learning Eval Template Smoke (2026-06)
+
+Extended the post-publish registry smoke gate so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai learn --eval-template` checkpoint generation and then re-runs the generated checkpoint through `design-ai learn --eval --strict --json`.
+
+The registry smoke now uses the same learning relevance fixture as prompt/pack learning selection, writes a generated eval-template checkpoint artifact, validates its privacy metadata, and confirms the selected entry survives strict eval from the published package path.
+
+### What this enables
+
+Publish verification now protects the new checkpoint bootstrap loop after the package leaves the local tarball path.
+
+### Verified
+
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.36.0 → 4.37.0.
+
 ## v4.36.0 — Learning Eval Template Generation (2026-06)
 
 Added `design-ai learn --eval-template` so operators can generate runnable deterministic learning eval checkpoint JSON from the active local profile instead of hand-writing every case.

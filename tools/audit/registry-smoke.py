@@ -3178,6 +3178,95 @@ def assert_learning_query_export_json(
     )
 
 
+def assert_learning_eval_template_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn eval-template JSON") from error
+
+    source_profile = payload.get("sourceProfile")
+    require_registry_smoke(
+        payload.get("version") == 1
+        and isinstance(source_profile, dict)
+        and source_profile.get("file") == str(profile_path)
+        and source_profile.get("entryCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should report the source learning profile",
+    )
+    cases = payload.get("cases")
+    require_registry_smoke(
+        payload.get("caseCount") == 1
+        and isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("expectedSelectedIds") == ["learn-relevant"]
+        and cases[0].get("minMatchedCount") == 1
+        and cases[0].get("requireNoFallback") is True,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should generate a runnable expected-selection checkpoint",
+    )
+    privacy = payload.get("privacy")
+    require_registry_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("storesRawBriefText") is True
+        and privacy.get("storesBriefHash") is False
+        and privacy.get("exposesMatchedTokens") is False,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+    )
+    require_registry_smoke(
+        EXPECTED_ROUTE_BRIEF in raw and "\"brief\"" in raw,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should include runnable raw brief text in checkpoint cases",
+    )
+
+
+def assert_learning_eval_template_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    eval_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse generated learn eval JSON") from error
+
+    require_registry_smoke(
+        payload.get("file") == str(profile_path)
+        and payload.get("source") == str(eval_path)
+        and payload.get("status") == "pass"
+        and payload.get("caseCount") == 1
+        and payload.get("passed") == 1,
+        context=context,
+        cmd=cmd,
+        message="generated learn eval-template checkpoint should pass learn --eval --strict",
+    )
+    cases = payload.get("cases")
+    require_registry_smoke(
+        isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
+        and cases[0].get("missingExpectedIds") == [],
+        context=context,
+        cmd=cmd,
+        message="generated learn eval-template report should select the expected learning entry",
+    )
+
+
 def assert_learning_relevance_smoke(
     command_factory,
     profile_path: Path,
@@ -3278,6 +3367,54 @@ def assert_learning_relevance_smoke(
     plan = pack_payload.get("plan")
     require_registry_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
     assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+
+    eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
+    eval_template_path.write_text("stale eval template output\n", encoding="utf-8")
+    eval_template_cmd = command_factory(
+        "learn",
+        "--eval-template",
+        "--query",
+        EXPECTED_ROUTE_BRIEF,
+        "--category",
+        "accessibility",
+        "--file",
+        str(profile_path),
+        "--out",
+        str(eval_template_path),
+        "--force",
+    )
+    eval_template_result = run_plain(eval_template_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        eval_template_result.stdout,
+        context=f"{context} learn eval-template out",
+        cmd=eval_template_cmd,
+        expected_path=str(eval_template_path),
+    )
+    assert_learning_eval_template_json(
+        eval_template_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        context=f"{context} learn eval-template out file",
+        cmd=eval_template_cmd,
+    )
+
+    eval_template_check_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(eval_template_path),
+        "--file",
+        str(profile_path),
+        "--strict",
+        "--json",
+    )
+    eval_template_check_result = run_plain(eval_template_check_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_eval_template_report_json(
+        eval_template_check_result.stdout,
+        profile_path=profile_path,
+        eval_path=eval_template_path,
+        context=f"{context} generated learn eval-template checkpoint",
+        cmd=eval_template_check_cmd,
+    )
 
 
 def wait_for_registry_package(
@@ -5247,6 +5384,128 @@ def run_self_test() -> None:
             ),
             expected="learn query export should not use recency fallback",
             scope="registry smoke",
+        )
+
+        learning_eval_template_path = tmp_root / "learning-eval-template.json"
+        learning_eval_template_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-01T00:00:02.000Z",
+            "sourceProfile": {
+                "file": str(learning_relevance_path),
+                "exists": True,
+                "entryCount": 3,
+                "auditStatus": "pass",
+                "category": "accessibility",
+                "query": EXPECTED_ROUTE_BRIEF,
+                "limit": 6,
+            },
+            "selection": {
+                "mode": "brief-relevance",
+                "candidateCount": 1,
+                "matchedCount": 1,
+                "selectedCount": 1,
+                "queryTokenCount": 7,
+                "fallbackCount": 0,
+            },
+            "caseCount": 1,
+            "cases": [
+                {
+                    "id": "eval-1-0123456789",
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "category": "accessibility",
+                    "limit": 1,
+                    "expectedSelectedIds": ["learn-relevant"],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": True,
+                "storesBriefHash": False,
+                "exposesMatchedTokens": False,
+            },
+        }
+        learn_eval_template_cmd = [
+            "design-ai",
+            "learn",
+            "--eval-template",
+            "--query",
+            EXPECTED_ROUTE_BRIEF,
+            "--file",
+            str(learning_relevance_path),
+            "--json",
+        ]
+        assert_learning_eval_template_json(
+            json.dumps(learning_eval_template_payload),
+            profile_path=learning_relevance_path,
+            context="registry smoke self-test",
+            cmd=learn_eval_template_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_template_json(
+                json.dumps({
+                    **learning_eval_template_payload,
+                    "privacy": {
+                        **learning_eval_template_payload["privacy"],
+                        "storesRawBriefText": False,
+                    },
+                }),
+                profile_path=learning_relevance_path,
+                context="registry smoke self-test",
+                cmd=learn_eval_template_cmd,
+            ),
+            expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+            scope="registry smoke",
+        )
+        assert_learning_eval_template_report_json(
+            json.dumps({
+                "file": str(learning_relevance_path),
+                "source": str(learning_eval_template_path),
+                "profileExists": True,
+                "profileEntryCount": 3,
+                "checkpointVersion": 1,
+                "defaultLimit": 12,
+                "defaultCategory": "",
+                "status": "pass",
+                "caseCount": 1,
+                "passed": 1,
+                "warned": 0,
+                "failed": 0,
+                "auditSummary": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+                "cases": [
+                    {
+                        "id": "eval-1-0123456789",
+                        "status": "pass",
+                        "selectedEntryIds": ["learn-relevant"],
+                        "missingExpectedIds": [],
+                    },
+                ],
+                "recommendations": [],
+                "privacy": {
+                    "storesRawBriefText": False,
+                    "storesBriefHash": True,
+                    "exposesMatchedTokens": False,
+                },
+            }),
+            profile_path=learning_relevance_path,
+            eval_path=learning_eval_template_path,
+            context="registry smoke self-test generated eval-template checkpoint",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--eval",
+                "--from-file",
+                str(learning_eval_template_path),
+                "--file",
+                str(learning_relevance_path),
+                "--strict",
+                "--json",
+            ],
         )
 
         learning_relevance_payload = {

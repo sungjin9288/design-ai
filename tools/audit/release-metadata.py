@@ -1466,6 +1466,20 @@ RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
         "registry prompt/pack --with-learning",
     ),
 )
+RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS = (
+    (
+        "public registry `design-ai learn --eval-template` checkpoint generation",
+        "public registry design-ai learn --eval-template checkpoint generation",
+        "public registry learn --eval-template checkpoint generation",
+        "registry learn eval-template checkpoint generation",
+    ),
+    (
+        "public registry generated checkpoint strict validation",
+        "public registry generated checkpoint strict eval",
+        "registry generated learn eval-template checkpoint",
+        "public registry generated learn eval-template checkpoint",
+    ),
+)
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
     ("doctor --strict", "design-ai doctor --strict"),
 )
@@ -1639,6 +1653,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn eval-template smoke phrase",
     "learn eval checkpoint smoke phrase",
     "registry learn relevance smoke phrase",
+    "registry learn eval-template smoke phrase",
     "learn audit cleanup smoke phrase",
     "learn audit out smoke phrase",
     "registry learn audit cleanup smoke phrase",
@@ -1839,6 +1854,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "registry learn relevance smoke phrase",
         RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS,
+    ),
+    (
+        "registry learn eval-template smoke phrase",
+        RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS,
     ),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
     ("learn audit out smoke phrase", RELEASE_LEARN_AUDIT_OUT_TERM_GROUPS),
@@ -2284,6 +2303,7 @@ public registry JSON `design-ai learn --redact` output including public registry
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
 public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning and prompt/pack learning usage sidecar recording,
+public registry `design-ai learn --eval-template` checkpoint generation plus public registry generated checkpoint strict validation,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
@@ -2366,6 +2386,7 @@ public registry JSON `design-ai learn --redact` output과 public registry `desig
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
 public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning, prompt/pack learning usage sidecar recording도 확인하고,
+public registry `design-ai learn --eval-template` checkpoint generation과 public registry generated checkpoint strict validation도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
@@ -3124,6 +3145,32 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn relevance smoke phrase"
         in registry_learn_relevance_drift_errors,
         "release policy docs should mention public registry prompt/pack learning relevance smoke",
+    )
+
+    registry_learn_eval_template_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry `design-ai learn --eval-template` checkpoint generation",
+                "public registry learning checkpoint bootstrap",
+            ).replace(
+                "public registry generated checkpoint strict validation",
+                "public registry checkpoint review",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_eval_template_drift_errors = "\n".join(
+        registry_learn_eval_template_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing registry learn eval-template smoke phrase"
+        in registry_learn_eval_template_drift_errors,
+        "release policy docs should mention public registry learn eval-template smoke",
     )
 
     package_contents_command_drift = release_metadata_summary(

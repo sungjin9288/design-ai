@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 252 — Public Registry Learning Eval Template Smoke (v4.37.0) ✓ shipped
+
+Post-publish registry smoke now covers the learning eval-template bootstrap path from the public package. `tools/audit/registry-smoke.py` runs `design-ai learn --eval-template` against a deterministic learning relevance fixture through `npm exec --package @design-ai/cli@<version>`, then feeds the generated checkpoint into `design-ai learn --eval --strict --json`.
+
+### Changed
+- Extended `assert_learning_relevance_smoke` so public registry checks cover `learn --eval-template --out <file> --force`.
+- Added registry smoke assertions for eval-template source profile metadata, checkpoint cases, raw-brief privacy disclosure, and generated strict eval pass.
+- Added registry smoke self-test drift fixtures for eval-template privacy metadata and generated checkpoint strict validation.
+- Added release metadata guard phrases for public registry eval-template smoke.
+- Updated README, Distribution docs, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.37.0`.
+
+### Impact
+- Local packed-tarball smoke and post-publish registry smoke now protect the same eval-template bootstrap contract.
+- Existing `learning.json`, usage sidecar, eval checkpoint, workspace readiness, and prompt/pack learning selection schemas remain compatible.
+
+### What this enables
+- Operators can trust that checkpoint generation works not only from the local repo and packed tarball, but also from the published npm package path before broader internal distribution.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.36.0 → 4.37.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 251 — Learning Eval Template Generation (v4.36.0) ✓ shipped
 
 Local learning eval checkpoints can now be bootstrapped from the active profile. `design-ai learn --eval-template` generates runnable checkpoint JSON from current entries, an optional query, category, and limit, so operators can immediately feed the output into `design-ai learn --eval --strict`.
