@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { defaultLearningFile, learningStats } from "./learn.mjs";
+import { defaultLearningFile, learningEvalReport, learningStats } from "./learn.mjs";
 import { DESIGN_AI_HOME } from "./paths.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
@@ -15,6 +15,7 @@ export const WORKSPACE_OPTIONS = [
   "--strict",
   "--root",
   "--learning-file",
+  "--learning-eval",
 ];
 
 const RELEASE_SCRIPT_NAMES = [
@@ -38,6 +39,7 @@ export function parseWorkspaceArgs(args) {
     strict: false,
     root: "",
     learningFilePath: "",
+    learningEvalPath: "",
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -70,10 +72,19 @@ export function parseWorkspaceArgs(args) {
       i += 1;
       continue;
     }
+    if (arg === "--learning-eval") {
+      const evalPath = args[i + 1];
+      if (!evalPath || evalPath.startsWith("--")) {
+        throw new Error("--learning-eval expects a path");
+      }
+      flags.learningEvalPath = evalPath;
+      i += 1;
+      continue;
+    }
 
     throw new Error(
       `${unknownOptionMessage("workspace", arg, WORKSPACE_OPTIONS)}\n` +
-        "Usage: design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
+        "Usage: design-ai workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
     );
   }
 
@@ -341,11 +352,63 @@ export function collectLearningReport({
   }
 }
 
+export function collectLearningEvalReport({
+  learningFilePath = defaultLearningFile(),
+  learningEvalPath = "",
+  learningEvalReportProvider = learningEvalReport,
+} = {}) {
+  if (!learningEvalPath) return null;
+
+  const resolvedEvalPath = path.resolve(learningEvalPath);
+  const resolvedLearningFile = path.resolve(learningFilePath);
+  try {
+    const evalText = readFileSync(resolvedEvalPath, "utf8");
+    const report = learningEvalReportProvider({
+      filePath: resolvedLearningFile,
+      evalText,
+      source: resolvedEvalPath,
+    });
+    return {
+      source: resolvedEvalPath,
+      file: report.file,
+      status: report.status,
+      caseCount: report.caseCount,
+      passed: report.passed,
+      warned: report.warned,
+      failed: report.failed,
+      profileExists: report.profileExists,
+      profileEntryCount: report.profileEntryCount,
+      auditSummary: report.auditSummary,
+      privacy: report.privacy,
+      error: "",
+    };
+  } catch (error) {
+    return {
+      source: resolvedEvalPath,
+      file: resolvedLearningFile,
+      status: "fail",
+      caseCount: 0,
+      passed: 0,
+      warned: 0,
+      failed: 0,
+      profileExists: existsSync(resolvedLearningFile),
+      profileEntryCount: 0,
+      auditSummary: { status: "fail", failures: 1, warnings: 0 },
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        exposesMatchedTokens: false,
+      },
+      error: error?.message || String(error),
+    };
+  }
+}
+
 function action(level, text, command = "") {
   return command ? { level, text, command } : { level, text };
 }
 
-export function buildWorkspaceNextActions({ git, repository, learning, release }) {
+export function buildWorkspaceNextActions({ git, repository, learning, learningEval, release }) {
   const actions = [];
 
   if (!git.isRepo) {
@@ -382,6 +445,19 @@ export function buildWorkspaceNextActions({ git, repository, learning, release }
     actions.push(action("info", "Capture reviewed feedback after checks to make dogfood runs improve over time.", "design-ai check artifact.md --learn --yes"));
   }
 
+  if (learningEval) {
+    const evalCommand = `design-ai learn --eval --from-file ${learningEval.source} --file ${learningEval.file} --strict`;
+    if (learningEval.error) {
+      actions.push(action("fail", "Fix the local learning eval checkpoint before using workspace readiness as a gate.", evalCommand));
+    } else if (learningEval.status === "fail") {
+      actions.push(action("fail", "Review failed local learning eval checkpoint cases before trusting prompt/pack selection.", evalCommand));
+    } else if (learningEval.status === "warn") {
+      actions.push(action("warn", "Review local learning eval checkpoint warnings before relying on personalized prompt context.", evalCommand));
+    } else {
+      actions.push(action("pass", "Learning eval checkpoints pass.", evalCommand));
+    }
+  }
+
   if (release.available.includes("test")) {
     actions.push(action("info", "Run CLI unit tests before handing this phase off.", "npm test"));
   }
@@ -403,8 +479,10 @@ export function collectWorkspaceReport({
   root = process.cwd(),
   sourceRoot = DESIGN_AI_HOME,
   learningFilePath = defaultLearningFile(),
+  learningEvalPath = "",
   gitRunner = runGitCommand,
   learningStatsProvider = learningStats,
+  learningEvalReportProvider = learningEvalReport,
 } = {}) {
   const resolvedRoot = path.resolve(root);
   const resolvedSourceRoot = path.resolve(sourceRoot);
@@ -413,9 +491,14 @@ export function collectWorkspaceReport({
     filePath: learningFilePath,
     learningStatsProvider,
   });
+  const learningEval = collectLearningEvalReport({
+    learningFilePath,
+    learningEvalPath,
+    learningEvalReportProvider,
+  });
   const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });
   const repository = collectRepositoryReport({ sourceRoot: resolvedSourceRoot, git });
-  const nextActions = buildWorkspaceNextActions({ git, repository, learning, release });
+  const nextActions = buildWorkspaceNextActions({ git, repository, learning, learningEval, release });
 
   return {
     context: {
@@ -428,11 +511,20 @@ export function collectWorkspaceReport({
     git,
     repository,
     learning,
+    learningEval,
     release,
     nextActions,
   };
 }
 
 export function formatWorkspaceJson(report) {
-  return JSON.stringify(report, null, 2);
+  return JSON.stringify({
+    context: report.context,
+    git: report.git,
+    repository: report.repository,
+    learning: report.learning,
+    learningEval: report.learningEval || null,
+    release: report.release,
+    nextActions: report.nextActions,
+  }, null, 2);
 }

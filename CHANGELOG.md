@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.34.0 — Workspace Learning Eval Readiness (2026-06)
+
+Added `design-ai workspace --learning-eval <checkpoint.json>` so local dogfood readiness snapshots can include deterministic learning-selection checkpoint summaries next to git, repository metadata, learning profile audit, and release-script state.
+Workspace JSON now includes a `learningEval` object when a checkpoint file is provided, and human output prints a read-only "Learning eval" section with case counts, status, and privacy notes.
+`workspace --strict` now treats learning eval warnings or failures as readiness issues while keeping the command read-only and leaving `learning.json` unchanged.
+
+Package smoke now verifies workspace learning-eval summaries in the clean strict success path for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the workspace learning eval readiness gate.
+
+### What this enables
+
+Operators can check whether the current repo, local learning profile, and learning eval checkpoint suite are ready from one workspace readiness command before internal dogfood handoff.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.33.0 → 4.34.0.
+
 ## v4.33.0 — Local Learning Eval Strict Gate (2026-06)
 
 Added `design-ai learn --eval --strict` so deterministic local learning checkpoint reports can fail CI or internal release gates when any case warns or fails.

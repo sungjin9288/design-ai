@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.33 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval strict gates). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.34 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval readiness gates). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.33 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.34 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.34 — Workspace learning eval readiness
+
+- **v4.34 (Phase 249)** — Added `design-ai workspace --learning-eval <checkpoint.json>` so dogfood readiness snapshots can include local learning-selection checkpoint status beside git, repository metadata, learning audit state, release scripts, and next actions. `workspace --strict` now treats eval warnings/failures as readiness issues without mutating `learning.json`.
 
 ### v4.33 — Local learning eval strict gate
 
@@ -308,6 +312,7 @@ Build the leverage tool, then push coverage further.
 - **v4.31 (Phase 246)** — Added read-only learning usage reports: `learn --usage` summarizes sidecar events, selected entry counts, unused active entries, stale selected ids, recent hashes, and privacy metadata, with unit and package-smoke coverage.
 - **v4.32 (Phase 247)** — Added read-only learning eval checkpoints: `learn --eval` validates expected and avoided selected ids against deterministic brief-relevance selection, while reporting brief hashes instead of raw brief text.
 - **v4.33 (Phase 248)** — Added strict learning eval gating: `learn --eval --strict` keeps report output read-only and privacy-preserving, then exits non-zero when any checkpoint warns or fails.
+- **v4.34 (Phase 249)** — Added workspace learning eval readiness: `workspace --learning-eval` includes checkpoint summaries in local dogfood readiness and lets `workspace --strict` fail on eval warning/failure states.
 
 ## Patterns that didn't work
 
@@ -388,9 +393,9 @@ design-ai/
 ├── refs/                              Upstream sources (gitignored)
 ├── knowledge/  (92 files; generated coverage report + versioned corpus)
 ├── examples/   (220 files)
-├── skills/     (19, all with verification phase)
+├── skills/     (20, all with verification phase)
 ├── agents/     (4)
-├── commands/   (16)
+├── commands/   (17)
 ├── docs/                              Architecture + integrations
 ├── tools/
 │   ├── extractors/                   Source → knowledge pipeline

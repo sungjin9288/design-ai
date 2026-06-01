@@ -125,6 +125,31 @@ RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_WORKSPACE_LEARNING_EVAL_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai workspace --learning-eval",
+        "design-ai workspace --learning-eval",
+        "workspace `--learning-eval` checkpoint",
+        "workspace --learning-eval checkpoint",
+        "workspace learning-eval summary",
+        "workspace learning eval summary",
+        "workspace `--learning-eval` checkpoint summary",
+    ),
+    (
+        "checkpoint summaries",
+        "checkpoint summary",
+        "learning eval checkpoint summaries",
+        "learning eval checkpoint summary",
+        "learning-eval checkpoint summaries",
+        "learning-eval checkpoint summary",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_JSON_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --json`",
@@ -1465,6 +1490,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "packed tarball smoke phrase",
     "package smoke command phrase",
     "workspace strict package smoke phrase",
+    "workspace learning-eval package smoke phrase",
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
     "site prompt-list package smoke phrase",
@@ -1605,6 +1631,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace strict package smoke phrase",
         RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace learning-eval package smoke phrase",
+        RELEASE_WORKSPACE_LEARNING_EVAL_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site JSON package smoke phrase",
@@ -2190,6 +2220,7 @@ warnings at the accepted baseline. It also smoke-tests human `design-ai version`
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 `npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
+including `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths,
 `design-ai site --stdin --json` Website Console export validation,
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
@@ -2269,6 +2300,7 @@ machine-readable diagnostics output from `design-ai doctor --json` before releas
 packed-tarball installed-bin 경로도 확인하고,
 `npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
+`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --json` Website Console export validation도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
@@ -2520,6 +2552,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             ).replace(
                 "installed-bin and one-shot npm exec package coverage",
                 "local package execution coverage",
+            ).replace(
+                "checkpoint summaries in installed-bin and one-shot paths",
+                "checkpoint summaries in packaged paths",
             ),
         },
         audit_count=8,
@@ -2596,6 +2631,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in workspace_strict_package_smoke_drift_errors
         ),
         "release policy docs should mention workspace strict package smoke",
+    )
+
+    workspace_learning_eval_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths",
+                "workspace eval coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_learning_eval_package_smoke_drift_errors = "\n".join(
+        workspace_learning_eval_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace learning-eval package smoke phrase"
+            in workspace_learning_eval_package_smoke_drift_errors
+        ),
+        "release policy docs should mention workspace learning-eval package smoke",
     )
 
     workspace_strict_registry_smoke_drift = release_metadata_summary(

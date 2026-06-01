@@ -31,10 +31,17 @@ function fakeGit(responses) {
 
 function withTempDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), "design-ai-workspace-"));
+  const cleanup = () => rmSync(dir, { recursive: true, force: true });
   try {
-    return fn(dir);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+    const result = fn(dir);
+    if (result && typeof result.then === "function") {
+      return result.finally(cleanup);
+    }
+    cleanup();
+    return result;
+  } catch (error) {
+    cleanup();
+    throw error;
   }
 }
 
@@ -100,16 +107,18 @@ async function captureStdout(fn) {
   return stdout;
 }
 
-test("parseWorkspaceArgs supports root, learning-file, strict, json, and help", () => {
-  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--strict", "--json"]), {
+test("parseWorkspaceArgs supports root, learning-file, learning-eval, strict, json, and help", () => {
+  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--learning-eval", "eval.json", "--strict", "--json"]), {
     help: false,
     json: true,
     strict: true,
     root: "repo",
     learningFilePath: "learning.json",
+    learningEvalPath: "eval.json",
   });
   assert.equal(parseWorkspaceArgs(["--help"]).help, true);
   assert.throws(() => parseWorkspaceArgs(["--root"]), /--root expects a path/);
+  assert.throws(() => parseWorkspaceArgs(["--learning-eval"]), /--learning-eval expects a path/);
   assert.throws(() => parseWorkspaceArgs(["--bad"]), /Unknown workspace option: --bad/);
 });
 
@@ -190,6 +199,71 @@ test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failu
   assert.equal(hasWorkspaceStrictIssues({ nextActions: [{ level: "fail" }] }), true);
 });
 
+test("collectWorkspaceReport includes optional local learning eval readiness", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const evalFile = path.join(dir, "learning-eval.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(
+    learningFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:02.000Z",
+      entries: [
+        {
+          id: "learn-keyboard",
+          category: "accessibility",
+          text: "Prioritize keyboard accessibility details for Button component API specs",
+          source: "test",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    evalFile,
+    JSON.stringify({
+      version: 1,
+      cases: [
+        {
+          id: "button-keyboard",
+          brief: "Spec a Button component API with keyboard accessibility",
+          expectedSelectedIds: ["learn-keyboard"],
+          minMatchedCount: 1,
+          requireNoFallback: true,
+        },
+      ],
+    }),
+    "utf8",
+  );
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    learningEvalPath: evalFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace learning eval\n"),
+    }),
+  });
+
+  assert.equal(report.learningEval.source, evalFile);
+  assert.equal(report.learningEval.status, "pass");
+  assert.equal(report.learningEval.caseCount, 1);
+  assert.equal(report.learningEval.privacy.storesRawBriefText, false);
+  assert.equal(report.nextActions.some((item) => item.text === "Learning eval checkpoints pass."), true);
+}));
+
 test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
   const sourceRoot = path.join(dir, "source");
   mkdirSync(path.join(sourceRoot, ".claude-plugin"), { recursive: true });
@@ -246,7 +320,7 @@ test("formatWorkspaceJson emits a stable machine-readable object", () => {
   });
   const payload = JSON.parse(formatted);
 
-  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "release", "nextActions"]);
+  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningEval", "release", "nextActions"]);
   assert.equal(payload.context.root, "/repo");
 });
 
@@ -290,6 +364,78 @@ test("runWorkspace supports JSON output with injected collectors", async () => w
   assert.equal(payload.learning.file, learningFile);
   assert.equal(payload.release.available.includes("test"), true);
   assert.equal(payload.nextActions.some((item) => item.command === "npm test"), true);
+}));
+
+test("runWorkspace prints learning eval section and strict fails eval warnings", async () => withTempDir(async (dir) => {
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const evalFile = path.join(dir, "learning-eval.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(evalFile, JSON.stringify({ version: 1, cases: [{ id: "case-1", brief: "Button accessibility" }] }), "utf8");
+
+  const cleanGitRunner = fakeGit({
+    "rev-parse --is-inside-work-tree": ok("true\n"),
+    "rev-parse --show-toplevel": ok(`${dir}\n`),
+    "branch --show-current": ok("main\n"),
+    "status --short": ok(""),
+    "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+    "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+    "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+    "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace learning eval\n"),
+  });
+  const learningStatsProvider = ({ filePath }) => ({
+    file: filePath,
+    exists: true,
+    count: 1,
+    categoryCounts: { accessibility: 1 },
+    sourceCounts: { test: 1 },
+    latestEntry: null,
+    auditSummary: { status: "pass", failures: 0, warnings: 0 },
+  });
+  const learningEvalReportProvider = ({ filePath, source }) => ({
+    file: filePath,
+    source,
+    status: "warn",
+    caseCount: 1,
+    passed: 0,
+    warned: 1,
+    failed: 0,
+    profileExists: true,
+    profileEntryCount: 1,
+    auditSummary: { status: "pass", failures: 0, warnings: 0 },
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      exposesMatchedTokens: false,
+    },
+  });
+
+  const humanRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--learning-eval", evalFile],
+    {
+      sourceRoot,
+      gitRunner: cleanGitRunner,
+      learningStatsProvider,
+      learningEvalReportProvider,
+    },
+  ));
+  assert.match(humanRun.stdout, /Learning eval:/);
+  assert.match(humanRun.stdout, /Status: warn \| cases 1/);
+
+  const strictRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--learning-eval", evalFile, "--strict", "--json"],
+    {
+      sourceRoot,
+      gitRunner: cleanGitRunner,
+      learningStatsProvider,
+      learningEvalReportProvider,
+    },
+  ));
+  const payload = JSON.parse(strictRun.stdout);
+  assert.equal(strictRun.exitCode, 1);
+  assert.equal(payload.learningEval.status, "warn", JSON.stringify(payload.learningEval));
+  assert.equal(payload.nextActions.some((item) => (item.command || "").includes("design-ai learn --eval")), true);
 }));
 
 test("runWorkspace strict fails readiness warnings and passes info-only readiness", async () => withTempDir(async (dir) => {

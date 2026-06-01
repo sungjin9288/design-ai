@@ -1,5 +1,39 @@
 # Roadmap
 
+## Phase 249 — Workspace Learning Eval Readiness (v4.34.0) ✓ shipped
+
+Workspace readiness can now include local learning checkpoint health. `design-ai workspace --learning-eval <checkpoint.json>` reads the selected `--learning-file` profile and reports a compact learning eval summary beside git, repository metadata, learning audit state, release scripts, and next actions.
+
+### Changed
+- Added `--learning-eval path` to `design-ai workspace`.
+- Added optional `learningEval` JSON output with source path, profile file, status, case counts, audit summary, privacy flags, and error text.
+- Added a human "Learning eval" section when a checkpoint is supplied.
+- Extended `workspace --strict` so learning eval warn/fail states become readiness issues without mutating `learning.json`.
+- Added package-smoke coverage for clean strict workspace runs with learning eval summaries through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added unit tests, CLI help tests, smoke assertions, release metadata guard phrases, AI learning docs, README, Product Readiness, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.34.0`.
+
+### Impact
+- Operators can use one local workspace readiness command to inspect repo sync, learning profile audit state, release-script availability, and deterministic learning-selection checkpoint health before dogfood handoff.
+- Existing `learning.json`, usage sidecar, and eval checkpoint schemas remain compatible.
+
+### What this enables
+- A future composite dogfood gate can promote `workspace --learning-eval --strict` as the local pre-handoff check before heavier release smoke.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.33.0 → 4.34.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 248 — Local Learning Eval Strict Gate (v4.33.0) ✓ shipped
 
 Local learning eval checkpoints can now act as deterministic failure gates. `design-ai learn --eval --strict` keeps the existing report-first, read-only behavior, then exits non-zero when any checkpoint case warns or fails.

@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.33.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.34.0.tgz
 """
 from __future__ import annotations
 
@@ -1067,6 +1067,48 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
     run_fixture_git(repo, "remote", "add", "origin", f"{EXPECTED_REPOSITORY_URL}.git")
     run_fixture_git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
     run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
+
+
+def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:02.000Z",
+                "entries": [
+                    {
+                        "id": "learn-workspace-keyboard",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    eval_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "cases": [
+                    {
+                        "id": "workspace-keyboard-selection",
+                        "brief": "Spec a Button component API with keyboard accessibility",
+                        "expectedSelectedIds": ["learn-workspace-keyboard"],
+                        "minMatchedCount": 1,
+                        "requireNoFallback": True,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def write_learning_audit_fixture(profile_path: Path) -> None:
@@ -6037,10 +6079,22 @@ def smoke_tarball(tarball: Path) -> None:
         npm_cache = tmp_root / "npm-cache"
         installed_workspace_strict_root = tmp_root / "installed-workspace-strict"
         npx_workspace_strict_root = tmp_root / "npx-workspace-strict"
+        installed_workspace_learning_profile = tmp_root / "installed-workspace-strict-learning.json"
+        installed_workspace_learning_eval = tmp_root / "installed-workspace-learning-eval.json"
+        npx_workspace_learning_profile = tmp_root / "npx-workspace-strict-learning.json"
+        npx_workspace_learning_eval = tmp_root / "npx-workspace-learning-eval.json"
         install_root.mkdir()
         npx_root.mkdir()
         prepare_workspace_strict_repo(installed_workspace_strict_root)
         prepare_workspace_strict_repo(npx_workspace_strict_root)
+        write_workspace_learning_eval_fixture(
+            installed_workspace_learning_profile,
+            installed_workspace_learning_eval,
+        )
+        write_workspace_learning_eval_fixture(
+            npx_workspace_learning_profile,
+            npx_workspace_learning_eval,
+        )
 
         base_env = os.environ.copy()
         base_env.update({
@@ -6100,7 +6154,9 @@ def smoke_tarball(tarball: Path) -> None:
                 "--root",
                 str(installed_workspace_strict_root),
                 "--learning-file",
-                str(tmp_root / "installed-workspace-strict-learning.json"),
+                str(installed_workspace_learning_profile),
+                "--learning-eval",
+                str(installed_workspace_learning_eval),
                 "--strict",
                 "--json",
             ],
@@ -6822,7 +6878,9 @@ def smoke_tarball(tarball: Path) -> None:
                 "--root",
                 str(npx_workspace_strict_root),
                 "--learning-file",
-                str(tmp_root / "npx-workspace-strict-learning.json"),
+                str(npx_workspace_learning_profile),
+                "--learning-eval",
+                str(npx_workspace_learning_eval),
                 "--strict",
                 "--json",
             ),

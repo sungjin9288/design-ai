@@ -52,7 +52,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval\|--forget id\|--clear\] \[--json\] \[--out file\]/);
-  assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
+  assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
     output,
@@ -104,7 +104,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "workspace").usage,
-    "design-ai workspace [--root path] [--learning-file path] [--strict] [--json]",
+    "design-ai workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
@@ -238,8 +238,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --import --stdin --yes \[--json\] \[--out file\] \[--force\]/);
 
   const workspaceOutput = await captureStdout(() => runHelp(["workspace"]));
-  assert.match(workspaceOutput, /Usage:\s+design-ai workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
+  assert.match(workspaceOutput, /Usage:\s+design-ai workspace \[--root path\] \[--learning-file path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(workspaceOutput, /--learning-file path\s+Inspect a specific learning profile/);
+  assert.match(workspaceOutput, /--learning-eval path\s+Include a read-only local learning eval checkpoint summary/);
   assert.match(workspaceOutput, /--strict\s+Exit non-zero when readiness warnings or failures are present/);
 
   const siteOutput = await captureStdout(() => runHelp(["site"]));
