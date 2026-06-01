@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 255 — Workspace Learning Eval Sibling Checkpoint Discovery (v4.40.0) ✓ shipped
+
+`design-ai workspace` now automatically includes the selected learning profile's sibling `learning-eval.json` checkpoint when the operator does not pass `--learning-eval`. The eval-template next action writes to the same sibling checkpoint path, so the suggested bootstrap command and the next workspace readiness run line up without extra flags.
+
+### Changed
+- Added a deterministic default learning eval checkpoint path beside the selected learning profile.
+- Auto-detect that sibling checkpoint when `--learning-eval` is omitted and the file exists.
+- Kept explicit `--learning-eval path` as the override for alternate checkpoint files.
+- Updated the eval-template next-action command to write to the sibling checkpoint path.
+- Preserved shell-safe quoting for learning profile and checkpoint paths.
+- Added unit coverage for sibling checkpoint auto-detection and the updated next-action output path.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` workspace strict runs that rely on sibling checkpoint discovery.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.40.0`.
+
+### Impact
+- Operators can generate a private local `learning-eval.json` once beside `learning.json`, then run `design-ai workspace --strict` without repeatedly passing `--learning-eval`.
+- Existing explicit checkpoint paths, learning profile schema, eval checkpoint schema, workspace JSON key shape, and prompt/pack learning selection behavior remain compatible.
+
+### What this enables
+- A lower-friction local dogfood loop for personal or company learning profiles while keeping checkpoint files colocated with the private profile by default.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.39.0 → 4.40.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 254 — Workspace Learning Eval Command Path Quoting (v4.39.0) ✓ shipped
 
 `design-ai workspace` now shell-quotes learning eval next-action command paths. The eval-template bootstrap hint and the checkpoint revalidation command remain copy/paste safe when the selected `learning.json` or `learning-eval.json` path includes spaces, apostrophes, or other shell-sensitive characters.

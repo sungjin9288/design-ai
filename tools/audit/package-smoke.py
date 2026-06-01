@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.39.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.40.0.tgz
 """
 from __future__ import annotations
 
@@ -1070,6 +1070,8 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
 
 
 def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    eval_path.parent.mkdir(parents=True, exist_ok=True)
     profile_path.write_text(
         json.dumps(
             {
@@ -6290,8 +6292,12 @@ def smoke_tarball(tarball: Path) -> None:
         npx_workspace_strict_root = tmp_root / "npx-workspace-strict"
         installed_workspace_learning_profile = tmp_root / "installed-workspace-strict-learning.json"
         installed_workspace_learning_eval = tmp_root / "installed-workspace-learning-eval.json"
+        installed_workspace_auto_profile = tmp_root / "installed-workspace-auto" / "learning.json"
+        installed_workspace_auto_eval = tmp_root / "installed-workspace-auto" / "learning-eval.json"
         npx_workspace_learning_profile = tmp_root / "npx-workspace-strict-learning.json"
         npx_workspace_learning_eval = tmp_root / "npx-workspace-learning-eval.json"
+        npx_workspace_auto_profile = tmp_root / "npx-workspace-auto" / "learning.json"
+        npx_workspace_auto_eval = tmp_root / "npx-workspace-auto" / "learning-eval.json"
         install_root.mkdir()
         npx_root.mkdir()
         prepare_workspace_strict_repo(installed_workspace_strict_root)
@@ -6301,8 +6307,16 @@ def smoke_tarball(tarball: Path) -> None:
             installed_workspace_learning_eval,
         )
         write_workspace_learning_eval_fixture(
+            installed_workspace_auto_profile,
+            installed_workspace_auto_eval,
+        )
+        write_workspace_learning_eval_fixture(
             npx_workspace_learning_profile,
             npx_workspace_learning_eval,
+        )
+        write_workspace_learning_eval_fixture(
+            npx_workspace_auto_profile,
+            npx_workspace_auto_eval,
         )
 
         base_env = os.environ.copy()
@@ -6372,6 +6386,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin workspace strict JSON success",
+        )
+        assert_workspace_strict_success_smoke(
+            [
+                str(bin_path),
+                "workspace",
+                "--root",
+                str(installed_workspace_strict_root),
+                "--learning-file",
+                str(installed_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace auto learning-eval JSON success",
         )
         assert_site_json_smoke(
             [str(bin_path), "site", "--stdin", "--json"],
@@ -7096,6 +7125,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec workspace strict JSON success",
+        )
+        assert_workspace_strict_success_smoke(
+            npm_exec_cmd(
+                tarball,
+                "workspace",
+                "--root",
+                str(npx_workspace_strict_root),
+                "--learning-file",
+                str(npx_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace auto learning-eval JSON success",
         )
         assert_site_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--json"),

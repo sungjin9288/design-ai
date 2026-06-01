@@ -31,6 +31,7 @@ const RELEASE_SCRIPT_NAMES = [
 const UNIQUE_RELEASE_SCRIPT_NAMES = [...new Set(RELEASE_SCRIPT_NAMES)];
 const CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai";
 const CANONICAL_REPOSITORY_URL = `https://github.com/${CANONICAL_REPOSITORY_SLUG}`;
+const DEFAULT_LEARNING_EVAL_FILE = "learning-eval.json";
 
 export function parseWorkspaceArgs(args) {
   const flags = {
@@ -404,6 +405,10 @@ export function collectLearningEvalReport({
   }
 }
 
+export function defaultLearningEvalPath(learningFilePath = defaultLearningFile()) {
+  return path.join(path.dirname(path.resolve(learningFilePath)), DEFAULT_LEARNING_EVAL_FILE);
+}
+
 function action(level, text, command = "") {
   return command ? { level, text, command } : { level, text };
 }
@@ -453,7 +458,7 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningE
     actions.push(action(
       "info",
       "Generate a local learning eval checkpoint before relying on personalized prompt context.",
-      `design-ai learn --eval-template --file ${quoteShellArg(learning.file)} --out learning-eval.json`,
+      `design-ai learn --eval-template --file ${quoteShellArg(learning.file)} --out ${quoteShellArg(defaultLearningEvalPath(learning.file))}`,
     ));
   }
 
@@ -498,14 +503,18 @@ export function collectWorkspaceReport({
 } = {}) {
   const resolvedRoot = path.resolve(root);
   const resolvedSourceRoot = path.resolve(sourceRoot);
+  const resolvedLearningFile = path.resolve(learningFilePath);
+  const resolvedLearningEvalPath = learningEvalPath || (
+    existsSync(defaultLearningEvalPath(resolvedLearningFile)) ? defaultLearningEvalPath(resolvedLearningFile) : ""
+  );
   const git = collectGitReport({ root: resolvedRoot, gitRunner });
   const learning = collectLearningReport({
-    filePath: learningFilePath,
+    filePath: resolvedLearningFile,
     learningStatsProvider,
   });
   const learningEval = collectLearningEvalReport({
-    learningFilePath,
-    learningEvalPath,
+    learningFilePath: resolvedLearningFile,
+    learningEvalPath: resolvedLearningEvalPath,
     learningEvalReportProvider,
   });
   const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });

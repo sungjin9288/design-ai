@@ -14,7 +14,7 @@ function printHelp() {
   console.log("Options:");
   console.log("  --root path           Inspect a specific git workspace root. Default: current directory");
   console.log("  --learning-file path  Inspect a specific learning profile. Default: DESIGN_AI_LEARNING_FILE or ~/.design-ai/learning.json");
-  console.log("  --learning-eval path  Include a read-only local learning eval checkpoint summary");
+  console.log("  --learning-eval path  Include a read-only local learning eval checkpoint summary. Default: auto-detect sibling learning-eval.json");
   console.log("  --strict              Exit non-zero when readiness warnings or failures are present");
   console.log("  --json                Emit machine-readable workspace diagnostics");
 }

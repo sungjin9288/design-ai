@@ -2,6 +2,25 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.40.0 — Workspace Learning Eval Sibling Checkpoint Discovery (2026-06)
+
+Made `design-ai workspace` automatically include a read-only learning eval summary when a sibling `learning-eval.json` exists next to the selected learning profile.
+
+The eval-template next-action now writes to that same sibling checkpoint path, so the local dogfood loop is consistent: generate the checkpoint once, then run `workspace --strict` without repeatedly passing `--learning-eval`.
+
+### What this enables
+
+Operators can keep private learning profiles and eval checkpoints together, reduce copy/paste friction, and still override the checkpoint explicitly with `--learning-eval path` when needed.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.39.0 → 4.40.0.
+
 ## v4.39.0 — Workspace Learning Eval Command Path Quoting (2026-06)
 
 Made `design-ai workspace` learning eval next-action commands shell-safe when local learning profile or checkpoint paths include spaces, apostrophes, or other shell-sensitive characters.

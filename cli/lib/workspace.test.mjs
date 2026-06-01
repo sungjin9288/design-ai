@@ -11,6 +11,7 @@ import {
   collectGitReport,
   collectRepositoryReport,
   collectWorkspaceReport,
+  defaultLearningEvalPath,
   formatWorkspaceJson,
   hasWorkspaceStrictIssues,
   normalizeRepositoryUrl,
@@ -320,7 +321,7 @@ test("collectWorkspaceReport suggests learning eval-template when profile has en
   assert.match(templateAction?.text || "", /Generate a local learning eval checkpoint/);
   assert.equal(
     templateAction?.command,
-    `design-ai learn --eval-template --file ${learningFile} --out learning-eval.json`,
+    `design-ai learn --eval-template --file ${learningFile} --out ${defaultLearningEvalPath(learningFile)}`,
   );
 }));
 
@@ -362,7 +363,7 @@ test("collectWorkspaceReport shell-quotes learning eval next action paths", () =
   const templateAction = templateReport.nextActions.find((item) => (item.command || "").includes("learn --eval-template"));
   assert.equal(
     templateAction?.command,
-    `design-ai learn --eval-template --file ${quoteShellArg(learningFile)} --out learning-eval.json`,
+    `design-ai learn --eval-template --file ${quoteShellArg(learningFile)} --out ${quoteShellArg(defaultLearningEvalPath(learningFile))}`,
   );
 
   const evalReport = collectWorkspaceReport({
@@ -395,6 +396,69 @@ test("collectWorkspaceReport shell-quotes learning eval next action paths", () =
     evalAction?.command,
     `design-ai learn --eval --from-file ${quoteShellArg(evalFile)} --file ${quoteShellArg(learningFile)} --strict`,
   );
+}));
+
+test("collectWorkspaceReport auto-detects sibling learning eval checkpoint", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const evalFile = defaultLearningEvalPath(learningFile);
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(
+    learningFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:02.000Z",
+      entries: [
+        {
+          id: "learn-keyboard",
+          category: "accessibility",
+          text: "Prioritize keyboard accessibility details for Button component API specs",
+          source: "test",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    evalFile,
+    JSON.stringify({
+      version: 1,
+      cases: [
+        {
+          id: "button-keyboard",
+          brief: "Spec a Button component API with keyboard accessibility",
+          expectedSelectedIds: ["learn-keyboard"],
+          minMatchedCount: 1,
+          requireNoFallback: true,
+        },
+      ],
+    }),
+    "utf8",
+  );
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace eval auto-discovery\n"),
+    }),
+  });
+
+  assert.equal(report.learningEval.source, evalFile);
+  assert.equal(report.learningEval.status, "pass");
+  assert.equal(report.nextActions.some((item) => (item.command || "").includes("learn --eval-template")), false);
+  assert.equal(report.nextActions.some((item) => item.text === "Learning eval checkpoints pass."), true);
 }));
 
 test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
