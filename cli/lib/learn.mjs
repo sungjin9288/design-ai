@@ -43,6 +43,7 @@ const LEARN_OPTIONS = [
   "--eval-template",
   "--strict",
   "--curate",
+  "--report",
   "--fix",
   "--dry-run",
   "--outcome",
@@ -190,6 +191,7 @@ export function parseLearnArgs(args) {
     fix: false,
     dryRun: false,
     strict: false,
+    report: false,
     yes: false,
     json: false,
     help: false,
@@ -233,6 +235,8 @@ export function parseLearnArgs(args) {
       setAction(out, "eval-template");
     } else if (arg === "--curate") {
       setAction(out, "curate");
+    } else if (arg === "--report") {
+      out.report = true;
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
@@ -339,14 +343,22 @@ export function parseLearnArgs(args) {
   if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
     throw new Error("--usage-file can only be used with --usage or --curate");
   }
+  if (out.report && out.action !== "curate") {
+    throw new Error("--report can only be used with --curate");
+  }
+  if (out.report && out.json) {
+    throw new Error("Choose either --json or --report for --curate");
+  }
   if (out.strict && out.action !== "eval") {
     throw new Error("--strict can only be used with --eval");
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
   }
-  if (!out.help && out.outPath && !["export", "eval-template"].includes(out.action) && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export or --eval-template");
+  const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
+    || (out.action === "curate" && out.report);
+  if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, or --curate --report");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());
@@ -2918,4 +2930,119 @@ export function learningUsageStats({
 
 export function formatLearningJson(payload) {
   return JSON.stringify(payload, null, 2);
+}
+
+function formatLearningSummary(summary) {
+  if (!summary) return "unknown";
+  return `${summary.status} (${summary.failures} failure(s), ${summary.warnings} warning(s))`;
+}
+
+function yesNo(value) {
+  return value ? "yes" : "no";
+}
+
+function learningReportListItem(label, value) {
+  return `- ${label}: ${value}`;
+}
+
+export function renderLearningCurationReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const mode = payload.applied ? "applied" : "preview";
+  const lines = [
+    "# Learning Curation Report",
+    "",
+    learningReportListItem("Generated", generatedAtText),
+    learningReportListItem("Mode", mode),
+    learningReportListItem("File", payload.file),
+    learningReportListItem("Archive", payload.archiveFile),
+    learningReportListItem("Before", formatLearningSummary(payload.before)),
+    learningReportListItem("After", payload.after ? formatLearningSummary(payload.after) : "not applied"),
+    learningReportListItem("Proposals", payload.proposalCount),
+    learningReportListItem("Archive candidates", payload.archiveCount),
+    learningReportListItem("Manual review", payload.manualReviewCount),
+    "",
+    "## Archive Candidates",
+    "",
+  ];
+
+  const archiveCandidates = (payload.proposals || []).filter((proposal) => proposal.action === "archive");
+  if (archiveCandidates.length === 0) {
+    lines.push("No archive candidates found.");
+  } else {
+    for (const proposal of archiveCandidates) {
+      lines.push(`- \`${proposal.entryId}\`: ${proposal.reason}`);
+      lines.push(`  - Issues: ${(proposal.issueCodes || []).join(", ") || "none"}`);
+      if (proposal.category) lines.push(`  - Category: ${proposal.category}`);
+      if (proposal.textPreview) lines.push(`  - Preview: ${proposal.textPreview}`);
+    }
+  }
+
+  lines.push("", "## Manual Review", "");
+  const manualCandidates = (payload.proposals || []).filter((proposal) => proposal.action === "manual-review");
+  if (manualCandidates.length === 0) {
+    lines.push("No profile curation items need manual review.");
+  } else {
+    for (const proposal of manualCandidates) {
+      const label = proposal.entryId || "profile";
+      lines.push(`- \`${label}\`: ${proposal.reason}`);
+      lines.push(`  - Issues: ${(proposal.issueCodes || []).join(", ") || "none"}`);
+      if (proposal.textPreview) lines.push(`  - Preview: ${proposal.textPreview}`);
+    }
+  }
+
+  lines.push("", "## Usage Review", "");
+  const usage = payload.usage || {};
+  lines.push(learningReportListItem("Sidecar", usage.usageFile || "not available"));
+  lines.push(learningReportListItem("Exists", yesNo(Boolean(usage.exists))));
+  lines.push(learningReportListItem("Profile file", usage.profileFile || payload.file));
+  lines.push(learningReportListItem("Profile file matches", yesNo(usage.profileFileMatches !== false)));
+  lines.push(learningReportListItem("Events", usage.eventCount || 0));
+  lines.push(learningReportListItem("Review items", usage.reviewCount || 0));
+  lines.push(learningReportListItem("Auto archive from usage", yesNo(Boolean(usage.autoArchive))));
+  if (usage.error) lines.push(learningReportListItem("Error", usage.error));
+
+  if (Array.isArray(usage.reviews) && usage.reviews.length > 0) {
+    lines.push("");
+    for (const review of usage.reviews) {
+      const label = review.entryId || "usage";
+      lines.push(`- \`${label}\`: ${review.reason} (${review.action})`);
+      if (review.level) lines.push(`  - Level: ${review.level}`);
+      if (Number.isInteger(review.usageCount)) lines.push(`  - Usage count: ${review.usageCount}`);
+      if (review.textPreview) lines.push(`  - Preview: ${review.textPreview}`);
+    }
+  } else {
+    lines.push("");
+    lines.push("No usage-based curation review items found.");
+  }
+
+  lines.push("", "## Skipped", "");
+  if (!Array.isArray(payload.skipped) || payload.skipped.length === 0) {
+    lines.push("No curation steps were skipped.");
+  } else {
+    for (const skipped of payload.skipped) {
+      const label = skipped.entryId ? `\`${skipped.entryId}\`` : "profile";
+      lines.push(`- ${label}: ${skipped.reason}`);
+      if (skipped.message) lines.push(`  - ${skipped.message}`);
+    }
+  }
+
+  lines.push("", "## Privacy", "");
+  lines.push("- Report text may include learning entry previews, but usage review does not include raw prompt or pack brief text.");
+  lines.push("- Usage sidecars store selected entry ids and short brief hashes; usage review remains advisory and never archives entries by itself.");
+
+  lines.push("", "## Next Steps", "");
+  if (payload.applied) {
+    lines.push("- Review the archive file before sharing or deleting local learning history.");
+    lines.push("- Run `design-ai learn --audit` and `design-ai workspace --strict` after curation to confirm readiness.");
+  } else if ((payload.archiveCount || 0) > 0) {
+    lines.push("- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.");
+    lines.push("- Keep usage-only review items as manual signals until enough prompt/pack usage has accumulated.");
+  } else {
+    lines.push("- No archive action is required from this curation report.");
+    lines.push("- Continue recording prompt/pack usage with `--with-learning` before making usage-based decisions.");
+  }
+
+  return `${lines.join("\n")}\n`;
 }

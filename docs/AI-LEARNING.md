@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.44:
+What ships in v4.45:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -14,13 +14,14 @@ What ships in v4.44:
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
 - `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted from the local profile, `--from-file`, or `--stdin`.
-- `design-ai learn --out file` writes JSON result artifacts, and `learn --export --out file` writes the Markdown context block, while `--force` controls overwrites.
+- `design-ai learn --out file` writes JSON result artifacts, `learn --export --out file` writes the Markdown context block, and `learn --curate --report --out file` writes the Markdown curation report, while `--force` controls overwrites.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
 - `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
 - `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile, and includes advisory usage review hints for profile-path mismatch, stale selected ids, and unused active entries when a usage sidecar is available.
+- `design-ai learn --curate --report` emits a Markdown curation report for preview or apply results, and `--out file` writes it as a durable local review artifact.
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
@@ -207,6 +208,7 @@ design-ai learn --audit --fix --dry-run
 design-ai learn --audit --fix --yes
 design-ai learn --curate
 design-ai learn --curate --usage-file ./learning.usage.json
+design-ai learn --curate --report --out learning-curation-report.md
 design-ai learn --curate --yes --json
 ```
 
@@ -214,7 +216,7 @@ The plain audit is advisory and non-mutating. It reports invalid JSON/profile sh
 
 `--audit --fix --dry-run` turns those safe suggestions into a cleanup plan without changing the file. `--audit --fix --yes` removes only entries that have stable, unambiguous ids and skips anything that still needs manual review, such as invalid JSON, duplicate ids, malformed entries, or warnings without a safe target.
 
-`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. When a default or explicit `--usage-file` sidecar is available, the same preview adds a usage review section for sidecars recorded against a different profile path, stale selected ids, and active entries that have not appeared in recorded prompt/pack usage. Usage review is advisory only: `autoArchive` stays `false`, and unused or mismatched usage signals never archive entries by themselves. Confirmed `--curate --yes` rewrites the active `learning.json` with duplicate/sensitive archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
+`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. When a default or explicit `--usage-file` sidecar is available, the same preview adds a usage review section for sidecars recorded against a different profile path, stale selected ids, and active entries that have not appeared in recorded prompt/pack usage. Usage review is advisory only: `autoArchive` stays `false`, and unused or mismatched usage signals never archive entries by themselves. Add `--report` when you need a Markdown audit trail with profile/archive paths, before/after summaries, archive candidates, manual review items, usage review, privacy notes, and next steps; `--curate --report --out file` writes that report without requiring `--json`. Confirmed `--curate --yes` rewrites the active `learning.json` with duplicate/sensitive archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
 
 Summarize profile health and recency:
 

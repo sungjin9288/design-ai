@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.44.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.45.0.tgz
 """
 from __future__ import annotations
 
@@ -1813,6 +1813,26 @@ def assert_learning_curation_human(raw: str, *, context: str, cmd: list[str]) ->
         )
 
 
+def assert_learning_curation_report(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Learning Curation Report",
+        "Mode: preview",
+        "Archive candidates: 2",
+        "`learn-b`: duplicate-entry",
+        "`learn-c`: sensitive-content",
+        "## Usage Review",
+        "Usage sidecars store selected entry ids and short brief hashes",
+        "rerun `design-ai learn --curate --yes`",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn curate report missing {expected!r}",
+        )
+
+
 def assert_learning_feedback_json(
     raw: str,
     *,
@@ -2949,6 +2969,43 @@ def assert_learning_curation_smoke(
         context=f"{context} human preview archive absent",
         cmd=human_cmd,
         message="learn curate preview should not create an archive file",
+    )
+
+    report_path = profile_path.with_name(f"{profile_path.stem}.curation-report.md")
+    report_cmd = command_factory(
+        "learn",
+        "--curate",
+        "--file",
+        str(profile_path),
+        "--report",
+        "--out",
+        str(report_path),
+    )
+    report_result = run_plain(report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(report_result.stdout, report_cmd)
+    require_package_smoke(
+        "Wrote " in report_result.stdout,
+        context=f"{context} report write confirmation",
+        cmd=report_cmd,
+        message="learn curate report should confirm --out file writes",
+    )
+    assert_learning_curation_report(
+        report_path.read_text(encoding="utf-8"),
+        context=f"{context} report preview",
+        cmd=report_cmd,
+    )
+    profile_after_report = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(profile_after_report.get("entries", [])) == 3,
+        context=f"{context} report preview profile unchanged",
+        cmd=report_cmd,
+        message="learn curate report should leave profile entries unchanged",
+    )
+    require_package_smoke(
+        not archive_path.exists(),
+        context=f"{context} report preview archive absent",
+        cmd=report_cmd,
+        message="learn curate report preview should not create an archive file",
     )
 
     json_cmd = command_factory("learn", "--curate", "--file", str(profile_path), "--json")
@@ -6480,6 +6537,40 @@ def run_self_test() -> None:
                 cmd=learn_curate_cmd,
             ),
             expected="learn curate archive count changed",
+            scope="package smoke",
+        )
+        learn_curate_report_cmd = [
+            "design-ai",
+            "learn",
+            "--curate",
+            "--file",
+            str(learning_profile_path),
+            "--report",
+            "--out",
+            "learning-curation-report.md",
+        ]
+        assert_learning_curation_report(
+            "\n".join([
+                "# Learning Curation Report",
+                "- Mode: preview",
+                "- Archive candidates: 2",
+                "## Archive Candidates",
+                "- `learn-b`: duplicate-entry",
+                "- `learn-c`: sensitive-content",
+                "## Usage Review",
+                "Usage sidecars store selected entry ids and short brief hashes",
+                "- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.",
+            ]),
+            context=context,
+            cmd=learn_curate_report_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_curation_report(
+                "# Learning Curation Report\n- Mode: preview\n",
+                context=context,
+                cmd=learn_curate_report_cmd,
+            ),
+            expected="learn curate report missing 'Archive candidates: 2'",
             scope="package smoke",
         )
         learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]

@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.45.0 — Learning Curation Markdown Reports (2026-06)
+
+Added a shareable Markdown report mode for archive-first learning curation. `design-ai learn --curate --report` now renders the same preview/apply payload as a durable audit trail, and `--out file` writes it without requiring `--json`.
+
+### Added
+- `design-ai learn --curate --report` emits a Markdown curation report for preview or confirmed apply results.
+- `design-ai learn --curate --report --out learning-curation-report.md` writes the report artifact with existing overwrite protection and `--force` behavior.
+- Reports include profile file, archive file, before/after audit summaries, archive candidates, manual-review candidates, usage sidecar review metadata, privacy notes, and next steps.
+- Package smoke now verifies packed-tarball curation report output in the installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Preserved
+- `learn --curate` remains preview-first; `--report` does not mutate `learning.json` unless `--yes` is explicitly present.
+- Usage-derived profile mismatch, stale id, and unused-entry signals remain advisory and cannot archive entries by themselves.
+- Existing `learn --curate --json`, archive file schema, usage sidecar schema, eval checkpoint schema, and workspace next actions remain compatible.
+
+### What this enables
+- Operators can keep or share a readable local learning maintenance record before applying archive actions, which is useful for solo dogfood, company rollout review, and support handoff without exposing raw prompt/pack brief text.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.44.0 → 4.45.0.
+
 ## v4.44.0 — Workspace Learning Curation Next Actions (2026-06)
 
 Connected workspace readiness warnings to the safer archive-first learning curation flow. `design-ai workspace` now points learning audit warnings and learning usage sidecar drift at `design-ai learn --curate --file ... --usage-file ...`, so operators can inspect profile issues and usage evidence in one preview before applying any cleanup.

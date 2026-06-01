@@ -25,6 +25,7 @@ import {
   parseLearnArgs,
   recordLearningFeedback,
   rememberLearning,
+  renderLearningCurationReport,
   selectLearningEntrySet,
   verifyLearningImportPayload,
 } from "../lib/learn.mjs";
@@ -52,7 +53,7 @@ function printHelp() {
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --dry-run [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --yes [--json] [--out file] [--force]");
-  console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
@@ -82,6 +83,7 @@ function printHelp() {
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
+  console.log("  --report             With --curate, emit a Markdown curation report instead of human console output");
   console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
@@ -94,7 +96,7 @@ function printHelp() {
   console.log("  --file path          Override the learning profile path");
   console.log("  --usage-file path    Override the learning usage sidecar path used by --usage or --curate");
   console.log("  --json               Emit machine-readable output");
-  console.log("  --out file           Write JSON output to a file, or export Markdown for --export");
+  console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
   console.log("  --force              Overwrite an existing --out file");
   console.log("");
   console.log("Environment:");
@@ -120,6 +122,7 @@ function printHelp() {
   console.log("  design-ai learn --audit --fix --dry-run");
   console.log("  design-ai learn --curate");
   console.log("  design-ai learn --curate --usage-file ./learning.usage.json");
+  console.log("  design-ai learn --curate --report --out learning-curation-report.md");
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
@@ -876,6 +879,10 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderLearningCurationReport(payload));
       return;
     }
     printCuration(payload);
