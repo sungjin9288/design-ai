@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.42.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.43.0.tgz
 """
 from __future__ import annotations
 
@@ -1192,6 +1192,40 @@ def write_learning_audit_fixture(profile_path: Path) -> None:
     )
 
 
+def write_learning_curation_usage_fixture(profile_path: Path, usage_path: Path) -> None:
+    usage_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:10:00.000Z",
+                "profileFile": str(profile_path),
+                "events": [
+                    {
+                        "id": "learn-use-package-smoke",
+                        "command": "prompt",
+                        "routeId": "design-review",
+                        "profileFile": str(profile_path),
+                        "briefHash": "package-smoke-hash",
+                        "category": "",
+                        "limit": 12,
+                        "selectedEntryIds": ["learn-a", "learn-stale"],
+                        "selectedCount": 2,
+                        "candidateCount": 3,
+                        "matchedCount": 1,
+                        "fallbackCount": 1,
+                        "queryTokenCount": 2,
+                        "auditStatus": "pass",
+                        "createdAt": "2026-05-22T00:10:00.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_learning_stats_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -1618,6 +1652,7 @@ def assert_learning_curation_json(
     raw: str,
     *,
     profile_path: Path,
+    usage_path: Path | None = None,
     dry_run: bool,
     context: str,
     cmd: list[str],
@@ -1654,6 +1689,57 @@ def assert_learning_curation_json(
     require_package_smoke(payload.get("proposalCount") == 2, context=context, cmd=cmd, message="learn curate proposal count changed")
     require_package_smoke(payload.get("archiveCount") == 2, context=context, cmd=cmd, message="learn curate archive count changed")
     require_package_smoke(payload.get("manualReviewCount") == 0, context=context, cmd=cmd, message="learn curate manual-review count changed")
+
+    usage = payload.get("usage")
+    require_package_smoke(isinstance(usage, dict), context=context, cmd=cmd, message="learn curate usage review missing")
+    if usage_path is not None:
+        require_package_smoke(
+            usage.get("usageFile") == str(usage_path),
+            context=context,
+            cmd=cmd,
+            message="learn curate usage file path changed",
+        )
+        require_package_smoke(usage.get("exists") is True, context=context, cmd=cmd, message="learn curate usage fixture missing")
+        require_package_smoke(usage.get("eventCount") == 1, context=context, cmd=cmd, message="learn curate usage event count changed")
+        require_package_smoke(usage.get("usedEntryCount") == 1, context=context, cmd=cmd, message="learn curate usage used count changed")
+        require_package_smoke(usage.get("unusedEntryCount") == 2, context=context, cmd=cmd, message="learn curate usage unused count changed")
+        require_package_smoke(
+            usage.get("staleSelectedEntryCount") == 1,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage stale count changed",
+        )
+        require_package_smoke(usage.get("reviewCount") == 3, context=context, cmd=cmd, message="learn curate usage review count changed")
+        require_package_smoke(usage.get("unusedReviewCount") == 2, context=context, cmd=cmd, message="learn curate usage unused review count changed")
+        require_package_smoke(usage.get("staleReviewCount") == 1, context=context, cmd=cmd, message="learn curate usage stale review count changed")
+        require_package_smoke(usage.get("autoArchive") is False, context=context, cmd=cmd, message="learn curate usage autoArchive changed")
+        reviews = usage.get("reviews")
+        require_package_smoke(isinstance(reviews, list), context=context, cmd=cmd, message="learn curate usage reviews missing")
+        review_reasons = {
+            item.get("entryId"): item.get("reason")
+            for item in reviews
+            if isinstance(item, dict)
+        }
+        require_package_smoke(
+            review_reasons.get("learn-stale") == "stale-selected-entry-id",
+            context=context,
+            cmd=cmd,
+            message="learn curate stale usage review changed",
+        )
+        require_package_smoke(
+            review_reasons.get("learn-b") == "unused-with-limited-history"
+            and review_reasons.get("learn-c") == "unused-with-limited-history",
+            context=context,
+            cmd=cmd,
+            message="learn curate unused usage review changed",
+        )
+    else:
+        require_package_smoke(
+            usage.get("autoArchive") is False,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage autoArchive changed",
+        )
 
     proposals = payload.get("proposals")
     require_package_smoke(isinstance(proposals, list), context=context, cmd=cmd, message="learn curate proposals missing")
@@ -2861,6 +2947,27 @@ def assert_learning_curation_smoke(
         dry_run=True,
         context=f"{context} JSON preview",
         cmd=json_cmd,
+    )
+
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
+    write_learning_curation_usage_fixture(profile_path, usage_path)
+    usage_cmd = command_factory(
+        "learn",
+        "--curate",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+    )
+    usage_result = run_plain(usage_cmd, cwd=cwd, env=env)
+    assert_learning_curation_json(
+        usage_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        dry_run=True,
+        context=f"{context} usage JSON preview",
+        cmd=usage_cmd,
     )
 
     apply_cmd = command_factory("learn", "--curate", "--yes", "--file", str(profile_path), "--json")
@@ -6177,6 +6284,9 @@ def run_self_test() -> None:
         learning_curation_payload = {
             "file": str(learning_profile_path),
             "archiveFile": str(learning_profile_path.with_name(f"{learning_profile_path.stem}.archive{learning_profile_path.suffix}")),
+            "usage": {
+                "autoArchive": False,
+            },
             "before": {
                 "status": "warn",
                 "failures": 0,
@@ -6223,6 +6333,75 @@ def run_self_test() -> None:
             dry_run=True,
             context=context,
             cmd=learn_curate_cmd,
+        )
+        learning_usage_path = learning_profile_path.with_name(
+            f"{learning_profile_path.stem}.usage{learning_profile_path.suffix}"
+        )
+        learning_curation_usage_payload = {
+            **learning_curation_payload,
+            "usage": {
+                "file": str(learning_profile_path),
+                "usageFile": str(learning_usage_path),
+                "exists": True,
+                "eventCount": 1,
+                "usedEntryCount": 1,
+                "unusedEntryCount": 2,
+                "staleSelectedEntryCount": 1,
+                "reviewCount": 3,
+                "unusedReviewCount": 2,
+                "staleReviewCount": 1,
+                "reviews": [
+                    {
+                        "level": "warning",
+                        "action": "review-usage-sidecar",
+                        "reason": "stale-selected-entry-id",
+                        "entryId": "learn-stale",
+                        "usageCount": 1,
+                        "message": "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
+                    },
+                    {
+                        "level": "info",
+                        "action": "manual-review",
+                        "reason": "unused-with-limited-history",
+                        "entryId": "learn-b",
+                        "usageCount": 0,
+                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                    },
+                    {
+                        "level": "info",
+                        "action": "manual-review",
+                        "reason": "unused-with-limited-history",
+                        "entryId": "learn-c",
+                        "usageCount": 0,
+                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                    },
+                ],
+                "recommendations": [],
+                "error": "",
+                "privacy": {
+                    "storesRawBriefText": False,
+                    "storesBriefHash": True,
+                    "storesSelectedEntryIds": True,
+                },
+                "autoArchive": False,
+            },
+        }
+        assert_learning_curation_json(
+            json.dumps(learning_curation_usage_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            dry_run=True,
+            context=f"{context} usage curation",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--curate",
+                "--file",
+                str(learning_profile_path),
+                "--usage-file",
+                str(learning_usage_path),
+                "--json",
+            ],
         )
         applied_learning_curation_payload = {
             **learning_curation_payload,

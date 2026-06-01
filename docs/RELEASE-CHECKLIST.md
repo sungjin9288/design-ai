@@ -157,7 +157,7 @@ GitHub Actions takes over:
 - The registry smoke also verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries plus auto-detected learning usage sidecar summaries with freshness metadata from the published package path.
 - The registry smoke also verifies public registry `design-ai learn --eval-template` checkpoint generation plus public registry generated checkpoint strict validation from the published package path.
 - The registry smoke also verifies public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation and public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output.
-- The packed-tarball smoke also verifies human / JSON `design-ai learn --curate` archive-first curation output and confirmed archive persistence through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- The packed-tarball smoke also verifies human / JSON `design-ai learn --curate` archive-first curation output plus usage-aware curation JSON review and confirmed archive persistence through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - `release.yml` verifies versions, runs audits + CLI unit tests, checks package contents, smoke-tests the installed tarball, then creates a GitHub Release using the same `npm pack` allowlist as the npm package.
 - `docs.yml` re-builds the doc site through `tools/audit/local-ci.py --docs-only` and deploys it.
 

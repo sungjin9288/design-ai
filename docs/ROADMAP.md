@@ -1,5 +1,41 @@
 # Roadmap
 
+## Phase 258 — Learning Usage Curation Review (v4.43.0) ✓ shipped
+
+`design-ai learn --curate` now folds local prompt/pack usage sidecar evidence into the archive-first curation preview. The feature keeps curation conservative: duplicate and sensitive profile entries can still be archived after `--yes`, while usage-derived findings only become manual review hints.
+
+### Changed
+- Added usage-aware review metadata to `learn --curate` JSON output.
+- Allowed `--usage-file path` with `learn --curate`.
+- Added stale selected-id usage review items when the sidecar references ids no longer present in the active profile.
+- Added unused active-entry review items when recorded prompt/pack usage has not selected entries yet.
+- Kept usage review advisory only through `autoArchive: false`; unused entries are not archived automatically.
+- Added human curation output for usage review when a sidecar is available or invalid.
+- Added unit coverage for usage-file parsing, usage review JSON shape, stale selected ids, unused entries, and apply behavior that leaves usage-only entries untouched.
+- Added package-smoke coverage for usage-aware curation JSON in installed-bin and one-shot packed tarball paths.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.43.0`.
+
+### Impact
+- Operators can review duplicate/sensitive cleanup and usage-derived stale/unused signals from one command.
+- Curation remains archive-first and conservative; prompt/pack usage metadata cannot delete or archive a valid active entry on its own.
+- Existing `learning.json`, `learning.usage.json`, `learn --usage`, `workspace --learning-usage`, and `learn --curate --yes` archive schemas remain compatible.
+
+### What this enables
+- Safer learning profile maintenance before relying on personalized prompt context for solo or company dogfood use.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.42.0 → 4.43.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 257 — Workspace Learning Usage Readiness (v4.42.0) ✓ shipped
 
 `design-ai workspace` now includes privacy-preserving prompt/pack learning usage sidecar readiness. The command can read an explicit `--learning-usage path` or auto-detect a sibling `learning.usage.json` beside the selected learning profile, then report whether local learning is actually being exercised and whether the sidecar still matches the active profile.

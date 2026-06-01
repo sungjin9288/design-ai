@@ -336,8 +336,8 @@ export function parseLearnArgs(args) {
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (out.usageFilePath && out.action !== "usage") {
-    throw new Error("--usage-file can only be used with --usage");
+  if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage or --curate");
   }
   if (out.strict && out.action !== "eval") {
     throw new Error("--strict can only be used with --eval");
@@ -1504,14 +1504,148 @@ function buildCurationProposal({ entry, issue, issueAction, existing }) {
   };
 }
 
+function learningUsageReviewItem({ level, action, reason, entryId, usageCount = 0, entry = null, message }) {
+  return {
+    level,
+    action,
+    reason,
+    entryId,
+    usageCount,
+    message,
+    ...(entry ? {
+      category: entry.category,
+      source: entry.source,
+      createdAt: entry.createdAt,
+      textPreview: previewText(entry.text),
+    } : {}),
+  };
+}
+
+function emptyLearningUsageCurationReview({ filePath, usageFile, exists = false, error = "" }) {
+  return {
+    file: path.resolve(filePath),
+    usageFile: path.resolve(usageFile),
+    exists,
+    eventCount: 0,
+    usedEntryCount: 0,
+    unusedEntryCount: 0,
+    staleSelectedEntryCount: 0,
+    reviewCount: 0,
+    unusedReviewCount: 0,
+    staleReviewCount: 0,
+    reviews: [],
+    recommendations: [],
+    error,
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      storesSelectedEntryIds: true,
+    },
+    autoArchive: false,
+  };
+}
+
+function learningUsageCurationReview({
+  filePath = defaultLearningFile(),
+  usageFile = defaultLearningUsageFile(filePath),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const resolvedUsageFile = path.resolve(usageFile);
+
+  try {
+    const stats = learningUsageStats({
+      filePath: resolvedFile,
+      usageFile: resolvedUsageFile,
+      limit: 10,
+    });
+
+    if (!stats.exists) {
+      return {
+        ...emptyLearningUsageCurationReview({
+          filePath: resolvedFile,
+          usageFile: resolvedUsageFile,
+          exists: false,
+        }),
+        recommendations: stats.recommendations || [],
+      };
+    }
+
+    const profile = loadLearningProfile(resolvedFile);
+    const entriesById = new Map(profile.entries.map((entry) => [entry.id, entry]));
+    const reviews = [];
+
+    for (const entryId of stats.staleSelectedEntryIds || []) {
+      reviews.push(learningUsageReviewItem({
+        level: "warning",
+        action: "review-usage-sidecar",
+        reason: "stale-selected-entry-id",
+        entryId,
+        usageCount: stats.selectedEntryCounts?.[entryId] || 0,
+        message: "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
+      }));
+    }
+
+    if (stats.eventCount > 0) {
+      for (const entryId of stats.unusedEntryIds || []) {
+        const entry = entriesById.get(entryId);
+        if (!entry) continue;
+        reviews.push(learningUsageReviewItem({
+          level: "info",
+          action: "manual-review",
+          reason: stats.eventCount >= 5
+            ? "unused-in-observed-usage"
+            : "unused-with-limited-history",
+          entryId,
+          entry,
+          message: "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+        }));
+      }
+    }
+
+    const unusedReviewCount = reviews.filter((review) => review.reason.startsWith("unused-")).length;
+    const staleReviewCount = reviews.filter((review) => review.reason === "stale-selected-entry-id").length;
+
+    return {
+      file: stats.file,
+      usageFile: stats.usageFile,
+      exists: true,
+      eventCount: stats.eventCount,
+      usedEntryCount: stats.usedEntryCount,
+      unusedEntryCount: stats.unusedEntryCount,
+      staleSelectedEntryCount: stats.staleSelectedEntryCount,
+      reviewCount: reviews.length,
+      unusedReviewCount,
+      staleReviewCount,
+      reviews,
+      recommendations: stats.recommendations || [],
+      error: "",
+      privacy: stats.privacy || {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+      autoArchive: false,
+    };
+  } catch (error) {
+    return emptyLearningUsageCurationReview({
+      filePath: resolvedFile,
+      usageFile: resolvedUsageFile,
+      exists: existsSync(resolvedUsageFile),
+      error: error?.message || String(error),
+    });
+  }
+}
+
 export function buildLearningCurationPlan({
   filePath = defaultLearningFile(),
   archiveFile = defaultLearningArchiveFile(filePath),
+  usageFile = defaultLearningUsageFile(filePath),
 } = {}) {
   const audit = auditLearningProfile({ filePath });
   const payload = {
     file: filePath,
     archiveFile,
+    usage: learningUsageCurationReview({ filePath, usageFile }),
     before: audit.summary,
     proposalCount: 0,
     archiveCount: 0,
@@ -1579,10 +1713,11 @@ export function buildLearningCurationPlan({
 export function applyLearningCurationPlan({
   filePath = defaultLearningFile(),
   archiveFile = defaultLearningArchiveFile(filePath),
+  usageFile = defaultLearningUsageFile(filePath),
   dryRun = true,
   now = new Date(),
 } = {}) {
-  const plan = buildLearningCurationPlan({ filePath, archiveFile });
+  const plan = buildLearningCurationPlan({ filePath, archiveFile, usageFile });
   const payload = {
     ...plan,
     dryRun,

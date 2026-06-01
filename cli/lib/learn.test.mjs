@@ -226,6 +226,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(curateArgs.dryRun, true);
   assert.equal(curateArgs.json, true);
 
+  const curateUsageArgs = parseLearnArgs(["--curate", "--usage-file", "learning.usage.json", "--json"]);
+  assert.equal(curateUsageArgs.action, "curate");
+  assert.equal(curateUsageArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(curateUsageArgs.json, true);
+
   const curateApplyArgs = parseLearnArgs(["--curate", "--yes"]);
   assert.equal(curateApplyArgs.action, "curate");
   assert.equal(curateApplyArgs.yes, true);
@@ -331,7 +336,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
-    /--usage-file can only be used with --usage/,
+    /--usage-file can only be used with --usage or --curate/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--strict"]),
@@ -1193,6 +1198,91 @@ test("buildLearningCurationPlan previews archive-first duplicate and sensitive c
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c", "learn-d"]);
 }));
 
+test("buildLearningCurationPlan includes usage review hints without auto-archiving unused entries", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "workflow",
+        text: "Prefer implementation summaries with verification evidence",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use restrained enterprise language for internal tools",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "accessibility",
+        text: "Always include keyboard focus and screen-reader behavior",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:10:00.000Z",
+    profileFile: filePath,
+    events: [
+      {
+        id: "learn-use-a",
+        command: "prompt",
+        routeId: "ux-audit",
+        profileFile: filePath,
+        briefHash: "abc123",
+        category: "",
+        limit: 12,
+        selectedEntryIds: ["learn-a", "learn-stale"],
+        selectedCount: 2,
+        candidateCount: 3,
+        matchedCount: 1,
+        fallbackCount: 1,
+        queryTokenCount: 3,
+        auditStatus: "pass",
+        createdAt: "2026-05-22T00:10:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const plan = buildLearningCurationPlan({ filePath, usageFile });
+  assert.equal(plan.proposalCount, 0);
+  assert.equal(plan.archiveCount, 0);
+  assert.equal(plan.manualReviewCount, 0);
+  assert.equal(plan.usage.exists, true);
+  assert.equal(plan.usage.eventCount, 1);
+  assert.equal(plan.usage.usedEntryCount, 1);
+  assert.equal(plan.usage.unusedEntryCount, 2);
+  assert.equal(plan.usage.staleSelectedEntryCount, 1);
+  assert.equal(plan.usage.reviewCount, 3);
+  assert.equal(plan.usage.unusedReviewCount, 2);
+  assert.equal(plan.usage.staleReviewCount, 1);
+  assert.equal(plan.usage.autoArchive, false);
+  assert.deepEqual(
+    plan.usage.reviews.map((review) => [review.entryId, review.reason, review.action]),
+    [
+      ["learn-stale", "stale-selected-entry-id", "review-usage-sidecar"],
+      ["learn-b", "unused-with-limited-history", "manual-review"],
+      ["learn-c", "unused-with-limited-history", "manual-review"],
+    ],
+  );
+
+  const applied = applyLearningCurationPlan({ filePath, usageFile, dryRun: false });
+  assert.equal(applied.applied, true);
+  assert.equal(applied.archiveCount, 0);
+  assert.deepEqual(applied.archived, []);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c"]);
+  assert.deepEqual(loadLearningArchive(defaultLearningArchiveFile(filePath), { sourceFile: filePath }).entries, []);
+}));
+
 test("applyLearningCurationPlan archives candidates without deleting audit history", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   const archiveFile = defaultLearningArchiveFile(filePath);
@@ -1281,6 +1371,37 @@ test("runLearn curation previews by default and applies only with confirmation",
   assert.match(previewOutput, /Learning curation preview/);
   assert.match(previewOutput, /Would archive:/);
   assert.match(previewOutput, /learn-b: duplicate-entry/);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b"]);
+
+  const usageFile = path.join(dir, "learning.usage.json");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:10:00.000Z",
+    profileFile: filePath,
+    events: [
+      {
+        id: "learn-use-a",
+        command: "pack",
+        routeId: "design-review",
+        profileFile: filePath,
+        briefHash: "usagehash",
+        category: "",
+        limit: 12,
+        selectedEntryIds: ["learn-a", "learn-stale"],
+        selectedCount: 2,
+        candidateCount: 2,
+        matchedCount: 1,
+        fallbackCount: 1,
+        queryTokenCount: 2,
+        auditStatus: "pass",
+        createdAt: "2026-05-22T00:10:00.000Z",
+      },
+    ],
+  }), "utf8");
+  const usagePreviewOutput = await captureStdout(() => runLearn(["--curate", "--file", filePath, "--usage-file", usageFile]));
+  assert.match(usagePreviewOutput, /Usage review:/);
+  assert.match(usagePreviewOutput, /learn-stale: stale-selected-entry-id/);
+  assert.match(usagePreviewOutput, /learn-b: unused-with-limited-history/);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b"]);
 
   const applyJsonOutput = await captureStdout(() => runLearn(["--curate", "--yes", "--file", filePath, "--json"]));

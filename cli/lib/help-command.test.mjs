@@ -275,9 +275,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --yes \[--json\] \[--out file\] \[--force\]/);
-  assert.match(learnOutput, /design-ai learn --curate \[--dry-run\|--yes\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --curate \[--dry-run\|--yes\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
-  assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive learning entries/);
+  assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive entries, plus usage review hints/);
   assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --curate, or --audit --fix without changing the profile/);
   assert.match(learnOutput, /design-ai learn --init --yes --json/);
   assert.match(learnOutput, /design-ai learn --curate --yes --json/);
@@ -285,7 +285,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
   assert.match(learnOutput, /design-ai learn --usage \[--limit N\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--usage\s+Summarize prompt\/pack --with-learning usage sidecar events without changing files/);
-  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage/);
+  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage or --curate/);
   assert.match(learnOutput, /design-ai learn --eval-template \[--query text\] \[--category kind\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--eval-template\s+Generate a runnable learning eval checkpoint from the active profile/);
   assert.match(learnOutput, /design-ai learn --eval --from-file eval\.json \[--category kind\] \[--limit N\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);

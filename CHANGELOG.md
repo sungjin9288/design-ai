@@ -2,6 +2,26 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.43.0 — Learning Usage Curation Review (2026-06)
+
+Made `design-ai learn --curate` usage-aware without making usage history destructive. The command now includes a `usage` review section sourced from the local learning usage sidecar, accepts `--usage-file path`, and reports stale selected entry ids plus active entries that have not appeared in recorded prompt/pack learning usage.
+
+Usage review items are advisory only: duplicate and sensitive learning entries remain the only automatic archive candidates, and unused entries are never archived by usage telemetry alone. Package smoke now verifies the usage-aware curation JSON path through the packed tarball.
+
+### What this enables
+
+Operators can review whether a learning entry is stale, unused, duplicated, or sensitive from one curation preview before deciding what to archive, rewrite, or keep.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.42.0 → 4.43.0.
+
 ## v4.42.0 — Workspace Learning Usage Readiness (2026-06)
 
 Made `design-ai workspace` include the local learning usage sidecar in the dogfood readiness snapshot. The command now supports `--learning-usage path`, auto-detects a sibling `learning.usage.json` when present, and reports prompt/pack usage event counts, used/unused profile entry counts, stale selected ids, latest usage metadata, and privacy guarantees without storing raw brief text.

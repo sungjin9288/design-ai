@@ -52,7 +52,7 @@ function printHelp() {
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --dry-run [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --yes [--json] [--out file] [--force]");
-  console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
@@ -81,7 +81,7 @@ function printHelp() {
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
-  console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive learning entries");
+  console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
   console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
@@ -92,7 +92,7 @@ function printHelp() {
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
-  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage or --curate");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, or export Markdown for --export");
   console.log("  --force              Overwrite an existing --out file");
@@ -119,6 +119,7 @@ function printHelp() {
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
   console.log("  design-ai learn --curate");
+  console.log("  design-ai learn --curate --usage-file ./learning.usage.json");
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
@@ -349,6 +350,26 @@ function printCuration(payload) {
       const entry = skipped.entryId ? `${skipped.entryId}: ` : "";
       console.log(`- ${entry}${skipped.reason}`);
     }
+    console.log();
+  }
+
+  if (payload.usage?.exists || payload.usage?.error) {
+    console.log("Usage review:");
+    console.log(`- sidecar: ${payload.usage.usageFile}`);
+    console.log(`- events: ${payload.usage.eventCount}`);
+    console.log(`- review items: ${payload.usage.reviewCount}`);
+    if (payload.usage.error) {
+      console.log(`- error: ${payload.usage.error}`);
+    } else if (payload.usage.reviews.length === 0) {
+      console.log("- no usage-based curation review items found");
+    } else {
+      for (const review of payload.usage.reviews) {
+        const label = review.entryId || "usage";
+        console.log(`- ${label}: ${review.reason} (${review.action})`);
+        if (review.textPreview) console.log(`  ${dim(review.textPreview)}`);
+      }
+    }
+    console.log(dim("Usage review is advisory; --curate only archives duplicate/sensitive audit candidates."));
     console.log();
   }
 
@@ -850,6 +871,7 @@ export async function runLearn(args) {
     if (!dryRun) assertConfirmed(parsed, "apply learning curation to");
     const payload = applyLearningCurationPlan({
       filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
       dryRun,
     });
     if (parsed.json) {
