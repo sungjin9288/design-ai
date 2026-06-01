@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 244 — Local Learning Archive-First Curation (v4.29.0) ✓ shipped
+
+Local learning profiles now have a safer maintenance loop. `design-ai learn --curate` previews deterministic curation proposals, and `design-ai learn --curate --yes` moves duplicate and sensitive-content entries into a sibling archive JSON instead of deleting them outright.
+
+### Changed
+- Added `--curate` to `design-ai learn`.
+- Added curation plan helpers that classify duplicate learning text and conservative sensitive-content warnings as archive candidates.
+- Kept malformed entries, duplicate ids, timestamp gaps, long notes, and profile-level failures in manual-review status.
+- Added `learning.archive.json`-style archive persistence with `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata.
+- Added CLI help, parser, unit test, package-smoke assertion, AI learning docs, README, Product Readiness, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.29.0`.
+
+### Impact
+- Operators can clean a growing local learning profile before `prompt` / `pack --with-learning` while preserving removed entries for review and audit history.
+- Existing `learn --audit`, `learn --audit --fix`, `learn --forget`, `learn --clear`, `check --learn`, and learned-context injection behavior remain compatible.
+
+### What this enables
+- A later local learning telemetry layer can record usage/selection metadata without changing the profile schema or requiring external AI services.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.28.0 → 4.29.0.
+
+### What's still ahead
+- Deterministic sidecar usage telemetry, eval/checkpoint harnesses, semantic embeddings, fine-tuning, and hosted multi-user sync remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 1 — Foundation ✓ shipped (v1.0)
 
 Three commits. See `git log --oneline`.

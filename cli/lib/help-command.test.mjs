@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
+  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--curate\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--strict\] \[--json\]/);
   assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
@@ -64,7 +64,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]\s+Manage local learning preferences for prompt personalization/,
+    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--import\|--audit \[--fix\]\|--curate\|--stats\|--forget id\|--clear\] \[--json\] \[--out file\]\s+Manage local learning preferences for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
@@ -96,7 +96,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--stats|--forget id|--clear] [--json] [--out file]",
+    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--forget id|--clear] [--json] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "check").usage,
@@ -273,9 +273,12 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --yes \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --curate \[--dry-run\|--yes\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
-  assert.match(learnOutput, /--dry-run\s+Preview --init, --import, or --audit --fix without changing the profile/);
+  assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive learning entries/);
+  assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --curate, or --audit --fix without changing the profile/);
   assert.match(learnOutput, /design-ai learn --init --yes --json/);
+  assert.match(learnOutput, /design-ai learn --curate --yes --json/);
   assert.match(learnOutput, /design-ai learn --stats \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
   assert.match(learnOutput, /design-ai learn --list --query "keyboard accessibility" --explain --json/);

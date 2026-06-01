@@ -8,15 +8,19 @@ import assert from "node:assert/strict";
 
 import {
   applyLearningAuditFixes,
+  applyLearningCurationPlan,
   auditLearningProfile,
+  buildLearningCurationPlan,
   buildLearningContext,
   buildLearningBackup,
   buildRedactedLearningBackup,
   clearLearning,
+  defaultLearningArchiveFile,
   forgetLearning,
   importLearningProfile,
   initializeLearningProfile,
   learningStats,
+  loadLearningArchive,
   loadLearningProfile,
   normalizeCategory,
   normalizeFeedbackOutcome,
@@ -187,6 +191,15 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(auditFixApplyArgs.fix, true);
   assert.equal(auditFixApplyArgs.yes, true);
 
+  const curateArgs = parseLearnArgs(["--curate", "--dry-run", "--json"]);
+  assert.equal(curateArgs.action, "curate");
+  assert.equal(curateArgs.dryRun, true);
+  assert.equal(curateArgs.json, true);
+
+  const curateApplyArgs = parseLearnArgs(["--curate", "--yes"]);
+  assert.equal(curateApplyArgs.action, "curate");
+  assert.equal(curateApplyArgs.yes, true);
+
   const statsArgs = parseLearnArgs(["--stats", "--json"]);
   assert.equal(statsArgs.action, "stats");
   assert.equal(statsArgs.json, true);
@@ -235,6 +248,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--audit", "--fix", "--dry-run", "--yes"]),
+    /Choose either --dry-run or --yes/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--curate", "--dry-run", "--yes"]),
     /Choose either --dry-run or --yes/,
   );
   assert.throws(
@@ -1050,6 +1067,164 @@ test("applyLearningAuditFixes previews and applies safe audit cleanup", () => wi
   assert.deepEqual(applied.removed.map((entry) => entry.id), ["learn-b", "learn-c"]);
   assert.equal(applied.after.status, "pass");
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
+}));
+
+test("buildLearningCurationPlan previews archive-first duplicate and sensitive cleanup", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const archiveFile = defaultLearningArchiveFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "workflow",
+        text: "Prefer release notes that state evidence before claims",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Prefer release notes that state evidence before claims",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "constraint",
+        text: "Never include api_key=redacted placeholders in prompt context",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+      {
+        id: "learn-d",
+        category: "preference",
+        text: "Keep this broad note for manual review. ".repeat(30),
+        source: "cli",
+        createdAt: "2026-05-22T00:00:03.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const plan = buildLearningCurationPlan({ filePath });
+  assert.equal(plan.file, filePath);
+  assert.equal(plan.archiveFile, archiveFile);
+  assert.equal(plan.before.status, "warn");
+  assert.equal(plan.proposalCount, 3);
+  assert.equal(plan.archiveCount, 2);
+  assert.equal(plan.manualReviewCount, 1);
+  assert.deepEqual(
+    plan.proposals
+      .filter((proposal) => proposal.action === "archive")
+      .map((proposal) => [proposal.entryId, proposal.reason]),
+    [
+      ["learn-b", "duplicate-entry"],
+      ["learn-c", "sensitive-content"],
+    ],
+  );
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c", "learn-d"]);
+}));
+
+test("applyLearningCurationPlan archives candidates without deleting audit history", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const archiveFile = defaultLearningArchiveFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "workflow",
+        text: "Prefer concise implementation summaries",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Prefer concise implementation summaries",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-c",
+        category: "constraint",
+        text: "Never include api_key=redacted placeholders in prompt context",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const dryRun = applyLearningCurationPlan({ filePath, dryRun: true });
+  assert.equal(dryRun.dryRun, true);
+  assert.equal(dryRun.applied, false);
+  assert.equal(dryRun.archiveCount, 2);
+  assert.equal(dryRun.archived.length, 0);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c"]);
+  assert.deepEqual(loadLearningArchive(archiveFile, { sourceFile: filePath }).entries, []);
+
+  const applied = applyLearningCurationPlan({
+    filePath,
+    dryRun: false,
+    now: new Date("2026-05-22T00:05:00.000Z"),
+  });
+  assert.equal(applied.dryRun, false);
+  assert.equal(applied.applied, true);
+  assert.equal(applied.archiveCount, 2);
+  assert.deepEqual(applied.archived.map((entry) => entry.id), ["learn-b", "learn-c"]);
+  assert.equal(applied.after.status, "pass");
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
+
+  const archive = loadLearningArchive(archiveFile, { sourceFile: filePath });
+  assert.equal(archive.sourceFile, filePath);
+  assert.deepEqual(archive.entries.map((entry) => entry.id), ["learn-b", "learn-c"]);
+  assert.deepEqual(archive.entries.map((entry) => entry.archivedAt), [
+    "2026-05-22T00:05:00.000Z",
+    "2026-05-22T00:05:00.000Z",
+  ]);
+  assert.deepEqual(archive.entries.map((entry) => entry.archiveReason), ["duplicate-entry", "sensitive-content"]);
+}));
+
+test("runLearn curation previews by default and applies only with confirmation", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const previewOutput = await captureStdout(() => runLearn(["--curate", "--file", filePath]));
+  assert.match(previewOutput, /Learning curation preview/);
+  assert.match(previewOutput, /Would archive:/);
+  assert.match(previewOutput, /learn-b: duplicate-entry/);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b"]);
+
+  const applyJsonOutput = await captureStdout(() => runLearn(["--curate", "--yes", "--file", filePath, "--json"]));
+  const payload = JSON.parse(applyJsonOutput);
+  assert.equal(payload.applied, true);
+  assert.equal(payload.dryRun, false);
+  assert.equal(payload.archiveCount, 1);
+  assert.equal(payload.archived[0].id, "learn-b");
+  assert.equal(payload.after.status, "pass");
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
+  assert.deepEqual(loadLearningArchive(defaultLearningArchiveFile(filePath), { sourceFile: filePath }).entries.map((entry) => entry.id), ["learn-b"]);
 }));
 
 test("runLearn audit fix supports dry-run and requires confirmation before applying", () => withTempDirAsync(async (dir) => {

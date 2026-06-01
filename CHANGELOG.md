@@ -2,6 +2,29 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.29.0 — Local Learning Archive-First Curation (2026-06)
+
+Added `design-ai learn --curate` so local learning profiles can be maintained with a preview-first, archive-first flow inspired by Hermes-style skill curation without adding model training, external AI APIs, embeddings, telemetry, or new dependencies.
+The new curation plan classifies duplicate learning text and conservative sensitive-content warnings as archive candidates, keeps long notes, timestamp gaps, malformed entries, duplicate ids, and profile-level failures in manual-review status, and defaults to a dry-run preview.
+Confirmed `design-ai learn --curate --yes` removes archive candidates from the active `learning.json` profile and appends their full entries to a sibling archive file such as `learning.archive.json` with `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata.
+
+Package smoke now verifies `learn --curate` preview/apply JSON and human output through both installed-bin and one-shot `npm exec --package <tarball>` paths.
+AI learning docs, README, Product Readiness, Roadmap, and Session Log now describe the archive-preserving curation flow.
+
+### What this enables
+
+Operators can keep a growing local learning profile clean before using `--with-learning` while preserving removed entries for audit/history instead of deleting them outright.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.28.0 → 4.29.0.
+
 ## v4.28.0 — Website Improvement Target-Repo Bundle Handoff Prompt (2026-06)
 
 Added `design-ai site <bundle-dir> --bundle-handoff [--strict] [--json]` so operators can turn a validated Website Improvement handoff bundle into a paste-ready Codex prompt for the target website repo.
