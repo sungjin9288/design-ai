@@ -1387,6 +1387,7 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     "",
     "## Checksum Verification",
     "- `summary.json` records SHA-256 checksums for every generated bundle file except `summary.json` itself.",
+    "- `summary.json.checksums.bundleDigest` records a deterministic fingerprint of the checksum manifest for quick bundle identity comparison.",
     "- `design-ai site <bundle-dir> --bundle-check --strict --json` recomputes those checksums so transferred or manually edited bundles fail before target-repo handoff.",
     "",
     "## Boundaries",
@@ -1399,14 +1400,21 @@ function sha256Hex(content) {
   return createHash("sha256").update(content, "utf8").digest("hex");
 }
 
+function buildBundleDigest(checksumFiles) {
+  const manifest = SITE_BUNDLE_CHECKSUM_FILES.map((filePath) => `${filePath}\t${checksumFiles[filePath] || ""}`).join("\n");
+  return sha256Hex(`${manifest}\n`);
+}
+
 function buildBundleChecksums(files) {
+  const checksumFiles = Object.fromEntries(
+    files
+      .filter((file) => file.path !== "summary.json")
+      .map((file) => [file.path, sha256Hex(file.content)]),
+  );
   return {
     algorithm: "sha256",
-    files: Object.fromEntries(
-      files
-        .filter((file) => file.path !== "summary.json")
-        .map((file) => [file.path, sha256Hex(file.content)]),
-    ),
+    bundleDigest: buildBundleDigest(checksumFiles),
+    files: checksumFiles,
   };
 }
 
@@ -1550,6 +1558,7 @@ function summarizeBundlePayload(summaryPayload) {
     mcpStatus: String(mcp.status || "unknown"),
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
     checksumAlgorithm: String(checksums.algorithm || ""),
+    checksumBundleDigest: String(checksums.bundleDigest || ""),
     checksumFiles: normalizeObject(checksums.files),
   };
 }
@@ -1633,7 +1642,17 @@ export function buildSiteBundleCheckReport({
     } else {
       const checksumFiles = summary.checksumFiles;
       const checksumKeys = Object.keys(checksumFiles).sort();
-      const expectedChecksumKeys = SITE_BUNDLE_CHECKSUM_FILES.slice().sort();
+      const expectedChecksumKeys = SITE_BUNDLE_CHECKSUM_FILES;
+      if (!summary.checksumBundleDigest) {
+        addIssue(issues, "warn", "bundle-checksum-bundle-digest-missing", "summary.json should include checksums.bundleDigest; regenerate the bundle with the current CLI");
+      } else if (!/^[a-f0-9]{64}$/.test(summary.checksumBundleDigest)) {
+        addIssue(issues, "fail", "bundle-checksum-bundle-digest-format", "summary.json checksums.bundleDigest must be a SHA-256 hex digest");
+      } else {
+        const manifestBundleDigest = buildBundleDigest(checksumFiles);
+        if (manifestBundleDigest !== summary.checksumBundleDigest) {
+          addIssue(issues, "fail", "bundle-checksum-bundle-digest-manifest", "summary.json checksums.bundleDigest does not match the checksum file manifest");
+        }
+      }
       for (const expectedPath of expectedChecksumKeys) {
         const expectedDigest = checksumFiles[expectedPath];
         if (!expectedDigest) {
@@ -1658,6 +1677,22 @@ export function buildSiteBundleCheckReport({
           const actualDigest = sha256Hex(readFileSync(targetPath, "utf8"));
           if (actualDigest !== expectedDigest) {
             addIssue(issues, "fail", `bundle-checksum-${expectedPath}`, `${expectedPath} checksum does not match summary.json`);
+          }
+        }
+        if (summary.checksumBundleDigest && /^[a-f0-9]{64}$/.test(summary.checksumBundleDigest)) {
+          const actualChecksumFiles = Object.fromEntries(
+            expectedChecksumKeys
+              .filter((filePath) => {
+                const targetPath = path.join(directory, filePath);
+                return existsSync(targetPath) && statSync(targetPath).isFile();
+              })
+              .map((filePath) => [filePath, sha256Hex(readFileSync(path.join(directory, filePath), "utf8"))]),
+          );
+          if (
+            expectedChecksumKeys.every((filePath) => actualChecksumFiles[filePath])
+            && buildBundleDigest(actualChecksumFiles) !== summary.checksumBundleDigest
+          ) {
+            addIssue(issues, "fail", "bundle-checksum-bundle-digest", "Current bundle files do not match summary.json checksums.bundleDigest");
           }
         }
       }
@@ -1764,6 +1799,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Status: ${report.status}`,
     `Files: ${report.counts.presentFiles}/${report.counts.expectedFiles}`,
     `Checksums: ${report.counts.verifiedChecksumFiles}/${report.counts.expectedChecksumFiles} verified`,
+    `Bundle digest: ${report.summary.checksumBundleDigest || "not recorded"}`,
     `Unexpected files: ${report.unexpectedFiles.length ? report.unexpectedFiles.join(", ") : "none"}`,
     `Source: ${report.summary.source || "unknown"}`,
     `Site: ${report.summary.siteName || "unknown"}`,

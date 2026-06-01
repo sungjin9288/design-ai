@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.25.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.26.0.tgz
 """
 from __future__ import annotations
 
@@ -710,6 +710,9 @@ def assert_site_bundle_smoke(
     checksum_files = checksums.get("files", {})
     if checksums.get("algorithm") != "sha256":
         raise SystemExit(f"site bundle after {context} checksum algorithm changed")
+    bundle_digest = checksums.get("bundleDigest")
+    if not isinstance(bundle_digest, str) or len(bundle_digest) != 64:
+        raise SystemExit(f"site bundle after {context} bundle digest is not a SHA-256 hex digest")
     expected_checksum_files = [name for name in expected_files if name != "summary.json"]
     if list(checksum_files.keys()) != expected_checksum_files:
         raise SystemExit(f"site bundle after {context} checksum file manifest changed")
@@ -764,6 +767,9 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} site name changed")
     if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
         raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
+    bundle_digest = payload.get("summary", {}).get("checksumBundleDigest")
+    if not isinstance(bundle_digest, str) or len(bundle_digest) != 64:
+        raise SystemExit(f"site bundle check after {context} bundle digest changed")
     if payload.get("mcpStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP status changed")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]

@@ -51,6 +51,41 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 241 — Website Improvement Handoff Bundle Fingerprint Verification (v4.26.0) ✓ shipped
+
+Website improvement handoff bundles now carry a deterministic bundle-level fingerprint. `design-ai site --bundle --out <dir>` records `summary.json.checksums.bundleDigest` from the ordered SHA-256 checksum manifest, and `design-ai site <bundle-dir> --bundle-check [--strict] [--json]` verifies both the manifest digest and the current bundle files before target-repo handoff.
+
+### Changed
+- Added `summary.json.checksums.bundleDigest` as a stable SHA-256 digest for the ordered checksum manifest.
+- Extended bundle-check validation to fail when the stored bundle digest does not match the checksum manifest or the current generated files.
+- Added bundle digest output to the human bundle-check report so operators can compare handoff bundle identity quickly.
+- Preserved backward compatibility for v4.25 bundles by warning when `bundleDigest` is missing instead of treating old checksum manifests as corrupt.
+- Added unit coverage for bundle digest shape, human output, and tampered bundle digest failure.
+- Extended packed-tarball smoke assertions to verify bundle digest presence in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.26.0`.
+
+### Impact
+- Operators can compare, archive, or attach Website Improvement handoff bundles using a single stable bundle fingerprint.
+- File-level checksum diagnostics remain intact for pinpointing which artifact drifted.
+
+### What this enables
+- Future hosted, VS Code, or target-repo automation can store a compact bundle fingerprint while still relying on the full checksum manifest for detailed validation.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.25.0 → 4.26.0.
+
 ## Phase 240 — Website Improvement Handoff Bundle Checksum Verification (v4.25.0) ✓ shipped
 
 Website improvement handoff bundles now carry SHA-256 checksums for generated artifacts. `design-ai site --bundle --out <dir>` records the checksum manifest in `summary.json`, and `design-ai site <bundle-dir> --bundle-check [--strict] [--json]` recomputes those checksums before target-repo handoff.

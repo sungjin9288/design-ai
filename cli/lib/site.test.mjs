@@ -305,6 +305,7 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
   assert.deepEqual(summaryPayload.files, Object.keys(files));
   assert.equal(summaryPayload.checksums.algorithm, "sha256");
+  assert.match(summaryPayload.checksums.bundleDigest, /^[a-f0-9]{64}$/);
   assert.deepEqual(Object.keys(summaryPayload.checksums.files), [
     "README.md",
     "website-workspace.tasks.json",
@@ -351,10 +352,12 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
   assert.equal(report.summary.checksumAlgorithm, "sha256");
+  assert.match(report.summary.checksumBundleDigest, /^[a-f0-9]{64}$/);
   assert.equal(json.issues[0].id, "bundle-ready");
   assert.match(human, /Website Improvement handoff bundle check/);
   assert.match(human, /Files: 8\/8/);
   assert.match(human, /Checksums: 7\/7 verified/);
+  assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /bundle-ready/);
 
   writeFileSync(path.join(dir, "codex-implementation.md"), `${readFileSync(path.join(dir, "codex-implementation.md"), "utf8")}\nTampered after export.\n`, "utf8");
@@ -362,8 +365,9 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(tamperedReport.status, "fail");
   assert.equal(tamperedReport.valid, false);
   assert.equal(tamperedReport.counts.verifiedChecksumFiles, 6);
-  assert.equal(tamperedReport.counts.checksumFailures, 1);
+  assert.equal(tamperedReport.counts.checksumFailures, 2);
   assert.ok(tamperedReport.issues.some((issue) => issue.id === "bundle-checksum-codex-implementation.md"));
+  assert.ok(tamperedReport.issues.some((issue) => issue.id === "bundle-checksum-bundle-digest"));
 
   writeFileSync(path.join(dir, "codex-implementation.md"), files["codex-implementation.md"], "utf8");
   rmSync(path.join(dir, "mcp-check.json"));

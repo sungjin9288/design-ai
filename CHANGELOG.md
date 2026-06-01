@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.26.0 — Website Improvement Handoff Bundle Fingerprint Verification (2026-06)
+
+Added a deterministic bundle-level fingerprint to Website Improvement handoff bundles so operators can compare a whole bundle identity, not only individual artifact checksums.
+`design-ai site --bundle --out <dir>` now writes `summary.json.checksums.bundleDigest`, derived from the ordered SHA-256 checksum manifest for every generated bundle file except `summary.json`.
+`design-ai site <bundle-dir> --bundle-check --strict --json` verifies the stored bundle digest against both the checksum manifest and the current bundle files, reports the digest in human output, and keeps per-file checksum validation intact.
+Package smoke now asserts bundle digest presence through both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, README, Distribution docs, Product Readiness, Website Improvement docs, Roadmap, and Session Log now describe bundle digest/fingerprint verification.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can archive, compare, or attach Website Improvement handoff bundles with one stable digest while still retaining file-level checksum diagnostics for drift and tampering.
+
+### Verified
+
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.25.0 → 4.26.0.
+
 ## v4.25.0 — Website Improvement Handoff Bundle Checksum Verification (2026-06)
 
 Added SHA-256 checksum manifesting to Website Improvement handoff bundles so transferred or manually edited bundle artifacts can be detected before target-repo handoff.
