@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 250 — Public Registry Workspace Learning Eval Smoke (v4.35.0) ✓ shipped
+
+Post-publish registry smoke now covers workspace learning eval readiness from the published package path. `tools/audit/registry-smoke.py` creates a clean git workspace plus local learning profile/eval checkpoint fixtures, then runs public `npm exec --package @design-ai/cli@<version>` with `design-ai workspace --learning-eval <checkpoint.json> --strict --json`.
+
+### Changed
+- Added registry-smoke fixture generation for a deterministic workspace learning eval checkpoint.
+- Extended the public registry workspace strict success smoke to include `--learning-eval` and validate the resulting `learningEval` JSON summary.
+- Added a registry-smoke self-test fixture for strict workspace success with learning eval metadata.
+- Added release metadata guard phrases for public registry workspace learning-eval smoke.
+- Updated README, Distribution docs, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.35.0`.
+
+### Impact
+- Local packed-tarball smoke and post-publish public registry smoke now protect the same workspace learning eval readiness contract.
+- Existing CLI runtime behavior, `learning.json`, usage sidecar, and eval checkpoint schemas remain compatible.
+
+### What this enables
+- External publish verification can catch npm registry path regressions in the dogfood readiness gate before broader company rollout.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.34.0 → 4.35.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader public-registry smoke coverage for future learning surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 249 — Workspace Learning Eval Readiness (v4.34.0) ✓ shipped
 
 Workspace readiness can now include local learning checkpoint health. `design-ai workspace --learning-eval <checkpoint.json>` reads the selected `--learning-file` profile and reports a compact learning eval summary beside git, repository metadata, learning audit state, release scripts, and next actions.
@@ -31,7 +64,7 @@ Workspace readiness can now include local learning checkpoint health. `design-ai
 - `package.json` + `.claude-plugin/plugin.json`: 4.33.0 → 4.34.0.
 
 ### What's still ahead
-- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- Semantic embeddings, fine-tuning, hosted sync, and broader public-registry smoke coverage for future learning surfaces remain future phases.
 - External release remains held until owner review and Real-CI are green.
 
 ## Phase 248 — Local Learning Eval Strict Gate (v4.33.0) ✓ shipped
@@ -63,7 +96,7 @@ Local learning eval checkpoints can now act as deterministic failure gates. `des
 - `package.json` + `.claude-plugin/plugin.json`: 4.32.0 → 4.33.0.
 
 ### What's still ahead
-- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- Semantic embeddings, fine-tuning, hosted sync, and broader public-registry smoke coverage for future learning surfaces remain future phases.
 - External release remains held until owner review and Real-CI are green.
 
 ## Phase 247 — Local Learning Eval Checkpoints (v4.32.0) ✓ shipped
@@ -95,7 +128,7 @@ Local learning selection is now checkpointable without mutating the learning pro
 - `package.json` + `.claude-plugin/plugin.json`: 4.31.0 → 4.32.0.
 
 ### What's still ahead
-- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- Semantic embeddings, fine-tuning, hosted sync, and broader public-registry smoke coverage for future learning surfaces remain future phases.
 - External release remains held until owner review and Real-CI are green.
 
 ## Phase 246 — Local Learning Usage Report (v4.31.0) ✓ shipped

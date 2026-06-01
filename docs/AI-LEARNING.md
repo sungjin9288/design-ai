@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.34:
+What ships in v4.35:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -26,6 +26,7 @@ What ships in v4.34:
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-eval path` to include a checkpoint summary, and add `--strict` when warning/failure readiness should fail the command.
+- Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries from the published package path.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.

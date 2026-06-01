@@ -420,6 +420,23 @@ RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS = (
         "strict 실패/성공",
     ),
 )
+RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS = (
+    (
+        "public registry `design-ai workspace --learning-eval",
+        "public registry design-ai workspace --learning-eval",
+        "public registry workspace learning-eval",
+        "registry `design-ai workspace --learning-eval",
+        "공개 npm registry `design-ai workspace --learning-eval",
+    ),
+    (
+        "checkpoint summaries",
+        "checkpoint summary",
+        "learning eval checkpoint summaries",
+        "learning eval checkpoint summary",
+        "learning-eval checkpoint summaries",
+        "learning-eval checkpoint summary",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -1503,6 +1520,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
+    "workspace learning-eval registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -1683,6 +1701,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace strict registry smoke phrase",
         RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace learning-eval registry smoke phrase",
+        RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS,
     ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -2235,6 +2257,7 @@ including `design-ai workspace --learning-eval learning-eval.json --strict --jso
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
+including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2315,6 +2338,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
+공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -2640,9 +2664,14 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths",
-                "workspace eval coverage",
+            "README.md": (
+                english_policy_doc.replace(
+                    "`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths",
+                    "workspace eval coverage",
+                ).replace(
+                    "including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries",
+                    "including public registry workspace eval coverage",
+                )
             ),
         },
         audit_count=8,
@@ -2681,6 +2710,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in workspace_strict_registry_smoke_drift_errors
         ),
         "release policy docs should mention public registry workspace strict smoke",
+    )
+
+    workspace_learning_eval_registry_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries",
+                "including public registry workspace eval coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_learning_eval_registry_smoke_drift_errors = "\n".join(
+        workspace_learning_eval_registry_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace learning-eval registry smoke phrase"
+            in workspace_learning_eval_registry_smoke_drift_errors
+        ),
+        "release policy docs should mention public registry workspace learning-eval smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(

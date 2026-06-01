@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.34 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval readiness gates). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.35 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval readiness gates verified through local and public registry smoke). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.34 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.35 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.35 — Public registry workspace learning eval smoke
+
+- **v4.35 (Phase 250)** — Extended post-publish registry smoke so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai workspace --learning-eval <checkpoint.json> --strict --json` checkpoint summaries from a clean workspace fixture.
 
 ### v4.34 — Workspace learning eval readiness
 
@@ -313,6 +317,7 @@ Build the leverage tool, then push coverage further.
 - **v4.32 (Phase 247)** — Added read-only learning eval checkpoints: `learn --eval` validates expected and avoided selected ids against deterministic brief-relevance selection, while reporting brief hashes instead of raw brief text.
 - **v4.33 (Phase 248)** — Added strict learning eval gating: `learn --eval --strict` keeps report output read-only and privacy-preserving, then exits non-zero when any checkpoint warns or fails.
 - **v4.34 (Phase 249)** — Added workspace learning eval readiness: `workspace --learning-eval` includes checkpoint summaries in local dogfood readiness and lets `workspace --strict` fail on eval warning/failure states.
+- **v4.35 (Phase 250)** — Added public registry workspace learning eval smoke: `registry-smoke` now verifies `workspace --learning-eval` checkpoint summaries from the published npm package path.
 
 ## Patterns that didn't work
 

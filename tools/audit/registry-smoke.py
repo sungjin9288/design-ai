@@ -2337,6 +2337,48 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
     run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
 
 
+def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:02.000Z",
+                "entries": [
+                    {
+                        "id": "learn-workspace-keyboard",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "source": "registry-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    eval_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "cases": [
+                    {
+                        "id": "workspace-keyboard-selection",
+                        "brief": "Spec a Button component API with keyboard accessibility",
+                        "expectedSelectedIds": ["learn-workspace-keyboard"],
+                        "minMatchedCount": 1,
+                        "requireNoFallback": True,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
@@ -3279,8 +3321,11 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         claude_home = tmp_root / "claude-home"
         npm_cache = tmp_root / "npm-cache"
         workspace_strict_root = tmp_root / "registry-workspace-strict"
+        workspace_learning_profile = tmp_root / "registry-workspace-strict-learning.json"
+        workspace_learning_eval = tmp_root / "registry-workspace-learning-eval.json"
         npx_root.mkdir()
         prepare_workspace_strict_repo(workspace_strict_root)
+        write_workspace_learning_eval_fixture(workspace_learning_profile, workspace_learning_eval)
 
         env = os.environ.copy()
         env.update({
@@ -3325,13 +3370,15 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
                 "--root",
                 str(workspace_strict_root),
                 "--learning-file",
-                str(tmp_root / "registry-workspace-strict-learning.json"),
+                str(workspace_learning_profile),
+                "--learning-eval",
+                str(workspace_learning_eval),
                 "--strict",
                 "--json",
             ),
             cwd=npx_root,
             env=env,
-            context="registry smoke npm exec workspace strict JSON success",
+            context="registry smoke npm exec workspace strict learning-eval JSON success",
         )
         assert_main_help_smoke(
             npm_exec_cmd(package_spec, "help"),
@@ -4033,6 +4080,43 @@ def run_self_test() -> None:
             returncode=0,
             context="registry smoke self-test",
             cmd=workspace_strict_cmd,
+        )
+        workspace_learning_eval_cmd = [
+            "design-ai",
+            "workspace",
+            "--learning-eval",
+            "learning-eval.json",
+            "--strict",
+            "--json",
+        ]
+        workspace_learning_eval_payload = json.loads(passing_workspace_strict_clean_json())
+        workspace_learning_eval_payload["learningEval"] = {
+            "source": "/tmp/learning-eval.json",
+            "file": "/tmp/learning.json",
+            "status": "pass",
+            "caseCount": 1,
+            "passed": 1,
+            "warned": 0,
+            "failed": 0,
+            "profileExists": True,
+            "profileEntryCount": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "privacy": {
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
+                "exposesMatchedTokens": False,
+            },
+            "error": "",
+        }
+        assert_workspace_strict_success_json(
+            json.dumps(workspace_learning_eval_payload),
+            returncode=0,
+            context="registry smoke self-test learning-eval",
+            cmd=workspace_learning_eval_cmd,
         )
         expect_self_test_failure(
             lambda: assert_workspace_strict_failure_json(

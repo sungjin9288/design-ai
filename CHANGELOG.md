@@ -2,6 +2,29 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.35.0 — Public Registry Workspace Learning Eval Smoke (2026-06)
+
+Extended the post-publish registry smoke gate so the published package path verifies `design-ai workspace --learning-eval <checkpoint.json> --strict --json` in addition to the existing workspace strict readiness success/failure checks.
+The registry fixture now creates a clean git workspace, a local learning profile, and a deterministic eval checkpoint, then validates the public `npm exec --package @design-ai/cli@<version>` path through the shared workspace JSON assertions.
+
+Release metadata guards, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now preserve the public registry workspace learning-eval smoke contract.
+
+### What this enables
+
+Operators can catch publish-path regressions in workspace learning eval readiness after npm release, matching the local packed-tarball smoke coverage before broader distribution.
+
+### Verified
+
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.34.0 → 4.35.0.
+
 ## v4.34.0 — Workspace Learning Eval Readiness (2026-06)
 
 Added `design-ai workspace --learning-eval <checkpoint.json>` so local dogfood readiness snapshots can include deterministic learning-selection checkpoint summaries next to git, repository metadata, learning profile audit, and release-script state.
