@@ -282,6 +282,33 @@ RELEASE_SITE_BUNDLE_CHECK_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json`",
+        "design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json",
+        "site --bundle-compare --strict --json",
+        "site --bundle-compare",
+    ),
+    (
+        "Website Console handoff bundle compare",
+        "Website Improvement handoff bundle compare",
+        "site bundle-compare JSON",
+        "Website Console handoff bundle 비교",
+    ),
+    (
+        "bundle digest comparison",
+        "bundle fingerprint comparison",
+        "bundle identity comparison",
+        "bundle digest 비교",
+        "bundle fingerprint 비교",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --tasks`",
@@ -1370,6 +1397,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site mcp-plan package smoke phrase",
     "site bundle package smoke phrase",
     "site bundle-check package smoke phrase",
+    "site bundle-compare package smoke phrase",
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
@@ -1526,6 +1554,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site bundle-check package smoke phrase",
         RELEASE_SITE_BUNDLE_CHECK_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site bundle-compare package smoke phrase",
+        RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site tasks package smoke phrase",
@@ -2079,6 +2111,7 @@ including `design-ai workspace --strict --json` workspace strict failure/success
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification and bundle digest fingerprint verification,
+`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2154,6 +2187,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증과 bundle digest 검증도 확인하고,
+`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,

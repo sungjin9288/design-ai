@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.27.0 — Website Improvement Handoff Bundle Compare (2026-06)
+
+Added `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> [--strict] [--json]` so operators can compare two generated Website Improvement handoff bundles before target-repo handoff.
+The compare report reuses bundle-check validation for both directories, compares `summary.json.checksums.bundleDigest`, lists changed generated files from checksum drift, and reports summary metadata changes such as site name, source, task count, workspace status, and MCP status.
+Human output gives a compact digest comparison, while JSON output exposes `sameBundle`, `digestMatch`, `changedFiles`, `metadataChanges`, and issue counts for release smoke or archive workflows.
+Package smoke now verifies bundle-compare JSON through both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, README, Distribution docs, Product Readiness, Website Improvement docs, Roadmap, and Session Log now describe bundle digest comparison.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can check whether a regenerated or archived handoff bundle is identical to the bundle already approved for implementation, and can see which generated artifacts changed when it is not identical.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.26.0 → 4.27.0.
+
 ## v4.26.0 — Website Improvement Handoff Bundle Fingerprint Verification (2026-06)
 
 Added a deterministic bundle-level fingerprint to Website Improvement handoff bundles so operators can compare a whole bundle identity, not only individual artifact checksums.

@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.26.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.27.0.tgz
 """
 from __future__ import annotations
 
@@ -775,6 +775,33 @@ def assert_site_bundle_check_json_smoke(
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-ready"]:
         raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
+
+
+def assert_site_bundle_compare_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    payload = json.loads(result.stdout)
+    if payload.get("status") != "pass" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle compare after {context} expected pass/valid output")
+    if payload.get("sameBundle") is not True or payload.get("digestMatch") is not True:
+        raise SystemExit(f"site bundle compare after {context} expected identical bundle digest")
+    if payload.get("counts", {}).get("changedFiles") != 0:
+        raise SystemExit(f"site bundle compare after {context} expected no changed files")
+    for side in ("left", "right"):
+        digest = payload.get(side, {}).get("checksumBundleDigest")
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
+        if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
+            raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+    issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
+    if issue_ids != ["bundle-compare-identical"]:
+        raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
 
 
 def assert_workspace_strict_success_smoke(
@@ -4862,6 +4889,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-check JSON",
         )
+        assert_site_bundle_compare_json_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-compare", str(installed_site_bundle_dir), "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-compare JSON",
+        )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
             cwd=install_root,
@@ -5565,6 +5598,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-check JSON",
+        )
+        assert_site_bundle_compare_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-compare", str(npx_site_bundle_dir), "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-compare JSON",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),

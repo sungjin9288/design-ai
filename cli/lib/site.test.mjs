@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { runSite } from "../commands/site.mjs";
 import {
   analyzeSiteWorkspace,
+  buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
@@ -20,6 +21,8 @@ import {
   createSampleSiteWorkspace,
   formatSiteBundleCheckHuman,
   formatSiteBundleCheckJson,
+  formatSiteBundleCompareHuman,
+  formatSiteBundleCompareJson,
   formatSiteJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
@@ -66,6 +69,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     tasks: false,
     bundle: false,
     bundleCheck: false,
+    bundleCompareTarget: "",
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -87,6 +91,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     tasks: false,
     bundle: false,
     bundleCheck: false,
+    bundleCompareTarget: "",
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -112,6 +117,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
   assert.equal(parseSiteArgs(["workspace.json", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-check", "--json"]).bundleCheck, true);
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-compare", "handoff-bundle.previous", "--json"]).bundleCompareTarget, "handoff-bundle.previous");
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
@@ -138,6 +144,11 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-check", "--bundle", "--out", "bundle"]), /Use --bundle-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-check", "--report"]), /Use --bundle-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-check"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--bundle-compare", "other-bundle"]), /Use --bundle-compare with handoff bundle directory paths/);
+  assert.throws(() => parseSiteArgs(["--bundle-compare", "other-bundle"]), /--bundle-compare requires a primary handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-compare"]), /--bundle-compare requires a second handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-compare", "other-bundle", "--bundle-check"]), /Use --bundle-compare without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-compare", "other-bundle"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
@@ -279,9 +290,14 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   const workspace = createSampleSiteWorkspace();
   const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
   const bundle = buildSiteHandoffBundle(workspace, summary);
+  const duplicateBundle = buildSiteHandoffBundle(workspace, summary);
   const files = Object.fromEntries(bundle.files.map((file) => [file.path, file.content]));
 
   assert.equal(bundle.status, "pass");
+  assert.deepEqual(
+    Object.fromEntries(duplicateBundle.files.map((file) => [file.path, file.content])),
+    files,
+  );
   assert.deepEqual(Object.keys(files), [
     "README.md",
     "summary.json",
@@ -301,6 +317,7 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
 
   const summaryPayload = JSON.parse(files["summary.json"]);
   assert.equal(summaryPayload.status, "pass");
+  assert.equal(summaryPayload.generatedAt, workspace.updatedAt);
   assert.equal(summaryPayload.taskGeneration.totalTasks, 3);
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
   assert.deepEqual(summaryPayload.files, Object.keys(files));
@@ -377,6 +394,52 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.ok(missingReport.issues.some((issue) => issue.id === "bundle-missing-mcp-check.json"));
 }));
 
+test("buildSiteBundleCompareReport compares handoff bundle fingerprints and changed files", () => withTempDir((dir) => {
+  const leftDir = path.join(dir, "left");
+  const rightDir = path.join(dir, "right");
+  mkdirSync(leftDir);
+  mkdirSync(rightDir);
+
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
+  const leftBundle = buildSiteHandoffBundle(workspace, summary);
+  for (const file of leftBundle.files) {
+    writeFileSync(path.join(leftDir, file.path), file.content, "utf8");
+    writeFileSync(path.join(rightDir, file.path), file.content, "utf8");
+  }
+
+  const identical = buildSiteBundleCompareReport({ target: leftDir, compareTarget: rightDir });
+  const identicalJson = JSON.parse(formatSiteBundleCompareJson(identical));
+  const identicalHuman = formatSiteBundleCompareHuman(identical);
+
+  assert.equal(identical.status, "pass");
+  assert.equal(identical.valid, true);
+  assert.equal(identical.sameBundle, true);
+  assert.equal(identical.digestMatch, true);
+  assert.equal(identical.counts.changedFiles, 0);
+  assert.equal(identical.issues[0].id, "bundle-compare-identical");
+  assert.equal(identicalJson.left.siteName, "Korean SaaS marketing site");
+  assert.match(identicalHuman, /Same bundle: yes/);
+
+  const changedWorkspace = createSampleSiteWorkspace();
+  changedWorkspace.auditChecklist["content-quality"].findings.push("FAQ page lacks proof for enterprise procurement teams");
+  const changedSummary = analyzeSiteWorkspace(changedWorkspace, { filePath: "stdin" }).summary;
+  const rightBundle = buildSiteHandoffBundle(changedWorkspace, changedSummary);
+  for (const file of rightBundle.files) {
+    writeFileSync(path.join(rightDir, file.path), file.content, "utf8");
+  }
+
+  const changed = buildSiteBundleCompareReport({ target: leftDir, compareTarget: rightDir });
+  assert.equal(changed.status, "warn");
+  assert.equal(changed.valid, true);
+  assert.equal(changed.sameBundle, false);
+  assert.equal(changed.digestMatch, false);
+  assert.ok(changed.changedFiles.some((file) => file.path === "website-workspace.tasks.json"));
+  assert.ok(changed.changedFiles.some((file) => file.path === "website-handoff.md"));
+  assert.equal(changed.issues[0].id, "bundle-compare-different");
+  assert.match(formatSiteBundleCompareHuman(changed), /Changed files: [1-9]/);
+}));
+
 test("runSite prints and writes MCP readiness check output", async () => {
   await withTempDir(async (dir) => {
     const file = path.join(dir, "workspace.json");
@@ -421,6 +484,7 @@ test("generateSiteRefactorTasks adds deterministic starter tasks from audit find
   const result = generateSiteRefactorTasks(workspace);
 
   assert.equal(result.created.length, 2);
+  assert.equal(result.workspace.updatedAt, workspace.updatedAt);
   assert.deepEqual(result.created.map((task) => task.id), ["task-accessibility", "task-content-quality"]);
   assert.equal(result.workspace.refactorTasks.length, 3);
   assert.equal(result.workspace.refactorTasks[1].priority, "p0");
@@ -629,6 +693,15 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleCheckWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-check", "--json", "--out", bundleCheckFile]));
     assert.match(bundleCheckWriteOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(bundleCheckFile, "utf8")).summary.totalTasks, 3);
+
+    const bundleCompareOutput = await captureConsole(() => runSite([bundleDir, "--bundle-compare", bundleDir, "--json"]));
+    assert.equal(JSON.parse(bundleCompareOutput.stdout).status, "pass");
+    assert.equal(JSON.parse(bundleCompareOutput.stdout).sameBundle, true);
+
+    const bundleCompareFile = path.join(dir, "out", "handoff-bundle-compare.json");
+    const bundleCompareWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-compare", bundleDir, "--json", "--out", bundleCompareFile]));
+    assert.match(bundleCompareWriteOutput.stdout, /Wrote /);
+    assert.equal(JSON.parse(readFileSync(bundleCompareFile, "utf8")).digestMatch, true);
   });
 });
 
@@ -705,6 +778,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
@@ -713,6 +787,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory/);
   assert.match(output.stdout, /--bundle-check\s+Validate a generated handoff bundle directory/);
+  assert.match(output.stdout, /--bundle-compare dir\s+Compare two generated handoff bundles/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(output.stdout, /--prompt id Generate one Markdown prompt template/);

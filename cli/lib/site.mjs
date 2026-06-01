@@ -21,6 +21,7 @@ export const SITE_OPTIONS = [
   "--tasks",
   "--bundle",
   "--bundle-check",
+  "--bundle-compare",
   "--prompt-list",
   "--mcp-check",
   "--mcp-plan",
@@ -234,6 +235,7 @@ export function parseSiteArgs(args) {
     tasks: false,
     bundle: false,
     bundleCheck: false,
+    bundleCompareTarget: "",
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -266,6 +268,13 @@ export function parseSiteArgs(args) {
       out.bundle = true;
     } else if (arg === "--bundle-check") {
       out.bundleCheck = true;
+    } else if (arg === "--bundle-compare") {
+      const value = args[i + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--bundle-compare requires a second handoff bundle directory path");
+      }
+      out.bundleCompareTarget = value;
+      i += 1;
     } else if (arg === "--prompt-list") {
       out.promptList = true;
     } else if (arg === "--mcp-check") {
@@ -319,14 +328,14 @@ export function parseSiteArgs(args) {
   if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --sample without --report, --prompts, or --prompt");
   }
-  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
   }
-  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --report, --prompts, or --prompt");
+  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, or --prompt");
   }
-  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --report, --prompts, or --prompt");
+  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, or --prompt");
   }
   if (out.bundle && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --bundle without --sample, --tasks, --report, --prompts, or --prompt");
@@ -336,6 +345,15 @@ export function parseSiteArgs(args) {
   }
   if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
     throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  }
+  if (out.bundleCompareTarget && out.stdin) {
+    throw new Error("Use --bundle-compare with handoff bundle directory paths, not --stdin");
+  }
+  if (out.bundleCompareTarget && !out.target) {
+    throw new Error("--bundle-compare requires a primary handoff bundle directory path");
+  }
+  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.sample && (out.tasks || out.bundle)) {
     throw new Error("Use only one generated workspace mode: --sample, --tasks, or --bundle");
@@ -361,15 +379,15 @@ export function parseSiteArgs(args) {
   if (out.bundle && !out.outPath) {
     throw new Error("--bundle requires --out directory");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --bundle, or --bundle-check");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --bundle, --bundle-check, or --bundle-compare");
   }
   if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
-    throw new Error("--json is only supported for the site summary, --mcp-check, or --bundle-check; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
+    throw new Error("--json is only supported for the site summary, --mcp-check, --bundle-check, or --bundle-compare; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --prompt-list, --mcp-check, or --mcp-plan");
   }
 
   const { index, ...parsed } = out;
@@ -454,7 +472,7 @@ export function generateSiteRefactorTasks(workspaceInput) {
   return {
     workspace: {
       ...workspace,
-      updatedAt: new Date().toISOString(),
+      updatedAt: workspace.updatedAt,
       refactorTasks: workspace.refactorTasks.concat(created),
     },
     created,
@@ -661,7 +679,7 @@ export function normalizeSiteWorkspace(raw) {
 
   return {
     version: 1,
-    updatedAt: String(source.updatedAt || new Date().toISOString()),
+    updatedAt: String(source.updatedAt || fallback.updatedAt),
     siteProfile: {
       id: String(profile.id || fallback.siteProfile.id),
       name: String(profile.name || fallback.siteProfile.name),
@@ -1427,7 +1445,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const filePaths = SITE_BUNDLE_FILES;
   const bundleSummary = {
     version: 1,
-    generatedAt: new Date().toISOString(),
+    generatedAt: taskWorkspace.updatedAt,
     source,
     status: mcpReport.status,
     workspaceStatus: taskSummary.status,
@@ -1808,6 +1826,124 @@ export function formatSiteBundleCheckHuman(report) {
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
+    "",
+    "Issues:",
+    ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
+  ].join("\n");
+}
+
+function summarizeBundleForCompare(report) {
+  return {
+    directory: report.directory,
+    status: report.status,
+    valid: report.valid,
+    siteName: report.summary.siteName || "",
+    source: report.summary.source || "",
+    workspaceStatus: report.workspaceStatus || "unknown",
+    mcpStatus: report.mcpStatus || "unknown",
+    totalTasks: report.summary.totalTasks || 0,
+    checksumAlgorithm: report.summary.checksumAlgorithm || "",
+    checksumBundleDigest: report.summary.checksumBundleDigest || "",
+    checksumFailures: report.counts.checksumFailures,
+    issueCount: report.issues.length,
+  };
+}
+
+function buildBundleMetadataChanges(left, right) {
+  const pairs = [
+    ["siteName", "Site name", left.summary.siteName || "", right.summary.siteName || ""],
+    ["source", "Source", left.summary.source || "", right.summary.source || ""],
+    ["workspaceStatus", "Workspace status", left.workspaceStatus || "unknown", right.workspaceStatus || "unknown"],
+    ["mcpStatus", "MCP status", left.mcpStatus || "unknown", right.mcpStatus || "unknown"],
+    ["totalTasks", "Task count", String(left.summary.totalTasks || 0), String(right.summary.totalTasks || 0)],
+  ];
+  return pairs
+    .filter(([, , leftValue, rightValue]) => leftValue !== rightValue)
+    .map(([key, label, leftValue, rightValue]) => ({ key, label, leftValue, rightValue }));
+}
+
+function buildBundleFileChanges(left, right) {
+  return SITE_BUNDLE_CHECKSUM_FILES
+    .map((filePath) => ({
+      path: filePath,
+      leftChecksum: String(left.summary.checksumFiles[filePath] || ""),
+      rightChecksum: String(right.summary.checksumFiles[filePath] || ""),
+    }))
+    .filter((file) => file.leftChecksum !== file.rightChecksum);
+}
+
+export function buildSiteBundleCompareReport({ target, compareTarget }) {
+  const left = buildSiteBundleCheckReport({ target });
+  const right = buildSiteBundleCheckReport({ target: compareTarget });
+  const issues = [];
+
+  if (left.status === "fail") {
+    addIssue(issues, "fail", "bundle-compare-left-invalid", "Primary bundle must pass bundle-check before comparison can be trusted");
+  }
+  if (right.status === "fail") {
+    addIssue(issues, "fail", "bundle-compare-right-invalid", "Comparison bundle must pass bundle-check before comparison can be trusted");
+  }
+
+  const leftDigest = left.summary.checksumBundleDigest || "";
+  const rightDigest = right.summary.checksumBundleDigest || "";
+  const digestMatch = Boolean(leftDigest && rightDigest && leftDigest === rightDigest);
+  const changedFiles = buildBundleFileChanges(left, right);
+  const metadataChanges = buildBundleMetadataChanges(left, right);
+
+  if (issues.length === 0 && digestMatch && changedFiles.length === 0 && metadataChanges.length === 0) {
+    addIssue(issues, "pass", "bundle-compare-identical", "Handoff bundles have the same bundle digest and checksum manifest");
+  } else if (issues.length === 0) {
+    addIssue(issues, "warn", "bundle-compare-different", "Handoff bundles differ; review changed files before target-repo handoff");
+  }
+
+  const status = statusFromIssues(issues);
+  return {
+    status,
+    valid: left.valid && right.valid,
+    sameBundle: status === "pass",
+    digestMatch,
+    left: summarizeBundleForCompare(left),
+    right: summarizeBundleForCompare(right),
+    counts: {
+      changedFiles: changedFiles.length,
+      metadataChanges: metadataChanges.length,
+      leftIssues: left.issues.length,
+      rightIssues: right.issues.length,
+      issues: issues.length,
+      warnings: issues.filter((issue) => issue.level === "warn").length,
+      failures: issues.filter((issue) => issue.level === "fail").length,
+    },
+    changedFiles,
+    metadataChanges,
+    issues,
+  };
+}
+
+export function formatSiteBundleCompareJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteBundleCompareHuman(report) {
+  return [
+    `Website Improvement handoff bundle compare: ${report.left.directory} -> ${report.right.directory}`,
+    "",
+    `Status: ${report.status}`,
+    `Same bundle: ${report.sameBundle ? "yes" : "no"}`,
+    `Digest match: ${report.digestMatch ? "yes" : "no"}`,
+    `Left digest: ${report.left.checksumBundleDigest || "not recorded"}`,
+    `Right digest: ${report.right.checksumBundleDigest || "not recorded"}`,
+    `Changed files: ${report.counts.changedFiles}`,
+    `Metadata changes: ${report.counts.metadataChanges}`,
+    "",
+    "Changed files:",
+    ...(report.changedFiles.length
+      ? report.changedFiles.map((file) => `- ${file.path}`)
+      : ["- none"]),
+    "",
+    "Metadata changes:",
+    ...(report.metadataChanges.length
+      ? report.metadataChanges.map((item) => `- ${item.label}: ${item.leftValue || "not recorded"} -> ${item.rightValue || "not recorded"}`)
+      : ["- none"]),
     "",
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
