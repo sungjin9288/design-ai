@@ -2,6 +2,26 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.42.0 — Workspace Learning Usage Readiness (2026-06)
+
+Made `design-ai workspace` include the local learning usage sidecar in the dogfood readiness snapshot. The command now supports `--learning-usage path`, auto-detects a sibling `learning.usage.json` when present, and reports prompt/pack usage event counts, used/unused profile entry counts, stale selected ids, latest usage metadata, and privacy guarantees without storing raw brief text.
+
+`workspace --strict` now treats usage sidecar drift as readiness risk when the sidecar points at a different learning profile or references selected entry ids that no longer exist in the active profile. Package and registry smoke fixtures now include aligned usage sidecars in the workspace learning readiness path.
+
+### What this enables
+
+Operators can see whether local learning is only configured, or actually being exercised by prompt/pack runs, before curating entries or trusting personalized prompt context.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.41.0 → 4.42.0.
+
 ## v4.41.0 — Workspace Learning Eval Freshness Guard (2026-06)
 
 Made `design-ai workspace` compare learning eval checkpoint metadata against the active learning profile, so a passing checkpoint can still warn when it was generated before the profile changed.

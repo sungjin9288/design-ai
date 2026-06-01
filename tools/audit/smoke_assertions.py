@@ -108,7 +108,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json] [--out file]",
-    "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
+    "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
@@ -175,8 +175,9 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     ),
     "workspace": (
         "Usage:",
-        "design-ai workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
+        "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "--learning-file path",
+        "--learning-usage path",
         "without changing files",
     ),
     "site": (
@@ -227,7 +228,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "check <artifact.md|--stdin|--examples>",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear]",
-    "workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
+    "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site <workspace.json|--stdin>",
     "site --sample",
     "site --prompt-list",
@@ -243,7 +244,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.41.0",
+    "4.42.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -283,7 +284,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.41.0",
+    "Version alignment: 4.42.0",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -659,7 +660,7 @@ EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS = [
     "examples",
 ]
 EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS = ["example", "report"]
-EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningEval", "release", "nextActions"]
+EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningUsage", "learningEval", "release", "nextActions"]
 EXPECTED_WORKSPACE_CONTEXT_KEYS = ["cwd", "root", "sourceRoot", "packageName", "version"]
 EXPECTED_WORKSPACE_GIT_KEYS = [
     "isRepo",
@@ -699,6 +700,57 @@ EXPECTED_WORKSPACE_LEARNING_KEYS = [
     "latestEntry",
     "auditSummary",
     "error",
+]
+EXPECTED_WORKSPACE_LEARNING_USAGE_KEYS = [
+    "file",
+    "usageFile",
+    "exists",
+    "profileExists",
+    "profileFile",
+    "version",
+    "updatedAt",
+    "eventCount",
+    "profileEntryCount",
+    "usedEntryCount",
+    "unusedEntryCount",
+    "staleSelectedEntryCount",
+    "commandCounts",
+    "routeCounts",
+    "categoryCounts",
+    "auditStatusCounts",
+    "latestEvent",
+    "privacy",
+    "recommendations",
+    "readiness",
+    "error",
+]
+EXPECTED_WORKSPACE_LEARNING_USAGE_EVENT_KEYS = [
+    "id",
+    "command",
+    "routeId",
+    "category",
+    "limit",
+    "selectedEntryIds",
+    "selectedCount",
+    "candidateCount",
+    "matchedCount",
+    "fallbackCount",
+    "queryTokenCount",
+    "auditStatus",
+    "briefHash",
+    "createdAt",
+]
+EXPECTED_WORKSPACE_LEARNING_USAGE_PRIVACY_KEYS = [
+    "storesRawBriefText",
+    "storesBriefHash",
+    "storesSelectedEntryIds",
+]
+EXPECTED_WORKSPACE_LEARNING_USAGE_READINESS_KEYS = [
+    "status",
+    "reason",
+    "profileFile",
+    "profileFileMatches",
+    "staleSelectedEntryCount",
 ]
 EXPECTED_WORKSPACE_LEARNING_EVAL_KEYS = [
     "source",
@@ -1006,7 +1058,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.41.0",
+        "Plugin: design-ai v4.42.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -1038,7 +1090,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.41.0",
+            "version": "4.42.0",
             "kind": kind,
             "sections": [
                 {
@@ -1459,7 +1511,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.41.0",
+        "version": "4.42.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1533,7 +1585,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.41.0",
+        "Corpus version: 4.42.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1622,7 +1674,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.41.0",
+        "version": "4.42.0",
         "routes": routes,
     })
 
@@ -1630,7 +1682,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.41.0",
+        "version": "4.42.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1735,7 +1787,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.41.0",
+        "Corpus version: 4.42.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1761,7 +1813,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.41.0",
+        "version": "4.42.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1809,7 +1861,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.41.0",
+        "Corpus version: 4.42.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3662,7 +3714,8 @@ def passing_main_help_output() -> str:
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json] [--out file]",
         "    Manage local learning preferences, usage reports, and eval checkpoints for prompt personalization",
-        "  workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]     Show read-only local dogfood readiness: git, repository, learning, eval checkpoints, and release scripts",
+        "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
+        "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
         "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
@@ -3677,8 +3730,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.41.0",
-        "Plugin / corpus:  4.41.0",
+        "design-ai CLI:    4.42.0",
+        "Plugin / corpus:  4.42.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3691,8 +3744,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.41.0",
-                "plugin": "4.41.0",
+                "cli": "4.42.0",
+                "plugin": "4.42.0",
                 "aligned": True,
             },
         },
@@ -3709,7 +3762,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.41.0",
+                "version": "4.42.0",
             },
             "git": {
                 "isRepo": False,
@@ -3754,10 +3807,11 @@ def passing_workspace_json() -> str:
                 },
                 "error": "",
             },
+            "learningUsage": None,
             "learningEval": None,
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.41.0",
+                "version": "4.42.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -4363,7 +4417,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.41.0",
+        "✓  Version alignment: 4.42.0",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -4388,7 +4442,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.41.0",
+        "  v4.42.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -4817,7 +4871,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.41.0":
+    if workspace_context.get("version") != "4.42.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -4889,6 +4943,80 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
+
+    learning_usage = payload.get("learningUsage")
+    if learning_usage is not None:
+        learning_usage = assert_smoke_json_keys(
+            learning_usage,
+            EXPECTED_WORKSPACE_LEARNING_USAGE_KEYS,
+            label="learningUsage",
+            context=context,
+            command_label="workspace JSON",
+        )
+        for key in ("file", "usageFile", "profileFile", "updatedAt"):
+            if not isinstance(learning_usage.get(key), str):
+                raise SystemExit(f"workspace JSON after {context} learningUsage {key} is not a string")
+        if not learning_usage.get("file") or not learning_usage.get("usageFile"):
+            raise SystemExit(f"workspace JSON after {context} learningUsage file paths are missing")
+        for key in ("exists", "profileExists"):
+            if type(learning_usage.get(key)) is not bool:
+                raise SystemExit(f"workspace JSON after {context} learningUsage {key} is not boolean")
+        for key in (
+            "version",
+            "eventCount",
+            "profileEntryCount",
+            "usedEntryCount",
+            "unusedEntryCount",
+            "staleSelectedEntryCount",
+        ):
+            if not is_lifecycle_json_non_negative_int(learning_usage.get(key)):
+                raise SystemExit(f"workspace JSON after {context} learningUsage {key} is invalid")
+        for key in ("commandCounts", "routeCounts", "categoryCounts", "auditStatusCounts"):
+            if not isinstance(learning_usage.get(key), dict):
+                raise SystemExit(f"workspace JSON after {context} learningUsage {key} is not an object")
+        latest_event = learning_usage.get("latestEvent")
+        if latest_event is not None:
+            latest_event = assert_smoke_json_keys(
+                latest_event,
+                EXPECTED_WORKSPACE_LEARNING_USAGE_EVENT_KEYS,
+                label="learningUsage latestEvent",
+                context=context,
+                command_label="workspace JSON",
+            )
+            if not isinstance(latest_event.get("briefHash"), str) or not latest_event["briefHash"]:
+                raise SystemExit(f"workspace JSON after {context} learningUsage latestEvent briefHash is missing")
+            if "brief" in latest_event or "query" in latest_event:
+                raise SystemExit(f"workspace JSON after {context} learningUsage latestEvent exposes raw brief/query text")
+            if not isinstance(latest_event.get("selectedEntryIds"), list):
+                raise SystemExit(f"workspace JSON after {context} learningUsage latestEvent selectedEntryIds is not a list")
+        privacy = assert_smoke_json_keys(
+            learning_usage.get("privacy"),
+            EXPECTED_WORKSPACE_LEARNING_USAGE_PRIVACY_KEYS,
+            label="learningUsage privacy",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if privacy.get("storesRawBriefText") is not False or privacy.get("storesBriefHash") is not True:
+            raise SystemExit(f"workspace JSON after {context} learningUsage privacy flags changed")
+        if privacy.get("storesSelectedEntryIds") is not True:
+            raise SystemExit(f"workspace JSON after {context} learningUsage selected id privacy flag changed")
+        if not isinstance(learning_usage.get("recommendations"), list):
+            raise SystemExit(f"workspace JSON after {context} learningUsage recommendations is not a list")
+        readiness = assert_smoke_json_keys(
+            learning_usage.get("readiness"),
+            EXPECTED_WORKSPACE_LEARNING_USAGE_READINESS_KEYS,
+            label="learningUsage readiness",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if readiness.get("status") not in ("pass", "warn", "unknown", "fail"):
+            raise SystemExit(f"workspace JSON after {context} learningUsage readiness status is invalid")
+        if not isinstance(readiness.get("reason"), str):
+            raise SystemExit(f"workspace JSON after {context} learningUsage readiness reason is not a string")
+        if type(readiness.get("profileFileMatches")) is not bool:
+            raise SystemExit(f"workspace JSON after {context} learningUsage readiness profileFileMatches is not boolean")
+        if not is_lifecycle_json_non_negative_int(readiness.get("staleSelectedEntryCount")):
+            raise SystemExit(f"workspace JSON after {context} learningUsage readiness staleSelectedEntryCount is invalid")
 
     learning_eval = payload.get("learningEval")
     if learning_eval is not None:
@@ -4973,7 +5101,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.41.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.42.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -8327,7 +8455,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.41.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.42.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -8379,6 +8507,56 @@ def run_self_test() -> None:
         },
     }
     assert_workspace_json(json.dumps(workspace_eval_payload), context=context, cmd=workspace_cmd)
+    workspace_usage_payload = json.loads(passing_workspace_json())
+    workspace_usage_payload["learningUsage"] = {
+        "file": "/tmp/learning.json",
+        "usageFile": "/tmp/learning.usage.json",
+        "exists": True,
+        "profileExists": True,
+        "profileFile": "/tmp/learning.json",
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:04.000Z",
+        "eventCount": 1,
+        "profileEntryCount": 1,
+        "usedEntryCount": 1,
+        "unusedEntryCount": 0,
+        "staleSelectedEntryCount": 0,
+        "commandCounts": {"prompt": 1},
+        "routeCounts": {"component-spec": 1},
+        "categoryCounts": {"accessibility": 1},
+        "auditStatusCounts": {"pass": 1},
+        "latestEvent": {
+            "id": "learn-use-workspace-keyboard",
+            "command": "prompt",
+            "routeId": "component-spec",
+            "category": "accessibility",
+            "limit": 1,
+            "selectedEntryIds": ["learn-workspace-keyboard"],
+            "selectedCount": 1,
+            "candidateCount": 1,
+            "matchedCount": 1,
+            "fallbackCount": 0,
+            "queryTokenCount": 6,
+            "auditStatus": "pass",
+            "briefHash": "b20206b62f51bb23",
+            "createdAt": "2026-05-22T00:00:04.000Z",
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "storesBriefHash": True,
+            "storesSelectedEntryIds": True,
+        },
+        "recommendations": [],
+        "readiness": {
+            "status": "pass",
+            "reason": "",
+            "profileFile": "/tmp/learning.json",
+            "profileFileMatches": True,
+            "staleSelectedEntryCount": 0,
+        },
+        "error": "",
+    }
+    assert_workspace_json(json.dumps(workspace_usage_payload), context=context, cmd=workspace_cmd)
     assert_workspace_strict_failure_json(
         passing_workspace_json(),
         returncode=1,
@@ -8432,6 +8610,7 @@ def run_self_test() -> None:
         "context": reordered_workspace_payload["context"],
         "repository": reordered_workspace_payload["repository"],
         "learning": reordered_workspace_payload["learning"],
+        "learningUsage": reordered_workspace_payload["learningUsage"],
         "learningEval": reordered_workspace_payload["learningEval"],
         "release": reordered_workspace_payload["release"],
         "nextActions": reordered_workspace_payload["nextActions"],

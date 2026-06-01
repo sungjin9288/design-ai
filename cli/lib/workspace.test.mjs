@@ -9,10 +9,13 @@ import assert from "node:assert/strict";
 import { runWorkspace } from "../commands/workspace.mjs";
 import {
   assessLearningEvalFreshness,
+  assessLearningUsageReadiness,
   collectGitReport,
+  collectLearningUsageReport,
   collectRepositoryReport,
   collectWorkspaceReport,
   defaultLearningEvalPath,
+  defaultLearningUsagePath,
   formatWorkspaceJson,
   hasWorkspaceStrictIssues,
   normalizeRepositoryUrl,
@@ -110,17 +113,19 @@ async function captureStdout(fn) {
   return stdout;
 }
 
-test("parseWorkspaceArgs supports root, learning-file, learning-eval, strict, json, and help", () => {
-  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--learning-eval", "eval.json", "--strict", "--json"]), {
+test("parseWorkspaceArgs supports root, learning-file, learning-usage, learning-eval, strict, json, and help", () => {
+  assert.deepEqual(parseWorkspaceArgs(["--root", "repo", "--learning-file", "learning.json", "--learning-usage", "usage.json", "--learning-eval", "eval.json", "--strict", "--json"]), {
     help: false,
     json: true,
     strict: true,
     root: "repo",
     learningFilePath: "learning.json",
+    learningUsagePath: "usage.json",
     learningEvalPath: "eval.json",
   });
   assert.equal(parseWorkspaceArgs(["--help"]).help, true);
   assert.throws(() => parseWorkspaceArgs(["--root"]), /--root expects a path/);
+  assert.throws(() => parseWorkspaceArgs(["--learning-usage"]), /--learning-usage expects a path/);
   assert.throws(() => parseWorkspaceArgs(["--learning-eval"]), /--learning-eval expects a path/);
   assert.throws(() => parseWorkspaceArgs(["--bad"]), /Unknown workspace option: --bad/);
 });
@@ -324,12 +329,16 @@ test("collectWorkspaceReport suggests learning eval-template when profile has en
     templateAction?.command,
     `design-ai learn --eval-template --file ${learningFile} --out ${defaultLearningEvalPath(learningFile)}`,
   );
+  const usageAction = report.nextActions.find((item) => (item.command || "").includes("--with-learning"));
+  assert.equal(usageAction?.level, "info");
+  assert.match(usageAction?.text || "", /learning usage sidecar/);
 }));
 
-test("collectWorkspaceReport shell-quotes learning eval next action paths", () => withTempDir((dir) => {
+test("collectWorkspaceReport shell-quotes learning usage and eval next action paths", () => withTempDir((dir) => {
   const repoRoot = path.join(dir, "repo");
   const sourceRoot = path.join(dir, "source");
   const learningFile = path.join(dir, "learning profile's data.json");
+  const usageFile = path.join(dir, "learning usage sidecar.json");
   const evalFile = path.join(dir, "learning eval checkpoint.json");
   mkdirSync(sourceRoot, { recursive: true });
   writeSourceMetadata(sourceRoot, fullReleaseScripts());
@@ -371,9 +380,50 @@ test("collectWorkspaceReport shell-quotes learning eval next action paths", () =
     root: repoRoot,
     sourceRoot,
     learningFilePath: learningFile,
+    learningUsagePath: usageFile,
     learningEvalPath: evalFile,
     gitRunner,
     learningStatsProvider,
+    learningUsageStatsProvider: ({ filePath, usageFile }) => ({
+      file: filePath,
+      usageFile,
+      exists: true,
+      profileExists: true,
+      profileFile: filePath,
+      version: 1,
+      updatedAt: "2026-05-22T00:00:03.000Z",
+      eventCount: 1,
+      profileEntryCount: 1,
+      usedEntryCount: 1,
+      unusedEntryCount: 0,
+      staleSelectedEntryCount: 0,
+      commandCounts: { prompt: 1 },
+      routeCounts: { "component-spec": 1 },
+      categoryCounts: { accessibility: 1 },
+      auditStatusCounts: { pass: 1 },
+      latestEvent: {
+        id: "learn-use-1",
+        command: "prompt",
+        routeId: "component-spec",
+        category: "accessibility",
+        limit: 1,
+        selectedEntryIds: ["learn-keyboard"],
+        selectedCount: 1,
+        candidateCount: 1,
+        matchedCount: 1,
+        fallbackCount: 0,
+        queryTokenCount: 2,
+        auditStatus: "pass",
+        briefHash: "abc123",
+        createdAt: "2026-05-22T00:00:03.000Z",
+      },
+      recommendations: [],
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+    }),
     learningEvalReportProvider: ({ filePath, source }) => ({
       file: filePath,
       source,
@@ -393,11 +443,143 @@ test("collectWorkspaceReport shell-quotes learning eval next action paths", () =
     }),
   });
   const evalAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --eval --from-file"));
+  const usageAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --usage"));
+  assert.equal(
+    usageAction?.command,
+    `design-ai learn --usage --file ${quoteShellArg(learningFile)} --usage-file ${quoteShellArg(usageFile)}`,
+  );
   assert.equal(
     evalAction?.command,
     `design-ai learn --eval --from-file ${quoteShellArg(evalFile)} --file ${quoteShellArg(learningFile)} --strict`,
   );
 }));
+
+test("collectWorkspaceReport auto-detects sibling learning usage sidecar", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsagePath(learningFile);
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(
+    learningFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:02.000Z",
+      entries: [
+        {
+          id: "learn-keyboard",
+          category: "accessibility",
+          text: "Prioritize keyboard accessibility details for Button component API specs",
+          source: "test",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    usageFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:03.000Z",
+      profileFile: learningFile,
+      events: [
+        {
+          id: "learn-use-1",
+          command: "prompt",
+          routeId: "component-spec",
+          profileFile: learningFile,
+          briefHash: "abc123",
+          category: "accessibility",
+          limit: 1,
+          selectedEntryIds: ["learn-keyboard"],
+          selectedCount: 1,
+          candidateCount: 1,
+          matchedCount: 1,
+          fallbackCount: 0,
+          queryTokenCount: 2,
+          auditStatus: "pass",
+          createdAt: "2026-05-22T00:00:03.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace usage auto-discovery\n"),
+    }),
+  });
+
+  assert.equal(report.learningUsage.usageFile, usageFile);
+  assert.equal(report.learningUsage.eventCount, 1);
+  assert.equal(report.learningUsage.readiness.status, "pass");
+  assert.equal(report.nextActions.some((item) => item.text === "Learning usage sidecar is aligned with the active profile."), true);
+}));
+
+test("collectLearningUsageReport warns on stale selected entry ids", () => withTempDir((dir) => {
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  const report = collectLearningUsageReport({
+    learningFilePath: learningFile,
+    learningUsagePath: usageFile,
+    learningUsageStatsProvider: ({ filePath, usageFile }) => ({
+      file: filePath,
+      usageFile,
+      exists: true,
+      profileExists: true,
+      profileFile: filePath,
+      version: 1,
+      updatedAt: "2026-05-22T00:00:03.000Z",
+      eventCount: 1,
+      profileEntryCount: 1,
+      usedEntryCount: 0,
+      unusedEntryCount: 1,
+      staleSelectedEntryCount: 1,
+      commandCounts: { pack: 1 },
+      routeCounts: { "component-spec": 1 },
+      categoryCounts: { accessibility: 1 },
+      auditStatusCounts: { pass: 1 },
+      latestEvent: null,
+      recommendations: [],
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+    }),
+  });
+
+  assert.equal(report.readiness.status, "warn");
+  assert.match(report.readiness.reason, /stale-selected-entry-ids/);
+}));
+
+test("assessLearningUsageReadiness detects usage profile file mismatch", () => {
+  const readiness = assessLearningUsageReadiness({
+    learningFilePath: "/tmp/current-learning.json",
+    usage: {
+      exists: true,
+      eventCount: 1,
+      profileFile: "/tmp/other-learning.json",
+      staleSelectedEntryCount: 0,
+    },
+  });
+
+  assert.equal(readiness.status, "warn");
+  assert.match(readiness.reason, /usage-profile-file-mismatch/);
+});
 
 test("collectWorkspaceReport auto-detects sibling learning eval checkpoint", () => withTempDir((dir) => {
   const repoRoot = path.join(dir, "repo");
@@ -615,7 +797,7 @@ test("formatWorkspaceJson emits a stable machine-readable object", () => {
   });
   const payload = JSON.parse(formatted);
 
-  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningEval", "release", "nextActions"]);
+  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningUsage", "learningEval", "release", "nextActions"]);
   assert.equal(payload.context.root, "/repo");
 });
 
@@ -657,6 +839,7 @@ test("runWorkspace supports JSON output with injected collectors", async () => w
   assert.equal(payload.repository.metadataAligned, true);
   assert.equal(payload.repository.remoteAligned, true);
   assert.equal(payload.learning.file, learningFile);
+  assert.equal(payload.learningUsage, null);
   assert.equal(payload.release.available.includes("test"), true);
   assert.equal(payload.nextActions.some((item) => item.command === "npm test"), true);
 }));
@@ -731,6 +914,101 @@ test("runWorkspace prints learning eval section and strict fails eval warnings",
   assert.equal(strictRun.exitCode, 1);
   assert.equal(payload.learningEval.status, "warn", JSON.stringify(payload.learningEval));
   assert.equal(payload.nextActions.some((item) => (item.command || "").includes("design-ai learn --eval")), true);
+}));
+
+test("runWorkspace prints learning usage section and strict fails usage warnings", async () => withTempDir(async (dir) => {
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+
+  const cleanGitRunner = fakeGit({
+    "rev-parse --is-inside-work-tree": ok("true\n"),
+    "rev-parse --show-toplevel": ok(`${dir}\n`),
+    "branch --show-current": ok("main\n"),
+    "status --short": ok(""),
+    "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+    "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+    "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+    "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace learning usage\n"),
+  });
+  const learningStatsProvider = ({ filePath }) => ({
+    file: filePath,
+    exists: true,
+    count: 1,
+    categoryCounts: { accessibility: 1 },
+    sourceCounts: { test: 1 },
+    latestEntry: null,
+    auditSummary: { status: "pass", failures: 0, warnings: 0 },
+  });
+  const learningUsageStatsProvider = ({ filePath, usageFile }) => ({
+    file: filePath,
+    usageFile,
+    exists: true,
+    profileExists: true,
+    profileFile: path.join(dir, "old-learning.json"),
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    eventCount: 1,
+    profileEntryCount: 1,
+    usedEntryCount: 0,
+    unusedEntryCount: 1,
+    staleSelectedEntryCount: 1,
+    commandCounts: { prompt: 1 },
+    routeCounts: { "component-spec": 1 },
+    categoryCounts: { accessibility: 1 },
+    auditStatusCounts: { pass: 1 },
+    latestEvent: {
+      id: "learn-use-1",
+      command: "prompt",
+      routeId: "component-spec",
+      category: "accessibility",
+      limit: 1,
+      selectedEntryIds: ["learn-stale"],
+      selectedCount: 1,
+      candidateCount: 1,
+      matchedCount: 1,
+      fallbackCount: 0,
+      queryTokenCount: 2,
+      auditStatus: "pass",
+      briefHash: "abc123",
+      createdAt: "2026-05-22T00:00:03.000Z",
+    },
+    recommendations: [],
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      storesSelectedEntryIds: true,
+    },
+  });
+
+  const humanRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--learning-usage", usageFile],
+    {
+      sourceRoot,
+      gitRunner: cleanGitRunner,
+      learningStatsProvider,
+      learningUsageStatsProvider,
+    },
+  ));
+  assert.match(humanRun.stdout, /Learning usage:/);
+  assert.match(humanRun.stdout, /Events: 1 \| used 0\/1 \| stale 1/);
+  assert.match(humanRun.stdout, /Readiness: warn/);
+
+  const strictRun = await captureConsole(() => runWorkspace(
+    ["--root", dir, "--learning-file", learningFile, "--learning-usage", usageFile, "--strict", "--json"],
+    {
+      sourceRoot,
+      gitRunner: cleanGitRunner,
+      learningStatsProvider,
+      learningUsageStatsProvider,
+    },
+  ));
+  const payload = JSON.parse(strictRun.stdout);
+  assert.equal(strictRun.exitCode, 1);
+  assert.equal(payload.learningUsage.readiness.status, "warn");
+  assert.equal(payload.nextActions.some((item) => (item.command || "").includes("design-ai learn --usage")), true);
 }));
 
 test("runWorkspace strict fails readiness warnings and passes info-only readiness", async () => withTempDir(async (dir) => {

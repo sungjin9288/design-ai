@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.41.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.42.0.tgz
 """
 from __future__ import annotations
 
@@ -1072,6 +1072,7 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
 def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
     profile_path.parent.mkdir(parents=True, exist_ok=True)
     eval_path.parent.mkdir(parents=True, exist_ok=True)
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
     profile_path.write_text(
         json.dumps(
             {
@@ -1113,6 +1114,37 @@ def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -
                         "expectedSelectedIds": ["learn-workspace-keyboard"],
                         "minMatchedCount": 1,
                         "requireNoFallback": True,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    usage_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:04.000Z",
+                "profileFile": str(profile_path),
+                "events": [
+                    {
+                        "id": "learn-use-workspace-keyboard",
+                        "command": "prompt",
+                        "routeId": "component-spec",
+                        "profileFile": str(profile_path),
+                        "briefHash": "b20206b62f51bb23",
+                        "category": "accessibility",
+                        "limit": 1,
+                        "selectedEntryIds": ["learn-workspace-keyboard"],
+                        "selectedCount": 1,
+                        "candidateCount": 1,
+                        "matchedCount": 1,
+                        "fallbackCount": 0,
+                        "queryTokenCount": 6,
+                        "auditStatus": "pass",
+                        "createdAt": "2026-05-22T00:00:04.000Z",
                     },
                 ],
             },

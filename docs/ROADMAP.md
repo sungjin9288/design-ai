@@ -1,5 +1,42 @@
 # Roadmap
 
+## Phase 257 — Workspace Learning Usage Readiness (v4.42.0) ✓ shipped
+
+`design-ai workspace` now includes privacy-preserving prompt/pack learning usage sidecar readiness. The command can read an explicit `--learning-usage path` or auto-detect a sibling `learning.usage.json` beside the selected learning profile, then report whether local learning is actually being exercised and whether the sidecar still matches the active profile.
+
+### Changed
+- Added `--learning-usage path` to `design-ai workspace`.
+- Added sibling `learning.usage.json` auto-detection for the selected learning profile.
+- Added `learningUsage` to workspace JSON with event counts, used/unused entry counts, stale selected id count, latest event metadata, privacy flags, recommendations, and readiness.
+- Added human workspace output for learning usage sidecar status.
+- Made `workspace --strict` fail when the usage sidecar points at another profile or references selected entry ids that no longer exist.
+- Added next actions for aligned usage sidecars, stale/mismatched sidecars, missing usage telemetry, and usage report inspection.
+- Added unit coverage for parsing, explicit usage paths, sibling usage auto-detection, stale selected ids, profile mismatch, human output, JSON output, and strict behavior.
+- Added package/registry smoke fixture usage sidecars so workspace learning readiness covers usage metadata in installed-bin, one-shot, and public registry paths.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.42.0`.
+
+### Impact
+- Operators can now distinguish "learning profile exists" from "learning profile is being used in prompt/pack runs".
+- Usage sidecar readiness remains read-only and privacy-preserving: selected entry ids and short brief hashes only, no raw brief text.
+- Existing learning profile schema, usage sidecar event schema, eval checkpoint schema, prompt/pack recording behavior, and workspace eval freshness behavior remain compatible.
+
+### What this enables
+- Safer curation decisions before archiving or rewriting learning entries.
+- A stronger local dogfood gate for solo use first, company rollout later.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.41.0 → 4.42.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 256 — Workspace Learning Eval Freshness Guard (v4.41.0) ✓ shipped
 
 `design-ai workspace` now checks whether an included learning eval checkpoint still matches the active learning profile metadata. A checkpoint can pass its deterministic cases but still produce a readiness warning when it was generated before the profile was updated, was generated from another profile path, or records a different source entry count.

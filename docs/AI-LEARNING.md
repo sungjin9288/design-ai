@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.41:
+What ships in v4.42:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -26,11 +26,12 @@ What ships in v4.41:
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
 - `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails. JSON reports expose checkpoint `generatedAt` plus a sanitized `sourceProfile` summary without raw checkpoint brief or query text.
-- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-eval path` to include a specific checkpoint summary, omit it to auto-detect a sibling `learning-eval.json` when present, and add `--strict` when warning/failure readiness should fail the command.
+- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, usage sidecar readiness, eval checkpoint readiness, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-usage path` or `--learning-eval path` to include specific artifacts, omit them to auto-detect sibling `learning.usage.json` and `learning-eval.json` files when present, and add `--strict` when warning/failure readiness should fail the command.
+- `design-ai workspace` checks learning usage sidecar readiness when usage metadata is available. If the sidecar points at another profile or references selected entry ids that are no longer present in the active profile, `workspace` emits a warning and suggests `design-ai learn --usage`.
 - `design-ai workspace` checks learning eval checkpoint freshness when metadata is available. If the profile was updated after the checkpoint was generated, the checkpoint came from another profile path, or the source entry count changed, `workspace` emits a warning and suggests regenerating the checkpoint.
 - When a clean learning profile has entries but no checkpoint is available, `design-ai workspace` adds a next-action command for `design-ai learn --eval-template --file <learning.json> --out <learning-file-dir>/learning-eval.json`.
-- Workspace next-action commands that include learning profile or eval checkpoint paths are shell-quoted, so paths with spaces or apostrophes remain copy/paste safe.
-- Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries and public registry `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation from the published package path.
+- Workspace next-action commands that include learning profile, usage sidecar, or eval checkpoint paths are shell-quoted, so paths with spaces or apostrophes remain copy/paste safe.
+- Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries, auto-detected learning usage sidecar summaries, and public registry `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation from the published package path.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.
@@ -75,18 +76,21 @@ For a broader local readiness check that includes git state, learning audit stat
 ```bash
 design-ai workspace --json
 design-ai workspace --learning-file ./learning.json
+design-ai workspace --learning-file ./learning.json --learning-usage ./learning.usage.json
 design-ai workspace --learning-file ./learning.json --strict
-design-ai workspace --learning-file ./learning.json --learning-eval ./learning-eval.json --strict
+design-ai workspace --learning-file ./learning.json --learning-usage ./learning.usage.json --learning-eval ./learning-eval.json --strict
 design-ai workspace --strict
 ```
 
 This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
 
-If the selected learning profile has a sibling `learning-eval.json`, `workspace` automatically includes that checkpoint summary. Use `--learning-eval path` only when you want a different checkpoint.
+If the selected learning profile has sibling `learning.usage.json` or `learning-eval.json` files, `workspace` automatically includes those summaries. Use `--learning-usage path` or `--learning-eval path` only when you want a different sidecar or checkpoint.
+
+When usage metadata is available, `workspace` compares it against the selected profile. A usage sidecar becomes a readiness warning when its `profileFile` points at another profile or when its selected entry ids no longer exist in the active profile.
 
 When checkpoint metadata is available, `workspace` also compares it against the selected profile. A passing checkpoint still becomes a readiness warning when the profile `updatedAt` is newer than checkpoint `generatedAt`, when `sourceProfile.file` does not match the active profile path, or when the recorded source entry count differs from the active profile count.
 
-If the selected profile or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --eval-template` and `learn --eval --from-file` commands quote the path in the next action output.
+If the selected profile, usage sidecar, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
 
 If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until a sibling or explicit checkpoint is available:
 

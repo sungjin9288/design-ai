@@ -4,7 +4,13 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { defaultLearningFile, learningEvalReport, learningStats } from "./learn.mjs";
+import {
+  defaultLearningFile,
+  defaultLearningUsageFile,
+  learningEvalReport,
+  learningStats,
+  learningUsageStats,
+} from "./learn.mjs";
 import { DESIGN_AI_HOME } from "./paths.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
@@ -15,6 +21,7 @@ export const WORKSPACE_OPTIONS = [
   "--strict",
   "--root",
   "--learning-file",
+  "--learning-usage",
   "--learning-eval",
 ];
 
@@ -40,6 +47,7 @@ export function parseWorkspaceArgs(args) {
     strict: false,
     root: "",
     learningFilePath: "",
+    learningUsagePath: "",
     learningEvalPath: "",
   };
 
@@ -73,6 +81,15 @@ export function parseWorkspaceArgs(args) {
       i += 1;
       continue;
     }
+    if (arg === "--learning-usage") {
+      const usagePath = args[i + 1];
+      if (!usagePath || usagePath.startsWith("--")) {
+        throw new Error("--learning-usage expects a path");
+      }
+      flags.learningUsagePath = usagePath;
+      i += 1;
+      continue;
+    }
     if (arg === "--learning-eval") {
       const evalPath = args[i + 1];
       if (!evalPath || evalPath.startsWith("--")) {
@@ -85,7 +102,7 @@ export function parseWorkspaceArgs(args) {
 
     throw new Error(
       `${unknownOptionMessage("workspace", arg, WORKSPACE_OPTIONS)}\n` +
-        "Usage: design-ai workspace [--root path] [--learning-file path] [--learning-eval path] [--strict] [--json]",
+        "Usage: design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     );
   }
 
@@ -415,6 +432,10 @@ export function defaultLearningEvalPath(learningFilePath = defaultLearningFile()
   return path.join(path.dirname(path.resolve(learningFilePath)), DEFAULT_LEARNING_EVAL_FILE);
 }
 
+export function defaultLearningUsagePath(learningFilePath = defaultLearningFile()) {
+  return defaultLearningUsageFile(learningFilePath);
+}
+
 function action(level, text, command = "") {
   return command ? { level, text, command } : { level, text };
 }
@@ -495,7 +516,128 @@ export function assessLearningEvalFreshness({ learning, learningEval } = {}) {
   };
 }
 
-export function buildWorkspaceNextActions({ git, repository, learning, learningEval, release }) {
+export function collectLearningUsageReport({
+  learningFilePath = defaultLearningFile(),
+  learningUsagePath = "",
+  learningUsageStatsProvider = learningUsageStats,
+} = {}) {
+  if (!learningUsagePath) return null;
+
+  const resolvedLearningFile = path.resolve(learningFilePath);
+  const resolvedUsagePath = path.resolve(learningUsagePath);
+  try {
+    const stats = learningUsageStatsProvider({
+      filePath: resolvedLearningFile,
+      usageFile: resolvedUsagePath,
+    });
+    return {
+      file: stats.file || resolvedLearningFile,
+      usageFile: stats.usageFile || resolvedUsagePath,
+      exists: Boolean(stats.exists),
+      profileExists: Boolean(stats.profileExists),
+      profileFile: stats.profileFile || resolvedLearningFile,
+      version: Number.isInteger(stats.version) ? stats.version : 1,
+      updatedAt: stats.updatedAt || "",
+      eventCount: Number.isInteger(stats.eventCount) ? stats.eventCount : 0,
+      profileEntryCount: Number.isInteger(stats.profileEntryCount) ? stats.profileEntryCount : 0,
+      usedEntryCount: Number.isInteger(stats.usedEntryCount) ? stats.usedEntryCount : 0,
+      unusedEntryCount: Number.isInteger(stats.unusedEntryCount) ? stats.unusedEntryCount : 0,
+      staleSelectedEntryCount: Number.isInteger(stats.staleSelectedEntryCount) ? stats.staleSelectedEntryCount : 0,
+      commandCounts: stats.commandCounts || {},
+      routeCounts: stats.routeCounts || {},
+      categoryCounts: stats.categoryCounts || {},
+      auditStatusCounts: stats.auditStatusCounts || {},
+      latestEvent: stats.latestEvent || null,
+      privacy: stats.privacy || {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+      recommendations: Array.isArray(stats.recommendations) ? stats.recommendations : [],
+      readiness: assessLearningUsageReadiness({ learningFilePath: resolvedLearningFile, usage: stats }),
+      error: "",
+    };
+  } catch (error) {
+    return {
+      file: resolvedLearningFile,
+      usageFile: resolvedUsagePath,
+      exists: existsSync(resolvedUsagePath),
+      profileExists: existsSync(resolvedLearningFile),
+      profileFile: resolvedLearningFile,
+      version: 1,
+      updatedAt: "",
+      eventCount: 0,
+      profileEntryCount: 0,
+      usedEntryCount: 0,
+      unusedEntryCount: 0,
+      staleSelectedEntryCount: 0,
+      commandCounts: {},
+      routeCounts: {},
+      categoryCounts: {},
+      auditStatusCounts: {},
+      latestEvent: null,
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+      recommendations: [],
+      readiness: {
+        status: "fail",
+        reason: "usage-sidecar-error",
+        profileFile: resolvedLearningFile,
+        profileFileMatches: true,
+        staleSelectedEntryCount: 0,
+      },
+      error: error?.message || String(error),
+    };
+  }
+}
+
+export function assessLearningUsageReadiness({ learningFilePath = defaultLearningFile(), usage } = {}) {
+  if (!usage) return null;
+
+  const resolvedLearningFile = path.resolve(learningFilePath);
+  const profileFile = usage.profileFile ? path.resolve(usage.profileFile) : "";
+  const profileFileMatches = profileFile ? profileFile === resolvedLearningFile : true;
+  const staleSelectedEntryCount = Number.isInteger(usage.staleSelectedEntryCount)
+    ? usage.staleSelectedEntryCount
+    : 0;
+  const issues = [];
+
+  if (!profileFileMatches) issues.push("usage-profile-file-mismatch");
+  if (staleSelectedEntryCount > 0) issues.push("stale-selected-entry-ids");
+
+  if (issues.length > 0) {
+    return {
+      status: "warn",
+      reason: issues.join(", "),
+      profileFile: usage.profileFile || "",
+      profileFileMatches,
+      staleSelectedEntryCount,
+    };
+  }
+
+  if (!usage.exists || usage.eventCount === 0) {
+    return {
+      status: "unknown",
+      reason: usage.exists ? "usage sidecar has no events" : "usage sidecar unavailable",
+      profileFile: usage.profileFile || "",
+      profileFileMatches,
+      staleSelectedEntryCount,
+    };
+  }
+
+  return {
+    status: "pass",
+    reason: "",
+    profileFile: usage.profileFile || "",
+    profileFileMatches,
+    staleSelectedEntryCount,
+  };
+}
+
+export function buildWorkspaceNextActions({ git, repository, learning, learningUsage, learningEval, release }) {
   const actions = [];
 
   if (!git.isRepo) {
@@ -538,6 +680,25 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningE
     ));
   }
 
+  if (learningUsage) {
+    const usageCommand = `design-ai learn --usage --file ${quoteShellArg(learningUsage.file)} --usage-file ${quoteShellArg(learningUsage.usageFile)}`;
+    if (learningUsage.error) {
+      actions.push(action("fail", "Repair the local learning usage sidecar before trusting prompt/pack usage analytics.", usageCommand));
+    } else if (learningUsage.readiness?.status === "warn") {
+      actions.push(action("warn", "Review local learning usage sidecar drift before curating learning entries.", usageCommand));
+    } else if (learningUsage.readiness?.status === "pass") {
+      actions.push(action("pass", "Learning usage sidecar is aligned with the active profile.", usageCommand));
+    } else {
+      actions.push(action("info", "Record prompt/pack --with-learning usage before judging which learning entries are useful.", usageCommand));
+    }
+  } else if (!learning.error && learning.auditSummary.status === "pass" && learning.count > 0) {
+    actions.push(action(
+      "info",
+      "Run prompt or pack with --with-learning to create a local learning usage sidecar.",
+      "design-ai prompt \"your brief\" --with-learning",
+    ));
+  }
+
   if (learningEval) {
     const evalCommand = `design-ai learn --eval --from-file ${quoteShellArg(learningEval.source)} --file ${quoteShellArg(learningEval.file)} --strict`;
     const regenerateCommand = `design-ai learn --eval-template --file ${quoteShellArg(learningEval.file)} --out ${quoteShellArg(learningEval.source)} --force`;
@@ -575,14 +736,19 @@ export function collectWorkspaceReport({
   root = process.cwd(),
   sourceRoot = DESIGN_AI_HOME,
   learningFilePath = defaultLearningFile(),
+  learningUsagePath = "",
   learningEvalPath = "",
   gitRunner = runGitCommand,
   learningStatsProvider = learningStats,
+  learningUsageStatsProvider = learningUsageStats,
   learningEvalReportProvider = learningEvalReport,
 } = {}) {
   const resolvedRoot = path.resolve(root);
   const resolvedSourceRoot = path.resolve(sourceRoot);
   const resolvedLearningFile = path.resolve(learningFilePath);
+  const resolvedLearningUsagePath = learningUsagePath || (
+    existsSync(defaultLearningUsagePath(resolvedLearningFile)) ? defaultLearningUsagePath(resolvedLearningFile) : ""
+  );
   const resolvedLearningEvalPath = learningEvalPath || (
     existsSync(defaultLearningEvalPath(resolvedLearningFile)) ? defaultLearningEvalPath(resolvedLearningFile) : ""
   );
@@ -590,6 +756,11 @@ export function collectWorkspaceReport({
   const learning = collectLearningReport({
     filePath: resolvedLearningFile,
     learningStatsProvider,
+  });
+  const learningUsage = collectLearningUsageReport({
+    learningFilePath: resolvedLearningFile,
+    learningUsagePath: resolvedLearningUsagePath,
+    learningUsageStatsProvider,
   });
   const learningEval = collectLearningEvalReport({
     learningFilePath: resolvedLearningFile,
@@ -608,6 +779,7 @@ export function collectWorkspaceReport({
     git,
     repository,
     learning,
+    learningUsage,
     learningEval: learningEvalWithFreshness,
     release,
   });
@@ -623,6 +795,7 @@ export function collectWorkspaceReport({
     git,
     repository,
     learning,
+    learningUsage,
     learningEval: learningEvalWithFreshness,
     release,
     nextActions,
@@ -635,6 +808,7 @@ export function formatWorkspaceJson(report) {
     git: report.git,
     repository: report.repository,
     learning: report.learning,
+    learningUsage: report.learningUsage || null,
     learningEval: report.learningEval || null,
     release: report.release,
     nextActions: report.nextActions,

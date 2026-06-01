@@ -18,7 +18,7 @@
 //   doctor               Diagnose source, runtime, and install state
 //   examples             Find worked examples by query or route
 //   learn                Manage local learning preferences for prompt personalization
-//   workspace            Show read-only dogfood readiness: git, repository, learning, eval, release scripts
+//   workspace            Show read-only dogfood readiness: git, repository, learning usage/eval, release scripts
 //                        Add --strict to fail on readiness warnings/failures
 //   site                 Validate Website Improvement Console exports and generate handoff artifacts
 //   version [--json]     Show CLI + plugin versions
