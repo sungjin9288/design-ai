@@ -51,6 +51,52 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 237 — Website Improvement MCP Action Plan Export (v4.22.0) ✓ shipped
+
+Website improvement readiness checks can now become an operator-facing action plan. `design-ai site <workspace.json|--stdin> --mcp-plan [--strict] [--out file]` exports a Markdown plan that translates MCP readiness evidence, workspace issues, and task/MCP gaps into blocking items, warnings, task alignment, execution sequence, and follow-up commands.
+
+### Changed
+- Added `--mcp-plan` for `design-ai site` as a read-only workspace/stdin mode.
+- Added Markdown action plan output with summary, readiness matrix, blocking items, warnings, task/MCP alignment, execution sequence, reusable commands, and local/operator boundaries.
+- Reused the same deterministic local readiness engine as `--mcp-check`; no external MCP calls, target repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+- Added unit coverage for parser validation, action plan content, output-file writing, command-specific help, and help JSON catalog usage.
+- Added packed-tarball smoke coverage for `design-ai site --stdin --mcp-plan` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.22.0`.
+
+### Impact
+- Operators can include a human-readable readiness remediation plan with Website Improvement handoff packages.
+- The strict JSON readiness gate remains machine-readable, while `--mcp-plan` gives solo/internal pilots a concise execution sequence before handing work to Codex or Claude.
+
+### What this enables
+- Internal pilots can keep `--mcp-check --strict --json` as the automated gate and `--mcp-plan --out mcp-action-plan.md` as the operator checklist.
+- Future real MCP connection probes can keep the same action plan output contract while replacing local evidence checks underneath.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --mcp-plan`, `design-ai site --mcp-plan --out`, and `design-ai help site`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.21.0 → 4.22.0.
+
 ## Phase 236 — Website Improvement MCP Readiness Check (v4.21.0) ✓ shipped
 
 Website improvement work now has a local MCP readiness gate. `design-ai site <workspace.json|--stdin> --mcp-check [--strict] [--json]` checks Site Profile evidence, MCP readiness statuses, workspace validation issues, and refactor task MCP recommendations before operators hand work to Codex, Claude, or a target repo.

@@ -10,6 +10,7 @@ import { runSite } from "../commands/site.mjs";
 import {
   analyzeSiteWorkspace,
   buildSiteHandoffReport,
+  buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
   buildSitePrompt,
   buildSitePromptBundle,
@@ -61,6 +62,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     tasks: false,
     promptList: false,
     mcpCheck: false,
+    mcpPlan: false,
     promptTemplate: "",
     taskSelector: "",
     json: true,
@@ -79,6 +81,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     tasks: false,
     promptList: false,
     mcpCheck: false,
+    mcpPlan: false,
     promptTemplate: "",
     taskSelector: "",
     json: false,
@@ -97,6 +100,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
   assert.equal(parseSiteArgs(["--prompt-list", "--json"]).promptList, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
 });
 
@@ -108,9 +112,12 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--stdin", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--prompt", "codex-repo-intake"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--mcp-check"]), /Use --prompt-list without --sample/);
+  assert.throws(() => parseSiteArgs(["--prompt-list", "--mcp-plan"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--strict"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--tasks"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--report"]), /Use --mcp-check without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--tasks"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--report"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
@@ -120,7 +127,9 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--prompt", "codex-implementation"]), /Use --tasks without --prompt/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompts", "--prompt", "codex-implementation"]), /only one output mode/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--mcp-plan"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt"]), /--prompt requires a template id/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "bad-template"]), /--prompt must be one of/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--task"]), /--task requires a refactor task id/);
@@ -215,6 +224,36 @@ test("buildSiteMcpCheckReport summarizes evidence and task/MCP gaps", () => {
   assert.match(missingReport.nextActions.join("\n"), /siteProfile\.repoUrl/);
 });
 
+test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidance", () => {
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
+  const plan = buildSiteMcpActionPlan(workspace, summary);
+
+  assert.match(plan, /# Website improvement MCP action plan: Korean SaaS marketing site/);
+  assert.match(plan, /## Readiness Matrix/);
+  assert.match(plan, /\| GitHub \| required \| ready \| pass \|/);
+  assert.match(plan, /## Blocking Items\n- No blocking readiness issues\./);
+  assert.match(plan, /## Task\/MCP Alignment/);
+  assert.match(plan, /task-homepage-cta/);
+  assert.match(plan, /design-ai site sample\.json --mcp-check --strict --json/);
+  assert.match(plan, /does not call external MCPs, mutate the target website repo/);
+
+  const missingRequiredWorkspace = {
+    ...workspace,
+    siteProfile: {
+      ...workspace.siteProfile,
+      repoUrl: "",
+      localPath: "",
+    },
+  };
+  const missingPlan = buildSiteMcpActionPlan(
+    missingRequiredWorkspace,
+    analyzeSiteWorkspace(missingRequiredWorkspace, { filePath: "missing.json" }).summary,
+  );
+  assert.match(missingPlan, /Status: fail/);
+  assert.match(missingPlan, /GitHub: Add siteProfile\.repoUrl or siteProfile\.localPath/);
+});
+
 test("runSite prints and writes MCP readiness check output", async () => {
   await withTempDir(async (dir) => {
     const file = path.join(dir, "workspace.json");
@@ -234,6 +273,23 @@ test("runSite prints and writes MCP readiness check output", async () => {
     const writeOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", outFile]));
     assert.match(writeOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(outFile, "utf8")).status, "pass");
+  });
+});
+
+test("runSite prints and writes MCP readiness action plan output", async () => {
+  await withTempDir(async (dir) => {
+    const file = path.join(dir, "workspace.json");
+    const outFile = path.join(dir, "mcp-action-plan.md");
+    writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
+
+    const planOutput = await captureConsole(() => runSite([file, "--mcp-plan"]));
+    assert.match(planOutput.stdout, /# Website improvement MCP action plan/);
+    assert.match(planOutput.stdout, /## Execution Sequence/);
+    assert.equal(planOutput.exitCode, undefined);
+
+    const writeOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", outFile]));
+    assert.match(writeOutput.stdout, /Wrote /);
+    assert.match(readFileSync(outFile, "utf8"), /Task\/MCP Alignment/);
   });
 });
 
@@ -391,6 +447,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const singlePrompt = path.join(dir, "out", "codex-implementation.md");
     const promptList = path.join(dir, "out", "prompt-templates.json");
     const mcpCheck = path.join(dir, "out", "mcp-check.json");
+    const mcpPlan = path.join(dir, "out", "mcp-action-plan.md");
     writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
 
     const jsonOutput = await captureConsole(() => runSite([file, "--json"]));
@@ -421,6 +478,10 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const mcpCheckOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", mcpCheck]));
     assert.match(mcpCheckOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(mcpCheck, "utf8")).status, "pass");
+
+    const mcpPlanOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", mcpPlan]));
+    assert.match(mcpPlanOutput.stdout, /Wrote /);
+    assert.match(readFileSync(mcpPlan, "utf8"), /Website improvement MCP action plan/);
   });
 });
 
@@ -493,11 +554,13 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-plan \[--strict\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
+  assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);

@@ -15,6 +15,7 @@ export const SITE_OPTIONS = [
   "--tasks",
   "--prompt-list",
   "--mcp-check",
+  "--mcp-plan",
   "--prompt",
   "--task",
   "--strict",
@@ -212,6 +213,7 @@ export function parseSiteArgs(args) {
     tasks: false,
     promptList: false,
     mcpCheck: false,
+    mcpPlan: false,
     promptTemplate: "",
     taskSelector: "",
     json: false,
@@ -241,6 +243,8 @@ export function parseSiteArgs(args) {
       out.promptList = true;
     } else if (arg === "--mcp-check") {
       out.mcpCheck = true;
+    } else if (arg === "--mcp-plan") {
+      out.mcpPlan = true;
     } else if (arg === "--prompt") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -288,11 +292,14 @@ export function parseSiteArgs(args) {
   if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --sample without --report, --prompts, or --prompt");
   }
-  if (out.promptList && (out.sample || out.tasks || out.mcpCheck || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --mcp-check, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
   }
   if (out.mcpCheck && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --mcp-check without --sample, --tasks, --report, --prompts, or --prompt");
+  }
+  if (out.mcpPlan && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-plan without --sample, --tasks, --report, --prompts, or --prompt");
   }
   if (out.sample && out.tasks) {
     throw new Error("Use only one generated workspace mode: --sample or --tasks");
@@ -312,15 +319,15 @@ export function parseSiteArgs(args) {
   if (out.tasks && out.promptTemplate) {
     throw new Error("Use --tasks without --prompt; generate tasks in a separate command first");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, or --mcp-check");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, or --mcp-plan");
   }
-  if (out.json && (out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("--json is only supported for the site summary; use --out with --report, --prompts, or --prompt for Markdown artifacts");
+  if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
+    throw new Error("--json is only supported for the site summary or --mcp-check; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.promptList || out.mcpCheck)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --prompt-list, or --mcp-check");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --prompt-list, --mcp-check, or --mcp-plan");
   }
 
   const { index, ...parsed } = out;
@@ -1177,6 +1184,116 @@ export function formatSiteMcpCheckHuman(report) {
     "",
     "Next actions:",
     ...(report.nextActions.length ? report.nextActions.map((action) => `- ${action}`) : ["- none"]),
+  ].join("\n");
+}
+
+function markdownTable(headers, rows) {
+  const escapeCell = (value) => String(value || "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+  return [
+    `| ${headers.map(escapeCell).join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.map(escapeCell).join(" | ")} |`),
+  ].join("\n");
+}
+
+function mcpActionPlanTaskRows(workspace, report) {
+  const stateByKey = new Map(report.items.map((item) => [item.key, item.state]));
+  const topTasks = workspace.refactorTasks
+    .slice()
+    .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
+    .slice(0, 8);
+
+  if (topTasks.length === 0) {
+    return [["No refactor tasks", "n/a", "n/a", "Generate starter tasks with `design-ai site <workspace.json> --tasks`."]];
+  }
+
+  return topTasks.map((task) => {
+    const mcps = normalizeStringArray(task.recommendedMcp);
+    const states = mcps.length
+      ? mcps.map((rawMcp) => {
+        const key = normalizeMcpKey(rawMcp);
+        return `${key}: ${stateByKey.get(key) || "unknown"}`;
+      }).join(", ")
+      : "none";
+    return [
+      task.id,
+      `${task.priority} / ${task.impact}`,
+      mcps.join(", ") || "none",
+      states,
+    ];
+  });
+}
+
+export function buildSiteMcpActionPlan(workspace, summary = {}) {
+  const report = buildSiteMcpCheckReport(workspace, summary);
+  const filePath = report.filePath || "workspace.json";
+  const commandTarget = filePath === "stdin" ? "<workspace.json>" : filePath;
+  const requiredGaps = report.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass");
+  const optionalGaps = report.items.filter((item) => item.requestedStatus === "optional" && item.level !== "pass");
+  const blockingIssues = [
+    ...report.workspaceIssues.filter((issue) => issue.level === "fail").map((issue) => `${issue.id}: ${issue.message}`),
+    ...requiredGaps.map((item) => `${item.label}: ${item.actions.join(" ") || "Add required readiness evidence."}`),
+  ];
+  const warningIssues = [
+    ...report.workspaceIssues.filter((issue) => issue.level === "warn").map((issue) => `${issue.id}: ${issue.message}`),
+    ...optionalGaps.map((item) => `${item.label}: ${item.actions.join(" ") || "Add optional readiness evidence or mark unused."}`),
+    ...report.taskGaps.map((gap) => `${gap.taskId}: ${gap.message}`),
+  ];
+
+  return [
+    `# Website improvement MCP action plan: ${report.site.name}`,
+    "",
+    "## Summary",
+    `- Source: ${filePath}`,
+    `- Status: ${report.status}`,
+    `- Workspace status: ${report.workspaceStatus}`,
+    `- Live URL: ${report.site.liveUrl || "not provided"}`,
+    `- Repo: ${report.site.repoUrl || report.site.localPath || "not provided"}`,
+    `- Ready MCP: ${report.counts.ready}/${report.counts.total}`,
+    `- Missing MCP: ${report.counts.missing}`,
+    `- Task/MCP gaps: ${report.counts.taskGaps}`,
+    "",
+    "## Readiness Matrix",
+    markdownTable(
+      ["MCP", "Requested", "State", "Level", "Evidence"],
+      report.items.map((item) => [
+        item.label,
+        item.requestedStatus,
+        item.state,
+        item.level,
+        item.evidence.length ? item.evidence.join("; ") : "none",
+      ]),
+    ),
+    "",
+    "## Blocking Items",
+    markdownList(blockingIssues, "No blocking readiness issues."),
+    "",
+    "## Warnings",
+    markdownList(warningIssues, "No optional readiness or task/MCP warnings."),
+    "",
+    "## Task/MCP Alignment",
+    markdownTable(
+      ["Task", "Priority / impact", "Recommended MCP", "Readiness state"],
+      mcpActionPlanTaskRows(workspace, report),
+    ),
+    "",
+    "## Execution Sequence",
+    "1. Fix every blocking item before target-repo implementation handoff.",
+    "2. Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
+    "3. Re-run the strict readiness gate and keep the JSON output with the handoff package.",
+    "4. Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
+    "5. Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
+    "",
+    "## Commands",
+    `- \`design-ai site ${commandTarget} --mcp-check --strict --json\``,
+    `- \`design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json\``,
+    `- \`design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md\``,
+    `- \`design-ai site ${commandTarget} --report --out website-handoff.md\``,
+    "",
+    "## Boundaries",
+    "- This plan is deterministic and local.",
+    "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
+    "- Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
   ].join("\n");
 }
 

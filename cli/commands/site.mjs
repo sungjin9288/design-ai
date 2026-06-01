@@ -2,6 +2,7 @@
 
 import {
   buildSiteHandoffReport,
+  buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
   buildSitePrompt,
   buildSitePromptBundle,
@@ -24,6 +25,7 @@ function printHelp() {
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --mcp-plan [--strict] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
@@ -36,6 +38,8 @@ function printHelp() {
   console.log("              List Website Improvement prompt template ids and intended use");
   console.log("  --mcp-check");
   console.log("              Check MCP readiness evidence and task/MCP gaps without external MCP calls");
+  console.log("  --mcp-plan");
+  console.log("              Generate a Markdown MCP readiness action plan without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
@@ -44,13 +48,14 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --tasks, --report, --prompts, or --prompt output to a file");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --report, --prompts, or --prompt output to a file");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
+  console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
@@ -99,6 +104,7 @@ function printHumanSummary(summary) {
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompts --out website-prompts.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --task 1 --out codex-implementation.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-check --json`);
+  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-plan --out mcp-action-plan.md`);
 }
 
 function shouldFail(summary, strict) {
@@ -162,6 +168,10 @@ export async function runSite(args) {
     const mcpReport = buildSiteMcpCheckReport(workspace, summary);
     status = mcpReport.status;
     content = `${parsed.json ? formatSiteMcpCheckJson(mcpReport) : formatSiteMcpCheckHuman(mcpReport)}\n`;
+  } else if (parsed.mcpPlan) {
+    const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+    status = mcpReport.status;
+    content = `${buildSiteMcpActionPlan(workspace, summary)}\n`;
   } else if (parsed.report) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {
@@ -181,7 +191,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.mcpCheck || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
+  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);

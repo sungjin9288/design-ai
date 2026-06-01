@@ -2,6 +2,41 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.22.0 — Website Improvement MCP Action Plan Export (2026-06)
+
+Added `design-ai site <workspace.json|--stdin> --mcp-plan [--strict] [--out file]` so Website Improvement MCP readiness results can be exported as a Markdown action plan before target-repo implementation.
+The plan includes readiness status, MCP evidence, blocking items, optional warnings, task/MCP alignment, execution sequence, follow-up commands, and local/operator boundaries.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the MCP action plan path.
+Packed-tarball package smoke verifies `design-ai site --stdin --mcp-plan` from both installed-bin and one-shot `npm exec --package <tarball>` paths.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can turn readiness warnings into an ordered handoff checklist, then keep the strict JSON readiness gate and Markdown action plan together with the website improvement handoff package.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- All 8 audits pass.
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- Manual CLI smoke for `design-ai site --mcp-plan`, `design-ai site --mcp-plan --out`, and `design-ai help site`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.21.0 → 4.22.0.
+
 ## v4.21.0 — Website Improvement MCP Readiness Check (2026-06)
 
 Added `design-ai site <workspace.json|--stdin> --mcp-check [--strict] [--json]` so Website Improvement workspace exports can be checked for local MCP readiness evidence and task/MCP gaps before handoff.

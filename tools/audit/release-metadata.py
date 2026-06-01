@@ -206,6 +206,27 @@ RELEASE_SITE_MCP_CHECK_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --stdin --mcp-plan`",
+        "design-ai site --stdin --mcp-plan",
+        "site --stdin --mcp-plan",
+        "site --mcp-plan",
+    ),
+    (
+        "Website Console MCP action plan",
+        "Website Improvement MCP action plan",
+        "site mcp-plan Markdown",
+        "Website Console MCP action plan",
+        "Website Console MCP action plan 생성",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --tasks`",
@@ -1291,6 +1312,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site sample package smoke phrase",
     "site prompt-list package smoke phrase",
     "site mcp-check package smoke phrase",
+    "site mcp-plan package smoke phrase",
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
@@ -1435,6 +1457,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site mcp-check package smoke phrase",
         RELEASE_SITE_MCP_CHECK_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site mcp-plan package smoke phrase",
+        RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site tasks package smoke phrase",
@@ -1985,6 +2011,7 @@ including `design-ai workspace --strict --json` workspace strict failure/success
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
+`design-ai site --stdin --mcp-plan` Website Console MCP action plan,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2057,6 +2084,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
+`design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
