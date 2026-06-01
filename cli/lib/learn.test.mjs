@@ -239,11 +239,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(usageArgs.limit, 5);
   assert.equal(usageArgs.json, true);
 
-  const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--json"]);
+  const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
   assert.equal(evalArgs.category, "accessibility");
   assert.equal(evalArgs.limit, 2);
+  assert.equal(evalArgs.strict, true);
   assert.equal(evalArgs.json, true);
 });
 
@@ -319,6 +320,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
     /--usage-file can only be used with --usage/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--strict"]),
+    /--strict can only be used with --eval/,
   );
   assert.throws(
     () => parseLearnArgs(["--eval"]),
@@ -2091,6 +2096,70 @@ test("runLearn --eval reports checkpoint results in JSON and human output", () =
   assert.match(humanOutput, /Local learning eval report/);
   assert.match(humanOutput, /button-accessibility \/ component-spec: pass/);
   assert.match(humanOutput, /Privacy: eval reports expose brief hashes and selected ids/);
+}));
+
+test("runLearn --eval --strict exits non-zero when checkpoints fail", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const evalFile = path.join(dir, "learning-eval.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(evalFile, JSON.stringify({
+    version: 1,
+    cases: [
+      {
+        id: "button-accessibility",
+        routeId: "component-spec",
+        brief: "Spec a Button component API with keyboard accessibility",
+        expectedSelectedIds: ["missing-entry"],
+        minMatchedCount: 1,
+      },
+    ],
+  }), "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--eval",
+      "--from-file",
+      evalFile,
+      "--file",
+      filePath,
+      "--limit",
+      "1",
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "fail");
+    assert.equal(process.exitCode, 1);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--eval",
+      "--from-file",
+      evalFile,
+      "--file",
+      filePath,
+      "--limit",
+      "1",
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
 }));
 
 test("prompt and pack commands record --with-learning usage sidecar metadata", () => withTempDirAsync(async (dir) => {

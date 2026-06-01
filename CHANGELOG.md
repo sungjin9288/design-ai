@@ -2,6 +2,30 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.33.0 — Local Learning Eval Strict Gate (2026-06)
+
+Added `design-ai learn --eval --strict` so deterministic local learning checkpoint reports can fail CI or internal release gates when any case warns or fails.
+Strict mode preserves the existing read-only eval behavior: JSON/human reports and `--out` artifacts are produced before the command sets a non-zero exit code, and the learning profile is never mutated.
+The eval report remains privacy-preserving by exposing brief hashes, selected ids, counts, status, and issues without raw brief/query text, matched tokens, embeddings, model calls, telemetry, or fine-tuning data.
+
+Package smoke now verifies the strict failure path for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the `learn --eval --strict` failure gate.
+
+### What this enables
+
+Operators can promote local learning checkpoint suites from advisory reports into deterministic release gates while keeping local learning explicit, file-based, and offline.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.32.0 → 4.33.0.
+
 ## v4.32.0 — Local Learning Eval Checkpoints (2026-06)
 
 Added `design-ai learn --eval` so operators can validate local learning selection against deterministic JSON checkpoint cases without changing the learning profile.

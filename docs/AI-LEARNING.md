@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.32:
+What ships in v4.33:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -24,7 +24,7 @@ What ships in v4.32:
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
-- `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile.
+- `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--strict` when warning/failure readiness should fail the command.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
@@ -231,12 +231,13 @@ cat > learning-eval.json <<'JSON'
   ]
 }
 JSON
-design-ai learn --eval --from-file learning-eval.json --json
+design-ai learn --eval --from-file learning-eval.json --strict --json
 cat learning-eval.json | design-ai learn --eval --stdin --category accessibility --limit 1
 design-ai learn --eval --from-file learning-eval.json --json --out learning-eval-report.json
 ```
 
 Eval mode is read-only. It compares checkpoint cases against the same brief-relevance selection used by `prompt --with-learning` and `pack --with-learning`, then reports expected selected ids, avoided selected ids, minimum matched counts, fallback policy failures, and per-case status. JSON and human reports expose a short `briefHash`, selected entry ids, counts, and issues; they do not expose raw brief/query text or matched tokens. `--out` writes only the eval report artifact and follows the normal overwrite protection unless `--force` is provided.
+Add `--strict` when the eval report should act as a local CI or release gate: the report is printed or written first, then the command exits non-zero if any case warns or fails.
 
 Remove one saved entry:
 

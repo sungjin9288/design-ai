@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 248 — Local Learning Eval Strict Gate (v4.33.0) ✓ shipped
+
+Local learning eval checkpoints can now act as deterministic failure gates. `design-ai learn --eval --strict` keeps the existing report-first, read-only behavior, then exits non-zero when any checkpoint case warns or fails.
+
+### Changed
+- Added `--strict` to `design-ai learn --eval`.
+- Rejected `--strict` outside eval mode so other learning commands keep their previous exit behavior.
+- Preserved JSON/human output and safe `--out` report writes before applying the strict non-zero exit status.
+- Added package-smoke coverage for strict failed checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added unit tests, CLI help tests, package-smoke assertions, release metadata guard phrases, AI learning docs, README, Product Readiness, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.33.0`.
+
+### Impact
+- Operators can use local learning checkpoint suites in CI or internal release scripts without adding external AI APIs, embeddings, telemetry, fine-tuning, or raw brief storage.
+- Existing `learning.json` schema, usage sidecar schema, eval checkpoint payloads, and prompt/pack learning injection remain compatible.
+
+### What this enables
+- Future release gates can combine `workspace --strict`, `site --bundle-check --strict`, and `learn --eval --strict` into one local dogfood readiness sequence.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.32.0 → 4.33.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 247 — Local Learning Eval Checkpoints (v4.32.0) ✓ shipped
 
 Local learning selection is now checkpointable without mutating the learning profile. `design-ai learn --eval` reads a JSON checkpoint file or stdin and verifies expected selected ids, avoided selected ids, minimum matched counts, and fallback policy against the same brief-relevance ranking used by `prompt --with-learning` and `pack --with-learning`.

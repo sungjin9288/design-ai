@@ -1389,6 +1389,12 @@ RELEASE_LEARN_EVAL_TERM_GROUPS = (
         "learn --eval --out",
         "design-ai learn --eval",
     ),
+    (
+        "learn eval `--strict` failure gate",
+        "learn eval --strict failure gate",
+        "learn --eval --strict",
+        "design-ai learn --eval --strict",
+    ),
 )
 RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
     (
@@ -2228,7 +2234,7 @@ human / JSON `design-ai learn --stats` profile summary output plus learn stats `
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
-human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation,
+human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
@@ -2307,7 +2313,7 @@ human / JSON `design-ai learn --stats` profile summary output과 learn stats `--
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
-human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation도 확인하며,
+human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,

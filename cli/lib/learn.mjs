@@ -40,6 +40,7 @@ const LEARN_OPTIONS = [
   "--stats",
   "--usage",
   "--eval",
+  "--strict",
   "--curate",
   "--fix",
   "--dry-run",
@@ -187,6 +188,7 @@ export function parseLearnArgs(args) {
     limit: 0,
     fix: false,
     dryRun: false,
+    strict: false,
     yes: false,
     json: false,
     help: false,
@@ -232,6 +234,8 @@ export function parseLearnArgs(args) {
       out.fix = true;
     } else if (arg === "--dry-run") {
       out.dryRun = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (arg === "--query") {
       const query = args[i + 1];
       if (!query || query.startsWith("--")) throw new Error("--query expects search text");
@@ -331,6 +335,9 @@ export function parseLearnArgs(args) {
   }
   if (out.usageFilePath && out.action !== "usage") {
     throw new Error("--usage-file can only be used with --usage");
+  }
+  if (out.strict && out.action !== "eval") {
+    throw new Error("--strict can only be used with --eval");
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");

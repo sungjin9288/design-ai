@@ -284,9 +284,10 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --usage \[--limit N\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--usage\s+Summarize prompt\/pack --with-learning usage sidecar events without changing files/);
   assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage/);
-  assert.match(learnOutput, /design-ai learn --eval --from-file eval\.json \[--category kind\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --eval --from-file eval\.json \[--category kind\] \[--limit N\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--eval\s+Run deterministic learning-selection checkpoint cases without changing files/);
-  assert.match(learnOutput, /design-ai learn --eval --from-file learning-eval\.json --json/);
+  assert.match(learnOutput, /--strict\s+With --eval, exit non-zero when any checkpoint warns or fails/);
+  assert.match(learnOutput, /design-ai learn --eval --from-file learning-eval\.json --strict --json/);
   assert.match(learnOutput, /design-ai learn --list --query "keyboard accessibility" --explain --json/);
   assert.match(learnOutput, /design-ai learn --export --query "pricing page" --limit 3/);
   assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\] \[--out file\] \[--force\]/);

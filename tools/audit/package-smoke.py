@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.32.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.33.0.tgz
 """
 from __future__ import annotations
 
@@ -3693,6 +3693,82 @@ def assert_learning_eval_report_json(
     )
 
 
+def assert_learning_eval_strict_failure_json(
+    raw: str,
+    *,
+    returncode: int,
+    profile_path: Path,
+    eval_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    require_package_smoke(
+        returncode == 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval --strict should exit with code 1 when checkpoints fail",
+    )
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn eval strict JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the learning profile path",
+    )
+    require_package_smoke(
+        payload.get("source") == str(eval_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the checkpoint source path",
+    )
+    require_package_smoke(
+        payload.get("status") == "fail"
+        and payload.get("caseCount") == 1
+        and payload.get("failed") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the failed checkpoint case",
+    )
+    cases = payload.get("cases")
+    issue_codes = []
+    if isinstance(cases, list) and cases and isinstance(cases[0].get("issues"), list):
+        issue_codes = [issue.get("code") for issue in cases[0]["issues"] if isinstance(issue, dict)]
+    require_package_smoke(
+        isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("status") == "fail"
+        and cases[0].get("missingExpectedIds") == ["missing-entry"]
+        and "expected-entry-not-in-profile" in issue_codes
+        and "expected-entry-not-selected" in issue_codes,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should include deterministic failure details",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("storesRawBriefText") is False
+        and privacy.get("storesBriefHash") is True
+        and privacy.get("exposesMatchedTokens") is False,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should describe privacy-preserving checkpoint output",
+    )
+    require_package_smoke(
+        EXPECTED_ROUTE_BRIEF not in raw
+        and "\"brief\"" not in raw
+        and "\"query\"" not in raw,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should not expose raw brief or query text",
+    )
+
+
 def assert_learning_eval_report_human(
     raw: str,
     *,
@@ -4136,6 +4212,51 @@ def assert_learning_relevance_smoke(
         eval_path=eval_path,
         context=f"{context} learn eval JSON",
         cmd=eval_json_cmd,
+    )
+
+    strict_eval_path = profile_path.with_name(f"{profile_path.stem}-eval-strict-fail.json")
+    strict_eval_path.write_text(
+        json.dumps({
+            "version": 1,
+            "cases": [
+                {
+                    "id": "missing-accessibility",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "limit": 1,
+                    "expectedSelectedIds": ["missing-entry"],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+    strict_eval_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(strict_eval_path),
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--strict",
+        "--json",
+    )
+    run_expected_failure(
+        strict_eval_cmd,
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn eval strict failure",
+        assertion=lambda raw, *, returncode, context, cmd: assert_learning_eval_strict_failure_json(
+            raw,
+            returncode=returncode,
+            profile_path=profile_path,
+            eval_path=strict_eval_path,
+            context=context,
+            cmd=cmd,
+        ),
     )
 
     eval_out_path = profile_path.with_name(f"{profile_path.stem}-eval-out.json")
@@ -5517,6 +5638,93 @@ def run_self_test() -> None:
                 cmd=learn_eval_cmd,
             ),
             expected="learn eval JSON should not expose raw brief or query text",
+            scope="package smoke",
+        )
+        learning_eval_strict_path = Path(tmp) / "learning-eval-strict-fail.json"
+        learning_eval_strict_payload = {
+            **learning_eval_payload,
+            "source": str(learning_eval_strict_path),
+            "status": "fail",
+            "passed": 0,
+            "failed": 1,
+            "cases": [
+                {
+                    **learning_eval_payload["cases"][0],
+                    "id": "missing-accessibility",
+                    "status": "fail",
+                    "failures": 2,
+                    "expectedSelectedIds": ["missing-entry"],
+                    "missingExpectedIds": ["missing-entry"],
+                    "issues": [
+                        {
+                            "level": "failure",
+                            "code": "expected-entry-not-in-profile",
+                            "message": "Expected entry missing-entry is not present in the active learning profile.",
+                        },
+                        {
+                            "level": "failure",
+                            "code": "expected-entry-not-selected",
+                            "message": "Expected selected entries were missing: missing-entry.",
+                        },
+                    ],
+                },
+            ],
+            "recommendations": [
+                {
+                    "level": "warning",
+                    "text": "Review failed eval cases before trusting prompt/pack --with-learning selection.",
+                },
+            ],
+        }
+        learn_eval_strict_cmd = [
+            "design-ai",
+            "learn",
+            "--eval",
+            "--from-file",
+            str(learning_eval_strict_path),
+            "--file",
+            str(learning_profile_path),
+            "--strict",
+            "--json",
+        ]
+        assert_learning_eval_strict_failure_json(
+            json.dumps(learning_eval_strict_payload),
+            returncode=1,
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_strict_path,
+            context=context,
+            cmd=learn_eval_strict_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_strict_failure_json(
+                json.dumps(learning_eval_strict_payload),
+                returncode=0,
+                profile_path=learning_profile_path,
+                eval_path=learning_eval_strict_path,
+                context=context,
+                cmd=learn_eval_strict_cmd,
+            ),
+            expected="learn eval --strict should exit with code 1 when checkpoints fail",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_strict_failure_json(
+                json.dumps({
+                    **learning_eval_strict_payload,
+                    "cases": [
+                        {
+                            **learning_eval_strict_payload["cases"][0],
+                            "brief": EXPECTED_ROUTE_BRIEF,
+                        },
+                    ],
+                }),
+                returncode=1,
+                profile_path=learning_profile_path,
+                eval_path=learning_eval_strict_path,
+                context=context,
+                cmd=learn_eval_strict_cmd,
+            ),
+            expected="learn eval strict JSON should not expose raw brief or query text",
             scope="package smoke",
         )
 

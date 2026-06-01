@@ -54,8 +54,8 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--json] [--out file] [--force]");
-  console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--json]");
+  console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
+  console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --clear --yes [--json] [--out file] [--force]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
@@ -84,6 +84,7 @@ function printHelp() {
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
+  console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -118,7 +119,7 @@ function printHelp() {
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
-  console.log("  design-ai learn --eval --from-file learning-eval.json --json");
+  console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
@@ -511,6 +512,12 @@ function printEval(payload) {
   console.log("Privacy: eval reports expose brief hashes and selected ids, not raw brief text.");
 }
 
+function applyEvalStrictExit(parsed, payload) {
+  if (parsed.strict && payload.status !== "pass") {
+    process.exitCode = 1;
+  }
+}
+
 function printInit(payload) {
   header("design-ai learn", payload.dryRun ? "Learning profile init preview" : "Learning profile init applied");
   info(`File: ${payload.file}`);
@@ -851,9 +858,11 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      applyEvalStrictExit(parsed, payload);
       return;
     }
     printEval(payload);
+    applyEvalStrictExit(parsed, payload);
     return;
   }
 
