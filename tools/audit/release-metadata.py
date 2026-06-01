@@ -1438,6 +1438,20 @@ RELEASE_LEARN_EVAL_TERM_GROUPS = (
         "design-ai learn --eval --strict",
     ),
 )
+RELEASE_LEARN_EVAL_TEMPLATE_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --eval-template` checkpoint generation",
+        "human / JSON design-ai learn --eval-template checkpoint generation",
+        "learn --eval-template checkpoint generation",
+        "learning eval template generation",
+    ),
+    (
+        "generated checkpoint strict validation",
+        "generated checkpoint strict eval",
+        "generated checkpoint strict validation",
+        "generated learn eval-template checkpoint",
+    ),
+)
 RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
     (
         "public registry brief-relevant prompt/pack learning selection",
@@ -1622,6 +1636,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn relevance smoke phrase",
     "learn usage sidecar smoke phrase",
     "learn usage report smoke phrase",
+    "learn eval-template smoke phrase",
     "learn eval checkpoint smoke phrase",
     "registry learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
@@ -1819,6 +1834,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
     ("learn usage sidecar smoke phrase", RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS),
     ("learn usage report smoke phrase", RELEASE_LEARN_USAGE_REPORT_TERM_GROUPS),
+    ("learn eval-template smoke phrase", RELEASE_LEARN_EVAL_TEMPLATE_TERM_GROUPS),
     ("learn eval checkpoint smoke phrase", RELEASE_LEARN_EVAL_TERM_GROUPS),
     (
         "registry learn relevance smoke phrase",
@@ -2288,6 +2304,7 @@ human / JSON `design-ai learn --stats` profile summary output plus learn stats `
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
+human / JSON `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation,
 human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
@@ -2369,6 +2386,7 @@ human / JSON `design-ai learn --stats` profile summary output과 learn stats `--
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
+human / JSON `design-ai learn --eval-template` checkpoint generation과 generated checkpoint strict validation도 확인하며,
 human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,

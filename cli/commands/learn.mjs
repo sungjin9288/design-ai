@@ -9,6 +9,7 @@ import {
   auditLearningProfile,
   applyLearningAuditFixes,
   applyLearningCurationPlan,
+  buildLearningEvalTemplate,
   buildLearningBackup,
   buildLearningContext,
   buildRedactedLearningBackup,
@@ -54,6 +55,7 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
@@ -83,6 +85,7 @@ function printHelp() {
   console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
+  console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
@@ -119,6 +122,7 @@ function printHelp() {
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
+  console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
@@ -512,6 +516,38 @@ function printEval(payload) {
   console.log("Privacy: eval reports expose brief hashes and selected ids, not raw brief text.");
 }
 
+function printEvalTemplate(payload) {
+  header("design-ai learn", "Learning eval checkpoint template");
+  info(`File: ${payload.sourceProfile.file}`);
+  info(`Profile entries: ${payload.sourceProfile.entryCount}`);
+  info(`Cases: ${payload.caseCount}`);
+  info(`Limit: ${payload.sourceProfile.limit}`);
+  if (payload.sourceProfile.category) info(`Category: ${payload.sourceProfile.category}`);
+  if (payload.sourceProfile.query) info(`Query: ${payload.sourceProfile.query}`);
+  console.log();
+
+  if (payload.cases.length === 0) {
+    console.log("No checkpoint cases generated.");
+  } else {
+    console.log("Generated cases:");
+    for (const item of payload.cases) {
+      const category = item.category ? ` / ${item.category}` : "";
+      console.log(`- ${item.id}${category}: expects ${item.expectedSelectedIds.join(", ")}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: checkpoint templates store raw brief text so they can be re-run locally. Review before sharing.");
+}
+
 function applyEvalStrictExit(parsed, payload) {
   if (parsed.strict && payload.status !== "pass") {
     process.exitCode = 1;
@@ -845,6 +881,21 @@ export async function runLearn(args) {
       return;
     }
     printUsage(payload);
+    return;
+  }
+
+  if (parsed.action === "eval-template") {
+    const payload = buildLearningEvalTemplate({
+      filePath: parsed.filePath,
+      query: parsed.query,
+      category: parsed.categorySpecified ? parsed.category : "",
+      limit: parsed.limit || 6,
+    });
+    if (parsed.json || parsed.outPath) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printEvalTemplate(payload);
     return;
   }
 

@@ -14,6 +14,7 @@ import {
   buildLearningContext,
   buildLearningUsageEvent,
   buildLearningBackup,
+  buildLearningEvalTemplate,
   buildRedactedLearningBackup,
   clearLearning,
   defaultLearningArchiveFile,
@@ -246,6 +247,13 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(evalArgs.limit, 2);
   assert.equal(evalArgs.strict, true);
   assert.equal(evalArgs.json, true);
+
+  const evalTemplateArgs = parseLearnArgs(["--eval-template", "--query", "keyboard accessibility", "--category", "accessibility", "--limit", "3", "--out", "learning-eval.json"]);
+  assert.equal(evalTemplateArgs.action, "eval-template");
+  assert.equal(evalTemplateArgs.query, "keyboard accessibility");
+  assert.equal(evalTemplateArgs.category, "accessibility");
+  assert.equal(evalTemplateArgs.limit, 3);
+  assert.equal(evalTemplateArgs.outPath, "learning-eval.json");
 });
 
 test("parseLearnArgs rejects unsupported categories and unknown options", () => {
@@ -270,12 +278,16 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /--query expects search text/,
   );
   assert.throws(
+    () => parseLearnArgs(["--stats", "--query", "brand"]),
+    /--query can only be used with --list, --export, or --eval-template/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--list", "extra"]),
     /Unexpected learn argument/,
   );
   assert.throws(
     () => parseLearnArgs(["--remember", "x", "--query", "brand"]),
-    /--query can only be used with --list or --export/,
+    /--query can only be used with --list, --export, or --eval-template/,
   );
   assert.throws(
     () => parseLearnArgs(["--export", "--explain"]),
@@ -2038,6 +2050,112 @@ test("learningEvalReport validates expected learning selection without raw brief
   const raw = JSON.stringify(payload);
   assert.ok(!raw.includes("Spec a Button component API with keyboard accessibility"));
   assert.ok(!raw.includes("keyboard accessibility"));
+}));
+
+test("buildLearningEvalTemplate generates runnable checkpoints from profile selection", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "test",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const template = buildLearningEvalTemplate({
+    filePath,
+    query: "Spec a Button component API with keyboard accessibility",
+    category: "accessibility",
+    limit: 3,
+    now: new Date("2026-05-22T00:00:04.000Z"),
+  });
+
+  assert.equal(template.version, 1);
+  assert.equal(template.sourceProfile.file, filePath);
+  assert.equal(template.sourceProfile.query, "Spec a Button component API with keyboard accessibility");
+  assert.equal(template.caseCount, 1);
+  assert.equal(template.cases[0].expectedSelectedIds[0], "learn-relevant");
+  assert.equal(template.cases[0].limit, 1);
+  assert.equal(template.cases[0].requireNoFallback, true);
+  assert.equal(template.privacy.storesRawBriefText, true);
+
+  const report = learningEvalReport({
+    filePath,
+    evalText: JSON.stringify(template),
+    source: "generated-template",
+  });
+  assert.equal(report.status, "pass");
+  assert.deepEqual(report.cases[0].selectedEntryIds, ["learn-relevant"]);
+}));
+
+test("runLearn --eval-template writes runnable checkpoint JSON without mutating profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const outPath = path.join(dir, "learning-eval.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-keyboard",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  const wroteOutput = await captureStdout(() => runLearn([
+    "--eval-template",
+    "--query",
+    "Spec a Button component API with keyboard accessibility",
+    "--category",
+    "accessibility",
+    "--file",
+    filePath,
+    "--out",
+    outPath,
+  ]));
+  assert.match(wroteOutput, /Wrote/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const template = JSON.parse(readFileSync(outPath, "utf8"));
+  assert.equal(template.caseCount, 1);
+  assert.equal(template.cases[0].expectedSelectedIds[0], "learn-keyboard");
+  assert.equal(template.privacy.storesRawBriefText, true);
+
+  const evalOutput = await captureStdout(() => runLearn([
+    "--eval",
+    "--from-file",
+    outPath,
+    "--file",
+    filePath,
+    "--strict",
+    "--json",
+  ]));
+  assert.equal(JSON.parse(evalOutput).status, "pass");
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--eval-template",
+    "--file",
+    filePath,
+  ]));
+  assert.match(humanOutput, /Learning eval checkpoint template/);
+  assert.match(humanOutput, /Privacy: checkpoint templates store raw brief text/);
 }));
 
 test("runLearn --eval reports checkpoint results in JSON and human output", () => withTempDirAsync(async (dir) => {

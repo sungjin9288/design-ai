@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 251 — Learning Eval Template Generation (v4.36.0) ✓ shipped
+
+Local learning eval checkpoints can now be bootstrapped from the active profile. `design-ai learn --eval-template` generates runnable checkpoint JSON from current entries, an optional query, category, and limit, so operators can immediately feed the output into `design-ai learn --eval --strict`.
+
+### Changed
+- Added `--eval-template` to `design-ai learn`.
+- Generated valid checkpoint JSON with `version`, source profile metadata, selection summary, cases, recommendations, and privacy metadata.
+- Supported `--query`, `--category`, `--limit`, `--json`, `--out`, and `--force`.
+- Kept the active `learning.json` read-only while allowing `--out` to write only the checkpoint artifact.
+- Added unit tests for parser behavior, generated checkpoint validity, no-mutation behavior, and generated strict eval pass.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated CLI help assertions, README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.36.0`.
+
+### Impact
+- Operators no longer need to hand-author every learning eval case before creating a deterministic local checkpoint suite.
+- Existing `learning.json`, usage sidecar, eval checkpoint, workspace readiness, and prompt/pack learning selection schemas remain compatible.
+
+### What this enables
+- Faster internal dogfood loops for local learning: capture feedback, generate checkpoint, run `learn --eval --strict`, then include it in `workspace --learning-eval --strict`.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.35.0 → 4.36.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader public-registry smoke coverage for future learning surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 250 — Public Registry Workspace Learning Eval Smoke (v4.35.0) ✓ shipped
 
 Post-publish registry smoke now covers workspace learning eval readiness from the published package path. `tools/audit/registry-smoke.py` creates a clean git workspace plus local learning profile/eval checkpoint fixtures, then runs public `npm exec --package @design-ai/cli@<version>` with `design-ai workspace --learning-eval <checkpoint.json> --strict --json`.

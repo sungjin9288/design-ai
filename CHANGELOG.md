@@ -2,6 +2,28 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.36.0 — Learning Eval Template Generation (2026-06)
+
+Added `design-ai learn --eval-template` so operators can generate runnable deterministic learning eval checkpoint JSON from the active local profile instead of hand-writing every case.
+The template generator supports optional `--query`, `--category`, `--limit`, `--json`, `--out`, and `--force`, keeps the learning profile read-only, and writes checkpoint JSON that can be passed directly to `design-ai learn --eval --from-file ... --strict --json`.
+
+Package smoke now verifies the generated checkpoint path through installed-bin and one-shot `npm exec --package <tarball>` flows, including the follow-up strict eval pass.
+README, AI Learning docs, Product Readiness, Roadmap, Session Log, CLI help assertions, and release smoke metadata now describe the new checkpoint bootstrap loop.
+
+### What this enables
+
+Operators can turn the current local learning profile into a repeatable eval suite faster, then use `learn --eval --strict` or `workspace --learning-eval --strict` as a deterministic dogfood readiness signal.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.35.0 → 4.36.0.
+
 ## v4.35.0 — Public Registry Workspace Learning Eval Smoke (2026-06)
 
 Extended the post-publish registry smoke gate so the published package path verifies `design-ai workspace --learning-eval <checkpoint.json> --strict --json` in addition to the existing workspace strict readiness success/failure checks.

@@ -40,6 +40,7 @@ const LEARN_OPTIONS = [
   "--stats",
   "--usage",
   "--eval",
+  "--eval-template",
   "--strict",
   "--curate",
   "--fix",
@@ -228,6 +229,8 @@ export function parseLearnArgs(args) {
       setAction(out, "usage");
     } else if (arg === "--eval") {
       setAction(out, "eval");
+    } else if (arg === "--eval-template") {
+      setAction(out, "eval-template");
     } else if (arg === "--curate") {
       setAction(out, "curate");
     } else if (arg === "--fix") {
@@ -327,8 +330,8 @@ export function parseLearnArgs(args) {
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
   }
-  if (out.query && !["list", "export"].includes(out.action)) {
-    throw new Error("--query can only be used with --list or --export");
+  if (out.query && !["list", "export", "eval-template"].includes(out.action)) {
+    throw new Error("--query can only be used with --list, --export, or --eval-template");
   }
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
@@ -342,8 +345,8 @@ export function parseLearnArgs(args) {
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
   }
-  if (!out.help && out.outPath && out.action !== "export" && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export");
+  if (!out.help && out.outPath && !["export", "eval-template"].includes(out.action) && !out.json) {
+    throw new Error("--out requires --json for learn actions other than --export or --eval-template");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());
@@ -2452,6 +2455,132 @@ export function learningEvalReport({
     privacy: {
       storesRawBriefText: false,
       storesBriefHash: true,
+      exposesMatchedTokens: false,
+    },
+  };
+}
+
+function learningEvalTemplateCaseId(seed, index) {
+  return `eval-${index + 1}-${shortHash(seed).slice(0, 10)}`;
+}
+
+function learningEvalTemplateCaseFromEntry(entry, index) {
+  return {
+    id: learningEvalTemplateCaseId(`${entry.id}\n${entry.category}\n${entry.text}`, index),
+    brief: entry.text,
+    category: entry.category,
+    limit: 1,
+    expectedSelectedIds: [entry.id],
+    minMatchedCount: 1,
+    requireNoFallback: true,
+  };
+}
+
+export function buildLearningEvalTemplate({
+  filePath = defaultLearningFile(),
+  query = "",
+  category = "",
+  limit = 6,
+  now = new Date(),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const normalizedCategory = category ? normalizeCategory(category) : "";
+  const maxCases = Number.isInteger(limit) && limit > 0 ? limit : 6;
+  const profileExists = existsSync(resolvedFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const audit = auditLearningProfile({ filePath: resolvedFile });
+  const cleanedQuery = cleanNoteText(query);
+  const recommendations = [];
+  let cases = [];
+  let selectionSummary = null;
+
+  if (cleanedQuery) {
+    const { selection } = selectLearningEntrySet(profile, {
+      category: normalizedCategory,
+      limit: maxCases,
+      query: cleanedQuery,
+      includeFallback: false,
+    });
+    const expectedSelectedIds = selection.selected.map((item) => item.id).filter(Boolean);
+    selectionSummary = {
+      mode: selection.mode,
+      candidateCount: selection.candidateCount,
+      matchedCount: selection.matchedCount,
+      selectedCount: expectedSelectedIds.length,
+      queryTokenCount: selection.queryTokenCount,
+      fallbackCount: selection.fallbackCount,
+    };
+    if (expectedSelectedIds.length > 0) {
+      const evalLimit = expectedSelectedIds.length;
+      cases = [
+        {
+          id: learningEvalTemplateCaseId(`${cleanedQuery}\n${normalizedCategory}`, 0),
+          brief: cleanedQuery,
+          ...(normalizedCategory ? { category: normalizedCategory } : {}),
+          limit: evalLimit,
+          expectedSelectedIds,
+          minMatchedCount: expectedSelectedIds.length,
+          requireNoFallback: true,
+        },
+      ];
+    }
+  } else {
+    const { entries, selection } = selectLearningEntrySet(profile, {
+      category: normalizedCategory,
+      limit: maxCases,
+      includeFallback: false,
+    });
+    selectionSummary = {
+      mode: selection.mode,
+      candidateCount: selection.candidateCount,
+      matchedCount: selection.matchedCount,
+      selectedCount: entries.length,
+      queryTokenCount: selection.queryTokenCount,
+      fallbackCount: selection.fallbackCount,
+    };
+    cases = entries.map((entry, index) => learningEvalTemplateCaseFromEntry(entry, index));
+  }
+
+  if (!profileExists) {
+    recommendations.push({
+      level: "warning",
+      text: "Learning profile does not exist; create entries before generating durable eval checkpoints.",
+    });
+  }
+  if (audit.summary.status !== "pass") {
+    recommendations.push({
+      level: audit.summary.failures > 0 ? "warning" : "info",
+      text: "Run `design-ai learn --audit` before using generated eval checkpoints as a gate.",
+    });
+  }
+  if (cases.length === 0) {
+    recommendations.push({
+      level: "info",
+      text: cleanedQuery
+        ? "No matching learning entries found for the query; add or adjust learning entries before saving this checkpoint."
+        : "No learning entries are available for checkpoint generation.",
+    });
+  }
+
+  return {
+    version: 1,
+    generatedAt: now.toISOString(),
+    sourceProfile: {
+      file: resolvedFile,
+      exists: profileExists,
+      entryCount: profile.entries.length,
+      auditStatus: audit.summary.status,
+      category: normalizedCategory,
+      query: cleanedQuery,
+      limit: maxCases,
+    },
+    selection: selectionSummary,
+    caseCount: cases.length,
+    cases,
+    recommendations,
+    privacy: {
+      storesRawBriefText: true,
+      storesBriefHash: false,
       exposesMatchedTokens: false,
     },
   };
