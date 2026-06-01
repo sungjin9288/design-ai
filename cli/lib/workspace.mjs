@@ -408,6 +408,12 @@ function action(level, text, command = "") {
   return command ? { level, text, command } : { level, text };
 }
 
+export function quoteShellArg(value) {
+  const text = String(value ?? "");
+  if (/^[A-Za-z0-9_@%+=:,./-]+$/u.test(text)) return text;
+  return `'${text.replace(/'/gu, "'\\''")}'`;
+}
+
 export function buildWorkspaceNextActions({ git, repository, learning, learningEval, release }) {
   const actions = [];
 
@@ -447,12 +453,12 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningE
     actions.push(action(
       "info",
       "Generate a local learning eval checkpoint before relying on personalized prompt context.",
-      `design-ai learn --eval-template --file ${learning.file} --out learning-eval.json`,
+      `design-ai learn --eval-template --file ${quoteShellArg(learning.file)} --out learning-eval.json`,
     ));
   }
 
   if (learningEval) {
-    const evalCommand = `design-ai learn --eval --from-file ${learningEval.source} --file ${learningEval.file} --strict`;
+    const evalCommand = `design-ai learn --eval --from-file ${quoteShellArg(learningEval.source)} --file ${quoteShellArg(learningEval.file)} --strict`;
     if (learningEval.error) {
       actions.push(action("fail", "Fix the local learning eval checkpoint before using workspace readiness as a gate.", evalCommand));
     } else if (learningEval.status === "fail") {

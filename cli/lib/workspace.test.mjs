@@ -15,6 +15,7 @@ import {
   hasWorkspaceStrictIssues,
   normalizeRepositoryUrl,
   parseWorkspaceArgs,
+  quoteShellArg,
 } from "./workspace.mjs";
 
 function ok(stdout = "") {
@@ -199,6 +200,16 @@ test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failu
   assert.equal(hasWorkspaceStrictIssues({ nextActions: [{ level: "fail" }] }), true);
 });
 
+test("quoteShellArg preserves safe args and quotes unsafe shell args", () => {
+  assert.equal(quoteShellArg("learning.json"), "learning.json");
+  assert.equal(quoteShellArg("/tmp/design-ai/learning.json"), "/tmp/design-ai/learning.json");
+  assert.equal(quoteShellArg(""), "''");
+  assert.equal(
+    quoteShellArg("/tmp/design ai/owner's learning.json"),
+    "'/tmp/design ai/owner'\\''s learning.json'",
+  );
+});
+
 test("collectWorkspaceReport includes optional local learning eval readiness", () => withTempDir((dir) => {
   const repoRoot = path.join(dir, "repo");
   const sourceRoot = path.join(dir, "source");
@@ -310,6 +321,79 @@ test("collectWorkspaceReport suggests learning eval-template when profile has en
   assert.equal(
     templateAction?.command,
     `design-ai learn --eval-template --file ${learningFile} --out learning-eval.json`,
+  );
+}));
+
+test("collectWorkspaceReport shell-quotes learning eval next action paths", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning profile's data.json");
+  const evalFile = path.join(dir, "learning eval checkpoint.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+
+  const gitRunner = fakeGit({
+    "rev-parse --is-inside-work-tree": ok("true\n"),
+    "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+    "branch --show-current": ok("main\n"),
+    "status --short": ok(""),
+    "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+    "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+    "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+    "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace quoted paths\n"),
+  });
+  const learningStatsProvider = ({ filePath }) => ({
+    file: filePath,
+    exists: true,
+    count: 1,
+    categoryCounts: { workflow: 1 },
+    sourceCounts: { test: 1 },
+    latestEntry: null,
+    auditSummary: { status: "pass", failures: 0, warnings: 0 },
+  });
+
+  const templateReport = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner,
+    learningStatsProvider,
+  });
+  const templateAction = templateReport.nextActions.find((item) => (item.command || "").includes("learn --eval-template"));
+  assert.equal(
+    templateAction?.command,
+    `design-ai learn --eval-template --file ${quoteShellArg(learningFile)} --out learning-eval.json`,
+  );
+
+  const evalReport = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    learningEvalPath: evalFile,
+    gitRunner,
+    learningStatsProvider,
+    learningEvalReportProvider: ({ filePath, source }) => ({
+      file: filePath,
+      source,
+      status: "pass",
+      caseCount: 1,
+      passed: 1,
+      warned: 0,
+      failed: 0,
+      profileExists: true,
+      profileEntryCount: 1,
+      auditSummary: { status: "pass", failures: 0, warnings: 0 },
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        exposesMatchedTokens: false,
+      },
+    }),
+  });
+  const evalAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --eval --from-file"));
+  assert.equal(
+    evalAction?.command,
+    `design-ai learn --eval --from-file ${quoteShellArg(evalFile)} --file ${quoteShellArg(learningFile)} --strict`,
   );
 }));
 

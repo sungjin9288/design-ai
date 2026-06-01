@@ -2,6 +2,25 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.39.0 — Workspace Learning Eval Command Path Quoting (2026-06)
+
+Made `design-ai workspace` learning eval next-action commands shell-safe when local learning profile or checkpoint paths include spaces, apostrophes, or other shell-sensitive characters.
+
+The command output still uses the existing `nextActions[].command` string shape and remains read-only; only the generated command text for learning eval-template/eval follow-up actions changes.
+
+### What this enables
+
+Operators can copy/paste workspace learning eval next actions from real local paths such as project folders with spaces without manually rewriting `--file` or `--from-file` arguments.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.38.0 → 4.39.0.
+
 ## v4.38.0 — Workspace Learning Eval Template Hints (2026-06)
 
 Added a `design-ai workspace` next-action hint that recommends `design-ai learn --eval-template --file <learning.json> --out learning-eval.json` when the selected learning profile has entries, passes audit, and no `--learning-eval` checkpoint is supplied.

@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 254 — Workspace Learning Eval Command Path Quoting (v4.39.0) ✓ shipped
+
+`design-ai workspace` now shell-quotes learning eval next-action command paths. The eval-template bootstrap hint and the checkpoint revalidation command remain copy/paste safe when the selected `learning.json` or `learning-eval.json` path includes spaces, apostrophes, or other shell-sensitive characters.
+
+### Changed
+- Added a dependency-free shell argument quoting helper for workspace next-action commands.
+- Applied quoting to `design-ai learn --eval-template --file <learning.json> --out learning-eval.json`.
+- Applied quoting to `design-ai learn --eval --from-file <checkpoint.json> --file <learning.json> --strict`.
+- Added unit coverage for safe args, empty args, spaces, apostrophes, eval-template next actions, and eval checkpoint next actions.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.39.0`.
+
+### Impact
+- Operators can copy/paste workspace learning eval next actions from realistic local project paths without manually escaping file names.
+- Existing `workspace` JSON shape, learning profile schema, eval checkpoint schema, and prompt/pack learning selection behavior remain compatible.
+
+### What this enables
+- A more reliable local dogfood loop for personal or company paths that include spaces, names, or synced folder labels.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.38.0 → 4.39.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 253 — Workspace Learning Eval Template Hints (v4.38.0) ✓ shipped
 
 `design-ai workspace` now closes the gap between a populated local learning profile and the checkpoint gate. When the selected learning profile has entries, passes audit, and no `--learning-eval` checkpoint is supplied, the readiness next actions recommend generating a runnable checkpoint with `design-ai learn --eval-template`.

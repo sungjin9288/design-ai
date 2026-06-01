@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.38.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.39.0.tgz
 """
 from __future__ import annotations
 

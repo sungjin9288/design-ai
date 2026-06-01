@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.38 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval readiness gates with workspace checkpoint bootstrap hints). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.39 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval readiness gates with shell-safe workspace checkpoint commands). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.38 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.39 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.39 — Workspace learning eval command path quoting
+
+- **v4.39 (Phase 254)** — Added shell-safe path quoting for `design-ai workspace` learning eval next-action commands so `--file` and `--from-file` paths with spaces or apostrophes remain copy/paste safe.
 
 ### v4.38 — Workspace learning eval-template hints
 
@@ -333,6 +337,7 @@ Build the leverage tool, then push coverage further.
 - **v4.36 (Phase 251)** — Added learning eval template generation: `learn --eval-template` creates runnable checkpoint JSON from the active profile so local learning gates are easier to maintain.
 - **v4.37 (Phase 252)** — Added public registry learning eval-template smoke: `registry-smoke` now verifies generated checkpoint templates and strict eval replay from the published npm package path.
 - **v4.38 (Phase 253)** — Added workspace learning eval-template hints: populated, audit-clean learning profiles now get a read-only next action for generating a local checkpoint before relying on personalized prompt context.
+- **v4.39 (Phase 254)** — Added shell-safe workspace learning eval commands: next actions quote learning profile and checkpoint paths before presenting copy/pasteable eval-template or eval commands.
 
 ## Patterns that didn't work
 
