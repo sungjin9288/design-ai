@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.24.0 — Website Improvement Handoff Bundle Verification (2026-06)
+
+Added `design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file]` so generated Website Improvement handoff bundles can be verified before target-repo handoff.
+The check validates the expected bundle file manifest, parses `summary.json`, `website-workspace.tasks.json`, and `mcp-check.json`, recomputes local MCP readiness from the bundled workspace, compares summary/MCP/task counts, and checks required Markdown anchors.
+CLI help, help JSON catalog, unit tests, package smoke, release metadata guards, README, Distribution docs, Product Readiness, Roadmap, Website Improvement docs, and Session Log now describe the bundle-check path.
+Packed-tarball package smoke verifies `design-ai site <bundle-dir> --bundle-check --strict --json` from both installed-bin and one-shot `npm exec --package <tarball>` paths after bundle generation.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can treat a handoff bundle as a portable artifact with a local integrity gate before attaching it to a Codex/Claude target-repo implementation session.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.23.0 → 4.24.0.
+
 ## v4.23.0 — Website Improvement Handoff Bundle Export (2026-06)
 
 Added `design-ai site <workspace.json|--stdin> --bundle --out <dir> [--strict] [--force]` so Website Improvement workspaces can be exported as a complete local handoff bundle before target-repo implementation.

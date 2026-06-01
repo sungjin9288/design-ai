@@ -51,6 +51,43 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 239 — Website Improvement Handoff Bundle Verification (v4.24.0) ✓ shipped
+
+Website improvement handoff bundles can now be checked as portable artifacts. `design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file]` validates the generated bundle directory before it is attached to a target-repo Codex or Claude implementation session.
+
+### Changed
+- Added `--bundle-check` for `design-ai site` as a read-only handoff bundle directory verification mode.
+- Added human and JSON bundle-check output with file counts, summary/task/MCP status, unexpected file reporting, and issue details.
+- Validates the expected bundle file manifest, JSON parseability, `summary.json` file list, task count consistency, site name consistency, `mcp-check.json` status/counts against recomputed local MCP readiness, and required Markdown anchors.
+- Kept the check deterministic and local: no external MCP calls, target repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+- Added unit coverage for parser validation, complete bundle verification, missing bundle file failure, command-specific help, and help JSON catalog usage.
+- Added packed-tarball smoke coverage for `design-ai site <bundle-dir> --bundle-check --strict --json` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated help catalog, smoke assertions, package smoke, release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.24.0`.
+
+### Impact
+- Operators can verify a handoff bundle after export and before target-repo implementation.
+- Internal pilots now have a local integrity gate for bundle portability, manifest drift, and stale MCP readiness evidence.
+
+### What this enables
+- Future bundle consumers, VS Code webviews, or target-repo automation can depend on the same bundle-check JSON contract.
+- Real MCP probes can later replace local readiness evidence while keeping bundle validation stable.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.23.0 → 4.24.0.
+
 ## Phase 238 — Website Improvement Handoff Bundle Export (v4.23.0) ✓ shipped
 
 Website improvement work can now be packaged as a complete local handoff bundle. `design-ai site <workspace.json|--stdin> --bundle --out <dir> [--strict] [--force]` writes a portable directory containing generated tasks, MCP readiness, MCP action plan, handoff report, prompt bundle, and a focused Codex implementation prompt.

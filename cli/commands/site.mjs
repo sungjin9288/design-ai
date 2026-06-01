@@ -3,6 +3,7 @@
 import {
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
+  buildSiteBundleCheckReport,
   buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
   buildSitePrompt,
@@ -10,6 +11,8 @@ import {
   buildSiteReport,
   createSampleSiteWorkspace,
   formatSiteJson,
+  formatSiteBundleCheckHuman,
+  formatSiteBundleCheckJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
@@ -29,6 +32,7 @@ function printHelp() {
   console.log("        design-ai site <workspace.json> --mcp-plan [--strict] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
+  console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]\n");
@@ -44,6 +48,8 @@ function printHelp() {
   console.log("              Generate a Markdown MCP readiness action plan without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --bundle    Write a complete local handoff bundle directory");
+  console.log("  --bundle-check");
+  console.log("              Validate a generated handoff bundle directory before target-repo handoff");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
@@ -51,7 +57,7 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --bundle-check, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
@@ -61,6 +67,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
+  console.log("  design-ai site website-handoff-bundle --bundle-check --json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
@@ -158,6 +165,27 @@ export async function runSite(args) {
   if (!parsed.target && !parsed.stdin) {
     printHelp();
     process.exitCode = 1;
+    return;
+  }
+
+  if (parsed.bundleCheck) {
+    const bundleReport = buildSiteBundleCheckReport({
+      target: parsed.target,
+    });
+    const content = `${parsed.json ? formatSiteBundleCheckJson(bundleReport) : formatSiteBundleCheckHuman(bundleReport)}\n`;
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
+    if (shouldFail(bundleReport, parsed.strict)) {
+      process.exitCode = 1;
+    }
     return;
   }
 
