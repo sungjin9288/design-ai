@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 256 — Workspace Learning Eval Freshness Guard (v4.41.0) ✓ shipped
+
+`design-ai workspace` now checks whether an included learning eval checkpoint still matches the active learning profile metadata. A checkpoint can pass its deterministic cases but still produce a readiness warning when it was generated before the profile was updated, was generated from another profile path, or records a different source entry count.
+
+### Changed
+- Added privacy-preserving `generatedAt` and sanitized `sourceProfile` metadata to `learn --eval` reports.
+- Added `learning.updatedAt` and `learningEval.freshness` to workspace JSON.
+- Added human workspace output for checkpoint generation time and freshness status.
+- Made `workspace --strict` fail on stale/mismatched learning eval checkpoint freshness warnings through the existing nextActions warning path.
+- Added a regenerate next-action command that rewrites the same checkpoint path through `design-ai learn --eval-template --force`.
+- Added unit coverage for stale checkpoint detection and source profile drift.
+- Added package-smoke fixture metadata so installed-bin and one-shot workspace strict smoke cover freshness-pass checkpoint metadata.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.41.0`.
+
+### Impact
+- Operators no longer get a clean workspace gate from an old checkpoint after adding or changing local learning entries.
+- Existing checkpoint case schema, explicit `--learning-eval` override, sibling checkpoint auto-detection, prompt/pack learning selection, and profile storage remain compatible.
+
+### What this enables
+- A more trustworthy local dogfood gate before relying on personalized prompt context for internal use or company rollout.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.40.0 → 4.41.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 255 — Workspace Learning Eval Sibling Checkpoint Discovery (v4.40.0) ✓ shipped
 
 `design-ai workspace` now automatically includes the selected learning profile's sibling `learning-eval.json` checkpoint when the operator does not pass `--learning-eval`. The eval-template next action writes to the same sibling checkpoint path, so the suggested bootstrap command and the next workspace readiness run line up without extra flags.

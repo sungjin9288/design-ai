@@ -332,6 +332,7 @@ export function collectLearningReport({
     return {
       file: stats.file || resolvedFile,
       exists: Boolean(stats.exists),
+      updatedAt: stats.updatedAt || "",
       count: Number.isInteger(stats.count) ? stats.count : 0,
       categoryCounts: stats.categoryCounts || {},
       sourceCounts: stats.sourceCounts || {},
@@ -343,6 +344,7 @@ export function collectLearningReport({
     return {
       file: resolvedFile,
       exists: existsSync(resolvedFile),
+      updatedAt: "",
       count: 0,
       categoryCounts: {},
       sourceCounts: {},
@@ -377,6 +379,8 @@ export function collectLearningEvalReport({
       passed: report.passed,
       warned: report.warned,
       failed: report.failed,
+      generatedAt: report.generatedAt || "",
+      sourceProfile: report.sourceProfile || null,
       profileExists: report.profileExists,
       profileEntryCount: report.profileEntryCount,
       auditSummary: report.auditSummary,
@@ -392,6 +396,8 @@ export function collectLearningEvalReport({
       passed: 0,
       warned: 0,
       failed: 0,
+      generatedAt: "",
+      sourceProfile: null,
       profileExists: existsSync(resolvedLearningFile),
       profileEntryCount: 0,
       auditSummary: { status: "fail", failures: 1, warnings: 0 },
@@ -417,6 +423,76 @@ export function quoteShellArg(value) {
   const text = String(value ?? "");
   if (/^[A-Za-z0-9_@%+=:,./-]+$/u.test(text)) return text;
   return `'${text.replace(/'/gu, "'\\''")}'`;
+}
+
+function parsedTimestamp(value) {
+  const time = Date.parse(String(value || ""));
+  return Number.isNaN(time) ? null : time;
+}
+
+export function assessLearningEvalFreshness({ learning, learningEval } = {}) {
+  const profileUpdatedAt = learning?.updatedAt || "";
+  const checkpointGeneratedAt = learningEval?.generatedAt || "";
+  const sourceProfile = learningEval?.sourceProfile || null;
+  const issues = [];
+
+  if (!learningEval) return null;
+
+  if (sourceProfile?.file && path.resolve(sourceProfile.file) !== path.resolve(learning?.file || "")) {
+    issues.push("source-profile-file-mismatch");
+  }
+
+  if (
+    Number.isInteger(sourceProfile?.entryCount)
+    && Number.isInteger(learning?.count)
+    && sourceProfile.entryCount !== learning.count
+  ) {
+    issues.push("source-profile-entry-count-changed");
+  }
+
+  const profileUpdatedTime = parsedTimestamp(profileUpdatedAt);
+  const checkpointGeneratedTime = parsedTimestamp(checkpointGeneratedAt);
+  if (
+    profileUpdatedTime !== null
+    && checkpointGeneratedTime !== null
+    && profileUpdatedTime > checkpointGeneratedTime
+  ) {
+    issues.push("profile-updated-after-checkpoint");
+  }
+
+  if (issues.length > 0) {
+    return {
+      status: "warn",
+      stale: true,
+      reason: issues.join(", "),
+      profileUpdatedAt,
+      checkpointGeneratedAt,
+      sourceProfileFile: sourceProfile?.file || "",
+      sourceProfileEntryCount: Number.isInteger(sourceProfile?.entryCount) ? sourceProfile.entryCount : null,
+    };
+  }
+
+  if (!checkpointGeneratedAt && !sourceProfile) {
+    return {
+      status: "unknown",
+      stale: false,
+      reason: "checkpoint metadata unavailable",
+      profileUpdatedAt,
+      checkpointGeneratedAt,
+      sourceProfileFile: "",
+      sourceProfileEntryCount: null,
+    };
+  }
+
+  return {
+    status: "pass",
+    stale: false,
+    reason: "",
+    profileUpdatedAt,
+    checkpointGeneratedAt,
+    sourceProfileFile: sourceProfile?.file || "",
+    sourceProfileEntryCount: Number.isInteger(sourceProfile?.entryCount) ? sourceProfile.entryCount : null,
+  };
 }
 
 export function buildWorkspaceNextActions({ git, repository, learning, learningEval, release }) {
@@ -464,12 +540,15 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningE
 
   if (learningEval) {
     const evalCommand = `design-ai learn --eval --from-file ${quoteShellArg(learningEval.source)} --file ${quoteShellArg(learningEval.file)} --strict`;
+    const regenerateCommand = `design-ai learn --eval-template --file ${quoteShellArg(learningEval.file)} --out ${quoteShellArg(learningEval.source)} --force`;
     if (learningEval.error) {
       actions.push(action("fail", "Fix the local learning eval checkpoint before using workspace readiness as a gate.", evalCommand));
     } else if (learningEval.status === "fail") {
       actions.push(action("fail", "Review failed local learning eval checkpoint cases before trusting prompt/pack selection.", evalCommand));
     } else if (learningEval.status === "warn") {
       actions.push(action("warn", "Review local learning eval checkpoint warnings before relying on personalized prompt context.", evalCommand));
+    } else if (learningEval.freshness?.status === "warn") {
+      actions.push(action("warn", "Regenerate the local learning eval checkpoint because the learning profile changed after it was created.", regenerateCommand));
     } else {
       actions.push(action("pass", "Learning eval checkpoints pass.", evalCommand));
     }
@@ -517,9 +596,21 @@ export function collectWorkspaceReport({
     learningEvalPath: resolvedLearningEvalPath,
     learningEvalReportProvider,
   });
+  const learningEvalWithFreshness = learningEval
+    ? {
+        ...learningEval,
+        freshness: assessLearningEvalFreshness({ learning, learningEval }),
+      }
+    : null;
   const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });
   const repository = collectRepositoryReport({ sourceRoot: resolvedSourceRoot, git });
-  const nextActions = buildWorkspaceNextActions({ git, repository, learning, learningEval, release });
+  const nextActions = buildWorkspaceNextActions({
+    git,
+    repository,
+    learning,
+    learningEval: learningEvalWithFreshness,
+    release,
+  });
 
   return {
     context: {
@@ -532,7 +623,7 @@ export function collectWorkspaceReport({
     git,
     repository,
     learning,
-    learningEval,
+    learningEval: learningEvalWithFreshness,
     release,
     nextActions,
   };

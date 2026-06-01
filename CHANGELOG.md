@@ -2,6 +2,25 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.41.0 — Workspace Learning Eval Freshness Guard (2026-06)
+
+Made `design-ai workspace` compare learning eval checkpoint metadata against the active learning profile, so a passing checkpoint can still warn when it was generated before the profile changed.
+
+`learn --eval` now returns privacy-preserving checkpoint metadata (`generatedAt` and a sanitized `sourceProfile` summary) without exposing raw checkpoint brief or query text. `workspace --strict` treats stale or profile-mismatched checkpoint metadata as a readiness warning and suggests regenerating the checkpoint with `learn --eval-template --force`.
+
+### What this enables
+
+Operators can keep using sibling `learning-eval.json` discovery while avoiding a false sense of readiness after adding, importing, curating, or otherwise changing local learning entries.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.40.0 → 4.41.0.
+
 ## v4.40.0 — Workspace Learning Eval Sibling Checkpoint Discovery (2026-06)
 
 Made `design-ai workspace` automatically include a read-only learning eval summary when a sibling `learning-eval.json` exists next to the selected learning profile.

@@ -79,6 +79,12 @@ function printWorkspaceReport(report) {
     console.log("\nLearning eval:");
     info(`Checkpoint: ${report.learningEval.source}`);
     info(`Status: ${report.learningEval.status} | cases ${report.learningEval.caseCount} (pass ${report.learningEval.passed}, warn ${report.learningEval.warned}, fail ${report.learningEval.failed})`);
+    if (report.learningEval.generatedAt) {
+      info(`Generated: ${report.learningEval.generatedAt}`);
+    }
+    if (report.learningEval.freshness) {
+      info(`Freshness: ${report.learningEval.freshness.status}${report.learningEval.freshness.reason ? ` | ${report.learningEval.freshness.reason}` : ""}`);
+    }
     info(`Privacy: brief hashes only, no raw brief text`);
     if (report.learningEval.error) warn(`Learning eval error: ${report.learningEval.error}`);
   }

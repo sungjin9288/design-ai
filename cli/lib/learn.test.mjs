@@ -2009,6 +2009,16 @@ test("learningEvalReport validates expected learning selection without raw brief
 
   const evalText = JSON.stringify({
     version: 1,
+    generatedAt: "2026-05-22T00:00:04.000Z",
+    sourceProfile: {
+      file: filePath,
+      exists: true,
+      entryCount: 2,
+      auditStatus: "pass",
+      category: "accessibility",
+      query: "Spec a Button component API with keyboard accessibility",
+      limit: 6,
+    },
     cases: [
       {
         id: "button-accessibility",
@@ -2040,6 +2050,11 @@ test("learningEvalReport validates expected learning selection without raw brief
   assert.equal(payload.caseCount, 2);
   assert.equal(payload.passed, 1);
   assert.equal(payload.failed, 1);
+  assert.equal(payload.generatedAt, "2026-05-22T00:00:04.000Z");
+  assert.equal(payload.sourceProfile.file, filePath);
+  assert.equal(payload.sourceProfile.entryCount, 2);
+  assert.equal(payload.sourceProfile.queryPresent, true);
+  assert.equal(payload.sourceProfile.query, undefined);
   assert.equal(payload.cases[0].status, "pass");
   assert.deepEqual(payload.cases[0].selectedEntryIds, ["learn-relevant"]);
   assert.equal(payload.cases[0].briefHash.length, 16);

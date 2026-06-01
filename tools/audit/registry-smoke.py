@@ -2362,6 +2362,16 @@ def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -
         json.dumps(
             {
                 "version": 1,
+                "generatedAt": "2026-05-22T00:00:03.000Z",
+                "sourceProfile": {
+                    "file": str(profile_path),
+                    "exists": True,
+                    "entryCount": 1,
+                    "auditStatus": "pass",
+                    "category": "",
+                    "query": "",
+                    "limit": 6,
+                },
                 "cases": [
                     {
                         "id": "workspace-keyboard-selection",
@@ -4235,6 +4245,16 @@ def run_self_test() -> None:
             "passed": 1,
             "warned": 0,
             "failed": 0,
+            "generatedAt": "2026-05-22T00:00:02.000Z",
+            "sourceProfile": {
+                "file": "/tmp/learning.json",
+                "exists": True,
+                "entryCount": 1,
+                "auditStatus": "pass",
+                "category": "",
+                "queryPresent": False,
+                "limit": 6,
+            },
             "profileExists": True,
             "profileEntryCount": 1,
             "auditSummary": {
@@ -4248,6 +4268,15 @@ def run_self_test() -> None:
                 "exposesMatchedTokens": False,
             },
             "error": "",
+            "freshness": {
+                "status": "pass",
+                "stale": False,
+                "reason": "",
+                "profileUpdatedAt": "",
+                "checkpointGeneratedAt": "2026-05-22T00:00:02.000Z",
+                "sourceProfileFile": "/tmp/learning.json",
+                "sourceProfileEntryCount": 1,
+            },
         }
         assert_workspace_strict_success_json(
             json.dumps(workspace_learning_eval_payload),

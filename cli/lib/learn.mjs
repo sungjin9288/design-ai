@@ -2194,7 +2194,39 @@ function parseLearningEvalPayload(evalText, source = "input") {
   return {
     source,
     version: Number.isInteger(payload.version) ? payload.version : 1,
+    generatedAt: safeIsoString(payload.generatedAt),
+    sourceProfile: summarizeLearningEvalSourceProfile(payload.sourceProfile),
     cases: payload.cases,
+  };
+}
+
+function safeIsoString(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return Number.isNaN(Date.parse(text)) ? "" : text;
+}
+
+function nullableBoolean(value) {
+  return typeof value === "boolean" ? value : null;
+}
+
+function nullableNonNegativeInteger(value) {
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function summarizeLearningEvalSourceProfile(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  return {
+    file: String(value.file || "").trim(),
+    exists: nullableBoolean(value.exists),
+    entryCount: nullableNonNegativeInteger(value.entryCount),
+    auditStatus: ["pass", "warn", "fail"].includes(String(value.auditStatus || ""))
+      ? String(value.auditStatus)
+      : "",
+    category: value.category ? normalizeCategory(value.category) : "",
+    queryPresent: Boolean(cleanNoteText(value.query)),
+    limit: nullableNonNegativeInteger(value.limit),
   };
 }
 
@@ -2442,6 +2474,8 @@ export function learningEvalReport({
     profileExists,
     profileEntryCount: profile.entries.length,
     checkpointVersion: checkpoint.version,
+    generatedAt: checkpoint.generatedAt,
+    sourceProfile: checkpoint.sourceProfile,
     defaultLimit,
     defaultCategory,
     status: failed > 0 ? "fail" : warned > 0 ? "warn" : "pass",

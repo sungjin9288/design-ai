@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 
 import { runWorkspace } from "../commands/workspace.mjs";
 import {
+  assessLearningEvalFreshness,
   collectGitReport,
   collectRepositoryReport,
   collectWorkspaceReport,
@@ -460,6 +461,103 @@ test("collectWorkspaceReport auto-detects sibling learning eval checkpoint", () 
   assert.equal(report.nextActions.some((item) => (item.command || "").includes("learn --eval-template")), false);
   assert.equal(report.nextActions.some((item) => item.text === "Learning eval checkpoints pass."), true);
 }));
+
+test("collectWorkspaceReport warns when learning eval checkpoint is stale", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  const evalFile = defaultLearningEvalPath(learningFile);
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(
+    learningFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-23T00:00:00.000Z",
+      entries: [
+        {
+          id: "learn-keyboard",
+          category: "accessibility",
+          text: "Prioritize keyboard accessibility details for Button component API specs",
+          source: "test",
+          createdAt: "2026-05-22T00:00:01.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+  writeFileSync(
+    evalFile,
+    JSON.stringify({
+      version: 1,
+      generatedAt: "2026-05-22T00:00:02.000Z",
+      sourceProfile: {
+        file: learningFile,
+        exists: true,
+        entryCount: 1,
+        auditStatus: "pass",
+        category: "",
+        query: "",
+        limit: 6,
+      },
+      cases: [
+        {
+          id: "button-keyboard",
+          brief: "Spec a Button component API with keyboard accessibility",
+          expectedSelectedIds: ["learn-keyboard"],
+          minMatchedCount: 1,
+          requireNoFallback: true,
+        },
+      ],
+    }),
+    "utf8",
+  );
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace eval freshness\n"),
+    }),
+  });
+
+  assert.equal(report.learningEval.status, "pass");
+  assert.equal(report.learningEval.generatedAt, "2026-05-22T00:00:02.000Z");
+  assert.equal(report.learningEval.freshness.status, "warn");
+  assert.equal(report.learningEval.freshness.stale, true);
+  assert.match(report.learningEval.freshness.reason, /profile-updated-after-checkpoint/);
+  assert.equal(report.nextActions.some((item) => item.level === "warn" && /Regenerate/.test(item.text)), true);
+  assert.equal(hasWorkspaceStrictIssues(report), true);
+}));
+
+test("assessLearningEvalFreshness detects source profile drift", () => {
+  const freshness = assessLearningEvalFreshness({
+    learning: {
+      file: "/tmp/current-learning.json",
+      updatedAt: "2026-05-22T00:00:02.000Z",
+      count: 2,
+    },
+    learningEval: {
+      generatedAt: "2026-05-22T00:00:03.000Z",
+      sourceProfile: {
+        file: "/tmp/old-learning.json",
+        entryCount: 1,
+      },
+    },
+  });
+
+  assert.equal(freshness.status, "warn");
+  assert.match(freshness.reason, /source-profile-file-mismatch/);
+  assert.match(freshness.reason, /source-profile-entry-count-changed/);
+});
 
 test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
   const sourceRoot = path.join(dir, "source");

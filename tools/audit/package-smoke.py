@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.40.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.41.0.tgz
 """
 from __future__ import annotations
 
@@ -1096,6 +1096,16 @@ def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -
         json.dumps(
             {
                 "version": 1,
+                "generatedAt": "2026-05-22T00:00:03.000Z",
+                "sourceProfile": {
+                    "file": str(profile_path),
+                    "exists": True,
+                    "entryCount": 1,
+                    "auditStatus": "pass",
+                    "category": "",
+                    "query": "",
+                    "limit": 6,
+                },
                 "cases": [
                     {
                         "id": "workspace-keyboard-selection",
