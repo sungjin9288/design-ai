@@ -1,5 +1,40 @@
 # Roadmap
 
+## Phase 253 — Workspace Learning Eval Template Hints (v4.38.0) ✓ shipped
+
+`design-ai workspace` now closes the gap between a populated local learning profile and the checkpoint gate. When the selected learning profile has entries, passes audit, and no `--learning-eval` checkpoint is supplied, the readiness next actions recommend generating a runnable checkpoint with `design-ai learn --eval-template`.
+
+### Changed
+- Added an info-level workspace next action for `design-ai learn --eval-template --file <learning.json> --out learning-eval.json`.
+- Kept the hint read-only and conditional: it is skipped for empty profiles, audit warnings/failures, profile errors, and runs that already include `--learning-eval`.
+- Added unit coverage for the hint and for suppressing it when an eval checkpoint is present.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.38.0`.
+
+### Impact
+- Operators can move from captured local learning entries to deterministic checkpoint validation without remembering the eval-template command manually.
+- Existing `learning.json`, usage sidecar, eval checkpoint, workspace readiness, and prompt/pack learning selection schemas remain compatible.
+
+### What this enables
+- A clearer dogfood loop: capture feedback, generate a checkpoint, run `learn --eval --strict`, then include the checkpoint in `workspace --learning-eval --strict`.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.37.0 → 4.38.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 252 — Public Registry Learning Eval Template Smoke (v4.37.0) ✓ shipped
 
 Post-publish registry smoke now covers the learning eval-template bootstrap path from the public package. `tools/audit/registry-smoke.py` runs `design-ai learn --eval-template` against a deterministic learning relevance fixture through `npm exec --package @design-ai/cli@<version>`, then feeds the generated checkpoint into `design-ai learn --eval --strict --json`.

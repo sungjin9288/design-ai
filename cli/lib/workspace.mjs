@@ -443,6 +443,12 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningE
     actions.push(action("warn", "Review local learning profile audit warnings before dogfooding prompts.", "design-ai learn --audit"));
   } else if (learning.count === 0) {
     actions.push(action("info", "Capture reviewed feedback after checks to make dogfood runs improve over time.", "design-ai check artifact.md --learn --yes"));
+  } else if (!learningEval) {
+    actions.push(action(
+      "info",
+      "Generate a local learning eval checkpoint before relying on personalized prompt context.",
+      `design-ai learn --eval-template --file ${learning.file} --out learning-eval.json`,
+    ));
   }
 
   if (learningEval) {

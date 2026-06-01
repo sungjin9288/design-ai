@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.37:
+What ships in v4.38:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -27,6 +27,7 @@ What ships in v4.37:
 - `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-eval path` to include a checkpoint summary, and add `--strict` when warning/failure readiness should fail the command.
+- When a clean learning profile has entries but no `--learning-eval` checkpoint is provided, `design-ai workspace` adds a next-action command for `design-ai learn --eval-template --file <learning.json> --out learning-eval.json`.
 - Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries and public registry `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation from the published package path.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
@@ -77,6 +78,13 @@ design-ai workspace --strict
 ```
 
 This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
+
+If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until you provide a checkpoint:
+
+```bash
+design-ai learn --eval-template --file ./learning.json --out learning-eval.json
+design-ai workspace --learning-file ./learning.json --learning-eval ./learning-eval.json --strict
+```
 
 ## Usage
 

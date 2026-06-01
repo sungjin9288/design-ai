@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.38.0 — Workspace Learning Eval Template Hints (2026-06)
+
+Added a `design-ai workspace` next-action hint that recommends `design-ai learn --eval-template --file <learning.json> --out learning-eval.json` when the selected learning profile has entries, passes audit, and no `--learning-eval` checkpoint is supplied.
+
+The hint keeps `workspace` read-only, does not create or mutate checkpoint files by itself, and disappears once a checkpoint is provided through `--learning-eval`.
+
+### What this enables
+
+Operators get a clearer local learning loop: capture feedback, generate an eval checkpoint, then run `workspace --learning-eval --strict` before trusting personalized prompt context.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.37.0 → 4.38.0.
+
 ## v4.37.0 — Public Registry Learning Eval Template Smoke (2026-06)
 
 Extended the post-publish registry smoke gate so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai learn --eval-template` checkpoint generation and then re-runs the generated checkpoint through `design-ai learn --eval --strict --json`.

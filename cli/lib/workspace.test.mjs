@@ -262,6 +262,55 @@ test("collectWorkspaceReport includes optional local learning eval readiness", (
   assert.equal(report.learningEval.caseCount, 1);
   assert.equal(report.learningEval.privacy.storesRawBriefText, false);
   assert.equal(report.nextActions.some((item) => item.text === "Learning eval checkpoints pass."), true);
+  assert.equal(report.nextActions.some((item) => (item.command || "").includes("learn --eval-template")), false);
+}));
+
+test("collectWorkspaceReport suggests learning eval-template when profile has entries but no checkpoint", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace eval-template hint\n"),
+    }),
+    learningStatsProvider: ({ filePath }) => ({
+      file: filePath,
+      exists: true,
+      count: 1,
+      categoryCounts: { accessibility: 1 },
+      sourceCounts: { test: 1 },
+      latestEntry: {
+        id: "learn-keyboard",
+        category: "accessibility",
+        source: "test",
+        createdAt: "2026-05-27T00:00:00.000Z",
+        textPreview: "Prioritize keyboard accessibility",
+      },
+      auditSummary: { status: "pass", failures: 0, warnings: 0 },
+    }),
+  });
+
+  assert.equal(report.learningEval, null);
+  const templateAction = report.nextActions.find((item) => (item.command || "").includes("learn --eval-template"));
+  assert.equal(templateAction?.level, "info");
+  assert.match(templateAction?.text || "", /Generate a local learning eval checkpoint/);
+  assert.equal(
+    templateAction?.command,
+    `design-ai learn --eval-template --file ${learningFile} --out learning-eval.json`,
+  );
 }));
 
 test("collectRepositoryReport normalizes remote forms and reports metadata drift", () => withTempDir((dir) => {
