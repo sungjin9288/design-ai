@@ -2,6 +2,30 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.31.0 — Local Learning Usage Report (2026-06)
+
+Added `design-ai learn --usage` so operators can inspect the local `learning.usage.json` sidecar without changing the learning profile.
+The report summarizes event counts, command / route / category distribution, selected learning entry usage, unused active entries, stale selected ids, recent events, and privacy metadata in both human and JSON output.
+`--usage-file` lets package smoke and local operators point the report at a specific sidecar while the default still follows the existing `DESIGN_AI_LEARNING_USAGE_FILE` / sibling-file behavior.
+
+Package smoke now verifies the usage report in human, JSON, and safe `--out` file-write paths for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the read-only usage report.
+
+### What this enables
+
+Operators can identify which local learning entries are active, unused, or referenced by stale usage events without adding telemetry, embeddings, model calls, fine-tuning, or raw brief storage.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.30.0 → 4.31.0.
+
 ## v4.30.0 — Local Learning Usage Sidecar (2026-06)
 
 Added local usage sidecar recording for `prompt --with-learning` and `pack --with-learning`.

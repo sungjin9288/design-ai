@@ -1362,6 +1362,20 @@ RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS = (
         "prompt/pack",
     ),
 )
+RELEASE_LEARN_USAGE_REPORT_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --usage` usage sidecar report",
+        "human / JSON design-ai learn --usage usage sidecar report",
+        "learn --usage usage sidecar report",
+        "learning usage report",
+    ),
+    (
+        "learn usage `--out` file-write confirmation",
+        "learn usage --out file-write confirmation",
+        "learn --usage --out",
+        "design-ai learn --usage",
+    ),
+)
 RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
     (
         "public registry brief-relevant prompt/pack learning selection",
@@ -1543,6 +1557,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "registry learn query explain smoke phrase",
     "learn relevance smoke phrase",
     "learn usage sidecar smoke phrase",
+    "learn usage report smoke phrase",
     "registry learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
     "learn audit out smoke phrase",
@@ -1730,6 +1745,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ),
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
     ("learn usage sidecar smoke phrase", RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS),
+    ("learn usage report smoke phrase", RELEASE_LEARN_USAGE_REPORT_TERM_GROUPS),
     (
         "registry learn relevance smoke phrase",
         RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS,
@@ -2195,6 +2211,7 @@ JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` f
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
+human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
@@ -2272,6 +2289,7 @@ JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` fil
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
+human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,

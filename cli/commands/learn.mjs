@@ -18,6 +18,7 @@ import {
   importLearningProfile,
   initializeLearningProfile,
   learningStats,
+  learningUsageStats,
   loadLearningProfile,
   parseLearnArgs,
   recordLearningFeedback,
@@ -51,6 +52,7 @@ function printHelp() {
   console.log("        design-ai learn --audit --fix --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
+  console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --clear --yes [--json] [--out file] [--force]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
@@ -77,16 +79,19 @@ function printHelp() {
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive learning entries");
   console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
+  console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, or export Markdown for --export");
   console.log("  --force              Overwrite an existing --out file");
   console.log("");
   console.log("Environment:");
-  console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json  Override the default profile path");
+  console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json       Override the default profile path");
+  console.log("  DESIGN_AI_LEARNING_USAGE_FILE=/path/usage.json    Override the default usage sidecar path");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai learn --init");
@@ -108,6 +113,7 @@ function printHelp() {
   console.log("  design-ai learn --curate");
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
+  console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
@@ -203,6 +209,13 @@ function formatCategoryCounts(categoryCounts) {
   return LEARNING_CATEGORIES
     .filter((category) => categoryCounts[category])
     .map((category) => `${category} ${categoryCounts[category]}`)
+    .join(", ");
+}
+
+function formatCounts(counts) {
+  return Object.entries(counts || {})
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([key, count]) => `${key} ${count}`)
     .join(", ");
 }
 
@@ -379,6 +392,76 @@ function printStats(payload) {
     console.log(`Oldest: [${payload.oldestEntry.category}] ${payload.oldestEntry.textPreview}`);
     console.log(`        ${dim(`${payload.oldestEntry.id} · ${payload.oldestEntry.createdAt}`)}`);
   }
+}
+
+function printUsage(payload) {
+  header("design-ai learn", "Local learning usage report");
+  info(`File: ${payload.file}`);
+  info(`Usage sidecar: ${payload.usageFile}`);
+  info(`Usage exists: ${payload.exists ? "yes" : "no"}`);
+  info(`Events: ${payload.eventCount}`);
+  info(`Profile entries: ${payload.profileEntryCount}`);
+  info(`Used entries: ${payload.usedEntryCount}`);
+  info(`Unused entries: ${payload.unusedEntryCount}`);
+  info(`Stale selected ids: ${payload.staleSelectedEntryCount}`);
+  info(`Updated: ${payload.updatedAt || "unknown"}`);
+
+  const commands = formatCounts(payload.commandCounts);
+  if (commands) info(`Commands: ${commands}`);
+  const routes = formatCounts(payload.routeCounts);
+  if (routes) info(`Routes: ${routes}`);
+  const categories = formatCounts(payload.categoryCounts);
+  if (categories) info(`Categories: ${categories}`);
+  console.log();
+
+  if (!payload.exists) {
+    console.log("No local learning usage sidecar exists yet.");
+    console.log("Run `design-ai prompt \"...\" --with-learning` or `design-ai pack \"...\" --with-learning` to record usage metadata.");
+    return;
+  }
+
+  if (payload.eventCount === 0) {
+    console.log("No local learning usage events are stored yet.");
+    return;
+  }
+
+  if (payload.topSelectedEntries.length > 0) {
+    console.log("Top selected entries:");
+    for (const entry of payload.topSelectedEntries) {
+      console.log(`- ${entry.id}: ${entry.usageCount} use(s) [${entry.category}] ${entry.textPreview}`);
+      if (entry.latestUsedAt) console.log(`  ${dim(`latest ${entry.latestUsedAt}`)}`);
+    }
+    console.log();
+  }
+
+  if (payload.recentEvents.length > 0) {
+    console.log("Recent events:");
+    for (const event of payload.recentEvents) {
+      const route = event.routeId || "unrouted";
+      const ids = event.selectedEntryIds.length > 0 ? event.selectedEntryIds.join(", ") : "none";
+      console.log(`- ${event.createdAt}: ${event.command} / ${route} selected ${ids}`);
+      console.log(`  ${dim(`briefHash ${event.briefHash || "none"} · matched ${event.matchedCount}/${event.candidateCount} · fallback ${event.fallbackCount}`)}`);
+    }
+    console.log();
+  }
+
+  if (payload.unusedEntryIds.length > 0) {
+    console.log(`Unused active entry ids: ${payload.unusedEntryIds.join(", ")}`);
+  }
+  if (payload.staleSelectedEntryIds.length > 0) {
+    console.log(`Stale selected entry ids: ${payload.staleSelectedEntryIds.join(", ")}`);
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: usage events store selected entry ids and a short brief hash, not raw brief text.");
 }
 
 function printInit(payload) {
@@ -694,6 +777,20 @@ export async function runLearn(args) {
       return;
     }
     printStats(payload);
+    return;
+  }
+
+  if (parsed.action === "usage") {
+    const payload = learningUsageStats({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      limit: parsed.limit || 10,
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printUsage(payload);
     return;
   }
 

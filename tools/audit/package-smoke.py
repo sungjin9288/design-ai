@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.30.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.31.0.tgz
 """
 from __future__ import annotations
 
@@ -3526,6 +3526,107 @@ def assert_learning_usage_sidecar(
         )
 
 
+def assert_learning_usage_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn usage JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should report the learning profile path",
+    )
+    require_package_smoke(
+        payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should report the usage sidecar path",
+    )
+    require_package_smoke(
+        payload.get("exists") is True,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should confirm the usage sidecar exists",
+    )
+    require_package_smoke(
+        payload.get("eventCount") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should count prompt/pack sidecar events",
+    )
+    require_package_smoke(
+        payload.get("usedEntryCount") == 1 and payload.get("unusedEntryCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should summarize used and unused profile entries",
+    )
+    command_counts = payload.get("commandCounts")
+    require_package_smoke(
+        isinstance(command_counts, dict)
+        and command_counts.get("prompt") >= 1
+        and command_counts.get("pack") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should summarize prompt and pack command counts",
+    )
+    selected_counts = payload.get("selectedEntryCounts")
+    require_package_smoke(
+        isinstance(selected_counts, dict)
+        and selected_counts.get("learn-relevant") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should count selected learning entry ids",
+    )
+    latest_event = payload.get("latestEvent")
+    require_package_smoke(
+        isinstance(latest_event, dict)
+        and isinstance(latest_event.get("briefHash"), str)
+        and "query" not in latest_event
+        and "brief" not in latest_event,
+        context=context,
+        cmd=cmd,
+        message="learn usage report should keep event details privacy-preserving",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict) and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should explicitly state that raw brief text is not stored",
+    )
+
+
+def assert_learning_usage_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Local learning usage report",
+        "Usage sidecar:",
+        "Events:",
+        "Top selected entries:",
+        "Recent events:",
+        "Privacy: usage events store selected entry ids and a short brief hash",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn usage human output missing {expected!r}",
+        )
+
+
 def assert_learning_query_json(
     raw: str,
     *,
@@ -3829,6 +3930,68 @@ def assert_learning_relevance_smoke(
         expected_commands=["prompt", "pack"],
         context=f"{context} learning usage sidecar",
         cmd=pack_cmd,
+    )
+
+    usage_human_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+    )
+    usage_human_result = run_plain(usage_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_usage_report_human(
+        usage_human_result.stdout,
+        context=f"{context} learn usage human",
+        cmd=usage_human_cmd,
+    )
+
+    usage_json_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+    )
+    usage_json_result = run_plain(usage_json_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_usage_report_json(
+        usage_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn usage JSON",
+        cmd=usage_json_cmd,
+    )
+
+    usage_out_path = profile_path.with_name(f"{profile_path.stem}-usage-out.json")
+    usage_out_path.write_text("stale usage output\n", encoding="utf-8")
+    usage_out_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+        "--out",
+        str(usage_out_path),
+        "--force",
+    )
+    usage_out_result = run_plain(usage_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        usage_out_result.stdout,
+        context=f"{context} learn usage out",
+        cmd=usage_out_cmd,
+        expected_path=str(usage_out_path),
+    )
+    assert_learning_usage_report_json(
+        usage_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn usage out file",
+        cmd=usage_out_cmd,
     )
 
 
@@ -4959,6 +5122,119 @@ def run_self_test() -> None:
             expected_commands=["prompt", "pack"],
             context=context,
             cmd=learning_relevance_cmd,
+        )
+        learning_usage_report_payload = {
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "exists": True,
+            "profileExists": True,
+            "profileFile": str(learning_profile_path),
+            "version": 1,
+            "updatedAt": "2026-06-01T00:00:01.000Z",
+            "eventCount": 2,
+            "profileEntryCount": 3,
+            "usedEntryCount": 1,
+            "unusedEntryCount": 2,
+            "staleSelectedEntryCount": 0,
+            "commandCounts": {
+                "prompt": 1,
+                "pack": 1,
+            },
+            "routeCounts": {
+                EXPECTED_ROUTE_ID: 2,
+            },
+            "categoryCounts": {
+                "all": 2,
+            },
+            "auditStatusCounts": {
+                "pass": 2,
+            },
+            "selectedEntryCounts": {
+                "learn-relevant": 2,
+            },
+            "topSelectedEntries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "source": "package-smoke",
+                    "textPreview": "Prioritize keyboard accessibility details for Button component API specs",
+                    "usageCount": 2,
+                    "latestUsedAt": "2026-06-01T00:00:01.000Z",
+                    "commands": {
+                        "prompt": 1,
+                        "pack": 1,
+                    },
+                    "routes": {
+                        EXPECTED_ROUTE_ID: 2,
+                    },
+                },
+            ],
+            "unusedEntryIds": ["learn-unrelated-newer", "learn-brand"],
+            "staleSelectedEntryIds": [],
+            "oldestEvent": {
+                **learning_relevance_payload["learningUsage"]["event"],
+                "id": "learn-use-prompt",
+                "command": "prompt",
+            },
+            "latestEvent": {
+                **learning_relevance_payload["learningUsage"]["event"],
+                "id": "learn-use-pack",
+                "command": "pack",
+                "createdAt": "2026-06-01T00:00:01.000Z",
+            },
+            "recentEvents": [
+                {
+                    **learning_relevance_payload["learningUsage"]["event"],
+                    "id": "learn-use-pack",
+                    "command": "pack",
+                    "createdAt": "2026-06-01T00:00:01.000Z",
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
+                "storesSelectedEntryIds": True,
+            },
+        }
+        learn_usage_cmd = ["design-ai", "learn", "--usage", "--file", str(learning_profile_path), "--usage-file", str(learning_usage_path), "--json"]
+        assert_learning_usage_report_json(
+            json.dumps(learning_usage_report_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_usage_cmd,
+        )
+        assert_learning_usage_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning usage report",
+                f"Usage sidecar: {learning_usage_path}",
+                "Events: 2",
+                "Top selected entries:",
+                "Recent events:",
+                "Privacy: usage events store selected entry ids and a short brief hash",
+            ]),
+            context=context,
+            cmd=learn_usage_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_report_json(
+                json.dumps({
+                    **learning_usage_report_payload,
+                    "latestEvent": {
+                        **learning_usage_report_payload["latestEvent"],
+                        "brief": EXPECTED_ROUTE_BRIEF,
+                        "briefHash": "",
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_usage_cmd,
+            ),
+            expected="learn usage report should keep event details privacy-preserving",
+            scope="package smoke",
         )
         expect_self_test_failure(
             lambda: assert_learning_usage_sidecar(

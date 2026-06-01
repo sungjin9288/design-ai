@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 246 — Local Learning Usage Report (v4.31.0) ✓ shipped
+
+Local learning usage is now inspectable without mutating the learning profile. `design-ai learn --usage` reads the active `learning.json` profile plus a sibling usage sidecar such as `learning.usage.json` and emits a deterministic report in human or JSON form.
+
+### Changed
+- Added `--usage` and `--usage-file` to `design-ai learn`.
+- Summarized usage sidecar events, command counts, route counts, category counts, audit status counts, selected entry counts, unused active entry ids, stale selected ids, and recent events.
+- Kept the report privacy-preserving by exposing selected ids and brief hashes, not raw prompt / brief text.
+- Added safe `learn --usage --json --out <file>` coverage with normal `--force` overwrite behavior.
+- Added unit tests, CLI help tests, package-smoke assertions, release metadata guard phrases, AI learning docs, README, Product Readiness, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.31.0`.
+
+### Impact
+- Operators can see whether local learning entries are actually used by `prompt` / `pack --with-learning`.
+- Existing `learning.json` schema, usage sidecar write format, prompt/pack learning injection, and cleanup flows remain compatible.
+
+### What this enables
+- Future deterministic quality checks can compare explicit feedback, check-captured issues, and actual prompt/pack usage frequency before introducing any heavier learning layer.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.30.0 → 4.31.0.
+
+### What's still ahead
+- Eval/checkpoint harnesses, semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for usage reports remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 245 — Local Learning Usage Sidecar (v4.30.0) ✓ shipped
 
 Local learning injection now leaves a local, privacy-preserving usage trail outside `learning.json`. `design-ai prompt --with-learning` and `design-ai pack --with-learning` write selection metadata into a sibling usage sidecar such as `learning.usage.json`.

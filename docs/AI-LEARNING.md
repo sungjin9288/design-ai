@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.30:
+What ships in v4.31:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -23,6 +23,7 @@ What ships in v4.30:
 - `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile.
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
+- `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--strict` when warning/failure readiness should fail the command.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
@@ -58,6 +59,7 @@ Override path:
 ```bash
 DESIGN_AI_LEARNING_FILE=/path/to/learning.json design-ai learn --list
 DESIGN_AI_LEARNING_USAGE_FILE=/path/to/learning.usage.json design-ai prompt "audit checkout UX" --with-learning
+design-ai learn --usage --file /path/to/learning.json --usage-file /path/to/learning.usage.json
 ```
 
 The profile and usage sidecar are local to the machine. They are not synced, uploaded, or sent to any provider by this CLI.
@@ -196,6 +198,16 @@ design-ai learn --stats --json
 ```
 
 Stats mode is also read-only. It is a compact overview for deciding whether to inspect, filter, or clean up the profile before using `--with-learning`.
+
+Summarize usage sidecar activity:
+
+```bash
+design-ai learn --usage
+design-ai learn --usage --json
+design-ai learn --usage --limit 5 --usage-file ./learning.usage.json
+```
+
+Usage mode is read-only. It reports event count, command/route/category distribution, entry ids selected by `prompt` and `pack`, active profile entries that have not been used yet, stale selected ids no longer present in the active profile, and recent events. It preserves the privacy boundary from the sidecar: selected entry ids and short brief hashes are shown, but raw prompt or query text is not stored or reported.
 
 Remove one saved entry:
 

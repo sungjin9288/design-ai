@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.28 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, bundle verification, checksum integrity checks, bundle fingerprint verification, bundle comparison, and target-repo handoff prompts). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.31 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning usage reports). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.28 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.31 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,18 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.31 — Local learning usage report
+
+- **v4.31 (Phase 246)** — Added `design-ai learn --usage [--usage-file path]` to summarize local prompt/pack learning sidecar activity without mutating `learning.json`. The report exposes event counts, command / route / category distribution, selected entry counts, unused active entries, stale selected ids, recent event hashes, and explicit privacy metadata. Package smoke verifies human, JSON, and `--out` report paths through installed-bin and one-shot `npm exec --package <tarball>`.
+
+### v4.30 — Local learning usage sidecar
+
+- **v4.30 (Phase 245)** — Added privacy-preserving learning usage sidecar recording for `prompt --with-learning` and `pack --with-learning`. Usage events store selected entry ids, command, route, counts, audit status, and short brief hashes in `learning.usage.json` without raw brief text. Package smoke verifies sidecar output through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### v4.29 — Local learning archive-first curation
+
+- **v4.29 (Phase 244)** — Added `design-ai learn --curate` preview/apply flow to archive duplicate and sensitive learning entries into sibling `*.archive.json` files before removing them from the active profile. Package smoke verifies curation preview/apply behavior and archive persistence through installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 ### v4.28 — Website improvement target-repo bundle handoff prompt
 
@@ -285,6 +297,7 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 228)** — Added learning feedback output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --feedback --json --out --force` confirmation, persisted feedback JSON artifacts, and the matching profile write.
 - **v4.29 (Phase 244)** — Added archive-first learning curation: `learn --curate` previews duplicate/sensitive profile cleanup and `learn --curate --yes` moves candidates to a sibling archive JSON instead of deleting them, with unit and package-smoke coverage.
 - **v4.30 (Phase 245)** — Added privacy-preserving learning usage sidecar: `prompt --with-learning` and `pack --with-learning` now record selected entry ids, command, route, counts, audit status, and short brief hashes in `learning.usage.json`, with unit and package-smoke coverage.
+- **v4.31 (Phase 246)** — Added read-only learning usage reports: `learn --usage` summarizes sidecar events, selected entry counts, unused active entries, stale selected ids, recent hashes, and privacy metadata, with unit and package-smoke coverage.
 
 ## Patterns that didn't work
 
