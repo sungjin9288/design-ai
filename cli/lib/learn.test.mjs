@@ -21,6 +21,7 @@ import {
   forgetLearning,
   importLearningProfile,
   initializeLearningProfile,
+  learningEvalReport,
   learningStats,
   learningUsageStats,
   loadLearningArchive,
@@ -237,6 +238,13 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(usageArgs.usageFilePath, path.resolve("learning.usage.json"));
   assert.equal(usageArgs.limit, 5);
   assert.equal(usageArgs.json, true);
+
+  const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--json"]);
+  assert.equal(evalArgs.action, "eval");
+  assert.equal(evalArgs.fromFile, "learning-eval.json");
+  assert.equal(evalArgs.category, "accessibility");
+  assert.equal(evalArgs.limit, 2);
+  assert.equal(evalArgs.json, true);
 });
 
 test("parseLearnArgs rejects unsupported categories and unknown options", () => {
@@ -311,6 +319,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
     /--usage-file can only be used with --usage/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--eval"]),
+    /--eval requires --from-file or --stdin/,
   );
 });
 
@@ -1953,6 +1965,132 @@ test("runLearn --usage reports sidecar summaries in JSON and human output", () =
   assert.match(humanOutput, /Events: 1/);
   assert.match(humanOutput, /Top selected entries:/);
   assert.match(humanOutput, /Privacy: usage events store selected entry ids and a short brief hash/);
+}));
+
+test("learningEvalReport validates expected learning selection without raw brief text", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "test",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const evalText = JSON.stringify({
+    version: 1,
+    cases: [
+      {
+        id: "button-accessibility",
+        routeId: "component-spec",
+        brief: "Spec a Button component API with keyboard accessibility",
+        limit: 1,
+        expectedSelectedIds: ["learn-relevant"],
+        avoidedSelectedIds: ["learn-brand"],
+        minMatchedCount: 1,
+        requireNoFallback: true,
+      },
+      {
+        id: "brand-avoidance",
+        brief: "Spec a Button component API with keyboard accessibility",
+        limit: 2,
+        avoidedSelectedIds: ["learn-relevant"],
+      },
+    ],
+  });
+
+  const payload = learningEvalReport({
+    filePath,
+    evalText,
+    source: "learning-eval.json",
+    limit: 1,
+  });
+
+  assert.equal(payload.status, "fail");
+  assert.equal(payload.caseCount, 2);
+  assert.equal(payload.passed, 1);
+  assert.equal(payload.failed, 1);
+  assert.equal(payload.cases[0].status, "pass");
+  assert.deepEqual(payload.cases[0].selectedEntryIds, ["learn-relevant"]);
+  assert.equal(payload.cases[0].briefHash.length, 16);
+  assert.equal(payload.cases[1].unexpectedAvoidedIds[0], "learn-relevant");
+  assert.equal(payload.privacy.storesRawBriefText, false);
+  assert.equal(payload.privacy.exposesMatchedTokens, false);
+
+  const raw = JSON.stringify(payload);
+  assert.ok(!raw.includes("Spec a Button component API with keyboard accessibility"));
+  assert.ok(!raw.includes("keyboard accessibility"));
+}));
+
+test("runLearn --eval reports checkpoint results in JSON and human output", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const evalFile = path.join(dir, "learning-eval.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(evalFile, JSON.stringify({
+    version: 1,
+    cases: [
+      {
+        id: "button-accessibility",
+        routeId: "component-spec",
+        brief: "Spec a Button component API with keyboard accessibility",
+        expectedSelectedIds: ["learn-relevant"],
+        minMatchedCount: 1,
+      },
+    ],
+  }), "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--eval",
+    "--from-file",
+    evalFile,
+    "--file",
+    filePath,
+    "--limit",
+    "1",
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.source, evalFile);
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.cases[0].selectedEntryIds[0], "learn-relevant");
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--eval",
+    "--from-file",
+    evalFile,
+    "--file",
+    filePath,
+    "--limit",
+    "1",
+  ]));
+  assert.match(humanOutput, /Local learning eval report/);
+  assert.match(humanOutput, /button-accessibility \/ component-spec: pass/);
+  assert.match(humanOutput, /Privacy: eval reports expose brief hashes and selected ids/);
 }));
 
 test("prompt and pack commands record --with-learning usage sidecar metadata", () => withTempDirAsync(async (dir) => {

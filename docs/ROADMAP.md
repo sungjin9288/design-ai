@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 247 — Local Learning Eval Checkpoints (v4.32.0) ✓ shipped
+
+Local learning selection is now checkpointable without mutating the learning profile. `design-ai learn --eval` reads a JSON checkpoint file or stdin and verifies expected selected ids, avoided selected ids, minimum matched counts, and fallback policy against the same brief-relevance ranking used by `prompt --with-learning` and `pack --with-learning`.
+
+### Changed
+- Added `--eval` to `design-ai learn` with `--from-file`, `--stdin`, `--category`, `--limit`, `--json`, `--out`, and `--force` support.
+- Reported per-case status, brief hashes, selected ids, matched counts, fallback state, warnings, failures, and privacy metadata.
+- Kept eval reports privacy-preserving by exposing short brief hashes and selected ids, not raw brief / query text or matched tokens.
+- Added safe `learn --eval --json --out <file>` coverage with normal `--force` overwrite behavior.
+- Added unit tests, CLI help tests, package-smoke assertions, release metadata guard phrases, AI learning docs, README, Product Readiness, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.32.0`.
+
+### Impact
+- Operators can validate that learned context still selects intended entries for known briefs before using it as a release or handoff confidence signal.
+- Existing `learning.json` schema, usage sidecar schema, prompt/pack learning injection, and cleanup flows remain compatible.
+
+### What this enables
+- Future local learning quality gates can combine explicit feedback, check-captured QA issues, usage sidecar activity, and checkpoint results without adding external AI services.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.31.0 → 4.32.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and public-registry smoke expansion for eval checkpoints remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 246 — Local Learning Usage Report (v4.31.0) ✓ shipped
 
 Local learning usage is now inspectable without mutating the learning profile. `design-ai learn --usage` reads the active `learning.json` profile plus a sibling usage sidecar such as `learning.usage.json` and emits a deterministic report in human or JSON form.

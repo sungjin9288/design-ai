@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.31 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning usage reports). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.32 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning eval checkpoints). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.31 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.32 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.32 — Local learning eval checkpoints
+
+- **v4.32 (Phase 247)** — Added `design-ai learn --eval --from-file <checkpoint.json>` and stdin support to validate deterministic learning-selection checkpoints without mutating `learning.json`. Reports expose brief hashes, selected ids, per-case status, and privacy metadata while omitting raw brief/query text and matched tokens. Package smoke verifies human, JSON, and `--out` report paths through installed-bin and one-shot `npm exec --package <tarball>`.
 
 ### v4.31 — Local learning usage report
 
@@ -298,6 +302,7 @@ Build the leverage tool, then push coverage further.
 - **v4.29 (Phase 244)** — Added archive-first learning curation: `learn --curate` previews duplicate/sensitive profile cleanup and `learn --curate --yes` moves candidates to a sibling archive JSON instead of deleting them, with unit and package-smoke coverage.
 - **v4.30 (Phase 245)** — Added privacy-preserving learning usage sidecar: `prompt --with-learning` and `pack --with-learning` now record selected entry ids, command, route, counts, audit status, and short brief hashes in `learning.usage.json`, with unit and package-smoke coverage.
 - **v4.31 (Phase 246)** — Added read-only learning usage reports: `learn --usage` summarizes sidecar events, selected entry counts, unused active entries, stale selected ids, recent hashes, and privacy metadata, with unit and package-smoke coverage.
+- **v4.32 (Phase 247)** — Added read-only learning eval checkpoints: `learn --eval` validates expected and avoided selected ids against deterministic brief-relevance selection, while reporting brief hashes instead of raw brief text.
 
 ## Patterns that didn't work
 

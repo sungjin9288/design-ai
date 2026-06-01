@@ -17,6 +17,7 @@ import {
   formatLearningJson,
   importLearningProfile,
   initializeLearningProfile,
+  learningEvalReport,
   learningStats,
   learningUsageStats,
   loadLearningProfile,
@@ -53,6 +54,8 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--json] [--out file] [--force]");
+  console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--json]");
   console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --clear --yes [--json] [--out file] [--force]\n");
   console.log("Stores local design preferences for explicit prompt personalization.");
@@ -80,6 +83,7 @@ function printHelp() {
   console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
+  console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -114,6 +118,7 @@ function printHelp() {
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
+  console.log("  design-ai learn --eval --from-file learning-eval.json --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
   console.log("  design-ai pack \"spec a pricing page\" --with-learning");
@@ -464,6 +469,48 @@ function printUsage(payload) {
   console.log("Privacy: usage events store selected entry ids and a short brief hash, not raw brief text.");
 }
 
+function printEval(payload) {
+  header("design-ai learn", "Local learning eval report");
+  info(`File: ${payload.file}`);
+  info(`Checkpoint: ${payload.source}`);
+  info(`Status: ${payload.status}`);
+  info(`Cases: ${payload.caseCount}`);
+  info(`Passed: ${payload.passed}`);
+  info(`Warned: ${payload.warned}`);
+  info(`Failed: ${payload.failed}`);
+  info(`Profile entries: ${payload.profileEntryCount}`);
+  info(`Default limit: ${payload.defaultLimit}`);
+  if (payload.defaultCategory) info(`Default category: ${payload.defaultCategory}`);
+  console.log();
+
+  for (const item of payload.cases) {
+    const route = item.routeId ? ` / ${item.routeId}` : "";
+    const category = item.category ? ` / ${item.category}` : "";
+    console.log(`- ${item.id}${route}${category}: ${item.status}`);
+    console.log(`  ${dim(`briefHash ${item.briefHash} · matched ${item.matchedCount}/${item.candidateCount} · selected ${item.selectedEntryIds.join(", ") || "none"} · fallback ${item.fallbackCount}`)}`);
+    if (item.missingExpectedIds.length > 0) {
+      console.log(`  missing expected: ${item.missingExpectedIds.join(", ")}`);
+    }
+    if (item.unexpectedAvoidedIds.length > 0) {
+      console.log(`  avoided selected: ${item.unexpectedAvoidedIds.join(", ")}`);
+    }
+    for (const issue of item.issues) {
+      console.log(`  ${issue.level.toUpperCase()} ${issue.code}: ${issue.message}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: eval reports expose brief hashes and selected ids, not raw brief text.");
+}
+
 function printInit(payload) {
   header("design-ai learn", payload.dryRun ? "Learning profile init preview" : "Learning profile init applied");
   info(`File: ${payload.file}`);
@@ -791,6 +838,22 @@ export async function runLearn(args) {
       return;
     }
     printUsage(payload);
+    return;
+  }
+
+  if (parsed.action === "eval") {
+    const payload = learningEvalReport({
+      filePath: parsed.filePath,
+      evalText: readLearningInput(parsed),
+      source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
+      limit: parsed.limit || 12,
+      category: parsed.categorySpecified ? parsed.category : "",
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printEval(payload);
     return;
   }
 

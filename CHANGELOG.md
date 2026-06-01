@@ -2,6 +2,30 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.32.0 — Local Learning Eval Checkpoints (2026-06)
+
+Added `design-ai learn --eval` so operators can validate local learning selection against deterministic JSON checkpoint cases without changing the learning profile.
+The eval report compares expected selected ids, avoided selected ids, minimum matched counts, and fallback policy against the same brief-relevance ranking used by `prompt --with-learning` and `pack --with-learning`.
+Human and JSON reports expose brief hashes, selected ids, counts, status, and issues, but do not expose raw brief/query text or matched tokens.
+
+Package smoke now verifies `learn --eval` in human, JSON, and safe `--out` file-write paths for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the read-only eval checkpoint report.
+
+### What this enables
+
+Operators can check whether a growing local learning profile still selects the right entries for known scenarios before relying on learned context in prompt or pack generation, without embeddings, model calls, fine-tuning, telemetry, or raw brief storage.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.31.0 → 4.32.0.
+
 ## v4.31.0 — Local Learning Usage Report (2026-06)
 
 Added `design-ai learn --usage` so operators can inspect the local `learning.usage.json` sidecar without changing the learning profile.

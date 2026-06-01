@@ -39,6 +39,7 @@ const LEARN_OPTIONS = [
   "--audit",
   "--stats",
   "--usage",
+  "--eval",
   "--curate",
   "--fix",
   "--dry-run",
@@ -223,6 +224,8 @@ export function parseLearnArgs(args) {
       setAction(out, "stats");
     } else if (arg === "--usage") {
       setAction(out, "usage");
+    } else if (arg === "--eval") {
+      setAction(out, "eval");
     } else if (arg === "--curate") {
       setAction(out, "curate");
     } else if (arg === "--fix") {
@@ -276,7 +279,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "redact"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "redact", "eval"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -328,6 +331,9 @@ export function parseLearnArgs(args) {
   }
   if (out.usageFilePath && out.action !== "usage") {
     throw new Error("--usage-file can only be used with --usage");
+  }
+  if (out.action === "eval" && !out.fromFile && !out.stdin) {
+    throw new Error("--eval requires --from-file or --stdin");
   }
   if (!out.help && out.outPath && out.action !== "export" && !out.json) {
     throw new Error("--out requires --json for learn actions other than --export");
@@ -2154,6 +2160,293 @@ function usageEntrySummary(entry, usage) {
     latestUsedAt: usage?.latestUsedAt || "",
     commands: usage?.commands || {},
     routes: usage?.routes || {},
+  };
+}
+
+function parseLearningEvalPayload(evalText, source = "input") {
+  let payload = null;
+  try {
+    payload = JSON.parse(String(evalText || ""));
+  } catch {
+    throw new Error("Learning eval checkpoint is not valid JSON");
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Learning eval checkpoint must be a JSON object with a cases array");
+  }
+  if (!Array.isArray(payload.cases)) {
+    throw new Error("Learning eval checkpoint must include a cases array");
+  }
+  if (payload.cases.length === 0) {
+    throw new Error("Learning eval checkpoint has no cases");
+  }
+
+  return {
+    source,
+    version: Number.isInteger(payload.version) ? payload.version : 1,
+    cases: payload.cases,
+  };
+}
+
+function evalStringList(value, { field, caseId }) {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an array of ids`);
+  }
+  return value.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function evalPositiveInteger(value, { field, caseId, fallback }) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 1 || number > 100) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an integer from 1 to 100`);
+  }
+  return number;
+}
+
+function evalNonNegativeInteger(value, { field, caseId, fallback = 0 }) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 0 || number > 100) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an integer from 0 to 100`);
+  }
+  return number;
+}
+
+function normalizeLearningEvalCase(rawCase, index, {
+  defaultLimit = 12,
+  defaultCategory = "",
+} = {}) {
+  const caseId = String(rawCase?.id || `case-${index + 1}`).trim() || `case-${index + 1}`;
+  if (!rawCase || typeof rawCase !== "object" || Array.isArray(rawCase)) {
+    throw new Error(`Learning eval case ${caseId} must be an object`);
+  }
+
+  const brief = cleanNoteText(rawCase.brief || rawCase.query);
+  if (!brief) {
+    throw new Error(`Learning eval case ${caseId} requires a brief`);
+  }
+
+  const category = rawCase.category !== undefined
+    ? String(rawCase.category || "").trim()
+    : defaultCategory;
+
+  return {
+    id: caseId,
+    routeId: String(rawCase.routeId || "").trim(),
+    brief,
+    briefHash: shortHash(brief),
+    category: category ? normalizeCategory(category) : "",
+    limit: evalPositiveInteger(rawCase.limit, {
+      field: "limit",
+      caseId,
+      fallback: defaultLimit,
+    }),
+    expectedSelectedIds: evalStringList(
+      rawCase.expectedSelectedIds ?? rawCase.expectSelectedIds ?? rawCase.expectedEntryIds,
+      { field: "expectedSelectedIds", caseId },
+    ),
+    avoidedSelectedIds: evalStringList(
+      rawCase.avoidedSelectedIds ?? rawCase.avoidSelectedIds ?? rawCase.avoidEntryIds,
+      { field: "avoidedSelectedIds", caseId },
+    ),
+    minMatchedCount: evalNonNegativeInteger(rawCase.minMatchedCount, {
+      field: "minMatchedCount",
+      caseId,
+      fallback: 0,
+    }),
+    requireNoFallback: Boolean(rawCase.requireNoFallback),
+  };
+}
+
+function learningEvalIssue({ level = "warning", code, message }) {
+  return { level, code, message };
+}
+
+function summarizeLearningEvalIssues(issues) {
+  const failures = issues.filter((issue) => issue.level === "failure").length;
+  const warnings = issues.filter((issue) => issue.level === "warning").length;
+  return {
+    status: failures > 0 ? "fail" : warnings > 0 ? "warn" : "pass",
+    failures,
+    warnings,
+  };
+}
+
+function selectedEvalEntry(item) {
+  return {
+    id: item.id,
+    category: item.category,
+    score: item.score,
+    reason: item.reason,
+  };
+}
+
+function evaluateLearningCase(profile, rawCase, index, {
+  defaultLimit = 12,
+  defaultCategory = "",
+} = {}) {
+  const evalCase = normalizeLearningEvalCase(rawCase, index, {
+    defaultLimit,
+    defaultCategory,
+  });
+  const { selection } = selectLearningEntrySet(profile, {
+    category: evalCase.category,
+    limit: evalCase.limit,
+    query: evalCase.brief,
+    includeFallback: true,
+  });
+  const selected = Array.isArray(selection.selected) ? selection.selected : [];
+  const selectedEntryIds = selected.map((item) => item.id).filter(Boolean);
+  const selectedEntryIdSet = new Set(selectedEntryIds);
+  const profileEntryIds = new Set(profile.entries.map((entry) => entry.id).filter(Boolean));
+  const issues = [];
+
+  const missingProfileExpectedIds = evalCase.expectedSelectedIds
+    .filter((entryId) => !profileEntryIds.has(entryId));
+  const missingExpectedIds = evalCase.expectedSelectedIds
+    .filter((entryId) => !selectedEntryIdSet.has(entryId));
+  const unexpectedAvoidedIds = evalCase.avoidedSelectedIds
+    .filter((entryId) => selectedEntryIdSet.has(entryId));
+
+  for (const entryId of missingProfileExpectedIds) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "expected-entry-not-in-profile",
+      message: `Expected entry ${entryId} is not present in the active learning profile.`,
+    }));
+  }
+  if (missingExpectedIds.length > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "expected-entry-not-selected",
+      message: `Expected selected entries were missing: ${missingExpectedIds.join(", ")}.`,
+    }));
+  }
+  if (unexpectedAvoidedIds.length > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "avoided-entry-selected",
+      message: `Avoided entries were selected: ${unexpectedAvoidedIds.join(", ")}.`,
+    }));
+  }
+  if (selection.matchedCount < evalCase.minMatchedCount) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "matched-count-below-minimum",
+      message: `Matched ${selection.matchedCount} learning entries, expected at least ${evalCase.minMatchedCount}.`,
+    }));
+  }
+  if (evalCase.requireNoFallback && selection.fallbackCount > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "fallback-selected",
+      message: `Selected ${selection.fallbackCount} recency fallback entr${selection.fallbackCount === 1 ? "y" : "ies"}.`,
+    }));
+  }
+  if (
+    evalCase.expectedSelectedIds.length === 0
+    && evalCase.avoidedSelectedIds.length === 0
+    && evalCase.minMatchedCount === 0
+    && !evalCase.requireNoFallback
+  ) {
+    issues.push(learningEvalIssue({
+      code: "no-eval-assertions",
+      message: "Case has no expected ids, avoided ids, minMatchedCount, or requireNoFallback assertion.",
+    }));
+  }
+
+  const summary = summarizeLearningEvalIssues(issues);
+
+  return {
+    id: evalCase.id,
+    routeId: evalCase.routeId,
+    briefHash: evalCase.briefHash,
+    category: evalCase.category,
+    limit: evalCase.limit,
+    status: summary.status,
+    failures: summary.failures,
+    warnings: summary.warnings,
+    candidateCount: selection.candidateCount,
+    matchedCount: selection.matchedCount,
+    selectedCount: selection.selectedCount,
+    fallbackCount: selection.fallbackCount,
+    expectedSelectedIds: evalCase.expectedSelectedIds,
+    missingExpectedIds,
+    avoidedSelectedIds: evalCase.avoidedSelectedIds,
+    unexpectedAvoidedIds,
+    minMatchedCount: evalCase.minMatchedCount,
+    requireNoFallback: evalCase.requireNoFallback,
+    selectedEntryIds,
+    selected: selected.map(selectedEvalEntry),
+    issues,
+  };
+}
+
+export function learningEvalReport({
+  filePath = defaultLearningFile(),
+  evalText = "",
+  source = "input",
+  limit = 12,
+  category = "",
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const defaultLimit = Number.isInteger(limit) && limit > 0 ? limit : 12;
+  const defaultCategory = category ? normalizeCategory(category) : "";
+  const checkpoint = parseLearningEvalPayload(evalText, source);
+  const profileExists = existsSync(resolvedFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const audit = auditLearningProfile({ filePath: resolvedFile });
+  const cases = checkpoint.cases.map((rawCase, index) => evaluateLearningCase(profile, rawCase, index, {
+    defaultLimit,
+    defaultCategory,
+  }));
+  const failed = cases.filter((item) => item.status === "fail").length;
+  const warned = cases.filter((item) => item.status === "warn").length;
+  const passed = cases.filter((item) => item.status === "pass").length;
+  const recommendations = [];
+
+  if (!profileExists) {
+    recommendations.push({
+      level: "warning",
+      text: "Learning profile does not exist; initialize or import entries before relying on eval results.",
+    });
+  }
+  if (audit.summary.status !== "pass") {
+    recommendations.push({
+      level: audit.summary.failures > 0 ? "warning" : "info",
+      text: "Run `design-ai learn --audit` before using eval checkpoints as a release gate.",
+    });
+  }
+  if (failed > 0) {
+    recommendations.push({
+      level: "warning",
+      text: "Review failed eval cases before trusting prompt/pack --with-learning selection.",
+    });
+  }
+
+  return {
+    file: resolvedFile,
+    source,
+    profileExists,
+    profileEntryCount: profile.entries.length,
+    checkpointVersion: checkpoint.version,
+    defaultLimit,
+    defaultCategory,
+    status: failed > 0 ? "fail" : warned > 0 ? "warn" : "pass",
+    caseCount: cases.length,
+    passed,
+    warned,
+    failed,
+    auditSummary: audit.summary,
+    cases,
+    recommendations,
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      exposesMatchedTokens: false,
+    },
   };
 }
 
