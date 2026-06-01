@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.27.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.28.0.tgz
 """
 from __future__ import annotations
 
@@ -802,6 +802,47 @@ def assert_site_bundle_compare_json_smoke(
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-compare-identical"]:
         raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
+
+
+def assert_site_bundle_handoff_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    payload = json.loads(result.stdout)
+    if payload.get("status") != "pass" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle handoff after {context} expected pass/valid output")
+    bundle = payload.get("bundle", {})
+    if bundle.get("siteName") != "Korean SaaS marketing site":
+        raise SystemExit(f"site bundle handoff after {context} site name changed")
+    if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
+        raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    digest = bundle.get("checksumBundleDigest")
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise SystemExit(f"site bundle handoff after {context} bundle digest changed")
+    prompt = payload.get("prompt")
+    if not isinstance(prompt, str):
+        raise SystemExit(f"site bundle handoff after {context} prompt missing")
+    for fragment in (
+        "Website improvement target-repo handoff prompt",
+        "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Primary Codex Implementation Prompt",
+        "Task ID: task-accessibility",
+        "Required Final Response",
+    ):
+        if fragment not in prompt:
+            raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
+    included = {
+        item.get("path")
+        for item in payload.get("files", [])
+        if item.get("included") is True
+    }
+    if "codex-implementation.md" not in included or "website-handoff.md" not in included:
+        raise SystemExit(f"site bundle handoff after {context} included files changed: {sorted(included)!r}")
 
 
 def assert_workspace_strict_success_smoke(
@@ -4895,6 +4936,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-compare JSON",
         )
+        assert_site_bundle_handoff_json_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff JSON",
+        )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
             cwd=install_root,
@@ -5604,6 +5651,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-compare JSON",
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff JSON",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),

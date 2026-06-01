@@ -15,6 +15,7 @@ import {
   buildSiteHandoffBundle,
   buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
+  buildSiteBundleHandoffReport,
   buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
@@ -24,6 +25,8 @@ import {
   formatSiteBundleCompareHuman,
   formatSiteBundleCompareJson,
   formatSiteJson,
+  formatSiteBundleHandoffHuman,
+  formatSiteBundleHandoffJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
@@ -70,6 +73,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     bundle: false,
     bundleCheck: false,
     bundleCompareTarget: "",
+    bundleHandoff: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -92,6 +96,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     bundle: false,
     bundleCheck: false,
     bundleCompareTarget: "",
+    bundleHandoff: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -118,6 +123,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-check", "--json"]).bundleCheck, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-compare", "handoff-bundle.previous", "--json"]).bundleCompareTarget, "handoff-bundle.previous");
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-handoff", "--json"]).bundleHandoff, true);
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
@@ -131,6 +137,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--prompt-list", "--mcp-plan"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-check"]), /Use --prompt-list without --sample/);
+  assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-handoff"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--strict"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--tasks"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--report"]), /Use --mcp-check without --sample/);
@@ -149,6 +156,11 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-compare"]), /--bundle-compare requires a second handoff bundle directory path/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-compare", "other-bundle", "--bundle-check"]), /Use --bundle-compare without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-compare", "other-bundle"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--bundle-handoff"]), /Use --bundle-handoff with a handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["--bundle-handoff"]), /--bundle-handoff requires a handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--bundle-check"]), /Use --bundle-check without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--report"]), /Use --bundle-handoff without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-handoff"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, or --prompt/);
   assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
@@ -440,6 +452,42 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
   assert.match(formatSiteBundleCompareHuman(changed), /Changed files: [1-9]/);
 }));
 
+test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bundle", () => withTempDir((dir) => {
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
+  const bundle = buildSiteHandoffBundle(workspace, summary);
+  for (const file of bundle.files) {
+    writeFileSync(path.join(dir, file.path), file.content, "utf8");
+  }
+
+  const report = buildSiteBundleHandoffReport({ target: dir });
+  const json = JSON.parse(formatSiteBundleHandoffJson(report));
+  const human = formatSiteBundleHandoffHuman(report);
+
+  assert.equal(report.status, "pass");
+  assert.equal(report.valid, true);
+  assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
+  assert.match(report.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
+  assert.equal(report.bundle.verifiedChecksumFiles, 7);
+  assert.equal(report.files.find((file) => file.path === "codex-implementation.md").included, true);
+  assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
+  assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
+  assert.match(report.prompt, /SHA-256 bundle digest: [a-f0-9]{64}/);
+  assert.match(report.prompt, /# Codex implementation prompt/);
+  assert.match(report.prompt, /Task ID: task-accessibility/);
+  assert.match(report.prompt, /Required Final Response/);
+  assert.equal(json.status, "pass");
+  assert.match(json.prompt, /Primary Codex Implementation Prompt/);
+  assert.match(human, /Bundle Gate/);
+
+  writeFileSync(path.join(dir, "codex-implementation.md"), "tampered\n", "utf8");
+  const tampered = buildSiteBundleHandoffReport({ target: dir });
+  assert.equal(tampered.status, "fail");
+  assert.equal(tampered.valid, false);
+  assert.match(tampered.prompt, /did not fully pass local bundle-check validation/);
+  assert.ok(tampered.issues.some((issue) => issue.id === "bundle-checksum-codex-implementation.md"));
+}));
+
 test("runSite prints and writes MCP readiness check output", async () => {
   await withTempDir(async (dir) => {
     const file = path.join(dir, "workspace.json");
@@ -702,6 +750,21 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleCompareWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-compare", bundleDir, "--json", "--out", bundleCompareFile]));
     assert.match(bundleCompareWriteOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(bundleCompareFile, "utf8")).digestMatch, true);
+
+    const bundleHandoffOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff"]));
+    assert.match(bundleHandoffOutput.stdout, /Website improvement target-repo handoff prompt/);
+    assert.match(bundleHandoffOutput.stdout, /Task ID: task-accessibility/);
+
+    const bundleHandoffJsonOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--json"]));
+    const bundleHandoffPayload = JSON.parse(bundleHandoffJsonOutput.stdout);
+    assert.equal(bundleHandoffPayload.status, "pass");
+    assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
+    assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
+
+    const bundleHandoffFile = path.join(dir, "out", "target-repo-handoff.md");
+    const bundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--out", bundleHandoffFile]));
+    assert.match(bundleHandoffWriteOutput.stdout, /Wrote /);
+    assert.match(readFileSync(bundleHandoffFile, "utf8"), /Website improvement target-repo handoff prompt/);
   });
 });
 
@@ -779,6 +842,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-handoff \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
@@ -788,6 +852,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory/);
   assert.match(output.stdout, /--bundle-check\s+Validate a generated handoff bundle directory/);
   assert.match(output.stdout, /--bundle-compare dir\s+Compare two generated handoff bundles/);
+  assert.match(output.stdout, /--bundle-handoff\s+Generate a target-repo Codex handoff prompt/);
   assert.match(output.stdout, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(output.stdout, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(output.stdout, /--prompt id Generate one Markdown prompt template/);

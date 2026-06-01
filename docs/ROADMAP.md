@@ -51,6 +51,38 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 243 — Website Improvement Target-Repo Bundle Handoff Prompt (v4.28.0) ✓ shipped
+
+Verified Website Improvement handoff bundles can now be converted into target-repo implementation prompts. `design-ai site <bundle-dir> --bundle-handoff [--strict] [--json]` reuses bundle-check validation, carries the SHA-256 bundle digest, embeds the top-priority Codex implementation prompt, and adds target-repo operating rules plus final response requirements.
+
+### Changed
+- Added `--bundle-handoff` for `design-ai site`.
+- Added human Markdown prompt output and JSON output with `status`, `valid`, `bundle`, `prompt`, `files`, and `issues`.
+- Reused bundle-check validation so strict mode fails on bundle warnings or failures before target-repo handoff.
+- Added unit/help coverage for parser validation, verified prompt generation, tampered bundle handling, JSON output, and output-file writing.
+- Extended packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.28.0`.
+
+### Impact
+- Operators can paste one verified prompt into the target website repo instead of manually stitching together `summary.json`, `website-handoff.md`, `mcp-action-plan.md`, and `codex-implementation.md`.
+- The prompt preserves the design-ai boundary: no external MCP calls and no target repo mutation happen inside design-ai.
+
+### What this enables
+- Future target-repo automation can consume one handoff JSON contract after bundle approval and before implementation.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.27.0 → 4.28.0.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+
 ## Phase 242 — Website Improvement Handoff Bundle Compare (v4.27.0) ✓ shipped
 
 Website improvement handoff bundles can now be compared as deterministic local artifacts. `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> [--strict] [--json]` validates both bundles with bundle-check, compares bundle digest identity, lists checksum-level file changes, and reports summary metadata drift before target-repo handoff.

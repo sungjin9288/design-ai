@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.27 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, bundle verification, checksum integrity checks, bundle fingerprint verification, and bundle comparison). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.28 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, bundle verification, checksum integrity checks, bundle fingerprint verification, bundle comparison, and target-repo handoff prompts). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.27 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.28 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.28 — Website improvement target-repo bundle handoff prompt
+
+- **v4.28 (Phase 243)** — Added `design-ai site <bundle-dir> --bundle-handoff [--strict] [--json]` to turn a verified Website Improvement handoff bundle into a target-repo Codex prompt with bundle-check status, SHA-256 bundle digest, implementation prompt content, operating rules, supporting context, and required final response evidence. Package smoke verifies bundle-handoff JSON through installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 ### v4.27 — Website improvement handoff bundle compare
 

@@ -22,6 +22,7 @@ export const SITE_OPTIONS = [
   "--bundle",
   "--bundle-check",
   "--bundle-compare",
+  "--bundle-handoff",
   "--prompt-list",
   "--mcp-check",
   "--mcp-plan",
@@ -236,6 +237,7 @@ export function parseSiteArgs(args) {
     bundle: false,
     bundleCheck: false,
     bundleCompareTarget: "",
+    bundleHandoff: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -275,6 +277,8 @@ export function parseSiteArgs(args) {
       }
       out.bundleCompareTarget = value;
       i += 1;
+    } else if (arg === "--bundle-handoff") {
+      out.bundleHandoff = true;
     } else if (arg === "--prompt-list") {
       out.promptList = true;
     } else if (arg === "--mcp-check") {
@@ -328,14 +332,14 @@ export function parseSiteArgs(args) {
   if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --sample without --report, --prompts, or --prompt");
   }
-  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
   }
-  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, or --prompt");
+  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt");
   }
-  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, or --prompt");
+  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt");
   }
   if (out.bundle && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --bundle without --sample, --tasks, --report, --prompts, or --prompt");
@@ -343,8 +347,8 @@ export function parseSiteArgs(args) {
   if (out.bundleCheck && out.stdin) {
     throw new Error("Use --bundle-check with a handoff bundle directory path, not --stdin");
   }
-  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.bundleHandoff || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --bundle-handoff, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleCompareTarget && out.stdin) {
     throw new Error("Use --bundle-compare with handoff bundle directory paths, not --stdin");
@@ -352,8 +356,17 @@ export function parseSiteArgs(args) {
   if (out.bundleCompareTarget && !out.target) {
     throw new Error("--bundle-compare requires a primary handoff bundle directory path");
   }
-  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleHandoff || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --bundle-handoff, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  }
+  if (out.bundleHandoff && out.stdin) {
+    throw new Error("Use --bundle-handoff with a handoff bundle directory path, not --stdin");
+  }
+  if (out.bundleHandoff && !out.target) {
+    throw new Error("--bundle-handoff requires a handoff bundle directory path");
+  }
+  if (out.bundleHandoff && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-handoff without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.sample && (out.tasks || out.bundle)) {
     throw new Error("Use only one generated workspace mode: --sample, --tasks, or --bundle");
@@ -379,15 +392,15 @@ export function parseSiteArgs(args) {
   if (out.bundle && !out.outPath) {
     throw new Error("--bundle requires --out directory");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --bundle, --bundle-check, or --bundle-compare");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --bundle, --bundle-check, --bundle-compare, or --bundle-handoff");
   }
   if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
-    throw new Error("--json is only supported for the site summary, --mcp-check, --bundle-check, or --bundle-compare; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
+    throw new Error("--json is only supported for the site summary, --mcp-check, --bundle-check, --bundle-compare, or --bundle-handoff; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --prompt-list, --mcp-check, or --mcp-plan");
   }
 
   const { index, ...parsed } = out;
@@ -1394,14 +1407,16 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     "## Suggested Sequence",
     "1. Read `summary.json` and `mcp-action-plan.md` first.",
     "2. Fix required MCP readiness gaps, then re-run the strict gate.",
-    "3. Use `codex-implementation.md` in the target website repo for the top-priority task.",
-    "4. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
-    "5. Paste target-repo verification results into `website-handoff.md` after implementation.",
+    "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
+    "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
+    "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
+    "6. Paste target-repo verification results into `website-handoff.md` after implementation.",
     "",
     "## Regenerate",
     `- \`design-ai site ${commandTarget} --bundle --out website-handoff-bundle --force\``,
     `- \`design-ai site ${commandTarget} --mcp-check --strict --json\``,
     `- \`design-ai site website-handoff-bundle --bundle-check --strict --json\``,
+    `- \`design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md\``,
     "",
     "## Checksum Verification",
     "- `summary.json` records SHA-256 checksums for every generated bundle file except `summary.json` itself.",
@@ -1948,6 +1963,128 @@ export function formatSiteBundleCompareHuman(report) {
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
   ].join("\n");
+}
+
+function readBundleTextIfPresent(directory, relativePath) {
+  const targetPath = path.join(directory, relativePath);
+  if (!existsSync(targetPath) || !statSync(targetPath).isFile()) return "";
+  return readFileSync(targetPath, "utf8").trim();
+}
+
+function formatBundleHandoffIssueLines(issues) {
+  const actionable = issues.filter((issue) => issue.level !== "pass");
+  if (actionable.length === 0) return "- No blocking bundle-check issues were found.";
+  return actionable.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`).join("\n");
+}
+
+function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
+  const bundleDigest = checkReport.summary.checksumBundleDigest || "not recorded";
+  const checksumStatus = `${checkReport.counts.verifiedChecksumFiles}/${checkReport.counts.expectedChecksumFiles} verified`;
+  const bundleReadinessLine = checkReport.status === "pass"
+    ? "The bundle passed local bundle-check validation. Proceed in the target website repo after confirming the repo path."
+    : "The bundle did not fully pass local bundle-check validation. Resolve the listed bundle issues before treating this as implementation authority.";
+  return [
+    "# Website improvement target-repo handoff prompt",
+    "",
+    "You are Codex working in the target website repository, not in the design-ai repository.",
+    "Use this verified Website Improvement handoff bundle as read-only planning evidence. Do not modify the design-ai repo while executing this prompt.",
+    "",
+    "## Verified Bundle",
+    `- Bundle directory: ${checkReport.directory}`,
+    `- Site: ${checkReport.summary.siteName || "unknown"}`,
+    `- Source workspace: ${checkReport.summary.source || "unknown"}`,
+    `- Bundle status: ${checkReport.status}`,
+    `- Workspace status: ${checkReport.workspaceStatus}`,
+    `- MCP status: ${checkReport.mcpStatus}`,
+    `- Tasks: ${checkReport.summary.totalTasks}`,
+    `- SHA-256 bundle digest: ${bundleDigest}`,
+    `- Checksums: ${checksumStatus}`,
+    "",
+    "## Bundle Gate",
+    bundleReadinessLine,
+    formatBundleHandoffIssueLines(checkReport.issues),
+    "",
+    "## Operating Rules",
+    "1. Confirm the current working directory is the target website repo before editing files.",
+    "2. Inspect the target repo architecture, existing components, design tokens, routing, styling, and test scripts before implementation.",
+    "3. Reuse existing UI/system patterns and keep the change scoped to the selected improvement task.",
+    "4. Do not add production dependencies unless the target repo clearly requires them and the tradeoff is documented.",
+    "5. Preserve WCAG 2.1 AA expectations: visible focus, keyboard reachability, semantic structure, and text contrast.",
+    "6. Verify desktop, tablet, and mobile behavior plus target repo lint/typecheck/build commands when available.",
+    "7. Keep the handoff bundle files read-only; record implementation evidence in the target repo final response or report.",
+    "",
+    "## Primary Codex Implementation Prompt",
+    bundleTexts.codexImplementation || "_codex-implementation.md was not readable from the bundle._",
+    "",
+    "## Additional Bundle Context",
+    "Use these files only as supporting evidence:",
+    "- `website-handoff.md`: audit summary, priority recommendations, and remaining risk context.",
+    "- `mcp-action-plan.md`: MCP readiness gaps and operator sequence.",
+    "- `website-prompts.md`: alternate Codex/Claude review, QA, deployment, research, and copy prompts.",
+    "- `summary.json`: bundle manifest, source workspace, task count, and checksum digest.",
+    "",
+    "### Handoff Report Snapshot",
+    bundleTexts.websiteHandoff || "_website-handoff.md was not readable from the bundle._",
+    "",
+    "## Required Final Response",
+    "Return a concise implementation report with:",
+    "- Files changed in the target repo",
+    "- The specific website improvement task completed",
+    "- Verification commands and browser/viewport checks performed",
+    "- Remaining risks or follow-up work",
+    `- Bundle digest used for handoff: ${bundleDigest}`,
+  ].join("\n");
+}
+
+export function buildSiteBundleHandoffReport({
+  target,
+  cwd = process.cwd(),
+} = {}) {
+  const checkReport = buildSiteBundleCheckReport({ target, cwd });
+  const includedFilePaths = [
+    "summary.json",
+    "mcp-action-plan.md",
+    "website-handoff.md",
+    "website-prompts.md",
+    "codex-implementation.md",
+  ];
+  const bundleTexts = {
+    codexImplementation: readBundleTextIfPresent(checkReport.directory, "codex-implementation.md"),
+    websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
+  };
+  const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
+  return {
+    status: checkReport.status,
+    valid: checkReport.valid,
+    directory: checkReport.directory,
+    bundle: {
+      directory: checkReport.directory,
+      siteName: checkReport.summary.siteName || "",
+      source: checkReport.summary.source || "",
+      workspaceStatus: checkReport.workspaceStatus || "unknown",
+      mcpStatus: checkReport.mcpStatus || "unknown",
+      totalTasks: checkReport.summary.totalTasks || 0,
+      checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",
+      checksumBundleDigest: checkReport.summary.checksumBundleDigest || "",
+      expectedChecksumFiles: checkReport.counts.expectedChecksumFiles,
+      verifiedChecksumFiles: checkReport.counts.verifiedChecksumFiles,
+      checksumFailures: checkReport.counts.checksumFailures,
+    },
+    prompt,
+    files: checkReport.files.map((file) => ({
+      ...file,
+      included: includedFilePaths.includes(file.path),
+    })),
+    issues: checkReport.issues,
+  };
+}
+
+export function formatSiteBundleHandoffJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteBundleHandoffHuman(report) {
+  return report.prompt;
 }
 
 function markdownList(items, fallback) {

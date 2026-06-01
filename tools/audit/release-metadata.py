@@ -309,6 +309,33 @@ RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_BUNDLE_HANDOFF_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site <bundle-dir> --bundle-handoff --strict --json`",
+        "design-ai site <bundle-dir> --bundle-handoff --strict --json",
+        "site --bundle-handoff --strict --json",
+        "site --bundle-handoff",
+    ),
+    (
+        "Website Console target-repo handoff prompt",
+        "Website Improvement target-repo handoff prompt",
+        "site bundle-handoff JSON",
+        "Website Console target repo handoff prompt",
+        "Website Console 대상 repo handoff prompt",
+    ),
+    (
+        "bundle digest",
+        "verified bundle",
+        "validated handoff bundle",
+        "검증된 handoff bundle",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --tasks`",
@@ -1398,6 +1425,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site bundle package smoke phrase",
     "site bundle-check package smoke phrase",
     "site bundle-compare package smoke phrase",
+    "site bundle-handoff package smoke phrase",
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
@@ -1558,6 +1586,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site bundle-compare package smoke phrase",
         RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site bundle-handoff package smoke phrase",
+        RELEASE_SITE_BUNDLE_HANDOFF_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site tasks package smoke phrase",
@@ -2112,6 +2144,7 @@ including `design-ai workspace --strict --json` workspace strict failure/success
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification and bundle digest fingerprint verification,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
+`design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console target-repo handoff prompt from a verified bundle digest,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2188,6 +2221,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증과 bundle digest 검증도 확인하고,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
+`design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console 대상 repo handoff prompt와 검증된 handoff bundle digest도 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,

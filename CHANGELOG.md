@@ -2,6 +2,29 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.28.0 — Website Improvement Target-Repo Bundle Handoff Prompt (2026-06)
+
+Added `design-ai site <bundle-dir> --bundle-handoff [--strict] [--json]` so operators can turn a validated Website Improvement handoff bundle into a paste-ready Codex prompt for the target website repo.
+The generated prompt carries the bundle-check status, SHA-256 bundle digest, primary `codex-implementation.md` content, supporting handoff context, operating rules, and required final response evidence while keeping design-ai read-only.
+
+Package smoke now verifies bundle-handoff JSON through both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, README, Distribution docs, Product Readiness, Website Improvement docs, Roadmap, and Session Log now describe the target-repo handoff prompt.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can move from a verified Website Improvement bundle to target-repo implementation without manually stitching together `summary.json`, `website-handoff.md`, `mcp-action-plan.md`, and `codex-implementation.md`.
+
+### Verified
+
+- All 8 audits pass.
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.27.0 → 4.28.0.
+
 ## v4.27.0 — Website Improvement Handoff Bundle Compare (2026-06)
 
 Added `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> [--strict] [--json]` so operators can compare two generated Website Improvement handoff bundles before target-repo handoff.
