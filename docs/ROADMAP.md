@@ -51,6 +51,42 @@ Driven by the dogfood findings. Wrapped in 4 commits (Batch A–D).
 - [x] `tools/audit/check-coverage.py` — coverage report. Outputs to `knowledge/COVERAGE.md` + console summary.
 - [x] CI lint that fails PRs introducing raw hex in `examples/` unless the file is an explicit palette/brand/email/chart fixture. _(Phase 50)_
 
+## Phase 240 — Website Improvement Handoff Bundle Checksum Verification (v4.25.0) ✓ shipped
+
+Website improvement handoff bundles now carry SHA-256 checksums for generated artifacts. `design-ai site --bundle --out <dir>` records the checksum manifest in `summary.json`, and `design-ai site <bundle-dir> --bundle-check [--strict] [--json]` recomputes those checksums before target-repo handoff.
+
+### Changed
+- Added `summary.json.checksums` with `algorithm: "sha256"` and digests for every generated bundle file except `summary.json`.
+- Extended bundle-check JSON/human output with expected checksum file count, verified checksum file count, and checksum failure count.
+- Added checksum mismatch failures so edited or partially transferred bundle files fail the local integrity gate.
+- Kept the verification deterministic and local: no external MCP calls, target repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+- Added unit coverage for checksum manifest shape, complete checksum verification, and tampered bundle failure.
+- Extended packed-tarball smoke assertions to verify the checksum manifest and bundle-check checksum counts in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated release metadata phrase guards, README, Distribution docs, Product Readiness, Website Improvement docs, Changelog, Roadmap, and Session Log.
+- Updated package/plugin metadata to `4.25.0`.
+
+### Impact
+- Operators can detect handoff bundle drift after copying, attaching, archiving, or editing generated artifacts.
+- Internal pilots get a stronger local integrity gate before using a bundle in a Codex or Claude target-repo implementation session.
+
+### What this enables
+- Future target-repo automation can trust bundle-check JSON to include both structural validity and artifact integrity.
+- Hosted or VS Code consumers can reuse the same checksum contract when bundles move between storage surfaces.
+
+### What's still ahead
+- Real MCP connection probes, target-repo automation, Lighthouse/axe/visual diff, hosted multi-user storage, and public registry smoke expansion remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
+### Verified
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.24.0 → 4.25.0.
+
 ## Phase 239 — Website Improvement Handoff Bundle Verification (v4.24.0) ✓ shipped
 
 Website improvement handoff bundles can now be checked as portable artifacts. `design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file]` validates the generated bundle directory before it is attached to a target-repo Codex or Claude implementation session.

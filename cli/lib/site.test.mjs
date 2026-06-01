@@ -304,6 +304,19 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   assert.equal(summaryPayload.taskGeneration.totalTasks, 3);
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
   assert.deepEqual(summaryPayload.files, Object.keys(files));
+  assert.equal(summaryPayload.checksums.algorithm, "sha256");
+  assert.deepEqual(Object.keys(summaryPayload.checksums.files), [
+    "README.md",
+    "website-workspace.tasks.json",
+    "mcp-check.json",
+    "mcp-action-plan.md",
+    "website-handoff.md",
+    "website-prompts.md",
+    "codex-implementation.md",
+  ]);
+  for (const digest of Object.values(summaryPayload.checksums.files)) {
+    assert.match(digest, /^[a-f0-9]{64}$/);
+  }
 
   const tasksWorkspace = JSON.parse(files["website-workspace.tasks.json"]);
   assert.deepEqual(tasksWorkspace.refactorTasks.map((task) => task.id), [
@@ -317,6 +330,7 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   const workspace = createSampleSiteWorkspace();
   const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
   const bundle = buildSiteHandoffBundle(workspace, summary);
+  const files = Object.fromEntries(bundle.files.map((file) => [file.path, file.content]));
   for (const file of bundle.files) {
     const target = path.join(dir, file.path);
     mkdirSync(path.dirname(target), { recursive: true });
@@ -331,13 +345,27 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.valid, true);
   assert.equal(report.counts.expectedFiles, 8);
   assert.equal(report.counts.presentFiles, 8);
+  assert.equal(report.counts.expectedChecksumFiles, 7);
+  assert.equal(report.counts.verifiedChecksumFiles, 7);
+  assert.equal(report.counts.checksumFailures, 0);
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
+  assert.equal(report.summary.checksumAlgorithm, "sha256");
   assert.equal(json.issues[0].id, "bundle-ready");
   assert.match(human, /Website Improvement handoff bundle check/);
   assert.match(human, /Files: 8\/8/);
+  assert.match(human, /Checksums: 7\/7 verified/);
   assert.match(human, /bundle-ready/);
 
+  writeFileSync(path.join(dir, "codex-implementation.md"), `${readFileSync(path.join(dir, "codex-implementation.md"), "utf8")}\nTampered after export.\n`, "utf8");
+  const tamperedReport = buildSiteBundleCheckReport({ target: dir });
+  assert.equal(tamperedReport.status, "fail");
+  assert.equal(tamperedReport.valid, false);
+  assert.equal(tamperedReport.counts.verifiedChecksumFiles, 6);
+  assert.equal(tamperedReport.counts.checksumFailures, 1);
+  assert.ok(tamperedReport.issues.some((issue) => issue.id === "bundle-checksum-codex-implementation.md"));
+
+  writeFileSync(path.join(dir, "codex-implementation.md"), files["codex-implementation.md"], "utf8");
   rmSync(path.join(dir, "mcp-check.json"));
   const missingReport = buildSiteBundleCheckReport({ target: dir });
   assert.equal(missingReport.status, "fail");

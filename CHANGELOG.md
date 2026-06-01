@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.25.0 — Website Improvement Handoff Bundle Checksum Verification (2026-06)
+
+Added SHA-256 checksum manifesting to Website Improvement handoff bundles so transferred or manually edited bundle artifacts can be detected before target-repo handoff.
+`design-ai site --bundle --out <dir>` now writes `summary.json` with `checksums.algorithm: "sha256"` and digests for every generated bundle file except `summary.json` itself.
+`design-ai site <bundle-dir> --bundle-check --strict --json` recomputes those digests, reports verified checksum counts, and fails when a bundle file no longer matches the manifest.
+Package smoke now asserts checksum manifest shape and bundle-check checksum verification through both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, README, Distribution docs, Product Readiness, Website Improvement docs, Roadmap, and Session Log now describe the checksum verification boundary.
+No external MCP calls, target website repo mutation, backend storage, crawling, Lighthouse/axe automation, visual diff, embeddings, fine-tuning, or new dependencies were added.
+
+### What this enables
+
+Operators can share or archive Website Improvement handoff bundles with a deterministic local tamper/drift check before a Codex or Claude target-repo implementation session uses the bundle.
+
+### Verified
+
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- All 8 audits pass.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.24.0 → 4.25.0.
+
 ## v4.24.0 — Website Improvement Handoff Bundle Verification (2026-06)
 
 Added `design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file]` so generated Website Improvement handoff bundles can be verified before target-repo handoff.

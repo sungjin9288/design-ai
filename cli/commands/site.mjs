@@ -49,7 +49,7 @@ function printHelp() {
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --bundle    Write a complete local handoff bundle directory");
   console.log("  --bundle-check");
-  console.log("              Validate a generated handoff bundle directory before target-repo handoff");
+  console.log("              Validate a generated handoff bundle directory, including SHA-256 checksums");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");

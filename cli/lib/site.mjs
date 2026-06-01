@@ -6,6 +6,7 @@ import {
   readdirSync,
   statSync,
 } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 import { parseOutputFlags } from "./output.mjs";
@@ -151,6 +152,8 @@ export const SITE_BUNDLE_FILES = [
   "website-prompts.md",
   "codex-implementation.md",
 ];
+
+export const SITE_BUNDLE_CHECKSUM_FILES = SITE_BUNDLE_FILES.filter((filePath) => filePath !== "summary.json");
 
 export const SITE_PROMPT_TEMPLATES = [
   {
@@ -1380,11 +1383,31 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     "## Regenerate",
     `- \`design-ai site ${commandTarget} --bundle --out website-handoff-bundle --force\``,
     `- \`design-ai site ${commandTarget} --mcp-check --strict --json\``,
+    `- \`design-ai site website-handoff-bundle --bundle-check --strict --json\``,
+    "",
+    "## Checksum Verification",
+    "- `summary.json` records SHA-256 checksums for every generated bundle file except `summary.json` itself.",
+    "- `design-ai site <bundle-dir> --bundle-check --strict --json` recomputes those checksums so transferred or manually edited bundles fail before target-repo handoff.",
     "",
     "## Boundaries",
     "- This bundle is deterministic and local.",
     "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
   ].join("\n");
+}
+
+function sha256Hex(content) {
+  return createHash("sha256").update(content, "utf8").digest("hex");
+}
+
+function buildBundleChecksums(files) {
+  return {
+    algorithm: "sha256",
+    files: Object.fromEntries(
+      files
+        .filter((file) => file.path !== "summary.json")
+        .map((file) => [file.path, sha256Hex(file.content)]),
+    ),
+  };
 }
 
 export function buildSiteHandoffBundle(workspace, summary = {}) {
@@ -1427,42 +1450,48 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
     ],
   };
 
+  const contentFiles = [
+    {
+      path: "README.md",
+      content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, filePaths)}\n`,
+    },
+    {
+      path: "website-workspace.tasks.json",
+      content: `${JSON.stringify(taskWorkspace, null, 2)}\n`,
+    },
+    {
+      path: "mcp-check.json",
+      content: `${formatSiteMcpCheckJson(mcpReport)}\n`,
+    },
+    {
+      path: "mcp-action-plan.md",
+      content: `${buildSiteMcpActionPlan(taskWorkspace, taskSummary)}\n`,
+    },
+    {
+      path: "website-handoff.md",
+      content: `${buildSiteHandoffReport(taskWorkspace)}\n`,
+    },
+    {
+      path: "website-prompts.md",
+      content: `${buildSitePromptBundle(taskWorkspace)}\n`,
+    },
+    {
+      path: "codex-implementation.md",
+      content: `${buildSitePrompt(taskWorkspace, "codex-implementation", { taskSelector: "1" })}\n`,
+    },
+  ];
+  bundleSummary.checksums = buildBundleChecksums(contentFiles);
+
   return {
     status: mcpReport.status,
     summary: bundleSummary,
     files: [
-      {
-        path: "README.md",
-        content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, filePaths)}\n`,
-      },
+      contentFiles.find((file) => file.path === "README.md"),
       {
         path: "summary.json",
         content: `${JSON.stringify(bundleSummary, null, 2)}\n`,
       },
-      {
-        path: "website-workspace.tasks.json",
-        content: `${JSON.stringify(taskWorkspace, null, 2)}\n`,
-      },
-      {
-        path: "mcp-check.json",
-        content: `${formatSiteMcpCheckJson(mcpReport)}\n`,
-      },
-      {
-        path: "mcp-action-plan.md",
-        content: `${buildSiteMcpActionPlan(taskWorkspace, taskSummary)}\n`,
-      },
-      {
-        path: "website-handoff.md",
-        content: `${buildSiteHandoffReport(taskWorkspace)}\n`,
-      },
-      {
-        path: "website-prompts.md",
-        content: `${buildSitePromptBundle(taskWorkspace)}\n`,
-      },
-      {
-        path: "codex-implementation.md",
-        content: `${buildSitePrompt(taskWorkspace, "codex-implementation", { taskSelector: "1" })}\n`,
-      },
+      ...contentFiles.filter((file) => file.path !== "README.md"),
     ],
   };
 }
@@ -1511,6 +1540,7 @@ function summarizeBundlePayload(summaryPayload) {
   const taskGeneration = normalizeObject(summaryPayload?.taskGeneration);
   const site = normalizeObject(summaryPayload?.site);
   const mcp = normalizeObject(summaryPayload?.mcp);
+  const checksums = normalizeObject(summaryPayload?.checksums);
   return {
     source: String(summaryPayload?.source || ""),
     status: String(summaryPayload?.status || "unknown"),
@@ -1519,6 +1549,8 @@ function summarizeBundlePayload(summaryPayload) {
     totalTasks: Number.isFinite(taskGeneration.totalTasks) ? taskGeneration.totalTasks : 0,
     mcpStatus: String(mcp.status || "unknown"),
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
+    checksumAlgorithm: String(checksums.algorithm || ""),
+    checksumFiles: normalizeObject(checksums.files),
   };
 }
 
@@ -1593,6 +1625,43 @@ export function buildSiteBundleCheckReport({
         addIssue(issues, "warn", `bundle-boundary-${boundary}`, `summary.json boundaries should include ${boundary}`);
       }
     }
+
+    if (!summaryPayload.checksums) {
+      addIssue(issues, "warn", "bundle-checksums-missing", "summary.json should include SHA-256 checksums; regenerate the bundle with the current CLI");
+    } else if (summary.checksumAlgorithm !== "sha256") {
+      addIssue(issues, "fail", "bundle-checksum-algorithm", "summary.json checksums.algorithm must be sha256");
+    } else {
+      const checksumFiles = summary.checksumFiles;
+      const checksumKeys = Object.keys(checksumFiles).sort();
+      const expectedChecksumKeys = SITE_BUNDLE_CHECKSUM_FILES.slice().sort();
+      for (const expectedPath of expectedChecksumKeys) {
+        const expectedDigest = checksumFiles[expectedPath];
+        if (!expectedDigest) {
+          addIssue(issues, "fail", `bundle-checksum-missing-${expectedPath}`, `summary.json is missing a checksum for ${expectedPath}`);
+          continue;
+        }
+        if (!/^[a-f0-9]{64}$/.test(String(expectedDigest))) {
+          addIssue(issues, "fail", `bundle-checksum-format-${expectedPath}`, `summary.json checksum for ${expectedPath} must be a SHA-256 hex digest`);
+        }
+      }
+      for (const checksumPath of checksumKeys) {
+        if (!expectedChecksumKeys.includes(checksumPath)) {
+          addIssue(issues, "fail", `bundle-checksum-unexpected-${checksumPath}`, `summary.json includes an unexpected checksum entry: ${checksumPath}`);
+        }
+      }
+      if (canReadDirectory) {
+        for (const expectedPath of expectedChecksumKeys) {
+          const targetPath = path.join(directory, expectedPath);
+          if (!existsSync(targetPath) || !statSync(targetPath).isFile()) continue;
+          const expectedDigest = checksumFiles[expectedPath];
+          if (!expectedDigest || !/^[a-f0-9]{64}$/.test(String(expectedDigest))) continue;
+          const actualDigest = sha256Hex(readFileSync(targetPath, "utf8"));
+          if (actualDigest !== expectedDigest) {
+            addIssue(issues, "fail", `bundle-checksum-${expectedPath}`, `${expectedPath} checksum does not match summary.json`);
+          }
+        }
+      }
+    }
   }
 
   if (workspacePayload) {
@@ -1662,6 +1731,15 @@ export function buildSiteBundleCheckReport({
       presentFiles: files.filter((file) => file.present).length,
       missingFiles: files.filter((file) => !file.present).length,
       unexpectedFiles: unexpectedFiles.length,
+      expectedChecksumFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+      verifiedChecksumFiles: SITE_BUNDLE_CHECKSUM_FILES.filter((filePath) => {
+        const expectedDigest = summary.checksumFiles[filePath];
+        const targetPath = path.join(directory, filePath);
+        if (!expectedDigest || !/^[a-f0-9]{64}$/.test(String(expectedDigest))) return false;
+        if (!canReadDirectory || !existsSync(targetPath) || !statSync(targetPath).isFile()) return false;
+        return sha256Hex(readFileSync(targetPath, "utf8")) === expectedDigest;
+      }).length,
+      checksumFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-checksum-")).length,
       issues: issues.length,
       warnings: issues.filter((issue) => issue.level === "warn").length,
       failures: issues.filter((issue) => issue.level === "fail").length,
@@ -1685,6 +1763,7 @@ export function formatSiteBundleCheckHuman(report) {
     "",
     `Status: ${report.status}`,
     `Files: ${report.counts.presentFiles}/${report.counts.expectedFiles}`,
+    `Checksums: ${report.counts.verifiedChecksumFiles}/${report.counts.expectedChecksumFiles} verified`,
     `Unexpected files: ${report.unexpectedFiles.length ? report.unexpectedFiles.join(", ") : "none"}`,
     `Source: ${report.summary.source || "unknown"}`,
     `Site: ${report.summary.siteName || "unknown"}`,

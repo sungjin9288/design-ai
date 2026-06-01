@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.24 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, and bundle verification). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.25 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, bundle verification, and checksum integrity checks). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.24 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.25 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.25 — Website improvement handoff bundle checksum verification
+
+- **v4.25 (Phase 240)** — Added SHA-256 checksum manifesting to Website Improvement handoff bundles. `design-ai site --bundle --out <dir>` now records checksums in `summary.json`, and `design-ai site <bundle-dir> --bundle-check --strict --json` recomputes them so copied, edited, or partially transferred bundles fail before target-repo handoff. Package smoke verifies checksum manifest shape and verified checksum counts through installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 ### v4.24 — Website improvement handoff bundle verification
 

@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.24.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.25.0.tgz
 """
 from __future__ import annotations
 
@@ -706,6 +706,16 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site bundle after {context} file manifest changed")
+    checksums = summary.get("checksums", {})
+    checksum_files = checksums.get("files", {})
+    if checksums.get("algorithm") != "sha256":
+        raise SystemExit(f"site bundle after {context} checksum algorithm changed")
+    expected_checksum_files = [name for name in expected_files if name != "summary.json"]
+    if list(checksum_files.keys()) != expected_checksum_files:
+        raise SystemExit(f"site bundle after {context} checksum file manifest changed")
+    for name, digest in checksum_files.items():
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise SystemExit(f"site bundle after {context} checksum for {name} is not a SHA-256 hex digest")
 
     tasks = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
     task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
@@ -744,10 +754,16 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} expected pass/valid output")
     if payload.get("counts", {}).get("presentFiles") != 8:
         raise SystemExit(f"site bundle check after {context} expected 8 present files")
+    if payload.get("counts", {}).get("verifiedChecksumFiles") != 7:
+        raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
+    if payload.get("counts", {}).get("checksumFailures") != 0:
+        raise SystemExit(f"site bundle check after {context} expected no checksum failures")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle check after {context} site name changed")
+    if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
+        raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
     if payload.get("mcpStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP status changed")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
