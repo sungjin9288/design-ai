@@ -8,6 +8,7 @@ import {
   LEARNING_FEEDBACK_OUTCOMES,
   auditLearningProfile,
   applyLearningAuditFixes,
+  applyLearningCurationPlan,
   buildLearningBackup,
   buildLearningContext,
   buildRedactedLearningBackup,
@@ -48,6 +49,7 @@ function printHelp() {
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --dry-run [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit --fix --yes [--json] [--out file] [--force]");
+  console.log("        design-ai learn --curate [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --forget id-or-number --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --clear --yes [--json] [--out file] [--force]\n");
@@ -72,7 +74,8 @@ function printHelp() {
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
-  console.log("  --dry-run            Preview --init, --import, or --audit --fix without changing the profile");
+  console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive learning entries");
+  console.log("  --dry-run            Preview --init, --import, --curate, or --audit --fix without changing the profile");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
@@ -102,6 +105,8 @@ function printHelp() {
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
+  console.log("  design-ai learn --curate");
+  console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
   console.log("  design-ai prompt \"audit checkout UX\" --with-learning");
@@ -275,6 +280,57 @@ function printAuditFix(payload) {
   if (payload.dryRun) {
     console.log();
     console.log("No changes made. Re-run with `--yes` instead of `--dry-run` to apply safe cleanup.");
+  }
+}
+
+function printCuration(payload) {
+  header("design-ai learn", payload.dryRun ? "Learning curation preview" : "Learning curation applied");
+  info(`File: ${payload.file}`);
+  info(`Archive: ${payload.archiveFile}`);
+  info(`Before: ${payload.before.status} (${payload.before.failures} failure(s), ${payload.before.warnings} warning(s))`);
+  info(`Proposals: ${payload.proposalCount}`);
+  info(`Archive candidates: ${payload.archiveCount}`);
+  info(`Manual review: ${payload.manualReviewCount}`);
+  if (payload.after) {
+    info(`After: ${payload.after.status} (${payload.after.failures} failure(s), ${payload.after.warnings} warning(s))`);
+  }
+  console.log();
+
+  if (payload.proposals.length === 0) {
+    console.log("No learning curation candidates found.");
+  } else {
+    const archiveCandidates = payload.proposals.filter((proposal) => proposal.action === "archive");
+    const manualCandidates = payload.proposals.filter((proposal) => proposal.action === "manual-review");
+    if (archiveCandidates.length > 0) {
+      console.log(payload.dryRun ? "Would archive:" : "Archived:");
+      for (const proposal of archiveCandidates) {
+        console.log(`- ${proposal.entryId}: ${proposal.reason} (${proposal.issueCodes.join(", ")})`);
+        if (proposal.textPreview) console.log(`  ${dim(proposal.textPreview)}`);
+      }
+      console.log();
+    }
+    if (manualCandidates.length > 0) {
+      console.log("Needs manual review:");
+      for (const proposal of manualCandidates) {
+        const label = proposal.entryId || "profile";
+        console.log(`- ${label}: ${proposal.reason} (${proposal.issueCodes.join(", ")})`);
+        if (proposal.textPreview) console.log(`  ${dim(proposal.textPreview)}`);
+      }
+      console.log();
+    }
+  }
+
+  if (payload.skipped.length > 0) {
+    console.log("Skipped:");
+    for (const skipped of payload.skipped) {
+      const entry = skipped.entryId ? `${skipped.entryId}: ` : "";
+      console.log(`- ${entry}${skipped.reason}`);
+    }
+    console.log();
+  }
+
+  if (payload.dryRun) {
+    console.log("No changes made. Re-run with `--yes` to move archive candidates into the learning archive.");
   }
 }
 
@@ -613,6 +669,21 @@ export async function runLearn(args) {
       return;
     }
     printAudit(payload);
+    return;
+  }
+
+  if (parsed.action === "curate") {
+    const dryRun = parsed.dryRun || !parsed.yes;
+    if (!dryRun) assertConfirmed(parsed, "apply learning curation to");
+    const payload = applyLearningCurationPlan({
+      filePath: parsed.filePath,
+      dryRun,
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printCuration(payload);
     return;
   }
 

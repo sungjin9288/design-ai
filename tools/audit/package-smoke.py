@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.28.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.29.0.tgz
 """
 from __future__ import annotations
 
@@ -1528,6 +1528,107 @@ def assert_learning_audit_fix_json(
         )
 
 
+def assert_learning_curation_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn curate JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn curate JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn curate JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(
+        payload.get("archiveFile") == str(profile_path.with_name(f"{profile_path.stem}.archive{profile_path.suffix}")),
+        context=context,
+        cmd=cmd,
+        message="learn curate archive file path changed",
+    )
+    require_package_smoke(payload.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn curate dryRun flag changed")
+    require_package_smoke(payload.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn curate applied flag changed")
+
+    before = payload.get("before")
+    require_package_smoke(
+        isinstance(before, dict) and before.get("status") == "warn",
+        context=context,
+        cmd=cmd,
+        message="learn curate should start from a warning profile",
+    )
+    require_package_smoke(payload.get("proposalCount") == 2, context=context, cmd=cmd, message="learn curate proposal count changed")
+    require_package_smoke(payload.get("archiveCount") == 2, context=context, cmd=cmd, message="learn curate archive count changed")
+    require_package_smoke(payload.get("manualReviewCount") == 0, context=context, cmd=cmd, message="learn curate manual-review count changed")
+
+    proposals = payload.get("proposals")
+    require_package_smoke(isinstance(proposals, list), context=context, cmd=cmd, message="learn curate proposals missing")
+    proposals_by_entry = {
+        proposal.get("entryId"): proposal
+        for proposal in proposals
+        if isinstance(proposal, dict)
+    }
+    expected_reasons = {
+        "learn-b": "duplicate-entry",
+        "learn-c": "sensitive-content",
+    }
+    for entry_id, reason in expected_reasons.items():
+        proposal = proposals_by_entry.get(entry_id)
+        require_package_smoke(
+            isinstance(proposal, dict)
+            and proposal.get("action") == "archive"
+            and proposal.get("reason") == reason,
+            context=context,
+            cmd=cmd,
+            message=f"learn curate proposal changed for {entry_id}",
+        )
+
+    archived = payload.get("archived")
+    if dry_run:
+        require_package_smoke(archived == [], context=context, cmd=cmd, message="learn curate dry run should not archive entries")
+        require_package_smoke(payload.get("after") is None, context=context, cmd=cmd, message="learn curate dry run should not include after summary")
+    else:
+        require_package_smoke(
+            isinstance(archived, list) and [item.get("id") for item in archived] == ["learn-b", "learn-c"],
+            context=context,
+            cmd=cmd,
+            message="learn curate archived entries changed",
+        )
+        after = payload.get("after")
+        require_package_smoke(
+            isinstance(after, dict) and after.get("status") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn curate should leave a passing profile after archived entries move out",
+        )
+
+
+def assert_learning_curation_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Learning curation preview",
+        "Archive candidates: 2",
+        "Would archive:",
+        "learn-b: duplicate-entry",
+        "learn-c: sensitive-content",
+        "No changes made.",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn curate human output missing {expected!r}",
+        )
+
+
 def assert_learning_feedback_json(
     raw: str,
     *,
@@ -2635,6 +2736,69 @@ def assert_learning_audit_cleanup_smoke(
         dry_run=False,
         context=f"{context} fix apply JSON",
         cmd=fix_apply_cmd,
+    )
+
+
+def assert_learning_curation_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_audit_fixture(profile_path)
+    archive_path = profile_path.with_name(f"{profile_path.stem}.archive{profile_path.suffix}")
+
+    human_cmd = command_factory("learn", "--curate", "--file", str(profile_path))
+    human_result = run_plain(human_cmd, cwd=cwd, env=env)
+    assert_learning_curation_human(human_result.stdout, context=f"{context} human preview", cmd=human_cmd)
+    profile_after_human = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(profile_after_human.get("entries", [])) == 3,
+        context=f"{context} human preview profile unchanged",
+        cmd=human_cmd,
+        message="learn curate preview should leave profile entries unchanged",
+    )
+    require_package_smoke(
+        not archive_path.exists(),
+        context=f"{context} human preview archive absent",
+        cmd=human_cmd,
+        message="learn curate preview should not create an archive file",
+    )
+
+    json_cmd = command_factory("learn", "--curate", "--file", str(profile_path), "--json")
+    json_result = run_plain(json_cmd, cwd=cwd, env=env)
+    assert_learning_curation_json(
+        json_result.stdout,
+        profile_path=profile_path,
+        dry_run=True,
+        context=f"{context} JSON preview",
+        cmd=json_cmd,
+    )
+
+    apply_cmd = command_factory("learn", "--curate", "--yes", "--file", str(profile_path), "--json")
+    apply_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_learning_curation_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        dry_run=False,
+        context=f"{context} JSON apply",
+        cmd=apply_cmd,
+    )
+    profile_after_apply = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        [entry.get("id") for entry in profile_after_apply.get("entries", [])] == ["learn-a"],
+        context=f"{context} apply profile archived",
+        cmd=apply_cmd,
+        message="learn curate apply should leave only the canonical profile entry",
+    )
+    archive_payload = json.loads(archive_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        [entry.get("id") for entry in archive_payload.get("entries", [])] == ["learn-b", "learn-c"],
+        context=f"{context} apply archive file",
+        cmd=apply_cmd,
+        message="learn curate apply should write duplicate and sensitive entries to archive",
     )
 
 
@@ -4751,6 +4915,89 @@ def run_self_test() -> None:
             context=context,
             cmd=["design-ai", "learn", "--audit", "--fix", "--yes", "--file", str(learning_profile_path), "--json"],
         )
+        learning_curation_payload = {
+            "file": str(learning_profile_path),
+            "archiveFile": str(learning_profile_path.with_name(f"{learning_profile_path.stem}.archive{learning_profile_path.suffix}")),
+            "before": {
+                "status": "warn",
+                "failures": 0,
+                "warnings": 2,
+            },
+            "proposalCount": 2,
+            "archiveCount": 2,
+            "manualReviewCount": 0,
+            "proposals": [
+                {
+                    "entryId": "learn-b",
+                    "action": "archive",
+                    "reason": "duplicate-entry",
+                    "issueCodes": ["duplicate-entry-text"],
+                    "messages": ["Entry duplicates learn-a in the same category."],
+                    "category": "workflow",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer release notes that state evidence before claims",
+                },
+                {
+                    "entryId": "learn-c",
+                    "action": "archive",
+                    "reason": "sensitive-content",
+                    "issueCodes": ["sensitive-secret-assignment"],
+                    "messages": ["Entry may contain a secret-like assignment."],
+                    "category": "constraint",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                    "textPreview": "Never include api_key=redacted placeholders in prompt context",
+                },
+            ],
+            "skipped": [],
+            "count": 3,
+            "dryRun": True,
+            "applied": False,
+            "archived": [],
+            "after": None,
+        }
+        learn_curate_cmd = ["design-ai", "learn", "--curate", "--file", str(learning_profile_path), "--json"]
+        assert_learning_curation_json(
+            json.dumps(learning_curation_payload),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_curate_cmd,
+        )
+        applied_learning_curation_payload = {
+            **learning_curation_payload,
+            "dryRun": False,
+            "applied": True,
+            "archived": [
+                {
+                    "id": "learn-b",
+                    "category": "workflow",
+                    "text": "Prefer release notes that state evidence before claims",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+                {
+                    "id": "learn-c",
+                    "category": "constraint",
+                    "text": "Never include api_key=redacted placeholders in prompt context",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                },
+            ],
+            "after": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+        }
+        assert_learning_curation_json(
+            json.dumps(applied_learning_curation_payload),
+            profile_path=learning_profile_path,
+            dry_run=False,
+            context=context,
+            cmd=["design-ai", "learn", "--curate", "--yes", "--file", str(learning_profile_path), "--json"],
+        )
         expect_self_test_failure(
             lambda: assert_learning_audit_cleanup_json(
                 json.dumps({**learning_audit_payload, "suggestions": []}),
@@ -4770,6 +5017,17 @@ def run_self_test() -> None:
                 cmd=learn_audit_fix_cmd,
             ),
             expected="learn audit fix cleanup entry missing: learn-b",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_curation_json(
+                json.dumps({**learning_curation_payload, "archiveCount": 1}),
+                profile_path=learning_profile_path,
+                dry_run=True,
+                context=context,
+                cmd=learn_curate_cmd,
+            ),
+            expected="learn curate archive count changed",
             scope="package smoke",
         )
         learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]
@@ -5499,6 +5757,12 @@ def smoke_tarball(tarball: Path) -> None:
             tmp_root / "installed-learning.json",
             env=smoke_env,
             context="package smoke installed bin learn audit cleanup",
+        )
+        assert_learning_curation_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-curate-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn curation",
         )
         assert_learning_relevance_smoke(
             lambda *args: [str(bin_path), *args],
@@ -6267,6 +6531,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn audit cleanup",
+        )
+        assert_learning_curation_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-curate-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn curation",
         )
         assert_learning_relevance_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

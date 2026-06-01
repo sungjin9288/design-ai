@@ -37,6 +37,7 @@ const LEARN_OPTIONS = [
   "--redact",
   "--audit",
   "--stats",
+  "--curate",
   "--fix",
   "--dry-run",
   "--outcome",
@@ -206,6 +207,8 @@ export function parseLearnArgs(args) {
       setAction(out, "audit");
     } else if (arg === "--stats") {
       setAction(out, "stats");
+    } else if (arg === "--curate") {
+      setAction(out, "curate");
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
@@ -278,8 +281,8 @@ export function parseLearnArgs(args) {
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
   }
-  if (out.dryRun && !out.fix && !["import", "init"].includes(out.action)) {
-    throw new Error("--dry-run requires --fix");
+  if (out.dryRun && !out.fix && !["import", "init", "curate"].includes(out.action)) {
+    throw new Error("--dry-run requires --fix, --init, --import, or --curate");
   }
   if (out.fix && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --audit --fix");
@@ -289,6 +292,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "init" && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --init");
+  }
+  if (out.action === "curate" && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --curate");
   }
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
@@ -1313,6 +1319,302 @@ export function applyLearningAuditFixes({
     skipped,
     removed,
     after: afterAudit.summary,
+  };
+}
+
+export function defaultLearningArchiveFile(filePath = defaultLearningFile()) {
+  const parsed = path.parse(filePath);
+  const ext = parsed.ext || ".json";
+  const base = parsed.ext ? parsed.name : parsed.base;
+  return path.join(parsed.dir || ".", `${base}.archive${ext}`);
+}
+
+export function emptyLearningArchive(sourceFile = defaultLearningFile()) {
+  return {
+    version: 1,
+    updatedAt: "",
+    sourceFile,
+    entries: [],
+  };
+}
+
+function normalizeLearningArchive(rawArchive, { sourceFile = defaultLearningFile() } = {}) {
+  const archive = emptyLearningArchive(sourceFile);
+  if (!rawArchive || typeof rawArchive !== "object" || Array.isArray(rawArchive)) {
+    return archive;
+  }
+
+  archive.version = Number.isInteger(rawArchive.version) ? rawArchive.version : 1;
+  archive.updatedAt = String(rawArchive.updatedAt || "").trim();
+  archive.sourceFile = String(rawArchive.sourceFile || sourceFile).trim() || sourceFile;
+  archive.entries = Array.isArray(rawArchive.entries)
+    ? rawArchive.entries
+      .filter((entry) => entry && typeof entry === "object" && !Array.isArray(entry))
+      .map((entry) => {
+        let category = "other";
+        try {
+          category = normalizeCategory(entry.category || "other");
+        } catch {
+          category = "other";
+        }
+        return {
+          id: String(entry.id || "").trim(),
+          category,
+          text: String(entry.text || "").trim(),
+          source: String(entry.source || "archive").trim() || "archive",
+          createdAt: String(entry.createdAt || "").trim(),
+          archivedAt: String(entry.archivedAt || "").trim(),
+          archiveReason: String(entry.archiveReason || "curation").trim() || "curation",
+          issueCodes: Array.isArray(entry.issueCodes)
+            ? entry.issueCodes.map((code) => String(code || "").trim()).filter(Boolean)
+            : [],
+          originalFile: String(entry.originalFile || sourceFile).trim() || sourceFile,
+        };
+      })
+      .filter((entry) => entry.id && entry.text)
+    : [];
+  return archive;
+}
+
+export function loadLearningArchive(archiveFile = defaultLearningArchiveFile(), {
+  sourceFile = defaultLearningFile(),
+} = {}) {
+  if (!existsSync(archiveFile)) return emptyLearningArchive(sourceFile);
+  const raw = readFileSync(archiveFile, "utf8");
+  try {
+    return normalizeLearningArchive(JSON.parse(raw), { sourceFile });
+  } catch {
+    throw new Error(`Learning archive is not valid JSON: ${archiveFile}`);
+  }
+}
+
+function writeLearningArchive(archiveFile, archive) {
+  mkdirSync(path.dirname(archiveFile), { recursive: true });
+  writeFileSync(archiveFile, `${JSON.stringify(archive, null, 2)}\n`, "utf8");
+}
+
+function learningCurationIssueAction(issue, { ambiguousEntryIds = new Set() } = {}) {
+  if (!issue.entryId) {
+    return {
+      action: "manual-review",
+      reason: "profile-level-issue",
+    };
+  }
+  if (ambiguousEntryIds.has(issue.entryId)) {
+    return {
+      action: "manual-review",
+      reason: "ambiguous-entry-id",
+    };
+  }
+  if (issue.code === "duplicate-entry-text") {
+    return {
+      action: "archive",
+      reason: "duplicate-entry",
+    };
+  }
+  if (issue.code.startsWith("sensitive-")) {
+    return {
+      action: "archive",
+      reason: "sensitive-content",
+    };
+  }
+  return {
+    action: "manual-review",
+    reason: issue.level === "failure" ? "manual-profile-repair" : "manual-quality-review",
+  };
+}
+
+function issueIsHigherPriority(nextAction, currentAction) {
+  if (!currentAction) return true;
+  if (nextAction.action === "archive" && currentAction.action !== "archive") return true;
+  return false;
+}
+
+function buildCurationProposal({ entry, issue, issueAction, existing }) {
+  const currentAction = existing
+    ? { action: existing.action, reason: existing.reason }
+    : null;
+  const nextAction = issueIsHigherPriority(issueAction, currentAction)
+    ? issueAction
+    : currentAction;
+  const issueCodes = existing?.issueCodes || [];
+  if (!issueCodes.includes(issue.code)) issueCodes.push(issue.code);
+
+  const messages = existing?.messages || [];
+  if (issue.message && !messages.includes(issue.message)) messages.push(issue.message);
+
+  return {
+    entryId: issue.entryId || "",
+    action: nextAction.action,
+    reason: nextAction.reason,
+    issueCodes,
+    messages,
+    ...(entry ? {
+      category: entry.category,
+      source: entry.source,
+      createdAt: entry.createdAt,
+      textPreview: previewText(entry.text),
+    } : {}),
+  };
+}
+
+export function buildLearningCurationPlan({
+  filePath = defaultLearningFile(),
+  archiveFile = defaultLearningArchiveFile(filePath),
+} = {}) {
+  const audit = auditLearningProfile({ filePath });
+  const payload = {
+    file: filePath,
+    archiveFile,
+    before: audit.summary,
+    proposalCount: 0,
+    archiveCount: 0,
+    manualReviewCount: 0,
+    proposals: [],
+    skipped: [],
+    count: audit.count,
+  };
+
+  if (!audit.exists) {
+    payload.skipped.push({
+      reason: "profile-missing",
+      message: "No local learning profile exists yet.",
+    });
+    return payload;
+  }
+
+  if (audit.summary.failures > 0) {
+    payload.skipped.push({
+      reason: "profile-has-failures",
+      message: "Repair failing learning profile issues before automated curation.",
+    });
+    return payload;
+  }
+
+  const profile = loadLearningProfile(filePath);
+  const entriesById = new Map(profile.entries.map((entry) => [entry.id, entry]));
+  const ambiguousEntryIds = new Set(
+    audit.issues
+      .filter((issue) => issue.code === "duplicate-entry-id" && issue.entryId)
+      .map((issue) => issue.entryId),
+  );
+  const proposalsByEntryId = new Map();
+
+  for (const issue of audit.issues) {
+    const issueAction = learningCurationIssueAction(issue, { ambiguousEntryIds });
+    const entry = issue.entryId ? entriesById.get(issue.entryId) : null;
+    if (issue.entryId && !entry) {
+      payload.skipped.push({
+        entryId: issue.entryId,
+        issueCode: issue.code,
+        reason: "entry-not-found",
+        message: "The audited entry was not present in the normalized learning profile.",
+      });
+      continue;
+    }
+
+    const key = issue.entryId || `profile:${issue.code}`;
+    const proposal = buildCurationProposal({
+      entry,
+      issue,
+      issueAction,
+      existing: proposalsByEntryId.get(key),
+    });
+    proposalsByEntryId.set(key, proposal);
+  }
+
+  payload.proposals = [...proposalsByEntryId.values()];
+  payload.proposalCount = payload.proposals.length;
+  payload.archiveCount = payload.proposals.filter((proposal) => proposal.action === "archive").length;
+  payload.manualReviewCount = payload.proposals.filter((proposal) => proposal.action === "manual-review").length;
+  return payload;
+}
+
+export function applyLearningCurationPlan({
+  filePath = defaultLearningFile(),
+  archiveFile = defaultLearningArchiveFile(filePath),
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const plan = buildLearningCurationPlan({ filePath, archiveFile });
+  const payload = {
+    ...plan,
+    dryRun,
+    applied: !dryRun,
+    archived: [],
+    after: null,
+  };
+
+  if (dryRun || plan.archiveCount === 0) {
+    return payload;
+  }
+
+  const archiveIds = new Set(
+    plan.proposals
+      .filter((proposal) => proposal.action === "archive")
+      .map((proposal) => proposal.entryId),
+  );
+  const proposalByEntryId = new Map(plan.proposals.map((proposal) => [proposal.entryId, proposal]));
+  const profile = loadLearningProfile(filePath);
+  const archived = [];
+  const remaining = [];
+  const archivedAt = now.toISOString();
+
+  for (const entry of profile.entries) {
+    if (!archiveIds.has(entry.id)) {
+      remaining.push(entry);
+      continue;
+    }
+
+    const proposal = proposalByEntryId.get(entry.id);
+    archived.push({
+      id: entry.id,
+      category: entry.category,
+      text: entry.text,
+      source: entry.source,
+      createdAt: entry.createdAt,
+      archivedAt,
+      archiveReason: proposal?.reason || "curation",
+      issueCodes: proposal?.issueCodes || [],
+      originalFile: filePath,
+    });
+  }
+
+  const archivedIds = new Set(archived.map((entry) => entry.id));
+  for (const entryId of archiveIds) {
+    if (!archivedIds.has(entryId)) {
+      payload.skipped.push({
+        entryId,
+        reason: "entry-not-found",
+        message: "The entry was not present when applying learning curation.",
+      });
+    }
+  }
+
+  const updatedAt = now.toISOString();
+  writeLearningProfile(filePath, {
+    version: 1,
+    updatedAt,
+    entries: remaining,
+  });
+
+  if (archived.length > 0) {
+    const archive = loadLearningArchive(archiveFile, { sourceFile: filePath });
+    writeLearningArchive(archiveFile, {
+      version: 1,
+      updatedAt,
+      sourceFile: filePath,
+      entries: [...archive.entries, ...archived],
+    });
+  }
+
+  const afterAudit = auditLearningProfile({ filePath });
+  return {
+    ...payload,
+    archiveCount: archived.length,
+    archived,
+    after: afterAudit.summary,
+    count: remaining.length,
   };
 }
 
