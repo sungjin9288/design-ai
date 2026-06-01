@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.43:
+What ships in v4.44:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -20,14 +20,14 @@ What ships in v4.43:
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
 - `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
-- `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile, and includes advisory usage review hints when a usage sidecar is available.
+- `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile, and includes advisory usage review hints for profile-path mismatch, stale selected ids, and unused active entries when a usage sidecar is available.
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
 - `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails. JSON reports expose checkpoint `generatedAt` plus a sanitized `sourceProfile` summary without raw checkpoint brief or query text.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, usage sidecar readiness, eval checkpoint readiness, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-usage path` or `--learning-eval path` to include specific artifacts, omit them to auto-detect sibling `learning.usage.json` and `learning-eval.json` files when present, and add `--strict` when warning/failure readiness should fail the command.
-- `design-ai workspace` checks learning usage sidecar readiness when usage metadata is available. If the sidecar points at another profile or references selected entry ids that are no longer present in the active profile, `workspace` emits a warning and suggests `design-ai learn --usage`.
+- `design-ai workspace` checks learning usage sidecar readiness when usage metadata is available. If the sidecar points at another profile or references selected entry ids that are no longer present in the active profile, `workspace` emits a warning and suggests `design-ai learn --curate --usage-file ...` so profile audit and usage review are inspected together.
 - `design-ai workspace` checks learning eval checkpoint freshness when metadata is available. If the profile was updated after the checkpoint was generated, the checkpoint came from another profile path, or the source entry count changed, `workspace` emits a warning and suggests regenerating the checkpoint.
 - When a clean learning profile has entries but no checkpoint is available, `design-ai workspace` adds a next-action command for `design-ai learn --eval-template --file <learning.json> --out <learning-file-dir>/learning-eval.json`.
 - Workspace next-action commands that include learning profile, usage sidecar, or eval checkpoint paths are shell-quoted, so paths with spaces or apostrophes remain copy/paste safe.
@@ -86,11 +86,11 @@ This command is read-only. It does not save learning entries, edit the profile, 
 
 If the selected learning profile has sibling `learning.usage.json` or `learning-eval.json` files, `workspace` automatically includes those summaries. Use `--learning-usage path` or `--learning-eval path` only when you want a different sidecar or checkpoint.
 
-When usage metadata is available, `workspace` compares it against the selected profile. A usage sidecar becomes a readiness warning when its `profileFile` points at another profile or when its selected entry ids no longer exist in the active profile.
+When usage metadata is available, `workspace` compares it against the selected profile. A usage sidecar becomes a readiness warning when its `profileFile` points at another profile or when its selected entry ids no longer exist in the active profile, and the next action points to usage-aware curation rather than a separate usage-only report.
 
 When checkpoint metadata is available, `workspace` also compares it against the selected profile. A passing checkpoint still becomes a readiness warning when the profile `updatedAt` is newer than checkpoint `generatedAt`, when `sourceProfile.file` does not match the active profile path, or when the recorded source entry count differs from the active profile count.
 
-If the selected profile, usage sidecar, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
+If the selected profile, usage sidecar, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
 
 If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until a sibling or explicit checkpoint is available:
 
@@ -214,7 +214,7 @@ The plain audit is advisory and non-mutating. It reports invalid JSON/profile sh
 
 `--audit --fix --dry-run` turns those safe suggestions into a cleanup plan without changing the file. `--audit --fix --yes` removes only entries that have stable, unambiguous ids and skips anything that still needs manual review, such as invalid JSON, duplicate ids, malformed entries, or warnings without a safe target.
 
-`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. When a default or explicit `--usage-file` sidecar is available, the same preview adds a usage review section for stale selected ids and active entries that have not appeared in recorded prompt/pack usage. Usage review is advisory only: `autoArchive` stays `false`, and unused entries are never archived because of usage metadata alone. Confirmed `--curate --yes` rewrites the active `learning.json` with duplicate/sensitive archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
+`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. When a default or explicit `--usage-file` sidecar is available, the same preview adds a usage review section for sidecars recorded against a different profile path, stale selected ids, and active entries that have not appeared in recorded prompt/pack usage. Usage review is advisory only: `autoArchive` stays `false`, and unused or mismatched usage signals never archive entries by themselves. Confirmed `--curate --yes` rewrites the active `learning.json` with duplicate/sensitive archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
 
 Summarize profile health and recency:
 

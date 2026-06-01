@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 259 — Workspace Learning Curation Next Actions (v4.44.0) ✓ shipped
+
+`design-ai workspace` now routes local learning maintenance warnings into the safer archive-first curation preview. Instead of splitting operators between audit-only and usage-only reports, workspace next actions point to `learn --curate --file ...` and include `--usage-file ...` when a usage sidecar is part of readiness.
+
+### Changed
+- Added workspace next actions that recommend `design-ai learn --curate --file <learning.json>` when the active learning profile audit is not clean.
+- Added workspace next actions that recommend `design-ai learn --curate --file <learning.json> --usage-file <learning.usage.json>` when learning usage sidecar readiness warns.
+- Kept read-only workspace behavior: no profile, sidecar, checkpoint, git, release, or archive mutation occurs from `workspace`.
+- Extended `learn --curate` usage review with `profileFile`, `profileFileMatches`, and a `usage-profile-file-mismatch` advisory item when a sidecar was recorded for another profile path.
+- Preserved usage curation as advisory only through `autoArchive: false`; `--curate --yes` still archives only duplicate/sensitive audit candidates.
+- Added unit coverage for workspace curation next actions and usage profile mismatch review.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.44.0`.
+
+### Impact
+- Operators can move from `workspace --strict` warnings directly into the single curation preview that combines profile audit findings with usage evidence.
+- Usage sidecar profile mismatch is visible from both workspace readiness and curation review without changing existing `learning.usage.json` files.
+- Existing learning profile, usage sidecar, eval checkpoint, prompt/pack recording, and archive apply schemas remain compatible.
+
+### What this enables
+- A tighter local dogfood loop before solo use or company rollout: inspect workspace readiness, preview curation with usage evidence, then apply only explicit duplicate/sensitive archive candidates.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.43.0 → 4.44.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 258 — Learning Usage Curation Review (v4.43.0) ✓ shipped
 
 `design-ai learn --curate` now folds local prompt/pack usage sidecar evidence into the archive-first curation preview. The feature keeps curation conservative: duplicate and sensitive profile entries can still be archived after `--yes`, while usage-derived findings only become manual review hints.

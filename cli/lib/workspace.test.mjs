@@ -198,7 +198,8 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.equal(report.learning.auditSummary.status, "warn");
   assert.deepEqual(report.release.available, ["test", "audit:strict", "package:smoke"]);
   assert.match(report.nextActions.map((item) => item.text).join("\n"), /Review local changes/);
-  assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --audit/);
+  assert.match(report.nextActions.map((item) => item.text).join("\n"), /Preview archive-first learning curation/);
+  assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --curate --file/);
 }));
 
 test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failures", () => {
@@ -1008,7 +1009,10 @@ test("runWorkspace prints learning usage section and strict fails usage warnings
   const payload = JSON.parse(strictRun.stdout);
   assert.equal(strictRun.exitCode, 1);
   assert.equal(payload.learningUsage.readiness.status, "warn");
-  assert.equal(payload.nextActions.some((item) => (item.command || "").includes("design-ai learn --usage")), true);
+  const curationAction = payload.nextActions.find((item) => (item.command || "").includes("design-ai learn --curate"));
+  assert.equal(curationAction?.level, "warn");
+  assert.match(curationAction?.text || "", /usage-aware learning curation/);
+  assert.match(curationAction?.command || "", /--usage-file/);
 }));
 
 test("runWorkspace strict fails readiness warnings and passes info-only readiness", async () => withTempDir(async (dir) => {

@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.44.0 — Workspace Learning Curation Next Actions (2026-06)
+
+Connected workspace readiness warnings to the safer archive-first learning curation flow. `design-ai workspace` now points learning audit warnings and learning usage sidecar drift at `design-ai learn --curate --file ... --usage-file ...`, so operators can inspect profile issues and usage evidence in one preview before applying any cleanup.
+
+### Added
+- `workspace` next actions now recommend `learn --curate` for non-passing learning profile audits instead of sending operators back to audit-only output.
+- Learning usage sidecar readiness warnings now recommend usage-aware curation with the active `--learning-file` and `--learning-usage` paths.
+- `learn --curate` usage review now reports `profileFile`, `profileFileMatches`, and a `usage-profile-file-mismatch` advisory review item when a sidecar was recorded against another profile.
+- Added unit coverage for workspace curation next actions and usage profile mismatch review.
+
+### Preserved
+- `workspace` remains read-only and does not mutate `learning.json`, usage sidecars, eval checkpoints, git state, or release artifacts.
+- `learn --curate --yes` still archives only duplicate/sensitive audit candidates; usage-derived profile mismatch, stale id, and unused-entry signals remain advisory through `autoArchive: false`.
+- Existing `learning.json`, `learning.usage.json`, `learning-eval.json`, and prompt/pack usage sidecar schemas remain compatible.
+
+### What this enables
+- Operators can move from `workspace --strict` warnings directly into one local curation preview that combines profile audit findings with usage sidecar evidence before applying any archive action.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.43.0 → 4.44.0.
+
 ## v4.43.0 — Learning Usage Curation Review (2026-06)
 
 Made `design-ai learn --curate` usage-aware without making usage history destructive. The command now includes a `usage` review section sourced from the local learning usage sidecar, accepts `--usage-file path`, and reports stale selected entry ids plus active entries that have not appeared in recorded prompt/pack learning usage.

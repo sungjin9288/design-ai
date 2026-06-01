@@ -1521,10 +1521,19 @@ function learningUsageReviewItem({ level, action, reason, entryId, usageCount = 
   };
 }
 
-function emptyLearningUsageCurationReview({ filePath, usageFile, exists = false, error = "" }) {
+function emptyLearningUsageCurationReview({
+  filePath,
+  usageFile,
+  exists = false,
+  profileFile = "",
+  profileFileMatches = true,
+  error = "",
+}) {
   return {
     file: path.resolve(filePath),
     usageFile: path.resolve(usageFile),
+    profileFile: profileFile ? path.resolve(profileFile) : path.resolve(filePath),
+    profileFileMatches,
     exists,
     eventCount: 0,
     usedEntryCount: 0,
@@ -1558,12 +1567,16 @@ function learningUsageCurationReview({
       usageFile: resolvedUsageFile,
       limit: 10,
     });
+    const statsProfileFile = stats.profileFile ? path.resolve(stats.profileFile) : resolvedFile;
+    const profileFileMatches = statsProfileFile === resolvedFile;
 
     if (!stats.exists) {
       return {
         ...emptyLearningUsageCurationReview({
           filePath: resolvedFile,
           usageFile: resolvedUsageFile,
+          profileFile: statsProfileFile,
+          profileFileMatches,
           exists: false,
         }),
         recommendations: stats.recommendations || [],
@@ -1573,6 +1586,22 @@ function learningUsageCurationReview({
     const profile = loadLearningProfile(resolvedFile);
     const entriesById = new Map(profile.entries.map((entry) => [entry.id, entry]));
     const reviews = [];
+    const recommendations = [...(stats.recommendations || [])];
+
+    if (!profileFileMatches) {
+      reviews.push(learningUsageReviewItem({
+        level: "warning",
+        action: "review-usage-sidecar",
+        reason: "usage-profile-file-mismatch",
+        entryId: "",
+        usageCount: stats.eventCount,
+        message: "Usage sidecar was recorded for a different learning profile path.",
+      }));
+      recommendations.push({
+        level: "warning",
+        text: "Usage sidecar profile path differs from the active learning profile.",
+      });
+    }
 
     for (const entryId of stats.staleSelectedEntryIds || []) {
       reviews.push(learningUsageReviewItem({
@@ -1608,6 +1637,8 @@ function learningUsageCurationReview({
     return {
       file: stats.file,
       usageFile: stats.usageFile,
+      profileFile: statsProfileFile,
+      profileFileMatches,
       exists: true,
       eventCount: stats.eventCount,
       usedEntryCount: stats.usedEntryCount,
@@ -1617,7 +1648,7 @@ function learningUsageCurationReview({
       unusedReviewCount,
       staleReviewCount,
       reviews,
-      recommendations: stats.recommendations || [],
+      recommendations,
       error: "",
       privacy: stats.privacy || {
         storesRawBriefText: false,

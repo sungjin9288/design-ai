@@ -1258,6 +1258,8 @@ test("buildLearningCurationPlan includes usage review hints without auto-archivi
   assert.equal(plan.archiveCount, 0);
   assert.equal(plan.manualReviewCount, 0);
   assert.equal(plan.usage.exists, true);
+  assert.equal(plan.usage.profileFile, filePath);
+  assert.equal(plan.usage.profileFileMatches, true);
   assert.equal(plan.usage.eventCount, 1);
   assert.equal(plan.usage.usedEntryCount, 1);
   assert.equal(plan.usage.unusedEntryCount, 2);
@@ -1281,6 +1283,67 @@ test("buildLearningCurationPlan includes usage review hints without auto-archivi
   assert.deepEqual(applied.archived, []);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a", "learn-b", "learn-c"]);
   assert.deepEqual(loadLearningArchive(defaultLearningArchiveFile(filePath), { sourceFile: filePath }).entries, []);
+}));
+
+test("buildLearningCurationPlan reports usage profile mismatch as advisory review", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  const oldProfile = path.join(dir, "old-learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "workflow",
+        text: "Prefer implementation summaries with verification evidence",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:10:00.000Z",
+    profileFile: oldProfile,
+    events: [
+      {
+        id: "learn-use-stale",
+        command: "pack",
+        routeId: "design-review",
+        profileFile: oldProfile,
+        briefHash: "abc123",
+        category: "",
+        limit: 12,
+        selectedEntryIds: ["learn-stale"],
+        selectedCount: 1,
+        candidateCount: 1,
+        matchedCount: 1,
+        fallbackCount: 0,
+        queryTokenCount: 3,
+        auditStatus: "pass",
+        createdAt: "2026-05-22T00:10:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const plan = buildLearningCurationPlan({ filePath, usageFile });
+  assert.equal(plan.usage.exists, true);
+  assert.equal(plan.usage.profileFile, oldProfile);
+  assert.equal(plan.usage.profileFileMatches, false);
+  assert.equal(plan.usage.reviewCount, 3);
+  assert.equal(plan.usage.staleReviewCount, 1);
+  assert.equal(plan.usage.autoArchive, false);
+  assert.deepEqual(
+    plan.usage.reviews.map((review) => [review.reason, review.action]),
+    [
+      ["usage-profile-file-mismatch", "review-usage-sidecar"],
+      ["stale-selected-entry-id", "review-usage-sidecar"],
+      ["unused-with-limited-history", "manual-review"],
+    ],
+  );
+  assert.equal(plan.archiveCount, 0);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-a"]);
 }));
 
 test("applyLearningCurationPlan archives candidates without deleting audit history", () => withTempDir((dir) => {

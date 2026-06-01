@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.43.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.44.0.tgz
 """
 from __future__ import annotations
 
@@ -1698,6 +1698,18 @@ def assert_learning_curation_json(
             context=context,
             cmd=cmd,
             message="learn curate usage file path changed",
+        )
+        require_package_smoke(
+            usage.get("profileFile") == str(profile_path),
+            context=context,
+            cmd=cmd,
+            message="learn curate usage profile path changed",
+        )
+        require_package_smoke(
+            usage.get("profileFileMatches") is True,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage profile match flag changed",
         )
         require_package_smoke(usage.get("exists") is True, context=context, cmd=cmd, message="learn curate usage fixture missing")
         require_package_smoke(usage.get("eventCount") == 1, context=context, cmd=cmd, message="learn curate usage event count changed")
@@ -6342,6 +6354,8 @@ def run_self_test() -> None:
             "usage": {
                 "file": str(learning_profile_path),
                 "usageFile": str(learning_usage_path),
+                "profileFile": str(learning_profile_path),
+                "profileFileMatches": True,
                 "exists": True,
                 "eventCount": 1,
                 "usedEntryCount": 1,

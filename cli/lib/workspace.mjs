@@ -446,6 +446,18 @@ export function quoteShellArg(value) {
   return `'${text.replace(/'/gu, "'\\''")}'`;
 }
 
+function pushUniqueAction(actions, nextAction) {
+  if (nextAction.command && actions.some((item) => item.command === nextAction.command)) return;
+  actions.push(nextAction);
+}
+
+function learningCurationCommand(learning, learningUsage = null) {
+  const usagePart = learningUsage?.usageFile
+    ? ` --usage-file ${quoteShellArg(learningUsage.usageFile)}`
+    : "";
+  return `design-ai learn --curate --file ${quoteShellArg(learning.file)}${usagePart}`;
+}
+
 function parsedTimestamp(value) {
   const time = Date.parse(String(value || ""));
   return Number.isNaN(time) ? null : time;
@@ -669,7 +681,11 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningU
   if (learning.error) {
     actions.push(action("fail", "Repair the local learning profile before relying on personalized prompt context.", "design-ai learn --audit"));
   } else if (learning.auditSummary.status !== "pass") {
-    actions.push(action("warn", "Review local learning profile audit warnings before dogfooding prompts.", "design-ai learn --audit"));
+    pushUniqueAction(actions, action(
+      "warn",
+      "Preview archive-first learning curation before dogfooding prompts.",
+      learningCurationCommand(learning, learningUsage),
+    ));
   } else if (learning.count === 0) {
     actions.push(action("info", "Capture reviewed feedback after checks to make dogfood runs improve over time.", "design-ai check artifact.md --learn --yes"));
   } else if (!learningEval) {
@@ -685,7 +701,11 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningU
     if (learningUsage.error) {
       actions.push(action("fail", "Repair the local learning usage sidecar before trusting prompt/pack usage analytics.", usageCommand));
     } else if (learningUsage.readiness?.status === "warn") {
-      actions.push(action("warn", "Review local learning usage sidecar drift before curating learning entries.", usageCommand));
+      pushUniqueAction(actions, action(
+        "warn",
+        "Preview usage-aware learning curation before curating learning entries.",
+        learningCurationCommand(learning, learningUsage),
+      ));
     } else if (learningUsage.readiness?.status === "pass") {
       actions.push(action("pass", "Learning usage sidecar is aligned with the active profile.", usageCommand));
     } else {
