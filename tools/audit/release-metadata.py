@@ -1348,6 +1348,20 @@ RELEASE_LEARN_RELEVANCE_TERM_GROUPS = (
         "`pack --with-learning`",
     ),
 )
+RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS = (
+    (
+        "prompt/pack learning usage sidecar recording",
+        "learning usage sidecar",
+        "learning.usage.json",
+    ),
+    (
+        "prompt --with-learning",
+        "pack --with-learning",
+        "`prompt --with-learning`",
+        "`pack --with-learning`",
+        "prompt/pack",
+    ),
+)
 RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
     (
         "public registry brief-relevant prompt/pack learning selection",
@@ -1528,6 +1542,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn query explain smoke phrase",
     "registry learn query explain smoke phrase",
     "learn relevance smoke phrase",
+    "learn usage sidecar smoke phrase",
     "registry learn relevance smoke phrase",
     "learn audit cleanup smoke phrase",
     "learn audit out smoke phrase",
@@ -1714,6 +1729,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
         RELEASE_REGISTRY_LEARN_QUERY_EXPLAIN_TERM_GROUPS,
     ),
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
+    ("learn usage sidecar smoke phrase", RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS),
     (
         "registry learn relevance smoke phrase",
         RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS,
@@ -2159,7 +2175,7 @@ public registry JSON `design-ai learn --import` dry-run/apply output plus public
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
-public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning,
+public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning and prompt/pack learning usage sidecar recording,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
@@ -2178,7 +2194,7 @@ JSON `design-ai learn --verify` output plus learn verify `--out` file-write conf
 JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` file-write confirmation,
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
-brief-relevant prompt/pack learning selection,
+brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
@@ -2236,7 +2252,7 @@ public registry JSON `design-ai learn --import` dry-run/apply output과 public r
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
-public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning도 확인하고,
+public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning, prompt/pack learning usage sidecar recording도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
@@ -2255,7 +2271,7 @@ JSON `design-ai learn --verify` output과 learn verify `--out` file-write confir
 JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
-brief-relevant prompt/pack learning selection도 확인하며,
+brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,

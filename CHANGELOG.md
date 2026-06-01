@@ -2,6 +2,29 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.30.0 — Local Learning Usage Sidecar (2026-06)
+
+Added local usage sidecar recording for `prompt --with-learning` and `pack --with-learning`.
+Whenever learned context is explicitly requested, the CLI now records a deterministic local event in a sibling usage file such as `learning.usage.json`, including the command, route id, selected learning entry ids, selection counts, audit status, and a short brief hash instead of raw prompt text.
+JSON output for prompt and pack includes `learningUsage` metadata so operators can verify which learning entries were injected without opening the sidecar file.
+
+Package smoke now verifies learning usage sidecar output for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+AI learning docs, README, Product Readiness, Roadmap, and Session Log now describe the privacy-preserving usage log.
+
+### What this enables
+
+Operators can inspect which local learning entries are actually being used over time without changing `learning.json`, adding external telemetry, or storing raw briefs.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.29.0 → 4.30.0.
+
 ## v4.29.0 — Local Learning Archive-First Curation (2026-06)
 
 Added `design-ai learn --curate` so local learning profiles can be maintained with a preview-first, archive-first flow inspired by Hermes-style skill curation without adding model training, external AI APIs, embeddings, telemetry, or new dependencies.

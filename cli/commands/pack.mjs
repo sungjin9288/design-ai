@@ -3,6 +3,7 @@
 import { DESIGN_AI_HOME, SYMLINK_PREFIX } from "../lib/paths.mjs";
 import { header, info, success } from "../lib/log.mjs";
 import { resolveBriefInput } from "../lib/brief.mjs";
+import { recordLearningUsage } from "../lib/learn.mjs";
 import { buildPromptPack, formatPackJson, parsePackArgs } from "../lib/pack.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 
@@ -15,13 +16,17 @@ function printHelp() {
   console.log("  --from-file file  Read the task brief from a markdown/text file");
   console.log("  --stdin           Read the task brief from standard input");
   console.log("  --route id        Force a route id from `design-ai route --json`");
-  console.log("  --with-learning   Include brief-relevant local learning preferences from `design-ai learn`");
+  console.log("  --with-learning   Include brief-relevant local learning preferences and record local usage metadata");
   console.log("  --learning-category kind  Include only one learning category; requires --with-learning");
   console.log("  --learning-limit N        Limit included learning entries, 1-100; requires --with-learning");
   console.log("  --max-bytes N     Maximum context bytes to include, 1000-1000000. Default: 120000");
   console.log("  --json            Emit machine-readable bundle");
   console.log("  --out file        Write output to a file instead of stdout");
   console.log("  --force           Overwrite an existing --out file");
+  console.log("");
+  console.log("Environment:");
+  console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json        Override the profile used by --with-learning");
+  console.log("  DESIGN_AI_LEARNING_USAGE_FILE=/path/usage.json     Override the local usage sidecar path");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai pack \"audit checkout UX\" --with-learning --learning-category korean --learning-limit 5");
@@ -65,8 +70,25 @@ export async function runPack(args) {
     learningCategory: parsed.learningCategory,
     learningLimit: parsed.learningLimit,
   });
+  const learningUsage = parsed.withLearning
+    ? recordLearningUsage({
+      command: "pack",
+      routeId: pack.plan.route.id,
+      learningContext: pack.plan.learningContext,
+    })
+    : null;
+  const outputPack = learningUsage
+    ? {
+      ...pack,
+      learningUsage,
+      plan: {
+        ...pack.plan,
+        learningUsage,
+      },
+    }
+    : pack;
 
-  const content = parsed.json ? `${formatPackJson(pack)}\n` : `${pack.markdown}\n`;
+  const content = parsed.json ? `${formatPackJson(outputPack)}\n` : `${outputPack.markdown}\n`;
 
   if (parsed.outPath) {
     const written = writeOutputFile({
@@ -85,8 +107,11 @@ export async function runPack(args) {
 
   header("design-ai pack", brief);
   info(`Source: ${DESIGN_AI_HOME}`);
-  info(`Corpus version: ${pack.version}`);
-  info(`Context: ${pack.summary.status}, ${pack.usedBytes}/${pack.maxBytes} bytes, ${pack.warnings.length} warnings`);
+  info(`Corpus version: ${outputPack.version}`);
+  info(`Context: ${outputPack.summary.status}, ${outputPack.usedBytes}/${outputPack.maxBytes} bytes, ${outputPack.warnings.length} warnings`);
+  if (learningUsage?.recorded) {
+    info(`Learning usage: recorded ${learningUsage.event.id}`);
+  }
   console.log();
-  console.log(pack.markdown);
+  console.log(outputPack.markdown);
 }

@@ -1,10 +1,10 @@
 # AI learning
 
-design-ai supports a local learning profile. This is not model training, fine-tuning, or background data collection. It is explicit local memory that you choose to include in generated prompts; `check --learn` can derive entries from a local QA report only when you run it.
+design-ai supports a local learning profile. This is not model training, fine-tuning, or external telemetry. It is explicit local memory that you choose to include in generated prompts; `check --learn` can derive entries from a local QA report only when you run it.
 
 ## Scope
 
-What ships in v4.13:
+What ships in v4.30:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -28,13 +28,14 @@ What ships in v4.13:
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.
 - `design-ai pack --with-learning ...` includes the same brief-relevant learned context in portable prompt packs, with the same optional scoping controls and selection scoring metadata.
+- `prompt --with-learning` and `pack --with-learning` write a local usage sidecar such as `learning.usage.json` with command, route id, selected learning entry ids, selection counts, audit status, and a short brief hash. The sidecar does not store raw brief/query text.
 - Exported and injected learned context carries an audit summary; if the profile has warnings, the generated context includes a notice to run `design-ai learn --audit`.
 
 What does not ship:
 
 - Model fine-tuning.
 - Private model training on user artifacts.
-- Automatic telemetry or background collection.
+- External telemetry or background collection outside explicit local CLI runs.
 - Semantic embedding index generation.
 - Background learning from accepted/rejected recommendations without an explicit CLI command.
 
@@ -46,13 +47,20 @@ Default path:
 ~/.design-ai/learning.json
 ```
 
+Default usage sidecar path:
+
+```bash
+~/.design-ai/learning.usage.json
+```
+
 Override path:
 
 ```bash
 DESIGN_AI_LEARNING_FILE=/path/to/learning.json design-ai learn --list
+DESIGN_AI_LEARNING_USAGE_FILE=/path/to/learning.usage.json design-ai prompt "audit checkout UX" --with-learning
 ```
 
-The profile is local to the machine. It is not synced, uploaded, or sent to any provider by this CLI.
+The profile and usage sidecar are local to the machine. They are not synced, uploaded, or sent to any provider by this CLI.
 
 For a broader local readiness check that includes git state, learning audit state, and release-script availability, run:
 
@@ -209,7 +217,7 @@ design-ai prompt "Audit this checkout UX" --with-learning
 design-ai prompt "Audit this checkout UX" --with-learning --learning-category korean --learning-limit 5
 ```
 
-When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. JSON output includes `selection.selected[]` with each selected entry's `id`, `category`, relevance `score`, `matchedTokens`, and `reason` (`brief-match`, `recency-fallback`, or `recency`). The learned-context block includes a compact selection note, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
+When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. JSON output includes `selection.selected[]` with each selected entry's `id`, `category`, relevance `score`, `matchedTokens`, and `reason` (`brief-match`, `recency-fallback`, or `recency`). Prompt and pack JSON also include `learningUsage`, and the CLI writes a local sidecar event that records selected entry ids and a short brief hash, not raw brief text. The learned-context block includes a compact selection note, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
 
 Use learned context in a prompt pack:
 

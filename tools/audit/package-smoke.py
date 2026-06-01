@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.29.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.30.0.tgz
 """
 from __future__ import annotations
 
@@ -3427,6 +3427,105 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
     )
 
 
+def assert_learning_usage_payload(
+    payload: dict[str, object],
+    *,
+    expected_command: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    learning_usage = payload.get("learningUsage")
+    require_package_smoke(
+        isinstance(learning_usage, dict),
+        context=context,
+        cmd=cmd,
+        message="learningUsage should be present when --with-learning records usage",
+    )
+    require_package_smoke(
+        learning_usage.get("recorded") is True,
+        context=context,
+        cmd=cmd,
+        message="learningUsage should report a recorded local sidecar event",
+    )
+
+    event = learning_usage.get("event")
+    require_package_smoke(
+        isinstance(event, dict),
+        context=context,
+        cmd=cmd,
+        message="learningUsage event metadata missing",
+    )
+    require_package_smoke(
+        event.get("command") == expected_command,
+        context=context,
+        cmd=cmd,
+        message=f"learningUsage event should record command {expected_command}",
+    )
+    require_package_smoke(
+        event.get("selectedEntryIds") == ["learn-relevant"],
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should record the selected learning entry id",
+    )
+    require_package_smoke(
+        isinstance(event.get("briefHash"), str) and len(event.get("briefHash")) == 16,
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should store a short brief hash instead of raw brief text",
+    )
+    require_package_smoke(
+        "query" not in event and "brief" not in event,
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should not persist raw brief/query text",
+    )
+
+
+def assert_learning_usage_sidecar(
+    usage_path: Path,
+    *,
+    expected_commands: list[str],
+    context: str,
+    cmd: list[str],
+) -> None:
+    require_package_smoke(
+        usage_path.exists(),
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar file should be written next to the learning profile",
+    )
+    try:
+        payload = json.loads(usage_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learning usage sidecar JSON") from error
+
+    events = payload.get("events")
+    require_package_smoke(
+        isinstance(events, list) and len(events) >= len(expected_commands),
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar should contain prompt/pack usage events",
+    )
+    recent_events = events[-len(expected_commands):]
+    require_package_smoke(
+        [event.get("command") for event in recent_events if isinstance(event, dict)] == expected_commands,
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar should preserve prompt/pack command order",
+    )
+    for event in recent_events:
+        require_package_smoke(
+            isinstance(event, dict)
+            and event.get("selectedEntryIds") == ["learn-relevant"]
+            and isinstance(event.get("briefHash"), str)
+            and "query" not in event
+            and "brief" not in event,
+            context=context,
+            cmd=cmd,
+            message="learning usage sidecar event should be privacy-preserving and reference selected ids",
+        )
+
+
 def assert_learning_query_json(
     raw: str,
     *,
@@ -3685,6 +3784,12 @@ def assert_learning_relevance_smoke(
     except json.JSONDecodeError as error:
         raise SystemExit(f"{context}: failed to parse prompt learning relevance JSON") from error
     assert_learning_relevance_context(prompt_payload, context=f"{context} prompt", cmd=prompt_cmd)
+    assert_learning_usage_payload(
+        prompt_payload,
+        expected_command="prompt",
+        context=f"{context} prompt usage",
+        cmd=prompt_cmd,
+    )
 
     pack_cmd = command_factory(
         "pack",
@@ -3706,6 +3811,25 @@ def assert_learning_relevance_smoke(
     plan = pack_payload.get("plan")
     require_package_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
     assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+    assert_learning_usage_payload(
+        pack_payload,
+        expected_command="pack",
+        context=f"{context} pack usage",
+        cmd=pack_cmd,
+    )
+    assert_learning_usage_payload(
+        plan,
+        expected_command="pack",
+        context=f"{context} pack plan usage",
+        cmd=pack_cmd,
+    )
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
+    assert_learning_usage_sidecar(
+        usage_path,
+        expected_commands=["prompt", "pack"],
+        context=f"{context} learning usage sidecar",
+        cmd=pack_cmd,
+    )
 
 
 def run_self_test() -> None:
@@ -4735,10 +4859,34 @@ def run_self_test() -> None:
                 "Learning selection: brief relevance\n"
                 "Prioritize keyboard accessibility details for Button component API specs"
             ),
+            "learningUsage": {
+                "recorded": True,
+                "event": {
+                    "id": "learn-use-prompt",
+                    "command": "prompt",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "profileFile": str(learning_profile_path),
+                    "briefHash": "0123456789abcdef",
+                    "selectedEntryIds": ["learn-relevant"],
+                    "selectedCount": 1,
+                    "candidateCount": 3,
+                    "matchedCount": 1,
+                    "fallbackCount": 0,
+                    "queryTokenCount": 6,
+                    "auditStatus": "pass",
+                    "createdAt": "2026-06-01T00:00:00.000Z",
+                },
+            },
         }
         learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
         assert_learning_relevance_context(
             learning_relevance_payload,
+            context=context,
+            cmd=learning_relevance_cmd,
+        )
+        assert_learning_usage_payload(
+            learning_relevance_payload,
+            expected_command="prompt",
             context=context,
             cmd=learning_relevance_cmd,
         )
@@ -4761,6 +4909,65 @@ def run_self_test() -> None:
                 cmd=learning_relevance_cmd,
             ),
             expected="brief relevance should pick the Button accessibility entry",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_payload(
+                {
+                    **learning_relevance_payload,
+                    "learningUsage": {
+                        **learning_relevance_payload["learningUsage"],
+                        "event": {
+                            **learning_relevance_payload["learningUsage"]["event"],
+                            "brief": EXPECTED_ROUTE_BRIEF,
+                            "briefHash": "",
+                        },
+                    },
+                },
+                expected_command="prompt",
+                context=context,
+                cmd=learning_relevance_cmd,
+            ),
+            expected="learningUsage event should store a short brief hash",
+            scope="package smoke",
+        )
+
+        learning_usage_path = Path(tmp) / "learning.usage.json"
+        learning_usage_path.write_text(
+            json.dumps({
+                "version": 1,
+                "updatedAt": "2026-06-01T00:00:01.000Z",
+                "profileFile": str(learning_profile_path),
+                "events": [
+                    {
+                        **learning_relevance_payload["learningUsage"]["event"],
+                        "id": "learn-use-prompt",
+                        "command": "prompt",
+                    },
+                    {
+                        **learning_relevance_payload["learningUsage"]["event"],
+                        "id": "learn-use-pack",
+                        "command": "pack",
+                        "createdAt": "2026-06-01T00:00:01.000Z",
+                    },
+                ],
+            }),
+            encoding="utf-8",
+        )
+        assert_learning_usage_sidecar(
+            learning_usage_path,
+            expected_commands=["prompt", "pack"],
+            context=context,
+            cmd=learning_relevance_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_sidecar(
+                learning_usage_path.with_name("missing-usage.json"),
+                expected_commands=["prompt", "pack"],
+                context=context,
+                cmd=learning_relevance_cmd,
+            ),
+            expected="learning usage sidecar file should be written",
             scope="package smoke",
         )
 

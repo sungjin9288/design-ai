@@ -15,6 +15,7 @@ import { parseOutputFlags } from "./output.mjs";
 import { expectedValueMessage, unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_LEARNING_FILE = path.join(homedir(), ".design-ai", "learning.json");
+const DEFAULT_LEARNING_USAGE_EVENT_LIMIT = 500;
 const LEARN_OPTIONS = [
   "-h",
   "--help",
@@ -120,6 +121,16 @@ const LEARNING_SENSITIVE_PATTERNS = [
 
 export function defaultLearningFile() {
   return process.env.DESIGN_AI_LEARNING_FILE || DEFAULT_LEARNING_FILE;
+}
+
+export function defaultLearningUsageFile(filePath = defaultLearningFile()) {
+  if (process.env.DESIGN_AI_LEARNING_USAGE_FILE) {
+    return process.env.DESIGN_AI_LEARNING_USAGE_FILE;
+  }
+
+  const parsed = path.parse(filePath);
+  const ext = parsed.ext || ".json";
+  return path.join(parsed.dir, `${parsed.name}.usage${ext}`);
 }
 
 function setAction(out, action) {
@@ -758,6 +769,10 @@ function writeLearningProfile(filePath, profile) {
 function shortEntryId({ text, category, createdAt }) {
   const input = `${createdAt}\n${category}\n${text}`;
   return createHash("sha256").update(input).digest("hex").slice(0, 10);
+}
+
+function shortHash(value) {
+  return createHash("sha256").update(String(value || "")).digest("hex").slice(0, 16);
 }
 
 function cleanNoteText(text) {
@@ -1870,6 +1885,166 @@ export function buildLearningContext({
       includeFallback,
       auditSummary: audit.summary,
     }),
+  };
+}
+
+export function emptyLearningUsageLog({ profileFile = "" } = {}) {
+  return {
+    version: 1,
+    updatedAt: "",
+    profileFile,
+    events: [],
+  };
+}
+
+function normalizeLearningUsageEvent(event) {
+  if (!event || typeof event !== "object" || Array.isArray(event)) return null;
+  const createdAt = String(event.createdAt || "").trim();
+  const command = String(event.command || "").trim();
+  const selectedEntryIds = Array.isArray(event.selectedEntryIds)
+    ? event.selectedEntryIds.map((id) => String(id || "").trim()).filter(Boolean)
+    : [];
+
+  if (!createdAt || !command) return null;
+
+  return {
+    id: String(event.id || `learn-use-${shortHash(`${createdAt}\n${command}`)}`).trim(),
+    command,
+    routeId: String(event.routeId || "").trim(),
+    profileFile: String(event.profileFile || "").trim(),
+    briefHash: String(event.briefHash || "").trim(),
+    category: String(event.category || "").trim(),
+    limit: Number.isInteger(event.limit) ? event.limit : null,
+    selectedEntryIds,
+    selectedCount: Number.isInteger(event.selectedCount) ? event.selectedCount : selectedEntryIds.length,
+    candidateCount: Number.isInteger(event.candidateCount) ? event.candidateCount : 0,
+    matchedCount: Number.isInteger(event.matchedCount) ? event.matchedCount : 0,
+    fallbackCount: Number.isInteger(event.fallbackCount) ? event.fallbackCount : 0,
+    queryTokenCount: Number.isInteger(event.queryTokenCount) ? event.queryTokenCount : 0,
+    auditStatus: String(event.auditStatus || "").trim(),
+    createdAt,
+  };
+}
+
+export function normalizeLearningUsageLog(rawLog, { profileFile = "" } = {}) {
+  const log = rawLog && typeof rawLog === "object" ? rawLog : {};
+  const events = Array.isArray(log.events)
+    ? log.events.map(normalizeLearningUsageEvent).filter(Boolean)
+    : [];
+
+  return {
+    version: Number.isInteger(log.version) ? log.version : 1,
+    updatedAt: String(log.updatedAt || "").trim(),
+    profileFile: String(log.profileFile || profileFile || "").trim(),
+    events,
+  };
+}
+
+export function loadLearningUsageLog(filePath = defaultLearningUsageFile(), { profileFile = "" } = {}) {
+  if (!existsSync(filePath)) {
+    return emptyLearningUsageLog({ profileFile });
+  }
+
+  const raw = readFileSync(filePath, "utf8");
+  try {
+    return normalizeLearningUsageLog(JSON.parse(raw), { profileFile });
+  } catch {
+    throw new Error(`Learning usage log is not valid JSON: ${filePath}`);
+  }
+}
+
+function writeLearningUsageLog(filePath, log) {
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, `${JSON.stringify(log, null, 2)}\n`, "utf8");
+}
+
+export function buildLearningUsageEvent({
+  command,
+  routeId = "",
+  learningContext,
+  now = new Date(),
+} = {}) {
+  if (!learningContext) return null;
+
+  const createdAt = now.toISOString();
+  const selection = learningContext.selection || {};
+  const selectedEntryIds = Array.isArray(selection.selected) && selection.selected.length > 0
+    ? selection.selected.map((item) => item?.id).filter(Boolean)
+    : (learningContext.entries || []).map((entry) => entry.id).filter(Boolean);
+  const normalizedCommand = String(command || "").trim();
+
+  return {
+    id: `learn-use-${shortHash([
+      createdAt,
+      normalizedCommand,
+      routeId,
+      selectedEntryIds.join(","),
+      learningContext.query || "",
+    ].join("\n"))}`,
+    command: normalizedCommand,
+    routeId: String(routeId || "").trim(),
+    profileFile: String(learningContext.file || "").trim(),
+    briefHash: shortHash(learningContext.query || ""),
+    category: String(learningContext.category || "").trim(),
+    limit: Number.isInteger(learningContext.limit) ? learningContext.limit : null,
+    selectedEntryIds,
+    selectedCount: Number.isInteger(selection.selectedCount) ? selection.selectedCount : selectedEntryIds.length,
+    candidateCount: Number.isInteger(selection.candidateCount) ? selection.candidateCount : 0,
+    matchedCount: Number.isInteger(selection.matchedCount) ? selection.matchedCount : 0,
+    fallbackCount: Number.isInteger(selection.fallbackCount) ? selection.fallbackCount : 0,
+    queryTokenCount: Number.isInteger(selection.queryTokenCount) ? selection.queryTokenCount : 0,
+    auditStatus: String(learningContext.auditSummary?.status || "").trim(),
+    createdAt,
+  };
+}
+
+export function recordLearningUsage({
+  command,
+  routeId = "",
+  learningContext,
+  usageFile = defaultLearningUsageFile(learningContext?.file || defaultLearningFile()),
+  now = new Date(),
+  eventLimit = DEFAULT_LEARNING_USAGE_EVENT_LIMIT,
+} = {}) {
+  const event = buildLearningUsageEvent({
+    command,
+    routeId,
+    learningContext,
+    now,
+  });
+  const resolvedUsageFile = path.resolve(usageFile);
+
+  if (!event) {
+    return {
+      file: resolvedUsageFile,
+      recorded: false,
+      reason: "missing-learning-context",
+      count: 0,
+      event: null,
+    };
+  }
+
+  const log = loadLearningUsageLog(resolvedUsageFile, { profileFile: event.profileFile });
+  const updatedAt = event.createdAt;
+  const maxEvents = Number.isInteger(eventLimit) && eventLimit > 0
+    ? eventLimit
+    : DEFAULT_LEARNING_USAGE_EVENT_LIMIT;
+  const events = [...log.events, event].slice(-maxEvents);
+  const nextLog = {
+    version: 1,
+    updatedAt,
+    profileFile: event.profileFile || log.profileFile,
+    events,
+  };
+
+  writeLearningUsageLog(resolvedUsageFile, nextLog);
+
+  return {
+    file: resolvedUsageFile,
+    recorded: true,
+    event,
+    count: nextLog.events.length,
+    eventLimit: maxEvents,
   };
 }
 

@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 245 — Local Learning Usage Sidecar (v4.30.0) ✓ shipped
+
+Local learning injection now leaves a local, privacy-preserving usage trail outside `learning.json`. `design-ai prompt --with-learning` and `design-ai pack --with-learning` write selection metadata into a sibling usage sidecar such as `learning.usage.json`.
+
+### Changed
+- Added local learning usage event helpers for sidecar load/write/normalization.
+- Recorded `prompt` and `pack` learning usage only when `--with-learning` is explicitly used.
+- Stored selected learning entry ids, command, route id, selection counts, audit status, and a short brief hash instead of raw prompt text.
+- Added `learningUsage` metadata to prompt/pack JSON output.
+- Added unit and package-smoke coverage for sidecar events through installed-bin and `npm exec --package <tarball>` paths.
+- Updated package/plugin metadata to `4.30.0`.
+
+### Impact
+- Operators can see which local learning entries are actually injected over time without modifying the learning profile schema.
+- The feature remains local-only and does not add external telemetry, embeddings, model calls, or fine-tuning behavior.
+
+### What this enables
+- Future learning quality reports can identify stale or unused entries from deterministic local usage events.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.29.0 → 4.30.0.
+
+### What's still ahead
+- Deterministic learning quality reports, eval/checkpoint harnesses, semantic embeddings, fine-tuning, and hosted multi-user sync remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 244 — Local Learning Archive-First Curation (v4.29.0) ✓ shipped
 
 Local learning profiles now have a safer maintenance loop. `design-ai learn --curate` previews deterministic curation proposals, and `design-ai learn --curate --yes` moves duplicate and sensitive-content entries into a sibling archive JSON instead of deleting them outright.

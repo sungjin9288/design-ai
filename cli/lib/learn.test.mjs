@@ -12,19 +12,23 @@ import {
   auditLearningProfile,
   buildLearningCurationPlan,
   buildLearningContext,
+  buildLearningUsageEvent,
   buildLearningBackup,
   buildRedactedLearningBackup,
   clearLearning,
   defaultLearningArchiveFile,
+  defaultLearningUsageFile,
   forgetLearning,
   importLearningProfile,
   initializeLearningProfile,
   learningStats,
   loadLearningArchive,
   loadLearningProfile,
+  loadLearningUsageLog,
   normalizeCategory,
   normalizeFeedbackOutcome,
   parseLearnArgs,
+  recordLearningUsage,
   recordLearningFeedback,
   rememberLearning,
   renderLearningMarkdown,
@@ -36,6 +40,8 @@ import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 import { runLearn } from "../commands/learn.mjs";
+import { runPrompt } from "../commands/prompt.mjs";
+import { runPack } from "../commands/pack.mjs";
 
 function withTempDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), "design-ai-learn-test-"));
@@ -67,6 +73,27 @@ async function captureStdout(fn) {
     console.log = originalLog;
   }
   return lines.join("\n");
+}
+
+async function withLearningEnv({ learningFile, usageFile }, fn) {
+  const previousLearningFile = process.env.DESIGN_AI_LEARNING_FILE;
+  const previousUsageFile = process.env.DESIGN_AI_LEARNING_USAGE_FILE;
+  process.env.DESIGN_AI_LEARNING_FILE = learningFile;
+  process.env.DESIGN_AI_LEARNING_USAGE_FILE = usageFile;
+  try {
+    return await fn();
+  } finally {
+    if (previousLearningFile === undefined) {
+      delete process.env.DESIGN_AI_LEARNING_FILE;
+    } else {
+      process.env.DESIGN_AI_LEARNING_FILE = previousLearningFile;
+    }
+    if (previousUsageFile === undefined) {
+      delete process.env.DESIGN_AI_LEARNING_USAGE_FILE;
+    } else {
+      process.env.DESIGN_AI_LEARNING_USAGE_FILE = previousUsageFile;
+    }
+  }
 }
 
 test("parseLearnArgs defaults to list and supports remember notes", () => {
@@ -1735,4 +1762,128 @@ test("buildLearningContext reports empty profiles without creating files", () =>
     warnings: 0,
   });
   assert.match(context.markdown, /No local learning preferences are stored yet/);
+}));
+
+test("recordLearningUsage writes a privacy-preserving sidecar event", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const learningContext = buildLearningContext({
+    filePath,
+    limit: 1,
+    query: "Spec a Button component API with keyboard accessibility",
+  });
+  const event = buildLearningUsageEvent({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    now: new Date("2026-06-01T00:00:00.000Z"),
+  });
+
+  assert.equal(event.command, "prompt");
+  assert.equal(event.routeId, "component-spec");
+  assert.equal(event.briefHash.length, 16);
+  assert.deepEqual(event.selectedEntryIds, ["learn-relevant"]);
+  assert.equal(event.selectedCount, 1);
+  assert.equal(event.matchedCount, 1);
+  assert.equal(event.auditStatus, "pass");
+  assert.ok(!Object.hasOwn(event, "query"));
+
+  const result = recordLearningUsage({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    usageFile,
+    now: new Date("2026-06-01T00:00:00.000Z"),
+  });
+
+  assert.equal(result.recorded, true);
+  assert.equal(result.file, usageFile);
+  assert.equal(result.event.id, event.id);
+
+  const log = loadLearningUsageLog(usageFile, { profileFile: filePath });
+  assert.equal(log.version, 1);
+  assert.equal(log.profileFile, filePath);
+  assert.equal(log.events.length, 1);
+  assert.deepEqual(log.events[0].selectedEntryIds, ["learn-relevant"]);
+
+  const raw = readFileSync(usageFile, "utf8");
+  assert.ok(!raw.includes("Spec a Button component API with keyboard accessibility"));
+}));
+
+test("prompt and pack commands record --with-learning usage sidecar metadata", () => withTempDirAsync(async (dir) => {
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  writeFileSync(learningFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-relevant",
+        category: "accessibility",
+        text: "Prioritize keyboard accessibility details for Button component API specs",
+        source: "test",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-unrelated",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "test",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  await withLearningEnv({ learningFile, usageFile }, async () => {
+    const promptOutput = await captureStdout(() => runPrompt([
+      "Spec a Button component API with keyboard accessibility",
+      "--route",
+      "component-spec",
+      "--with-learning",
+      "--learning-limit",
+      "1",
+      "--json",
+    ]));
+    const promptPayload = JSON.parse(promptOutput);
+    assert.equal(promptPayload.learningUsage.recorded, true);
+    assert.equal(promptPayload.learningUsage.event.command, "prompt");
+    assert.deepEqual(promptPayload.learningUsage.event.selectedEntryIds, ["learn-relevant"]);
+
+    const packOutput = await captureStdout(() => runPack([
+      "Spec a Button component API with keyboard accessibility",
+      "--route",
+      "component-spec",
+      "--with-learning",
+      "--learning-limit",
+      "1",
+      "--max-bytes",
+      "5000",
+      "--json",
+    ]));
+    const packPayload = JSON.parse(packOutput);
+    assert.equal(packPayload.learningUsage.recorded, true);
+    assert.equal(packPayload.learningUsage.event.command, "pack");
+    assert.equal(packPayload.plan.learningUsage.event.command, "pack");
+  });
+
+  const log = loadLearningUsageLog(usageFile, { profileFile: learningFile });
+  assert.deepEqual(log.events.map((event) => event.command), ["prompt", "pack"]);
+  assert.deepEqual(log.events.map((event) => event.selectedEntryIds), [
+    ["learn-relevant"],
+    ["learn-relevant"],
+  ]);
 }));
