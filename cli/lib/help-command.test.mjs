@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
+  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
@@ -64,7 +64,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]\s+Manage local learning preferences, usage reports, and eval checkpoints for prompt personalization/,
+    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]\s+Manage local learning preferences, usage reports, and eval checkpoints for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
@@ -96,7 +96,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
+    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "check").usage,
@@ -279,10 +279,15 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --restore --stdin \[--dry-run\|--yes\] \[--backup-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--restore\s+Preview or apply replacing the active profile with a portable learning JSON payload/);
   assert.match(learnOutput, /design-ai learn --restore-backups \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --restore-backups --prune \[--keep N\] \[--dry-run\|--yes\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--restore-backups\s+List sibling restore rollback backups for the active learning profile/);
+  assert.match(learnOutput, /--prune\s+With --restore-backups, preview or delete older rollback backup files/);
+  assert.match(learnOutput, /--keep N\s+With --restore-backups --prune, keep the N newest backups\. Default: 5/);
   assert.match(learnOutput, /--backup-file path\s+With --restore, override the automatic rollback backup file path/);
   assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json --dry-run/);
   assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json --yes --backup-file learning-before-restore\.json/);
+  assert.match(learnOutput, /design-ai learn --restore-backups --prune --keep 5/);
+  assert.match(learnOutput, /design-ai learn --restore-backups --prune --keep 5 --yes/);
   assert.match(learnOutput, /--import\s+Merge entries from a JSON learning profile or learn --export --json payload/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);
@@ -291,7 +296,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
   assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive entries, plus usage review hints/);
   assert.match(learnOutput, /--report\s+With --curate, emit a Markdown curation report instead of human console output/);
-  assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --restore, --curate, or --audit --fix without changing the profile/);
+  assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files/);
   assert.match(learnOutput, /design-ai learn --init --yes --json/);
   assert.match(learnOutput, /design-ai learn --curate --yes --json/);
   assert.match(learnOutput, /design-ai learn --curate --report --out learning-curation-report\.md/);

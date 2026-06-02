@@ -3181,6 +3181,49 @@ def assert_learning_restore_backups_json(
     )
 
 
+def assert_learning_restore_backups_prune_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    deleted_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore-backups prune JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups prune JSON must be an object")
+    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups prune file path changed")
+    prune = payload.get("prune")
+    require_package_smoke(isinstance(prune, dict), context=context, cmd=cmd, message="learn restore-backups prune payload missing")
+    require_package_smoke(prune.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn restore-backups prune dryRun changed")
+    require_package_smoke(prune.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn restore-backups prune applied flag changed")
+    require_package_smoke(prune.get("keep") == 1, context=context, cmd=cmd, message="learn restore-backups prune keep count changed")
+    require_package_smoke(prune.get("candidateCount") == 1, context=context, cmd=cmd, message="learn restore-backups prune candidate count changed")
+    expected_deleted_count = 0 if dry_run else 1
+    require_package_smoke(prune.get("deletedCount") == expected_deleted_count, context=context, cmd=cmd, message="learn restore-backups prune deleted count changed")
+    candidates = prune.get("candidates")
+    require_package_smoke(isinstance(candidates, list) and candidates, context=context, cmd=cmd, message="learn restore-backups prune candidates missing")
+    require_package_smoke(candidates[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune candidate file changed")
+    if not dry_run:
+        deleted = prune.get("deleted")
+        require_package_smoke(isinstance(deleted, list) and deleted, context=context, cmd=cmd, message="learn restore-backups prune deleted list missing")
+        require_package_smoke(deleted[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune deleted file changed")
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("deletesBackupFiles") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups prune privacy flags changed",
+    )
+
+
 def assert_learning_restore_smoke(
     command_factory,
     profile_path: Path,
@@ -3311,7 +3354,9 @@ def assert_learning_restore_smoke(
     )
 
     restore_inventory_path = profile_path.with_name(f"{profile_path.stem}.restore-backup-20260522T000500000Z.json")
+    older_restore_inventory_path = profile_path.with_name(f"{profile_path.stem}.restore-backup-20260522T000400000Z.json")
     restore_inventory_path.write_text(json.dumps(backup_profile, indent=2), encoding="utf-8")
+    older_restore_inventory_path.write_text(json.dumps(backup_profile, indent=2), encoding="utf-8")
     backups_human_cmd = command_factory("learn", "--restore-backups", "--file", str(profile_path), "--limit", "1")
     backups_human_result = run_plain(backups_human_cmd, cwd=cwd, env=env)
     require_package_smoke(
@@ -3360,6 +3405,59 @@ def assert_learning_restore_smoke(
         backup_path=restore_inventory_path,
         context=f"{context} restore-backups out file",
         cmd=backups_out_cmd,
+    )
+
+    prune_preview_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    prune_preview_result = run_plain(prune_preview_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_prune_json(
+        prune_preview_result.stdout,
+        profile_path=profile_path,
+        deleted_path=older_restore_inventory_path,
+        dry_run=True,
+        context=f"{context} restore-backups prune preview",
+        cmd=prune_preview_cmd,
+    )
+    require_package_smoke(
+        restore_inventory_path.exists() and older_restore_inventory_path.exists(),
+        context=f"{context} restore-backups prune preview files",
+        cmd=prune_preview_cmd,
+        message="learn restore-backups prune preview should not delete backup files",
+    )
+
+    prune_apply_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(profile_path),
+        "--yes",
+        "--json",
+    )
+    prune_apply_result = run_plain(prune_apply_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_prune_json(
+        prune_apply_result.stdout,
+        profile_path=profile_path,
+        deleted_path=older_restore_inventory_path,
+        dry_run=False,
+        context=f"{context} restore-backups prune apply",
+        cmd=prune_apply_cmd,
+    )
+    require_package_smoke(
+        restore_inventory_path.exists() and not older_restore_inventory_path.exists(),
+        context=f"{context} restore-backups prune apply files",
+        cmd=prune_apply_cmd,
+        message="learn restore-backups prune apply should delete only older backup files",
     )
 
 
@@ -5992,6 +6090,7 @@ def run_self_test() -> None:
 
         learning_restore_path = Path(tmp) / "learning-restore.json"
         learning_restore_backup_path = Path(tmp) / "learning.restore-backup-20260522T000100000Z.json"
+        learning_restore_backup_prune_path = Path(tmp) / "learning.restore-backup-20260522T000000000Z.json"
         learning_restore_payload = {
             "file": str(learning_profile_path),
             "source": str(learning_restore_path),
@@ -6173,6 +6272,114 @@ def run_self_test() -> None:
                 cmd=learn_restore_backups_cmd,
             ),
             expected="learn restore-backups privacy mutation flag changed",
+            scope="package smoke",
+        )
+
+        learning_restore_backups_prune_payload = {
+            **learning_restore_backups_payload,
+            "totalCount": 2,
+            "prune": {
+                "dryRun": True,
+                "applied": False,
+                "keep": 1,
+                "retainedCount": 1,
+                "candidateCount": 1,
+                "deletedCount": 0,
+                "failureCount": 0,
+                "retained": learning_restore_backups_payload["backups"],
+                "candidates": [
+                    {
+                        **learning_restore_backups_payload["backups"][0],
+                        "file": str(learning_restore_backup_prune_path),
+                        "name": learning_restore_backup_prune_path.name,
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                        "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_prune_path} --file {learning_profile_path} --dry-run",
+                    },
+                ],
+                "deleted": [],
+                "failures": [],
+            },
+            "privacy": {
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": False,
+                "mutatesProfile": False,
+                "deletesBackupFiles": False,
+            },
+        }
+        learn_restore_backups_prune_cmd = [
+            "design-ai",
+            "learn",
+            "--restore-backups",
+            "--prune",
+            "--keep",
+            "1",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        assert_learning_restore_backups_prune_json(
+            json.dumps(learning_restore_backups_prune_payload),
+            profile_path=learning_profile_path,
+            deleted_path=learning_restore_backup_prune_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_backups_prune_cmd,
+        )
+        assert_learning_restore_backups_prune_json(
+            json.dumps({
+                **learning_restore_backups_prune_payload,
+                "prune": {
+                    **learning_restore_backups_prune_payload["prune"],
+                    "dryRun": False,
+                    "applied": True,
+                    "deletedCount": 1,
+                    "deleted": learning_restore_backups_prune_payload["prune"]["candidates"],
+                },
+                "privacy": {
+                    **learning_restore_backups_prune_payload["privacy"],
+                    "deletesBackupFiles": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            deleted_path=learning_restore_backup_prune_path,
+            dry_run=False,
+            context=context,
+            cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_prune_json(
+                json.dumps({
+                    **learning_restore_backups_prune_payload,
+                    "prune": {
+                        **learning_restore_backups_prune_payload["prune"],
+                        "candidateCount": 0,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                deleted_path=learning_restore_backup_prune_path,
+                dry_run=True,
+                context=context,
+                cmd=learn_restore_backups_prune_cmd,
+            ),
+            expected="learn restore-backups prune candidate count changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_prune_json(
+                json.dumps({
+                    **learning_restore_backups_prune_payload,
+                    "privacy": {
+                        **learning_restore_backups_prune_payload["privacy"],
+                        "deletesBackupFiles": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                deleted_path=learning_restore_backup_prune_path,
+                dry_run=True,
+                context=context,
+                cmd=learn_restore_backups_prune_cmd,
+            ),
+            expected="learn restore-backups prune privacy flags changed",
             scope="package smoke",
         )
 

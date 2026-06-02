@@ -2,6 +2,39 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.51.0 — Learning Restore Backup Prune (2026-06)
+
+Added preview-first rollback backup pruning for local learning restores. `design-ai learn --restore-backups --prune` now shows which older sibling rollback backup files would be deleted, and `--yes` deletes only those older backup files while leaving the active learning profile unchanged.
+
+### Added
+- `design-ai learn --restore-backups --prune [--keep N] [--dry-run|--yes] [--json] [--out file]` for safe rollback backup retention cleanup.
+- Default keep policy of the 5 newest rollback backups, with `--keep N` for explicit retention.
+- Human output for prune preview/applied states, retained count, candidate count, deleted count, and delete failures.
+- JSON output with `prune.dryRun`, `prune.applied`, `prune.keep`, retained backups, candidate backups, deleted backups, failures, and privacy metadata that separates profile mutation from backup file deletion.
+- Unit coverage for parser validation, dry-run no-delete behavior, confirmed backup deletion, command human output, command JSON output, and help text.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` restore-backups prune preview/apply paths.
+- Release metadata guard coverage for the `design-ai learn --restore-backups --prune` smoke phrase.
+
+### Preserved
+- `learn --restore-backups` inventory remains read-only unless `--prune --yes` is present.
+- `learn --restore-backups --prune` never mutates the active learning profile.
+- The learning profile schema remains unchanged at version 1.
+
+### What this enables
+- Operators can keep automatic restore rollback backups discoverable while safely removing older backup files after reviewing the prune preview.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.50.0 → 4.51.0.
+
 ## v4.50.0 — Learning Restore Backup Inventory (2026-06)
 
 Added a read-only rollback backup inventory for learning profile restores. `design-ai learn --restore-backups` now lists sibling `learning.restore-backup-*.json` files, audits each candidate, and prints a restore dry-run preview command for each backup.
