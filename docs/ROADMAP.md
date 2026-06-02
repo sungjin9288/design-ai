@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 275 — Website Console MCP Probes (unreleased)
+
+`design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` now add read-only local probe results to the Website Improvement MCP readiness workflow. The default `--mcp-check` JSON shape remains unchanged unless `--probes` is explicitly requested.
+
+### Changed
+- Added `--probes` for `design-ai site --mcp-check` and `design-ai site --mcp-plan`.
+- Added a separate `probes` JSON block with mode, external call policy, pass/warn/fail counts, and itemized probe evidence.
+- Added deterministic probes for GitHub repo references, Figma URLs, Browser smoke targets, and deployment provider references.
+- Added human and Markdown action-plan probe sections when probe mode is enabled.
+- Added unit coverage, smoke assertion fixtures, and packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` probe JSON paths.
+
+### Impact
+- Website Improvement operators can verify handoff readiness beyond declared MCP statuses while preserving the stable local readiness contract.
+- Probes are read-only and deterministic: they do not call external MCPs, write to external systems, crawl target sites, run Lighthouse/axe, mutate target repos, add dependencies, or use external AI APIs.
+
+### Verified
+- Targeted `site` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Workflow graph export remains the next Website Console automation phase.
+
 ## Phase 274 — Skill Evolution Proposals (unreleased)
 
 `design-ai learn --propose-skills` now converts repeated check-capture learning signals into preview-only skill instruction delta proposals. It uses the active local learning profile, optional usage sidecar path, and optional eval signal file/directory to keep the same operator context as `learn --signals`.
@@ -21,7 +43,7 @@
 - Package smoke assertion self-tests.
 
 ### What's still ahead
-- Optional MCP probes and workflow graph export remain future phases.
+- Workflow graph export remains a future phase.
 
 ## Phase 273 — Learning Signal Registry (unreleased)
 

@@ -214,8 +214,8 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "cat workspace.json | design-ai site --stdin [--strict] [--json]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site --prompt-list [--json] [--out file] [--force]",
-        "design-ai site <workspace.json> --mcp-check [--strict] [--json] [--out file] [--force]",
-        "design-ai site <workspace.json> --mcp-plan [--strict] [--out file] [--force]",
+        "design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]",
+        "design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--out file] [--force]",
         "design-ai site <workspace.json> --tasks [--out file] [--force]",
         "design-ai site <workspace.json> --bundle --out dir [--strict] [--force]",
         "design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]",
@@ -225,6 +225,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--sample",
         "--prompt-list",
         "--mcp-check",
+        "--probes",
         "--mcp-plan",
         "--tasks",
         "--bundle",
@@ -988,6 +989,29 @@ EXPECTED_SITE_MCP_CHECK_ITEM_KEYS = [
     "requestedStatus",
     "state",
     "level",
+    "evidence",
+    "actions",
+]
+EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS = EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS + ["probes"]
+EXPECTED_SITE_MCP_PROBES_KEYS = [
+    "enabled",
+    "mode",
+    "externalCalls",
+    "status",
+    "count",
+    "pass",
+    "warn",
+    "fail",
+    "items",
+]
+EXPECTED_SITE_MCP_PROBE_ITEM_KEYS = [
+    "id",
+    "key",
+    "label",
+    "requestedStatus",
+    "level",
+    "passed",
+    "message",
     "evidence",
     "actions",
 ]
@@ -4383,6 +4407,67 @@ def passing_site_mcp_check_json() -> str:
     )
 
 
+def passing_site_mcp_check_probes_json() -> str:
+    payload = json.loads(passing_site_mcp_check_json())
+    payload["probes"] = {
+        "enabled": True,
+        "mode": "read-only-local",
+        "externalCalls": False,
+        "status": "pass",
+        "count": 4,
+        "pass": 4,
+        "warn": 0,
+        "fail": 0,
+        "items": [
+            {
+                "id": "github-repo-reference",
+                "key": "github",
+                "label": "GitHub repo reference",
+                "requestedStatus": "required",
+                "level": "pass",
+                "passed": True,
+                "message": "Target repo reference is parseable for Codex handoff.",
+                "evidence": ["github repo: acme/korean-saas-site"],
+                "actions": [],
+            },
+            {
+                "id": "figma-url-reference",
+                "key": "figma",
+                "label": "Figma file reference",
+                "requestedStatus": "optional",
+                "level": "pass",
+                "passed": True,
+                "message": "Figma URL is parseable for design-context handoff.",
+                "evidence": ["figma reference: file/example"],
+                "actions": [],
+            },
+            {
+                "id": "browser-smoke-target",
+                "key": "browser",
+                "label": "Browser smoke target",
+                "requestedStatus": "required",
+                "level": "pass",
+                "passed": True,
+                "message": "Browser smoke target and viewport set are ready for manual or MCP-driven QA.",
+                "evidence": ["liveUrl host: example.com", "viewports: desktop, tablet, mobile"],
+                "actions": [],
+            },
+            {
+                "id": "deploy-provider-reference",
+                "key": "deploy",
+                "label": "Deployment provider reference",
+                "requestedStatus": "required",
+                "level": "pass",
+                "passed": True,
+                "message": "Deployment provider and live URL are configured for verification handoff.",
+                "evidence": ["deployProvider: vercel", "liveUrl host: example.com"],
+                "actions": [],
+            },
+        ],
+    }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
 def passing_site_mcp_plan_markdown() -> str:
     return """# Website improvement MCP action plan: Korean SaaS marketing site
 
@@ -5734,6 +5819,70 @@ def assert_site_mcp_check_json(raw: str, *, context: str, cmd: list[str]) -> Non
         raise SystemExit(f"site mcp-check JSON after {context} should not report sample workspace issues")
     if not isinstance(payload.get("nextActions"), list):
         raise SystemExit(f"site mcp-check JSON after {context} nextActions must be an array")
+
+
+def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site mcp-check probes JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site mcp-check probes JSON",
+    )
+    base_payload = dict(payload)
+    probes = base_payload.pop("probes")
+    assert_site_mcp_check_json(json.dumps(base_payload), context=context, cmd=cmd)
+
+    probes = assert_smoke_json_keys(
+        probes,
+        EXPECTED_SITE_MCP_PROBES_KEYS,
+        label="probes",
+        context=context,
+        command_label="site mcp-check probes JSON",
+    )
+    if probes.get("enabled") is not True or probes.get("mode") != "read-only-local":
+        raise SystemExit(f"site mcp-check probes JSON after {context} probe mode changed")
+    if probes.get("externalCalls") is not False:
+        raise SystemExit(f"site mcp-check probes JSON after {context} must remain read-only without external calls")
+    if probes.get("status") != "pass" or probes.get("count") != 4 or probes.get("pass") != 4:
+        raise SystemExit(f"site mcp-check probes JSON after {context} sample probes should pass")
+    if probes.get("warn") != 0 or probes.get("fail") != 0:
+        raise SystemExit(f"site mcp-check probes JSON after {context} sample probes should not warn or fail")
+
+    items = probes.get("items")
+    if not isinstance(items, list) or len(items) != 4:
+        raise SystemExit(f"site mcp-check probes JSON after {context} should include four probe items")
+    expected_ids = [
+        "github-repo-reference",
+        "figma-url-reference",
+        "browser-smoke-target",
+        "deploy-provider-reference",
+    ]
+    checked_ids = []
+    for item in items:
+        checked = assert_smoke_json_keys(
+            item,
+            EXPECTED_SITE_MCP_PROBE_ITEM_KEYS,
+            label="probes item",
+            context=context,
+            command_label="site mcp-check probes JSON",
+        )
+        checked_ids.append(checked.get("id"))
+        if checked.get("level") != "pass" or checked.get("passed") is not True:
+            raise SystemExit(f"site mcp-check probes JSON after {context} sample probe should pass: {checked.get('id')}")
+        if not isinstance(checked.get("evidence"), list) or not checked.get("evidence"):
+            raise SystemExit(f"site mcp-check probes JSON after {context} probe evidence is missing")
+        if not isinstance(checked.get("actions"), list):
+            raise SystemExit(f"site mcp-check probes JSON after {context} probe actions must be an array")
+    if checked_ids != expected_ids:
+        raise SystemExit(f"site mcp-check probes JSON after {context} probe item order changed")
 
 
 def assert_site_mcp_plan_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -8902,6 +9051,8 @@ def run_self_test() -> None:
     assert_site_prompt_templates_json(passing_site_prompt_templates_json(), context=context, cmd=site_prompt_templates_cmd)
     site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
     assert_site_mcp_check_json(passing_site_mcp_check_json(), context=context, cmd=site_mcp_check_cmd)
+    site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
+    assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
     site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
     assert_site_mcp_plan_markdown(passing_site_mcp_plan_markdown(), context=context, cmd=site_mcp_plan_cmd)
     expect_self_test_failure(
@@ -8931,6 +9082,11 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_site_mcp_check_json("\x1b[31m{}", context=context, cmd=site_mcp_check_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json("\x1b[31m{}", context=context, cmd=site_mcp_check_probes_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -9107,6 +9263,28 @@ def run_self_test() -> None:
             cmd=site_mcp_check_cmd,
         ),
         expected="sample item should pass",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_check_probes_payload = json.loads(passing_site_mcp_check_probes_json())
+    stale_site_mcp_check_probes_payload["probes"]["externalCalls"] = True
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json(
+            json.dumps(stale_site_mcp_check_probes_payload),
+            context=context,
+            cmd=site_mcp_check_probes_cmd,
+        ),
+        expected="external calls",
+        scope="smoke assertions",
+    )
+    missing_site_mcp_probe_payload = json.loads(passing_site_mcp_check_probes_json())
+    missing_site_mcp_probe_payload["probes"]["items"] = missing_site_mcp_probe_payload["probes"]["items"][:3]
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json(
+            json.dumps(missing_site_mcp_probe_payload),
+            context=context,
+            cmd=site_mcp_check_probes_cmd,
+        ),
+        expected="four probe items",
         scope="smoke assertions",
     )
     expect_self_test_failure(

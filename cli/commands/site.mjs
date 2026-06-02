@@ -34,8 +34,8 @@ function printHelp() {
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --mcp-check [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --mcp-plan [--strict] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
@@ -52,6 +52,8 @@ function printHelp() {
   console.log("              List Website Improvement prompt template ids and intended use");
   console.log("  --mcp-check");
   console.log("              Check MCP readiness evidence and task/MCP gaps without external MCP calls");
+  console.log("  --probes");
+  console.log("              Add read-only local URL/path/tool-handoff probes to --mcp-check or --mcp-plan; no external writes or MCP calls");
   console.log("  --mcp-plan");
   console.log("              Generate a Markdown MCP readiness action plan without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
@@ -76,6 +78,7 @@ function printHelp() {
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
+  console.log("  design-ai site website-workspace.json --mcp-check --probes --json");
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
@@ -255,13 +258,13 @@ export async function runSite(args) {
   let content = "";
   let status = summary.status;
   if (parsed.mcpCheck) {
-    const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+    const mcpReport = buildSiteMcpCheckReport(workspace, summary, { probes: parsed.probes });
     status = mcpReport.status;
     content = `${parsed.json ? formatSiteMcpCheckJson(mcpReport) : formatSiteMcpCheckHuman(mcpReport)}\n`;
   } else if (parsed.mcpPlan) {
-    const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+    const mcpReport = buildSiteMcpCheckReport(workspace, summary, { probes: parsed.probes });
     status = mcpReport.status;
-    content = `${buildSiteMcpActionPlan(workspace, summary)}\n`;
+    content = `${buildSiteMcpActionPlan(workspace, summary, { probes: parsed.probes })}\n`;
   } else if (parsed.report) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {

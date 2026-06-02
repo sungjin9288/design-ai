@@ -2,9 +2,9 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## Unreleased — Agent Eval, Learning Signals, and Skill Proposals
+## Unreleased — Agent Eval, Learning Signals, Skill Proposals, and MCP Probes
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, and preview-only skill evolution proposals for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, and optional Website Console MCP probes for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -19,9 +19,12 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Learning signal registry JSON reports include `learning`, `usage`, `evals`, `checkCapture`, `workspace`, `recommendations`, and privacy metadata; human output summarizes eval signals, recent check captures, workspace readiness, and next actions.
 - `design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json]` converts repeated check-capture learning signals into preview-only skill instruction delta proposals.
 - Skill proposal JSON reports include `proposals` with `candidateSkillPath`, `evidenceSources`, `proposedInstructionDelta`, `verificationCommand`, `riskLevel`, and privacy metadata; single-entry groups are reported in `skipped`.
+- `design-ai site --mcp-check --probes [--json]` adds read-only local MCP probe results for GitHub repo references, Figma URLs, Browser smoke targets, and deployment provider references.
+- `design-ai site --mcp-plan --probes` includes the same read-only probes in the Markdown MCP action plan.
 - Packed-tarball smoke now verifies route eval, prompt eval, and pack eval checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --signals` human, JSON, and `--out` registry reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --propose-skills` human, JSON, and `--out` preview reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Packed-tarball smoke now verifies `design-ai site --stdin --mcp-check --probes --json` probe output through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Release metadata now guards the route/prompt/pack eval smoke phrase in release policy docs.
 - `docs/AGENT-DEVELOPMENT.md` records the Hermes/Harness-centered reference analysis and the next AI/agent development phases.
 
@@ -29,6 +32,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Agent evals are read-only. They do not call external AI APIs, mutate the learning profile, or install new dependencies.
 - The signal registry is read-only and deterministic; it reports local files only and exposes short check-capture previews rather than raw brief text.
 - Skill proposals are preview-only. They do not edit `learning.json` or `skills/*/SKILL.md`; an explicit apply path remains a future phase.
+- Website Console probes are opt-in and read-only. They do not call external MCPs, write to external systems, crawl target sites, or add dependencies.
 - npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
 
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)

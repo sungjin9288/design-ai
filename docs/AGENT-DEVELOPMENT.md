@@ -103,14 +103,14 @@ The command groups repeated `source: check:*` learning entries by candidate skil
 
 ### Phase 275: Website Console MCP probes
 
-Extend the existing MCP readiness matrix from declared status to optional live probes:
+Implemented `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` as optional read-only probe overlays for the existing Website Console MCP readiness matrix:
 
-- GitHub repo reachable
-- Figma URL parseable
-- browser smoke available
-- deployment provider configured
+- GitHub repo reference parseable through `github.com/<owner>/<repo>` or an existing local repo path
+- Figma URL parseable for `design`, `file`, `board`, `slides`, or `make` handoff references
+- Browser smoke target available from a valid live URL plus configured viewport set
+- deployment provider reference configured with a valid live URL
 
-This remains read-only and should not write to external systems.
+The probes report as a separate `probes` JSON block so the default `--mcp-check` contract stays stable. They remain deterministic, local, and read-only: no external MCP calls, no writes to GitHub/Figma/deploy providers, no crawling, no Lighthouse/axe automation, and no new dependencies.
 
 ### Phase 276: workflow graph export
 

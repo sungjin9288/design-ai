@@ -85,6 +85,7 @@ from smoke_assertions import (
     assert_status_output,
     assert_site_json,
     assert_site_mcp_check_json,
+    assert_site_mcp_check_probes_json,
     assert_site_mcp_plan_markdown,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
@@ -683,6 +684,22 @@ def assert_site_mcp_check_json_smoke(
         env=env,
     )
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_check_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_site_mcp_plan_markdown_smoke(
@@ -8724,6 +8741,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-check JSON",
         )
+        assert_site_mcp_check_probes_json_smoke(
+            [str(bin_path), "site", "--stdin", "--mcp-check", "--probes", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check probes JSON",
+        )
         assert_site_mcp_plan_markdown_smoke(
             [str(bin_path), "site", "--stdin", "--mcp-plan"],
             cwd=install_root,
@@ -9521,6 +9544,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-check JSON",
+        )
+        assert_site_mcp_check_probes_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--probes", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check probes JSON",
         )
         assert_site_mcp_plan_markdown_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan"),

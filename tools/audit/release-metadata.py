@@ -237,6 +237,12 @@ RELEASE_SITE_MCP_CHECK_PACKAGE_SMOKE_TERM_GROUPS = (
         "site --mcp-check --json",
     ),
     (
+        "`design-ai site --stdin --mcp-check --probes --json`",
+        "design-ai site --stdin --mcp-check --probes --json",
+        "site --stdin --mcp-check --probes --json",
+        "site --mcp-check --probes --json",
+    ),
+    (
         "Website Console MCP readiness check",
         "Website Improvement MCP readiness check",
         "site mcp-check JSON",
@@ -2471,6 +2477,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
+`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification and bundle digest fingerprint verification,
@@ -2564,6 +2571,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
+`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe 검증도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증과 bundle digest 검증도 확인하고,
@@ -3060,6 +3068,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing site registry smoke phrase" in site_registry_smoke_drift_errors,
         "release policy docs should mention public registry Website Console smoke",
+    )
+
+    site_mcp_probe_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check",
+                "Website Console MCP probe coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    site_mcp_probe_package_smoke_drift_errors = "\n".join(
+        site_mcp_probe_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site mcp-check package smoke phrase"
+        in site_mcp_probe_package_smoke_drift_errors,
+        "release policy docs should mention Website Console MCP probe smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
