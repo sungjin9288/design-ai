@@ -18,6 +18,8 @@ Post-publish registry smoke guidance must also retain public registry `design-ai
 
 Packed-tarball smoke guidance must also retain `design-ai learn --signals` learning signal registry coverage for human, JSON, and `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
+Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills` preview-only skill proposal coverage for human, JSON, and `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
+
 For pre-push Real-CI parity, run the broader local workflow gate:
 
 ```bash

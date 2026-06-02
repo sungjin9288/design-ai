@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 274 — Skill Evolution Proposals (unreleased)
+
+`design-ai learn --propose-skills` now converts repeated check-capture learning signals into preview-only skill instruction delta proposals. It uses the active local learning profile, optional usage sidecar path, and optional eval signal file/directory to keep the same operator context as `learn --signals`.
+
+### Changed
+- Added `design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]`.
+- Added deterministic grouping from `source: check:*` learning entries to candidate skill paths through route skills or category fallback.
+- Added proposal JSON fields for candidate skill, evidence sources, proposed instruction delta, verification command, risk level, skipped single-entry groups, and privacy metadata.
+- Added human output for quick review of candidate skill deltas and evidence previews.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` skill proposal JSON/human/`--out` paths.
+- Added help, unit, smoke assertion, and docs coverage for the new preview-only proposal flow.
+
+### Impact
+- Repeated local QA feedback can now be reviewed as concrete skill improvement candidates before any skill file is edited.
+- The command is deterministic and preview-only; it rejects `--yes`, does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, does not call external AI APIs, and does not add dependencies.
+
+### Verified
+- Targeted `learn` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Optional MCP probes and workflow graph export remain future phases.
+
 ## Phase 273 — Learning Signal Registry (unreleased)
 
 `design-ai learn --signals` now reports a joined, read-only local signal registry for AI/agent development. It combines learning profile audit state, learning usage sidecar activity, eval signal files, check learning capture entries, and workspace readiness without changing the active learning profile.
@@ -21,7 +44,7 @@
 - Package smoke assertion self-tests.
 
 ### What's still ahead
-- Preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+- Optional MCP probes and workflow graph export remain future phases.
 
 ## Phase 272 — Agent Prompt and Pack Eval Harness (unreleased)
 

@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
+  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals\|--propose-skills\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
@@ -64,7 +64,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]\s+Manage local learning preferences, usage reports, signal registry, and eval checkpoints for prompt personalization/,
+    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals\|--propose-skills\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]\s+Manage local learning preferences, usage reports, signal registry, skill proposals, and eval checkpoints for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
@@ -104,7 +104,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
+    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals|--propose-skills|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "check").usage,
@@ -326,7 +326,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--usage\s+Summarize prompt\/pack --with-learning usage sidecar events without changing files/);
   assert.match(learnOutput, /design-ai learn --signals \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--signals\s+Summarize local learning, usage, eval, check-capture, and workspace readiness signals without changing files/);
-  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage, --curate, or --signals/);
+  assert.match(learnOutput, /design-ai learn --propose-skills \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /--propose-skills\s+Preview skill instruction deltas from repeated check-capture learning signals without changing files/);
+  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage, --curate, --signals, or --propose-skills/);
   assert.match(learnOutput, /design-ai learn --eval-template \[--query text\] \[--category kind\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--eval-template\s+Generate a runnable learning eval checkpoint from the active profile/);
   assert.match(learnOutput, /design-ai learn --eval --from-file eval\.json \[--category kind\] \[--limit N\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -335,6 +337,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --eval-template --query "keyboard accessibility" --out learning-eval\.json/);
   assert.match(learnOutput, /design-ai learn --eval --from-file learning-eval\.json --strict --json/);
   assert.match(learnOutput, /design-ai learn --signals --from-file \. --json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --json/);
   assert.match(learnOutput, /design-ai learn --list --query "keyboard accessibility" --explain --json/);
   assert.match(learnOutput, /design-ai learn --export --query "pricing page" --limit 3/);
   assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\] \[--out file\] \[--force\]/);

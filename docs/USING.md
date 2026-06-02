@@ -49,6 +49,17 @@ design-ai learn --signals --from-file route-eval-report.json --usage-file learni
 
 `--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews.
 
+## Skill evolution proposals
+
+Use skill evolution proposals after repeated `check --learn --yes` captures point at the same route or category. The report turns those local signals into candidate skill edits, but it remains preview-only.
+
+```bash
+design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
+
 ## Claude Code
 
 Claude Code reads `CLAUDE.md` automatically. To get **slash commands** and **skill auto-loading**, optionally symlink:

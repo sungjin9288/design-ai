@@ -30,6 +30,7 @@ What ships in v4.54:
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
+- `design-ai learn --propose-skills` converts repeated check-capture learning signals into preview-only candidate skill instruction deltas without changing `learning.json` or skill files.
 - `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails. JSON reports expose checkpoint `generatedAt` plus a sanitized `sourceProfile` summary without raw checkpoint brief or query text.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, usage sidecar readiness, eval checkpoint readiness, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-usage path` or `--learning-eval path` to include specific artifacts, omit them to auto-detect sibling `learning.usage.json` and `learning-eval.json` files when present, and add `--strict` when warning/failure readiness should fail the command.
@@ -98,7 +99,7 @@ When usage metadata is available, `workspace` compares it against the selected p
 
 When checkpoint metadata is available, `workspace` also compares it against the selected profile. A passing checkpoint still becomes a readiness warning when the profile `updatedAt` is newer than checkpoint `generatedAt`, when `sourceProfile.file` does not match the active profile path, or when the recorded source entry count differs from the active profile count.
 
-If the selected profile, usage sidecar, report output, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --curate --report --out`, `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
+If the selected profile, usage sidecar, report output, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --curate --report --out`, `learn --usage`, `learn --propose-skills`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
 
 If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until a sibling or explicit checkpoint is available:
 
@@ -282,6 +283,16 @@ design-ai learn --usage --limit 5 --usage-file ./learning.usage.json
 ```
 
 Usage mode is read-only. It reports event count, command/route/category distribution, entry ids selected by `prompt` and `pack`, active profile entries that have not been used yet, stale selected ids no longer present in the active profile, and recent events. It preserves the privacy boundary from the sidecar: selected entry ids and short brief hashes are shown, but raw prompt or query text is not stored or reported.
+
+Preview skill evolution proposals:
+
+```bash
+design-ai learn --propose-skills
+design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file route-eval-report.json --usage-file ./learning.usage.json --json --out skill-proposals.json
+```
+
+Skill proposal mode is read-only. It scans active learning entries whose `source` starts with `check:`, groups repeated check-capture signals by candidate skill and category, and emits proposal records with `candidateSkillPath`, `evidenceSources`, `proposedInstructionDelta`, `verificationCommand`, and `riskLevel`. Single-entry groups are reported as skipped until enough repeated evidence exists. The command is deliberately preview-only: `--yes` is rejected, `learning.json` is not changed, `skills/*/SKILL.md` is not edited, and no external AI API is called.
 
 Evaluate learning-selection checkpoints:
 

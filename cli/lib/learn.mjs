@@ -47,6 +47,7 @@ const LEARN_OPTIONS = [
   "--stats",
   "--usage",
   "--signals",
+  "--propose-skills",
   "--eval",
   "--eval-template",
   "--strict",
@@ -292,6 +293,8 @@ export function parseLearnArgs(args) {
       setAction(out, "usage");
     } else if (arg === "--signals") {
       setAction(out, "signals");
+    } else if (arg === "--propose-skills") {
+      setAction(out, "propose-skills");
     } else if (arg === "--eval") {
       setAction(out, "eval");
     } else if (arg === "--eval-template") {
@@ -363,7 +366,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals", "propose-skills"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -428,8 +431,8 @@ export function parseLearnArgs(args) {
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (out.usageFilePath && !["usage", "curate", "signals"].includes(out.action)) {
-    throw new Error("--usage-file can only be used with --usage, --curate, or --signals");
+  if (out.usageFilePath && !["usage", "curate", "signals", "propose-skills"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage, --curate, --signals, or --propose-skills");
   }
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");
@@ -448,6 +451,12 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "signals" && out.stdin) {
     throw new Error("--signals does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "propose-skills" && out.stdin) {
+    throw new Error("--propose-skills does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "propose-skills" && out.yes) {
+    throw new Error("--propose-skills is preview-only and does not accept --yes");
   }
   if (out.action === "diff" && !out.fromFile && !out.stdin) {
     throw new Error("--diff requires --from-file or --stdin");

@@ -4846,6 +4846,93 @@ def assert_learning_signal_report_human(
         )
 
 
+def assert_skill_proposal_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should report the learning profile and usage paths",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is True and payload.get("applied") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals must remain preview-only",
+    )
+    require_package_smoke(
+        payload.get("checkCaptureCount") >= 2
+        and payload.get("candidateCount") >= 1
+        and payload.get("proposalCount") >= 1
+        and payload.get("count") == payload.get("proposalCount"),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should summarize repeated check captures",
+    )
+    proposals = payload.get("proposals")
+    require_package_smoke(
+        isinstance(proposals, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("sourceIssueCount", 0) >= 2
+            and item.get("proposedInstructionDelta")
+            and item.get("verificationCommand")
+            and isinstance(item.get("evidenceSources"), list)
+            and len(item.get("evidenceSources")) >= 2
+            for item in proposals
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should include the repeated component-spec skill delta",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should be read-only and local",
+    )
+
+
+def assert_skill_proposal_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Skill evolution proposals",
+        "Signal source:",
+        "Proposed skill deltas:",
+        "skills/component-spec-writer/SKILL.md",
+        "No changes made. This command is preview-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals human output missing {expected!r}",
+        )
+
+
 def assert_learning_eval_report_json(
     raw: str,
     *,
@@ -5556,6 +5643,122 @@ def assert_learning_relevance_smoke(
         usage_path=usage_path,
         context=f"{context} learn signals out file",
         cmd=signals_out_cmd,
+    )
+
+    proposal_profile_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.json")
+    proposal_usage_path = proposal_profile_path.with_name(f"{proposal_profile_path.stem}.usage{proposal_profile_path.suffix}")
+    proposal_profile_path.write_text(
+        json.dumps({
+            "version": 1,
+            "updatedAt": "2026-06-02T00:00:02.000Z",
+            "entries": [
+                {
+                    "id": "learn-skill-proposal-a",
+                    "category": "accessibility",
+                    "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+                    "source": "check:component-spec",
+                    "createdAt": "2026-06-02T00:00:01.000Z",
+                },
+                {
+                    "id": "learn-skill-proposal-b",
+                    "category": "accessibility",
+                    "text": "Improve future outputs by addressing Screen reader behavior: No screen-reader behavior note detected.",
+                    "source": "check:component-spec",
+                    "createdAt": "2026-06-02T00:00:02.000Z",
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+    proposal_usage_path.write_text(
+        json.dumps({
+            "version": 1,
+            "updatedAt": "2026-06-02T00:00:02.000Z",
+            "profileFile": str(proposal_profile_path),
+            "events": [],
+        }),
+        encoding="utf-8",
+    )
+    proposal_before = proposal_profile_path.read_text(encoding="utf-8")
+
+    skill_proposals_human_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    skill_proposals_human_result = run_plain(skill_proposals_human_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_report_human(
+        skill_proposals_human_result.stdout,
+        context=f"{context} learn skill proposals human",
+        cmd=skill_proposals_human_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals human",
+        cmd=skill_proposals_human_cmd,
+        message="learn skill proposals human output must not mutate the profile",
+    )
+
+    skill_proposals_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_json_result = run_plain(skill_proposals_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_report_json(
+        skill_proposals_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals JSON",
+        cmd=skill_proposals_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals JSON",
+        cmd=skill_proposals_json_cmd,
+        message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    skill_proposals_out_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-out.json")
+    skill_proposals_out_path.write_text("stale skill proposal output\n", encoding="utf-8")
+    skill_proposals_out_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(skill_proposals_out_path),
+        "--force",
+    )
+    skill_proposals_out_result = run_plain(skill_proposals_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_out_result.stdout,
+        context=f"{context} learn skill proposals out",
+        cmd=skill_proposals_out_cmd,
+        expected_path=str(skill_proposals_out_path),
+    )
+    assert_skill_proposal_report_json(
+        skill_proposals_out_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals out file",
+        cmd=skill_proposals_out_cmd,
     )
 
     eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
@@ -7568,6 +7771,109 @@ def run_self_test() -> None:
                 cmd=learn_signals_cmd,
             ),
             expected="learn signals human output missing 'Workspace readiness:'",
+            scope="package smoke",
+        )
+
+        learn_skill_proposals_cmd = [
+            "design-ai",
+            "learn",
+            "--propose-skills",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        learning_skill_proposal_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "dryRun": True,
+            "applied": False,
+            "minEvidenceCount": 2,
+            "checkCaptureCount": 2,
+            "candidateCount": 1,
+            "count": 1,
+            "proposalCount": 1,
+            "skippedCount": 0,
+            "signalStatus": "pass",
+            "proposals": [
+                {
+                    "id": "skill-proposal-component-spec-writer-abcdef1234",
+                    "candidateSkill": "component-spec-writer",
+                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                    "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                    "riskLevel": "low",
+                    "category": "accessibility",
+                    "routeIds": [EXPECTED_ROUTE_ID],
+                    "sourceIssueCount": 2,
+                    "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
+                    "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
+                    "evidenceSources": [
+                        {
+                            "kind": "check-capture",
+                            "entryId": "learn-skill-proposal-a",
+                            "category": "accessibility",
+                            "source": f"check:{EXPECTED_ROUTE_ID}",
+                            "routeId": EXPECTED_ROUTE_ID,
+                            "textPreview": "Improve future outputs by addressing Keyboard and focus behavior.",
+                        },
+                        {
+                            "kind": "check-capture",
+                            "entryId": "learn-skill-proposal-b",
+                            "category": "accessibility",
+                            "source": f"check:{EXPECTED_ROUTE_ID}",
+                            "routeId": EXPECTED_ROUTE_ID,
+                            "textPreview": "Improve future outputs by addressing Screen reader behavior.",
+                        },
+                    ],
+                },
+            ],
+            "skipped": [],
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+            },
+        }
+        assert_skill_proposal_report_json(
+            json.dumps(learning_skill_proposal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
+        assert_skill_proposal_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Skill evolution proposals",
+                f"Signal source: {Path(tmp)}",
+                "Proposed skill deltas:",
+                "skills/component-spec-writer/SKILL.md",
+                "No changes made. This command is preview-only",
+            ]),
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "proposals": [],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals JSON should include the repeated component-spec skill delta",
             scope="package smoke",
         )
 

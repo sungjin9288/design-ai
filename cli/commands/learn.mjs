@@ -36,6 +36,7 @@ import {
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 import { learningSignalRegistry } from "../lib/signals.mjs";
+import { buildSkillEvolutionProposals } from "../lib/skill-proposals.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
@@ -68,6 +69,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -106,6 +108,7 @@ function printHelp() {
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --signals            Summarize local learning, usage, eval, check-capture, and workspace readiness signals without changing files");
+  console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
@@ -113,7 +116,7 @@ function printHelp() {
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
-  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, or --signals");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, --signals, or --propose-skills");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
   console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
@@ -152,6 +155,7 @@ function printHelp() {
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
+  console.log("  design-ai learn --propose-skills --from-file . --json");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -575,6 +579,54 @@ function printSignals(payload) {
   }
 
   console.log("Privacy: signal registry is read-only and does not mutate learning.json.");
+}
+
+function printSkillProposals(payload) {
+  header("design-ai learn", "Skill evolution proposals");
+  info(`File: ${payload.file}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Check capture entries: ${payload.checkCaptureCount}`);
+  info(`Candidates: ${payload.candidateCount}`);
+  info(`Proposals: ${payload.proposalCount}`);
+  info(`Skipped: ${payload.skippedCount}`);
+  console.log();
+
+  if (payload.proposals.length === 0) {
+    console.log("No repeated check-capture groups crossed the proposal threshold.");
+  } else {
+    console.log("Proposed skill deltas:");
+    for (const proposal of payload.proposals) {
+      const routes = proposal.routeIds.length > 0 ? proposal.routeIds.join(", ") : "artifact";
+      console.log(`- ${proposal.id}: ${proposal.candidateSkillPath}`);
+      console.log(`  ${dim(`${proposal.sourceIssueCount} issue(s) · ${proposal.category} · routes ${routes} · risk ${proposal.riskLevel}`)}`);
+      console.log(`  Delta: ${proposal.proposedInstructionDelta}`);
+      console.log(`  Verify: ${proposal.verificationCommand}`);
+      for (const evidence of proposal.evidenceSources.slice(0, 3)) {
+        console.log(`  Evidence: ${evidence.entryId} [${evidence.category}] ${evidence.source}`);
+        if (evidence.textPreview) console.log(`    ${dim(evidence.textPreview)}`);
+      }
+    }
+  }
+
+  if (payload.skipped.length > 0) {
+    console.log();
+    console.log("Skipped groups:");
+    for (const item of payload.skipped) {
+      console.log(`- ${item.candidateSkillPath} [${item.category}]: ${item.reason}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("No changes made. This command is preview-only and does not edit skill files or learning.json.");
 }
 
 function printDiff(payload) {
@@ -1275,6 +1327,21 @@ export async function runLearn(args) {
       return;
     }
     printSignals(payload);
+    return;
+  }
+
+  if (parsed.action === "propose-skills") {
+    const payload = buildSkillEvolutionProposals({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printSkillProposals(payload);
     return;
   }
 

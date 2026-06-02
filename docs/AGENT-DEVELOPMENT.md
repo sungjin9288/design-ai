@@ -86,7 +86,7 @@ This exposes drift without changing the learning profile, calling external AI AP
 
 ### Phase 274: skill evolution proposals
 
-Add a preview-only command that converts repeated learning/check issues into proposed skill edits:
+Implemented `design-ai learn --propose-skills` as a preview-only command that converts repeated learning/check issues into proposed skill edits:
 
 - candidate skill
 - evidence sources
@@ -94,7 +94,12 @@ Add a preview-only command that converts repeated learning/check issues into pro
 - verification command
 - risk level
 
-No skill file should be changed unless the operator runs an explicit apply command later.
+```bash
+design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+The command groups repeated `source: check:*` learning entries by candidate skill and category. It reports single-entry groups as skipped, rejects `--yes`, and does not change `learning.json`, edit `skills/*/SKILL.md`, call external AI APIs, or add dependencies. No skill file should be changed unless the operator runs an explicit apply command in a later phase.
 
 ### Phase 275: Website Console MCP probes
 
