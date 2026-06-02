@@ -14,6 +14,8 @@ This runs CLI unit tests, `npm run audit:strict` all eight repository audits, wh
 
 Post-publish registry smoke guidance must also retain public registry query-filtered learn list explanation/export JSON output plus public registry brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording with public registry prompt/pack --with-learning.
 
+Post-publish registry smoke guidance must also retain public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, refactor task generation, and task-selected prompt generation.
+
 For pre-push Real-CI parity, run the broader local workflow gate:
 
 ```bash

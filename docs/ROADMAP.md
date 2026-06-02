@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 270 — Public Registry Website Console Smoke Coverage (v4.55.0) ✓ shipped
+
+`npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, generated tasks, and task-selected prompt flows.
+
+### Changed
+- Added public registry smoke coverage for `design-ai site --stdin --json`, `design-ai site --sample`, and `design-ai site --prompt-list --json`.
+- Added public registry smoke coverage for `design-ai site --stdin --mcp-check --json` and `design-ai site --stdin --mcp-plan`.
+- Added public registry smoke coverage for `design-ai site --stdin --bundle --out <dir>`, `--bundle-check --strict --json`, `--bundle-compare <dir> --strict --json`, and `--bundle-handoff --strict --json`.
+- Added public registry smoke coverage for `design-ai site --stdin --tasks` and `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta`.
+- Added registry-smoke self-test coverage for Website Console assertion drift.
+- Added release metadata guard phrases for public registry Website Console smoke coverage.
+- Updated README, Korean README, Product Readiness, Distribution docs, Release Checklist, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.55.0`.
+
+### Impact
+- Local packed-tarball smoke and post-publish public registry smoke now protect the same Website Console handoff and prompt-generation contracts.
+- Existing Website Console workspace, task, MCP readiness, and bundle schemas remain compatible.
+
+### What this enables
+- After publish, operators can confirm that the public registry package can generate website improvement handoff artifacts before company rollout or external release checks.
+
+### Verified
+- All 8 audits pass.
+- Registry smoke self-test.
+- Release metadata self-test.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.54.0 → 4.55.0.
+
+### What's still ahead
+- Real MCP connection probes, Playwright/Lighthouse/axe automation, semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 269 — Public Registry Workspace Restore Backup Readiness Smoke (v4.54.0) ✓ shipped
 
 `npm run registry:smoke` now verifies the published-package workspace restore-backups readiness path. The public `npm exec --package @design-ai/cli@<version>` smoke creates a clean workspace fixture, writes sibling restore rollback backups beside the selected learning profile, and checks that `design-ai workspace` reports `learningRestoreBackups` inventory plus preview-first prune next actions.

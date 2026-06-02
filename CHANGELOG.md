@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)
+
+Extended post-publish registry smoke coverage for the Website Improvement Console CLI surface. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for `design-ai site` workspace validation, sample generation, MCP readiness, handoff bundles, bundle verification, task generation, and task-selected prompt output.
+
+### Added
+- Public registry smoke coverage for `design-ai site --stdin --json`, `design-ai site --sample`, and `design-ai site --prompt-list --json`.
+- Public registry smoke coverage for `design-ai site --stdin --mcp-check --json` and `design-ai site --stdin --mcp-plan`.
+- Public registry smoke coverage for `design-ai site --stdin --bundle --out <dir>`, bundle checksum/fingerprint verification through `--bundle-check`, bundle comparison through `--bundle-compare`, and target-repo handoff prompt generation through `--bundle-handoff`.
+- Public registry smoke coverage for `design-ai site --stdin --tasks` and task-selected `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta`.
+- Release metadata guard phrase for public registry Website Console smoke coverage.
+
+### Changed
+- Updated README, Korean README, Product Readiness, Distribution docs, Release Checklist, Roadmap, and Session Log coverage for v4.55.
+- Updated package/plugin metadata to `4.55.0`.
+
+### Verified
+- All 8 audits pass.
+- Registry smoke self-test.
+- Release metadata self-test.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.54.0 → 4.55.0.
+
+### What this enables
+- After publish, operators can verify that the public package path exposes the same Website Console handoff and prompt-generation contracts already covered by local packed-tarball smoke.
+
 ## v4.54.0 — Public Registry Workspace Restore Backup Readiness Smoke (2026-06)
 
 Extended post-publish registry smoke coverage for workspace restore-backups readiness. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for `design-ai workspace` JSON that reports sibling restore rollback backup inventory and prune next actions.
