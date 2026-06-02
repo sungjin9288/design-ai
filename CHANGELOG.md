@@ -2,9 +2,9 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## Unreleased — Agent Eval Harness
+## Unreleased — Agent Eval and Learning Signal Registry
 
-Added deterministic route, prompt-plan, and prompt-pack eval surfaces for agent development.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, plus a read-only learning signal registry for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -15,12 +15,16 @@ Added deterministic route, prompt-plan, and prompt-pack eval surfaces for agent 
 - `design-ai pack --eval-template [--json]` generates runnable prompt-pack checkpoints.
 - `design-ai pack --eval --from-file pack-eval.json [--strict] [--json]` checks expected routes, planned files, included context files, context status, and optional learning context.
 - Pack eval JSON reports include context metadata and markdown byte counts without embedding full context file bodies.
+- `design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json]` joins learning profile audit state, usage sidecar activity, route/prompt/pack/learning eval signal files, check learning capture entries, and workspace readiness without changing `learning.json`.
+- Learning signal registry JSON reports include `learning`, `usage`, `evals`, `checkCapture`, `workspace`, `recommendations`, and privacy metadata; human output summarizes eval signals, recent check captures, workspace readiness, and next actions.
 - Packed-tarball smoke now verifies route eval, prompt eval, and pack eval checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Packed-tarball smoke now verifies `learn --signals` human, JSON, and `--out` registry reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Release metadata now guards the route/prompt/pack eval smoke phrase in release policy docs.
 - `docs/AGENT-DEVELOPMENT.md` records the Hermes/Harness-centered reference analysis and the next AI/agent development phases.
 
 ### Notes
 - Agent evals are read-only. They do not call external AI APIs, mutate the learning profile, or install new dependencies.
+- The signal registry is read-only and deterministic; it reports local files only and exposes short check-capture previews rather than raw brief text.
 - npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
 
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)

@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 273 — Learning Signal Registry (unreleased)
+
+`design-ai learn --signals` now reports a joined, read-only local signal registry for AI/agent development. It combines learning profile audit state, learning usage sidecar activity, eval signal files, check learning capture entries, and workspace readiness without changing the active learning profile.
+
+### Changed
+- Added `design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]`.
+- Added signal-file discovery for route, prompt, pack, and learning eval reports/templates.
+- Added registry JSON fields for learning health, usage sidecar status, eval signal summary, check capture summaries, workspace readiness, recommendations, and privacy metadata.
+- Added human output for quick review of eval signals, recent check captures, workspace readiness, and recommended next actions.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` learning signal registry JSON/human/`--out` paths.
+- Added help, unit, smoke assertion, and docs coverage for the new read-only registry flow.
+
+### Impact
+- Local learning and agent eval drift can be reviewed from one command before deeper skill evolution, MCP probe, or Website Console automation work.
+- The registry is deterministic and read-only; it does not mutate `learning.json`, call external AI APIs, add dependencies, or store raw brief text.
+
+### Verified
+- Targeted `learn` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+
 ## Phase 272 — Agent Prompt and Pack Eval Harness (unreleased)
 
 `design-ai prompt` and `design-ai pack` now have deterministic eval surfaces for prompt plans and context bundles. This extends the Phase 271 route eval pattern into the actual agent handoff payloads used by design-ai.
@@ -27,7 +50,7 @@
 - Package smoke and release metadata self-tests.
 
 ### What's still ahead
-- Joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+- Preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
 
 ## Phase 271 — Agent Route Eval Harness (unreleased)
 
@@ -45,7 +68,7 @@
 - The eval harness is deterministic and read-only; it does not add dependencies, external AI calls, background telemetry, or learning-profile mutation.
 
 ### What's still ahead
-- Joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+- Prompt/pack evals, joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
 
 ## Phase 270 — Public Registry Website Console Smoke Coverage (v4.55.0) ✓ shipped
 

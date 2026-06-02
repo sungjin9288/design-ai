@@ -38,6 +38,17 @@ design-ai pack --eval --from-file pack-eval.json --strict --json
 
 Prompt eval은 context bundle을 만들기 전 prompt plan을 검사합니다. Pack eval은 bundled file set과 context status를 검사하되 eval JSON에는 전체 context file body를 출력하지 않습니다. 두 경로 모두 deterministic, local, read-only입니다.
 
+## Learning signal registry
+
+로컬 학습 profile 상태, usage sidecar 활동, route/prompt/pack/learning eval file, check learning capture entry, workspace readiness를 한 번에 읽기 전용으로 확인할 때 learning signal registry를 사용하세요.
+
+```bash
+design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+`--from-file`은 단일 eval signal file이나 `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, `learning-eval*.json` report가 들어 있는 directory를 받을 수 있어요. 이 명령은 `learning.json`을 수정하지 않고, 외부 AI API도 호출하지 않으며, 로컬 metadata와 짧은 check-capture text preview만 노출합니다.
+
 ## Claude Code
 
 Claude Code는 `CLAUDE.md`를 자동으로 읽어요. **슬래시 커맨드**와 **스킬 자동 로딩**을 쓰려면 심볼릭 링크를 거는 게 좋아요:

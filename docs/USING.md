@@ -38,6 +38,17 @@ design-ai pack --eval --from-file pack-eval.json --strict --json
 
 Prompt evals check the plan before context bundling. Pack evals check the bundled file set and context status without printing the full context file bodies in eval JSON. Both paths are deterministic, local, and read-only.
 
+## Learning signal registry
+
+Use the learning signal registry when you want one read-only snapshot that joins local learning profile health, usage sidecar activity, route/prompt/pack/learning eval files, check learning capture entries, and workspace readiness.
+
+```bash
+design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+`--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews.
+
 ## Claude Code
 
 Claude Code reads `CLAUDE.md` automatically. To get **slash commands** and **skill auto-loading**, optionally symlink:

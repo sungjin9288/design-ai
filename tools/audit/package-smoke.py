@@ -4742,6 +4742,110 @@ def assert_learning_usage_report_human(
         )
 
 
+def assert_learning_signal_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn signals JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON version changed",
+    )
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should report the learning profile path",
+    )
+    learning = payload.get("learning")
+    require_package_smoke(
+        isinstance(learning, dict)
+        and learning.get("count") >= 3
+        and isinstance(learning.get("auditSummary"), dict),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include learning profile audit summary",
+    )
+    usage = payload.get("usage")
+    require_package_smoke(
+        isinstance(usage, dict)
+        and usage.get("usageFile") == str(usage_path)
+        and usage.get("eventCount") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include usage sidecar summary",
+    )
+    evals = payload.get("evals")
+    eval_files = evals.get("files") if isinstance(evals, dict) else None
+    require_package_smoke(
+        isinstance(evals, dict)
+        and isinstance(eval_files, list)
+        and any(isinstance(item, dict) and item.get("kind") == "route-eval" for item in eval_files),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include route eval signal files",
+    )
+    check_capture = payload.get("checkCapture")
+    require_package_smoke(
+        isinstance(check_capture, dict)
+        and isinstance(check_capture.get("count"), int)
+        and isinstance(check_capture.get("latestEntries"), list),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include check capture summary shape",
+    )
+    workspace = payload.get("workspace")
+    require_package_smoke(
+        isinstance(workspace, dict)
+        and isinstance(workspace.get("nextActionCount"), int),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include workspace readiness summary",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should be read-only and privacy-preserving",
+    )
+
+
+def assert_learning_signal_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Learning signal registry",
+        "Signal source:",
+        "Learning audit:",
+        "Eval signals:",
+        "Workspace readiness:",
+        "Privacy: signal registry is read-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn signals human output missing {expected!r}",
+        )
+
+
 def assert_learning_eval_report_json(
     raw: str,
     *,
@@ -5358,6 +5462,100 @@ def assert_learning_relevance_smoke(
         usage_path=usage_path,
         context=f"{context} learn usage out file",
         cmd=usage_out_cmd,
+    )
+
+    signal_dir = profile_path.parent
+    route_signal_path = signal_dir / "route-eval-report.json"
+    route_signal_path.write_text(
+        json.dumps({
+            "evalVersion": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "status": "pass",
+            "summary": {
+                "total": 1,
+                "pass": 1,
+                "warn": 0,
+                "fail": 0,
+            },
+            "cases": [
+                {
+                    "id": "component-spec-contract",
+                    "status": "pass",
+                    "expectedRouteId": EXPECTED_ROUTE_ID,
+                    "topRouteId": EXPECTED_ROUTE_ID,
+                    "issues": [],
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    signals_human_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    signals_human_result = run_plain(signals_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_signal_report_human(
+        signals_human_result.stdout,
+        context=f"{context} learn signals human",
+        cmd=signals_human_cmd,
+    )
+
+    signals_json_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    signals_json_result = run_plain(signals_json_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_signal_report_json(
+        signals_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals JSON",
+        cmd=signals_json_cmd,
+    )
+
+    signals_out_path = profile_path.with_name(f"{profile_path.stem}-signals-out.json")
+    signals_out_path.write_text("stale signals output\n", encoding="utf-8")
+    signals_out_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(signals_out_path),
+        "--force",
+    )
+    signals_out_result = run_plain(signals_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        signals_out_result.stdout,
+        context=f"{context} learn signals out",
+        cmd=signals_out_cmd,
+        expected_path=str(signals_out_path),
+    )
+    assert_learning_signal_report_json(
+        signals_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals out file",
+        cmd=signals_out_cmd,
     )
 
     eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
@@ -7220,6 +7418,156 @@ def run_self_test() -> None:
                 cmd=learning_relevance_cmd,
             ),
             expected="learning usage sidecar file should be written",
+            scope="package smoke",
+        )
+
+        learn_signals_cmd = [
+            "design-ai",
+            "learn",
+            "--signals",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        learning_signal_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "status": "pass",
+            "file": str(learning_profile_path),
+            "signalSource": str(Path(tmp)),
+            "learning": {
+                "exists": True,
+                "version": 1,
+                "updatedAt": "2026-06-01T00:00:00.000Z",
+                "count": 3,
+                "categoryCounts": {"workflow": 2, "brand": 1},
+                "sourceCounts": {"feedback:keep": 2, "check:artifact": 1},
+                "auditSummary": {"status": "pass", "failures": 0, "warnings": 0},
+            },
+            "usage": {
+                "usageFile": str(learning_usage_path),
+                "exists": True,
+                "eventCount": 2,
+                "usedEntryCount": 2,
+                "unusedEntryCount": 1,
+                "staleSelectedEntryCount": 0,
+                "commandCounts": {"prompt": 1, "pack": 1},
+                "routeCounts": {EXPECTED_ROUTE_ID: 2},
+                "latestEvent": learning_usage_report_payload["latestEvent"],
+                "privacy": learning_usage_report_payload["privacy"],
+            },
+            "evals": {
+                "source": str(Path(tmp)),
+                "count": 1,
+                "reports": 1,
+                "templates": 0,
+                "failed": 0,
+                "warned": 0,
+                "passed": 1,
+                "files": [
+                    {
+                        "file": str(Path(tmp) / "route-eval-report.json"),
+                        "exists": True,
+                        "kind": "route-eval",
+                        "shape": "report",
+                        "status": "pass",
+                        "caseCount": 1,
+                        "passed": 1,
+                        "warned": 0,
+                        "failed": 0,
+                        "generatedAt": "2026-06-02T00:00:00.000Z",
+                        "error": "",
+                    },
+                ],
+            },
+            "checkCapture": {
+                "count": 1,
+                "categoryCounts": {"workflow": 1},
+                "sourceCounts": {"check:artifact": 1},
+                "latestEntries": [
+                    {
+                        "id": "learn-check",
+                        "category": "workflow",
+                        "source": "check:artifact",
+                        "createdAt": "2026-06-01T00:00:00.000Z",
+                        "textPreview": "Improve future outputs by addressing responsive QA.",
+                    },
+                ],
+            },
+            "workspace": {
+                "root": str(Path(tmp)),
+                "version": "4.55.0",
+                "git": {"isRepo": True, "branch": "main", "clean": True, "ahead": 0, "behind": 0},
+                "repository": {"status": "pass", "canonical": True},
+                "learning": {"status": "pass", "reason": ""},
+                "learningUsage": {"status": "pass", "reason": ""},
+                "learningEval": {"status": "pass", "reason": ""},
+                "nextActionCounts": {},
+                "nextActionCount": 0,
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_learning_signal_report_json(
+            json.dumps(learning_signal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_signals_cmd,
+        )
+        assert_learning_signal_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Learning signal registry",
+                f"Signal source: {Path(tmp)}",
+                "Learning audit: pass",
+                "Eval signals:",
+                "Workspace readiness:",
+                "Privacy: signal registry is read-only",
+            ]),
+            context=context,
+            cmd=learn_signals_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "evals": {
+                        **learning_signal_payload["evals"],
+                        "files": [],
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals JSON should include route eval signal files",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_human(
+                "\n".join([
+                    "design-ai learn",
+                    "Learning signal registry",
+                    "Signal source:",
+                    "Learning audit:",
+                    "Eval signals:",
+                    "Privacy: signal registry is read-only",
+                ]),
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals human output missing 'Workspace readiness:'",
             scope="package smoke",
         )
 

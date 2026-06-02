@@ -69,15 +69,20 @@ Prompt evals report the generated prompt plan. Pack evals report a context snaps
 
 ### Phase 273: learning signal registry
 
-Add a read-only registry report that joins:
+Implemented `design-ai learn --signals` as a read-only registry report that joins:
 
 - learning profile audit
 - usage sidecar
-- route eval results
+- route/prompt/pack/learning eval signal files
 - check learning capture entries
 - workspace readiness
 
-This should expose drift without changing the learning profile.
+```bash
+design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+This exposes drift without changing the learning profile, calling external AI APIs, adding dependencies, or storing raw brief text.
 
 ### Phase 274: skill evolution proposals
 

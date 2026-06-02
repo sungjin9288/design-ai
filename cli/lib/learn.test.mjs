@@ -47,6 +47,10 @@ import {
 } from "./learn.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
+import {
+  learningSignalRegistry,
+  summarizeSignalEvalFile,
+} from "./signals.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 import { runLearn } from "../commands/learn.mjs";
 import { runPrompt } from "../commands/prompt.mjs";
@@ -295,6 +299,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(usageArgs.limit, 5);
   assert.equal(usageArgs.json, true);
 
+  const signalsArgs = parseLearnArgs(["--signals", "--from-file", "signals", "--usage-file", "learning.usage.json", "--json"]);
+  assert.equal(signalsArgs.action, "signals");
+  assert.equal(signalsArgs.fromFile, "signals");
+  assert.equal(signalsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(signalsArgs.json, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -410,7 +420,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
-    /--usage-file can only be used with --usage or --curate/,
+    /--usage-file can only be used with --usage, --curate, or --signals/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--backup-file", "learning-before-restore.json"]),
@@ -439,6 +449,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--eval"]),
     /--eval requires --from-file or --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--signals", "--stdin"]),
+    /--signals does not support --stdin/,
   );
   assert.throws(
     () => parseLearnArgs(["--diff"]),
@@ -3074,6 +3088,205 @@ test("runLearn --usage reports sidecar summaries in JSON and human output", () =
   assert.match(humanOutput, /Events: 1/);
   assert.match(humanOutput, /Top selected entries:/);
   assert.match(humanOutput, /Privacy: usage events store selected entry ids and a short brief hash/);
+}));
+
+test("learningSignalRegistry joins audit, usage, eval, check capture, and workspace signals", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "feedback:keep",
+        createdAt: "2026-06-02T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+  const learningContext = buildLearningContext({
+    filePath,
+    limit: 1,
+    query: "Spec a Button component API with keyboard accessibility",
+  });
+  recordLearningUsage({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    usageFile,
+    now: new Date("2026-06-02T00:00:02.000Z"),
+  });
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    generatedAt: "2026-06-02T00:00:03.000Z",
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "component-spec-contract",
+        status: "pass",
+        expectedRouteId: "component-spec",
+        topRouteId: "component-spec",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+
+  const signal = summarizeSignalEvalFile(routeEvalFile);
+  assert.equal(signal.kind, "route-eval");
+  assert.equal(signal.shape, "report");
+  assert.equal(signal.status, "pass");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: {
+        root: dir,
+        version: "4.55.0",
+      },
+      git: {
+        isRepo: true,
+        branch: "main",
+        clean: true,
+        ahead: 0,
+        behind: 0,
+      },
+      repository: {
+        status: "pass",
+        canonical: true,
+      },
+      learning: {
+        readiness: {
+          status: "pass",
+          reason: "",
+        },
+        auditSummary: {
+          status: "pass",
+        },
+      },
+      learningUsage: {
+        readiness: {
+          status: "pass",
+        },
+      },
+      learningEval: {
+        freshness: {
+          status: "pass",
+        },
+      },
+      nextActions: [
+        {
+          level: "pass",
+          text: "Learning usage sidecar is aligned with the active profile.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.learning.count, 2);
+  assert.equal(payload.usage.eventCount, 1);
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.evals.files[0].kind, "route-eval");
+  assert.equal(payload.checkCapture.count, 1);
+  assert.equal(payload.checkCapture.latestEntries[0].id, "learn-check");
+  assert.equal(payload.workspace.git.branch, "main");
+  assert.equal(payload.privacy.mutatesProfile, false);
+}));
+
+test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:artifact",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "website-improvement-control-tower",
+        status: "pass",
+        expectedRouteId: "website-improvement",
+        topRouteId: "website-improvement",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.checkCapture.count, 1);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+  ]));
+  assert.match(humanOutput, /Learning signal registry/);
+  assert.match(humanOutput, /Eval signals:/);
+  assert.match(humanOutput, /Recent check captures:/);
+  assert.match(humanOutput, /Privacy: signal registry is read-only/);
 }));
 
 test("learningEvalReport validates expected learning selection without raw brief text", () => withTempDir((dir) => {

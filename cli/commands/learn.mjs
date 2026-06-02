@@ -35,6 +35,7 @@ import {
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
+import { learningSignalRegistry } from "../lib/signals.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
@@ -66,6 +67,7 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -103,6 +105,7 @@ function printHelp() {
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
+  console.log("  --signals            Summarize local learning, usage, eval, check-capture, and workspace readiness signals without changing files");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
@@ -110,7 +113,7 @@ function printHelp() {
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
-  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage or --curate");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, or --signals");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
   console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
@@ -148,6 +151,7 @@ function printHelp() {
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
+  console.log("  design-ai learn --signals --from-file . --json");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -518,6 +522,59 @@ function printUsage(payload) {
 
   console.log();
   console.log("Privacy: usage events store selected entry ids and a short brief hash, not raw brief text.");
+}
+
+function printSignals(payload) {
+  header("design-ai learn", "Learning signal registry");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Learning entries: ${payload.learning.count}`);
+  info(`Learning audit: ${payload.learning.auditSummary.status} (${payload.learning.auditSummary.failures} failure(s), ${payload.learning.auditSummary.warnings} warning(s))`);
+  info(`Usage events: ${payload.usage.eventCount}`);
+  info(`Eval signals: ${payload.evals.count} (${payload.evals.reports} report(s), ${payload.evals.templates} template(s))`);
+  info(`Check capture entries: ${payload.checkCapture.count}`);
+  info(`Workspace next actions: ${payload.workspace.nextActionCount}`);
+  console.log();
+
+  if (payload.evals.files.length > 0) {
+    console.log("Eval signals:");
+    for (const item of payload.evals.files) {
+      const label = path.basename(item.file);
+      const counts = item.shape === "report"
+        ? ` · pass ${item.passed} / warn ${item.warned} / fail ${item.failed}`
+        : "";
+      console.log(`- ${label}: ${item.kind} ${item.shape} ${item.status} (${item.caseCount} case(s))${counts}`);
+      if (item.error) console.log(`  ${dim(item.error)}`);
+    }
+    console.log();
+  }
+
+  if (payload.checkCapture.latestEntries.length > 0) {
+    console.log("Recent check captures:");
+    for (const entry of payload.checkCapture.latestEntries) {
+      console.log(`- ${entry.id}: [${entry.category}] ${entry.source}`);
+      if (entry.textPreview) console.log(`  ${dim(entry.textPreview)}`);
+    }
+    console.log();
+  }
+
+  console.log("Workspace readiness:");
+  console.log(`- branch: ${payload.workspace.git.branch || "unknown"} (${payload.workspace.git.clean ? "clean" : "dirty"})`);
+  console.log(`- repository: ${payload.workspace.repository.status || "unknown"}`);
+  console.log(`- learning usage: ${payload.workspace.learningUsage?.status || "not checked"}`);
+  console.log(`- learning eval: ${payload.workspace.learningEval?.status || "not checked"}`);
+  console.log();
+
+  if (payload.recommendations.length > 0) {
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+    console.log();
+  }
+
+  console.log("Privacy: signal registry is read-only and does not mutate learning.json.");
 }
 
 function printDiff(payload) {
@@ -1203,6 +1260,21 @@ export async function runLearn(args) {
       return;
     }
     printUsage(payload);
+    return;
+  }
+
+  if (parsed.action === "signals") {
+    const payload = learningSignalRegistry({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printSignals(payload);
     return;
   }
 

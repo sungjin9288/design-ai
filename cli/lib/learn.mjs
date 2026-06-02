@@ -46,6 +46,7 @@ const LEARN_OPTIONS = [
   "--audit",
   "--stats",
   "--usage",
+  "--signals",
   "--eval",
   "--eval-template",
   "--strict",
@@ -289,6 +290,8 @@ export function parseLearnArgs(args) {
       setAction(out, "stats");
     } else if (arg === "--usage") {
       setAction(out, "usage");
+    } else if (arg === "--signals") {
+      setAction(out, "signals");
     } else if (arg === "--eval") {
       setAction(out, "eval");
     } else if (arg === "--eval-template") {
@@ -360,7 +363,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -425,8 +428,8 @@ export function parseLearnArgs(args) {
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
-    throw new Error("--usage-file can only be used with --usage or --curate");
+  if (out.usageFilePath && !["usage", "curate", "signals"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage, --curate, or --signals");
   }
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");
@@ -442,6 +445,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.action === "signals" && out.stdin) {
+    throw new Error("--signals does not support --stdin; use --from-file for a signal file or directory");
   }
   if (out.action === "diff" && !out.fromFile && !out.stdin) {
     throw new Error("--diff requires --from-file or --stdin");

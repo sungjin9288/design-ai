@@ -31,8 +31,9 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ## Phase log
 
-### Active after v4.55 — Agent eval harness
+### Active after v4.55 — Agent eval and learning signal registry
 
+- **Phase 273 (unreleased)** — Added read-only `design-ai learn --signals` registry reports that join learning profile audit state, learning usage sidecar activity, route/prompt/pack/learning eval signal files, check learning capture entries, and workspace readiness without mutating `learning.json`. Packed-tarball smoke now covers human, JSON, and `--out` signal registry reports in installed-bin and one-shot package paths.
 - **Phase 272 (unreleased)** — Added deterministic `design-ai prompt --eval-template`, `design-ai prompt --eval`, `design-ai pack --eval-template`, and `design-ai pack --eval` checkpoints. Prompt eval protects expected routes, required files, checklist items, prompt fragments, and learning context; pack eval protects planned files, included context files, and context status without dumping full context bodies into eval JSON. Packed-tarball smoke now covers route/prompt/pack eval checkpoints in installed-bin and one-shot package paths.
 - **Phase 271 (unreleased)** — Added deterministic `design-ai route --eval-template` and `design-ai route --eval` checkpoints after reviewing Hermes/Harness-centered agent references. This gives design-ai a read-only route conformance gate before deeper prompt, learning, skill-evolution, and Website Console eval work.
 
