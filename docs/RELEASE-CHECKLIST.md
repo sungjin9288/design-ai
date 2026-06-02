@@ -20,6 +20,8 @@ Packed-tarball smoke guidance must also retain `design-ai learn --signals` learn
 
 Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills` preview-only skill proposal coverage for human, JSON, and `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
+Packed-tarball smoke guidance must also retain non-empty Website Console `implementationEvidence` count verification through evidence bundle check, compare, and handoff JSON in installed-bin and one-shot `npm exec --package <tarball>` paths.
+
 For pre-push Real-CI parity, run the broader local workflow gate:
 
 ```bash

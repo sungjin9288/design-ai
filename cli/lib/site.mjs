@@ -140,6 +140,7 @@ const DEFAULT_IMPLEMENTATION_RISKS = [
   "Copy or brand changes may require stakeholder review.",
   "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
 ];
+const IMPLEMENTATION_EVIDENCE_KEYS = ["executedWork", "verificationResults", "remainingRisks", "nextActions"];
 export const SITE_PROMPT_TEMPLATE_IDS = [
   "codex-repo-intake",
   "codex-implementation",
@@ -715,6 +716,16 @@ function normalizeImplementationEvidence(value) {
   };
 }
 
+function countImplementationEvidence(value = {}) {
+  const source = normalizeObject(value);
+  return Object.fromEntries(IMPLEMENTATION_EVIDENCE_KEYS.map((key) => {
+    const items = source[key];
+    if (Array.isArray(items)) return [key, items.length];
+    if (Number.isInteger(items) && items >= 0) return [key, items];
+    return [key, 0];
+  }));
+}
+
 export function normalizeSiteWorkspace(raw) {
   const fallback = createSampleSiteWorkspace();
   const source = normalizeObject(raw);
@@ -790,7 +801,7 @@ function validateRawWorkspace(raw) {
     if (root.implementationEvidence === null || typeof root.implementationEvidence !== "object" || Array.isArray(root.implementationEvidence)) {
       addIssue(issues, "fail", "implementation-evidence", "implementationEvidence must be an object when provided");
     } else {
-      for (const key of ["executedWork", "verificationResults", "remainingRisks", "nextActions"]) {
+      for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
         if (evidence[key] !== undefined && !Array.isArray(evidence[key])) {
           addIssue(issues, "fail", `implementation-evidence-${key}`, `implementationEvidence.${key} must be an array`);
         }
@@ -2019,12 +2030,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
         priority: task.priority,
       })),
     },
-    implementationEvidence: {
-      executedWork: taskWorkspace.implementationEvidence.executedWork.length,
-      verificationResults: taskWorkspace.implementationEvidence.verificationResults.length,
-      remainingRisks: taskWorkspace.implementationEvidence.remainingRisks.length,
-      nextActions: taskWorkspace.implementationEvidence.nextActions.length,
-    },
+    implementationEvidence: countImplementationEvidence(taskWorkspace.implementationEvidence),
     mcp: {
       status: mcpReport.status,
       counts: mcpReport.counts,
@@ -2136,6 +2142,7 @@ function summarizeBundlePayload(summaryPayload) {
     workspaceStatus: String(summaryPayload?.workspaceStatus || "unknown"),
     siteName: String(site.name || ""),
     totalTasks: Number.isFinite(taskGeneration.totalTasks) ? taskGeneration.totalTasks : 0,
+    implementationEvidence: countImplementationEvidence(summaryPayload?.implementationEvidence),
     mcpStatus: String(mcp.status || "unknown"),
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
     checksumAlgorithm: String(checksums.algorithm || ""),
@@ -2208,6 +2215,18 @@ export function buildSiteBundleCheckReport({
     }
     if (!arraysEqual(summary.files, SITE_BUNDLE_FILES)) {
       addIssue(issues, "fail", "bundle-summary-files", "summary.json files must match the expected handoff bundle manifest");
+    }
+    if (summaryPayload.implementationEvidence !== undefined) {
+      const evidenceCounts = normalizeObject(summaryPayload.implementationEvidence);
+      if (summaryPayload.implementationEvidence === null || typeof summaryPayload.implementationEvidence !== "object" || Array.isArray(summaryPayload.implementationEvidence)) {
+        addIssue(issues, "fail", "bundle-summary-implementation-evidence", "summary.json implementationEvidence must be an object when provided");
+      } else {
+        for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
+          if (!Number.isInteger(evidenceCounts[key]) || evidenceCounts[key] < 0) {
+            addIssue(issues, "fail", `bundle-summary-implementation-evidence-${key}`, `summary.json implementationEvidence.${key} must be a non-negative integer`);
+          }
+        }
+      }
     }
     const boundaries = Array.isArray(summaryPayload.boundaries) ? summaryPayload.boundaries : [];
     for (const boundary of ["deterministic-local", "no-external-mcp-calls", "no-target-repo-mutation"]) {
@@ -2293,6 +2312,16 @@ export function buildSiteBundleCheckReport({
     }
     if (summaryPayload && summary.totalTasks !== analyzed.workspace.refactorTasks.length) {
       addIssue(issues, "fail", "bundle-task-count", "summary.json taskGeneration.totalTasks does not match website-workspace.tasks.json");
+    }
+    const workspaceEvidenceCounts = countImplementationEvidence(analyzed.workspace.implementationEvidence);
+    if (summaryPayload && summaryPayload.implementationEvidence !== undefined) {
+      for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
+        if (summary.implementationEvidence[key] !== workspaceEvidenceCounts[key]) {
+          addIssue(issues, "fail", `bundle-implementation-evidence-${key}`, `summary.json implementationEvidence.${key} does not match website-workspace.tasks.json`);
+        }
+      }
+    } else {
+      summary.implementationEvidence = workspaceEvidenceCounts;
     }
     recomputedMcp = buildSiteMcpCheckReport(analyzed.workspace, analyzed.summary);
   }
@@ -2385,6 +2414,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Source: ${report.summary.source || "unknown"}`,
     `Site: ${report.summary.siteName || "unknown"}`,
     `Tasks: ${report.summary.totalTasks}`,
+    `Evidence: executed work ${report.summary.implementationEvidence.executedWork}, verification ${report.summary.implementationEvidence.verificationResults}, risks ${report.summary.implementationEvidence.remainingRisks}, next actions ${report.summary.implementationEvidence.nextActions}`,
     `MCP status: ${report.mcpStatus}`,
     "",
     "Files:",
@@ -2405,6 +2435,7 @@ function summarizeBundleForCompare(report) {
     workspaceStatus: report.workspaceStatus || "unknown",
     mcpStatus: report.mcpStatus || "unknown",
     totalTasks: report.summary.totalTasks || 0,
+    implementationEvidence: { ...report.summary.implementationEvidence },
     checksumAlgorithm: report.summary.checksumAlgorithm || "",
     checksumBundleDigest: report.summary.checksumBundleDigest || "",
     checksumFailures: report.counts.checksumFailures,
@@ -2419,6 +2450,12 @@ function buildBundleMetadataChanges(left, right) {
     ["workspaceStatus", "Workspace status", left.workspaceStatus || "unknown", right.workspaceStatus || "unknown"],
     ["mcpStatus", "MCP status", left.mcpStatus || "unknown", right.mcpStatus || "unknown"],
     ["totalTasks", "Task count", String(left.summary.totalTasks || 0), String(right.summary.totalTasks || 0)],
+    ...IMPLEMENTATION_EVIDENCE_KEYS.map((key) => [
+      `implementationEvidence.${key}`,
+      `Evidence ${key}`,
+      String(left.summary.implementationEvidence[key] || 0),
+      String(right.summary.implementationEvidence[key] || 0),
+    ]),
   ];
   return pairs
     .filter(([, , leftValue, rightValue]) => leftValue !== rightValue)
@@ -2545,6 +2582,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Workspace status: ${checkReport.workspaceStatus}`,
     `- MCP status: ${checkReport.mcpStatus}`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
+    `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
     `- SHA-256 bundle digest: ${bundleDigest}`,
     `- Checksums: ${checksumStatus}`,
     "",
@@ -2612,6 +2650,7 @@ export function buildSiteBundleHandoffReport({
       workspaceStatus: checkReport.workspaceStatus || "unknown",
       mcpStatus: checkReport.mcpStatus || "unknown",
       totalTasks: checkReport.summary.totalTasks || 0,
+      implementationEvidence: { ...checkReport.summary.implementationEvidence },
       checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",
       checksumBundleDigest: checkReport.summary.checksumBundleDigest || "",
       expectedChecksumFiles: checkReport.counts.expectedChecksumFiles,

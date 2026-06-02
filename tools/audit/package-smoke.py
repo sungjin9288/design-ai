@@ -127,6 +127,7 @@ SITE_EVIDENCE_VALUES = {
     "remainingRisks": "Preview deploy still needs analytics review",
     "nextActions": "Attach before/after screenshots",
 }
+SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -959,7 +960,15 @@ def assert_site_bundle_check_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
@@ -975,6 +984,12 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle check after {context} site name changed")
+    evidence_counts = payload.get("summary", {}).get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle check after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle check after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
         raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
     bundle_digest = payload.get("summary", {}).get("checksumBundleDigest")
@@ -993,7 +1008,15 @@ def assert_site_bundle_compare_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
@@ -1009,6 +1032,12 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+        evidence_counts = payload.get(side, {}).get("implementationEvidence")
+        if not isinstance(evidence_counts, dict):
+            raise SystemExit(f"site bundle compare after {context} {side} implementationEvidence counts missing")
+        for key, expected in expected_evidence_counts.items():
+            if evidence_counts.get(key) != expected:
+                raise SystemExit(f"site bundle compare after {context} {side} evidence count {key} changed: {evidence_counts.get(key)!r}")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-compare-identical"]:
         raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
@@ -1020,7 +1049,15 @@ def assert_site_bundle_handoff_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
@@ -1031,6 +1068,12 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    evidence_counts = bundle.get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle handoff after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     digest = bundle.get("checksumBundleDigest")
     if not isinstance(digest, str) or len(digest) != 64:
         raise SystemExit(f"site bundle handoff after {context} bundle digest changed")
@@ -9000,6 +9043,27 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff JSON",
         )
+        assert_site_bundle_check_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-check JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_compare_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-compare", str(installed_site_evidence_bundle_dir), "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-compare JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_handoff_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-handoff", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-handoff JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
             cwd=install_root,
@@ -9829,6 +9893,27 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_check_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-check JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_compare_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-compare", str(npx_site_evidence_bundle_dir), "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-compare JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-handoff", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-handoff JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),

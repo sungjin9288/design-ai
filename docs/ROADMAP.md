@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 281 — Website Console Verified Bundle Evidence Metadata (unreleased)
+
+Verified Website Console handoff bundle flows now keep implementation evidence counts visible after bundle verification. This closes the gap between evidence-preserving bundle export and the later `--bundle-check`, `--bundle-compare`, and `--bundle-handoff` JSON summaries used before target-repo implementation.
+
+### Changed
+- Added normalized `implementationEvidence` count metadata to `design-ai site <bundle-dir> --bundle-check --json` summaries.
+- Added evidence count metadata to both sides of `design-ai site <bundle-dir> --bundle-compare other-bundle-dir --json`.
+- Added evidence count metadata to `design-ai site <bundle-dir> --bundle-handoff --json` and the generated target-repo handoff prompt.
+- Added bundle-check validation that fails when `summary.json.implementationEvidence` counts drift from `website-workspace.tasks.json`.
+- Extended packed-tarball smoke so installed-bin and one-shot `npm exec --package <tarball>` paths verify non-empty evidence counts through evidence bundle check, compare, and handoff JSON.
+
+### Impact
+- Website Improvement operators can confirm recorded target-repo evidence survives the whole handoff chain: browser workspace export, CLI report/tasks/bundle generation, bundle verification, bundle comparison, and target-repo handoff prompt generation.
+- The feature remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims automatically, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 280 — Website Console Evidence Package Smoke Expansion (unreleased)
 
 Packed-tarball smoke now verifies that non-empty Website Console handoff evidence survives the release distribution paths. This protects the Phase 278/279 evidence workflow after packaging, install shims, and one-shot `npm exec --package <tarball>` execution.
