@@ -142,6 +142,17 @@ The view renders:
 
 This keeps the useful part of visual workflow builders in a dependency-free, local/read-only console. It does not add a workflow runtime, backend sync, crawling, Lighthouse/axe automation, or live MCP connection checks.
 
+### Phase 278: handoff evidence tracking
+
+Implemented browser-local Website Console evidence tracking for the handoff phase:
+
+- executed target-repo work
+- verification results from lint/typecheck/build, Browser QA, deployment checks, or manual QA
+- remaining risks
+- next actions
+
+The Handoff Report tab stores those fields in the workspace JSON, shows compact evidence counts, and injects the evidence into copied/exported Markdown reports. This keeps the closed loop between generated prompts and final operator evidence without mutating the target repo, calling external MCPs, adding a backend, or adding dependencies.
+
 ## Current MVP boundary
 
 In scope:

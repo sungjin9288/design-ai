@@ -220,6 +220,16 @@
           risks: ["Could change conversion copy without stakeholder approval"],
         },
       ],
+      implementationEvidence: {
+        executedWork: [],
+        verificationResults: [],
+        remainingRisks: [
+          "MCP readiness gaps may limit verification depth.",
+          "Copy or brand changes may require stakeholder review.",
+          "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+        ],
+        nextActions: [],
+      },
       reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
     };
   }
@@ -252,12 +262,24 @@
       auditChecklist: normalizeChecklist(source.auditChecklist || fallback.auditChecklist),
       mcpReadiness: normalizeMcp(source.mcpReadiness || fallback.mcpReadiness),
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
+      implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
       workspace.siteProfile.viewports = ["desktop"];
     }
     return workspace;
+  }
+
+  function normalizeImplementationEvidence(value) {
+    var fallback = createDefaultWorkspace().implementationEvidence;
+    var source = value && typeof value === "object" ? value : {};
+    return {
+      executedWork: normalizeStringArray(source.executedWork, []),
+      verificationResults: normalizeStringArray(source.verificationResults, []),
+      remainingRisks: normalizeStringArray(source.remainingRisks, fallback.remainingRisks),
+      nextActions: normalizeStringArray(source.nextActions, []),
+    };
   }
 
   function normalizeChecklist(value) {
@@ -388,6 +410,8 @@
     var requiredMcp = mcpItems.filter(function (item) {
       return appState.workspace.mcpReadiness[item[0]] === "required";
     }).length;
+    var evidence = appState.workspace.implementationEvidence;
+    var evidenceCount = evidence.executedWork.length + evidence.verificationResults.length;
     var graph = buildWorkflowGraph();
     return {
       pages: appState.workspace.siteProfile.pages.length,
@@ -395,6 +419,7 @@
       blocked: blocked,
       tasks: appState.workspace.refactorTasks.length,
       requiredMcp: requiredMcp,
+      evidence: evidenceCount,
       graphNodes: graph.summary.nodeCount,
       graphEdges: graph.summary.edgeCount,
     };
@@ -433,7 +458,8 @@
           : id === "tasks" ? String(metrics.tasks)
             : id === "mcp" ? String(metrics.requiredMcp)
               : id === "graph" ? String(metrics.graphNodes)
-                : "";
+                : id === "report" && metrics.evidence ? String(metrics.evidence)
+                  : "";
         return [
           "<li>",
           "<button type=\"button\" class=\"nav-button\" data-nav=\"" + escapeAttr(id) + "\" aria-current=\"" + (appState.activeTab === id ? "page" : "false") + "\">",
@@ -822,7 +848,20 @@
 
   function renderReport() {
     var report = buildHandoffReport();
+    var evidence = appState.workspace.implementationEvidence;
     return panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
+      "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
+      metric("Executed", evidence.executedWork.length, "Target repo changes"),
+      metric("Verified", evidence.verificationResults.length, "Checks recorded"),
+      metric("Risks", evidence.remainingRisks.length, "Open items"),
+      metric("Next", evidence.nextActions.length, "Follow-up steps"),
+      "</div>",
+      "<div class=\"form-grid evidence-grid\">",
+      textareaField("Executed work", "implementationEvidence.executedWork", linesToText(evidence.executedWork), "", "One completed target-repo change per line."),
+      textareaField("Verification results", "implementationEvidence.verificationResults", linesToText(evidence.verificationResults), "", "One command, browser check, deployment check, or manual QA result per line."),
+      textareaField("Remaining risks", "implementationEvidence.remainingRisks", linesToText(evidence.remainingRisks), "", "One unresolved risk or dependency per line."),
+      textareaField("Next actions", "implementationEvidence.nextActions", linesToText(evidence.nextActions), "", "One follow-up task per line."),
+      "</div>",
       "<div class=\"field field--wide\" style=\"margin-bottom: 12px;\">",
       "<label for=\"reportNotes\">Report notes</label>",
       "<textarea id=\"reportNotes\" data-field=\"reportNotes\">" + escapeHtml(appState.workspace.reportNotes) + "</textarea>",
@@ -833,6 +872,13 @@
       "</div>",
       "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
     ].join(""));
+  }
+
+  function syncReportPreview() {
+    var output = document.querySelector("[data-output='report']");
+    if (output) {
+      output.textContent = buildHandoffReport();
+    }
   }
 
   function panel(title, subtitle, body) {
@@ -853,7 +899,14 @@
       target = target[parts[i]];
     }
     var key = parts[parts.length - 1];
-    if (path === "siteProfile.pages" || path === "siteProfile.userFlows") {
+    if (
+      path === "siteProfile.pages" ||
+      path === "siteProfile.userFlows" ||
+      path === "implementationEvidence.executedWork" ||
+      path === "implementationEvidence.verificationResults" ||
+      path === "implementationEvidence.remainingRisks" ||
+      path === "implementationEvidence.nextActions"
+    ) {
       target[key] = textToLines(value);
     } else {
       target[key] = value;
@@ -1441,6 +1494,7 @@
   function buildHandoffReport() {
     var profile = appState.workspace.siteProfile;
     var tasks = appState.workspace.refactorTasks;
+    var evidence = appState.workspace.implementationEvidence;
     return [
       "# Website improvement handoff: " + profile.name,
       "",
@@ -1489,17 +1543,19 @@
       "",
       "## Executed work",
       "",
-      "- Not recorded in this MVP. Add implementation notes after running Codex in the target repo.",
+      markdownList(evidence.executedWork, "Not recorded yet. Add implementation notes after running Codex in the target repo."),
       "",
       "## Verification results",
       "",
-      "- Not recorded in this MVP. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here.",
+      markdownList(evidence.verificationResults, "Not recorded yet. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here."),
       "",
       "## Remaining risks",
       "",
-      "- MCP readiness gaps may limit verification depth.",
-      "- Copy or brand changes may require stakeholder review.",
-      "- Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+      markdownList(evidence.remainingRisks, "No remaining risks recorded."),
+      "",
+      "## Next actions",
+      "",
+      markdownList(evidence.nextActions, "No next actions recorded."),
       "",
       "## Notes",
       "",
@@ -1555,6 +1611,7 @@
     if (target.matches("[data-field]")) {
       setByPath(appState.workspace, target.dataset.field, target.value);
       saveWorkspace();
+      syncReportPreview();
       return;
     }
 

@@ -16,7 +16,7 @@
 | Workflow Graph | workspace, profile, audit, MCP, task, prompt, handoff, bundle, target repo node와 deterministic edge를 시각화하고 graph JSON을 export |
 | Refactor Plan | finding을 실제 task, priority, Codex prompt, verification, risk로 변환 |
 | Prompt Generator | Codex/Claude에 넘길 8개 prompt template 생성 |
-| Handoff Report | 작업 전후 상태와 남은 리스크를 Markdown report로 정리 |
+| Handoff Report | 실행한 작업, 검증 결과, 남은 리스크, 다음 작업을 기록하고 Markdown report로 정리 |
 
 ## Boundary
 

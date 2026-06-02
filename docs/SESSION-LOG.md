@@ -31,8 +31,9 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ## Phase log
 
-### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, and workflow graphs
+### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 278 (unreleased)** — Added browser-local Website Console handoff evidence tracking. The `Handoff Report` tab now records executed work, verification results, remaining risks, and next actions in localStorage, shows compact evidence counts, and injects operator-entered target-repo evidence into copied/exported Markdown reports while staying dependency-free and target-repo safe.
 - **Phase 277 (unreleased)** — Added static Website Console workflow graph rendering. The browser app now has a `Workflow Graph` tab with 35-node / 67-edge sample coverage, lane-based node groups, boundary markers, a complete edge table, and graph JSON copy/export actions while staying dependency-free, local/read-only, and target-repo safe.
 - **Phase 276 (unreleased)** — Added `design-ai site --graph [--json]` workflow graph export for Website Improvement workspaces. The graph includes workspace, site profile, audit, MCP readiness, refactor task, prompt template, handoff report, bundle, and target-repo nodes with deterministic edges, while staying local/read-only with no external MCP calls, target-repo mutation, workflow runtime dependency, crawling, or added dependencies. Packed-tarball smoke covers graph JSON in installed-bin and one-shot package paths.
 - **Phase 275 (unreleased)** — Added opt-in `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` reports for Website Console MCP readiness. Probes check GitHub repo references, Figma URLs, Browser smoke targets, and deployment provider references as a separate read-only `probes` JSON block without changing the default MCP check shape, calling external MCPs, writing to outside systems, or adding dependencies. Packed-tarball smoke covers probe JSON in installed-bin and one-shot package paths.

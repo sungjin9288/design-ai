@@ -250,6 +250,17 @@ a:focus-visible {
   font-size: 12px;
 }
 
+.evidence-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--border);
+  margin-bottom: 16px;
+}
+
 .panel {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -339,6 +350,10 @@ a:focus-visible {
 
 .field small {
   color: var(--text-subtle);
+}
+
+.evidence-grid {
+  margin-bottom: 16px;
 }
 
 .checkbox-row {
@@ -761,6 +776,7 @@ td input {
 
   .topbar,
   .summary-strip,
+  .evidence-summary,
   .graph-summary,
   .grid-2,
   .grid-3,

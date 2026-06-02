@@ -14,7 +14,8 @@ Open the MVP app:
 - Converts audit findings into starter refactor tasks with impact, effort, priority, MCP recommendations, Codex prompts, verification steps, and risks.
 - Renders a local Workflow Graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edge rows.
 - Generates prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
-- Drafts a Markdown handoff report for before/after status and verification evidence.
+- Tracks executed work, verification results, remaining risks, and next actions after target-repo implementation.
+- Drafts a Markdown handoff report that includes before/after status, implementation evidence, verification evidence, and follow-up work.
 
 ## Boundaries
 
@@ -30,7 +31,8 @@ Actual code changes happen in the target website repository. Use the generated C
 4. Review the Workflow Graph to confirm audit, MCP, task, prompt, and handoff dependencies.
 5. Generate starter refactor tasks from findings.
 6. Copy a Codex or Claude prompt and run it in the right tool.
-7. Export the handoff report after implementation and verification.
+7. Record executed work, verification results, remaining risks, and next actions in the Handoff Report tab.
+8. Export the handoff report after implementation and verification.
 
 ## CLI Export Workflow
 

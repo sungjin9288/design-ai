@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 278 — Website Console Handoff Evidence Tracking (unreleased)
+
+The static Website Improvement Console now lets operators record target-repo implementation evidence before exporting a final handoff report. This closes the gap between planning prompts and the local Markdown report without letting this repo edit the target website source.
+
+### Changed
+- Added an `implementationEvidence` localStorage workspace block for executed work, verification results, remaining risks, and next actions.
+- Added editable Handoff Report evidence fields plus compact count metrics in `docs/website-console/`.
+- Updated generated Markdown handoff reports so copied/exported reports include operator-entered implementation evidence instead of fixed placeholder text.
+- Preserved existing JSON import/export compatibility by normalizing older workspaces that do not include the new evidence block.
+- Kept the static console dependency-free, browser-local, and target-repo safe.
+
+### Impact
+- Website Improvement operators can now keep planning, implementation proof, verification results, risks, and next actions in one browser workspace.
+- The console still does not call external MCPs, mutate target repos, run crawling/Lighthouse/axe automation, add backend sync, or add dependencies.
+
+### Verified
+- `node --check docs/website-console/app.js`.
+- Browser smoke confirmed Handoff Report evidence inputs, live Markdown preview, JSON import restore, mobile overflow safety, and zero console errors.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, CLI evidence export, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 277 — Website Console Workflow Graph Rendering (unreleased)
 
 The static Website Improvement Console now renders the portable workflow graph directly in the browser. Operators can inspect the same local workflow shape before exporting graph JSON or moving implementation prompts into the target website repo.
@@ -20,7 +42,7 @@ The static Website Improvement Console now renders the portable workflow graph d
 - Browser smoke at `http://127.0.0.1:8765/` confirmed 35 graph nodes, 67 edge rows, 6 lanes, boundary markers, and zero console errors.
 
 ### What's still ahead
-- Real MCP connection checks, Playwright/Lighthouse/axe automation, target-repo implementation tracking, and VS Code Webview reuse remain future Website Console automation work.
+- Target-repo implementation tracking is covered in Phase 278. Real MCP connection checks, Playwright/Lighthouse/axe automation, CLI evidence export, and VS Code Webview reuse remain future Website Console automation work.
 
 ## Phase 276 — Website Console Workflow Graph Export (unreleased)
 
