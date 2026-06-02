@@ -2589,6 +2589,43 @@ def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Pat
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_workspace_restore_backups_payload(payload: dict, *, context: str, cmd: list[str]) -> None:
+    restore_backups = payload.get("learningRestoreBackups")
+    if not isinstance(restore_backups, dict):
+        raise SystemExit(f"workspace restore-backups after {context} did not report learningRestoreBackups")
+    if restore_backups.get("totalCount") != 6 or restore_backups.get("count") != 5:
+        raise SystemExit(
+            f"workspace restore-backups after {context} expected totalCount=6/count=5, "
+            f"got totalCount={restore_backups.get('totalCount')!r}/count={restore_backups.get('count')!r}"
+        )
+    readiness = restore_backups.get("readiness")
+    if not isinstance(readiness, dict) or readiness.get("status") != "warn" or readiness.get("pruneCandidateCount") != 1:
+        raise SystemExit(f"workspace restore-backups after {context} readiness did not report one prune candidate")
+    latest_backup = restore_backups.get("latestBackup")
+    if not isinstance(latest_backup, dict) or "--restore" not in latest_backup.get("restorePreviewCommand", ""):
+        raise SystemExit(f"workspace restore-backups after {context} latest restore preview command is missing")
+    next_actions = payload.get("nextActions")
+    if not any(
+        isinstance(action, dict)
+        and "--restore-backups" in action.get("command", "")
+        and "--prune --keep 5" in action.get("command", "")
+        for action in next_actions or []
+    ):
+        raise SystemExit(f"workspace restore-backups after {context} missing prune next action")
+
+
+def assert_workspace_restore_backups_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_json(result.stdout, context=context, cmd=cmd)
+    assert_workspace_restore_backups_payload(json.loads(result.stdout), context=context, cmd=cmd)
+
+
 def assert_workspace_strict_success_smoke(
     cmd: list[str],
     *,
@@ -2878,6 +2915,35 @@ def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -
         + "\n",
         encoding="utf-8",
     )
+
+
+def write_workspace_restore_backup_fixture(profile_path: Path, count: int = 6) -> None:
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    for index in range(1, count + 1):
+        timestamp = f"20260522T000{index}00000Z"
+        backup_path = profile_path.with_name(
+            f"{profile_path.stem}.restore-backup-{timestamp}{profile_path.suffix or '.json'}"
+        )
+        backup_path.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "updatedAt": f"2026-05-22T00:0{index}:00.000Z",
+                    "entries": [
+                        {
+                            "id": f"learn-workspace-restore-{index}",
+                            "category": "workflow",
+                            "text": f"Rollback snapshot {index} for registry workspace restore backup smoke",
+                            "source": "registry-smoke",
+                            "createdAt": f"2026-05-22T00:0{index}:00.000Z",
+                        },
+                    ],
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
 
 def assert_route_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -3964,6 +4030,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
         npx_root.mkdir()
         prepare_workspace_strict_repo(workspace_strict_root)
         write_workspace_learning_eval_fixture(workspace_learning_profile, workspace_learning_eval)
+        write_workspace_restore_backup_fixture(workspace_learning_profile)
 
         env = os.environ.copy()
         env.update({
@@ -4017,6 +4084,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec workspace strict learning-eval JSON success",
+        )
+        assert_workspace_restore_backups_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "workspace",
+                "--root",
+                str(workspace_strict_root),
+                "--learning-file",
+                str(workspace_learning_profile),
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec workspace restore-backups JSON",
         )
         assert_main_help_smoke(
             npm_exec_cmd(package_spec, "help"),
@@ -4781,6 +4862,100 @@ def run_self_test() -> None:
             returncode=0,
             context="registry smoke self-test learning-eval",
             cmd=workspace_learning_eval_cmd,
+        )
+        workspace_restore_backups_payload = json.loads(passing_workspace_strict_clean_json())
+        workspace_restore_backups_payload["learningRestoreBackups"] = {
+            "file": "/tmp/learning.json",
+            "directory": "/tmp",
+            "pattern": "learning.restore-backup-*.json",
+            "generatedAt": "2026-05-22T00:00:07.000Z",
+            "limit": 5,
+            "totalCount": 6,
+            "count": 5,
+            "latestBackup": {
+                "file": "/tmp/learning.restore-backup-20260522T000600000Z.json",
+                "name": "learning.restore-backup-20260522T000600000Z.json",
+                "createdAt": "2026-05-22T00:06:00.000Z",
+                "modifiedAt": "2026-05-22T00:06:00.000Z",
+                "sizeBytes": 128,
+                "updatedAt": "2026-05-22T00:06:00.000Z",
+                "entryCount": 1,
+                "auditSummary": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+                "issueCount": 0,
+                "restorePreviewCommand": "design-ai learn --restore --from-file /tmp/learning.restore-backup-20260522T000600000Z.json --file /tmp/learning.json",
+            },
+            "backups": [
+                {
+                    "file": f"/tmp/learning.restore-backup-20260522T000{index}00000Z.json",
+                    "name": f"learning.restore-backup-20260522T000{index}00000Z.json",
+                    "createdAt": f"2026-05-22T00:0{index}:00.000Z",
+                    "modifiedAt": f"2026-05-22T00:0{index}:00.000Z",
+                    "sizeBytes": 128 + index,
+                    "updatedAt": f"2026-05-22T00:0{index}:00.000Z",
+                    "entryCount": 1,
+                    "auditSummary": {
+                        "status": "pass",
+                        "failures": 0,
+                        "warnings": 0,
+                    },
+                    "issueCount": 0,
+                    "restorePreviewCommand": (
+                        "design-ai learn --restore "
+                        f"--from-file /tmp/learning.restore-backup-20260522T000{index}00000Z.json "
+                        "--file /tmp/learning.json"
+                    ),
+                }
+                for index in range(6, 1, -1)
+            ],
+            "readiness": {
+                "status": "warn",
+                "reason": "backup-count-exceeds-keep",
+                "keep": 5,
+                "totalCount": 6,
+                "pruneCandidateCount": 1,
+            },
+            "privacy": {
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": False,
+                "mutatesProfile": False,
+            },
+            "error": "",
+        }
+        workspace_restore_backups_payload["nextActions"].append(
+            {
+                "level": "info",
+                "text": "Preview pruning older learning restore rollback backups.",
+                "command": "design-ai learn --restore-backups --file /tmp/learning.json --prune --keep 5",
+            }
+        )
+        assert_workspace_json(
+            json.dumps(workspace_restore_backups_payload),
+            context="registry smoke self-test restore-backups",
+            cmd=workspace_cmd,
+        )
+        assert_workspace_restore_backups_payload(
+            workspace_restore_backups_payload,
+            context="registry smoke self-test restore-backups",
+            cmd=workspace_cmd,
+        )
+        missing_restore_backups_next_action = json.loads(json.dumps(workspace_restore_backups_payload))
+        missing_restore_backups_next_action["nextActions"] = [
+            action
+            for action in missing_restore_backups_next_action["nextActions"]
+            if "--restore-backups" not in action.get("command", "")
+        ]
+        expect_self_test_failure(
+            lambda: assert_workspace_restore_backups_payload(
+                missing_restore_backups_next_action,
+                context="registry smoke self-test restore-backups",
+                cmd=workspace_cmd,
+            ),
+            expected="missing prune next action",
+            scope="registry smoke",
         )
         expect_self_test_failure(
             lambda: assert_workspace_strict_failure_json(

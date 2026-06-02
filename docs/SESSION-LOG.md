@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.53 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval / restore-backup readiness gates). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.54 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval / restore-backup readiness gates with public registry smoke coverage). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.53 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.54 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.54 — Public registry workspace restore backup readiness smoke
+
+- **v4.54 (Phase 269)** — Extended `npm run registry:smoke` so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai workspace` restore-backups readiness, sibling rollback backup inventory, latest restore preview command, prune candidate readiness, and preview-first prune next action metadata.
 
 ### v4.53 — Workspace learning restore backup readiness
 
