@@ -7,10 +7,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { runWorkspace } from "../commands/workspace.mjs";
+import { defaultLearningRestoreBackupFile } from "./learn.mjs";
 import {
   assessLearningEvalFreshness,
+  assessLearningRestoreBackupReadiness,
   assessLearningUsageReadiness,
   collectGitReport,
+  collectLearningRestoreBackupsReport,
   collectLearningUsageReport,
   collectRepositoryReport,
   collectWorkspaceReport,
@@ -445,9 +448,38 @@ test("collectWorkspaceReport shell-quotes learning usage and eval next action pa
         exposesMatchedTokens: false,
       },
     }),
+    learningRestoreBackupsProvider: ({ filePath }) => ({
+      file: filePath,
+      directory: path.dirname(filePath),
+      pattern: "learning.restore-backup-*.json",
+      generatedAt: "2026-05-22T00:06:00.000Z",
+      limit: 5,
+      totalCount: 6,
+      count: 5,
+      backups: [
+        {
+          file: path.join(dir, "learning.restore-backup-20260522T000600000Z.json"),
+          name: "learning.restore-backup-20260522T000600000Z.json",
+          createdAt: "2026-05-22T00:06:00.000Z",
+          modifiedAt: "2026-05-22T00:06:00.000Z",
+          sizeBytes: 100,
+          updatedAt: "2026-05-22T00:06:00.000Z",
+          entryCount: 1,
+          auditSummary: { status: "pass", failures: 0, warnings: 0 },
+          issueCount: 0,
+          restorePreviewCommand: "design-ai learn --restore --dry-run",
+        },
+      ],
+      privacy: {
+        storesRawBriefText: false,
+        exposesEntryTextPreview: false,
+        mutatesProfile: false,
+      },
+    }),
   });
   const evalAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --eval --from-file"));
   const usageAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --usage"));
+  const restoreBackupsAction = evalReport.nextActions.find((item) => (item.command || "").includes("learn --restore-backups"));
   assert.equal(
     usageAction?.command,
     `design-ai learn --usage --file ${quoteShellArg(learningFile)} --usage-file ${quoteShellArg(usageFile)}`,
@@ -455,6 +487,10 @@ test("collectWorkspaceReport shell-quotes learning usage and eval next action pa
   assert.equal(
     evalAction?.command,
     `design-ai learn --eval --from-file ${quoteShellArg(evalFile)} --file ${quoteShellArg(learningFile)} --strict`,
+  );
+  assert.equal(
+    restoreBackupsAction?.command,
+    `design-ai learn --restore-backups --file ${quoteShellArg(learningFile)} --prune --keep 5`,
   );
 
   const warningReport = collectWorkspaceReport({
@@ -578,6 +614,98 @@ test("collectWorkspaceReport auto-detects sibling learning usage sidecar", () =>
   assert.equal(report.learningUsage.eventCount, 1);
   assert.equal(report.learningUsage.readiness.status, "pass");
   assert.equal(report.nextActions.some((item) => item.text === "Learning usage sidecar is aligned with the active profile."), true);
+}));
+
+test("collectWorkspaceReport auto-detects sibling learning restore rollback backups", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+  writeFileSync(
+    learningFile,
+    JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:06:00.000Z",
+      entries: [
+        {
+          id: "learn-active",
+          category: "workflow",
+          text: "Run verification before handoff",
+          source: "test",
+          createdAt: "2026-05-22T00:06:00.000Z",
+        },
+      ],
+    }),
+    "utf8",
+  );
+
+  for (let minute = 1; minute <= 6; minute += 1) {
+    const timestamp = `2026-05-22T00:0${minute}:00.000Z`;
+    writeFileSync(
+      defaultLearningRestoreBackupFile(learningFile, new Date(timestamp)),
+      JSON.stringify({
+        version: 1,
+        updatedAt: timestamp,
+        entries: [
+          {
+            id: `learn-backup-${minute}`,
+            category: "brand",
+            text: "Use quiet enterprise language",
+            source: "backup",
+            createdAt: timestamp,
+          },
+        ],
+      }),
+      "utf8",
+    );
+  }
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(""),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace restore backups\n"),
+    }),
+  });
+
+  assert.equal(report.learningRestoreBackups.totalCount, 6);
+  assert.equal(report.learningRestoreBackups.count, 5);
+  assert.match(report.learningRestoreBackups.latestBackup.name, /20260522T000600000Z/);
+  assert.equal(report.learningRestoreBackups.readiness.status, "warn");
+  assert.equal(report.learningRestoreBackups.readiness.pruneCandidateCount, 1);
+  const pruneAction = report.nextActions.find((item) => (item.command || "").includes("--restore-backups --file"));
+  assert.equal(pruneAction?.level, "info");
+  assert.match(pruneAction?.text || "", /Preview pruning older learning restore rollback backups/);
+  assert.match(pruneAction?.command || "", /--prune --keep 5/);
+}));
+
+test("collectLearningRestoreBackupsReport handles provider errors and readiness states", () => withTempDir((dir) => {
+  const learningFile = path.join(dir, "learning.json");
+
+  assert.equal(collectLearningRestoreBackupsReport({
+    learningFilePath: learningFile,
+    learningRestoreBackupsProvider: () => ({ totalCount: 0, backups: [] }),
+  }), null);
+  assert.equal(assessLearningRestoreBackupReadiness({ totalCount: 1, keep: 5 }).status, "pass");
+  assert.equal(assessLearningRestoreBackupReadiness({ totalCount: 6, keep: 5 }).status, "warn");
+
+  const report = collectLearningRestoreBackupsReport({
+    learningFilePath: learningFile,
+    learningRestoreBackupsProvider: () => {
+      throw new Error("cannot read backups");
+    },
+  });
+  assert.equal(report.readiness.status, "fail");
+  assert.match(report.error, /cannot read backups/);
 }));
 
 test("collectLearningUsageReport warns on stale selected entry ids", () => withTempDir((dir) => {
@@ -848,8 +976,9 @@ test("formatWorkspaceJson emits a stable machine-readable object", () => {
   });
   const payload = JSON.parse(formatted);
 
-  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningUsage", "learningEval", "release", "nextActions"]);
+  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "release", "nextActions"]);
   assert.equal(payload.context.root, "/repo");
+  assert.equal(payload.learningRestoreBackups, null);
 });
 
 test("runWorkspace supports JSON output with injected collectors", async () => withTempDir(async (dir) => {

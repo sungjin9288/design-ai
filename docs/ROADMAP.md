@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 268 — Workspace Learning Restore Backup Readiness (v4.53.0) ✓ shipped
+
+`design-ai workspace` now detects sibling learning restore rollback backups beside the selected profile and reports the inventory in local dogfood readiness. The report stays read-only, exposes `learningRestoreBackups` in JSON, shows the latest rollback backup, and points operators to preview-first prune cleanup when older backups exceed the default keep count.
+
+### Changed
+- Added workspace auto-detection for sibling `*.restore-backup-*.json` rollback backups.
+- Added `learningRestoreBackups` JSON output with inventory counts, latest backup metadata, readiness, privacy flags, and error handling.
+- Added human workspace output for restore rollback backup inventory and readiness.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` workspace restore-backups readiness.
+- Added release metadata guard phrases for workspace learning restore-backups readiness coverage.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.53.0`.
+
+### Impact
+- Workspace readiness now covers rollback backup discoverability and retention cleanup without mutating the active learning profile.
+- Existing learning profile, restore, restore-backups, and prune schemas remain compatible.
+
+### What this enables
+- Operators can decide whether to restore, inspect, or prune local learning rollback backups from the same read-only workspace snapshot used before commits, pushes, and handoffs.
+
+### Verified
+- All 8 audits pass.
+- Targeted workspace/learning unit tests.
+- Smoke assertion, package smoke, and release metadata self-tests.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.52.0 → 4.53.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 267 — Public Registry Learning Restore Smoke (v4.52.0) ✓ shipped
 
 `npm run registry:smoke` now verifies the published-package learning restore safety path. The public `npm exec --package @design-ai/cli@<version>` smoke covers restore preview/apply behavior, rollback backup creation with explicit backup paths, restore-backups inventory, and restore-backups prune preview/apply cleanup.

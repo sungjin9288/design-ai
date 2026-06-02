@@ -8,6 +8,7 @@ import {
   defaultLearningFile,
   defaultLearningUsageFile,
   learningEvalReport,
+  listLearningRestoreBackups,
   learningStats,
   learningUsageStats,
 } from "./learn.mjs";
@@ -40,6 +41,7 @@ const CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai";
 const CANONICAL_REPOSITORY_URL = `https://github.com/${CANONICAL_REPOSITORY_SLUG}`;
 const DEFAULT_LEARNING_EVAL_FILE = "learning-eval.json";
 const DEFAULT_LEARNING_CURATION_REPORT_FILE = "learning-curation-report.md";
+const DEFAULT_RESTORE_BACKUP_KEEP = 5;
 
 export function parseWorkspaceArgs(args) {
   const flags = {
@@ -429,6 +431,111 @@ export function collectLearningEvalReport({
   }
 }
 
+export function assessLearningRestoreBackupReadiness({
+  totalCount = 0,
+  keep = DEFAULT_RESTORE_BACKUP_KEEP,
+  error = "",
+} = {}) {
+  if (error) {
+    return {
+      status: "fail",
+      reason: "restore-backup-inventory-error",
+      keep,
+      totalCount,
+      pruneCandidateCount: 0,
+    };
+  }
+
+  if (totalCount <= 0) {
+    return {
+      status: "unknown",
+      reason: "no restore rollback backups found",
+      keep,
+      totalCount,
+      pruneCandidateCount: 0,
+    };
+  }
+
+  const pruneCandidateCount = Math.max(0, totalCount - keep);
+  if (pruneCandidateCount > 0) {
+    return {
+      status: "warn",
+      reason: `${pruneCandidateCount} older restore rollback backup(s) can be pruned`,
+      keep,
+      totalCount,
+      pruneCandidateCount,
+    };
+  }
+
+  return {
+    status: "pass",
+    reason: "",
+    keep,
+    totalCount,
+    pruneCandidateCount,
+  };
+}
+
+export function collectLearningRestoreBackupsReport({
+  learningFilePath = defaultLearningFile(),
+  limit = DEFAULT_RESTORE_BACKUP_KEEP,
+  keep = DEFAULT_RESTORE_BACKUP_KEEP,
+  learningRestoreBackupsProvider = listLearningRestoreBackups,
+} = {}) {
+  const resolvedLearningFile = path.resolve(learningFilePath);
+
+  try {
+    const inventory = learningRestoreBackupsProvider({
+      filePath: resolvedLearningFile,
+      limit,
+    });
+    const totalCount = Number.isInteger(inventory.totalCount) ? inventory.totalCount : 0;
+    if (totalCount <= 0) return null;
+
+    const backups = Array.isArray(inventory.backups) ? inventory.backups : [];
+    const readiness = assessLearningRestoreBackupReadiness({ totalCount, keep });
+
+    return {
+      file: inventory.file || resolvedLearningFile,
+      directory: inventory.directory || path.dirname(resolvedLearningFile),
+      pattern: inventory.pattern || "",
+      generatedAt: inventory.generatedAt || "",
+      limit: Number.isInteger(inventory.limit) ? inventory.limit : limit,
+      totalCount,
+      count: Number.isInteger(inventory.count) ? inventory.count : backups.length,
+      latestBackup: backups[0] || null,
+      backups,
+      readiness,
+      privacy: inventory.privacy || {
+        storesRawBriefText: false,
+        exposesEntryTextPreview: false,
+        mutatesProfile: false,
+      },
+      error: "",
+    };
+  } catch (error) {
+    const message = error?.message || String(error);
+    return {
+      file: resolvedLearningFile,
+      directory: path.dirname(resolvedLearningFile),
+      pattern: "",
+      generatedAt: "",
+      limit,
+      totalCount: 0,
+      count: 0,
+      latestBackup: null,
+      backups: [],
+      readiness: assessLearningRestoreBackupReadiness({ totalCount: 0, keep, error: message }),
+      privacy: {
+        storesRawBriefText: false,
+        exposesEntryTextPreview: false,
+        mutatesProfile: false,
+      },
+      error: message,
+    };
+  }
+}
+
 export function defaultLearningEvalPath(learningFilePath = defaultLearningFile()) {
   return path.join(path.dirname(path.resolve(learningFilePath)), DEFAULT_LEARNING_EVAL_FILE);
 }
@@ -465,6 +572,14 @@ export function defaultLearningCurationReportPath(learningFilePath = defaultLear
 
 function learningCurationReportCommand(learning, learningUsage = null) {
   return `${learningCurationCommand(learning, learningUsage)} --report --out ${quoteShellArg(defaultLearningCurationReportPath(learning.file))}`;
+}
+
+function learningRestoreBackupsCommand(learning) {
+  return `design-ai learn --restore-backups --file ${quoteShellArg(learning.file)}`;
+}
+
+function learningRestoreBackupPruneCommand(learning, keep = DEFAULT_RESTORE_BACKUP_KEEP) {
+  return `${learningRestoreBackupsCommand(learning)} --prune --keep ${keep}`;
 }
 
 function parsedTimestamp(value) {
@@ -658,7 +773,15 @@ export function assessLearningUsageReadiness({ learningFilePath = defaultLearnin
   };
 }
 
-export function buildWorkspaceNextActions({ git, repository, learning, learningUsage, learningEval, release }) {
+export function buildWorkspaceNextActions({
+  git,
+  repository,
+  learning,
+  learningUsage,
+  learningEval,
+  learningRestoreBackups,
+  release,
+}) {
   const actions = [];
 
   if (!git.isRepo) {
@@ -754,6 +877,21 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningU
     }
   }
 
+  if (learningRestoreBackups) {
+    const readiness = learningRestoreBackups.readiness || {};
+    if (learningRestoreBackups.error) {
+      actions.push(action("fail", "Repair the learning restore rollback backup inventory before relying on restore readiness.", learningRestoreBackupsCommand(learning)));
+    } else if (readiness.pruneCandidateCount > 0) {
+      actions.push(action(
+        "info",
+        "Preview pruning older learning restore rollback backups after keeping the newest recovery points.",
+        learningRestoreBackupPruneCommand(learning, readiness.keep || DEFAULT_RESTORE_BACKUP_KEEP),
+      ));
+    } else if (learningRestoreBackups.totalCount > 0) {
+      actions.push(action("pass", "Learning restore rollback backups are available for rollback review.", learningRestoreBackupsCommand(learning)));
+    }
+  }
+
   if (release.available.includes("test")) {
     actions.push(action("info", "Run CLI unit tests before handing this phase off.", "npm test"));
   }
@@ -781,6 +919,7 @@ export function collectWorkspaceReport({
   learningStatsProvider = learningStats,
   learningUsageStatsProvider = learningUsageStats,
   learningEvalReportProvider = learningEvalReport,
+  learningRestoreBackupsProvider = listLearningRestoreBackups,
 } = {}) {
   const resolvedRoot = path.resolve(root);
   const resolvedSourceRoot = path.resolve(sourceRoot);
@@ -806,6 +945,10 @@ export function collectWorkspaceReport({
     learningEvalPath: resolvedLearningEvalPath,
     learningEvalReportProvider,
   });
+  const learningRestoreBackups = collectLearningRestoreBackupsReport({
+    learningFilePath: resolvedLearningFile,
+    learningRestoreBackupsProvider,
+  });
   const learningEvalWithFreshness = learningEval
     ? {
         ...learningEval,
@@ -820,6 +963,7 @@ export function collectWorkspaceReport({
     learning,
     learningUsage,
     learningEval: learningEvalWithFreshness,
+    learningRestoreBackups,
     release,
   });
 
@@ -836,6 +980,7 @@ export function collectWorkspaceReport({
     learning,
     learningUsage,
     learningEval: learningEvalWithFreshness,
+    learningRestoreBackups,
     release,
     nextActions,
   };
@@ -849,6 +994,7 @@ export function formatWorkspaceJson(report) {
     learning: report.learning,
     learningUsage: report.learningUsage || null,
     learningEval: report.learningEval || null,
+    learningRestoreBackups: report.learningRestoreBackups || null,
     release: report.release,
     nextActions: report.nextActions,
   }, null, 2);

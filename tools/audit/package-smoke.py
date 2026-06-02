@@ -455,6 +455,40 @@ def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Pat
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_workspace_restore_backups_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_workspace_json(result.stdout, context=context, cmd=cmd)
+    payload = json.loads(result.stdout)
+    restore_backups = payload.get("learningRestoreBackups")
+    if not isinstance(restore_backups, dict):
+        raise SystemExit(f"workspace restore-backups after {context} did not report learningRestoreBackups")
+    if restore_backups.get("totalCount") != 6 or restore_backups.get("count") != 5:
+        raise SystemExit(
+            f"workspace restore-backups after {context} expected totalCount=6/count=5, "
+            f"got totalCount={restore_backups.get('totalCount')!r}/count={restore_backups.get('count')!r}"
+        )
+    readiness = restore_backups.get("readiness")
+    if not isinstance(readiness, dict) or readiness.get("status") != "warn" or readiness.get("pruneCandidateCount") != 1:
+        raise SystemExit(f"workspace restore-backups after {context} readiness did not report one prune candidate")
+    latest_backup = restore_backups.get("latestBackup")
+    if not isinstance(latest_backup, dict) or "--restore" not in latest_backup.get("restorePreviewCommand", ""):
+        raise SystemExit(f"workspace restore-backups after {context} latest restore preview command is missing")
+    next_actions = payload.get("nextActions")
+    if not any(
+        isinstance(action, dict)
+        and "--restore-backups" in action.get("command", "")
+        and "--prune --keep 5" in action.get("command", "")
+        for action in next_actions or []
+    ):
+        raise SystemExit(f"workspace restore-backups after {context} missing prune next action")
+
+
 def site_workspace_fixture_json() -> str:
     return json.dumps(
         {
@@ -1153,6 +1187,35 @@ def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -
         + "\n",
         encoding="utf-8",
     )
+
+
+def write_workspace_restore_backup_fixture(profile_path: Path, count: int = 6) -> None:
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    for index in range(1, count + 1):
+        timestamp = f"20260522T000{index}00000Z"
+        backup_path = profile_path.with_name(
+            f"{profile_path.stem}.restore-backup-{timestamp}{profile_path.suffix or '.json'}"
+        )
+        backup_path.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "updatedAt": f"2026-05-22T00:0{index}:00.000Z",
+                    "entries": [
+                        {
+                            "id": f"learn-workspace-restore-{index}",
+                            "category": "workflow",
+                            "text": f"Rollback snapshot {index} for workspace restore backup smoke",
+                            "source": "package-smoke",
+                            "createdAt": f"2026-05-22T00:0{index}:00.000Z",
+                        },
+                    ],
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
 
 def write_learning_audit_fixture(profile_path: Path) -> None:
@@ -7667,6 +7730,10 @@ def smoke_tarball(tarball: Path) -> None:
             npx_workspace_auto_profile,
             npx_workspace_auto_eval,
         )
+        write_workspace_restore_backup_fixture(installed_workspace_learning_profile)
+        write_workspace_restore_backup_fixture(installed_workspace_auto_profile)
+        write_workspace_restore_backup_fixture(npx_workspace_learning_profile)
+        write_workspace_restore_backup_fixture(npx_workspace_auto_profile)
 
         base_env = os.environ.copy()
         base_env.update({
@@ -7736,6 +7803,23 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin workspace strict JSON success",
         )
+        assert_workspace_restore_backups_smoke(
+            [
+                str(bin_path),
+                "workspace",
+                "--root",
+                str(installed_workspace_strict_root),
+                "--learning-file",
+                str(installed_workspace_learning_profile),
+                "--learning-eval",
+                str(installed_workspace_learning_eval),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace restore-backups JSON",
+        )
         assert_workspace_strict_success_smoke(
             [
                 str(bin_path),
@@ -7750,6 +7834,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin workspace auto learning-eval JSON success",
+        )
+        assert_workspace_restore_backups_smoke(
+            [
+                str(bin_path),
+                "workspace",
+                "--root",
+                str(installed_workspace_strict_root),
+                "--learning-file",
+                str(installed_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace auto restore-backups JSON",
         )
         assert_site_json_smoke(
             [str(bin_path), "site", "--stdin", "--json"],
@@ -8487,6 +8586,23 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec workspace strict JSON success",
         )
+        assert_workspace_restore_backups_smoke(
+            npm_exec_cmd(
+                tarball,
+                "workspace",
+                "--root",
+                str(npx_workspace_strict_root),
+                "--learning-file",
+                str(npx_workspace_learning_profile),
+                "--learning-eval",
+                str(npx_workspace_learning_eval),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace restore-backups JSON",
+        )
         assert_workspace_strict_success_smoke(
             npm_exec_cmd(
                 tarball,
@@ -8501,6 +8617,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec workspace auto learning-eval JSON success",
+        )
+        assert_workspace_restore_backups_smoke(
+            npm_exec_cmd(
+                tarball,
+                "workspace",
+                "--root",
+                str(npx_workspace_strict_root),
+                "--learning-file",
+                str(npx_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace auto restore-backups JSON",
         )
         assert_site_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--json"),

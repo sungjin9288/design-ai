@@ -104,6 +104,21 @@ function printWorkspaceReport(report) {
     if (report.learningEval.error) warn(`Learning eval error: ${report.learningEval.error}`);
   }
 
+  if (report.learningRestoreBackups) {
+    console.log("\nLearning restore backups:");
+    info(`Directory: ${report.learningRestoreBackups.directory}`);
+    info(`Backups: ${report.learningRestoreBackups.totalCount} total | showing ${report.learningRestoreBackups.count}`);
+    if (report.learningRestoreBackups.latestBackup) {
+      info(`Latest: ${report.learningRestoreBackups.latestBackup.name} | entries ${report.learningRestoreBackups.latestBackup.entryCount}`);
+    }
+    if (report.learningRestoreBackups.readiness) {
+      const readiness = report.learningRestoreBackups.readiness;
+      info(`Readiness: ${readiness.status}${readiness.reason ? ` | ${readiness.reason}` : ""}`);
+    }
+    info("Privacy: backup inventory only, no entry text previews");
+    if (report.learningRestoreBackups.error) warn(`Learning restore backup error: ${report.learningRestoreBackups.error}`);
+  }
+
   console.log("\nRepository:");
   info(`Canonical: ${report.repository.slug} (${report.repository.url})`);
   const remoteStatus = report.repository.remoteAligned === null

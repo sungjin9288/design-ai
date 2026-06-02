@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.52:
+What ships in v4.53:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -37,6 +37,7 @@ What ships in v4.52:
 - When learning curation is recommended, `design-ai workspace` also suggests a companion report artifact command such as `design-ai learn --curate --report --out <learning-file-dir>/learning-curation-report.md`, adding `--usage-file` when usage metadata is part of the readiness warning.
 - `design-ai workspace` checks learning eval checkpoint freshness when metadata is available. If the profile was updated after the checkpoint was generated, the checkpoint came from another profile path, or the source entry count changed, `workspace` emits a warning and suggests regenerating the checkpoint.
 - When a clean learning profile has entries but no checkpoint is available, `design-ai workspace` adds a next-action command for `design-ai learn --eval-template --file <learning.json> --out <learning-file-dir>/learning-eval.json`.
+- `design-ai workspace` automatically detects sibling restore rollback backups such as `learning.restore-backup-*.json`, reports the total/latest backup inventory in JSON as `learningRestoreBackups`, and suggests a preview-first `design-ai learn --restore-backups --prune --keep 5` next action when older backups exceed the default keep count.
 - Workspace next-action commands that include learning profile, usage sidecar, or eval checkpoint paths are shell-quoted, so paths with spaces or apostrophes remain copy/paste safe.
 - Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries, auto-detected learning usage sidecar summaries, public registry `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation, public registry JSON `design-ai learn --restore` preview/apply output plus public registry learn restore `--out` file-write confirmation, public registry learn restore rollback backup verification, public registry learn restore `--backup-file` path coverage, public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage, and public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage from the published package path.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
@@ -91,7 +92,7 @@ design-ai workspace --strict
 
 This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
 
-If the selected learning profile has sibling `learning.usage.json` or `learning-eval.json` files, `workspace` automatically includes those summaries. Use `--learning-usage path` or `--learning-eval path` only when you want a different sidecar or checkpoint.
+If the selected learning profile has sibling `learning.usage.json`, `learning-eval.json`, or `learning.restore-backup-*.json` files, `workspace` automatically includes those summaries. Use `--learning-usage path` or `--learning-eval path` only when you want a different sidecar or checkpoint.
 
 When usage metadata is available, `workspace` compares it against the selected profile. A usage sidecar becomes a readiness warning when its `profileFile` points at another profile or when its selected entry ids no longer exist in the active profile, and the next actions point to usage-aware curation plus a companion curation Markdown report rather than a separate usage-only report.
 
@@ -104,6 +105,12 @@ If the selected learning profile already contains entries and passes audit, `wor
 ```bash
 design-ai learn --eval-template --file ./learning.json --out ./learning-eval.json
 design-ai workspace --learning-file ./learning.json --strict
+```
+
+If sibling restore rollback backups are present, `workspace` remains read-only and only reports the inventory. When more than five backups exist, the next action points to a dry-run-safe prune command:
+
+```bash
+design-ai learn --restore-backups --file ./learning.json --prune --keep 5
 ```
 
 ## Usage

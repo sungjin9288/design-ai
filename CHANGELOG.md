@@ -2,6 +2,33 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.53.0 — Workspace Learning Restore Backup Readiness (2026-06)
+
+Added `design-ai workspace` readiness coverage for sibling learning restore rollback backups. Workspace JSON now reports `learningRestoreBackups` inventory, latest backup metadata, privacy flags, and prune readiness while remaining read-only.
+
+### Added
+- `design-ai workspace` auto-detection for sibling `*.restore-backup-*.json` rollback backups beside the selected learning profile.
+- `learningRestoreBackups` JSON output with file, directory, pattern, total count, shown backups, latest backup, readiness, privacy, and error fields.
+- Human workspace output for restore rollback backup inventory and readiness.
+- Workspace next action for preview-first `design-ai learn --restore-backups --file <learning.json> --prune --keep 5` cleanup when older rollback backups exceed the default keep count.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` workspace restore-backups readiness.
+- Release metadata guard phrase for workspace learning restore-backups readiness coverage.
+
+### Changed
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Roadmap, and Session Log coverage for v4.53.
+- Updated package/plugin metadata to `4.53.0`.
+
+### Verified
+- All 8 audits pass.
+- Targeted workspace/learning unit tests.
+- Smoke assertion, package smoke, and release metadata self-tests.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.52.0 → 4.53.0.
+
+### What this enables
+- Operators can see local rollback restore points and cleanup readiness in the same dogfood snapshot they already use for git, learning usage, eval checkpoints, and release readiness.
+
 ## v4.52.0 — Public Registry Learning Restore Smoke (2026-06)
 
 Extended post-publish registry smoke coverage for the learning restore workflow. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for preview/apply restore behavior, explicit rollback backup paths, restore-backups inventory, and restore-backups prune preview/apply cleanup.
