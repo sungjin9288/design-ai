@@ -9,11 +9,13 @@ import {
 import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai workspace [--root path] [--learning-file path] [--strict] [--json]\n");
+  console.log("Usage:  design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]\n");
   console.log("Shows the current local dogfood workspace state without changing files.\n");
   console.log("Options:");
   console.log("  --root path           Inspect a specific git workspace root. Default: current directory");
   console.log("  --learning-file path  Inspect a specific learning profile. Default: DESIGN_AI_LEARNING_FILE or ~/.design-ai/learning.json");
+  console.log("  --learning-usage path Include a read-only local learning usage sidecar summary. Default: auto-detect sibling learning.usage.json");
+  console.log("  --learning-eval path  Include a read-only local learning eval checkpoint summary. Default: auto-detect sibling learning-eval.json");
   console.log("  --strict              Exit non-zero when readiness warnings or failures are present");
   console.log("  --json                Emit machine-readable workspace diagnostics");
 }
@@ -74,6 +76,34 @@ function printWorkspaceReport(report) {
   }
   if (report.learning.error) warn(`Learning profile error: ${report.learning.error}`);
 
+  if (report.learningUsage) {
+    console.log("\nLearning usage:");
+    info(`Usage sidecar: ${report.learningUsage.usageFile}`);
+    info(`Events: ${report.learningUsage.eventCount} | used ${report.learningUsage.usedEntryCount}/${report.learningUsage.profileEntryCount} | stale ${report.learningUsage.staleSelectedEntryCount}`);
+    if (report.learningUsage.latestEvent) {
+      info(`Latest: ${report.learningUsage.latestEvent.command || "unknown"} / ${report.learningUsage.latestEvent.routeId || "unrouted"} at ${report.learningUsage.latestEvent.createdAt || "unknown"}`);
+    }
+    if (report.learningUsage.readiness) {
+      info(`Readiness: ${report.learningUsage.readiness.status}${report.learningUsage.readiness.reason ? ` | ${report.learningUsage.readiness.reason}` : ""}`);
+    }
+    info("Privacy: selected entry ids and brief hashes only, no raw brief text");
+    if (report.learningUsage.error) warn(`Learning usage error: ${report.learningUsage.error}`);
+  }
+
+  if (report.learningEval) {
+    console.log("\nLearning eval:");
+    info(`Checkpoint: ${report.learningEval.source}`);
+    info(`Status: ${report.learningEval.status} | cases ${report.learningEval.caseCount} (pass ${report.learningEval.passed}, warn ${report.learningEval.warned}, fail ${report.learningEval.failed})`);
+    if (report.learningEval.generatedAt) {
+      info(`Generated: ${report.learningEval.generatedAt}`);
+    }
+    if (report.learningEval.freshness) {
+      info(`Freshness: ${report.learningEval.freshness.status}${report.learningEval.freshness.reason ? ` | ${report.learningEval.freshness.reason}` : ""}`);
+    }
+    info(`Privacy: brief hashes only, no raw brief text`);
+    if (report.learningEval.error) warn(`Learning eval error: ${report.learningEval.error}`);
+  }
+
   console.log("\nRepository:");
   info(`Canonical: ${report.repository.slug} (${report.repository.url})`);
   const remoteStatus = report.repository.remoteAligned === null
@@ -111,6 +141,8 @@ export async function runWorkspace(args, deps = {}) {
   const report = collectWorkspaceReport({
     root: flags.root || process.cwd(),
     learningFilePath: flags.learningFilePath || undefined,
+    learningUsagePath: flags.learningUsagePath || undefined,
+    learningEvalPath: flags.learningEvalPath || undefined,
     ...deps,
   });
 

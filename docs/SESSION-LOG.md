@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.28 (mature, dogfooded, 90%+ canonical coverage, and a website improvement control tower with CLI handoff plus MCP readiness checks, action plans, handoff bundles, bundle verification, checksum integrity checks, bundle fingerprint verification, bundle comparison, and target-repo handoff prompts). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.46 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning usage/eval readiness gates). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.28 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.46 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,78 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.46 — Workspace curation report next actions
+
+- **v4.46 (Phase 261)** — Added workspace next actions that pair learning profile audit and usage sidecar curation warnings with `learn --curate --report --out learning-curation-report.md` Markdown report artifact commands before applying archive cleanup.
+
+### v4.45 — Learning curation Markdown reports
+
+- **v4.45 (Phase 260)** — Added `learn --curate --report` so archive-first local learning curation can be saved as a readable Markdown audit trail before applying any profile cleanup.
+
+### v4.44 — Workspace learning curation next actions
+
+- **v4.44 (Phase 259)** — Connected `workspace` learning audit and usage sidecar warnings to usage-aware `learn --curate --usage-file` next actions, and added curation review metadata for usage sidecars recorded against another profile path.
+
+### v4.43 — Learning usage curation review
+
+- **v4.43 (Phase 258)** — Added usage-aware learning curation review so `learn --curate` reports stale usage sidecar ids and unused active entries as advisory review hints without auto-archiving them.
+
+### v4.42 — Workspace learning usage readiness
+
+- **v4.42 (Phase 257)** — Added workspace learning usage sidecar readiness so `workspace` reports prompt/pack usage event counts, stale selected ids, profile mismatch, and privacy metadata from explicit or sibling `learning.usage.json` files.
+
+### v4.41 — Workspace learning eval freshness guard
+
+- **v4.41 (Phase 256)** — Added workspace learning eval freshness checks so a passing checkpoint warns when it predates the active learning profile, was generated from another profile path, or records a different source entry count.
+
+### v4.40 — Workspace learning eval sibling checkpoint discovery
+
+- **v4.40 (Phase 255)** — Added sibling `learning-eval.json` auto-detection for `design-ai workspace` and aligned eval-template next actions to write checkpoints beside the selected learning profile.
+
+### v4.39 — Workspace learning eval command path quoting
+
+- **v4.39 (Phase 254)** — Added shell-safe path quoting for `design-ai workspace` learning eval next-action commands so `--file` and `--from-file` paths with spaces or apostrophes remain copy/paste safe.
+
+### v4.38 — Workspace learning eval-template hints
+
+- **v4.38 (Phase 253)** — Added `design-ai workspace` next-action guidance for generating a local `learn --eval-template` checkpoint when a clean learning profile has entries but no `--learning-eval` checkpoint is supplied.
+
+### v4.37 — Public registry learning eval template smoke
+
+- **v4.37 (Phase 252)** — Extended post-publish registry smoke so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai learn --eval-template` checkpoint generation and re-runs the generated checkpoint through `design-ai learn --eval --strict --json`.
+
+### v4.36 — Learning eval template generation
+
+- **v4.36 (Phase 251)** — Added `design-ai learn --eval-template` so active local learning profiles can generate runnable checkpoint JSON, write it with `--out`, and immediately validate it through `learn --eval --strict`.
+
+### v4.35 — Public registry workspace learning eval smoke
+
+- **v4.35 (Phase 250)** — Extended post-publish registry smoke so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai workspace --learning-eval <checkpoint.json> --strict --json` checkpoint summaries from a clean workspace fixture.
+
+### v4.34 — Workspace learning eval readiness
+
+- **v4.34 (Phase 249)** — Added `design-ai workspace --learning-eval <checkpoint.json>` so dogfood readiness snapshots can include local learning-selection checkpoint status beside git, repository metadata, learning audit state, release scripts, and next actions. `workspace --strict` now treats eval warnings/failures as readiness issues without mutating `learning.json`.
+
+### v4.33 — Local learning eval strict gate
+
+- **v4.33 (Phase 248)** — Added `design-ai learn --eval --strict` so deterministic learning-selection checkpoint reports can fail CI or internal release gates when a case warns or fails. Strict mode prints or writes the report first, preserves read-only `learning.json` behavior, and keeps eval output privacy-preserving by exposing brief hashes and selected ids instead of raw brief/query text.
+
+### v4.32 — Local learning eval checkpoints
+
+- **v4.32 (Phase 247)** — Added `design-ai learn --eval --from-file <checkpoint.json>` and stdin support to validate deterministic learning-selection checkpoints without mutating `learning.json`. Reports expose brief hashes, selected ids, per-case status, and privacy metadata while omitting raw brief/query text and matched tokens. Package smoke verifies human, JSON, and `--out` report paths through installed-bin and one-shot `npm exec --package <tarball>`.
+
+### v4.31 — Local learning usage report
+
+- **v4.31 (Phase 246)** — Added `design-ai learn --usage [--usage-file path]` to summarize local prompt/pack learning sidecar activity without mutating `learning.json`. The report exposes event counts, command / route / category distribution, selected entry counts, unused active entries, stale selected ids, recent event hashes, and explicit privacy metadata. Package smoke verifies human, JSON, and `--out` report paths through installed-bin and one-shot `npm exec --package <tarball>`.
+
+### v4.30 — Local learning usage sidecar
+
+- **v4.30 (Phase 245)** — Added privacy-preserving learning usage sidecar recording for `prompt --with-learning` and `pack --with-learning`. Usage events store selected entry ids, command, route, counts, audit status, and short brief hashes in `learning.usage.json` without raw brief text. Package smoke verifies sidecar output through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### v4.29 — Local learning archive-first curation
+
+- **v4.29 (Phase 244)** — Added `design-ai learn --curate` preview/apply flow to archive duplicate and sensitive learning entries into sibling `*.archive.json` files before removing them from the active profile. Package smoke verifies curation preview/apply behavior and archive persistence through installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 ### v4.28 — Website improvement target-repo bundle handoff prompt
 
@@ -284,6 +356,23 @@ Build the leverage tool, then push coverage further.
 - **v4.13 (Phase 227)** — Added learning import output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --import --dry-run --json --out --force` confirmation and persisted import preview JSON artifacts.
 - **v4.13 (Phase 228)** — Added learning feedback output-file smoke coverage: packed-tarball and public registry smoke now verify `learn --feedback --json --out --force` confirmation, persisted feedback JSON artifacts, and the matching profile write.
 - **v4.29 (Phase 244)** — Added archive-first learning curation: `learn --curate` previews duplicate/sensitive profile cleanup and `learn --curate --yes` moves candidates to a sibling archive JSON instead of deleting them, with unit and package-smoke coverage.
+- **v4.30 (Phase 245)** — Added privacy-preserving learning usage sidecar: `prompt --with-learning` and `pack --with-learning` now record selected entry ids, command, route, counts, audit status, and short brief hashes in `learning.usage.json`, with unit and package-smoke coverage.
+- **v4.31 (Phase 246)** — Added read-only learning usage reports: `learn --usage` summarizes sidecar events, selected entry counts, unused active entries, stale selected ids, recent hashes, and privacy metadata, with unit and package-smoke coverage.
+- **v4.32 (Phase 247)** — Added read-only learning eval checkpoints: `learn --eval` validates expected and avoided selected ids against deterministic brief-relevance selection, while reporting brief hashes instead of raw brief text.
+- **v4.33 (Phase 248)** — Added strict learning eval gating: `learn --eval --strict` keeps report output read-only and privacy-preserving, then exits non-zero when any checkpoint warns or fails.
+- **v4.34 (Phase 249)** — Added workspace learning eval readiness: `workspace --learning-eval` includes checkpoint summaries in local dogfood readiness and lets `workspace --strict` fail on eval warning/failure states.
+- **v4.35 (Phase 250)** — Added public registry workspace learning eval smoke: `registry-smoke` now verifies `workspace --learning-eval` checkpoint summaries from the published npm package path.
+- **v4.36 (Phase 251)** — Added learning eval template generation: `learn --eval-template` creates runnable checkpoint JSON from the active profile so local learning gates are easier to maintain.
+- **v4.37 (Phase 252)** — Added public registry learning eval-template smoke: `registry-smoke` now verifies generated checkpoint templates and strict eval replay from the published npm package path.
+- **v4.38 (Phase 253)** — Added workspace learning eval-template hints: populated, audit-clean learning profiles now get a read-only next action for generating a local checkpoint before relying on personalized prompt context.
+- **v4.39 (Phase 254)** — Added shell-safe workspace learning eval commands: next actions quote learning profile and checkpoint paths before presenting copy/pasteable eval-template or eval commands.
+- **v4.40 (Phase 255)** — Added workspace sibling learning eval checkpoint discovery: `workspace` auto-loads `learning-eval.json` beside the selected profile when present and suggests the same sibling path for eval-template generation.
+- **v4.41 (Phase 256)** — Added workspace learning eval freshness guard: `workspace` warns when checkpoint metadata is older than the active profile, points at another source profile, or records a different source entry count.
+- **v4.42 (Phase 257)** — Added workspace learning usage readiness: `workspace` auto-loads sibling `learning.usage.json`, accepts `--learning-usage`, and warns when usage sidecar metadata points at another profile or stale selected entry ids.
+- **v4.43 (Phase 258)** — Added learning usage curation review: `learn --curate` accepts `--usage-file`, surfaces stale selected ids and unused active entries, and keeps usage telemetry advisory-only.
+- **v4.44 (Phase 259)** — Added workspace learning curation next actions: `workspace` now points learning profile audit warnings and usage sidecar drift to usage-aware `learn --curate --usage-file` previews.
+- **v4.45 (Phase 260)** — Added learning curation Markdown reports: `learn --curate --report --out` writes a privacy-preserving review artifact with archive candidates, usage hints, and next steps.
+- **v4.46 (Phase 261)** — Added workspace curation report next actions: `workspace` now suggests privacy-preserving Markdown curation report artifacts alongside learning profile and usage sidecar curation warnings.
 
 ## Patterns that didn't work
 
@@ -339,7 +428,7 @@ The "model-agnostic" tagline was a claim until v3.4 added concrete walkthroughs 
 
 ## What's next (v4.13+)
 
-v4.13+ leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback plus workspace JSON readiness, portable learning backup/redact/verify/import, portable learning verify/backup/redact/import/stats/audit output-file persistence, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, archive-first `learn --curate` profile curation, public registry smoke coverage for check learning capture, learning feedback/init, portable learning verify/backup/import/stats/audit output-file persistence, portable learning import/redact, query-filtered learn list/export, brief-relevant prompt/pack learning selection, and learning audit cleanup, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, canonical `sungjin9288/design-ai` repository metadata, workspace repository alignment diagnostics, `workspace --strict` readiness gating, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
+v4.13+ leaves design-ai with 90%+ canonical coverage, no public DRAFT spec debt, a repeatable refs refresh path, a package smoke gate that covers inline/file/stdin learning feedback plus workspace JSON readiness, portable learning backup/redact/verify/import, portable learning verify/backup/redact/import/stats/audit output-file persistence, file/stdin redaction of existing portable backups, learning audit cleanup, safe fix behavior, archive-first `learn --curate` profile curation, local `learning.usage.json` sidecar recording for prompt/pack learning selection, public registry smoke coverage for check learning capture, learning feedback/init, portable learning verify/backup/import/stats/audit output-file persistence, portable learning import/redact, query-filtered learn list/export, brief-relevant prompt/pack learning selection, and learning audit cleanup, a Pages-disabled docs workflow guard, Node 24-compatible official action refs, retired temporary Node 24 opt-in state, canonical `sungjin9288/design-ai` repository metadata, workspace repository alignment diagnostics, `workspace --strict` readiness gating, and a local CI parity command that covers release, docs, and VS Code workflow surfaces. Logical paths:
 
 1. **External launch** — publish only after owner review; announcement drafts already exist under `docs/announcements/`.
 2. **Targeted upstream follow-up** — add specs only when upstream adds product-relevant primitives or HIGH/CRITICAL drift changes.
@@ -364,9 +453,9 @@ design-ai/
 ├── refs/                              Upstream sources (gitignored)
 ├── knowledge/  (92 files; generated coverage report + versioned corpus)
 ├── examples/   (220 files)
-├── skills/     (19, all with verification phase)
+├── skills/     (20, all with verification phase)
 ├── agents/     (4)
-├── commands/   (16)
+├── commands/   (17)
 ├── docs/                              Architecture + integrations
 ├── tools/
 │   ├── extractors/                   Source → knowledge pipeline

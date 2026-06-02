@@ -2,6 +2,389 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.46.0 — Workspace Curation Report Next Actions (2026-06)
+
+Added a read-only workspace bridge from learning curation warnings to durable Markdown report artifacts. `design-ai workspace` now suggests `design-ai learn --curate --report --out <learning-dir>/learning-curation-report.md` beside existing curation preview commands, so operators can save an audit trail before applying archive actions.
+
+### Added
+- Learning profile audit warnings in `design-ai workspace` now include an info next action for `design-ai learn --curate --report --out <learning-dir>/learning-curation-report.md`.
+- Learning usage sidecar readiness warnings now include the same report next action with `--usage-file <learning.usage.json>` when usage evidence is part of the readiness warning.
+- Report next actions reuse shell-safe quoting for learning profile, usage sidecar, and report output paths.
+- Unit coverage verifies profile-warning and usage-warning report next actions, including local paths with spaces and apostrophes.
+
+### Preserved
+- `design-ai workspace` remains read-only and does not create reports, mutate learning profiles, mutate usage sidecars, mutate eval checkpoints, or change git/release state.
+- Existing `learn --curate`, `learn --curate --report`, workspace JSON shape, strict readiness behavior, learning profile schema, archive schema, usage sidecar schema, and eval checkpoint schema remain compatible.
+
+### What this enables
+- Operators can move from `workspace --strict` warnings to a durable curation report first, then run the existing preview/apply curation flow only after review.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/workspace.mjs`
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.45.0 → 4.46.0.
+
+## v4.45.0 — Learning Curation Markdown Reports (2026-06)
+
+Added a shareable Markdown report mode for archive-first learning curation. `design-ai learn --curate --report` now renders the same preview/apply payload as a durable audit trail, and `--out file` writes it without requiring `--json`.
+
+### Added
+- `design-ai learn --curate --report` emits a Markdown curation report for preview or confirmed apply results.
+- `design-ai learn --curate --report --out learning-curation-report.md` writes the report artifact with existing overwrite protection and `--force` behavior.
+- Reports include profile file, archive file, before/after audit summaries, archive candidates, manual-review candidates, usage sidecar review metadata, privacy notes, and next steps.
+- Package smoke now verifies packed-tarball curation report output in the installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Preserved
+- `learn --curate` remains preview-first; `--report` does not mutate `learning.json` unless `--yes` is explicitly present.
+- Usage-derived profile mismatch, stale id, and unused-entry signals remain advisory and cannot archive entries by themselves.
+- Existing `learn --curate --json`, archive file schema, usage sidecar schema, eval checkpoint schema, and workspace next actions remain compatible.
+
+### What this enables
+- Operators can keep or share a readable local learning maintenance record before applying archive actions, which is useful for solo dogfood, company rollout review, and support handoff without exposing raw prompt/pack brief text.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.44.0 → 4.45.0.
+
+## v4.44.0 — Workspace Learning Curation Next Actions (2026-06)
+
+Connected workspace readiness warnings to the safer archive-first learning curation flow. `design-ai workspace` now points learning audit warnings and learning usage sidecar drift at `design-ai learn --curate --file ... --usage-file ...`, so operators can inspect profile issues and usage evidence in one preview before applying any cleanup.
+
+### Added
+- `workspace` next actions now recommend `learn --curate` for non-passing learning profile audits instead of sending operators back to audit-only output.
+- Learning usage sidecar readiness warnings now recommend usage-aware curation with the active `--learning-file` and `--learning-usage` paths.
+- `learn --curate` usage review now reports `profileFile`, `profileFileMatches`, and a `usage-profile-file-mismatch` advisory review item when a sidecar was recorded against another profile.
+- Added unit coverage for workspace curation next actions and usage profile mismatch review.
+
+### Preserved
+- `workspace` remains read-only and does not mutate `learning.json`, usage sidecars, eval checkpoints, git state, or release artifacts.
+- `learn --curate --yes` still archives only duplicate/sensitive audit candidates; usage-derived profile mismatch, stale id, and unused-entry signals remain advisory through `autoArchive: false`.
+- Existing `learning.json`, `learning.usage.json`, `learning-eval.json`, and prompt/pack usage sidecar schemas remain compatible.
+
+### What this enables
+- Operators can move from `workspace --strict` warnings directly into one local curation preview that combines profile audit findings with usage sidecar evidence before applying any archive action.
+
+### Verified
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.43.0 → 4.44.0.
+
+## v4.43.0 — Learning Usage Curation Review (2026-06)
+
+Made `design-ai learn --curate` usage-aware without making usage history destructive. The command now includes a `usage` review section sourced from the local learning usage sidecar, accepts `--usage-file path`, and reports stale selected entry ids plus active entries that have not appeared in recorded prompt/pack learning usage.
+
+Usage review items are advisory only: duplicate and sensitive learning entries remain the only automatic archive candidates, and unused entries are never archived by usage telemetry alone. Package smoke now verifies the usage-aware curation JSON path through the packed tarball.
+
+### What this enables
+
+Operators can review whether a learning entry is stale, unused, duplicated, or sensitive from one curation preview before deciding what to archive, rewrite, or keep.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.42.0 → 4.43.0.
+
+## v4.42.0 — Workspace Learning Usage Readiness (2026-06)
+
+Made `design-ai workspace` include the local learning usage sidecar in the dogfood readiness snapshot. The command now supports `--learning-usage path`, auto-detects a sibling `learning.usage.json` when present, and reports prompt/pack usage event counts, used/unused profile entry counts, stale selected ids, latest usage metadata, and privacy guarantees without storing raw brief text.
+
+`workspace --strict` now treats usage sidecar drift as readiness risk when the sidecar points at a different learning profile or references selected entry ids that no longer exist in the active profile. Package and registry smoke fixtures now include aligned usage sidecars in the workspace learning readiness path.
+
+### What this enables
+
+Operators can see whether local learning is only configured, or actually being exercised by prompt/pack runs, before curating entries or trusting personalized prompt context.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.41.0 → 4.42.0.
+
+## v4.41.0 — Workspace Learning Eval Freshness Guard (2026-06)
+
+Made `design-ai workspace` compare learning eval checkpoint metadata against the active learning profile, so a passing checkpoint can still warn when it was generated before the profile changed.
+
+`learn --eval` now returns privacy-preserving checkpoint metadata (`generatedAt` and a sanitized `sourceProfile` summary) without exposing raw checkpoint brief or query text. `workspace --strict` treats stale or profile-mismatched checkpoint metadata as a readiness warning and suggests regenerating the checkpoint with `learn --eval-template --force`.
+
+### What this enables
+
+Operators can keep using sibling `learning-eval.json` discovery while avoiding a false sense of readiness after adding, importing, curating, or otherwise changing local learning entries.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/learn.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.40.0 → 4.41.0.
+
+## v4.40.0 — Workspace Learning Eval Sibling Checkpoint Discovery (2026-06)
+
+Made `design-ai workspace` automatically include a read-only learning eval summary when a sibling `learning-eval.json` exists next to the selected learning profile.
+
+The eval-template next-action now writes to that same sibling checkpoint path, so the local dogfood loop is consistent: generate the checkpoint once, then run `workspace --strict` without repeatedly passing `--learning-eval`.
+
+### What this enables
+
+Operators can keep private learning profiles and eval checkpoints together, reduce copy/paste friction, and still override the checkpoint explicitly with `--learning-eval path` when needed.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.39.0 → 4.40.0.
+
+## v4.39.0 — Workspace Learning Eval Command Path Quoting (2026-06)
+
+Made `design-ai workspace` learning eval next-action commands shell-safe when local learning profile or checkpoint paths include spaces, apostrophes, or other shell-sensitive characters.
+
+The command output still uses the existing `nextActions[].command` string shape and remains read-only; only the generated command text for learning eval-template/eval follow-up actions changes.
+
+### What this enables
+
+Operators can copy/paste workspace learning eval next actions from real local paths such as project folders with spaces without manually rewriting `--file` or `--from-file` arguments.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.38.0 → 4.39.0.
+
+## v4.38.0 — Workspace Learning Eval Template Hints (2026-06)
+
+Added a `design-ai workspace` next-action hint that recommends `design-ai learn --eval-template --file <learning.json> --out learning-eval.json` when the selected learning profile has entries, passes audit, and no `--learning-eval` checkpoint is supplied.
+
+The hint keeps `workspace` read-only, does not create or mutate checkpoint files by itself, and disappears once a checkpoint is provided through `--learning-eval`.
+
+### What this enables
+
+Operators get a clearer local learning loop: capture feedback, generate an eval checkpoint, then run `workspace --learning-eval --strict` before trusting personalized prompt context.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.37.0 → 4.38.0.
+
+## v4.37.0 — Public Registry Learning Eval Template Smoke (2026-06)
+
+Extended the post-publish registry smoke gate so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai learn --eval-template` checkpoint generation and then re-runs the generated checkpoint through `design-ai learn --eval --strict --json`.
+
+The registry smoke now uses the same learning relevance fixture as prompt/pack learning selection, writes a generated eval-template checkpoint artifact, validates its privacy metadata, and confirms the selected entry survives strict eval from the published package path.
+
+### What this enables
+
+Publish verification now protects the new checkpoint bootstrap loop after the package leaves the local tarball path.
+
+### Verified
+
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.36.0 → 4.37.0.
+
+## v4.36.0 — Learning Eval Template Generation (2026-06)
+
+Added `design-ai learn --eval-template` so operators can generate runnable deterministic learning eval checkpoint JSON from the active local profile instead of hand-writing every case.
+The template generator supports optional `--query`, `--category`, `--limit`, `--json`, `--out`, and `--force`, keeps the learning profile read-only, and writes checkpoint JSON that can be passed directly to `design-ai learn --eval --from-file ... --strict --json`.
+
+Package smoke now verifies the generated checkpoint path through installed-bin and one-shot `npm exec --package <tarball>` flows, including the follow-up strict eval pass.
+README, AI Learning docs, Product Readiness, Roadmap, Session Log, CLI help assertions, and release smoke metadata now describe the new checkpoint bootstrap loop.
+
+### What this enables
+
+Operators can turn the current local learning profile into a repeatable eval suite faster, then use `learn --eval --strict` or `workspace --learning-eval --strict` as a deterministic dogfood readiness signal.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.35.0 → 4.36.0.
+
+## v4.35.0 — Public Registry Workspace Learning Eval Smoke (2026-06)
+
+Extended the post-publish registry smoke gate so the published package path verifies `design-ai workspace --learning-eval <checkpoint.json> --strict --json` in addition to the existing workspace strict readiness success/failure checks.
+The registry fixture now creates a clean git workspace, a local learning profile, and a deterministic eval checkpoint, then validates the public `npm exec --package @design-ai/cli@<version>` path through the shared workspace JSON assertions.
+
+Release metadata guards, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now preserve the public registry workspace learning-eval smoke contract.
+
+### What this enables
+
+Operators can catch publish-path regressions in workspace learning eval readiness after npm release, matching the local packed-tarball smoke coverage before broader distribution.
+
+### Verified
+
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.34.0 → 4.35.0.
+
+## v4.34.0 — Workspace Learning Eval Readiness (2026-06)
+
+Added `design-ai workspace --learning-eval <checkpoint.json>` so local dogfood readiness snapshots can include deterministic learning-selection checkpoint summaries next to git, repository metadata, learning profile audit, and release-script state.
+Workspace JSON now includes a `learningEval` object when a checkpoint file is provided, and human output prints a read-only "Learning eval" section with case counts, status, and privacy notes.
+`workspace --strict` now treats learning eval warnings or failures as readiness issues while keeping the command read-only and leaving `learning.json` unchanged.
+
+Package smoke now verifies workspace learning-eval summaries in the clean strict success path for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the workspace learning eval readiness gate.
+
+### What this enables
+
+Operators can check whether the current repo, local learning profile, and learning eval checkpoint suite are ready from one workspace readiness command before internal dogfood handoff.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/workspace.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.33.0 → 4.34.0.
+
+## v4.33.0 — Local Learning Eval Strict Gate (2026-06)
+
+Added `design-ai learn --eval --strict` so deterministic local learning checkpoint reports can fail CI or internal release gates when any case warns or fails.
+Strict mode preserves the existing read-only eval behavior: JSON/human reports and `--out` artifacts are produced before the command sets a non-zero exit code, and the learning profile is never mutated.
+The eval report remains privacy-preserving by exposing brief hashes, selected ids, counts, status, and issues without raw brief/query text, matched tokens, embeddings, model calls, telemetry, or fine-tuning data.
+
+Package smoke now verifies the strict failure path for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the `learn --eval --strict` failure gate.
+
+### What this enables
+
+Operators can promote local learning checkpoint suites from advisory reports into deterministic release gates while keeping local learning explicit, file-based, and offline.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.32.0 → 4.33.0.
+
+## v4.32.0 — Local Learning Eval Checkpoints (2026-06)
+
+Added `design-ai learn --eval` so operators can validate local learning selection against deterministic JSON checkpoint cases without changing the learning profile.
+The eval report compares expected selected ids, avoided selected ids, minimum matched counts, and fallback policy against the same brief-relevance ranking used by `prompt --with-learning` and `pack --with-learning`.
+Human and JSON reports expose brief hashes, selected ids, counts, status, and issues, but do not expose raw brief/query text or matched tokens.
+
+Package smoke now verifies `learn --eval` in human, JSON, and safe `--out` file-write paths for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the read-only eval checkpoint report.
+
+### What this enables
+
+Operators can check whether a growing local learning profile still selects the right entries for known scenarios before relying on learned context in prompt or pack generation, without embeddings, model calls, fine-tuning, telemetry, or raw brief storage.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.31.0 → 4.32.0.
+
+## v4.31.0 — Local Learning Usage Report (2026-06)
+
+Added `design-ai learn --usage` so operators can inspect the local `learning.usage.json` sidecar without changing the learning profile.
+The report summarizes event counts, command / route / category distribution, selected learning entry usage, unused active entries, stale selected ids, recent events, and privacy metadata in both human and JSON output.
+`--usage-file` lets package smoke and local operators point the report at a specific sidecar while the default still follows the existing `DESIGN_AI_LEARNING_USAGE_FILE` / sibling-file behavior.
+
+Package smoke now verifies the usage report in human, JSON, and safe `--out` file-write paths for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+Release metadata guards, CLI help assertions, README, Distribution docs, Product Readiness, AI Learning docs, Roadmap, and Session Log now describe the read-only usage report.
+
+### What this enables
+
+Operators can identify which local learning entries are active, unused, or referenced by stale usage events without adding telemetry, embeddings, model calls, fine-tuning, or raw brief storage.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.30.0 → 4.31.0.
+
+## v4.30.0 — Local Learning Usage Sidecar (2026-06)
+
+Added local usage sidecar recording for `prompt --with-learning` and `pack --with-learning`.
+Whenever learned context is explicitly requested, the CLI now records a deterministic local event in a sibling usage file such as `learning.usage.json`, including the command, route id, selected learning entry ids, selection counts, audit status, and a short brief hash instead of raw prompt text.
+JSON output for prompt and pack includes `learningUsage` metadata so operators can verify which learning entries were injected without opening the sidecar file.
+
+Package smoke now verifies learning usage sidecar output for both installed-bin and one-shot `npm exec --package <tarball>` paths.
+AI learning docs, README, Product Readiness, Roadmap, and Session Log now describe the privacy-preserving usage log.
+
+### What this enables
+
+Operators can inspect which local learning entries are actually being used over time without changing `learning.json`, adding external telemetry, or storing raw briefs.
+
+### Verified
+
+- All 8 audits pass.
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 4.29.0 → 4.30.0.
+
 ## v4.29.0 — Local Learning Archive-First Curation (2026-06)
 
 Added `design-ai learn --curate` so local learning profiles can be maintained with a preview-first, archive-first flow inspired by Hermes-style skill curation without adding model training, external AI APIs, embeddings, telemetry, or new dependencies.

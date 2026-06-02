@@ -41,8 +41,8 @@ export const HELP_COMMANDS = [
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
-  { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--forget id|--clear] [--json] [--out file]", description: "Manage local learning preferences for prompt personalization" },
-  { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning, and release scripts" },
+  { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]", description: "Manage local learning preferences, usage reports, and eval checkpoints for prompt personalization" },
+  { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts" },
   { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
@@ -224,7 +224,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);
-  console.log(`  ${dim("$")} design-ai workspace --strict`);
+  console.log(`  ${dim("$")} design-ai workspace --learning-usage learning.usage.json --learning-eval learning-eval.json --strict`);
   console.log(`  ${dim("$")} design-ai site examples/website-improvement-workspace.json --json`);
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);

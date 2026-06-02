@@ -125,6 +125,31 @@ RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_WORKSPACE_LEARNING_EVAL_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai workspace --learning-eval",
+        "design-ai workspace --learning-eval",
+        "workspace `--learning-eval` checkpoint",
+        "workspace --learning-eval checkpoint",
+        "workspace learning-eval summary",
+        "workspace learning eval summary",
+        "workspace `--learning-eval` checkpoint summary",
+    ),
+    (
+        "checkpoint summaries",
+        "checkpoint summary",
+        "learning eval checkpoint summaries",
+        "learning eval checkpoint summary",
+        "learning-eval checkpoint summaries",
+        "learning-eval checkpoint summary",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_JSON_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --json`",
@@ -393,6 +418,23 @@ RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS = (
         "strict failure and clean-success readiness",
         "strict 실패/성공 readiness",
         "strict 실패/성공",
+    ),
+)
+RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS = (
+    (
+        "public registry `design-ai workspace --learning-eval",
+        "public registry design-ai workspace --learning-eval",
+        "public registry workspace learning-eval",
+        "registry `design-ai workspace --learning-eval",
+        "공개 npm registry `design-ai workspace --learning-eval",
+    ),
+    (
+        "checkpoint summaries",
+        "checkpoint summary",
+        "learning eval checkpoint summaries",
+        "learning eval checkpoint summary",
+        "learning-eval checkpoint summaries",
+        "learning-eval checkpoint summary",
     ),
 )
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
@@ -1348,6 +1390,68 @@ RELEASE_LEARN_RELEVANCE_TERM_GROUPS = (
         "`pack --with-learning`",
     ),
 )
+RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS = (
+    (
+        "prompt/pack learning usage sidecar recording",
+        "learning usage sidecar",
+        "learning.usage.json",
+    ),
+    (
+        "prompt --with-learning",
+        "pack --with-learning",
+        "`prompt --with-learning`",
+        "`pack --with-learning`",
+        "prompt/pack",
+    ),
+)
+RELEASE_LEARN_USAGE_REPORT_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --usage` usage sidecar report",
+        "human / JSON design-ai learn --usage usage sidecar report",
+        "learn --usage usage sidecar report",
+        "learning usage report",
+    ),
+    (
+        "learn usage `--out` file-write confirmation",
+        "learn usage --out file-write confirmation",
+        "learn --usage --out",
+        "design-ai learn --usage",
+    ),
+)
+RELEASE_LEARN_EVAL_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --eval` checkpoint report",
+        "human / JSON design-ai learn --eval checkpoint report",
+        "learn --eval checkpoint report",
+        "learning eval checkpoint",
+    ),
+    (
+        "learn eval `--out` file-write confirmation",
+        "learn eval --out file-write confirmation",
+        "learn --eval --out",
+        "design-ai learn --eval",
+    ),
+    (
+        "learn eval `--strict` failure gate",
+        "learn eval --strict failure gate",
+        "learn --eval --strict",
+        "design-ai learn --eval --strict",
+    ),
+)
+RELEASE_LEARN_EVAL_TEMPLATE_TERM_GROUPS = (
+    (
+        "human / JSON `design-ai learn --eval-template` checkpoint generation",
+        "human / JSON design-ai learn --eval-template checkpoint generation",
+        "learn --eval-template checkpoint generation",
+        "learning eval template generation",
+    ),
+    (
+        "generated checkpoint strict validation",
+        "generated checkpoint strict eval",
+        "generated checkpoint strict validation",
+        "generated learn eval-template checkpoint",
+    ),
+)
 RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
     (
         "public registry brief-relevant prompt/pack learning selection",
@@ -1360,6 +1464,20 @@ RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS = (
         "public registry `prompt --with-learning`",
         "public registry `pack --with-learning`",
         "registry prompt/pack --with-learning",
+    ),
+)
+RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS = (
+    (
+        "public registry `design-ai learn --eval-template` checkpoint generation",
+        "public registry design-ai learn --eval-template checkpoint generation",
+        "public registry learn --eval-template checkpoint generation",
+        "registry learn eval-template checkpoint generation",
+    ),
+    (
+        "public registry generated checkpoint strict validation",
+        "public registry generated checkpoint strict eval",
+        "registry generated learn eval-template checkpoint",
+        "public registry generated learn eval-template checkpoint",
     ),
 )
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
@@ -1417,6 +1535,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "packed tarball smoke phrase",
     "package smoke command phrase",
     "workspace strict package smoke phrase",
+    "workspace learning-eval package smoke phrase",
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
     "site prompt-list package smoke phrase",
@@ -1429,6 +1548,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
+    "workspace learning-eval registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -1528,7 +1648,12 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn query explain smoke phrase",
     "registry learn query explain smoke phrase",
     "learn relevance smoke phrase",
+    "learn usage sidecar smoke phrase",
+    "learn usage report smoke phrase",
+    "learn eval-template smoke phrase",
+    "learn eval checkpoint smoke phrase",
     "registry learn relevance smoke phrase",
+    "registry learn eval-template smoke phrase",
     "learn audit cleanup smoke phrase",
     "learn audit out smoke phrase",
     "registry learn audit cleanup smoke phrase",
@@ -1554,6 +1679,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace strict package smoke phrase",
         RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace learning-eval package smoke phrase",
+        RELEASE_WORKSPACE_LEARNING_EVAL_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site JSON package smoke phrase",
@@ -1602,6 +1731,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace strict registry smoke phrase",
         RELEASE_WORKSPACE_STRICT_REGISTRY_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace learning-eval registry smoke phrase",
+        RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS,
     ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -1714,9 +1847,17 @@ RELEASE_POLICY_PHRASE_CHECKS = (
         RELEASE_REGISTRY_LEARN_QUERY_EXPLAIN_TERM_GROUPS,
     ),
     ("learn relevance smoke phrase", RELEASE_LEARN_RELEVANCE_TERM_GROUPS),
+    ("learn usage sidecar smoke phrase", RELEASE_LEARN_USAGE_SIDECAR_TERM_GROUPS),
+    ("learn usage report smoke phrase", RELEASE_LEARN_USAGE_REPORT_TERM_GROUPS),
+    ("learn eval-template smoke phrase", RELEASE_LEARN_EVAL_TEMPLATE_TERM_GROUPS),
+    ("learn eval checkpoint smoke phrase", RELEASE_LEARN_EVAL_TERM_GROUPS),
     (
         "registry learn relevance smoke phrase",
         RELEASE_REGISTRY_LEARN_RELEVANCE_TERM_GROUPS,
+    ),
+    (
+        "registry learn eval-template smoke phrase",
+        RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS,
     ),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
     ("learn audit out smoke phrase", RELEASE_LEARN_AUDIT_OUT_TERM_GROUPS),
@@ -2136,6 +2277,7 @@ warnings at the accepted baseline. It also smoke-tests human `design-ai version`
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 `npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
+including `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths,
 `design-ai site --stdin --json` Website Console export validation,
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
@@ -2150,6 +2292,7 @@ including `design-ai workspace --strict --json` workspace strict failure/success
 the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
+including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2159,7 +2302,8 @@ public registry JSON `design-ai learn --import` dry-run/apply output plus public
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
 public registry query-filtered learn list explanation/export JSON output,
-public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning,
+public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning and prompt/pack learning usage sidecar recording,
+public registry `design-ai learn --eval-template` checkpoint generation plus public registry generated checkpoint strict validation,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
@@ -2178,7 +2322,10 @@ JSON `design-ai learn --verify` output plus learn verify `--out` file-write conf
 JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` file-write confirmation,
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
-brief-relevant prompt/pack learning selection,
+brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
+human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
+human / JSON `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation,
+human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog output,
@@ -2213,6 +2360,7 @@ machine-readable diagnostics output from `design-ai doctor --json` before releas
 packed-tarball installed-bin 경로도 확인하고,
 `npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
+`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --json` Website Console export validation도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
@@ -2227,6 +2375,7 @@ packed-tarball installed-bin 경로도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
+공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -2236,7 +2385,8 @@ public registry JSON `design-ai learn --import` dry-run/apply output과 public r
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
-public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning도 확인하고,
+public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning, prompt/pack learning usage sidecar recording도 확인하고,
+public registry `design-ai learn --eval-template` checkpoint generation과 public registry generated checkpoint strict validation도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
@@ -2255,7 +2405,10 @@ JSON `design-ai learn --verify` output과 learn verify `--out` file-write confir
 JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
-brief-relevant prompt/pack learning selection도 확인하며,
+brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
+human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
+human / JSON `design-ai learn --eval-template` checkpoint generation과 generated checkpoint strict validation도 확인하며,
+human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog output도 확인하며,
@@ -2462,6 +2615,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             ).replace(
                 "installed-bin and one-shot npm exec package coverage",
                 "local package execution coverage",
+            ).replace(
+                "checkpoint summaries in installed-bin and one-shot paths",
+                "checkpoint summaries in packaged paths",
             ),
         },
         audit_count=8,
@@ -2540,6 +2696,36 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "release policy docs should mention workspace strict package smoke",
     )
 
+    workspace_learning_eval_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": (
+                english_policy_doc.replace(
+                    "`design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries in installed-bin and one-shot paths",
+                    "workspace eval coverage",
+                ).replace(
+                    "including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries",
+                    "including public registry workspace eval coverage",
+                )
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_learning_eval_package_smoke_drift_errors = "\n".join(
+        workspace_learning_eval_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace learning-eval package smoke phrase"
+            in workspace_learning_eval_package_smoke_drift_errors
+        ),
+        "release policy docs should mention workspace learning-eval package smoke",
+    )
+
     workspace_strict_registry_smoke_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -2563,6 +2749,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in workspace_strict_registry_smoke_drift_errors
         ),
         "release policy docs should mention public registry workspace strict smoke",
+    )
+
+    workspace_learning_eval_registry_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries",
+                "including public registry workspace eval coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_learning_eval_registry_smoke_drift_errors = "\n".join(
+        workspace_learning_eval_registry_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace learning-eval registry smoke phrase"
+            in workspace_learning_eval_registry_smoke_drift_errors
+        ),
+        "release policy docs should mention public registry workspace learning-eval smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
@@ -2934,6 +3145,32 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn relevance smoke phrase"
         in registry_learn_relevance_drift_errors,
         "release policy docs should mention public registry prompt/pack learning relevance smoke",
+    )
+
+    registry_learn_eval_template_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry `design-ai learn --eval-template` checkpoint generation",
+                "public registry learning checkpoint bootstrap",
+            ).replace(
+                "public registry generated checkpoint strict validation",
+                "public registry checkpoint review",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_eval_template_drift_errors = "\n".join(
+        registry_learn_eval_template_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing registry learn eval-template smoke phrase"
+        in registry_learn_eval_template_drift_errors,
+        "release policy docs should mention public registry learn eval-template smoke",
     )
 
     package_contents_command_drift = release_metadata_summary(

@@ -15,6 +15,7 @@ import { parseOutputFlags } from "./output.mjs";
 import { expectedValueMessage, unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_LEARNING_FILE = path.join(homedir(), ".design-ai", "learning.json");
+const DEFAULT_LEARNING_USAGE_EVENT_LIMIT = 500;
 const LEARN_OPTIONS = [
   "-h",
   "--help",
@@ -37,7 +38,12 @@ const LEARN_OPTIONS = [
   "--redact",
   "--audit",
   "--stats",
+  "--usage",
+  "--eval",
+  "--eval-template",
+  "--strict",
   "--curate",
+  "--report",
   "--fix",
   "--dry-run",
   "--outcome",
@@ -46,6 +52,7 @@ const LEARN_OPTIONS = [
   "--category",
   "--limit",
   "--file",
+  "--usage-file",
   "--yes",
 ];
 export const LEARNING_CATEGORIES = [
@@ -122,6 +129,16 @@ export function defaultLearningFile() {
   return process.env.DESIGN_AI_LEARNING_FILE || DEFAULT_LEARNING_FILE;
 }
 
+export function defaultLearningUsageFile(filePath = defaultLearningFile()) {
+  if (process.env.DESIGN_AI_LEARNING_USAGE_FILE) {
+    return process.env.DESIGN_AI_LEARNING_USAGE_FILE;
+  }
+
+  const parsed = path.parse(filePath);
+  const ext = parsed.ext || ".json";
+  return path.join(parsed.dir, `${parsed.name}.usage${ext}`);
+}
+
 function setAction(out, action) {
   if (out.action && out.action !== action) {
     throw new Error(`Choose only one learning action: --${out.action} or --${action}`);
@@ -164,6 +181,7 @@ export function parseLearnArgs(args) {
     feedbackOutcome: "improve",
     outcomeSpecified: false,
     filePath: "",
+    usageFilePath: "",
     outPath: "",
     force: false,
     query: "",
@@ -172,6 +190,8 @@ export function parseLearnArgs(args) {
     limit: 0,
     fix: false,
     dryRun: false,
+    strict: false,
+    report: false,
     yes: false,
     json: false,
     help: false,
@@ -207,12 +227,22 @@ export function parseLearnArgs(args) {
       setAction(out, "audit");
     } else if (arg === "--stats") {
       setAction(out, "stats");
+    } else if (arg === "--usage") {
+      setAction(out, "usage");
+    } else if (arg === "--eval") {
+      setAction(out, "eval");
+    } else if (arg === "--eval-template") {
+      setAction(out, "eval-template");
     } else if (arg === "--curate") {
       setAction(out, "curate");
+    } else if (arg === "--report") {
+      out.report = true;
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
       out.dryRun = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (arg === "--query") {
       const query = args[i + 1];
       if (!query || query.startsWith("--")) throw new Error("--query expects search text");
@@ -252,10 +282,15 @@ export function parseLearnArgs(args) {
       if (!filePath || filePath.startsWith("--")) throw new Error("--file expects a path");
       out.filePath = filePath;
       i += 1;
+    } else if (arg === "--usage-file") {
+      const usageFilePath = args[i + 1];
+      if (!usageFilePath || usageFilePath.startsWith("--")) throw new Error("--usage-file expects a path");
+      out.usageFilePath = usageFilePath;
+      i += 1;
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "redact"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "redact", "eval"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -299,21 +334,40 @@ export function parseLearnArgs(args) {
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
   }
-  if (out.query && !["list", "export"].includes(out.action)) {
-    throw new Error("--query can only be used with --list or --export");
+  if (out.query && !["list", "export", "eval-template"].includes(out.action)) {
+    throw new Error("--query can only be used with --list, --export, or --eval-template");
   }
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (!out.help && out.outPath && out.action !== "export" && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export");
+  if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage or --curate");
+  }
+  if (out.report && out.action !== "curate") {
+    throw new Error("--report can only be used with --curate");
+  }
+  if (out.report && out.json) {
+    throw new Error("Choose either --json or --report for --curate");
+  }
+  if (out.strict && out.action !== "eval") {
+    throw new Error("--strict can only be used with --eval");
+  }
+  if (out.action === "eval" && !out.fromFile && !out.stdin) {
+    throw new Error("--eval requires --from-file or --stdin");
+  }
+  const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
+    || (out.action === "curate" && out.report);
+  if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, or --curate --report");
   }
 
+  const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());
   return {
     ...out,
     index: undefined,
     briefParts: out.noteParts,
-    filePath: path.resolve(out.filePath || defaultLearningFile()),
+    filePath: resolvedFilePath,
+    usageFilePath: path.resolve(out.usageFilePath || defaultLearningUsageFile(resolvedFilePath)),
     category: normalizeCategory(out.category),
     feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),
     query: out.query,
@@ -758,6 +812,10 @@ function writeLearningProfile(filePath, profile) {
 function shortEntryId({ text, category, createdAt }) {
   const input = `${createdAt}\n${category}\n${text}`;
   return createHash("sha256").update(input).digest("hex").slice(0, 10);
+}
+
+function shortHash(value) {
+  return createHash("sha256").update(String(value || "")).digest("hex").slice(0, 16);
 }
 
 function cleanNoteText(text) {
@@ -1458,14 +1516,179 @@ function buildCurationProposal({ entry, issue, issueAction, existing }) {
   };
 }
 
+function learningUsageReviewItem({ level, action, reason, entryId, usageCount = 0, entry = null, message }) {
+  return {
+    level,
+    action,
+    reason,
+    entryId,
+    usageCount,
+    message,
+    ...(entry ? {
+      category: entry.category,
+      source: entry.source,
+      createdAt: entry.createdAt,
+      textPreview: previewText(entry.text),
+    } : {}),
+  };
+}
+
+function emptyLearningUsageCurationReview({
+  filePath,
+  usageFile,
+  exists = false,
+  profileFile = "",
+  profileFileMatches = true,
+  error = "",
+}) {
+  return {
+    file: path.resolve(filePath),
+    usageFile: path.resolve(usageFile),
+    profileFile: profileFile ? path.resolve(profileFile) : path.resolve(filePath),
+    profileFileMatches,
+    exists,
+    eventCount: 0,
+    usedEntryCount: 0,
+    unusedEntryCount: 0,
+    staleSelectedEntryCount: 0,
+    reviewCount: 0,
+    unusedReviewCount: 0,
+    staleReviewCount: 0,
+    reviews: [],
+    recommendations: [],
+    error,
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      storesSelectedEntryIds: true,
+    },
+    autoArchive: false,
+  };
+}
+
+function learningUsageCurationReview({
+  filePath = defaultLearningFile(),
+  usageFile = defaultLearningUsageFile(filePath),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const resolvedUsageFile = path.resolve(usageFile);
+
+  try {
+    const stats = learningUsageStats({
+      filePath: resolvedFile,
+      usageFile: resolvedUsageFile,
+      limit: 10,
+    });
+    const statsProfileFile = stats.profileFile ? path.resolve(stats.profileFile) : resolvedFile;
+    const profileFileMatches = statsProfileFile === resolvedFile;
+
+    if (!stats.exists) {
+      return {
+        ...emptyLearningUsageCurationReview({
+          filePath: resolvedFile,
+          usageFile: resolvedUsageFile,
+          profileFile: statsProfileFile,
+          profileFileMatches,
+          exists: false,
+        }),
+        recommendations: stats.recommendations || [],
+      };
+    }
+
+    const profile = loadLearningProfile(resolvedFile);
+    const entriesById = new Map(profile.entries.map((entry) => [entry.id, entry]));
+    const reviews = [];
+    const recommendations = [...(stats.recommendations || [])];
+
+    if (!profileFileMatches) {
+      reviews.push(learningUsageReviewItem({
+        level: "warning",
+        action: "review-usage-sidecar",
+        reason: "usage-profile-file-mismatch",
+        entryId: "",
+        usageCount: stats.eventCount,
+        message: "Usage sidecar was recorded for a different learning profile path.",
+      }));
+      recommendations.push({
+        level: "warning",
+        text: "Usage sidecar profile path differs from the active learning profile.",
+      });
+    }
+
+    for (const entryId of stats.staleSelectedEntryIds || []) {
+      reviews.push(learningUsageReviewItem({
+        level: "warning",
+        action: "review-usage-sidecar",
+        reason: "stale-selected-entry-id",
+        entryId,
+        usageCount: stats.selectedEntryCounts?.[entryId] || 0,
+        message: "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
+      }));
+    }
+
+    if (stats.eventCount > 0) {
+      for (const entryId of stats.unusedEntryIds || []) {
+        const entry = entriesById.get(entryId);
+        if (!entry) continue;
+        reviews.push(learningUsageReviewItem({
+          level: "info",
+          action: "manual-review",
+          reason: stats.eventCount >= 5
+            ? "unused-in-observed-usage"
+            : "unused-with-limited-history",
+          entryId,
+          entry,
+          message: "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+        }));
+      }
+    }
+
+    const unusedReviewCount = reviews.filter((review) => review.reason.startsWith("unused-")).length;
+    const staleReviewCount = reviews.filter((review) => review.reason === "stale-selected-entry-id").length;
+
+    return {
+      file: stats.file,
+      usageFile: stats.usageFile,
+      profileFile: statsProfileFile,
+      profileFileMatches,
+      exists: true,
+      eventCount: stats.eventCount,
+      usedEntryCount: stats.usedEntryCount,
+      unusedEntryCount: stats.unusedEntryCount,
+      staleSelectedEntryCount: stats.staleSelectedEntryCount,
+      reviewCount: reviews.length,
+      unusedReviewCount,
+      staleReviewCount,
+      reviews,
+      recommendations,
+      error: "",
+      privacy: stats.privacy || {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+      autoArchive: false,
+    };
+  } catch (error) {
+    return emptyLearningUsageCurationReview({
+      filePath: resolvedFile,
+      usageFile: resolvedUsageFile,
+      exists: existsSync(resolvedUsageFile),
+      error: error?.message || String(error),
+    });
+  }
+}
+
 export function buildLearningCurationPlan({
   filePath = defaultLearningFile(),
   archiveFile = defaultLearningArchiveFile(filePath),
+  usageFile = defaultLearningUsageFile(filePath),
 } = {}) {
   const audit = auditLearningProfile({ filePath });
   const payload = {
     file: filePath,
     archiveFile,
+    usage: learningUsageCurationReview({ filePath, usageFile }),
     before: audit.summary,
     proposalCount: 0,
     archiveCount: 0,
@@ -1533,10 +1756,11 @@ export function buildLearningCurationPlan({
 export function applyLearningCurationPlan({
   filePath = defaultLearningFile(),
   archiveFile = defaultLearningArchiveFile(filePath),
+  usageFile = defaultLearningUsageFile(filePath),
   dryRun = true,
   now = new Date(),
 } = {}) {
-  const plan = buildLearningCurationPlan({ filePath, archiveFile });
+  const plan = buildLearningCurationPlan({ filePath, archiveFile, usageFile });
   const payload = {
     ...plan,
     dryRun,
@@ -1873,6 +2097,166 @@ export function buildLearningContext({
   };
 }
 
+export function emptyLearningUsageLog({ profileFile = "" } = {}) {
+  return {
+    version: 1,
+    updatedAt: "",
+    profileFile,
+    events: [],
+  };
+}
+
+function normalizeLearningUsageEvent(event) {
+  if (!event || typeof event !== "object" || Array.isArray(event)) return null;
+  const createdAt = String(event.createdAt || "").trim();
+  const command = String(event.command || "").trim();
+  const selectedEntryIds = Array.isArray(event.selectedEntryIds)
+    ? event.selectedEntryIds.map((id) => String(id || "").trim()).filter(Boolean)
+    : [];
+
+  if (!createdAt || !command) return null;
+
+  return {
+    id: String(event.id || `learn-use-${shortHash(`${createdAt}\n${command}`)}`).trim(),
+    command,
+    routeId: String(event.routeId || "").trim(),
+    profileFile: String(event.profileFile || "").trim(),
+    briefHash: String(event.briefHash || "").trim(),
+    category: String(event.category || "").trim(),
+    limit: Number.isInteger(event.limit) ? event.limit : null,
+    selectedEntryIds,
+    selectedCount: Number.isInteger(event.selectedCount) ? event.selectedCount : selectedEntryIds.length,
+    candidateCount: Number.isInteger(event.candidateCount) ? event.candidateCount : 0,
+    matchedCount: Number.isInteger(event.matchedCount) ? event.matchedCount : 0,
+    fallbackCount: Number.isInteger(event.fallbackCount) ? event.fallbackCount : 0,
+    queryTokenCount: Number.isInteger(event.queryTokenCount) ? event.queryTokenCount : 0,
+    auditStatus: String(event.auditStatus || "").trim(),
+    createdAt,
+  };
+}
+
+export function normalizeLearningUsageLog(rawLog, { profileFile = "" } = {}) {
+  const log = rawLog && typeof rawLog === "object" ? rawLog : {};
+  const events = Array.isArray(log.events)
+    ? log.events.map(normalizeLearningUsageEvent).filter(Boolean)
+    : [];
+
+  return {
+    version: Number.isInteger(log.version) ? log.version : 1,
+    updatedAt: String(log.updatedAt || "").trim(),
+    profileFile: String(log.profileFile || profileFile || "").trim(),
+    events,
+  };
+}
+
+export function loadLearningUsageLog(filePath = defaultLearningUsageFile(), { profileFile = "" } = {}) {
+  if (!existsSync(filePath)) {
+    return emptyLearningUsageLog({ profileFile });
+  }
+
+  const raw = readFileSync(filePath, "utf8");
+  try {
+    return normalizeLearningUsageLog(JSON.parse(raw), { profileFile });
+  } catch {
+    throw new Error(`Learning usage log is not valid JSON: ${filePath}`);
+  }
+}
+
+function writeLearningUsageLog(filePath, log) {
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, `${JSON.stringify(log, null, 2)}\n`, "utf8");
+}
+
+export function buildLearningUsageEvent({
+  command,
+  routeId = "",
+  learningContext,
+  now = new Date(),
+} = {}) {
+  if (!learningContext) return null;
+
+  const createdAt = now.toISOString();
+  const selection = learningContext.selection || {};
+  const selectedEntryIds = Array.isArray(selection.selected) && selection.selected.length > 0
+    ? selection.selected.map((item) => item?.id).filter(Boolean)
+    : (learningContext.entries || []).map((entry) => entry.id).filter(Boolean);
+  const normalizedCommand = String(command || "").trim();
+
+  return {
+    id: `learn-use-${shortHash([
+      createdAt,
+      normalizedCommand,
+      routeId,
+      selectedEntryIds.join(","),
+      learningContext.query || "",
+    ].join("\n"))}`,
+    command: normalizedCommand,
+    routeId: String(routeId || "").trim(),
+    profileFile: String(learningContext.file || "").trim(),
+    briefHash: shortHash(learningContext.query || ""),
+    category: String(learningContext.category || "").trim(),
+    limit: Number.isInteger(learningContext.limit) ? learningContext.limit : null,
+    selectedEntryIds,
+    selectedCount: Number.isInteger(selection.selectedCount) ? selection.selectedCount : selectedEntryIds.length,
+    candidateCount: Number.isInteger(selection.candidateCount) ? selection.candidateCount : 0,
+    matchedCount: Number.isInteger(selection.matchedCount) ? selection.matchedCount : 0,
+    fallbackCount: Number.isInteger(selection.fallbackCount) ? selection.fallbackCount : 0,
+    queryTokenCount: Number.isInteger(selection.queryTokenCount) ? selection.queryTokenCount : 0,
+    auditStatus: String(learningContext.auditSummary?.status || "").trim(),
+    createdAt,
+  };
+}
+
+export function recordLearningUsage({
+  command,
+  routeId = "",
+  learningContext,
+  usageFile = defaultLearningUsageFile(learningContext?.file || defaultLearningFile()),
+  now = new Date(),
+  eventLimit = DEFAULT_LEARNING_USAGE_EVENT_LIMIT,
+} = {}) {
+  const event = buildLearningUsageEvent({
+    command,
+    routeId,
+    learningContext,
+    now,
+  });
+  const resolvedUsageFile = path.resolve(usageFile);
+
+  if (!event) {
+    return {
+      file: resolvedUsageFile,
+      recorded: false,
+      reason: "missing-learning-context",
+      count: 0,
+      event: null,
+    };
+  }
+
+  const log = loadLearningUsageLog(resolvedUsageFile, { profileFile: event.profileFile });
+  const updatedAt = event.createdAt;
+  const maxEvents = Number.isInteger(eventLimit) && eventLimit > 0
+    ? eventLimit
+    : DEFAULT_LEARNING_USAGE_EVENT_LIMIT;
+  const events = [...log.events, event].slice(-maxEvents);
+  const nextLog = {
+    version: 1,
+    updatedAt,
+    profileFile: event.profileFile || log.profileFile,
+    events,
+  };
+
+  writeLearningUsageLog(resolvedUsageFile, nextLog);
+
+  return {
+    file: resolvedUsageFile,
+    recorded: true,
+    event,
+    count: nextLog.events.length,
+    eventLimit: maxEvents,
+  };
+}
+
 export function buildLearningBackup({ filePath = defaultLearningFile(), now = new Date() } = {}) {
   const audit = auditLearningProfile({ filePath });
   const profile = loadLearningProfile(filePath);
@@ -1912,6 +2296,508 @@ function statsEntry(entry) {
   };
 }
 
+function usageEventTime(event) {
+  const time = Date.parse(event.createdAt);
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function usageEventSummary(event) {
+  return {
+    id: event.id,
+    command: event.command,
+    routeId: event.routeId,
+    category: event.category,
+    limit: event.limit,
+    selectedEntryIds: event.selectedEntryIds,
+    selectedCount: event.selectedCount,
+    candidateCount: event.candidateCount,
+    matchedCount: event.matchedCount,
+    fallbackCount: event.fallbackCount,
+    queryTokenCount: event.queryTokenCount,
+    auditStatus: event.auditStatus,
+    briefHash: event.briefHash,
+    createdAt: event.createdAt,
+  };
+}
+
+function incrementUsageEntry(entryUsage, entryId, event) {
+  if (!entryId) return;
+  const existing = entryUsage.get(entryId) || {
+    id: entryId,
+    count: 0,
+    commands: {},
+    routes: {},
+    latestUsedAt: "",
+  };
+  existing.count += 1;
+  if (event.command) existing.commands[event.command] = (existing.commands[event.command] || 0) + 1;
+  if (event.routeId) existing.routes[event.routeId] = (existing.routes[event.routeId] || 0) + 1;
+  if (!existing.latestUsedAt || usageEventTime(event) >= Date.parse(existing.latestUsedAt || "1970-01-01T00:00:00.000Z")) {
+    existing.latestUsedAt = event.createdAt;
+  }
+  entryUsage.set(entryId, existing);
+}
+
+function usageEntrySummary(entry, usage) {
+  return {
+    id: entry.id,
+    category: entry.category,
+    source: entry.source,
+    textPreview: previewText(entry.text),
+    usageCount: usage?.count || 0,
+    latestUsedAt: usage?.latestUsedAt || "",
+    commands: usage?.commands || {},
+    routes: usage?.routes || {},
+  };
+}
+
+function parseLearningEvalPayload(evalText, source = "input") {
+  let payload = null;
+  try {
+    payload = JSON.parse(String(evalText || ""));
+  } catch {
+    throw new Error("Learning eval checkpoint is not valid JSON");
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Learning eval checkpoint must be a JSON object with a cases array");
+  }
+  if (!Array.isArray(payload.cases)) {
+    throw new Error("Learning eval checkpoint must include a cases array");
+  }
+  if (payload.cases.length === 0) {
+    throw new Error("Learning eval checkpoint has no cases");
+  }
+
+  return {
+    source,
+    version: Number.isInteger(payload.version) ? payload.version : 1,
+    generatedAt: safeIsoString(payload.generatedAt),
+    sourceProfile: summarizeLearningEvalSourceProfile(payload.sourceProfile),
+    cases: payload.cases,
+  };
+}
+
+function safeIsoString(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return Number.isNaN(Date.parse(text)) ? "" : text;
+}
+
+function nullableBoolean(value) {
+  return typeof value === "boolean" ? value : null;
+}
+
+function nullableNonNegativeInteger(value) {
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function summarizeLearningEvalSourceProfile(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  return {
+    file: String(value.file || "").trim(),
+    exists: nullableBoolean(value.exists),
+    entryCount: nullableNonNegativeInteger(value.entryCount),
+    auditStatus: ["pass", "warn", "fail"].includes(String(value.auditStatus || ""))
+      ? String(value.auditStatus)
+      : "",
+    category: value.category ? normalizeCategory(value.category) : "",
+    queryPresent: Boolean(cleanNoteText(value.query)),
+    limit: nullableNonNegativeInteger(value.limit),
+  };
+}
+
+function evalStringList(value, { field, caseId }) {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an array of ids`);
+  }
+  return value.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function evalPositiveInteger(value, { field, caseId, fallback }) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 1 || number > 100) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an integer from 1 to 100`);
+  }
+  return number;
+}
+
+function evalNonNegativeInteger(value, { field, caseId, fallback = 0 }) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 0 || number > 100) {
+    throw new Error(`Learning eval case ${caseId} field ${field} must be an integer from 0 to 100`);
+  }
+  return number;
+}
+
+function normalizeLearningEvalCase(rawCase, index, {
+  defaultLimit = 12,
+  defaultCategory = "",
+} = {}) {
+  const caseId = String(rawCase?.id || `case-${index + 1}`).trim() || `case-${index + 1}`;
+  if (!rawCase || typeof rawCase !== "object" || Array.isArray(rawCase)) {
+    throw new Error(`Learning eval case ${caseId} must be an object`);
+  }
+
+  const brief = cleanNoteText(rawCase.brief || rawCase.query);
+  if (!brief) {
+    throw new Error(`Learning eval case ${caseId} requires a brief`);
+  }
+
+  const category = rawCase.category !== undefined
+    ? String(rawCase.category || "").trim()
+    : defaultCategory;
+
+  return {
+    id: caseId,
+    routeId: String(rawCase.routeId || "").trim(),
+    brief,
+    briefHash: shortHash(brief),
+    category: category ? normalizeCategory(category) : "",
+    limit: evalPositiveInteger(rawCase.limit, {
+      field: "limit",
+      caseId,
+      fallback: defaultLimit,
+    }),
+    expectedSelectedIds: evalStringList(
+      rawCase.expectedSelectedIds ?? rawCase.expectSelectedIds ?? rawCase.expectedEntryIds,
+      { field: "expectedSelectedIds", caseId },
+    ),
+    avoidedSelectedIds: evalStringList(
+      rawCase.avoidedSelectedIds ?? rawCase.avoidSelectedIds ?? rawCase.avoidEntryIds,
+      { field: "avoidedSelectedIds", caseId },
+    ),
+    minMatchedCount: evalNonNegativeInteger(rawCase.minMatchedCount, {
+      field: "minMatchedCount",
+      caseId,
+      fallback: 0,
+    }),
+    requireNoFallback: Boolean(rawCase.requireNoFallback),
+  };
+}
+
+function learningEvalIssue({ level = "warning", code, message }) {
+  return { level, code, message };
+}
+
+function summarizeLearningEvalIssues(issues) {
+  const failures = issues.filter((issue) => issue.level === "failure").length;
+  const warnings = issues.filter((issue) => issue.level === "warning").length;
+  return {
+    status: failures > 0 ? "fail" : warnings > 0 ? "warn" : "pass",
+    failures,
+    warnings,
+  };
+}
+
+function selectedEvalEntry(item) {
+  return {
+    id: item.id,
+    category: item.category,
+    score: item.score,
+    reason: item.reason,
+  };
+}
+
+function evaluateLearningCase(profile, rawCase, index, {
+  defaultLimit = 12,
+  defaultCategory = "",
+} = {}) {
+  const evalCase = normalizeLearningEvalCase(rawCase, index, {
+    defaultLimit,
+    defaultCategory,
+  });
+  const { selection } = selectLearningEntrySet(profile, {
+    category: evalCase.category,
+    limit: evalCase.limit,
+    query: evalCase.brief,
+    includeFallback: true,
+  });
+  const selected = Array.isArray(selection.selected) ? selection.selected : [];
+  const selectedEntryIds = selected.map((item) => item.id).filter(Boolean);
+  const selectedEntryIdSet = new Set(selectedEntryIds);
+  const profileEntryIds = new Set(profile.entries.map((entry) => entry.id).filter(Boolean));
+  const issues = [];
+
+  const missingProfileExpectedIds = evalCase.expectedSelectedIds
+    .filter((entryId) => !profileEntryIds.has(entryId));
+  const missingExpectedIds = evalCase.expectedSelectedIds
+    .filter((entryId) => !selectedEntryIdSet.has(entryId));
+  const unexpectedAvoidedIds = evalCase.avoidedSelectedIds
+    .filter((entryId) => selectedEntryIdSet.has(entryId));
+
+  for (const entryId of missingProfileExpectedIds) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "expected-entry-not-in-profile",
+      message: `Expected entry ${entryId} is not present in the active learning profile.`,
+    }));
+  }
+  if (missingExpectedIds.length > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "expected-entry-not-selected",
+      message: `Expected selected entries were missing: ${missingExpectedIds.join(", ")}.`,
+    }));
+  }
+  if (unexpectedAvoidedIds.length > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "avoided-entry-selected",
+      message: `Avoided entries were selected: ${unexpectedAvoidedIds.join(", ")}.`,
+    }));
+  }
+  if (selection.matchedCount < evalCase.minMatchedCount) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "matched-count-below-minimum",
+      message: `Matched ${selection.matchedCount} learning entries, expected at least ${evalCase.minMatchedCount}.`,
+    }));
+  }
+  if (evalCase.requireNoFallback && selection.fallbackCount > 0) {
+    issues.push(learningEvalIssue({
+      level: "failure",
+      code: "fallback-selected",
+      message: `Selected ${selection.fallbackCount} recency fallback entr${selection.fallbackCount === 1 ? "y" : "ies"}.`,
+    }));
+  }
+  if (
+    evalCase.expectedSelectedIds.length === 0
+    && evalCase.avoidedSelectedIds.length === 0
+    && evalCase.minMatchedCount === 0
+    && !evalCase.requireNoFallback
+  ) {
+    issues.push(learningEvalIssue({
+      code: "no-eval-assertions",
+      message: "Case has no expected ids, avoided ids, minMatchedCount, or requireNoFallback assertion.",
+    }));
+  }
+
+  const summary = summarizeLearningEvalIssues(issues);
+
+  return {
+    id: evalCase.id,
+    routeId: evalCase.routeId,
+    briefHash: evalCase.briefHash,
+    category: evalCase.category,
+    limit: evalCase.limit,
+    status: summary.status,
+    failures: summary.failures,
+    warnings: summary.warnings,
+    candidateCount: selection.candidateCount,
+    matchedCount: selection.matchedCount,
+    selectedCount: selection.selectedCount,
+    fallbackCount: selection.fallbackCount,
+    expectedSelectedIds: evalCase.expectedSelectedIds,
+    missingExpectedIds,
+    avoidedSelectedIds: evalCase.avoidedSelectedIds,
+    unexpectedAvoidedIds,
+    minMatchedCount: evalCase.minMatchedCount,
+    requireNoFallback: evalCase.requireNoFallback,
+    selectedEntryIds,
+    selected: selected.map(selectedEvalEntry),
+    issues,
+  };
+}
+
+export function learningEvalReport({
+  filePath = defaultLearningFile(),
+  evalText = "",
+  source = "input",
+  limit = 12,
+  category = "",
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const defaultLimit = Number.isInteger(limit) && limit > 0 ? limit : 12;
+  const defaultCategory = category ? normalizeCategory(category) : "";
+  const checkpoint = parseLearningEvalPayload(evalText, source);
+  const profileExists = existsSync(resolvedFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const audit = auditLearningProfile({ filePath: resolvedFile });
+  const cases = checkpoint.cases.map((rawCase, index) => evaluateLearningCase(profile, rawCase, index, {
+    defaultLimit,
+    defaultCategory,
+  }));
+  const failed = cases.filter((item) => item.status === "fail").length;
+  const warned = cases.filter((item) => item.status === "warn").length;
+  const passed = cases.filter((item) => item.status === "pass").length;
+  const recommendations = [];
+
+  if (!profileExists) {
+    recommendations.push({
+      level: "warning",
+      text: "Learning profile does not exist; initialize or import entries before relying on eval results.",
+    });
+  }
+  if (audit.summary.status !== "pass") {
+    recommendations.push({
+      level: audit.summary.failures > 0 ? "warning" : "info",
+      text: "Run `design-ai learn --audit` before using eval checkpoints as a release gate.",
+    });
+  }
+  if (failed > 0) {
+    recommendations.push({
+      level: "warning",
+      text: "Review failed eval cases before trusting prompt/pack --with-learning selection.",
+    });
+  }
+
+  return {
+    file: resolvedFile,
+    source,
+    profileExists,
+    profileEntryCount: profile.entries.length,
+    checkpointVersion: checkpoint.version,
+    generatedAt: checkpoint.generatedAt,
+    sourceProfile: checkpoint.sourceProfile,
+    defaultLimit,
+    defaultCategory,
+    status: failed > 0 ? "fail" : warned > 0 ? "warn" : "pass",
+    caseCount: cases.length,
+    passed,
+    warned,
+    failed,
+    auditSummary: audit.summary,
+    cases,
+    recommendations,
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      exposesMatchedTokens: false,
+    },
+  };
+}
+
+function learningEvalTemplateCaseId(seed, index) {
+  return `eval-${index + 1}-${shortHash(seed).slice(0, 10)}`;
+}
+
+function learningEvalTemplateCaseFromEntry(entry, index) {
+  return {
+    id: learningEvalTemplateCaseId(`${entry.id}\n${entry.category}\n${entry.text}`, index),
+    brief: entry.text,
+    category: entry.category,
+    limit: 1,
+    expectedSelectedIds: [entry.id],
+    minMatchedCount: 1,
+    requireNoFallback: true,
+  };
+}
+
+export function buildLearningEvalTemplate({
+  filePath = defaultLearningFile(),
+  query = "",
+  category = "",
+  limit = 6,
+  now = new Date(),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const normalizedCategory = category ? normalizeCategory(category) : "";
+  const maxCases = Number.isInteger(limit) && limit > 0 ? limit : 6;
+  const profileExists = existsSync(resolvedFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const audit = auditLearningProfile({ filePath: resolvedFile });
+  const cleanedQuery = cleanNoteText(query);
+  const recommendations = [];
+  let cases = [];
+  let selectionSummary = null;
+
+  if (cleanedQuery) {
+    const { selection } = selectLearningEntrySet(profile, {
+      category: normalizedCategory,
+      limit: maxCases,
+      query: cleanedQuery,
+      includeFallback: false,
+    });
+    const expectedSelectedIds = selection.selected.map((item) => item.id).filter(Boolean);
+    selectionSummary = {
+      mode: selection.mode,
+      candidateCount: selection.candidateCount,
+      matchedCount: selection.matchedCount,
+      selectedCount: expectedSelectedIds.length,
+      queryTokenCount: selection.queryTokenCount,
+      fallbackCount: selection.fallbackCount,
+    };
+    if (expectedSelectedIds.length > 0) {
+      const evalLimit = expectedSelectedIds.length;
+      cases = [
+        {
+          id: learningEvalTemplateCaseId(`${cleanedQuery}\n${normalizedCategory}`, 0),
+          brief: cleanedQuery,
+          ...(normalizedCategory ? { category: normalizedCategory } : {}),
+          limit: evalLimit,
+          expectedSelectedIds,
+          minMatchedCount: expectedSelectedIds.length,
+          requireNoFallback: true,
+        },
+      ];
+    }
+  } else {
+    const { entries, selection } = selectLearningEntrySet(profile, {
+      category: normalizedCategory,
+      limit: maxCases,
+      includeFallback: false,
+    });
+    selectionSummary = {
+      mode: selection.mode,
+      candidateCount: selection.candidateCount,
+      matchedCount: selection.matchedCount,
+      selectedCount: entries.length,
+      queryTokenCount: selection.queryTokenCount,
+      fallbackCount: selection.fallbackCount,
+    };
+    cases = entries.map((entry, index) => learningEvalTemplateCaseFromEntry(entry, index));
+  }
+
+  if (!profileExists) {
+    recommendations.push({
+      level: "warning",
+      text: "Learning profile does not exist; create entries before generating durable eval checkpoints.",
+    });
+  }
+  if (audit.summary.status !== "pass") {
+    recommendations.push({
+      level: audit.summary.failures > 0 ? "warning" : "info",
+      text: "Run `design-ai learn --audit` before using generated eval checkpoints as a gate.",
+    });
+  }
+  if (cases.length === 0) {
+    recommendations.push({
+      level: "info",
+      text: cleanedQuery
+        ? "No matching learning entries found for the query; add or adjust learning entries before saving this checkpoint."
+        : "No learning entries are available for checkpoint generation.",
+    });
+  }
+
+  return {
+    version: 1,
+    generatedAt: now.toISOString(),
+    sourceProfile: {
+      file: resolvedFile,
+      exists: profileExists,
+      entryCount: profile.entries.length,
+      auditStatus: audit.summary.status,
+      category: normalizedCategory,
+      query: cleanedQuery,
+      limit: maxCases,
+    },
+    selection: selectionSummary,
+    caseCount: cases.length,
+    cases,
+    recommendations,
+    privacy: {
+      storesRawBriefText: true,
+      storesBriefHash: false,
+      exposesMatchedTokens: false,
+    },
+  };
+}
+
 export function learningStats({ filePath = defaultLearningFile() } = {}) {
   const audit = auditLearningProfile({ filePath });
   const payload = {
@@ -1946,6 +2832,217 @@ export function learningStats({ filePath = defaultLearningFile() } = {}) {
   return payload;
 }
 
+export function learningUsageStats({
+  filePath = defaultLearningFile(),
+  usageFile = defaultLearningUsageFile(filePath),
+  limit = 10,
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const resolvedUsageFile = path.resolve(usageFile);
+  const profileExists = existsSync(resolvedFile);
+  const usageExists = existsSync(resolvedUsageFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const usageLog = loadLearningUsageLog(resolvedUsageFile, { profileFile: resolvedFile });
+  const events = usageLog.events;
+  const maxRecentEvents = Number.isInteger(limit) && limit > 0 ? limit : 10;
+  const sortedEvents = [...events].sort((a, b) => usageEventTime(a) - usageEventTime(b));
+  const recentEvents = [...sortedEvents].reverse().slice(0, maxRecentEvents).map(usageEventSummary);
+  const entryUsage = new Map();
+
+  for (const event of events) {
+    for (const entryId of event.selectedEntryIds) {
+      incrementUsageEntry(entryUsage, entryId, event);
+    }
+  }
+
+  const profileEntryIds = new Set(profile.entries.map((entry) => entry.id));
+  const selectedEntryIds = [...entryUsage.keys()].sort();
+  const usedEntryIds = selectedEntryIds.filter((entryId) => profileEntryIds.has(entryId));
+  const staleSelectedEntryIds = selectedEntryIds.filter((entryId) => !profileEntryIds.has(entryId));
+  const unusedEntryIds = profile.entries
+    .filter((entry) => !entryUsage.has(entry.id))
+    .map((entry) => entry.id);
+  const topSelectedEntries = profile.entries
+    .map((entry) => usageEntrySummary(entry, entryUsage.get(entry.id)))
+    .filter((entry) => entry.usageCount > 0)
+    .sort((a, b) => b.usageCount - a.usageCount || String(b.latestUsedAt).localeCompare(String(a.latestUsedAt)))
+    .slice(0, maxRecentEvents);
+  const recommendations = [];
+
+  if (!usageExists) {
+    recommendations.push({
+      level: "info",
+      text: "No learning usage sidecar exists yet. Run prompt or pack with --with-learning to record local usage metadata.",
+    });
+  } else if (events.length === 0) {
+    recommendations.push({
+      level: "info",
+      text: "Learning usage sidecar exists but has no events yet.",
+    });
+  }
+  if (profile.entries.length > 0 && unusedEntryIds.length > 0) {
+    recommendations.push({
+      level: "info",
+      text: "Review unused learning entries before curating; unused does not mean obsolete until enough prompt/pack usage has accumulated.",
+    });
+  }
+  if (staleSelectedEntryIds.length > 0) {
+    recommendations.push({
+      level: "warning",
+      text: "Usage sidecar references entry ids that are no longer present in the active learning profile.",
+    });
+  }
+
+  return {
+    file: resolvedFile,
+    usageFile: resolvedUsageFile,
+    exists: usageExists,
+    profileExists,
+    profileFile: usageLog.profileFile || resolvedFile,
+    version: usageLog.version,
+    updatedAt: usageLog.updatedAt,
+    eventCount: events.length,
+    profileEntryCount: profile.entries.length,
+    usedEntryCount: usedEntryIds.length,
+    unusedEntryCount: unusedEntryIds.length,
+    staleSelectedEntryCount: staleSelectedEntryIds.length,
+    commandCounts: countBy(events, (event) => event.command),
+    routeCounts: countBy(events, (event) => event.routeId || "unrouted"),
+    categoryCounts: countBy(events, (event) => event.category || "all"),
+    auditStatusCounts: countBy(events, (event) => event.auditStatus || "unknown"),
+    selectedEntryCounts: Object.fromEntries(
+      selectedEntryIds.map((entryId) => [entryId, entryUsage.get(entryId).count]),
+    ),
+    topSelectedEntries,
+    unusedEntryIds,
+    staleSelectedEntryIds,
+    oldestEvent: sortedEvents.length > 0 ? usageEventSummary(sortedEvents[0]) : null,
+    latestEvent: sortedEvents.length > 0 ? usageEventSummary(sortedEvents[sortedEvents.length - 1]) : null,
+    recentEvents,
+    recommendations,
+    privacy: {
+      storesRawBriefText: false,
+      storesBriefHash: true,
+      storesSelectedEntryIds: true,
+    },
+  };
+}
+
 export function formatLearningJson(payload) {
   return JSON.stringify(payload, null, 2);
+}
+
+function formatLearningSummary(summary) {
+  if (!summary) return "unknown";
+  return `${summary.status} (${summary.failures} failure(s), ${summary.warnings} warning(s))`;
+}
+
+function yesNo(value) {
+  return value ? "yes" : "no";
+}
+
+function learningReportListItem(label, value) {
+  return `- ${label}: ${value}`;
+}
+
+export function renderLearningCurationReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const mode = payload.applied ? "applied" : "preview";
+  const lines = [
+    "# Learning Curation Report",
+    "",
+    learningReportListItem("Generated", generatedAtText),
+    learningReportListItem("Mode", mode),
+    learningReportListItem("File", payload.file),
+    learningReportListItem("Archive", payload.archiveFile),
+    learningReportListItem("Before", formatLearningSummary(payload.before)),
+    learningReportListItem("After", payload.after ? formatLearningSummary(payload.after) : "not applied"),
+    learningReportListItem("Proposals", payload.proposalCount),
+    learningReportListItem("Archive candidates", payload.archiveCount),
+    learningReportListItem("Manual review", payload.manualReviewCount),
+    "",
+    "## Archive Candidates",
+    "",
+  ];
+
+  const archiveCandidates = (payload.proposals || []).filter((proposal) => proposal.action === "archive");
+  if (archiveCandidates.length === 0) {
+    lines.push("No archive candidates found.");
+  } else {
+    for (const proposal of archiveCandidates) {
+      lines.push(`- \`${proposal.entryId}\`: ${proposal.reason}`);
+      lines.push(`  - Issues: ${(proposal.issueCodes || []).join(", ") || "none"}`);
+      if (proposal.category) lines.push(`  - Category: ${proposal.category}`);
+      if (proposal.textPreview) lines.push(`  - Preview: ${proposal.textPreview}`);
+    }
+  }
+
+  lines.push("", "## Manual Review", "");
+  const manualCandidates = (payload.proposals || []).filter((proposal) => proposal.action === "manual-review");
+  if (manualCandidates.length === 0) {
+    lines.push("No profile curation items need manual review.");
+  } else {
+    for (const proposal of manualCandidates) {
+      const label = proposal.entryId || "profile";
+      lines.push(`- \`${label}\`: ${proposal.reason}`);
+      lines.push(`  - Issues: ${(proposal.issueCodes || []).join(", ") || "none"}`);
+      if (proposal.textPreview) lines.push(`  - Preview: ${proposal.textPreview}`);
+    }
+  }
+
+  lines.push("", "## Usage Review", "");
+  const usage = payload.usage || {};
+  lines.push(learningReportListItem("Sidecar", usage.usageFile || "not available"));
+  lines.push(learningReportListItem("Exists", yesNo(Boolean(usage.exists))));
+  lines.push(learningReportListItem("Profile file", usage.profileFile || payload.file));
+  lines.push(learningReportListItem("Profile file matches", yesNo(usage.profileFileMatches !== false)));
+  lines.push(learningReportListItem("Events", usage.eventCount || 0));
+  lines.push(learningReportListItem("Review items", usage.reviewCount || 0));
+  lines.push(learningReportListItem("Auto archive from usage", yesNo(Boolean(usage.autoArchive))));
+  if (usage.error) lines.push(learningReportListItem("Error", usage.error));
+
+  if (Array.isArray(usage.reviews) && usage.reviews.length > 0) {
+    lines.push("");
+    for (const review of usage.reviews) {
+      const label = review.entryId || "usage";
+      lines.push(`- \`${label}\`: ${review.reason} (${review.action})`);
+      if (review.level) lines.push(`  - Level: ${review.level}`);
+      if (Number.isInteger(review.usageCount)) lines.push(`  - Usage count: ${review.usageCount}`);
+      if (review.textPreview) lines.push(`  - Preview: ${review.textPreview}`);
+    }
+  } else {
+    lines.push("");
+    lines.push("No usage-based curation review items found.");
+  }
+
+  lines.push("", "## Skipped", "");
+  if (!Array.isArray(payload.skipped) || payload.skipped.length === 0) {
+    lines.push("No curation steps were skipped.");
+  } else {
+    for (const skipped of payload.skipped) {
+      const label = skipped.entryId ? `\`${skipped.entryId}\`` : "profile";
+      lines.push(`- ${label}: ${skipped.reason}`);
+      if (skipped.message) lines.push(`  - ${skipped.message}`);
+    }
+  }
+
+  lines.push("", "## Privacy", "");
+  lines.push("- Report text may include learning entry previews, but usage review does not include raw prompt or pack brief text.");
+  lines.push("- Usage sidecars store selected entry ids and short brief hashes; usage review remains advisory and never archives entries by itself.");
+
+  lines.push("", "## Next Steps", "");
+  if (payload.applied) {
+    lines.push("- Review the archive file before sharing or deleting local learning history.");
+    lines.push("- Run `design-ai learn --audit` and `design-ai workspace --strict` after curation to confirm readiness.");
+  } else if ((payload.archiveCount || 0) > 0) {
+    lines.push("- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.");
+    lines.push("- Keep usage-only review items as manual signals until enough prompt/pack usage has accumulated.");
+  } else {
+    lines.push("- No archive action is required from this curation report.");
+    lines.push("- Continue recording prompt/pack usage with `--with-learning` before making usage-based decisions.");
+  }
+
+  return `${lines.join("\n")}\n`;
 }

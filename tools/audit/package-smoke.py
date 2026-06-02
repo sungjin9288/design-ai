@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.29.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.46.0.tgz
 """
 from __future__ import annotations
 
@@ -1069,6 +1069,92 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
     run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
 
 
+def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    eval_path.parent.mkdir(parents=True, exist_ok=True)
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
+    profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:02.000Z",
+                "entries": [
+                    {
+                        "id": "learn-workspace-keyboard",
+                        "category": "accessibility",
+                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    eval_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "generatedAt": "2026-05-22T00:00:03.000Z",
+                "sourceProfile": {
+                    "file": str(profile_path),
+                    "exists": True,
+                    "entryCount": 1,
+                    "auditStatus": "pass",
+                    "category": "",
+                    "query": "",
+                    "limit": 6,
+                },
+                "cases": [
+                    {
+                        "id": "workspace-keyboard-selection",
+                        "brief": "Spec a Button component API with keyboard accessibility",
+                        "expectedSelectedIds": ["learn-workspace-keyboard"],
+                        "minMatchedCount": 1,
+                        "requireNoFallback": True,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    usage_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:04.000Z",
+                "profileFile": str(profile_path),
+                "events": [
+                    {
+                        "id": "learn-use-workspace-keyboard",
+                        "command": "prompt",
+                        "routeId": "component-spec",
+                        "profileFile": str(profile_path),
+                        "briefHash": "b20206b62f51bb23",
+                        "category": "accessibility",
+                        "limit": 1,
+                        "selectedEntryIds": ["learn-workspace-keyboard"],
+                        "selectedCount": 1,
+                        "candidateCount": 1,
+                        "matchedCount": 1,
+                        "fallbackCount": 0,
+                        "queryTokenCount": 6,
+                        "auditStatus": "pass",
+                        "createdAt": "2026-05-22T00:00:04.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_learning_audit_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -1096,6 +1182,40 @@ def write_learning_audit_fixture(profile_path: Path) -> None:
                         "text": "Never include api_key=redacted placeholders in prompt context",
                         "source": "package-smoke",
                         "createdAt": "2026-05-22T00:00:02.000Z",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_learning_curation_usage_fixture(profile_path: Path, usage_path: Path) -> None:
+    usage_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:10:00.000Z",
+                "profileFile": str(profile_path),
+                "events": [
+                    {
+                        "id": "learn-use-package-smoke",
+                        "command": "prompt",
+                        "routeId": "design-review",
+                        "profileFile": str(profile_path),
+                        "briefHash": "package-smoke-hash",
+                        "category": "",
+                        "limit": 12,
+                        "selectedEntryIds": ["learn-a", "learn-stale"],
+                        "selectedCount": 2,
+                        "candidateCount": 3,
+                        "matchedCount": 1,
+                        "fallbackCount": 1,
+                        "queryTokenCount": 2,
+                        "auditStatus": "pass",
+                        "createdAt": "2026-05-22T00:10:00.000Z",
                     },
                 ],
             },
@@ -1532,6 +1652,7 @@ def assert_learning_curation_json(
     raw: str,
     *,
     profile_path: Path,
+    usage_path: Path | None = None,
     dry_run: bool,
     context: str,
     cmd: list[str],
@@ -1568,6 +1689,69 @@ def assert_learning_curation_json(
     require_package_smoke(payload.get("proposalCount") == 2, context=context, cmd=cmd, message="learn curate proposal count changed")
     require_package_smoke(payload.get("archiveCount") == 2, context=context, cmd=cmd, message="learn curate archive count changed")
     require_package_smoke(payload.get("manualReviewCount") == 0, context=context, cmd=cmd, message="learn curate manual-review count changed")
+
+    usage = payload.get("usage")
+    require_package_smoke(isinstance(usage, dict), context=context, cmd=cmd, message="learn curate usage review missing")
+    if usage_path is not None:
+        require_package_smoke(
+            usage.get("usageFile") == str(usage_path),
+            context=context,
+            cmd=cmd,
+            message="learn curate usage file path changed",
+        )
+        require_package_smoke(
+            usage.get("profileFile") == str(profile_path),
+            context=context,
+            cmd=cmd,
+            message="learn curate usage profile path changed",
+        )
+        require_package_smoke(
+            usage.get("profileFileMatches") is True,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage profile match flag changed",
+        )
+        require_package_smoke(usage.get("exists") is True, context=context, cmd=cmd, message="learn curate usage fixture missing")
+        require_package_smoke(usage.get("eventCount") == 1, context=context, cmd=cmd, message="learn curate usage event count changed")
+        require_package_smoke(usage.get("usedEntryCount") == 1, context=context, cmd=cmd, message="learn curate usage used count changed")
+        require_package_smoke(usage.get("unusedEntryCount") == 2, context=context, cmd=cmd, message="learn curate usage unused count changed")
+        require_package_smoke(
+            usage.get("staleSelectedEntryCount") == 1,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage stale count changed",
+        )
+        require_package_smoke(usage.get("reviewCount") == 3, context=context, cmd=cmd, message="learn curate usage review count changed")
+        require_package_smoke(usage.get("unusedReviewCount") == 2, context=context, cmd=cmd, message="learn curate usage unused review count changed")
+        require_package_smoke(usage.get("staleReviewCount") == 1, context=context, cmd=cmd, message="learn curate usage stale review count changed")
+        require_package_smoke(usage.get("autoArchive") is False, context=context, cmd=cmd, message="learn curate usage autoArchive changed")
+        reviews = usage.get("reviews")
+        require_package_smoke(isinstance(reviews, list), context=context, cmd=cmd, message="learn curate usage reviews missing")
+        review_reasons = {
+            item.get("entryId"): item.get("reason")
+            for item in reviews
+            if isinstance(item, dict)
+        }
+        require_package_smoke(
+            review_reasons.get("learn-stale") == "stale-selected-entry-id",
+            context=context,
+            cmd=cmd,
+            message="learn curate stale usage review changed",
+        )
+        require_package_smoke(
+            review_reasons.get("learn-b") == "unused-with-limited-history"
+            and review_reasons.get("learn-c") == "unused-with-limited-history",
+            context=context,
+            cmd=cmd,
+            message="learn curate unused usage review changed",
+        )
+    else:
+        require_package_smoke(
+            usage.get("autoArchive") is False,
+            context=context,
+            cmd=cmd,
+            message="learn curate usage autoArchive changed",
+        )
 
     proposals = payload.get("proposals")
     require_package_smoke(isinstance(proposals, list), context=context, cmd=cmd, message="learn curate proposals missing")
@@ -1626,6 +1810,26 @@ def assert_learning_curation_human(raw: str, *, context: str, cmd: list[str]) ->
             context=context,
             cmd=cmd,
             message=f"learn curate human output missing {expected!r}",
+        )
+
+
+def assert_learning_curation_report(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Learning Curation Report",
+        "Mode: preview",
+        "Archive candidates: 2",
+        "`learn-b`: duplicate-entry",
+        "`learn-c`: sensitive-content",
+        "## Usage Review",
+        "Usage sidecars store selected entry ids and short brief hashes",
+        "rerun `design-ai learn --curate --yes`",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn curate report missing {expected!r}",
         )
 
 
@@ -2767,6 +2971,43 @@ def assert_learning_curation_smoke(
         message="learn curate preview should not create an archive file",
     )
 
+    report_path = profile_path.with_name(f"{profile_path.stem}.curation-report.md")
+    report_cmd = command_factory(
+        "learn",
+        "--curate",
+        "--file",
+        str(profile_path),
+        "--report",
+        "--out",
+        str(report_path),
+    )
+    report_result = run_plain(report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(report_result.stdout, report_cmd)
+    require_package_smoke(
+        "Wrote " in report_result.stdout,
+        context=f"{context} report write confirmation",
+        cmd=report_cmd,
+        message="learn curate report should confirm --out file writes",
+    )
+    assert_learning_curation_report(
+        report_path.read_text(encoding="utf-8"),
+        context=f"{context} report preview",
+        cmd=report_cmd,
+    )
+    profile_after_report = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(profile_after_report.get("entries", [])) == 3,
+        context=f"{context} report preview profile unchanged",
+        cmd=report_cmd,
+        message="learn curate report should leave profile entries unchanged",
+    )
+    require_package_smoke(
+        not archive_path.exists(),
+        context=f"{context} report preview archive absent",
+        cmd=report_cmd,
+        message="learn curate report preview should not create an archive file",
+    )
+
     json_cmd = command_factory("learn", "--curate", "--file", str(profile_path), "--json")
     json_result = run_plain(json_cmd, cwd=cwd, env=env)
     assert_learning_curation_json(
@@ -2775,6 +3016,27 @@ def assert_learning_curation_smoke(
         dry_run=True,
         context=f"{context} JSON preview",
         cmd=json_cmd,
+    )
+
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
+    write_learning_curation_usage_fixture(profile_path, usage_path)
+    usage_cmd = command_factory(
+        "learn",
+        "--curate",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+    )
+    usage_result = run_plain(usage_cmd, cwd=cwd, env=env)
+    assert_learning_curation_json(
+        usage_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        dry_run=True,
+        context=f"{context} usage JSON preview",
+        cmd=usage_cmd,
     )
 
     apply_cmd = command_factory("learn", "--curate", "--yes", "--file", str(profile_path), "--json")
@@ -3427,6 +3689,457 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
     )
 
 
+def assert_learning_usage_payload(
+    payload: dict[str, object],
+    *,
+    expected_command: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    learning_usage = payload.get("learningUsage")
+    require_package_smoke(
+        isinstance(learning_usage, dict),
+        context=context,
+        cmd=cmd,
+        message="learningUsage should be present when --with-learning records usage",
+    )
+    require_package_smoke(
+        learning_usage.get("recorded") is True,
+        context=context,
+        cmd=cmd,
+        message="learningUsage should report a recorded local sidecar event",
+    )
+
+    event = learning_usage.get("event")
+    require_package_smoke(
+        isinstance(event, dict),
+        context=context,
+        cmd=cmd,
+        message="learningUsage event metadata missing",
+    )
+    require_package_smoke(
+        event.get("command") == expected_command,
+        context=context,
+        cmd=cmd,
+        message=f"learningUsage event should record command {expected_command}",
+    )
+    require_package_smoke(
+        event.get("selectedEntryIds") == ["learn-relevant"],
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should record the selected learning entry id",
+    )
+    require_package_smoke(
+        isinstance(event.get("briefHash"), str) and len(event.get("briefHash")) == 16,
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should store a short brief hash instead of raw brief text",
+    )
+    require_package_smoke(
+        "query" not in event and "brief" not in event,
+        context=context,
+        cmd=cmd,
+        message="learningUsage event should not persist raw brief/query text",
+    )
+
+
+def assert_learning_usage_sidecar(
+    usage_path: Path,
+    *,
+    expected_commands: list[str],
+    context: str,
+    cmd: list[str],
+) -> None:
+    require_package_smoke(
+        usage_path.exists(),
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar file should be written next to the learning profile",
+    )
+    try:
+        payload = json.loads(usage_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learning usage sidecar JSON") from error
+
+    events = payload.get("events")
+    require_package_smoke(
+        isinstance(events, list) and len(events) >= len(expected_commands),
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar should contain prompt/pack usage events",
+    )
+    recent_events = events[-len(expected_commands):]
+    require_package_smoke(
+        [event.get("command") for event in recent_events if isinstance(event, dict)] == expected_commands,
+        context=context,
+        cmd=cmd,
+        message="learning usage sidecar should preserve prompt/pack command order",
+    )
+    for event in recent_events:
+        require_package_smoke(
+            isinstance(event, dict)
+            and event.get("selectedEntryIds") == ["learn-relevant"]
+            and isinstance(event.get("briefHash"), str)
+            and "query" not in event
+            and "brief" not in event,
+            context=context,
+            cmd=cmd,
+            message="learning usage sidecar event should be privacy-preserving and reference selected ids",
+        )
+
+
+def assert_learning_usage_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn usage JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should report the learning profile path",
+    )
+    require_package_smoke(
+        payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should report the usage sidecar path",
+    )
+    require_package_smoke(
+        payload.get("exists") is True,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should confirm the usage sidecar exists",
+    )
+    require_package_smoke(
+        payload.get("eventCount") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should count prompt/pack sidecar events",
+    )
+    require_package_smoke(
+        payload.get("usedEntryCount") == 1 and payload.get("unusedEntryCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should summarize used and unused profile entries",
+    )
+    command_counts = payload.get("commandCounts")
+    require_package_smoke(
+        isinstance(command_counts, dict)
+        and command_counts.get("prompt") >= 1
+        and command_counts.get("pack") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should summarize prompt and pack command counts",
+    )
+    selected_counts = payload.get("selectedEntryCounts")
+    require_package_smoke(
+        isinstance(selected_counts, dict)
+        and selected_counts.get("learn-relevant") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should count selected learning entry ids",
+    )
+    latest_event = payload.get("latestEvent")
+    require_package_smoke(
+        isinstance(latest_event, dict)
+        and isinstance(latest_event.get("briefHash"), str)
+        and "query" not in latest_event
+        and "brief" not in latest_event,
+        context=context,
+        cmd=cmd,
+        message="learn usage report should keep event details privacy-preserving",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict) and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn usage JSON should explicitly state that raw brief text is not stored",
+    )
+
+
+def assert_learning_usage_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Local learning usage report",
+        "Usage sidecar:",
+        "Events:",
+        "Top selected entries:",
+        "Recent events:",
+        "Privacy: usage events store selected entry ids and a short brief hash",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn usage human output missing {expected!r}",
+        )
+
+
+def assert_learning_eval_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    eval_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn eval JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should report the learning profile path",
+    )
+    require_package_smoke(
+        payload.get("source") == str(eval_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should report the checkpoint source path",
+    )
+    require_package_smoke(
+        payload.get("status") == "pass"
+        and payload.get("caseCount") == 1
+        and payload.get("passed") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should pass the expected checkpoint case",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(
+        isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("id") == "button-accessibility"
+        and cases[0].get("routeId") == EXPECTED_ROUTE_ID
+        and cases[0].get("briefHash")
+        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
+        and cases[0].get("missingExpectedIds") == [],
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should include selected ids and checkpoint status",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("storesRawBriefText") is False
+        and privacy.get("storesBriefHash") is True
+        and privacy.get("exposesMatchedTokens") is False,
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should describe privacy-preserving checkpoint output",
+    )
+    require_package_smoke(
+        EXPECTED_ROUTE_BRIEF not in raw
+        and "\"brief\"" not in raw
+        and "\"query\"" not in raw,
+        context=context,
+        cmd=cmd,
+        message="learn eval JSON should not expose raw brief or query text",
+    )
+
+
+def assert_learning_eval_template_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn eval-template JSON") from error
+
+    source_profile = payload.get("sourceProfile")
+    require_package_smoke(
+        payload.get("version") == 1
+        and isinstance(source_profile, dict)
+        and source_profile.get("file") == str(profile_path)
+        and source_profile.get("entryCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should report the source learning profile",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(
+        payload.get("caseCount") == 1
+        and isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("expectedSelectedIds") == ["learn-relevant"]
+        and cases[0].get("minMatchedCount") == 1
+        and cases[0].get("requireNoFallback") is True,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should generate a runnable expected-selection checkpoint",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("storesRawBriefText") is True
+        and privacy.get("storesBriefHash") is False
+        and privacy.get("exposesMatchedTokens") is False,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+    )
+    require_package_smoke(
+        EXPECTED_ROUTE_BRIEF in raw
+        and "\"brief\"" in raw,
+        context=context,
+        cmd=cmd,
+        message="learn eval-template JSON should include runnable raw brief text in checkpoint cases",
+    )
+
+
+def assert_learning_eval_template_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    eval_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse generated learn eval JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path)
+        and payload.get("source") == str(eval_path)
+        and payload.get("status") == "pass"
+        and payload.get("caseCount") == 1
+        and payload.get("passed") == 1,
+        context=context,
+        cmd=cmd,
+        message="generated learn eval-template checkpoint should pass learn --eval --strict",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(
+        isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
+        and cases[0].get("missingExpectedIds") == [],
+        context=context,
+        cmd=cmd,
+        message="generated learn eval-template report should select the expected learning entry",
+    )
+
+
+def assert_learning_eval_strict_failure_json(
+    raw: str,
+    *,
+    returncode: int,
+    profile_path: Path,
+    eval_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    require_package_smoke(
+        returncode == 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval --strict should exit with code 1 when checkpoints fail",
+    )
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn eval strict JSON") from error
+
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the learning profile path",
+    )
+    require_package_smoke(
+        payload.get("source") == str(eval_path),
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the checkpoint source path",
+    )
+    require_package_smoke(
+        payload.get("status") == "fail"
+        and payload.get("caseCount") == 1
+        and payload.get("failed") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should report the failed checkpoint case",
+    )
+    cases = payload.get("cases")
+    issue_codes = []
+    if isinstance(cases, list) and cases and isinstance(cases[0].get("issues"), list):
+        issue_codes = [issue.get("code") for issue in cases[0]["issues"] if isinstance(issue, dict)]
+    require_package_smoke(
+        isinstance(cases, list)
+        and len(cases) == 1
+        and cases[0].get("status") == "fail"
+        and cases[0].get("missingExpectedIds") == ["missing-entry"]
+        and "expected-entry-not-in-profile" in issue_codes
+        and "expected-entry-not-selected" in issue_codes,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should include deterministic failure details",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("storesRawBriefText") is False
+        and privacy.get("storesBriefHash") is True
+        and privacy.get("exposesMatchedTokens") is False,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should describe privacy-preserving checkpoint output",
+    )
+    require_package_smoke(
+        EXPECTED_ROUTE_BRIEF not in raw
+        and "\"brief\"" not in raw
+        and "\"query\"" not in raw,
+        context=context,
+        cmd=cmd,
+        message="learn eval strict JSON should not expose raw brief or query text",
+    )
+
+
+def assert_learning_eval_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Local learning eval report",
+        "Checkpoint:",
+        "Status: pass",
+        "button-accessibility / component-spec: pass",
+        "Privacy: eval reports expose brief hashes and selected ids, not raw brief text.",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn eval human output missing {expected!r}",
+        )
+
+
 def assert_learning_query_json(
     raw: str,
     *,
@@ -3685,6 +4398,12 @@ def assert_learning_relevance_smoke(
     except json.JSONDecodeError as error:
         raise SystemExit(f"{context}: failed to parse prompt learning relevance JSON") from error
     assert_learning_relevance_context(prompt_payload, context=f"{context} prompt", cmd=prompt_cmd)
+    assert_learning_usage_payload(
+        prompt_payload,
+        expected_command="prompt",
+        context=f"{context} prompt usage",
+        cmd=prompt_cmd,
+    )
 
     pack_cmd = command_factory(
         "pack",
@@ -3706,6 +4425,268 @@ def assert_learning_relevance_smoke(
     plan = pack_payload.get("plan")
     require_package_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
     assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+    assert_learning_usage_payload(
+        pack_payload,
+        expected_command="pack",
+        context=f"{context} pack usage",
+        cmd=pack_cmd,
+    )
+    assert_learning_usage_payload(
+        plan,
+        expected_command="pack",
+        context=f"{context} pack plan usage",
+        cmd=pack_cmd,
+    )
+    usage_path = profile_path.with_name(f"{profile_path.stem}.usage{profile_path.suffix}")
+    assert_learning_usage_sidecar(
+        usage_path,
+        expected_commands=["prompt", "pack"],
+        context=f"{context} learning usage sidecar",
+        cmd=pack_cmd,
+    )
+
+    usage_human_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+    )
+    usage_human_result = run_plain(usage_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_usage_report_human(
+        usage_human_result.stdout,
+        context=f"{context} learn usage human",
+        cmd=usage_human_cmd,
+    )
+
+    usage_json_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+    )
+    usage_json_result = run_plain(usage_json_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_usage_report_json(
+        usage_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn usage JSON",
+        cmd=usage_json_cmd,
+    )
+
+    usage_out_path = profile_path.with_name(f"{profile_path.stem}-usage-out.json")
+    usage_out_path.write_text("stale usage output\n", encoding="utf-8")
+    usage_out_cmd = command_factory(
+        "learn",
+        "--usage",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--json",
+        "--out",
+        str(usage_out_path),
+        "--force",
+    )
+    usage_out_result = run_plain(usage_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        usage_out_result.stdout,
+        context=f"{context} learn usage out",
+        cmd=usage_out_cmd,
+        expected_path=str(usage_out_path),
+    )
+    assert_learning_usage_report_json(
+        usage_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn usage out file",
+        cmd=usage_out_cmd,
+    )
+
+    eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
+    eval_template_path.write_text("stale eval template output\n", encoding="utf-8")
+    eval_template_cmd = command_factory(
+        "learn",
+        "--eval-template",
+        "--query",
+        EXPECTED_ROUTE_BRIEF,
+        "--category",
+        "accessibility",
+        "--file",
+        str(profile_path),
+        "--out",
+        str(eval_template_path),
+        "--force",
+    )
+    eval_template_result = run_plain(eval_template_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        eval_template_result.stdout,
+        context=f"{context} learn eval-template out",
+        cmd=eval_template_cmd,
+        expected_path=str(eval_template_path),
+    )
+    assert_learning_eval_template_json(
+        eval_template_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        context=f"{context} learn eval-template out file",
+        cmd=eval_template_cmd,
+    )
+
+    eval_template_check_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(eval_template_path),
+        "--file",
+        str(profile_path),
+        "--strict",
+        "--json",
+    )
+    eval_template_check_result = run_plain(eval_template_check_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_eval_template_report_json(
+        eval_template_check_result.stdout,
+        profile_path=profile_path,
+        eval_path=eval_template_path,
+        context=f"{context} generated learn eval-template checkpoint",
+        cmd=eval_template_check_cmd,
+    )
+
+    eval_path = profile_path.with_name(f"{profile_path.stem}-eval.json")
+    eval_path.write_text(
+        json.dumps({
+            "version": 1,
+            "cases": [
+                {
+                    "id": "button-accessibility",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "limit": 1,
+                    "expectedSelectedIds": ["learn-relevant"],
+                    "avoidedSelectedIds": ["learn-brand"],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    eval_human_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(eval_path),
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+    )
+    eval_human_result = run_plain(eval_human_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_eval_report_human(
+        eval_human_result.stdout,
+        context=f"{context} learn eval human",
+        cmd=eval_human_cmd,
+    )
+
+    eval_json_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(eval_path),
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--json",
+    )
+    eval_json_result = run_plain(eval_json_cmd, cwd=cwd, env=relevance_env)
+    assert_learning_eval_report_json(
+        eval_json_result.stdout,
+        profile_path=profile_path,
+        eval_path=eval_path,
+        context=f"{context} learn eval JSON",
+        cmd=eval_json_cmd,
+    )
+
+    strict_eval_path = profile_path.with_name(f"{profile_path.stem}-eval-strict-fail.json")
+    strict_eval_path.write_text(
+        json.dumps({
+            "version": 1,
+            "cases": [
+                {
+                    "id": "missing-accessibility",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "limit": 1,
+                    "expectedSelectedIds": ["missing-entry"],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+    strict_eval_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(strict_eval_path),
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--strict",
+        "--json",
+    )
+    run_expected_failure(
+        strict_eval_cmd,
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn eval strict failure",
+        assertion=lambda raw, *, returncode, context, cmd: assert_learning_eval_strict_failure_json(
+            raw,
+            returncode=returncode,
+            profile_path=profile_path,
+            eval_path=strict_eval_path,
+            context=context,
+            cmd=cmd,
+        ),
+    )
+
+    eval_out_path = profile_path.with_name(f"{profile_path.stem}-eval-out.json")
+    eval_out_path.write_text("stale eval output\n", encoding="utf-8")
+    eval_out_cmd = command_factory(
+        "learn",
+        "--eval",
+        "--from-file",
+        str(eval_path),
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--json",
+        "--out",
+        str(eval_out_path),
+        "--force",
+    )
+    eval_out_result = run_plain(eval_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        eval_out_result.stdout,
+        context=f"{context} learn eval out",
+        cmd=eval_out_cmd,
+        expected_path=str(eval_out_path),
+    )
+    assert_learning_eval_report_json(
+        eval_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        eval_path=eval_path,
+        context=f"{context} learn eval out file",
+        cmd=eval_out_cmd,
+    )
 
 
 def run_self_test() -> None:
@@ -4735,10 +5716,34 @@ def run_self_test() -> None:
                 "Learning selection: brief relevance\n"
                 "Prioritize keyboard accessibility details for Button component API specs"
             ),
+            "learningUsage": {
+                "recorded": True,
+                "event": {
+                    "id": "learn-use-prompt",
+                    "command": "prompt",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "profileFile": str(learning_profile_path),
+                    "briefHash": "0123456789abcdef",
+                    "selectedEntryIds": ["learn-relevant"],
+                    "selectedCount": 1,
+                    "candidateCount": 3,
+                    "matchedCount": 1,
+                    "fallbackCount": 0,
+                    "queryTokenCount": 6,
+                    "auditStatus": "pass",
+                    "createdAt": "2026-06-01T00:00:00.000Z",
+                },
+            },
         }
         learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
         assert_learning_relevance_context(
             learning_relevance_payload,
+            context=context,
+            cmd=learning_relevance_cmd,
+        )
+        assert_learning_usage_payload(
+            learning_relevance_payload,
+            expected_command="prompt",
             context=context,
             cmd=learning_relevance_cmd,
         )
@@ -4761,6 +5766,436 @@ def run_self_test() -> None:
                 cmd=learning_relevance_cmd,
             ),
             expected="brief relevance should pick the Button accessibility entry",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_payload(
+                {
+                    **learning_relevance_payload,
+                    "learningUsage": {
+                        **learning_relevance_payload["learningUsage"],
+                        "event": {
+                            **learning_relevance_payload["learningUsage"]["event"],
+                            "brief": EXPECTED_ROUTE_BRIEF,
+                            "briefHash": "",
+                        },
+                    },
+                },
+                expected_command="prompt",
+                context=context,
+                cmd=learning_relevance_cmd,
+            ),
+            expected="learningUsage event should store a short brief hash",
+            scope="package smoke",
+        )
+
+        learning_usage_path = Path(tmp) / "learning.usage.json"
+        learning_usage_path.write_text(
+            json.dumps({
+                "version": 1,
+                "updatedAt": "2026-06-01T00:00:01.000Z",
+                "profileFile": str(learning_profile_path),
+                "events": [
+                    {
+                        **learning_relevance_payload["learningUsage"]["event"],
+                        "id": "learn-use-prompt",
+                        "command": "prompt",
+                    },
+                    {
+                        **learning_relevance_payload["learningUsage"]["event"],
+                        "id": "learn-use-pack",
+                        "command": "pack",
+                        "createdAt": "2026-06-01T00:00:01.000Z",
+                    },
+                ],
+            }),
+            encoding="utf-8",
+        )
+        assert_learning_usage_sidecar(
+            learning_usage_path,
+            expected_commands=["prompt", "pack"],
+            context=context,
+            cmd=learning_relevance_cmd,
+        )
+        learning_usage_report_payload = {
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "exists": True,
+            "profileExists": True,
+            "profileFile": str(learning_profile_path),
+            "version": 1,
+            "updatedAt": "2026-06-01T00:00:01.000Z",
+            "eventCount": 2,
+            "profileEntryCount": 3,
+            "usedEntryCount": 1,
+            "unusedEntryCount": 2,
+            "staleSelectedEntryCount": 0,
+            "commandCounts": {
+                "prompt": 1,
+                "pack": 1,
+            },
+            "routeCounts": {
+                EXPECTED_ROUTE_ID: 2,
+            },
+            "categoryCounts": {
+                "all": 2,
+            },
+            "auditStatusCounts": {
+                "pass": 2,
+            },
+            "selectedEntryCounts": {
+                "learn-relevant": 2,
+            },
+            "topSelectedEntries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "source": "package-smoke",
+                    "textPreview": "Prioritize keyboard accessibility details for Button component API specs",
+                    "usageCount": 2,
+                    "latestUsedAt": "2026-06-01T00:00:01.000Z",
+                    "commands": {
+                        "prompt": 1,
+                        "pack": 1,
+                    },
+                    "routes": {
+                        EXPECTED_ROUTE_ID: 2,
+                    },
+                },
+            ],
+            "unusedEntryIds": ["learn-unrelated-newer", "learn-brand"],
+            "staleSelectedEntryIds": [],
+            "oldestEvent": {
+                **learning_relevance_payload["learningUsage"]["event"],
+                "id": "learn-use-prompt",
+                "command": "prompt",
+            },
+            "latestEvent": {
+                **learning_relevance_payload["learningUsage"]["event"],
+                "id": "learn-use-pack",
+                "command": "pack",
+                "createdAt": "2026-06-01T00:00:01.000Z",
+            },
+            "recentEvents": [
+                {
+                    **learning_relevance_payload["learningUsage"]["event"],
+                    "id": "learn-use-pack",
+                    "command": "pack",
+                    "createdAt": "2026-06-01T00:00:01.000Z",
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
+                "storesSelectedEntryIds": True,
+            },
+        }
+        learn_usage_cmd = ["design-ai", "learn", "--usage", "--file", str(learning_profile_path), "--usage-file", str(learning_usage_path), "--json"]
+        assert_learning_usage_report_json(
+            json.dumps(learning_usage_report_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_usage_cmd,
+        )
+        assert_learning_usage_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning usage report",
+                f"Usage sidecar: {learning_usage_path}",
+                "Events: 2",
+                "Top selected entries:",
+                "Recent events:",
+                "Privacy: usage events store selected entry ids and a short brief hash",
+            ]),
+            context=context,
+            cmd=learn_usage_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_report_json(
+                json.dumps({
+                    **learning_usage_report_payload,
+                    "latestEvent": {
+                        **learning_usage_report_payload["latestEvent"],
+                        "brief": EXPECTED_ROUTE_BRIEF,
+                        "briefHash": "",
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_usage_cmd,
+            ),
+            expected="learn usage report should keep event details privacy-preserving",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_usage_sidecar(
+                learning_usage_path.with_name("missing-usage.json"),
+                expected_commands=["prompt", "pack"],
+                context=context,
+                cmd=learning_relevance_cmd,
+            ),
+            expected="learning usage sidecar file should be written",
+            scope="package smoke",
+        )
+
+        learning_eval_template_path = Path(tmp) / "learning-eval-template.json"
+        learning_eval_template_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-01T00:00:02.000Z",
+            "sourceProfile": {
+                "file": str(learning_profile_path),
+                "exists": True,
+                "entryCount": 3,
+                "auditStatus": "pass",
+                "category": "accessibility",
+                "query": EXPECTED_ROUTE_BRIEF,
+                "limit": 6,
+            },
+            "selection": {
+                "mode": "brief-relevance",
+                "candidateCount": 1,
+                "matchedCount": 1,
+                "selectedCount": 1,
+                "queryTokenCount": 7,
+                "fallbackCount": 0,
+            },
+            "caseCount": 1,
+            "cases": [
+                {
+                    "id": "eval-1-0123456789",
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "category": "accessibility",
+                    "limit": 1,
+                    "expectedSelectedIds": ["learn-relevant"],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": True,
+                "storesBriefHash": False,
+                "exposesMatchedTokens": False,
+            },
+        }
+        learn_eval_template_cmd = ["design-ai", "learn", "--eval-template", "--query", EXPECTED_ROUTE_BRIEF, "--file", str(learning_profile_path), "--json"]
+        assert_learning_eval_template_json(
+            json.dumps(learning_eval_template_payload),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_eval_template_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_template_json(
+                json.dumps({
+                    **learning_eval_template_payload,
+                    "privacy": {
+                        **learning_eval_template_payload["privacy"],
+                        "storesRawBriefText": False,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                context=context,
+                cmd=learn_eval_template_cmd,
+            ),
+            expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+            scope="package smoke",
+        )
+        learning_eval_path = Path(tmp) / "learning-eval.json"
+        learning_eval_payload = {
+            "file": str(learning_profile_path),
+            "source": str(learning_eval_path),
+            "profileExists": True,
+            "profileEntryCount": 3,
+            "checkpointVersion": 1,
+            "defaultLimit": 1,
+            "defaultCategory": "",
+            "status": "pass",
+            "caseCount": 1,
+            "passed": 1,
+            "warned": 0,
+            "failed": 0,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "cases": [
+                {
+                    "id": "button-accessibility",
+                    "routeId": EXPECTED_ROUTE_ID,
+                    "briefHash": "0123456789abcdef",
+                    "category": "",
+                    "limit": 1,
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                    "candidateCount": 3,
+                    "matchedCount": 1,
+                    "selectedCount": 1,
+                    "fallbackCount": 0,
+                    "expectedSelectedIds": ["learn-relevant"],
+                    "missingExpectedIds": [],
+                    "avoidedSelectedIds": ["learn-brand"],
+                    "unexpectedAvoidedIds": [],
+                    "minMatchedCount": 1,
+                    "requireNoFallback": True,
+                    "selectedEntryIds": ["learn-relevant"],
+                    "selected": [
+                        {
+                            "id": "learn-relevant",
+                            "category": "accessibility",
+                            "score": 10,
+                            "reason": "brief-match",
+                        },
+                    ],
+                    "issues": [],
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
+                "exposesMatchedTokens": False,
+            },
+        }
+        learn_eval_cmd = ["design-ai", "learn", "--eval", "--from-file", str(learning_eval_path), "--file", str(learning_profile_path), "--json"]
+        assert_learning_eval_report_json(
+            json.dumps(learning_eval_payload),
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_path,
+            context=context,
+            cmd=learn_eval_cmd,
+        )
+        assert_learning_eval_template_report_json(
+            json.dumps({
+                **learning_eval_payload,
+                "source": str(learning_eval_template_path),
+            }),
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_template_path,
+            context=context,
+            cmd=["design-ai", "learn", "--eval", "--from-file", str(learning_eval_template_path), "--file", str(learning_profile_path), "--strict", "--json"],
+        )
+        assert_learning_eval_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning eval report",
+                f"Checkpoint: {learning_eval_path}",
+                "Status: pass",
+                "button-accessibility / component-spec: pass",
+                "Privacy: eval reports expose brief hashes and selected ids, not raw brief text.",
+            ]),
+            context=context,
+            cmd=learn_eval_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_report_json(
+                json.dumps({
+                    **learning_eval_payload,
+                    "cases": [
+                        {
+                            **learning_eval_payload["cases"][0],
+                            "brief": EXPECTED_ROUTE_BRIEF,
+                        },
+                    ],
+                }),
+                profile_path=learning_profile_path,
+                eval_path=learning_eval_path,
+                context=context,
+                cmd=learn_eval_cmd,
+            ),
+            expected="learn eval JSON should not expose raw brief or query text",
+            scope="package smoke",
+        )
+        learning_eval_strict_path = Path(tmp) / "learning-eval-strict-fail.json"
+        learning_eval_strict_payload = {
+            **learning_eval_payload,
+            "source": str(learning_eval_strict_path),
+            "status": "fail",
+            "passed": 0,
+            "failed": 1,
+            "cases": [
+                {
+                    **learning_eval_payload["cases"][0],
+                    "id": "missing-accessibility",
+                    "status": "fail",
+                    "failures": 2,
+                    "expectedSelectedIds": ["missing-entry"],
+                    "missingExpectedIds": ["missing-entry"],
+                    "issues": [
+                        {
+                            "level": "failure",
+                            "code": "expected-entry-not-in-profile",
+                            "message": "Expected entry missing-entry is not present in the active learning profile.",
+                        },
+                        {
+                            "level": "failure",
+                            "code": "expected-entry-not-selected",
+                            "message": "Expected selected entries were missing: missing-entry.",
+                        },
+                    ],
+                },
+            ],
+            "recommendations": [
+                {
+                    "level": "warning",
+                    "text": "Review failed eval cases before trusting prompt/pack --with-learning selection.",
+                },
+            ],
+        }
+        learn_eval_strict_cmd = [
+            "design-ai",
+            "learn",
+            "--eval",
+            "--from-file",
+            str(learning_eval_strict_path),
+            "--file",
+            str(learning_profile_path),
+            "--strict",
+            "--json",
+        ]
+        assert_learning_eval_strict_failure_json(
+            json.dumps(learning_eval_strict_payload),
+            returncode=1,
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_strict_path,
+            context=context,
+            cmd=learn_eval_strict_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_strict_failure_json(
+                json.dumps(learning_eval_strict_payload),
+                returncode=0,
+                profile_path=learning_profile_path,
+                eval_path=learning_eval_strict_path,
+                context=context,
+                cmd=learn_eval_strict_cmd,
+            ),
+            expected="learn eval --strict should exit with code 1 when checkpoints fail",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_eval_strict_failure_json(
+                json.dumps({
+                    **learning_eval_strict_payload,
+                    "cases": [
+                        {
+                            **learning_eval_strict_payload["cases"][0],
+                            "brief": EXPECTED_ROUTE_BRIEF,
+                        },
+                    ],
+                }),
+                returncode=1,
+                profile_path=learning_profile_path,
+                eval_path=learning_eval_strict_path,
+                context=context,
+                cmd=learn_eval_strict_cmd,
+            ),
+            expected="learn eval strict JSON should not expose raw brief or query text",
             scope="package smoke",
         )
 
@@ -4918,6 +6353,9 @@ def run_self_test() -> None:
         learning_curation_payload = {
             "file": str(learning_profile_path),
             "archiveFile": str(learning_profile_path.with_name(f"{learning_profile_path.stem}.archive{learning_profile_path.suffix}")),
+            "usage": {
+                "autoArchive": False,
+            },
             "before": {
                 "status": "warn",
                 "failures": 0,
@@ -4964,6 +6402,77 @@ def run_self_test() -> None:
             dry_run=True,
             context=context,
             cmd=learn_curate_cmd,
+        )
+        learning_usage_path = learning_profile_path.with_name(
+            f"{learning_profile_path.stem}.usage{learning_profile_path.suffix}"
+        )
+        learning_curation_usage_payload = {
+            **learning_curation_payload,
+            "usage": {
+                "file": str(learning_profile_path),
+                "usageFile": str(learning_usage_path),
+                "profileFile": str(learning_profile_path),
+                "profileFileMatches": True,
+                "exists": True,
+                "eventCount": 1,
+                "usedEntryCount": 1,
+                "unusedEntryCount": 2,
+                "staleSelectedEntryCount": 1,
+                "reviewCount": 3,
+                "unusedReviewCount": 2,
+                "staleReviewCount": 1,
+                "reviews": [
+                    {
+                        "level": "warning",
+                        "action": "review-usage-sidecar",
+                        "reason": "stale-selected-entry-id",
+                        "entryId": "learn-stale",
+                        "usageCount": 1,
+                        "message": "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
+                    },
+                    {
+                        "level": "info",
+                        "action": "manual-review",
+                        "reason": "unused-with-limited-history",
+                        "entryId": "learn-b",
+                        "usageCount": 0,
+                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                    },
+                    {
+                        "level": "info",
+                        "action": "manual-review",
+                        "reason": "unused-with-limited-history",
+                        "entryId": "learn-c",
+                        "usageCount": 0,
+                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                    },
+                ],
+                "recommendations": [],
+                "error": "",
+                "privacy": {
+                    "storesRawBriefText": False,
+                    "storesBriefHash": True,
+                    "storesSelectedEntryIds": True,
+                },
+                "autoArchive": False,
+            },
+        }
+        assert_learning_curation_json(
+            json.dumps(learning_curation_usage_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            dry_run=True,
+            context=f"{context} usage curation",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--curate",
+                "--file",
+                str(learning_profile_path),
+                "--usage-file",
+                str(learning_usage_path),
+                "--json",
+            ],
         )
         applied_learning_curation_payload = {
             **learning_curation_payload,
@@ -5030,6 +6539,40 @@ def run_self_test() -> None:
             expected="learn curate archive count changed",
             scope="package smoke",
         )
+        learn_curate_report_cmd = [
+            "design-ai",
+            "learn",
+            "--curate",
+            "--file",
+            str(learning_profile_path),
+            "--report",
+            "--out",
+            "learning-curation-report.md",
+        ]
+        assert_learning_curation_report(
+            "\n".join([
+                "# Learning Curation Report",
+                "- Mode: preview",
+                "- Archive candidates: 2",
+                "## Archive Candidates",
+                "- `learn-b`: duplicate-entry",
+                "- `learn-c`: sensitive-content",
+                "## Usage Review",
+                "Usage sidecars store selected entry ids and short brief hashes",
+                "- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.",
+            ]),
+            context=context,
+            cmd=learn_curate_report_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_curation_report(
+                "# Learning Curation Report\n- Mode: preview\n",
+                context=context,
+                cmd=learn_curate_report_cmd,
+            ),
+            expected="learn curate report missing 'Archive candidates: 2'",
+            scope="package smoke",
+        )
         learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]
         assert_learning_audit_cleanup_human(
             "\n".join([
@@ -5073,10 +6616,34 @@ def smoke_tarball(tarball: Path) -> None:
         npm_cache = tmp_root / "npm-cache"
         installed_workspace_strict_root = tmp_root / "installed-workspace-strict"
         npx_workspace_strict_root = tmp_root / "npx-workspace-strict"
+        installed_workspace_learning_profile = tmp_root / "installed-workspace-strict-learning.json"
+        installed_workspace_learning_eval = tmp_root / "installed-workspace-learning-eval.json"
+        installed_workspace_auto_profile = tmp_root / "installed-workspace-auto" / "learning.json"
+        installed_workspace_auto_eval = tmp_root / "installed-workspace-auto" / "learning-eval.json"
+        npx_workspace_learning_profile = tmp_root / "npx-workspace-strict-learning.json"
+        npx_workspace_learning_eval = tmp_root / "npx-workspace-learning-eval.json"
+        npx_workspace_auto_profile = tmp_root / "npx-workspace-auto" / "learning.json"
+        npx_workspace_auto_eval = tmp_root / "npx-workspace-auto" / "learning-eval.json"
         install_root.mkdir()
         npx_root.mkdir()
         prepare_workspace_strict_repo(installed_workspace_strict_root)
         prepare_workspace_strict_repo(npx_workspace_strict_root)
+        write_workspace_learning_eval_fixture(
+            installed_workspace_learning_profile,
+            installed_workspace_learning_eval,
+        )
+        write_workspace_learning_eval_fixture(
+            installed_workspace_auto_profile,
+            installed_workspace_auto_eval,
+        )
+        write_workspace_learning_eval_fixture(
+            npx_workspace_learning_profile,
+            npx_workspace_learning_eval,
+        )
+        write_workspace_learning_eval_fixture(
+            npx_workspace_auto_profile,
+            npx_workspace_auto_eval,
+        )
 
         base_env = os.environ.copy()
         base_env.update({
@@ -5136,13 +6703,30 @@ def smoke_tarball(tarball: Path) -> None:
                 "--root",
                 str(installed_workspace_strict_root),
                 "--learning-file",
-                str(tmp_root / "installed-workspace-strict-learning.json"),
+                str(installed_workspace_learning_profile),
+                "--learning-eval",
+                str(installed_workspace_learning_eval),
                 "--strict",
                 "--json",
             ],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin workspace strict JSON success",
+        )
+        assert_workspace_strict_success_smoke(
+            [
+                str(bin_path),
+                "workspace",
+                "--root",
+                str(installed_workspace_strict_root),
+                "--learning-file",
+                str(installed_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin workspace auto learning-eval JSON success",
         )
         assert_site_json_smoke(
             [str(bin_path), "site", "--stdin", "--json"],
@@ -5858,13 +7442,30 @@ def smoke_tarball(tarball: Path) -> None:
                 "--root",
                 str(npx_workspace_strict_root),
                 "--learning-file",
-                str(tmp_root / "npx-workspace-strict-learning.json"),
+                str(npx_workspace_learning_profile),
+                "--learning-eval",
+                str(npx_workspace_learning_eval),
                 "--strict",
                 "--json",
             ),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec workspace strict JSON success",
+        )
+        assert_workspace_strict_success_smoke(
+            npm_exec_cmd(
+                tarball,
+                "workspace",
+                "--root",
+                str(npx_workspace_strict_root),
+                "--learning-file",
+                str(npx_workspace_auto_profile),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec workspace auto learning-eval JSON success",
         )
         assert_site_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--json"),

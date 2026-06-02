@@ -1,10 +1,10 @@
 # AI learning
 
-design-ai supports a local learning profile. This is not model training, fine-tuning, or background data collection. It is explicit local memory that you choose to include in generated prompts; `check --learn` can derive entries from a local QA report only when you run it.
+design-ai supports a local learning profile. This is not model training, fine-tuning, or external telemetry. It is explicit local memory that you choose to include in generated prompts; `check --learn` can derive entries from a local QA report only when you run it.
 
 ## Scope
 
-What ships in v4.13:
+What ships in v4.46:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -14,27 +14,38 @@ What ships in v4.13:
 - `design-ai learn --export` prints the Markdown context block used by prompt generation, with the same filters.
 - `design-ai learn --backup` prints a full portable learning-profile backup in JSON mode.
 - `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted from the local profile, `--from-file`, or `--stdin`.
-- `design-ai learn --out file` writes JSON result artifacts, and `learn --export --out file` writes the Markdown context block, while `--force` controls overwrites.
+- `design-ai learn --out file` writes JSON result artifacts, `learn --export --out file` writes the Markdown context block, and `learn --curate --report --out file` writes the Markdown curation report, while `--force` controls overwrites.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
 - `design-ai learn --audit --fix --yes` applies only unambiguous safe cleanup suggestions.
-- `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile.
+- `design-ai learn --curate` previews archive-first cleanup for duplicate and sensitive learning entries without changing the profile, and includes advisory usage review hints for profile-path mismatch, stale selected ids, and unused active entries when a usage sidecar is available.
+- `design-ai learn --curate --report` emits a Markdown curation report for preview or apply results, and `--out file` writes it as a durable local review artifact.
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
-- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--strict` when warning/failure readiness should fail the command.
+- `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
+- `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
+- `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails. JSON reports expose checkpoint `generatedAt` plus a sanitized `sourceProfile` summary without raw checkpoint brief or query text.
+- `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, usage sidecar readiness, eval checkpoint readiness, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-usage path` or `--learning-eval path` to include specific artifacts, omit them to auto-detect sibling `learning.usage.json` and `learning-eval.json` files when present, and add `--strict` when warning/failure readiness should fail the command.
+- `design-ai workspace` checks learning usage sidecar readiness when usage metadata is available. If the sidecar points at another profile or references selected entry ids that are no longer present in the active profile, `workspace` emits a warning and suggests `design-ai learn --curate --usage-file ...` so profile audit and usage review are inspected together.
+- When learning curation is recommended, `design-ai workspace` also suggests a companion report artifact command such as `design-ai learn --curate --report --out <learning-file-dir>/learning-curation-report.md`, adding `--usage-file` when usage metadata is part of the readiness warning.
+- `design-ai workspace` checks learning eval checkpoint freshness when metadata is available. If the profile was updated after the checkpoint was generated, the checkpoint came from another profile path, or the source entry count changed, `workspace` emits a warning and suggests regenerating the checkpoint.
+- When a clean learning profile has entries but no checkpoint is available, `design-ai workspace` adds a next-action command for `design-ai learn --eval-template --file <learning.json> --out <learning-file-dir>/learning-eval.json`.
+- Workspace next-action commands that include learning profile, usage sidecar, or eval checkpoint paths are shell-quoted, so paths with spaces or apostrophes remain copy/paste safe.
+- Post-publish registry smoke verifies public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries, auto-detected learning usage sidecar summaries, and public registry `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation from the published package path.
 - `design-ai learn --forget ... --yes` removes a single saved entry.
 - `design-ai learn --clear --yes` clears the local profile.
 - `design-ai prompt --with-learning ...` injects learned context into the generated task prompt, ranking entries by current brief relevance before falling back to recency, with optional `--learning-category` and `--learning-limit` scoping plus selection scoring metadata.
 - `design-ai pack --with-learning ...` includes the same brief-relevant learned context in portable prompt packs, with the same optional scoping controls and selection scoring metadata.
+- `prompt --with-learning` and `pack --with-learning` write a local usage sidecar such as `learning.usage.json` with command, route id, selected learning entry ids, selection counts, audit status, and a short brief hash. The sidecar does not store raw brief/query text.
 - Exported and injected learned context carries an audit summary; if the profile has warnings, the generated context includes a notice to run `design-ai learn --audit`.
 
 What does not ship:
 
 - Model fine-tuning.
 - Private model training on user artifacts.
-- Automatic telemetry or background collection.
+- External telemetry or background collection outside explicit local CLI runs.
 - Semantic embedding index generation.
 - Background learning from accepted/rejected recommendations without an explicit CLI command.
 
@@ -46,23 +57,49 @@ Default path:
 ~/.design-ai/learning.json
 ```
 
+Default usage sidecar path:
+
+```bash
+~/.design-ai/learning.usage.json
+```
+
 Override path:
 
 ```bash
 DESIGN_AI_LEARNING_FILE=/path/to/learning.json design-ai learn --list
+DESIGN_AI_LEARNING_USAGE_FILE=/path/to/learning.usage.json design-ai prompt "audit checkout UX" --with-learning
+design-ai learn --usage --file /path/to/learning.json --usage-file /path/to/learning.usage.json
 ```
 
-The profile is local to the machine. It is not synced, uploaded, or sent to any provider by this CLI.
+The profile and usage sidecar are local to the machine. They are not synced, uploaded, or sent to any provider by this CLI.
 
 For a broader local readiness check that includes git state, learning audit state, and release-script availability, run:
 
 ```bash
 design-ai workspace --json
 design-ai workspace --learning-file ./learning.json
+design-ai workspace --learning-file ./learning.json --learning-usage ./learning.usage.json
+design-ai workspace --learning-file ./learning.json --strict
+design-ai workspace --learning-file ./learning.json --learning-usage ./learning.usage.json --learning-eval ./learning-eval.json --strict
 design-ai workspace --strict
 ```
 
 This command is read-only. It does not save learning entries, edit the profile, create commits, push branches, or run release scripts.
+
+If the selected learning profile has sibling `learning.usage.json` or `learning-eval.json` files, `workspace` automatically includes those summaries. Use `--learning-usage path` or `--learning-eval path` only when you want a different sidecar or checkpoint.
+
+When usage metadata is available, `workspace` compares it against the selected profile. A usage sidecar becomes a readiness warning when its `profileFile` points at another profile or when its selected entry ids no longer exist in the active profile, and the next actions point to usage-aware curation plus a companion curation Markdown report rather than a separate usage-only report.
+
+When checkpoint metadata is available, `workspace` also compares it against the selected profile. A passing checkpoint still becomes a readiness warning when the profile `updatedAt` is newer than checkpoint `generatedAt`, when `sourceProfile.file` does not match the active profile path, or when the recorded source entry count differs from the active profile count.
+
+If the selected profile, usage sidecar, report output, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --curate --report --out`, `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
+
+If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until a sibling or explicit checkpoint is available:
+
+```bash
+design-ai learn --eval-template --file ./learning.json --out ./learning-eval.json
+design-ai workspace --learning-file ./learning.json --strict
+```
 
 ## Usage
 
@@ -171,6 +208,8 @@ design-ai learn --audit --json
 design-ai learn --audit --fix --dry-run
 design-ai learn --audit --fix --yes
 design-ai learn --curate
+design-ai learn --curate --usage-file ./learning.usage.json
+design-ai learn --curate --report --out learning-curation-report.md
 design-ai learn --curate --yes --json
 ```
 
@@ -178,7 +217,7 @@ The plain audit is advisory and non-mutating. It reports invalid JSON/profile sh
 
 `--audit --fix --dry-run` turns those safe suggestions into a cleanup plan without changing the file. `--audit --fix --yes` removes only entries that have stable, unambiguous ids and skips anything that still needs manual review, such as invalid JSON, duplicate ids, malformed entries, or warnings without a safe target.
 
-`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. Confirmed `--curate --yes` rewrites the active `learning.json` with archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
+`--curate` is the safer Hermes-inspired path for normal profile maintenance. It previews curation proposals by default, classifies duplicate text and conservative sensitive-content warnings as archive candidates, and leaves timestamp, long-note, malformed-entry, duplicate-id, or profile-level failures for manual review. When a default or explicit `--usage-file` sidecar is available, the same preview adds a usage review section for sidecars recorded against a different profile path, stale selected ids, and active entries that have not appeared in recorded prompt/pack usage. Usage review is advisory only: `autoArchive` stays `false`, and unused or mismatched usage signals never archive entries by themselves. Add `--report` when you need a Markdown audit trail with profile/archive paths, before/after summaries, archive candidates, manual review items, usage review, privacy notes, and next steps; `--curate --report --out file` writes that report without requiring `--json`. Confirmed `--curate --yes` rewrites the active `learning.json` with duplicate/sensitive archive candidates removed and appends their full entries plus `archivedAt`, `archiveReason`, `issueCodes`, and `originalFile` metadata to a sibling archive file such as `learning.archive.json`. No archive file is written during preview.
 
 Summarize profile health and recency:
 
@@ -188,6 +227,46 @@ design-ai learn --stats --json
 ```
 
 Stats mode is also read-only. It is a compact overview for deciding whether to inspect, filter, or clean up the profile before using `--with-learning`.
+
+Summarize usage sidecar activity:
+
+```bash
+design-ai learn --usage
+design-ai learn --usage --json
+design-ai learn --usage --limit 5 --usage-file ./learning.usage.json
+```
+
+Usage mode is read-only. It reports event count, command/route/category distribution, entry ids selected by `prompt` and `pack`, active profile entries that have not been used yet, stale selected ids no longer present in the active profile, and recent events. It preserves the privacy boundary from the sidecar: selected entry ids and short brief hashes are shown, but raw prompt or query text is not stored or reported.
+
+Evaluate learning-selection checkpoints:
+
+```bash
+design-ai learn --eval-template --query "Spec a Button component API with keyboard accessibility" --category accessibility --out learning-eval.json
+cat > learning-eval.json <<'JSON'
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "button-accessibility",
+      "routeId": "component-spec",
+      "brief": "Spec a Button component API with keyboard accessibility",
+      "category": "accessibility",
+      "limit": 1,
+      "expectedSelectedIds": ["learn-relevant"],
+      "avoidedSelectedIds": ["learn-brand"],
+      "minMatchedCount": 1,
+      "requireNoFallback": true
+    }
+  ]
+}
+JSON
+design-ai learn --eval --from-file learning-eval.json --strict --json
+cat learning-eval.json | design-ai learn --eval --stdin --category accessibility --limit 1
+design-ai learn --eval --from-file learning-eval.json --json --out learning-eval-report.json
+```
+
+`learn --eval-template` is read-only and writes a checkpoint file that can be passed directly to `learn --eval`; checkpoint templates intentionally store raw `brief` text so they can be re-run locally, so review them before sharing. Eval mode is also read-only. It compares checkpoint cases against the same brief-relevance selection used by `prompt --with-learning` and `pack --with-learning`, then reports expected selected ids, avoided selected ids, minimum matched counts, fallback policy failures, and per-case status. JSON and human eval reports expose a short `briefHash`, selected entry ids, counts, and issues; they do not expose raw brief/query text or matched tokens. `--out` writes only the eval report artifact and follows the normal overwrite protection unless `--force` is provided.
+Add `--strict` when the eval report should act as a local CI or release gate: the report is printed or written first, then the command exits non-zero if any case warns or fails.
 
 Remove one saved entry:
 
@@ -209,7 +288,7 @@ design-ai prompt "Audit this checkout UX" --with-learning
 design-ai prompt "Audit this checkout UX" --with-learning --learning-category korean --learning-limit 5
 ```
 
-When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. JSON output includes `selection.selected[]` with each selected entry's `id`, `category`, relevance `score`, `matchedTokens`, and `reason` (`brief-match`, `recency-fallback`, or `recency`). The learned-context block includes a compact selection note, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
+When `--with-learning` is used, generated prompt plans include the same audit summary as `learn --export --json`. The selected entries are ranked against the prompt brief first, then recency is used for ties or unmatched fallback entries. JSON output includes `selection.selected[]` with each selected entry's `id`, `category`, relevance `score`, `matchedTokens`, and `reason` (`brief-match`, `recency-fallback`, or `recency`). Prompt and pack JSON also include `learningUsage`, and the CLI writes a local sidecar event that records selected entry ids and a short brief hash, not raw brief text. The learned-context block includes a compact selection note, and if the local profile has audit warnings, it tells the receiving agent to run `design-ai learn --audit` before relying on that context.
 
 Use learned context in a prompt pack:
 
