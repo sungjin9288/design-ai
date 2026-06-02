@@ -230,7 +230,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--redact\s+Print a portable JSON backup with sensitive-looking text redacted/);
   assert.match(learnOutput, /--from-file file\s+Read remember\/feedback text or import\/verify\/diff\/restore\/redact JSON from a file/);
   assert.match(learnOutput, /--out file\s+Write JSON output to a file, export Markdown for --export, or curation report Markdown/);
-  assert.match(learnOutput, /--force\s+Overwrite an existing --out file/);
+  assert.match(learnOutput, /--force\s+Overwrite an existing --out file, or an existing --backup-file during --restore/);
   assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--verify\s+Validate a portable learning JSON payload without importing it/);
@@ -275,10 +275,12 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --diff --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--diff\s+Compare the active profile against a portable learning JSON payload without importing it/);
   assert.match(learnOutput, /design-ai learn --diff --from-file learning-backup\.json --json/);
-  assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json \[--dry-run\|--yes\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --restore --stdin \[--dry-run\|--yes\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json \[--dry-run\|--yes\] \[--backup-file path\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --restore --stdin \[--dry-run\|--yes\] \[--backup-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--restore\s+Preview or apply replacing the active profile with a portable learning JSON payload/);
+  assert.match(learnOutput, /--backup-file path\s+With --restore, override the automatic rollback backup file path/);
   assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json --dry-run/);
+  assert.match(learnOutput, /design-ai learn --restore --from-file learning-backup\.json --yes --backup-file learning-before-restore\.json/);
   assert.match(learnOutput, /--import\s+Merge entries from a JSON learning profile or learn --export --json payload/);
   assert.match(learnOutput, /design-ai learn --audit \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /design-ai learn --audit --fix --dry-run \[--json\] \[--out file\] \[--force\]/);

@@ -1,6 +1,6 @@
 // Tests for local learning profile helpers.
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -18,6 +18,7 @@ import {
   buildRedactedLearningBackup,
   clearLearning,
   defaultLearningArchiveFile,
+  defaultLearningRestoreBackupFile,
   defaultLearningUsageFile,
   diffLearningProfiles,
   forgetLearning,
@@ -222,10 +223,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(diffStdinArgs.action, "diff");
   assert.equal(diffStdinArgs.stdin, true);
 
-  const restoreArgs = parseLearnArgs(["--restore", "--from-file", "learning-backup.json", "--dry-run", "--json"]);
+  const restoreArgs = parseLearnArgs(["--restore", "--from-file", "learning-backup.json", "--dry-run", "--backup-file", "learning-before-restore.json", "--json"]);
   assert.equal(restoreArgs.action, "restore");
   assert.equal(restoreArgs.fromFile, "learning-backup.json");
   assert.equal(restoreArgs.dryRun, true);
+  assert.equal(restoreArgs.backupFilePath, path.resolve("learning-before-restore.json"));
   assert.equal(restoreArgs.json, true);
 
   const restoreStdinArgs = parseLearnArgs(["--restore", "--stdin", "--yes"]);
@@ -369,6 +371,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
     /--usage-file can only be used with --usage or --curate/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--backup-file", "learning-before-restore.json"]),
+    /--backup-file can only be used with --restore/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--restore", "--from-file", "learning.json", "--backup-file"]),
+    /--backup-file expects a path/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--report"]),
@@ -720,6 +730,7 @@ test("diffLearningProfiles compares active and portable profiles without mutatio
 
 test("restoreLearningProfile previews and applies a full profile replacement", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
+  const rollbackPath = path.join(dir, "learning-before-restore.json");
   const restoreText = JSON.stringify({
     version: 1,
     updatedAt: "2026-05-22T00:02:00.000Z",
@@ -778,12 +789,19 @@ test("restoreLearningProfile previews and applies a full profile replacement", (
   assert.equal(preview.removedCount, 1);
   assert.equal(preview.addedCount, 1);
   assert.equal(preview.metadataChangedCount, 1);
+  assert.equal(preview.backupCreated, false);
+  assert.equal(preview.backupEntryCount, 2);
+  assert.equal(preview.backupUpdatedAt, "2026-05-22T00:01:00.000Z");
+  assert.equal(preview.backupFile, defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:03:00.000Z")));
+  assert.match(preview.rollbackCommand, /design-ai learn --restore --from-file/);
   assert.deepEqual(preview.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.equal(preview.privacy.mutatesProfile, false);
   assert.equal(readFileSync(filePath, "utf8"), before);
+  assert.equal(existsSync(preview.backupFile), false);
 
   const applied = restoreLearningProfile({
     filePath,
+    backupFilePath: rollbackPath,
     restoreText,
     source: "learning-backup.json",
     dryRun: false,
@@ -792,11 +810,94 @@ test("restoreLearningProfile previews and applies a full profile replacement", (
 
   assert.equal(applied.applied, true);
   assert.equal(applied.dryRun, false);
+  assert.equal(applied.backupFile, rollbackPath);
+  assert.equal(applied.backupCreated, true);
+  assert.equal(applied.rollbackCommand, `design-ai learn --restore --from-file ${rollbackPath} --file ${filePath} --dry-run`);
   assert.equal(applied.privacy.mutatesProfile, true);
+  const rollbackProfile = loadLearningProfile(rollbackPath);
+  assert.equal(rollbackProfile.updatedAt, "2026-05-22T00:01:00.000Z");
+  assert.deepEqual(rollbackProfile.entries.map((entry) => entry.id), ["learn-active-brand", "learn-active-workflow"]);
   const restored = loadLearningProfile(filePath);
   assert.equal(restored.updatedAt, "2026-05-22T00:02:00.000Z");
   assert.deepEqual(restored.entries.map((entry) => entry.id), ["learn-restored-brand", "learn-restored-korean"]);
   assert.deepEqual(restored.entries.map((entry) => entry.source), ["backup", "backup"]);
+}));
+
+test("restoreLearningProfile protects rollback backup paths before apply", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const restorePath = path.join(dir, "learning-backup.json");
+  const existingBackupPath = path.join(dir, "existing-rollback.json");
+  const activeProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-active",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  };
+  const restoreProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:01:00.000Z",
+    entries: [
+      {
+        id: "learn-restored",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "backup",
+        createdAt: "2026-05-22T00:01:00.000Z",
+      },
+    ],
+  };
+  const restoreText = JSON.stringify(restoreProfile);
+  writeFileSync(filePath, JSON.stringify(activeProfile), "utf8");
+  writeFileSync(restorePath, restoreText, "utf8");
+  writeFileSync(existingBackupPath, JSON.stringify(restoreProfile), "utf8");
+
+  assert.throws(
+    () => restoreLearningProfile({
+      filePath,
+      backupFilePath: filePath,
+      restoreText,
+      dryRun: false,
+    }),
+    /backup file must be different from the active learning profile/,
+  );
+  assert.throws(
+    () => restoreLearningProfile({
+      filePath,
+      backupFilePath: restorePath,
+      restoreText,
+      source: restorePath,
+      dryRun: false,
+    }),
+    /backup file must be different from the restore source/,
+  );
+  assert.throws(
+    () => restoreLearningProfile({
+      filePath,
+      backupFilePath: existingBackupPath,
+      restoreText,
+      dryRun: false,
+    }),
+    /backup file already exists/,
+  );
+
+  const applied = restoreLearningProfile({
+    filePath,
+    backupFilePath: existingBackupPath,
+    forceBackup: true,
+    restoreText,
+    dryRun: false,
+  });
+
+  assert.equal(applied.backupCreated, true);
+  assert.deepEqual(loadLearningProfile(existingBackupPath).entries.map((entry) => entry.id), ["learn-active"]);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-restored"]);
 }));
 
 test("restoreLearningProfile reports audit failures in preview and blocks apply", () => withTempDir((dir) => {
@@ -836,6 +937,7 @@ test("restoreLearningProfile reports audit failures in preview and blocks apply"
   });
 
   assert.equal(preview.restorable, false);
+  assert.equal(preview.backupCreated, false);
   assert.equal(preview.auditSummary.status, "fail");
   assert.equal(preview.issues[0].code, "invalid-category");
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
@@ -910,6 +1012,7 @@ test("runLearn emits profile diff JSON without importing comparison entries", as
 test("runLearn restore previews by default and applies only with confirmation", async () => withTempDirAsync(async (dir) => {
   const filePath = path.join(dir, "learning.json");
   const restorePath = path.join(dir, "learning-backup.json");
+  const rollbackPath = path.join(dir, "learning-rollback.json");
   writeFileSync(filePath, JSON.stringify({
     version: 1,
     updatedAt: "2026-05-22T00:00:00.000Z",
@@ -962,6 +1065,8 @@ test("runLearn restore previews by default and applies only with confirmation", 
   assert.equal(preview.restorable, true);
   assert.equal(preview.removedCount, 1);
   assert.equal(preview.addedCount, 1);
+  assert.equal(preview.backupCreated, false);
+  assert.match(preview.backupFile, /learning\.restore-backup-/);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
 
   const applyOutput = await captureStdout(() => runLearn([
@@ -970,6 +1075,8 @@ test("runLearn restore previews by default and applies only with confirmation", 
     restorePath,
     "--file",
     filePath,
+    "--backup-file",
+    rollbackPath,
     "--yes",
     "--json",
   ]));
@@ -977,6 +1084,11 @@ test("runLearn restore previews by default and applies only with confirmation", 
   assert.equal(applied.applied, true);
   assert.equal(applied.dryRun, false);
   assert.equal(applied.restoredCount, 1);
+  assert.equal(applied.backupFile, rollbackPath);
+  assert.equal(applied.backupCreated, true);
+  assert.equal(applied.backupEntryCount, 1);
+  assert.match(applied.rollbackCommand, /learning-rollback\.json/);
+  assert.deepEqual(loadLearningProfile(rollbackPath).entries.map((entry) => entry.id), ["learn-active"]);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-restored"]);
 }));
 
