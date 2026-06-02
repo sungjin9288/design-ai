@@ -128,6 +128,20 @@ The graph includes deterministic nodes for:
 
 Edges connect profile context, audit findings, MCP readiness, task execution, prompt generation, and handoff flow. The export remains deterministic, local, and read-only: no external MCP calls, no target-repo mutation, no workflow runtime dependency, no Lighthouse/axe/crawling, and no new dependencies.
 
+### Phase 277: static workflow graph rendering
+
+Implemented the static Website Console `Workflow Graph` tab so operators can inspect the workflow graph in the browser before exporting JSON or handing prompts to a target website repo.
+
+The view renders:
+
+- summary metrics for graph nodes, edges, tasks, and required MCPs
+- lane-based node groups for intake, audit, MCP readiness, tasks, prompts, and handoff
+- deterministic edge rows matching the portable graph contract
+- boundary markers for local execution, no external MCP calls, no target-repo mutation, and no new dependencies
+- copy/export actions for `website-workflow-graph.json`
+
+This keeps the useful part of visual workflow builders in a dependency-free, local/read-only console. It does not add a workflow runtime, backend sync, crawling, Lighthouse/axe automation, or live MCP connection checks.
+
 ## Current MVP boundary
 
 In scope:

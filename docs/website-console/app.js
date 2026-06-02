@@ -89,6 +89,7 @@
     ["profile", "Site Profile"],
     ["audit", "Audit Checklist"],
     ["mcp", "MCP Matrix"],
+    ["graph", "Workflow Graph"],
     ["tasks", "Refactor Plan"],
     ["prompts", "Prompt Generator"],
     ["report", "Handoff Report"],
@@ -387,12 +388,15 @@
     var requiredMcp = mcpItems.filter(function (item) {
       return appState.workspace.mcpReadiness[item[0]] === "required";
     }).length;
+    var graph = buildWorkflowGraph();
     return {
       pages: appState.workspace.siteProfile.pages.length,
       done: done,
       blocked: blocked,
       tasks: appState.workspace.refactorTasks.length,
       requiredMcp: requiredMcp,
+      graphNodes: graph.summary.nodeCount,
+      graphEdges: graph.summary.edgeCount,
     };
   }
 
@@ -428,7 +432,8 @@
         var count = id === "audit" ? metrics.done + "/" + auditCategories.length
           : id === "tasks" ? String(metrics.tasks)
             : id === "mcp" ? String(metrics.requiredMcp)
-              : "";
+              : id === "graph" ? String(metrics.graphNodes)
+                : "";
         return [
           "<li>",
           "<button type=\"button\" class=\"nav-button\" data-nav=\"" + escapeAttr(id) + "\" aria-current=\"" + (appState.activeTab === id ? "page" : "false") + "\">",
@@ -499,6 +504,7 @@
     if (appState.activeTab === "profile") return renderProfile();
     if (appState.activeTab === "audit") return renderAudit();
     if (appState.activeTab === "mcp") return renderMcp();
+    if (appState.activeTab === "graph") return renderGraph();
     if (appState.activeTab === "tasks") return renderTasks();
     if (appState.activeTab === "prompts") return renderPrompts();
     return renderReport();
@@ -659,6 +665,112 @@
       tasks.map(renderTaskRow).join(""),
       "</div>",
     ].join(""));
+  }
+
+  function renderGraph() {
+    var graph = buildWorkflowGraph();
+    return [
+      panel("Workflow Graph", "Render the local Website Improvement workflow before exporting it for CLI or target-repo handoff.", [
+        "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
+        "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-graph-json\">Copy graph JSON</button>",
+        "<button type=\"button\" class=\"button\" data-action=\"download-graph-json\">Export graph JSON</button>",
+        "</div>",
+        "<div class=\"graph-summary\" aria-label=\"Workflow graph summary\">",
+        metric("Nodes", graph.summary.nodeCount, "Workspace graph items"),
+        metric("Edges", graph.summary.edgeCount, "Workflow dependencies"),
+        metric("Tasks", graph.summary.taskCount, graph.summary.generatedTaskCount + " generated candidate(s)"),
+        metric("Required MCP", graph.summary.requiredMcpCount, graph.mcpStatus + " readiness"),
+        "</div>",
+        "<div class=\"graph-boundaries\" aria-label=\"Workflow boundaries\">",
+        graph.boundaries.map(function (item) {
+          return "<span class=\"pill\">" + escapeHtml(item) + "</span>";
+        }).join(""),
+        "</div>",
+        renderGraphLanes(graph),
+      ].join("")),
+      panel("Workflow Edges", "Deterministic edge list used by the portable graph export.", [
+        "<div class=\"table-wrap graph-edge-table\">",
+        "<table>",
+        "<thead><tr><th>From</th><th>To</th><th>Type</th><th>Label</th></tr></thead>",
+        "<tbody>",
+        graph.edges.map(function (edge) {
+          return [
+            "<tr>",
+            "<td><code>" + escapeHtml(edge.from) + "</code></td>",
+            "<td><code>" + escapeHtml(edge.to) + "</code></td>",
+            "<td>" + escapeHtml(edge.type) + "</td>",
+            "<td>" + escapeHtml(edge.label) + "</td>",
+            "</tr>",
+          ].join("");
+        }).join(""),
+        "</tbody>",
+        "</table>",
+        "</div>",
+      ].join("")),
+    ].join("");
+  }
+
+  function renderGraphLanes(graph) {
+    var lanes = [
+      ["intake", "Intake", ["workspace", "site-profile"]],
+      ["audit", "Audit", ["audit-category"]],
+      ["mcp", "MCP", ["mcp-readiness"]],
+      ["tasks", "Tasks", ["refactor-task"]],
+      ["prompts", "Prompts", ["prompt-template"]],
+      ["handoff", "Handoff", ["handoff-report", "handoff-bundle", "target-repo"]],
+    ];
+    return [
+      "<div class=\"graph-lanes\" aria-label=\"Workflow graph lanes\">",
+      lanes.map(function (lane) {
+        var nodes = graph.nodes.filter(function (node) {
+          return lane[2].indexOf(node.type) !== -1;
+        });
+        return [
+          "<section class=\"graph-lane\" aria-label=\"" + escapeAttr(lane[1]) + " nodes\">",
+          "<div class=\"graph-lane__header\">",
+          "<strong>" + escapeHtml(lane[1]) + "</strong>",
+          "<span>" + nodes.length + "</span>",
+          "</div>",
+          "<ol>",
+          nodes.map(renderGraphNode).join(""),
+          "</ol>",
+          "</section>",
+        ].join("");
+      }).join(""),
+      "</div>",
+    ].join("");
+  }
+
+  function renderGraphNode(node) {
+    return [
+      "<li class=\"graph-node graph-node--" + escapeAttr(node.type) + "\">",
+      "<div class=\"graph-node__top\">",
+      "<span class=\"graph-node__id\">" + escapeHtml(node.id) + "</span>",
+      badge(node.status),
+      "</div>",
+      "<strong>" + escapeHtml(node.label) + "</strong>",
+      renderGraphNodeMeta(node),
+      "</li>",
+    ].join("");
+  }
+
+  function renderGraphNodeMeta(node) {
+    if (node.type === "audit-category") {
+      return "<small>" + escapeHtml(node.data.findingCount + " finding(s)") + "</small>";
+    }
+    if (node.type === "mcp-readiness") {
+      return "<small>" + escapeHtml(node.data.requestedStatus + " / " + node.data.state) + "</small>";
+    }
+    if (node.type === "refactor-task") {
+      return "<small>" + escapeHtml(node.data.priority + " · " + node.data.category) + "</small>";
+    }
+    if (node.type === "prompt-template") {
+      return "<small>" + escapeHtml(node.data.agent + " · " + node.data.output) + "</small>";
+    }
+    if (node.type === "target-repo") {
+      return "<small>" + escapeHtml(node.data.repoUrl || node.data.localPath || "external repo boundary") + "</small>";
+    }
+    return "<small>" + escapeHtml(node.type) + "</small>";
   }
 
   function renderTaskRow(task) {
@@ -930,6 +1042,306 @@
       return rank[a.priority] - rank[b.priority];
     });
     return tasks[0] || null;
+  }
+
+  function orderedTasks(workspace) {
+    var rank = { p0: 0, p1: 1, p2: 2, p3: 3 };
+    return workspace.refactorTasks.slice().sort(function (a, b) {
+      var priority = rank[a.priority] - rank[b.priority];
+      if (priority !== 0) return priority;
+      return a.title.localeCompare(b.title);
+    });
+  }
+
+  function cloneWorkspace(workspace) {
+    return normalizeWorkspace(JSON.parse(JSON.stringify(workspace)));
+  }
+
+  function workflowTasks(workspace) {
+    var graphWorkspace = cloneWorkspace(workspace);
+    var existingIds = new Set(graphWorkspace.refactorTasks.map(function (task) { return task.id; }));
+    var existingCategories = new Set(graphWorkspace.refactorTasks.map(function (task) { return task.category; }));
+    var created = [];
+    auditCategories.forEach(function (category) {
+      if (existingCategories.has(category.id)) return;
+      var row = graphWorkspace.auditChecklist[category.id];
+      if (!row || row.findings.length === 0) return;
+      var id = "task-" + category.id;
+      if (existingIds.has(id)) return;
+      var task = taskFromCategoryForWorkspace(graphWorkspace, category, row.findings[0]);
+      graphWorkspace.refactorTasks.push(task);
+      created.push(task);
+      existingIds.add(id);
+      existingCategories.add(category.id);
+    });
+    return {
+      workspace: graphWorkspace,
+      tasks: orderedTasks(graphWorkspace),
+      created: created,
+    };
+  }
+
+  function taskFromCategoryForWorkspace(workspace, category, finding) {
+    var priority = category.id === "accessibility" || category.id === "runtime-issues" ? "p0" : "p1";
+    var impact = priority === "p0" ? "high" : "medium";
+    return {
+      id: "task-" + category.id,
+      title: "Resolve " + category.label + " finding",
+      category: category.id,
+      problem: finding,
+      evidence: "Audit finding captured in the Website Improvement Console.",
+      impact: impact,
+      effort: "medium",
+      priority: priority,
+      pages: workspace.siteProfile.pages.slice(0, 3),
+      recommendedMcp: recommendedMcpForCategory(category.id),
+      codexPrompt: buildCodexTaskPromptForWorkspace(workspace, category.id, finding),
+      verification: category.defaultVerification.concat(["Run target repo lint/typecheck/build when available"]),
+      risks: ["Target repo architecture may constrain the fix", "Manual stakeholder review may be needed before changing copy or brand language"],
+    };
+  }
+
+  function buildCodexTaskPromptForWorkspace(workspace, categoryId, finding) {
+    return [
+      "You are working in the target website repo, not in design-ai.",
+      "Site: " + workspace.siteProfile.name,
+      "Live URL: " + workspace.siteProfile.liveUrl,
+      "Category: " + categoryById(categoryId).label,
+      "Problem: " + finding,
+      "",
+      "Inspect the target repo first. Reuse existing architecture, UI components, state patterns, styling conventions, and design tokens. Do not add dependencies unless the existing codebase clearly requires them.",
+      "",
+      "Implement the smallest safe improvement, then verify desktop/tablet/mobile behavior, keyboard focus, screen-reader semantics where relevant, and the target repo's lint/typecheck/build commands.",
+    ].join("\n");
+  }
+
+  function combineStatus(left, right) {
+    if (left === "fail" || right === "fail") return "fail";
+    if (left === "warn" || right === "warn") return "warn";
+    return "pass";
+  }
+
+  function workflowNode(id, type, label, status, data) {
+    return {
+      id: id,
+      type: type,
+      label: label,
+      status: status,
+      data: data || {},
+    };
+  }
+
+  function workflowEdge(from, to, type, label) {
+    return {
+      id: from + "->" + to + ":" + type,
+      from: from,
+      to: to,
+      type: type,
+      label: label,
+    };
+  }
+
+  function profileNodeId(profile) {
+    return "profile:" + (profile.id || "site");
+  }
+
+  function workspaceStatus(workspace) {
+    var hasProfile = Boolean(workspace.siteProfile.name && workspace.siteProfile.liveUrl);
+    var blocked = auditCategories.some(function (category) {
+      return workspace.auditChecklist[category.id].status === "blocked";
+    });
+    if (!hasProfile) return "fail";
+    return blocked ? "warn" : "pass";
+  }
+
+  function mcpState(key, status, profile) {
+    if (status === "unused") return "not-needed";
+    if (status === "unavailable") return "missing";
+    if (key === "github") return profile.repoUrl || profile.localPath ? "ready" : "needs-evidence";
+    if (key === "figma") return profile.figmaUrl ? "ready" : "needs-evidence";
+    if (key === "deploy") return profile.deployProvider !== "none" ? "ready" : "needs-evidence";
+    if (key === "sentry") return profile.sentryProject ? "ready" : "needs-evidence";
+    return "declared";
+  }
+
+  function mcpLevel(requestedStatus, state) {
+    if (requestedStatus === "unavailable") return "fail";
+    if (requestedStatus === "required" && state === "needs-evidence") return "warn";
+    return "pass";
+  }
+
+  function buildWorkflowGraph() {
+    var taskResult = workflowTasks(appState.workspace);
+    var workspace = taskResult.workspace;
+    var profile = workspace.siteProfile;
+    var workspaceLevel = workspaceStatus(workspace);
+    var nodes = [];
+    var edges = [];
+    var profileId = profileNodeId(profile);
+    var mcpNodes = [];
+
+    nodes.push(workflowNode("workspace:intake", "workspace", "Workspace intake", workspaceLevel, {
+      version: workspace.version,
+      updatedAt: workspace.updatedAt,
+      source: "localStorage",
+      workspaceStatus: workspaceLevel,
+    }));
+    nodes.push(workflowNode(profileId, "site-profile", profile.name, workspaceLevel, {
+      id: profile.id,
+      liveUrl: profile.liveUrl,
+      repoUrl: profile.repoUrl,
+      localPath: profile.localPath,
+      figmaUrl: profile.figmaUrl,
+      deployProvider: profile.deployProvider,
+      cms: profile.cms,
+      database: profile.database,
+      pages: profile.pages,
+      userFlows: profile.userFlows,
+      viewports: profile.viewports,
+      brandNotes: profile.brandNotes,
+    }));
+    edges.push(workflowEdge("workspace:intake", profileId, "profile", "Workspace defines the target site profile"));
+
+    auditCategories.forEach(function (category) {
+      var row = workspace.auditChecklist[category.id];
+      var nodeId = "audit:" + category.id;
+      nodes.push(workflowNode(nodeId, "audit-category", category.label, row.status, {
+        category: category.id,
+        notes: row.notes,
+        findings: row.findings,
+        findingCount: row.findings.length,
+        defaultVerification: category.defaultVerification,
+      }));
+      edges.push(workflowEdge(profileId, nodeId, "audit-input", "Site context drives this audit category"));
+    });
+
+    mcpItems.forEach(function (item) {
+      var key = item[0];
+      var status = workspace.mcpReadiness[key];
+      var state = mcpState(key, status, profile);
+      var level = mcpLevel(status, state);
+      var node = workflowNode("mcp:" + key, "mcp-readiness", item[1], level, {
+        key: key,
+        requestedStatus: status,
+        state: state,
+        evidence: item[2],
+        actions: mcpAdvice(key, status),
+      });
+      mcpNodes.push(node);
+      nodes.push(node);
+      edges.push(workflowEdge(profileId, node.id, "readiness-input", "Site profile provides MCP readiness evidence"));
+    });
+
+    taskResult.tasks.forEach(function (task) {
+      var taskNodeId = "task:" + task.id;
+      nodes.push(workflowNode(taskNodeId, "refactor-task", task.title, "planned", {
+        id: task.id,
+        category: task.category,
+        problem: task.problem,
+        evidence: task.evidence,
+        impact: task.impact,
+        effort: task.effort,
+        priority: task.priority,
+        pages: task.pages,
+        recommendedMcp: task.recommendedMcp,
+        codexPrompt: task.codexPrompt,
+        verification: task.verification,
+        risks: task.risks,
+      }));
+      edges.push(workflowEdge("audit:" + task.category, taskNodeId, "finding-to-task", "Audit finding informs this refactor task"));
+      edges.push(workflowEdge(profileId, taskNodeId, "site-context", "Site profile scopes this refactor task"));
+      task.recommendedMcp.forEach(function (key) {
+        if (workspace.mcpReadiness[key]) {
+          edges.push(workflowEdge("mcp:" + key, taskNodeId, "mcp-support", "MCP readiness supports task execution"));
+        }
+      });
+    });
+
+    templates.forEach(function (template) {
+      var promptId = "prompt:" + template[0];
+      nodes.push(workflowNode(promptId, "prompt-template", template[1], "ready", {
+        id: template[0],
+        agent: template[0].indexOf("claude") === 0 ? "Claude" : "Codex",
+        output: template[0] === "handoff-report" ? "report" : "prompt",
+        description: template[1],
+        taskSelectable: template[0] === "codex-implementation",
+      }));
+      edges.push(workflowEdge(profileId, promptId, "profile-context", "Prompt template receives site profile context"));
+    });
+
+    taskResult.tasks.forEach(function (task) {
+      edges.push(workflowEdge("task:" + task.id, "prompt:codex-implementation", "implementation-prompt", "Task can be exported as a Codex implementation prompt"));
+    });
+
+    nodes.push(workflowNode("handoff:report", "handoff-report", "Handoff report", "ready", {
+      output: "website-handoff.md",
+      purpose: "Summarize site state, audit findings, priority improvements, verification, and remaining risk",
+    }));
+    nodes.push(workflowNode("handoff:bundle", "handoff-bundle", "Local handoff bundle", "ready", {
+      output: "website-handoff-bundle",
+      purpose: "Package the local Website Improvement plan without mutating the target repo",
+    }));
+    nodes.push(workflowNode("handoff:target-repo", "target-repo", "Target website repo", "external", {
+      repoUrl: profile.repoUrl,
+      localPath: profile.localPath,
+      boundary: "Implementation happens outside the design-ai repository",
+    }));
+    edges.push(workflowEdge(profileId, "handoff:report", "handoff-input", "Site profile anchors the handoff report"));
+    taskResult.tasks.forEach(function (task) {
+      edges.push(workflowEdge("task:" + task.id, "handoff:report", "handoff-input", "Refactor task is summarized in the handoff report"));
+    });
+    mcpNodes.filter(function (node) {
+      return node.data.requestedStatus !== "unused";
+    }).forEach(function (node) {
+      edges.push(workflowEdge(node.id, "handoff:report", "readiness-input", "MCP readiness is summarized in the handoff report"));
+    });
+    templates.forEach(function (template) {
+      edges.push(workflowEdge("prompt:" + template[0], "handoff:target-repo", "agent-prompt", "Prompt can be used in the target website workflow"));
+    });
+    edges.push(workflowEdge("handoff:report", "handoff:bundle", "bundle-input", "Handoff report can be packaged into a local bundle"));
+    edges.push(workflowEdge("handoff:bundle", "handoff:target-repo", "handoff", "Verified bundle can become target-repo implementation context"));
+
+    var mcpStatus = mcpNodes.some(function (node) { return node.status === "fail"; }) ? "fail"
+      : mcpNodes.some(function (node) { return node.status === "warn"; }) ? "warn"
+        : "pass";
+    var status = combineStatus(workspaceLevel, mcpStatus);
+    return {
+      version: 1,
+      kind: "website-improvement-workflow-graph",
+      generatedAt: workspace.updatedAt,
+      filePath: "localStorage",
+      status: status,
+      workspaceStatus: workspaceLevel,
+      mcpStatus: mcpStatus,
+      externalCalls: false,
+      site: {
+        id: profile.id,
+        name: profile.name,
+        liveUrl: profile.liveUrl,
+        repoUrl: profile.repoUrl,
+        localPath: profile.localPath,
+      },
+      summary: {
+        status: status,
+        workspaceStatus: workspaceLevel,
+        mcpStatus: mcpStatus,
+        nodeCount: nodes.length,
+        edgeCount: edges.length,
+        auditCategoryCount: auditCategories.length,
+        taskCount: taskResult.tasks.length,
+        generatedTaskCount: taskResult.created.length,
+        requiredMcpCount: mcpItems.filter(function (item) { return workspace.mcpReadiness[item[0]] === "required"; }).length,
+        promptTemplateCount: templates.length,
+      },
+      nodes: nodes,
+      edges: edges,
+      boundaries: [
+        "deterministic-local",
+        "no-external-mcp-calls",
+        "no-target-repo-mutation",
+        "no-new-dependencies",
+      ],
+    };
   }
 
   function buildPrompt(templateId) {
@@ -1244,6 +1656,11 @@
     } else if (action === "download-report") {
       downloadFile("website-improvement-handoff.md", buildHandoffReport(), "text/markdown");
       setMessage("Handoff report exported.");
+    } else if (action === "copy-graph-json") {
+      copyText(JSON.stringify(buildWorkflowGraph(), null, 2), "Workflow graph JSON copied.");
+    } else if (action === "download-graph-json") {
+      downloadFile("website-workflow-graph.json", JSON.stringify(buildWorkflowGraph(), null, 2), "application/json");
+      setMessage("Workflow graph JSON exported.");
     }
   }
 

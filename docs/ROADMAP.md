@@ -1,8 +1,30 @@
 # Roadmap
 
+## Phase 277 — Website Console Workflow Graph Rendering (unreleased)
+
+The static Website Improvement Console now renders the portable workflow graph directly in the browser. Operators can inspect the same local workflow shape before exporting graph JSON or moving implementation prompts into the target website repo.
+
+### Changed
+- Added a `Workflow Graph` tab to `docs/website-console/`.
+- Added deterministic in-browser graph generation for workspace intake, site profile, audit categories, MCP readiness, refactor tasks, prompt templates, handoff report, handoff bundle, and target repo boundary.
+- Added lane-based graph rendering, summary metrics, boundary markers, and a complete edge table.
+- Added browser-side copy/export actions for `website-workflow-graph.json`.
+- Kept the static console dependency-free and local/read-only.
+
+### Impact
+- Website Improvement operators can now review graph structure visually before saving the portable JSON artifact.
+- The static console can render the graph without a workflow runtime dependency, external MCP calls, target-repo mutation, crawling, Lighthouse/axe automation, or backend sync.
+
+### Verified
+- `node --check docs/website-console/app.js`.
+- Browser smoke at `http://127.0.0.1:8765/` confirmed 35 graph nodes, 67 edge rows, 6 lanes, boundary markers, and zero console errors.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, target-repo implementation tracking, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 276 — Website Console Workflow Graph Export (unreleased)
 
-`design-ai site --graph [--json]` now exports Website Improvement workspaces and agent plans as portable workflow graphs. The graph can be stored as JSON now and rendered later by the static console without adding a visual workflow runtime dependency.
+`design-ai site --graph [--json]` now exports Website Improvement workspaces and agent plans as portable workflow graphs. The graph can be stored as JSON and, as of Phase 277, rendered by the static console without adding a visual workflow runtime dependency.
 
 ### Changed
 - Added `design-ai site <workspace.json|--stdin> --graph [--json] [--out file] [--force]`.
@@ -20,7 +42,7 @@
 - Package smoke assertion self-tests.
 
 ### What's still ahead
-- Static console graph rendering and real MCP connection checks remain future phases.
+- Static console graph rendering is covered by Phase 277; real MCP connection checks remain future Website Console automation work.
 
 ## Phase 275 — Website Console MCP Probes (unreleased)
 
