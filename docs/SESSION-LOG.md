@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.52 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval readiness gates). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.53 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval / restore-backup readiness gates). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.52 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.53 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.53 — Workspace learning restore backup readiness
+
+- **v4.53 (Phase 268)** — Added `design-ai workspace` readiness for sibling learning restore rollback backups, including `learningRestoreBackups` JSON inventory, latest backup metadata, read-only privacy flags, and preview-first prune next actions when older rollback backups exceed the default keep count.
 
 ### v4.52 — Public registry learning restore smoke
 

@@ -258,7 +258,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.52.0",
+    "4.53.0",
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -298,7 +298,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.52.0",
+    "Version alignment: 4.53.0",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -674,7 +674,7 @@ EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS = [
     "examples",
 ]
 EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS = ["example", "report"]
-EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningUsage", "learningEval", "release", "nextActions"]
+EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "release", "nextActions"]
 EXPECTED_WORKSPACE_CONTEXT_KEYS = ["cwd", "root", "sourceRoot", "packageName", "version"]
 EXPECTED_WORKSPACE_GIT_KEYS = [
     "isRepo",
@@ -805,6 +805,44 @@ EXPECTED_WORKSPACE_LEARNING_EVAL_FRESHNESS_KEYS = [
     "checkpointGeneratedAt",
     "sourceProfileFile",
     "sourceProfileEntryCount",
+]
+EXPECTED_WORKSPACE_RESTORE_BACKUPS_KEYS = [
+    "file",
+    "directory",
+    "pattern",
+    "generatedAt",
+    "limit",
+    "totalCount",
+    "count",
+    "latestBackup",
+    "backups",
+    "readiness",
+    "privacy",
+    "error",
+]
+EXPECTED_WORKSPACE_RESTORE_BACKUP_KEYS = [
+    "file",
+    "name",
+    "createdAt",
+    "modifiedAt",
+    "sizeBytes",
+    "updatedAt",
+    "entryCount",
+    "auditSummary",
+    "issueCount",
+    "restorePreviewCommand",
+]
+EXPECTED_WORKSPACE_RESTORE_BACKUPS_READINESS_KEYS = [
+    "status",
+    "reason",
+    "keep",
+    "totalCount",
+    "pruneCandidateCount",
+]
+EXPECTED_WORKSPACE_RESTORE_BACKUPS_PRIVACY_KEYS = [
+    "storesRawBriefText",
+    "exposesEntryTextPreview",
+    "mutatesProfile",
 ]
 EXPECTED_WORKSPACE_RELEASE_KEYS = ["packageName", "version", "scripts", "available", "missing"]
 EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS = ["status", "failures", "warnings"]
@@ -1072,7 +1110,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.52.0",
+        "Plugin: design-ai v4.53.0",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -1104,7 +1142,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.52.0",
+            "version": "4.53.0",
             "kind": kind,
             "sections": [
                 {
@@ -1525,7 +1563,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.52.0",
+        "version": "4.53.0",
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -1599,7 +1637,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.52.0",
+        "Corpus version: 4.53.0",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -1688,7 +1726,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.52.0",
+        "version": "4.53.0",
         "routes": routes,
     })
 
@@ -1696,7 +1734,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.52.0",
+        "version": "4.53.0",
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -1801,7 +1839,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.52.0",
+        "Corpus version: 4.53.0",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -1827,7 +1865,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.52.0",
+        "version": "4.53.0",
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -1875,7 +1913,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.52.0",
+        "Corpus version: 4.53.0",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -3744,8 +3782,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.52.0",
-        "Plugin / corpus:  4.52.0",
+        "design-ai CLI:    4.53.0",
+        "Plugin / corpus:  4.53.0",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -3758,8 +3796,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.52.0",
-                "plugin": "4.52.0",
+                "cli": "4.53.0",
+                "plugin": "4.53.0",
                 "aligned": True,
             },
         },
@@ -3776,7 +3814,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.52.0",
+                "version": "4.53.0",
             },
             "git": {
                 "isRepo": False,
@@ -3823,9 +3861,10 @@ def passing_workspace_json() -> str:
             },
             "learningUsage": None,
             "learningEval": None,
+            "learningRestoreBackups": None,
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.52.0",
+                "version": "4.53.0",
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -4431,7 +4470,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.52.0",
+        "✓  Version alignment: 4.53.0",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -4456,7 +4495,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.52.0",
+        "  v4.53.0",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -4885,7 +4924,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.52.0":
+    if workspace_context.get("version") != "4.53.0":
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -5108,6 +5147,101 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         if freshness.get("sourceProfileEntryCount") is not None and not is_lifecycle_json_non_negative_int(freshness.get("sourceProfileEntryCount")):
             raise SystemExit(f"workspace JSON after {context} learningEval freshness sourceProfileEntryCount is invalid")
 
+    learning_restore_backups = payload.get("learningRestoreBackups")
+    if learning_restore_backups is not None:
+        learning_restore_backups = assert_smoke_json_keys(
+            learning_restore_backups,
+            EXPECTED_WORKSPACE_RESTORE_BACKUPS_KEYS,
+            label="learningRestoreBackups",
+            context=context,
+            command_label="workspace JSON",
+        )
+        for key in ("file", "directory", "pattern", "generatedAt", "error"):
+            if not isinstance(learning_restore_backups.get(key), str):
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups {key} is not a string")
+        if not learning_restore_backups.get("file") or not learning_restore_backups.get("directory"):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups paths are missing")
+        for key in ("limit", "totalCount", "count"):
+            if not is_lifecycle_json_non_negative_int(learning_restore_backups.get(key)):
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups {key} is invalid")
+        backups = learning_restore_backups.get("backups")
+        if not isinstance(backups, list):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups backups is not a list")
+        if len(backups) != learning_restore_backups.get("count"):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups count does not match backups length")
+        if learning_restore_backups.get("totalCount") < learning_restore_backups.get("count"):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups totalCount is below count")
+        latest_backup = learning_restore_backups.get("latestBackup")
+        if learning_restore_backups.get("count") > 0 and latest_backup is None:
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups latestBackup is missing")
+        for index, backup in enumerate(backups):
+            backup = assert_smoke_json_keys(
+                backup,
+                EXPECTED_WORKSPACE_RESTORE_BACKUP_KEYS,
+                label=f"learningRestoreBackups backup {index}",
+                context=context,
+                command_label="workspace JSON",
+            )
+            if not isinstance(backup.get("name"), str) or not backup["name"]:
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups backup name is missing")
+            if not isinstance(backup.get("restorePreviewCommand"), str) or "--restore" not in backup["restorePreviewCommand"]:
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups backup restore preview command is invalid")
+            if not is_lifecycle_json_non_negative_int(backup.get("entryCount")):
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups backup entryCount is invalid")
+            assert_smoke_json_keys(
+                backup.get("auditSummary"),
+                EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS,
+                label=f"learningRestoreBackups backup {index} auditSummary",
+                context=context,
+                command_label="workspace JSON",
+            )
+        if latest_backup is not None:
+            latest_backup = assert_smoke_json_keys(
+                latest_backup,
+                EXPECTED_WORKSPACE_RESTORE_BACKUP_KEYS,
+                label="learningRestoreBackups latestBackup",
+                context=context,
+                command_label="workspace JSON",
+            )
+            if not isinstance(latest_backup.get("name"), str) or not latest_backup["name"]:
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups latest backup name is missing")
+            if not isinstance(latest_backup.get("restorePreviewCommand"), str) or "--restore" not in latest_backup["restorePreviewCommand"]:
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups restore preview command is invalid")
+            if not is_lifecycle_json_non_negative_int(latest_backup.get("entryCount")):
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups latest backup entryCount is invalid")
+            assert_smoke_json_keys(
+                latest_backup.get("auditSummary"),
+                EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS,
+                label="learningRestoreBackups latestBackup auditSummary",
+                context=context,
+                command_label="workspace JSON",
+            )
+        readiness = assert_smoke_json_keys(
+            learning_restore_backups.get("readiness"),
+            EXPECTED_WORKSPACE_RESTORE_BACKUPS_READINESS_KEYS,
+            label="learningRestoreBackups readiness",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if readiness.get("status") not in ("pass", "warn", "unknown", "fail"):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups readiness status is invalid")
+        if not isinstance(readiness.get("reason"), str):
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups readiness reason is not a string")
+        for key in ("keep", "totalCount", "pruneCandidateCount"):
+            if not is_lifecycle_json_non_negative_int(readiness.get(key)):
+                raise SystemExit(f"workspace JSON after {context} learningRestoreBackups readiness {key} is invalid")
+        privacy = assert_smoke_json_keys(
+            learning_restore_backups.get("privacy"),
+            EXPECTED_WORKSPACE_RESTORE_BACKUPS_PRIVACY_KEYS,
+            label="learningRestoreBackups privacy",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if privacy.get("storesRawBriefText") is not False or privacy.get("exposesEntryTextPreview") is not False:
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups privacy flags changed")
+        if privacy.get("mutatesProfile") is not False:
+            raise SystemExit(f"workspace JSON after {context} learningRestoreBackups mutation privacy flag changed")
+
     release = assert_smoke_json_keys(
         payload.get("release"),
         EXPECTED_WORKSPACE_RELEASE_KEYS,
@@ -5115,7 +5249,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.52.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.53.0":
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -8469,7 +8603,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.52.0"', '"plugin": "unknown"'),
+            passing_version_json().replace('"plugin": "4.53.0"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),
@@ -8571,6 +8705,75 @@ def run_self_test() -> None:
         "error": "",
     }
     assert_workspace_json(json.dumps(workspace_usage_payload), context=context, cmd=workspace_cmd)
+    workspace_restore_backups_payload = json.loads(passing_workspace_json())
+    workspace_restore_backups_payload["learningRestoreBackups"] = {
+        "file": "/tmp/learning.json",
+        "directory": "/tmp",
+        "pattern": "learning.restore-backup-*.json",
+        "generatedAt": "2026-05-22T00:06:00.000Z",
+        "limit": 5,
+        "totalCount": 6,
+        "count": 1,
+        "latestBackup": {
+            "file": "/tmp/learning.restore-backup-20260522T000600000Z.json",
+            "name": "learning.restore-backup-20260522T000600000Z.json",
+            "createdAt": "2026-05-22T00:06:00.000Z",
+            "modifiedAt": "2026-05-22T00:06:00.000Z",
+            "sizeBytes": 276,
+            "updatedAt": "2026-05-22T00:06:00.000Z",
+            "entryCount": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "issueCount": 0,
+            "restorePreviewCommand": "design-ai learn --restore --from-file /tmp/learning.restore-backup-20260522T000600000Z.json --file /tmp/learning.json --dry-run",
+        },
+        "backups": [
+            {
+                "file": "/tmp/learning.restore-backup-20260522T000600000Z.json",
+                "name": "learning.restore-backup-20260522T000600000Z.json",
+                "createdAt": "2026-05-22T00:06:00.000Z",
+                "modifiedAt": "2026-05-22T00:06:00.000Z",
+                "sizeBytes": 276,
+                "updatedAt": "2026-05-22T00:06:00.000Z",
+                "entryCount": 1,
+                "auditSummary": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+                "issueCount": 0,
+                "restorePreviewCommand": "design-ai learn --restore --from-file /tmp/learning.restore-backup-20260522T000600000Z.json --file /tmp/learning.json --dry-run",
+            },
+        ],
+        "readiness": {
+            "status": "warn",
+            "reason": "1 older restore rollback backup(s) can be pruned",
+            "keep": 5,
+            "totalCount": 6,
+            "pruneCandidateCount": 1,
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": False,
+            "mutatesProfile": False,
+        },
+        "error": "",
+    }
+    assert_workspace_json(json.dumps(workspace_restore_backups_payload), context=context, cmd=workspace_cmd)
+    invalid_restore_backups_payload = json.loads(json.dumps(workspace_restore_backups_payload))
+    invalid_restore_backups_payload["learningRestoreBackups"]["privacy"]["exposesEntryTextPreview"] = True
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(invalid_restore_backups_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="privacy flags changed",
+        scope="smoke assertions",
+    )
     assert_workspace_strict_failure_json(
         passing_workspace_json(),
         returncode=1,
@@ -8626,6 +8829,7 @@ def run_self_test() -> None:
         "learning": reordered_workspace_payload["learning"],
         "learningUsage": reordered_workspace_payload["learningUsage"],
         "learningEval": reordered_workspace_payload["learningEval"],
+        "learningRestoreBackups": reordered_workspace_payload["learningRestoreBackups"],
         "release": reordered_workspace_payload["release"],
         "nextActions": reordered_workspace_payload["nextActions"],
     }
