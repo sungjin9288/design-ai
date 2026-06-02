@@ -121,6 +121,13 @@ from smoke_assertions import (
     unknown_option_args,
 )
 
+SITE_EVIDENCE_VALUES = {
+    "executedWork": "Implemented pricing CTA cleanup in the target repo",
+    "verificationResults": "npm run lint passed in the target repo",
+    "remainingRisks": "Preview deploy still needs analytics review",
+    "nextActions": "Attach before/after screenshots",
+}
+
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
     return [
@@ -611,6 +618,36 @@ def site_workspace_fixture_json() -> str:
     )
 
 
+def site_workspace_evidence_fixture_json() -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["implementationEvidence"] = {
+        key: [value]
+        for key, value in SITE_EVIDENCE_VALUES.items()
+    }
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def assert_site_evidence_payload(payload: object, *, context: str, label: str) -> None:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"{label} after {context} did not emit an object payload")
+    evidence = payload.get("implementationEvidence")
+    if not isinstance(evidence, dict):
+        raise SystemExit(f"{label} after {context} did not preserve implementationEvidence")
+    for key, expected in SITE_EVIDENCE_VALUES.items():
+        if evidence.get(key) != [expected]:
+            raise SystemExit(f"{label} after {context} evidence field {key} changed: {evidence.get(key)!r}")
+
+
+def assert_site_evidence_markdown(raw: str, *, context: str, cmd: list[str], label: str) -> None:
+    assert_no_ansi(raw, cmd)
+    stripped = raw.lstrip()
+    if stripped.startswith("{") or stripped.startswith("["):
+        raise SystemExit(f"{label} after {context} looks like JSON output")
+    for fragment in SITE_EVIDENCE_VALUES.values():
+        if fragment not in raw:
+            raise SystemExit(f"{label} after {context} missing evidence fragment: {fragment!r}")
+
+
 def assert_site_json_smoke(
     cmd: list[str],
     *,
@@ -652,6 +689,43 @@ def assert_site_tasks_json_smoke(
         env=env,
     )
     assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_report_evidence_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_evidence_markdown(result.stdout, context=context, cmd=cmd, label="site report evidence markdown")
+
+
+def assert_site_tasks_evidence_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+    assert_site_evidence_payload(
+        json.loads(result.stdout),
+        context=context,
+        label="site tasks evidence JSON",
+    )
 
 
 def assert_site_prompt_markdown_smoke(
@@ -831,6 +905,52 @@ def assert_site_bundle_smoke(
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
     if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+
+
+def assert_site_bundle_evidence_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    summary_path = out_dir / "summary.json"
+    tasks_path = out_dir / "website-workspace.tasks.json"
+    handoff_path = out_dir / "website-handoff.md"
+    readme_path = out_dir / "README.md"
+    for target in (summary_path, tasks_path, handoff_path, readme_path):
+        if not target.is_file():
+            raise SystemExit(f"site evidence bundle after {context} missing {target}")
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    evidence_counts = summary.get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site evidence bundle after {context} did not report implementationEvidence counts")
+    for key in SITE_EVIDENCE_VALUES:
+        if evidence_counts.get(key) != 1:
+            raise SystemExit(f"site evidence bundle after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
+
+    tasks = json.loads(tasks_path.read_text(encoding="utf-8"))
+    assert_site_evidence_payload(tasks, context=context, label="site evidence bundle workspace JSON")
+    assert_site_evidence_markdown(
+        handoff_path.read_text(encoding="utf-8"),
+        context=context,
+        cmd=cmd,
+        label="site evidence bundle handoff markdown",
+    )
+    readme = readme_path.read_text(encoding="utf-8")
+    if "- Evidence entries: 2" not in readme:
+        raise SystemExit(f"site evidence bundle after {context} README evidence count changed")
 
 
 def assert_site_bundle_check_json_smoke(
@@ -6042,6 +6162,42 @@ def run_self_test() -> None:
         scope="package smoke",
     )
 
+    site_evidence_cmd = ["design-ai", "site", "--stdin", "--report"]
+    site_evidence_payload = {
+        "implementationEvidence": {
+            key: [value]
+            for key, value in SITE_EVIDENCE_VALUES.items()
+        }
+    }
+    assert_site_evidence_payload(site_evidence_payload, context=context, label="site evidence self-test")
+    assert_site_evidence_markdown(
+        "\n".join(SITE_EVIDENCE_VALUES.values()),
+        context=context,
+        cmd=site_evidence_cmd,
+        label="site evidence self-test markdown",
+    )
+    stale_site_evidence_payload = json.loads(json.dumps(site_evidence_payload))
+    stale_site_evidence_payload["implementationEvidence"]["remainingRisks"] = []
+    expect_self_test_failure(
+        lambda: assert_site_evidence_payload(
+            stale_site_evidence_payload,
+            context=context,
+            label="site evidence self-test",
+        ),
+        expected="evidence field remainingRisks changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_evidence_markdown(
+            SITE_EVIDENCE_VALUES["executedWork"],
+            context=context,
+            cmd=site_evidence_cmd,
+            label="site evidence self-test markdown",
+        ),
+        expected="missing evidence fragment",
+        scope="package smoke",
+    )
+
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
         report_path = Path(tmp) / "doctor.json"
         report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
@@ -8798,6 +8954,18 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site workflow graph JSON",
         )
+        assert_site_report_evidence_markdown_smoke(
+            [str(bin_path), "site", "--stdin", "--report"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence report markdown",
+        )
+        assert_site_tasks_evidence_json_smoke(
+            [str(bin_path), "site", "--stdin", "--tasks"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence tasks JSON",
+        )
         installed_site_bundle_dir = install_root / "installed-site-handoff-bundle"
         assert_site_bundle_smoke(
             [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_bundle_dir)],
@@ -8805,6 +8973,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site handoff bundle",
+        )
+        installed_site_evidence_bundle_dir = install_root / "installed-site-evidence-handoff-bundle"
+        assert_site_bundle_evidence_smoke(
+            [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_evidence_bundle_dir)],
+            out_dir=installed_site_evidence_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence handoff bundle",
         )
         assert_site_bundle_check_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-check", "--strict", "--json"],
@@ -9608,6 +9784,18 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site workflow graph JSON",
         )
+        assert_site_report_evidence_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--report"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence report markdown",
+        )
+        assert_site_tasks_evidence_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence tasks JSON",
+        )
         npx_site_bundle_dir = npx_root / "npx-site-handoff-bundle"
         assert_site_bundle_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_bundle_dir)),
@@ -9615,6 +9803,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site handoff bundle",
+        )
+        npx_site_evidence_bundle_dir = npx_root / "npx-site-evidence-handoff-bundle"
+        assert_site_bundle_evidence_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_evidence_bundle_dir)),
+            out_dir=npx_site_evidence_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence handoff bundle",
         )
         assert_site_bundle_check_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-check", "--strict", "--json"),

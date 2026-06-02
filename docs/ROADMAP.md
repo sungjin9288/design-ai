@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 280 — Website Console Evidence Package Smoke Expansion (unreleased)
+
+Packed-tarball smoke now verifies that non-empty Website Console handoff evidence survives the release distribution paths. This protects the Phase 278/279 evidence workflow after packaging, install shims, and one-shot `npm exec --package <tarball>` execution.
+
+### Changed
+- Added a non-empty `implementationEvidence` smoke fixture for executed work, verification results, remaining risks, and next actions.
+- Added installed-bin smoke coverage for `design-ai site --stdin --report`, `design-ai site --stdin --tasks`, and `design-ai site --stdin --bundle --out <dir>` using the evidence fixture.
+- Added one-shot `npm exec --package <tarball>` smoke coverage for the same report, tasks, and bundle evidence preservation paths.
+- Added package smoke self-test drift fixtures for evidence payload and Markdown fragment assertions.
+
+### Impact
+- Website Improvement evidence capture is now protected across browser export, CLI report generation, generated task workspaces, handoff bundles, local package install shims, and one-shot tarball execution.
+- The smoke remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims, crawl pages, or add dependencies.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `npm run package:smoke`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:metadata`.
+- `python3 -B tools/audit/local-ci.py --docs-only`.
+- `npm run release:self-test`.
+- `git diff --check`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 279 — Website Console CLI Handoff Evidence Export (unreleased)
 
 `design-ai site` now preserves Website Console handoff evidence when operators move from the browser workspace to file-first CLI reports and bundles. Evidence recorded in the static app can now survive `--tasks`, appear in `--report`, and be archived in `--bundle` artifacts.
@@ -23,7 +51,7 @@
 - `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`.
 
 ### What's still ahead
-- Real MCP connection checks, Playwright/Lighthouse/axe automation, evidence-specific package smoke expansion, and VS Code Webview reuse remain future Website Console automation work.
+- Evidence-specific package smoke expansion is covered in Phase 280. Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
 
 ## Phase 278 — Website Console Handoff Evidence Tracking (unreleased)
 
@@ -45,7 +73,7 @@ The static Website Improvement Console now lets operators record target-repo imp
 - Browser smoke confirmed Handoff Report evidence inputs, live Markdown preview, JSON import restore, mobile overflow safety, and zero console errors.
 
 ### What's still ahead
-- CLI evidence export is covered in Phase 279. Real MCP connection checks, Playwright/Lighthouse/axe automation, evidence-specific package smoke expansion, and VS Code Webview reuse remain future Website Console automation work.
+- CLI evidence export is covered in Phase 279, and packed-tarball evidence smoke coverage is covered in Phase 280. Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
 
 ## Phase 277 — Website Console Workflow Graph Rendering (unreleased)
 

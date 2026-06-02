@@ -164,6 +164,18 @@ Implemented `implementationEvidence` support in `design-ai site` so browser-capt
 
 The CLI validates malformed evidence array shapes, but it does not verify target-repo claims automatically. Evidence remains operator-entered, deterministic, local, and dependency-free.
 
+### Phase 280: evidence package smoke expansion
+
+Expanded packed-tarball smoke coverage for Website Console evidence preservation:
+
+- installed-bin `design-ai site --stdin --report` preserves non-empty handoff evidence in Markdown
+- installed-bin `design-ai site --stdin --tasks` preserves the `implementationEvidence` JSON block
+- installed-bin `design-ai site --stdin --bundle --out <dir>` preserves evidence in `summary.json`, `website-workspace.tasks.json`, and `website-handoff.md`
+- one-shot `npm exec --package <tarball>` covers the same report, tasks, and bundle paths
+- `package-smoke.py --self-test` now includes evidence payload and Markdown drift fixtures
+
+This turns the Website Console evidence loop into a release-smoked distribution contract without adding dependencies, calling external MCPs, mutating target repos, or claiming that target-repo evidence is automatically verified.
+
 ## Current MVP boundary
 
 In scope:
