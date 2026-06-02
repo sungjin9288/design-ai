@@ -3036,6 +3036,179 @@ def assert_learning_diff_smoke(
     )
 
 
+def assert_learning_restore_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    source: str,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn restore JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn restore source changed")
+    require_package_smoke(
+        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore dry-run/apply flags changed",
+    )
+    require_package_smoke(payload.get("restorable") is True, context=context, cmd=cmd, message="learn restore should be restorable")
+    require_package_smoke(payload.get("previousCount") == 1, context=context, cmd=cmd, message="learn restore previous count changed")
+    require_package_smoke(payload.get("restoredCount") == 3, context=context, cmd=cmd, message="learn restore restored count changed")
+    require_package_smoke(payload.get("removedCount") == 0, context=context, cmd=cmd, message="learn restore removed count changed")
+    require_package_smoke(payload.get("addedCount") == 2, context=context, cmd=cmd, message="learn restore added count changed")
+    require_package_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn restore metadata change count changed")
+    require_package_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn restore id conflict count changed")
+    require_package_smoke(
+        payload.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
+        context=context,
+        cmd=cmd,
+        message="learn restore audit summary changed",
+    )
+
+    diff = payload.get("diff")
+    require_package_smoke(
+        isinstance(diff, dict)
+        and diff.get("comparisonOnlyCount") == 2
+        and diff.get("metadataChangedCount") == 1
+        and diff.get("idConflictCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn restore diff summary changed",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict) and privacy.get("mutatesProfile") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore privacy mutation flag changed",
+    )
+
+
+def assert_learning_restore_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    restore_file = profile_path.with_name(f"{profile_path.stem}-restore.json")
+    restore_file.write_text(f"{learning_diff_payload_text()}\n", encoding="utf-8")
+
+    dry_run_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--from-file",
+        str(restore_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    dry_run_result = run_plain(dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_restore_json(
+        dry_run_result.stdout,
+        profile_path=profile_path,
+        source=str(restore_file),
+        dry_run=True,
+        context=f"{context} from-file dry-run",
+        cmd=dry_run_cmd,
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(dry_run_profile.get("entries", [])) == 1,
+        context=f"{context} dry-run profile unchanged",
+        cmd=dry_run_cmd,
+        message="learn restore dry-run should leave target profile unchanged",
+    )
+
+    out_path = profile_path.with_name(f"{profile_path.stem}-restore-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--from-file",
+        str(restore_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_restore_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        source=str(restore_file),
+        dry_run=True,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+    out_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(out_profile.get("entries", [])) == 1,
+        context=f"{context} out profile unchanged",
+        cmd=out_cmd,
+        message="learn restore --out dry-run should leave target profile unchanged",
+    )
+
+    apply_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--stdin",
+        "--yes",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    apply_result = run_plain_with_input(
+        apply_cmd,
+        input_text=learning_diff_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_restore_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        source="stdin",
+        dry_run=False,
+        context=f"{context} stdin apply",
+        cmd=apply_cmd,
+    )
+    applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    applied_ids = {entry.get("id") for entry in applied_profile.get("entries", [])}
+    require_package_smoke(
+        len(applied_profile.get("entries", [])) == 3
+        and applied_ids == {"learn-existing-restored", "learn-new", "learn-existing"},
+        context=f"{context} apply profile",
+        cmd=apply_cmd,
+        message="learn restore apply should replace target profile with restore source",
+    )
+
+
 def assert_learning_audit_cleanup_smoke(
     command_factory,
     profile_path: Path,
@@ -5663,6 +5836,96 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        learning_restore_path = Path(tmp) / "learning-restore.json"
+        learning_restore_payload = {
+            "file": str(learning_profile_path),
+            "source": str(learning_restore_path),
+            "generatedAt": "2026-05-22T00:01:00.000Z",
+            "dryRun": True,
+            "applied": False,
+            "restorable": True,
+            "profileExists": True,
+            "previousUpdatedAt": "2026-05-22T00:00:00.000Z",
+            "restoredUpdatedAt": "2026-05-22T00:00:03.000Z",
+            "previousCount": 1,
+            "restoredCount": 3,
+            "removedCount": 0,
+            "addedCount": 2,
+            "sameTextCount": 1,
+            "metadataChangedCount": 1,
+            "idConflictCount": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "issues": [],
+            "diff": {
+                "profileOnlyCount": 0,
+                "comparisonOnlyCount": 2,
+                "metadataChangedCount": 1,
+                "idConflictCount": 1,
+                "profileOnly": [],
+                "comparisonOnly": learning_diff_payload["comparisonOnly"],
+                "metadataChanged": learning_diff_payload["metadataChanged"],
+                "idConflicts": learning_diff_payload["idConflicts"],
+            },
+            "privacy": {
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+                "mutatesProfile": False,
+            },
+        }
+        learn_restore_cmd = [
+            "design-ai",
+            "learn",
+            "--restore",
+            "--from-file",
+            str(learning_restore_path),
+            "--dry-run",
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        assert_learning_restore_json(
+            json.dumps(learning_restore_payload),
+            profile_path=learning_profile_path,
+            source=str(learning_restore_path),
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_json(
+                json.dumps({**learning_restore_payload, "restoredCount": 2}),
+                profile_path=learning_profile_path,
+                source=str(learning_restore_path),
+                dry_run=True,
+                context=context,
+                cmd=learn_restore_cmd,
+            ),
+            expected="learn restore restored count changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_json(
+                json.dumps({
+                    **learning_restore_payload,
+                    "privacy": {
+                        **learning_restore_payload["privacy"],
+                        "mutatesProfile": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                source=str(learning_restore_path),
+                dry_run=True,
+                context=context,
+                cmd=learn_restore_cmd,
+            ),
+            expected="learn restore privacy mutation flag changed",
+            scope="package smoke",
+        )
+
         learning_stats_payload = {
             "file": str(learning_profile_path),
             "exists": True,
@@ -7639,6 +7902,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn diff",
         )
+        assert_learning_restore_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-restore-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn restore",
+        )
         assert_learning_stats_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-stats-learning.json",
@@ -8434,6 +8703,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn diff",
+        )
+        assert_learning_restore_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-restore-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn restore",
         )
         assert_learning_stats_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),
