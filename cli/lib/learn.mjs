@@ -3,7 +3,9 @@
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { createHash } from "node:crypto";
@@ -37,6 +39,7 @@ const LEARN_OPTIONS = [
   "--verify",
   "--diff",
   "--restore",
+  "--restore-backups",
   "--redact",
   "--audit",
   "--stats",
@@ -153,6 +156,27 @@ export function defaultLearningRestoreBackupFile(filePath = defaultLearningFile(
   return path.join(parsed.dir, `${parsed.name}.restore-backup-${timestamp}${ext}`);
 }
 
+function learningRestoreBackupPattern(filePath = defaultLearningFile()) {
+  const resolvedFile = path.resolve(filePath);
+  const parsed = path.parse(resolvedFile);
+  const ext = parsed.ext || ".json";
+  return {
+    directory: parsed.dir,
+    prefix: `${parsed.name}.restore-backup-`,
+    ext,
+    glob: `${parsed.name}.restore-backup-*${ext}`,
+  };
+}
+
+function parseRestoreBackupCreatedAt(fileName, { prefix, ext }) {
+  if (!fileName.startsWith(prefix) || !fileName.endsWith(ext)) return "";
+  const timestamp = fileName.slice(prefix.length, fileName.length - ext.length);
+  const match = timestamp.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(\d{3})Z$/);
+  if (!match) return "";
+  const [, year, month, day, hour, minute, second, millisecond] = match;
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}Z`;
+}
+
 function setAction(out, action) {
   if (out.action && out.action !== action) {
     throw new Error(`Choose only one learning action: --${out.action} or --${action}`);
@@ -240,6 +264,8 @@ export function parseLearnArgs(args) {
       setAction(out, "diff");
     } else if (arg === "--restore") {
       setAction(out, "restore");
+    } else if (arg === "--restore-backups") {
+      setAction(out, "restore-backups");
     } else if (arg === "--redact") {
       setAction(out, "redact");
     } else if (arg === "--audit") {
@@ -1164,6 +1190,113 @@ export function verifyLearningImportPayload({
     auditSummary: audit.summary,
     issues: audit.issues,
     entries: importedEntries.map(statsEntry),
+  };
+}
+
+function invalidLearningBackupAudit(filePath, message) {
+  return {
+    file: filePath,
+    exists: true,
+    version: null,
+    updatedAt: "",
+    count: 0,
+    categoryCounts: {},
+    issues: [
+      learningAuditIssue({
+        level: "failure",
+        code: "invalid-json",
+        message,
+      }),
+    ],
+    summary: {
+      status: "fail",
+      failures: 1,
+      warnings: 0,
+    },
+    suggestions: [],
+  };
+}
+
+function inspectRestoreBackupFile(filePath, fileName, pattern, activeFile) {
+  const stat = statSync(filePath);
+  const createdAt = parseRestoreBackupCreatedAt(fileName, pattern);
+  let rawProfile = null;
+  let audit = null;
+
+  try {
+    rawProfile = JSON.parse(readFileSync(filePath, "utf8"));
+    audit = auditLearningProfileObject(rawProfile, {
+      filePath,
+      exists: true,
+    });
+  } catch (error) {
+    audit = invalidLearningBackupAudit(filePath, "Rollback backup is not valid JSON.");
+  }
+
+  return {
+    file: filePath,
+    name: fileName,
+    createdAt,
+    modifiedAt: stat.mtime.toISOString(),
+    sizeBytes: stat.size,
+    updatedAt: audit.updatedAt || "",
+    entryCount: audit.count || 0,
+    auditSummary: audit.summary,
+    issueCount: audit.issues.length,
+    restorePreviewCommand: commandFromArgs([
+      "design-ai",
+      "learn",
+      "--restore",
+      "--from-file",
+      filePath,
+      "--file",
+      activeFile,
+      "--dry-run",
+    ]),
+  };
+}
+
+export function listLearningRestoreBackups({
+  filePath = defaultLearningFile(),
+  limit = 10,
+  now = new Date(),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const pattern = learningRestoreBackupPattern(resolvedFile);
+  const directoryExists = existsSync(pattern.directory);
+  const files = directoryExists
+    ? readdirSync(pattern.directory)
+      .filter((fileName) => fileName.startsWith(pattern.prefix) && fileName.endsWith(pattern.ext))
+      .map((fileName) => ({
+        fileName,
+        filePath: path.join(pattern.directory, fileName),
+      }))
+      .filter(({ filePath: backupPath }) => statSync(backupPath).isFile())
+    : [];
+
+  const backups = files
+    .map(({ fileName, filePath: backupPath }) => inspectRestoreBackupFile(backupPath, fileName, pattern, resolvedFile))
+    .sort((a, b) => {
+      const aKey = a.createdAt || a.modifiedAt || a.name;
+      const bKey = b.createdAt || b.modifiedAt || b.name;
+      return bKey.localeCompare(aKey);
+    });
+  const limitedBackups = backups.slice(0, limit || 10);
+
+  return {
+    file: resolvedFile,
+    directory: pattern.directory,
+    pattern: pattern.glob,
+    generatedAt: now.toISOString(),
+    limit: limit || 10,
+    totalCount: backups.length,
+    count: limitedBackups.length,
+    backups: limitedBackups,
+    privacy: {
+      storesRawBriefText: false,
+      exposesEntryTextPreview: false,
+      mutatesProfile: false,
+    },
   };
 }
 

@@ -2,6 +2,36 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.50.0 — Learning Restore Backup Inventory (2026-06)
+
+Added a read-only rollback backup inventory for learning profile restores. `design-ai learn --restore-backups` now lists sibling `learning.restore-backup-*.json` files, audits each candidate, and prints a restore dry-run preview command for each backup.
+
+### Added
+- `design-ai learn --restore-backups [--limit N] [--json] [--out file]` for local restore rollback backup discovery.
+- Human output with active profile path, backup directory, search pattern, backup count, audit status, entry count, timestamps, and restore preview commands.
+- JSON output with `file`, `directory`, `pattern`, `totalCount`, `count`, `backups`, and privacy metadata.
+- Unit coverage for parser handling, sibling backup scanning, invalid backup JSON visibility, command human output, command JSON output, and help text.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` restore-backups human, JSON, and `--out` paths.
+- Release metadata guard coverage for the `design-ai learn --restore-backups` smoke phrase.
+
+### Preserved
+- `learn --restore-backups` is read-only and never mutates the active profile or rollback files.
+- The learning profile schema remains unchanged at version 1.
+- Restore apply still requires `--yes`; inventory output only prints dry-run preview commands.
+
+### What this enables
+- Operators can find and audit automatic restore rollback backups after a confirmed restore before deciding whether to preview or apply a rollback.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.49.0 → 4.50.0.
+
 ## v4.49.0 — Learning Restore Rollback Backup (2026-06)
 
 Added an automatic rollback backup for confirmed learning profile restores. `design-ai learn --restore --yes` now saves the current active profile before replacing it, so operators can preview and apply a rollback with the same restore flow if the replacement is not desired.

@@ -22,6 +22,7 @@ import {
   learningEvalReport,
   learningStats,
   learningUsageStats,
+  listLearningRestoreBackups,
   loadLearningProfile,
   parseLearnArgs,
   recordLearningFeedback,
@@ -54,6 +55,7 @@ function printHelp() {
   console.log("        cat learning.json | design-ai learn --diff --stdin [--json] [--out file] [--force]");
   console.log("        design-ai learn --restore --from-file learning-backup.json [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
   console.log("        cat learning-backup.json | design-ai learn --restore --stdin [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --restore-backups [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
@@ -87,6 +89,7 @@ function printHelp() {
   console.log("  --verify             Validate a portable learning JSON payload without importing it");
   console.log("  --diff               Compare the active profile against a portable learning JSON payload without importing it");
   console.log("  --restore            Preview or apply replacing the active profile with a portable learning JSON payload");
+  console.log("  --restore-backups    List sibling restore rollback backups for the active learning profile");
   console.log("  --backup-file path   With --restore, override the automatic rollback backup file path");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
@@ -129,6 +132,7 @@ function printHelp() {
   console.log("  design-ai learn --diff --from-file learning-backup.json --json");
   console.log("  design-ai learn --restore --from-file learning-backup.json --dry-run");
   console.log("  design-ai learn --restore --from-file learning-backup.json --yes --backup-file learning-before-restore.json");
+  console.log("  design-ai learn --restore-backups --json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -644,6 +648,36 @@ function printRestore(payload) {
   }
 }
 
+function printRestoreBackups(payload) {
+  header("design-ai learn", "Learning restore rollback backups");
+  info(`File: ${payload.file}`);
+  info(`Directory: ${payload.directory}`);
+  info(`Pattern: ${payload.pattern}`);
+  info(`Backups: ${payload.count}/${payload.totalCount}`);
+  info(`Limit: ${payload.limit}`);
+  console.log();
+
+  if (payload.backups.length === 0) {
+    console.log("No restore rollback backups found for this learning profile.");
+    console.log("Confirmed `design-ai learn --restore --yes` runs create sibling rollback backups automatically.");
+    return;
+  }
+
+  for (let i = 0; i < payload.backups.length; i += 1) {
+    const backup = payload.backups[i];
+    console.log(`${i + 1}. ${backup.name}`);
+    console.log(`   ${dim(`created ${backup.createdAt || "unknown"} · modified ${backup.modifiedAt} · ${backup.sizeBytes} bytes`)}`);
+    console.log(`   ${dim(`entries ${backup.entryCount} · updatedAt ${backup.updatedAt || "unknown"} · audit ${backup.auditSummary.status} (${backup.auditSummary.failures} failure(s), ${backup.auditSummary.warnings} warning(s))`)}`);
+    if (backup.issueCount > 0) {
+      console.log(`   ${dim(`issues ${backup.issueCount}`)}`);
+    }
+    console.log(`   Preview: ${backup.restorePreviewCommand}`);
+  }
+
+  console.log();
+  console.log("No changes made. Run the preview command first, then add `--yes` only after reviewing the restore diff.");
+}
+
 function printEval(payload) {
   header("design-ai learn", "Local learning eval report");
   info(`File: ${payload.file}`);
@@ -1011,6 +1045,20 @@ export async function runLearn(args) {
     }
 
     printRestore(payload);
+    return;
+  }
+
+  if (parsed.action === "restore-backups") {
+    const payload = listLearningRestoreBackups({
+      filePath: parsed.filePath,
+      limit: parsed.limit || 10,
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+
+    printRestoreBackups(payload);
     return;
   }
 
