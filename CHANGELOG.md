@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.52.0 — Public Registry Learning Restore Smoke (2026-06)
+
+Extended post-publish registry smoke coverage for the learning restore workflow. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for preview/apply restore behavior, explicit rollback backup paths, restore-backups inventory, and restore-backups prune preview/apply cleanup.
+
+### Added
+- Public registry smoke coverage for `design-ai learn --restore` preview/apply JSON output.
+- Public registry smoke coverage for `learn restore --out` file-write confirmation, rollback backup verification, and `--backup-file` path handling.
+- Public registry smoke coverage for `design-ai learn --restore-backups` rollback backup inventory and `design-ai learn --restore-backups --prune` rollback backup pruning.
+- Registry smoke self-test fixtures for restore metadata, backup inventory drift, and prune candidate drift.
+- Release metadata guard phrases for public registry restore, restore-backups, and restore-backups prune coverage.
+
+### Changed
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Roadmap, and Session Log coverage for v4.52.
+- Updated package/plugin metadata to `4.52.0`.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.51.0 → 4.52.0.
+
+### What this enables
+- Post-publish verification now covers the same learning restore rollback and pruning safety path that packed-tarball smoke already checks before release.
+
 ## v4.51.0 — Learning Restore Backup Prune (2026-06)
 
 Added preview-first rollback backup pruning for local learning restores. `design-ai learn --restore-backups --prune` now shows which older sibling rollback backup files would be deleted, and `--yes` deletes only those older backup files while leaving the active learning profile unchanged.

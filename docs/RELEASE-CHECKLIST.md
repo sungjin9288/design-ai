@@ -58,6 +58,8 @@ It also protects public registry JSON `design-ai learn --feedback` output plus p
 
 It also protects public registry JSON `design-ai learn --verify` output plus public registry learn verify `--out` file-write confirmation in release-facing docs.
 
+It also protects public registry JSON `design-ai learn --restore` preview/apply output plus public registry learn restore `--out` file-write confirmation, public registry learn restore rollback backup verification, public registry learn restore `--backup-file` path coverage, public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage, and public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage in release-facing docs.
+
 ### 3. CHANGELOG
 
 ```bash

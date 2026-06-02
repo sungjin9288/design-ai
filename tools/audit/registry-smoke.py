@@ -526,6 +526,40 @@ def learning_import_payload_text() -> str:
     )
 
 
+def learning_restore_payload_text() -> str:
+    return json.dumps(
+        {
+            "file": "/portable/registry-learning-restore.json",
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:03.000Z",
+            "entries": [
+                {
+                    "id": "registry-restore-existing-restored",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+                {
+                    "id": "registry-restore-new",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                },
+                {
+                    "id": "registry-import-existing",
+                    "category": "workflow",
+                    "text": "Use a release checklist before handoff",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:03.000Z",
+                },
+            ],
+        },
+        indent=2,
+    )
+
+
 def assert_learning_feedback_json(
     raw: str,
     *,
@@ -1238,6 +1272,431 @@ def assert_learning_backup_smoke(
         profile_path=profile_path,
         context=f"{context} out file",
         cmd=out_cmd,
+    )
+
+
+def assert_learning_restore_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    source: str,
+    dry_run: bool,
+    backup_path: Path | None = None,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore JSON") from error
+
+    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore JSON must be an object")
+    require_registry_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn restore JSON file path differs from the registry smoke profile",
+    )
+    require_registry_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn restore source changed")
+    require_registry_smoke(
+        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore dry-run/apply flags changed",
+    )
+    require_registry_smoke(payload.get("restorable") is True, context=context, cmd=cmd, message="learn restore should be restorable")
+    backup_file = payload.get("backupFile")
+    require_registry_smoke(isinstance(backup_file, str) and backup_file, context=context, cmd=cmd, message="learn restore backup file is missing")
+    if backup_path is not None:
+        require_registry_smoke(backup_file == str(backup_path), context=context, cmd=cmd, message="learn restore backup file path changed")
+    else:
+        require_registry_smoke(
+            f"{profile_path.stem}.restore-backup-" in backup_file,
+            context=context,
+            cmd=cmd,
+            message="learn restore default backup file naming changed",
+        )
+    require_registry_smoke(
+        payload.get("backupCreated") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore backup created flag changed",
+    )
+    require_registry_smoke(payload.get("backupEntryCount") == 1, context=context, cmd=cmd, message="learn restore backup entry count changed")
+    rollback_command = payload.get("rollbackCommand")
+    require_registry_smoke(
+        isinstance(rollback_command, str)
+        and "design-ai learn --restore --from-file" in rollback_command
+        and str(profile_path) in rollback_command,
+        context=context,
+        cmd=cmd,
+        message="learn restore rollback command changed",
+    )
+    require_registry_smoke(payload.get("previousCount") == 1, context=context, cmd=cmd, message="learn restore previous count changed")
+    require_registry_smoke(payload.get("restoredCount") == 3, context=context, cmd=cmd, message="learn restore restored count changed")
+    require_registry_smoke(payload.get("removedCount") == 0, context=context, cmd=cmd, message="learn restore removed count changed")
+    require_registry_smoke(payload.get("addedCount") == 2, context=context, cmd=cmd, message="learn restore added count changed")
+    require_registry_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn restore metadata change count changed")
+    require_registry_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn restore id conflict count changed")
+    require_registry_smoke(
+        payload.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
+        context=context,
+        cmd=cmd,
+        message="learn restore audit summary changed",
+    )
+
+    diff = payload.get("diff")
+    require_registry_smoke(
+        isinstance(diff, dict)
+        and diff.get("comparisonOnlyCount") == 2
+        and diff.get("metadataChangedCount") == 1
+        and diff.get("idConflictCount") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn restore diff summary changed",
+    )
+    privacy = payload.get("privacy")
+    require_registry_smoke(
+        isinstance(privacy, dict) and privacy.get("mutatesProfile") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore privacy mutation flag changed",
+    )
+
+
+def assert_learning_restore_backups_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    backup_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore-backups JSON") from error
+
+    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups JSON must be an object")
+    require_registry_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups file path changed")
+    require_registry_smoke(
+        payload.get("directory") == str(profile_path.parent)
+        and payload.get("pattern") == f"{profile_path.stem}.restore-backup-*.json",
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups search pattern changed",
+    )
+    require_registry_smoke(payload.get("totalCount", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups should find rollback backups")
+    require_registry_smoke(payload.get("count", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups limited count changed")
+    backups = payload.get("backups")
+    require_registry_smoke(isinstance(backups, list) and backups, context=context, cmd=cmd, message="learn restore-backups backups array missing")
+    first = backups[0]
+    require_registry_smoke(first.get("file") == str(backup_path), context=context, cmd=cmd, message="learn restore-backups latest file changed")
+    require_registry_smoke(first.get("entryCount") == 1, context=context, cmd=cmd, message="learn restore-backups entry count changed")
+    require_registry_smoke(
+        first.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups audit summary changed",
+    )
+    restore_preview_command = first.get("restorePreviewCommand")
+    require_registry_smoke(
+        isinstance(restore_preview_command, str)
+        and "design-ai learn --restore --from-file" in restore_preview_command
+        and str(backup_path) in restore_preview_command
+        and str(profile_path) in restore_preview_command,
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups preview command changed",
+    )
+    privacy = payload.get("privacy")
+    require_registry_smoke(
+        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups privacy mutation flag changed",
+    )
+
+
+def assert_learning_restore_backups_prune_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    deleted_path: Path,
+    dry_run: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore-backups prune JSON") from error
+
+    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups prune JSON must be an object")
+    require_registry_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups prune file path changed")
+    prune = payload.get("prune")
+    require_registry_smoke(isinstance(prune, dict), context=context, cmd=cmd, message="learn restore-backups prune payload missing")
+    require_registry_smoke(prune.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn restore-backups prune dryRun changed")
+    require_registry_smoke(prune.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn restore-backups prune applied flag changed")
+    require_registry_smoke(prune.get("keep") == 1, context=context, cmd=cmd, message="learn restore-backups prune keep count changed")
+    require_registry_smoke(prune.get("candidateCount") == 1, context=context, cmd=cmd, message="learn restore-backups prune candidate count changed")
+    expected_deleted_count = 0 if dry_run else 1
+    require_registry_smoke(prune.get("deletedCount") == expected_deleted_count, context=context, cmd=cmd, message="learn restore-backups prune deleted count changed")
+    candidates = prune.get("candidates")
+    require_registry_smoke(isinstance(candidates, list) and candidates, context=context, cmd=cmd, message="learn restore-backups prune candidates missing")
+    require_registry_smoke(candidates[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune candidate file changed")
+    if not dry_run:
+        deleted = prune.get("deleted")
+        require_registry_smoke(isinstance(deleted, list) and deleted, context=context, cmd=cmd, message="learn restore-backups prune deleted list missing")
+        require_registry_smoke(deleted[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune deleted file changed")
+    privacy = payload.get("privacy")
+    require_registry_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("deletesBackupFiles") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups prune privacy flags changed",
+    )
+
+
+def assert_learning_restore_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    restore_file = profile_path.with_name(f"{profile_path.stem}-restore.json")
+    restore_file.write_text(f"{learning_restore_payload_text()}\n", encoding="utf-8")
+
+    dry_run_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--from-file",
+        str(restore_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    dry_run_result = run_plain(dry_run_cmd, cwd=cwd, env=env)
+    assert_learning_restore_json(
+        dry_run_result.stdout,
+        profile_path=profile_path,
+        source=str(restore_file),
+        dry_run=True,
+        context=f"{context} from-file dry-run",
+        cmd=dry_run_cmd,
+    )
+    dry_run_payload = json.loads(dry_run_result.stdout)
+    require_registry_smoke(
+        not Path(dry_run_payload["backupFile"]).exists(),
+        context=f"{context} dry-run rollback backup",
+        cmd=dry_run_cmd,
+        message="learn restore dry-run should not create rollback backup file",
+    )
+    dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(dry_run_profile.get("entries", [])) == 1,
+        context=f"{context} dry-run profile unchanged",
+        cmd=dry_run_cmd,
+        message="learn restore dry-run should leave target profile unchanged",
+    )
+
+    out_path = profile_path.with_name(f"{profile_path.stem}-restore-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--from-file",
+        str(restore_file),
+        "--dry-run",
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_restore_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        source=str(restore_file),
+        dry_run=True,
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+    out_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_registry_smoke(
+        len(out_profile.get("entries", [])) == 1,
+        context=f"{context} out profile unchanged",
+        cmd=out_cmd,
+        message="learn restore --out dry-run should leave target profile unchanged",
+    )
+
+    backup_path = profile_path.with_name(f"{profile_path.stem}-rollback.json")
+    apply_cmd = command_factory(
+        "learn",
+        "--restore",
+        "--stdin",
+        "--yes",
+        "--file",
+        str(profile_path),
+        "--backup-file",
+        str(backup_path),
+        "--json",
+    )
+    apply_result = run_plain_with_input(
+        apply_cmd,
+        input_text=learning_restore_payload_text(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_learning_restore_json(
+        apply_result.stdout,
+        profile_path=profile_path,
+        source="stdin",
+        dry_run=False,
+        backup_path=backup_path,
+        context=f"{context} stdin apply",
+        cmd=apply_cmd,
+    )
+    backup_profile = json.loads(backup_path.read_text(encoding="utf-8"))
+    backup_ids = {entry.get("id") for entry in backup_profile.get("entries", [])}
+    require_registry_smoke(
+        backup_ids == {"registry-import-existing"},
+        context=f"{context} rollback backup profile",
+        cmd=apply_cmd,
+        message="learn restore apply should save the previous active profile as rollback backup",
+    )
+    applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    applied_ids = {entry.get("id") for entry in applied_profile.get("entries", [])}
+    require_registry_smoke(
+        len(applied_profile.get("entries", [])) == 3
+        and applied_ids == {"registry-restore-existing-restored", "registry-restore-new", "registry-import-existing"},
+        context=f"{context} apply profile",
+        cmd=apply_cmd,
+        message="learn restore apply should replace target profile with restore source",
+    )
+
+    restore_inventory_path = profile_path.with_name(f"{profile_path.stem}.restore-backup-20260522T000500000Z.json")
+    older_restore_inventory_path = profile_path.with_name(f"{profile_path.stem}.restore-backup-20260522T000400000Z.json")
+    restore_inventory_path.write_text(json.dumps(backup_profile, indent=2), encoding="utf-8")
+    older_restore_inventory_path.write_text(json.dumps(backup_profile, indent=2), encoding="utf-8")
+    backups_human_cmd = command_factory("learn", "--restore-backups", "--file", str(profile_path), "--limit", "1")
+    backups_human_result = run_plain(backups_human_cmd, cwd=cwd, env=env)
+    require_registry_smoke(
+        "Learning restore rollback backups" in backups_human_result.stdout
+        and restore_inventory_path.name in backups_human_result.stdout
+        and "Preview: design-ai learn --restore --from-file" in backups_human_result.stdout,
+        context=f"{context} restore-backups human",
+        cmd=backups_human_cmd,
+        message="learn restore-backups human output changed",
+    )
+
+    backups_json_cmd = command_factory("learn", "--restore-backups", "--file", str(profile_path), "--limit", "1", "--json")
+    backups_json_result = run_plain(backups_json_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_json(
+        backups_json_result.stdout,
+        profile_path=profile_path,
+        backup_path=restore_inventory_path,
+        context=f"{context} restore-backups JSON",
+        cmd=backups_json_cmd,
+    )
+
+    backups_out_path = profile_path.with_name(f"{profile_path.stem}-restore-backups-out.json")
+    backups_out_path.write_text("stale output\n", encoding="utf-8")
+    backups_out_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--json",
+        "--out",
+        str(backups_out_path),
+        "--force",
+    )
+    backups_out_result = run_plain(backups_out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        backups_out_result.stdout,
+        context=f"{context} restore-backups out",
+        cmd=backups_out_cmd,
+        expected_path=str(backups_out_path),
+    )
+    assert_learning_restore_backups_json(
+        backups_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        backup_path=restore_inventory_path,
+        context=f"{context} restore-backups out file",
+        cmd=backups_out_cmd,
+    )
+
+    prune_preview_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    prune_preview_result = run_plain(prune_preview_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_prune_json(
+        prune_preview_result.stdout,
+        profile_path=profile_path,
+        deleted_path=older_restore_inventory_path,
+        dry_run=True,
+        context=f"{context} restore-backups prune preview",
+        cmd=prune_preview_cmd,
+    )
+    require_registry_smoke(
+        restore_inventory_path.exists() and older_restore_inventory_path.exists(),
+        context=f"{context} restore-backups prune preview files",
+        cmd=prune_preview_cmd,
+        message="learn restore-backups prune preview should not delete backup files",
+    )
+
+    prune_apply_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(profile_path),
+        "--yes",
+        "--json",
+    )
+    prune_apply_result = run_plain(prune_apply_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_prune_json(
+        prune_apply_result.stdout,
+        profile_path=profile_path,
+        deleted_path=older_restore_inventory_path,
+        dry_run=False,
+        context=f"{context} restore-backups prune apply",
+        cmd=prune_apply_cmd,
+    )
+    require_registry_smoke(
+        restore_inventory_path.exists() and not older_restore_inventory_path.exists(),
+        context=f"{context} restore-backups prune apply files",
+        cmd=prune_apply_cmd,
+        message="learn restore-backups prune apply should delete only older backup files",
     )
 
 
@@ -4122,6 +4581,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec learn backup",
         )
+        assert_learning_restore_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-restore-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn restore",
+        )
         assert_learning_import_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
             npx_root / "registry-import-learning.json",
@@ -4905,6 +5371,244 @@ def run_self_test() -> None:
                 expected_path=str(learning_backup_out_path),
             ),
             expected="output write success",
+            scope="registry smoke",
+        )
+
+        learning_restore_path = tmp_root / "learning-restore.json"
+        learning_restore_source_path = tmp_root / "learning-restore-source.json"
+        learning_restore_default_backup_path = tmp_root / "learning-restore.restore-backup-20260602T000000000Z.json"
+        learning_restore_explicit_backup_path = tmp_root / "learning-restore-rollback.json"
+        learning_restore_payload = {
+            "file": str(learning_restore_path),
+            "source": str(learning_restore_source_path),
+            "dryRun": True,
+            "applied": False,
+            "restorable": True,
+            "backupFile": str(learning_restore_default_backup_path),
+            "backupCreated": False,
+            "backupEntryCount": 1,
+            "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_default_backup_path} --file {learning_restore_path} --dry-run",
+            "previousCount": 1,
+            "restoredCount": 3,
+            "removedCount": 0,
+            "addedCount": 2,
+            "metadataChangedCount": 1,
+            "idConflictCount": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "diff": {
+                "comparisonOnlyCount": 2,
+                "metadataChangedCount": 1,
+                "idConflictCount": 1,
+            },
+            "privacy": {
+                "mutatesProfile": False,
+            },
+        }
+        learn_restore_cmd = [
+            "design-ai",
+            "learn",
+            "--restore",
+            "--from-file",
+            str(learning_restore_source_path),
+            "--dry-run",
+            "--file",
+            str(learning_restore_path),
+            "--json",
+        ]
+        assert_learning_restore_json(
+            json.dumps(learning_restore_payload),
+            profile_path=learning_restore_path,
+            source=str(learning_restore_source_path),
+            dry_run=True,
+            context="registry smoke self-test",
+            cmd=learn_restore_cmd,
+        )
+        assert_learning_restore_json(
+            json.dumps({
+                **learning_restore_payload,
+                "source": "stdin",
+                "dryRun": False,
+                "applied": True,
+                "backupFile": str(learning_restore_explicit_backup_path),
+                "backupCreated": True,
+                "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_explicit_backup_path} --file {learning_restore_path} --dry-run",
+                "privacy": {
+                    "mutatesProfile": True,
+                },
+            }),
+            profile_path=learning_restore_path,
+            source="stdin",
+            dry_run=False,
+            backup_path=learning_restore_explicit_backup_path,
+            context="registry smoke self-test",
+            cmd=[
+                "design-ai",
+                "learn",
+                "--restore",
+                "--stdin",
+                "--yes",
+                "--file",
+                str(learning_restore_path),
+                "--backup-file",
+                str(learning_restore_explicit_backup_path),
+                "--json",
+            ],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_json(
+                json.dumps({**learning_restore_payload, "addedCount": 1}),
+                profile_path=learning_restore_path,
+                source=str(learning_restore_source_path),
+                dry_run=True,
+                context="registry smoke self-test",
+                cmd=learn_restore_cmd,
+            ),
+            expected="learn restore added count changed",
+            scope="registry smoke",
+        )
+
+        learning_restore_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000500000Z.json"
+        learning_restore_older_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000400000Z.json"
+        learning_restore_inventory_entry = {
+            "file": str(learning_restore_inventory_path),
+            "name": learning_restore_inventory_path.name,
+            "createdAt": "2026-06-02T00:05:00.000Z",
+            "entryCount": 1,
+            "auditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_inventory_path} --file {learning_restore_path} --dry-run",
+        }
+        learning_restore_backups_payload = {
+            "file": str(learning_restore_path),
+            "directory": str(learning_restore_path.parent),
+            "pattern": "learning-restore.restore-backup-*.json",
+            "limit": 1,
+            "totalCount": 2,
+            "count": 1,
+            "backups": [learning_restore_inventory_entry],
+            "privacy": {
+                "mutatesProfile": False,
+            },
+        }
+        learn_restore_backups_cmd = [
+            "design-ai",
+            "learn",
+            "--restore-backups",
+            "--file",
+            str(learning_restore_path),
+            "--limit",
+            "1",
+            "--json",
+        ]
+        assert_learning_restore_backups_json(
+            json.dumps(learning_restore_backups_payload),
+            profile_path=learning_restore_path,
+            backup_path=learning_restore_inventory_path,
+            context="registry smoke self-test",
+            cmd=learn_restore_backups_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_json(
+                json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
+                profile_path=learning_restore_path,
+                backup_path=learning_restore_inventory_path,
+                context="registry smoke self-test",
+                cmd=learn_restore_backups_cmd,
+            ),
+            expected="learn restore-backups should find rollback backups",
+            scope="registry smoke",
+        )
+
+        learning_restore_older_inventory_entry = {
+            **learning_restore_inventory_entry,
+            "file": str(learning_restore_older_inventory_path),
+            "name": learning_restore_older_inventory_path.name,
+            "createdAt": "2026-06-02T00:04:00.000Z",
+            "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_older_inventory_path} --file {learning_restore_path} --dry-run",
+        }
+        learning_restore_backups_prune_payload = {
+            **learning_restore_backups_payload,
+            "prune": {
+                "dryRun": True,
+                "applied": False,
+                "keep": 1,
+                "retainedCount": 1,
+                "candidateCount": 1,
+                "deletedCount": 0,
+                "failureCount": 0,
+                "retained": [learning_restore_inventory_entry],
+                "candidates": [learning_restore_older_inventory_entry],
+                "deleted": [],
+                "failures": [],
+            },
+            "privacy": {
+                "mutatesProfile": False,
+                "deletesBackupFiles": False,
+            },
+        }
+        learn_restore_backups_prune_cmd = [
+            "design-ai",
+            "learn",
+            "--restore-backups",
+            "--prune",
+            "--keep",
+            "1",
+            "--file",
+            str(learning_restore_path),
+            "--json",
+        ]
+        assert_learning_restore_backups_prune_json(
+            json.dumps(learning_restore_backups_prune_payload),
+            profile_path=learning_restore_path,
+            deleted_path=learning_restore_older_inventory_path,
+            dry_run=True,
+            context="registry smoke self-test",
+            cmd=learn_restore_backups_prune_cmd,
+        )
+        assert_learning_restore_backups_prune_json(
+            json.dumps({
+                **learning_restore_backups_prune_payload,
+                "prune": {
+                    **learning_restore_backups_prune_payload["prune"],
+                    "dryRun": False,
+                    "applied": True,
+                    "deletedCount": 1,
+                    "deleted": [learning_restore_older_inventory_entry],
+                },
+                "privacy": {
+                    "mutatesProfile": False,
+                    "deletesBackupFiles": True,
+                },
+            }),
+            profile_path=learning_restore_path,
+            deleted_path=learning_restore_older_inventory_path,
+            dry_run=False,
+            context="registry smoke self-test",
+            cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_prune_json(
+                json.dumps({
+                    **learning_restore_backups_prune_payload,
+                    "prune": {
+                        **learning_restore_backups_prune_payload["prune"],
+                        "candidateCount": 0,
+                    },
+                }),
+                profile_path=learning_restore_path,
+                deleted_path=learning_restore_older_inventory_path,
+                dry_run=True,
+                context="registry smoke self-test",
+                cmd=learn_restore_backups_prune_cmd,
+            ),
+            expected="learn restore-backups prune candidate count changed",
             scope="registry smoke",
         )
 

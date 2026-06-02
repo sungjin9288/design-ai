@@ -1317,6 +1317,29 @@ RELEASE_LEARN_RESTORE_TERM_GROUPS = (
         "learn restore --out file-write confirmation",
     ),
 )
+RELEASE_REGISTRY_LEARN_RESTORE_TERM_GROUPS = (
+    (
+        "public registry JSON `design-ai learn --restore` preview/apply output",
+        "public registry design-ai learn --restore preview/apply output",
+        "public registry learn restore preview/apply output",
+        "registry learn restore preview/apply output",
+    ),
+    (
+        "public registry learn restore `--out` file-write confirmation",
+        "public registry learn restore --out file-write confirmation",
+        "registry learn restore --out file-write confirmation",
+    ),
+    (
+        "public registry learn restore rollback backup verification",
+        "public registry learning restore rollback backup verification",
+        "registry learn restore rollback backup verification",
+    ),
+    (
+        "public registry learn restore `--backup-file` path coverage",
+        "public registry design-ai learn --restore --backup-file path coverage",
+        "registry learn restore --backup-file path coverage",
+    ),
+)
 RELEASE_LEARN_RESTORE_ROLLBACK_TERM_GROUPS = (
     (
         "learn restore rollback backup",
@@ -1341,6 +1364,14 @@ RELEASE_LEARN_RESTORE_BACKUPS_TERM_GROUPS = (
         "rollback backup inventory",
     ),
 )
+RELEASE_REGISTRY_LEARN_RESTORE_BACKUPS_TERM_GROUPS = (
+    (
+        "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
+        "public registry design-ai learn --restore-backups restore rollback backup inventory coverage",
+        "public registry learn restore-backups rollback backup inventory coverage",
+        "registry learn restore-backups inventory coverage",
+    ),
+)
 RELEASE_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS = (
     (
         "learn restore-backups --prune",
@@ -1351,6 +1382,14 @@ RELEASE_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS = (
         "restore rollback backup pruning",
         "learning restore rollback backup pruning",
         "rollback backup pruning",
+    ),
+)
+RELEASE_REGISTRY_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS = (
+    (
+        "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
+        "public registry design-ai learn --restore-backups --prune restore rollback backup pruning coverage",
+        "public registry learn restore-backups --prune rollback backup pruning coverage",
+        "registry learn restore-backups prune coverage",
     ),
 )
 RELEASE_LEARN_IMPORT_TERM_GROUPS = (
@@ -1691,9 +1730,12 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn verify smoke phrase",
     "registry learn verify smoke phrase",
     "learn restore smoke phrase",
+    "registry learn restore smoke phrase",
     "learn restore rollback backup smoke phrase",
     "learn restore-backups smoke phrase",
+    "registry learn restore-backups smoke phrase",
     "learn restore-backups prune smoke phrase",
+    "registry learn restore-backups prune smoke phrase",
     "learn import smoke phrase",
     "registry learn import smoke phrase",
     "learn stats smoke phrase",
@@ -1891,9 +1933,15 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn verify smoke phrase", RELEASE_LEARN_VERIFY_TERM_GROUPS),
     ("registry learn verify smoke phrase", RELEASE_REGISTRY_LEARN_VERIFY_TERM_GROUPS),
     ("learn restore smoke phrase", RELEASE_LEARN_RESTORE_TERM_GROUPS),
+    ("registry learn restore smoke phrase", RELEASE_REGISTRY_LEARN_RESTORE_TERM_GROUPS),
     ("learn restore rollback backup smoke phrase", RELEASE_LEARN_RESTORE_ROLLBACK_TERM_GROUPS),
     ("learn restore-backups smoke phrase", RELEASE_LEARN_RESTORE_BACKUPS_TERM_GROUPS),
+    ("registry learn restore-backups smoke phrase", RELEASE_REGISTRY_LEARN_RESTORE_BACKUPS_TERM_GROUPS),
     ("learn restore-backups prune smoke phrase", RELEASE_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS),
+    (
+        "registry learn restore-backups prune smoke phrase",
+        RELEASE_REGISTRY_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS,
+    ),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
     ("registry learn import smoke phrase", RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS),
     ("learn stats smoke phrase", RELEASE_LEARN_STATS_TERM_GROUPS),
@@ -2355,6 +2403,8 @@ public registry JSON `design-ai learn --feedback` output plus public registry le
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
 public registry JSON `design-ai learn --verify` output plus public registry learn verify `--out` file-write confirmation,
 public registry JSON `design-ai learn --backup` output plus public registry learn backup `--out` file-write confirmation,
+public registry JSON `design-ai learn --restore` preview/apply output plus public registry learn restore `--out` file-write confirmation plus public registry learn restore rollback backup verification plus public registry learn restore `--backup-file` path coverage,
+public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage plus public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage,
 public registry JSON `design-ai learn --import` dry-run/apply output plus public registry learn import `--out` file-write confirmation,
 public registry JSON `design-ai learn --redact` output including public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, and public registry learn redact `--out` file-write confirmation,
 public registry human / JSON `design-ai learn --stats` profile summary output plus public registry learn stats `--out` file-write confirmation,
@@ -2442,6 +2492,8 @@ public registry JSON `design-ai learn --feedback` output과 public registry lear
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
 public registry JSON `design-ai learn --verify` output과 public registry learn verify `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --backup` output과 public registry learn backup `--out` file-write confirmation도 확인하고,
+public registry JSON `design-ai learn --restore` preview/apply output과 public registry learn restore `--out` file-write confirmation, public registry learn restore rollback backup verification, public registry learn restore `--backup-file` path coverage도 확인하고,
+public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage와 public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage도 확인하고,
 public registry JSON `design-ai learn --import` dry-run/apply output과 public registry learn import `--out` file-write confirmation도 확인하고,
 public registry JSON `design-ai learn --redact` output과 public registry `design-ai learn --redact --from-file`, public registry `design-ai learn --redact --stdin`, public registry learn redact `--out` file-write confirmation도 확인하고,
 public registry human / JSON `design-ai learn --stats` profile summary output과 public registry learn stats `--out` file-write confirmation도 확인하고,
@@ -3055,6 +3107,69 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing registry learn backup smoke phrase"
         in registry_learn_backup_out_drift_errors,
         "release policy docs should mention public registry learn backup --out smoke",
+    )
+
+    registry_learn_restore_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry JSON `design-ai learn --restore` preview/apply output",
+                "public registry learning restore overview",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_restore_drift_errors = "\n".join(registry_learn_restore_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn restore smoke phrase"
+        in registry_learn_restore_drift_errors,
+        "release policy docs should mention public registry learn restore smoke",
+    )
+
+    registry_learn_restore_backups_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
+                "public registry restore rollback inventory coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_restore_backups_drift_errors = "\n".join(registry_learn_restore_backups_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn restore-backups smoke phrase"
+        in registry_learn_restore_backups_drift_errors,
+        "release policy docs should mention public registry learn restore-backups smoke",
+    )
+
+    registry_learn_restore_backups_prune_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
+                "public registry restore rollback cleanup coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    registry_learn_restore_backups_prune_drift_errors = "\n".join(registry_learn_restore_backups_prune_drift["errors"])
+    assert_condition(
+        "README.md is missing registry learn restore-backups prune smoke phrase"
+        in registry_learn_restore_backups_prune_drift_errors,
+        "release policy docs should mention public registry learn restore-backups prune smoke",
     )
 
     registry_learn_import_drift = release_metadata_summary(
@@ -5085,6 +5200,18 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             .replace(
                 "design-ai learn --restore-backups --prune restore rollback backup pruning coverage",
                 "design-ai learn --restore-backups --prune rollback file pruning coverage",
+            )
+            .replace(
+                "public registry learn restore rollback backup verification",
+                "public registry learning restore rollback artifact",
+            )
+            .replace(
+                "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
+                "public registry `design-ai learn --restore-backups` rollback file inventory coverage",
+            )
+            .replace(
+                "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
+                "public registry `design-ai learn --restore-backups --prune` rollback file pruning coverage",
             ),
         },
         audit_count=8,
@@ -5126,6 +5253,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "README.md": english_policy_doc.replace(
                 "design-ai learn --restore-backups restore rollback backup inventory coverage",
                 "learning restore rollback file listing coverage",
+            ).replace(
+                "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
+                "public registry restore rollback file listing coverage",
             ),
         },
         audit_count=8,
@@ -5146,6 +5276,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "README.md": english_policy_doc.replace(
                 "design-ai learn --restore-backups --prune restore rollback backup pruning coverage",
                 "learning restore rollback cleanup coverage",
+            ).replace(
+                "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
+                "public registry restore rollback cleanup coverage",
             ),
         },
         audit_count=8,
