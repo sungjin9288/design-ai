@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 267 — Public Registry Learning Restore Smoke (v4.52.0) ✓ shipped
+
+`npm run registry:smoke` now verifies the published-package learning restore safety path. The public `npm exec --package @design-ai/cli@<version>` smoke covers restore preview/apply behavior, rollback backup creation with explicit backup paths, restore-backups inventory, and restore-backups prune preview/apply cleanup.
+
+### Changed
+- Added public registry smoke coverage for `design-ai learn --restore` preview/apply JSON output.
+- Added public registry smoke coverage for `learn restore --out`, rollback backup verification, and `--backup-file` path handling.
+- Added public registry smoke coverage for `design-ai learn --restore-backups` inventory and `design-ai learn --restore-backups --prune` preview/apply pruning.
+- Added registry smoke self-test fixtures for restore metadata, restore-backups inventory drift, and prune candidate drift.
+- Added release metadata guard phrases for public registry restore, restore-backups, and restore-backups prune coverage.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.52.0`.
+
+### Impact
+- Published package verification now covers the full restore rollback maintenance path, not just packed-tarball pre-release smoke.
+- Existing learning profile, restore, restore-backups, and prune schemas remain compatible.
+
+### What this enables
+- After publish, operators can verify that registry-installed packages preserve the same preview-first restore and backup-pruning safety behavior proven by local package smoke.
+
+### Verified
+- All 8 audits pass.
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.51.0 → 4.52.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 266 — Learning Restore Backup Prune (v4.51.0) ✓ shipped
 
 `design-ai learn --restore-backups --prune` now turns rollback backup discovery into a safe retention workflow. It previews older sibling restore rollback backup files by default, keeps the newest backups, and deletes only older backup files after explicit `--yes`.
