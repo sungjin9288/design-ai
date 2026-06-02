@@ -2,6 +2,36 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.48.0 — Learning Profile Restore (2026-06)
+
+Added a preview-first full-profile restore path for local learning backups. `design-ai learn --restore --from-file learning-backup.json` now shows exactly how the active `learning.json` would change, and `--restore --yes` replaces the active profile only after the portable source passes audit.
+
+### Added
+- `design-ai learn --restore --from-file learning-backup.json [--dry-run|--yes] [--json] [--out file]` and stdin support.
+- Human and JSON restore output with target file, source, dry-run/apply state, restorable state, previous/restored counts, removed/added counts, same-text count, metadata changes, id conflicts, audit summary, diff details, and privacy metadata.
+- Apply protection that refuses restore when the source payload audit has failures, while preview still reports the audit issues.
+- Unit coverage for parser validation, preview-only behavior, confirmed apply behavior, stdin restore, audit-failure blocking, and command-level JSON output.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` `learn --restore --yes --json` paths.
+- README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Roadmap, and Session Log coverage.
+
+### Preserved
+- The learning profile schema remains unchanged at version 1.
+- `learn --restore` is preview-first by default and does not mutate the active profile unless `--yes` is present.
+- `learn --restore` replaces the active profile instead of merging; use `learn --import` when the desired operation is additive.
+
+### What this enables
+- Operators can now use a complete local learning operations loop: backup or redact, verify, diff, then either restore the complete profile or import only the new entries.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.47.0 → 4.48.0.
+
 ## v4.47.0 — Learning Profile Diff (2026-06)
 
 Added a read-only comparison path for local learning profiles. `design-ai learn --diff --from-file learning.json` now compares the active profile with a portable profile before import/restore decisions, reporting profile-only entries, comparison-only entries, metadata changes, and id conflicts without mutating `learning.json`.

@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.47:
+What ships in v4.48:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -17,6 +17,7 @@ What ships in v4.47:
 - `design-ai learn --out file` writes JSON result artifacts, `learn --export --out file` writes the Markdown context block, and `learn --curate --report --out file` writes the Markdown curation report, while `--force` controls overwrites.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
 - `design-ai learn --diff --from-file learning.json` compares the active profile against a portable learning JSON payload without importing it, reporting profile-only entries, comparison-only entries, metadata changes, and id conflicts.
+- `design-ai learn --restore --from-file learning-backup.json` previews a full active-profile replacement from a portable backup, and `--restore --yes` applies it only when the source audit has no failures.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
@@ -167,7 +168,7 @@ Back up the full local profile:
 design-ai learn --backup --json --out learning-backup.json
 ```
 
-Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then imported on another machine with `design-ai learn --import`. `--out` uses the same safe file-write rules as `prompt` and `pack`: existing files are rejected unless you add `--force`.
+Backup JSON includes all normalized entries, the source profile path, profile metadata, an `exportedAt` timestamp, and the current audit summary. The payload keeps an `entries` array, so it can be reviewed and then restored or imported on another machine with `design-ai learn --restore` or `design-ai learn --import`. `--out` uses the same safe file-write rules as `prompt` and `pack`: existing files are rejected unless you add `--force`.
 
 Create a redacted portable profile before sharing:
 
@@ -197,6 +198,19 @@ cat learning-backup.json | design-ai learn --diff --stdin --json
 ```
 
 Diff mode is read-only. It compares the active profile with a portable profile by category plus normalized text, then reports profile-only entries, comparison-only entries, metadata changes for matching notes, and id conflicts where the same id points at different learning text.
+
+Restore the active profile from a portable backup:
+
+```bash
+design-ai learn --backup --json --out learning-backup.json
+design-ai learn --verify --from-file learning-backup.json
+design-ai learn --diff --from-file learning-backup.json --json
+design-ai learn --restore --from-file learning-backup.json
+design-ai learn --restore --from-file learning-backup.json --yes --json
+cat learning-backup.json | design-ai learn --restore --stdin --yes
+```
+
+Restore is preview-first and replaces the active profile only when `--yes` is present. It requires `--from-file` or `--stdin`, rejects `--dry-run` combined with `--yes`, and refuses to apply a source payload whose audit has failures. JSON output reports the target file, dry-run/apply state, restorable state, previous/restored counts, removed/added counts, same-text count, metadata changes, id conflicts, audit summary, diff details, and privacy metadata. Use restore when the backup should become the complete active profile; use import when you only want to merge new entries while keeping the existing profile.
 
 Import a portable learning profile:
 

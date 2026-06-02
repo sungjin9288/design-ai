@@ -36,6 +36,7 @@ const LEARN_OPTIONS = [
   "--backup",
   "--verify",
   "--diff",
+  "--restore",
   "--redact",
   "--audit",
   "--stats",
@@ -224,6 +225,8 @@ export function parseLearnArgs(args) {
       setAction(out, "verify");
     } else if (arg === "--diff") {
       setAction(out, "diff");
+    } else if (arg === "--restore") {
+      setAction(out, "restore");
     } else if (arg === "--redact") {
       setAction(out, "redact");
     } else if (arg === "--audit") {
@@ -293,7 +296,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "diff", "redact", "eval"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -319,14 +322,17 @@ export function parseLearnArgs(args) {
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
   }
-  if (out.dryRun && !out.fix && !["import", "init", "curate"].includes(out.action)) {
-    throw new Error("--dry-run requires --fix, --init, --import, or --curate");
+  if (out.dryRun && !out.fix && !["import", "init", "curate", "restore"].includes(out.action)) {
+    throw new Error("--dry-run requires --fix, --init, --import, --restore, or --curate");
   }
   if (out.fix && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --audit --fix");
   }
   if (out.action === "import" && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --import");
+  }
+  if (out.action === "restore" && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --restore");
   }
   if (out.action === "init" && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --init");
@@ -360,6 +366,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "diff" && !out.fromFile && !out.stdin) {
     throw new Error("--diff requires --from-file or --stdin");
+  }
+  if (out.action === "restore" && !out.fromFile && !out.stdin) {
+    throw new Error("--restore requires --from-file or --stdin");
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
     || (out.action === "curate" && out.report);
@@ -1133,6 +1142,94 @@ export function verifyLearningImportPayload({
     auditSummary: audit.summary,
     issues: audit.issues,
     entries: importedEntries.map(statsEntry),
+  };
+}
+
+export function restoreLearningProfile({
+  restoreText,
+  filePath = defaultLearningFile(),
+  source = "input",
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const resolvedSource = source === "stdin" ? "stdin" : String(source || "input");
+  const rawRestore = parseLearningProfilePayload(String(restoreText || ""), "Learning restore");
+  const restoreAudit = auditLearningProfileObject(rawRestore, {
+    filePath: resolvedSource,
+    exists: true,
+  });
+  const profileExists = existsSync(resolvedFile);
+  const currentProfile = loadLearningProfile(resolvedFile);
+  const restorable = restoreAudit.summary.failures === 0;
+
+  if (!dryRun && !restorable) {
+    throw new Error("Refusing to restore learning profile with audit failures");
+  }
+
+  const restoredProfile = restorable ? normalizeLearningProfile(rawRestore) : emptyLearningProfile();
+  const targetProfile = {
+    version: 1,
+    updatedAt: restoredProfile.updatedAt || now.toISOString(),
+    entries: restoredProfile.entries,
+  };
+  const diff = restorable
+    ? diffLearningProfiles({
+      filePath: resolvedFile,
+      compareText: restoreText,
+      source: resolvedSource,
+      now,
+    })
+    : {
+      sameTextCount: 0,
+      profileOnlyCount: 0,
+      comparisonOnlyCount: 0,
+      metadataChangedCount: 0,
+      idConflictCount: 0,
+      profileOnly: [],
+      comparisonOnly: [],
+      metadataChanged: [],
+      idConflicts: [],
+    };
+
+  if (!dryRun) {
+    writeLearningProfile(resolvedFile, targetProfile);
+  }
+
+  return {
+    file: resolvedFile,
+    source: resolvedSource,
+    generatedAt: now.toISOString(),
+    dryRun,
+    applied: !dryRun,
+    restorable,
+    profileExists,
+    previousUpdatedAt: currentProfile.updatedAt,
+    restoredUpdatedAt: targetProfile.updatedAt,
+    previousCount: currentProfile.entries.length,
+    restoredCount: targetProfile.entries.length,
+    removedCount: diff.profileOnlyCount,
+    addedCount: diff.comparisonOnlyCount,
+    sameTextCount: diff.sameTextCount,
+    metadataChangedCount: diff.metadataChangedCount,
+    idConflictCount: diff.idConflictCount,
+    auditSummary: restoreAudit.summary,
+    issues: restoreAudit.issues,
+    diff: {
+      profileOnlyCount: diff.profileOnlyCount,
+      comparisonOnlyCount: diff.comparisonOnlyCount,
+      metadataChangedCount: diff.metadataChangedCount,
+      idConflictCount: diff.idConflictCount,
+      profileOnly: diff.profileOnly,
+      comparisonOnly: diff.comparisonOnly,
+      metadataChanged: diff.metadataChanged,
+      idConflicts: diff.idConflicts,
+    },
+    privacy: {
+      storesRawBriefText: false,
+      exposesEntryTextPreview: true,
+      mutatesProfile: !dryRun,
+    },
   };
 }
 
