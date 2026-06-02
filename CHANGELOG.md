@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.54.0 — Public Registry Workspace Restore Backup Readiness Smoke (2026-06)
+
+Extended post-publish registry smoke coverage for workspace restore-backups readiness. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for `design-ai workspace` JSON that reports sibling restore rollback backup inventory and prune next actions.
+
+### Added
+- Public registry smoke coverage for `design-ai workspace --root <repo> --learning-file <learning.json> --json` with sibling restore rollback backups.
+- Registry smoke fixture generation for six sibling `*.restore-backup-*.json` rollback files beside the workspace learning profile.
+- Registry smoke assertions for `learningRestoreBackups.totalCount`, limited backup count, latest restore preview command, readiness prune candidate count, and preview-first prune next action.
+- Release metadata guard phrase for public registry workspace restore-backups readiness coverage.
+
+### Changed
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Roadmap, and Session Log coverage for v4.54.
+- Updated package/plugin metadata to `4.54.0`.
+
+### Verified
+- All 8 audits pass.
+- Registry smoke self-test.
+- Release metadata self-test.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.53.0 → 4.54.0.
+
+### What this enables
+- After publish, operators can verify that the public package path exposes the same workspace rollback backup readiness contract already covered by local packed-tarball smoke.
+
 ## v4.53.0 — Workspace Learning Restore Backup Readiness (2026-06)
 
 Added `design-ai workspace` readiness coverage for sibling learning restore rollback backups. Workspace JSON now reports `learningRestoreBackups` inventory, latest backup metadata, privacy flags, and prune readiness while remaining read-only.

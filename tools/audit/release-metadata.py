@@ -456,6 +456,20 @@ RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS = (
         "learning-eval checkpoint summary",
     ),
 )
+RELEASE_WORKSPACE_RESTORE_BACKUPS_REGISTRY_SMOKE_TERM_GROUPS = (
+    (
+        "public registry `design-ai workspace` workspace restore-backups readiness",
+        "public registry design-ai workspace restore-backups readiness",
+        "public registry workspace restore-backups readiness",
+        "public registry workspace learning restore-backups readiness",
+        "공개 npm registry `design-ai workspace` workspace restore-backups readiness",
+    ),
+    (
+        "restore rollback backup inventory",
+        "learningRestoreBackups",
+        "restore-backups inventory",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -1657,6 +1671,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
     "workspace learning-eval registry smoke phrase",
+    "workspace restore-backups registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -1854,6 +1869,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "workspace learning-eval registry smoke phrase",
         RELEASE_WORKSPACE_LEARNING_EVAL_REGISTRY_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "workspace restore-backups registry smoke phrase",
+        RELEASE_WORKSPACE_RESTORE_BACKUPS_REGISTRY_SMOKE_TERM_GROUPS,
     ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -2423,6 +2442,7 @@ the one-shot `npm exec --package <tarball>` packed-tarball path,
 the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
+including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2513,6 +2533,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry package를 `npm exec --package @design-ai/cli@<version>` 경로로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
+공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -2879,9 +2900,14 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs={
             **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "including `design-ai workspace` workspace learning restore-backups readiness with restore rollback backup inventory in installed-bin and one-shot paths",
-                "including workspace restore backup coverage",
+            "README.md": (
+                english_policy_doc.replace(
+                    "including `design-ai workspace` workspace learning restore-backups readiness with restore rollback backup inventory in installed-bin and one-shot paths",
+                    "including workspace restore backup coverage",
+                ).replace(
+                    "including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory",
+                    "including public registry workspace restore backup coverage",
+                )
             ),
         },
         audit_count=8,
@@ -2945,6 +2971,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             in workspace_learning_eval_registry_smoke_drift_errors
         ),
         "release policy docs should mention public registry workspace learning-eval smoke",
+    )
+
+    workspace_restore_backups_registry_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory",
+                "including public registry workspace restore backup coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    workspace_restore_backups_registry_smoke_drift_errors = "\n".join(
+        workspace_restore_backups_registry_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing workspace restore-backups registry smoke phrase"
+            in workspace_restore_backups_registry_smoke_drift_errors
+        ),
+        "release policy docs should mention public registry workspace restore-backups smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
@@ -5270,6 +5321,10 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             .replace(
                 "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
                 "public registry `design-ai learn --restore-backups --prune` rollback file pruning coverage",
+            )
+            .replace(
+                "public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory",
+                "public registry `design-ai workspace` workspace restore-backups readiness with rollback file inventory",
             ),
         },
         audit_count=8,
@@ -5317,6 +5372,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             ).replace(
                 "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
                 "public registry restore rollback file listing coverage",
+            ).replace(
+                "public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory",
+                "public registry `design-ai workspace` workspace restore backup readiness with rollback file listing",
             ),
         },
         audit_count=8,

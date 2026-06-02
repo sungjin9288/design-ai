@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 269 — Public Registry Workspace Restore Backup Readiness Smoke (v4.54.0) ✓ shipped
+
+`npm run registry:smoke` now verifies the published-package workspace restore-backups readiness path. The public `npm exec --package @design-ai/cli@<version>` smoke creates a clean workspace fixture, writes sibling restore rollback backups beside the selected learning profile, and checks that `design-ai workspace` reports `learningRestoreBackups` inventory plus preview-first prune next actions.
+
+### Changed
+- Added public registry smoke coverage for `design-ai workspace --root <repo> --learning-file <learning.json> --json` with sibling restore rollback backup inventory.
+- Added registry-smoke fixture generation for six sibling `*.restore-backup-*.json` rollback files.
+- Added registry-smoke assertions for total backup count, limited count, latest restore preview command, readiness prune candidate count, and prune next action.
+- Added registry-smoke self-test coverage for workspace restore-backups assertion drift.
+- Added release metadata guard phrases for public registry workspace restore-backups readiness coverage.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.54.0`.
+
+### Impact
+- Local packed-tarball smoke and post-publish public registry smoke now protect the same workspace restore-backups readiness contract.
+- Existing workspace, learning profile, restore, restore-backups, and prune schemas remain compatible.
+
+### What this enables
+- After publish, operators can confirm that the public registry package reports rollback backup readiness and cleanup guidance before company rollout or external release checks.
+
+### Verified
+- All 8 audits pass.
+- Registry smoke self-test.
+- Release metadata self-test.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.53.0 → 4.54.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 268 — Workspace Learning Restore Backup Readiness (v4.53.0) ✓ shipped
 
 `design-ai workspace` now detects sibling learning restore rollback backups beside the selected profile and reports the inventory in local dogfood readiness. The report stays read-only, exposes `learningRestoreBackups` in JSON, shows the latest rollback backup, and points operators to preview-first prune cleanup when older backups exceed the default keep count.
