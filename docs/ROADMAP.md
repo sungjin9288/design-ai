@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 276 — Website Console Workflow Graph Export (unreleased)
+
+`design-ai site --graph [--json]` now exports Website Improvement workspaces and agent plans as portable workflow graphs. The graph can be stored as JSON now and rendered later by the static console without adding a visual workflow runtime dependency.
+
+### Changed
+- Added `design-ai site <workspace.json|--stdin> --graph [--json] [--out file] [--force]`.
+- Added deterministic graph nodes for workspace intake, site profile, audit categories, MCP readiness, generated and retained refactor tasks, prompt templates, handoff report, handoff bundle, and target website repo boundary.
+- Added deterministic graph edges for profile context, audit finding to task conversion, MCP support, task-selected Codex implementation prompts, handoff report inputs, prompt-to-target workflow, and bundle handoff.
+- Added JSON and Markdown graph formatters while keeping the export local/read-only.
+- Added unit coverage, smoke assertion fixtures, and packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` graph JSON paths.
+
+### Impact
+- Website Improvement operators can preserve a machine-readable workflow map alongside MCP readiness, prompts, and handoff artifacts.
+- The graph exports the useful part of visual workflow tools without adding dependencies, external MCP calls, target-repo mutation, crawling, Lighthouse/axe automation, or hidden background state.
+
+### Verified
+- Targeted `site` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Static console graph rendering and real MCP connection checks remain future phases.
+
 ## Phase 275 — Website Console MCP Probes (unreleased)
 
 `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` now add read-only local probe results to the Website Improvement MCP readiness workflow. The default `--mcp-check` JSON shape remains unchanged unless `--probes` is explicitly requested.
@@ -20,7 +42,7 @@
 - Package smoke assertion self-tests.
 
 ### What's still ahead
-- Workflow graph export remains the next Website Console automation phase.
+- Workflow graph export is covered by Phase 276; real MCP connection checks remain future Website Console automation work.
 
 ## Phase 274 — Skill Evolution Proposals (unreleased)
 

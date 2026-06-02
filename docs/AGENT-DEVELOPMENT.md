@@ -114,7 +114,19 @@ The probes report as a separate `probes` JSON block so the default `--mcp-check`
 
 ### Phase 276: workflow graph export
 
-Export website improvement workspaces and agent plans as portable JSON graphs that can be rendered later in the static console. This borrows the useful part of visual workflow tools without adding a heavy runtime dependency.
+Implemented `design-ai site --graph [--json]` so website improvement workspaces and agent plans can be exported as portable graphs that are renderable later in the static console.
+
+The graph includes deterministic nodes for:
+
+- workspace intake
+- site profile
+- audit categories
+- MCP readiness
+- generated and retained refactor tasks
+- prompt templates
+- handoff report, local bundle, and target website repo boundary
+
+Edges connect profile context, audit findings, MCP readiness, task execution, prompt generation, and handoff flow. The export remains deterministic, local, and read-only: no external MCP calls, no target-repo mutation, no workflow runtime dependency, no Lighthouse/axe/crawling, and no new dependencies.
 
 ## Current MVP boundary
 

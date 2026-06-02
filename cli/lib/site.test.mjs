@@ -20,6 +20,7 @@ import {
   buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
+  buildSiteWorkflowGraph,
   createSampleSiteWorkspace,
   formatSiteBundleCheckHuman,
   formatSiteBundleCheckJson,
@@ -32,6 +33,8 @@ import {
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
   formatSitePromptTemplatesJson,
+  formatSiteWorkflowGraphJson,
+  formatSiteWorkflowGraphMarkdown,
   generateSiteRefactorTasks,
   parseSiteArgs,
 } from "./site.mjs";
@@ -78,6 +81,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    graph: false,
     probes: false,
     promptTemplate: "",
     taskSelector: "",
@@ -102,6 +106,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    graph: false,
     probes: false,
     promptTemplate: "",
     taskSelector: "",
@@ -123,6 +128,8 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--probes", "--json"]).probes, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--graph", "--json"]).graph, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--graph", "--out", "website-workflow-graph.md"]).outPath, "website-workflow-graph.md");
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
   assert.equal(parseSiteArgs(["workspace.json", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-check", "--json"]).bundleCheck, true);
@@ -139,16 +146,19 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--prompt-list", "--prompt", "codex-repo-intake"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--mcp-check"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--mcp-plan"]), /Use --prompt-list without --sample/);
+  assert.throws(() => parseSiteArgs(["--prompt-list", "--graph"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-check"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-handoff"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--strict"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--tasks"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--report"]), /Use --mcp-check without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--graph"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--tasks"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--report"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--graph"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle"]), /--bundle requires --out directory/);
-  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle", "--json", "--out", "bundle"]), /--json is only supported/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle", "--json", "--out", "bundle"]), /--json is not supported with --bundle/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle", "--report", "--out", "bundle"]), /Use --bundle without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--bundle", "--out", "bundle"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["--stdin", "--bundle-check"]), /Use --bundle-check with a handoff bundle directory path/);
@@ -165,17 +175,20 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--bundle-check"]), /Use --bundle-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--report"]), /Use --bundle-handoff without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-handoff"]), /Use --mcp-plan without --sample/);
-  assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, or --prompt/);
-  assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, or --prompt/);
+  assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
+  assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
+  assert.throws(() => parseSiteArgs(["--sample", "--graph"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
   assert.throws(() => parseSiteArgs(["--sample", "--tasks"]), /Use only one generated workspace mode/);
   assert.throws(() => parseSiteArgs(["--sample", "--bundle", "--out", "bundle"]), /Use --bundle without --sample/);
   assert.throws(() => parseSiteArgs(["--sample", "--strict"]), /Use --sample without --strict/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--json"]), /Use --tasks without --json/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--report"]), /Use --tasks without --json/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--graph"]), /Use --tasks without --json, --graph/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--tasks", "--prompt", "codex-implementation"]), /Use --tasks without --prompt/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompts", "--prompt", "codex-implementation"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--mcp-plan"]), /only one output mode/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--graph", "--report"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--probes"]), /Use --probes only with --mcp-check or --mcp-plan/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]), /--json is only supported/);
@@ -353,6 +366,62 @@ test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidanc
   );
   assert.match(missingPlan, /Status: fail/);
   assert.match(missingPlan, /GitHub: Add siteProfile\.repoUrl or siteProfile\.localPath/);
+});
+
+test("buildSiteWorkflowGraph exports a deterministic portable workflow graph", () => {
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
+  const graph = buildSiteWorkflowGraph(workspace, summary);
+  const duplicateGraph = buildSiteWorkflowGraph(workspace, summary);
+  const json = JSON.parse(formatSiteWorkflowGraphJson(graph));
+  const markdown = formatSiteWorkflowGraphMarkdown(graph);
+
+  assert.deepEqual(graph, duplicateGraph);
+  assert.deepEqual(Object.keys(json), [
+    "version",
+    "kind",
+    "generatedAt",
+    "filePath",
+    "status",
+    "workspaceStatus",
+    "mcpStatus",
+    "externalCalls",
+    "site",
+    "summary",
+    "nodes",
+    "edges",
+    "boundaries",
+  ]);
+  assert.equal(graph.kind, "website-improvement-workflow-graph");
+  assert.equal(graph.status, "pass");
+  assert.equal(graph.externalCalls, false);
+  assert.equal(graph.summary.nodeCount, 35);
+  assert.equal(graph.summary.edgeCount, 67);
+  assert.equal(graph.summary.taskCount, 3);
+  assert.equal(graph.summary.generatedTaskCount, 2);
+  assert.equal(graph.summary.promptTemplateCount, 8);
+  assert.deepEqual(graph.nodes.map((node) => node.id).slice(0, 4), [
+    "workspace:intake",
+    "profile:sample-korean-saas",
+    "audit:visual-design",
+    "audit:ux-flow",
+  ]);
+  assert.ok(graph.nodes.some((node) => node.id === "task:task-accessibility" && node.type === "refactor-task"));
+  assert.ok(graph.nodes.some((node) => node.id === "prompt:codex-implementation" && node.type === "prompt-template"));
+  assert.ok(graph.nodes.some((node) => node.id === "handoff:target-repo" && node.status === "external"));
+  assert.ok(graph.edges.some((edge) => edge.from === "task:task-homepage-cta" && edge.to === "prompt:codex-implementation"));
+  assert.ok(graph.edges.some((edge) => edge.from === "handoff:bundle" && edge.to === "handoff:target-repo"));
+  assert.deepEqual(graph.boundaries, [
+    "deterministic-local",
+    "no-external-mcp-calls",
+    "no-target-repo-mutation",
+    "no-new-dependencies",
+  ]);
+
+  assert.match(markdown, /# Website improvement workflow graph: Korean SaaS marketing site/);
+  assert.match(markdown, /Nodes: 35/);
+  assert.match(markdown, /Edges: 67/);
+  assert.match(markdown, /No external MCP calls are made/);
 });
 
 test("buildSiteHandoffBundle creates a complete deterministic handoff package", () => {
@@ -755,6 +824,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptList = path.join(dir, "out", "prompt-templates.json");
     const mcpCheck = path.join(dir, "out", "mcp-check.json");
     const mcpPlan = path.join(dir, "out", "mcp-action-plan.md");
+    const workflowGraph = path.join(dir, "out", "website-workflow-graph.json");
     writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
 
     const jsonOutput = await captureConsole(() => runSite([file, "--json"]));
@@ -789,6 +859,20 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const mcpPlanOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", mcpPlan]));
     assert.match(mcpPlanOutput.stdout, /Wrote /);
     assert.match(readFileSync(mcpPlan, "utf8"), /Website improvement MCP action plan/);
+
+    const graphJsonOutput = await captureConsole(() => runSite([file, "--graph", "--json"]));
+    const graphPayload = JSON.parse(graphJsonOutput.stdout);
+    assert.equal(graphPayload.kind, "website-improvement-workflow-graph");
+    assert.equal(graphPayload.summary.nodeCount, 35);
+    assert.equal(graphPayload.summary.edgeCount, 67);
+
+    const graphHumanOutput = await captureConsole(() => runSite([file, "--graph"]));
+    assert.match(graphHumanOutput.stdout, /Website improvement workflow graph/);
+    assert.match(graphHumanOutput.stdout, /No external MCP calls/);
+
+    const graphWriteOutput = await captureConsole(() => runSite([file, "--graph", "--json", "--out", workflowGraph]));
+    assert.match(graphWriteOutput.stdout, /Wrote /);
+    assert.equal(JSON.parse(readFileSync(workflowGraph, "utf8")).kind, "website-improvement-workflow-graph");
 
     const bundleDir = path.join(dir, "out", "handoff-bundle");
     const bundleOutput = await captureConsole(() => runSite([file, "--bundle", "--out", bundleDir]));
@@ -910,6 +994,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --graph \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -921,6 +1006,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(output.stdout, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
   assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
+  assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory/);
   assert.match(output.stdout, /--bundle-check\s+Validate a generated handoff bundle directory/);

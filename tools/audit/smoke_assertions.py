@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals|--propose-skills|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -216,6 +216,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site --prompt-list [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--out file] [--force]",
+        "design-ai site <workspace.json> --graph [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --tasks [--out file] [--force]",
         "design-ai site <workspace.json> --bundle --out dir [--strict] [--force]",
         "design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]",
@@ -227,6 +228,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--mcp-check",
         "--probes",
         "--mcp-plan",
+        "--graph",
         "--tasks",
         "--bundle",
         "--bundle-check",
@@ -261,7 +263,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "site <workspace.json|--stdin>",
     "site --sample",
     "site --prompt-list",
-    "[--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
+    "[--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
     "site <bundle-dir> --bundle-check",
     "site <bundle-dir> --bundle-compare",
     "site <bundle-dir> --bundle-handoff",
@@ -1016,6 +1018,52 @@ EXPECTED_SITE_MCP_PROBE_ITEM_KEYS = [
     "actions",
 ]
 EXPECTED_SITE_MCP_CHECK_TASK_GAP_KEYS = ["taskId", "title", "mcp", "status", "level", "message"]
+EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS = [
+    "version",
+    "kind",
+    "generatedAt",
+    "filePath",
+    "status",
+    "workspaceStatus",
+    "mcpStatus",
+    "externalCalls",
+    "site",
+    "summary",
+    "nodes",
+    "edges",
+    "boundaries",
+]
+EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS = ["id", "name", "liveUrl", "repoUrl", "localPath"]
+EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS = [
+    "status",
+    "workspaceStatus",
+    "mcpStatus",
+    "nodeCount",
+    "edgeCount",
+    "auditCategoryCount",
+    "taskCount",
+    "generatedTaskCount",
+    "requiredMcpCount",
+    "promptTemplateCount",
+]
+EXPECTED_SITE_WORKFLOW_GRAPH_NODE_KEYS = ["id", "type", "label", "status", "data"]
+EXPECTED_SITE_WORKFLOW_GRAPH_EDGE_KEYS = ["id", "from", "to", "type", "label"]
+EXPECTED_SITE_WORKFLOW_GRAPH_NODE_IDS = [
+    "workspace:intake",
+    "profile:sample-korean-saas",
+    "audit:visual-design",
+    "audit:accessibility",
+    "mcp:github",
+    "mcp:browser",
+    "task:task-homepage-cta",
+    "task:task-accessibility",
+    "task:task-content-quality",
+    "prompt:codex-implementation",
+    "prompt:claude-design-review",
+    "handoff:report",
+    "handoff:bundle",
+    "handoff:target-repo",
+]
 EXPECTED_REPOSITORY_SLUG = "sungjin9288/design-ai"
 EXPECTED_REPOSITORY_URL = f"https://github.com/{EXPECTED_REPOSITORY_SLUG}"
 
@@ -3807,7 +3855,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -4517,6 +4565,168 @@ def passing_site_mcp_plan_markdown() -> str:
 - It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.
 - Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.
 """
+
+
+def passing_site_workflow_graph_json() -> str:
+    categories = [
+        ("visual-design", "Visual Design", "in-progress"),
+        ("ux-flow", "UX Flow", "todo"),
+        ("responsive", "Responsive QA", "todo"),
+        ("accessibility", "Accessibility", "todo"),
+        ("performance", "Performance", "todo"),
+        ("seo", "SEO", "todo"),
+        ("technical-quality", "Technical Quality", "todo"),
+        ("runtime-issues", "Runtime Issues", "todo"),
+        ("content-quality", "Content Quality", "in-progress"),
+    ]
+    mcps = [
+        ("github", "GitHub", "required", "pass"),
+        ("figma", "Figma", "optional", "pass"),
+        ("browser", "Browser/Playwright", "required", "pass"),
+        ("chromeDevtools", "Chrome DevTools", "optional", "pass"),
+        ("deploy", "Deploy", "required", "pass"),
+        ("sentry", "Sentry", "optional", "pass"),
+        ("database", "Database", "unused", "pass"),
+        ("cms", "CMS", "optional", "pass"),
+        ("collaboration", "Collaboration", "optional", "pass"),
+        ("research", "Research", "optional", "pass"),
+    ]
+    tasks = [
+        ("task-accessibility", "Resolve Accessibility finding", "accessibility", ["browser", "chromeDevtools"]),
+        ("task-homepage-cta", "Clarify homepage CTA hierarchy", "visual-design", ["browser", "figma"]),
+        ("task-content-quality", "Resolve Content Quality finding", "content-quality", ["figma", "research", "cms"]),
+    ]
+    prompts = [
+        ("codex-repo-intake", "Codex repo intake"),
+        ("codex-implementation", "Codex implementation"),
+        ("codex-visual-qa", "Codex visual QA"),
+        ("codex-deployment", "Codex deployment verification"),
+        ("claude-design-review", "Claude design review"),
+        ("claude-competitor", "Claude competitor research"),
+        ("claude-copy-ux", "Claude copy/UX critique"),
+        ("handoff-report", "Final handoff report"),
+    ]
+    nodes = [
+        {"id": "workspace:intake", "type": "workspace", "label": "Workspace intake", "status": "pass", "data": {"source": "stdin"}},
+        {"id": "profile:sample-korean-saas", "type": "site-profile", "label": "Korean SaaS marketing site", "status": "pass", "data": {"id": "sample-korean-saas"}},
+    ]
+    nodes.extend(
+        {"id": f"audit:{category_id}", "type": "audit-category", "label": label, "status": status, "data": {"category": category_id}}
+        for category_id, label, status in categories
+    )
+    nodes.extend(
+        {
+            "id": f"mcp:{key}",
+            "type": "mcp-readiness",
+            "label": label,
+            "status": level,
+            "data": {"key": key, "requestedStatus": requested},
+        }
+        for key, label, requested, level in mcps
+    )
+    nodes.extend(
+        {
+            "id": f"task:{task_id}",
+            "type": "refactor-task",
+            "label": title,
+            "status": "planned",
+            "data": {"id": task_id, "category": category},
+        }
+        for task_id, title, category, _recommended in tasks
+    )
+    nodes.extend(
+        {
+            "id": f"prompt:{prompt_id}",
+            "type": "prompt-template",
+            "label": label,
+            "status": "ready",
+            "data": {"id": prompt_id},
+        }
+        for prompt_id, label in prompts
+    )
+    nodes.extend([
+        {"id": "handoff:report", "type": "handoff-report", "label": "Handoff report", "status": "ready", "data": {}},
+        {"id": "handoff:bundle", "type": "handoff-bundle", "label": "Local handoff bundle", "status": "ready", "data": {}},
+        {"id": "handoff:target-repo", "type": "target-repo", "label": "Target website repo", "status": "external", "data": {}},
+    ])
+
+    edges: list[dict[str, str]] = []
+
+    def edge(from_id: str, to_id: str, edge_type: str, label: str) -> None:
+        edges.append({
+            "id": f"{from_id}->{to_id}:{edge_type}",
+            "from": from_id,
+            "to": to_id,
+            "type": edge_type,
+            "label": label,
+        })
+
+    edge("workspace:intake", "profile:sample-korean-saas", "profile", "Workspace defines the target site profile")
+    for category_id, _label, _status in categories:
+        edge("profile:sample-korean-saas", f"audit:{category_id}", "audit-input", "Site context drives this audit category")
+    for key, _label, _requested, _level in mcps:
+        edge("profile:sample-korean-saas", f"mcp:{key}", "readiness-input", "Site profile provides MCP readiness evidence")
+    for task_id, _title, category, recommended in tasks:
+        edge(f"audit:{category}", f"task:{task_id}", "finding-to-task", "Audit finding informs this refactor task")
+        edge("profile:sample-korean-saas", f"task:{task_id}", "site-context", "Site profile scopes this refactor task")
+        for key in recommended:
+            edge(f"mcp:{key}", f"task:{task_id}", "mcp-support", "MCP readiness supports task execution")
+    for prompt_id, _label in prompts:
+        edge("profile:sample-korean-saas", f"prompt:{prompt_id}", "profile-context", "Prompt template receives site profile context")
+    for task_id, _title, _category, _recommended in tasks:
+        edge(f"task:{task_id}", "prompt:codex-implementation", "implementation-prompt", "Task can be exported as a Codex implementation prompt")
+    edge("profile:sample-korean-saas", "handoff:report", "handoff-input", "Site profile anchors the handoff report")
+    for task_id, _title, _category, _recommended in tasks:
+        edge(f"task:{task_id}", "handoff:report", "handoff-input", "Refactor task is summarized in the handoff report")
+    for key, _label, requested, _level in mcps:
+        if requested != "unused":
+            edge(f"mcp:{key}", "handoff:report", "readiness-input", "MCP readiness is summarized in the handoff report")
+    for prompt_id, _label in prompts:
+        edge(f"prompt:{prompt_id}", "handoff:target-repo", "agent-prompt", "Prompt can be used in the target website workflow")
+    edge("handoff:report", "handoff:bundle", "bundle-input", "Handoff report can be packaged into a local bundle")
+    edge("handoff:bundle", "handoff:target-repo", "handoff", "Verified bundle can become target-repo implementation context")
+
+    return json.dumps(
+        {
+            "version": 1,
+            "kind": "website-improvement-workflow-graph",
+            "generatedAt": "2026-05-30T00:00:00.000Z",
+            "filePath": "stdin",
+            "status": "pass",
+            "workspaceStatus": "pass",
+            "mcpStatus": "pass",
+            "externalCalls": False,
+            "site": {
+                "id": "sample-korean-saas",
+                "name": "Korean SaaS marketing site",
+                "liveUrl": "https://example.com",
+                "repoUrl": "https://github.com/acme/korean-saas-site",
+                "localPath": "/Users/you/dev/korean-saas-site",
+            },
+            "summary": {
+                "status": "pass",
+                "workspaceStatus": "pass",
+                "mcpStatus": "pass",
+                "nodeCount": len(nodes),
+                "edgeCount": len(edges),
+                "auditCategoryCount": 9,
+                "taskCount": 3,
+                "generatedTaskCount": 2,
+                "requiredMcpCount": 3,
+                "promptTemplateCount": 8,
+            },
+            "nodes": nodes,
+            "edges": edges,
+            "boundaries": [
+                "deterministic-local",
+                "no-external-mcp-calls",
+                "no-target-repo-mutation",
+                "no-new-dependencies",
+            ],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
 
 
 def passing_workspace_strict_clean_json() -> str:
@@ -5908,6 +6118,112 @@ def assert_site_mcp_plan_markdown(raw: str, *, context: str, cmd: list[str]) -> 
         context=context,
         label="site mcp-plan markdown",
     )
+
+
+def assert_site_workflow_graph_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site workflow graph JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site workflow graph JSON",
+    )
+    if payload.get("version") != 1 or payload.get("kind") != "website-improvement-workflow-graph":
+        raise SystemExit(f"site workflow graph JSON after {context} graph identity changed")
+    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass" or payload.get("mcpStatus") != "pass":
+        raise SystemExit(f"site workflow graph JSON after {context} should pass for the sample workspace")
+    if payload.get("externalCalls") is not False:
+        raise SystemExit(f"site workflow graph JSON after {context} must remain read-only without external calls")
+
+    site = assert_smoke_json_keys(
+        payload.get("site"),
+        EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS,
+        label="site",
+        context=context,
+        command_label="site workflow graph JSON",
+    )
+    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
+        raise SystemExit(f"site workflow graph JSON after {context} sample site identity changed")
+
+    summary = assert_smoke_json_keys(
+        payload.get("summary"),
+        EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS,
+        label="summary",
+        context=context,
+        command_label="site workflow graph JSON",
+    )
+    expected_summary = {
+        "status": "pass",
+        "workspaceStatus": "pass",
+        "mcpStatus": "pass",
+        "nodeCount": 35,
+        "edgeCount": 67,
+        "auditCategoryCount": 9,
+        "taskCount": 3,
+        "generatedTaskCount": 2,
+        "requiredMcpCount": 3,
+        "promptTemplateCount": 8,
+    }
+    for key, expected in expected_summary.items():
+        if summary.get(key) != expected:
+            raise SystemExit(f"site workflow graph JSON after {context} summary {key} changed")
+
+    nodes = payload.get("nodes")
+    if not isinstance(nodes, list) or len(nodes) != summary.get("nodeCount"):
+        raise SystemExit(f"site workflow graph JSON after {context} node count changed")
+    node_ids = []
+    for node in nodes:
+        checked = assert_smoke_json_keys(
+            node,
+            EXPECTED_SITE_WORKFLOW_GRAPH_NODE_KEYS,
+            label="nodes entry",
+            context=context,
+            command_label="site workflow graph JSON",
+        )
+        node_ids.append(checked.get("id"))
+        if not isinstance(checked.get("data"), dict):
+            raise SystemExit(f"site workflow graph JSON after {context} node data must be an object")
+
+    for expected_node_id in EXPECTED_SITE_WORKFLOW_GRAPH_NODE_IDS:
+        if expected_node_id not in node_ids:
+            raise SystemExit(f"site workflow graph JSON after {context} missing node {expected_node_id}")
+
+    edges = payload.get("edges")
+    if not isinstance(edges, list) or len(edges) != summary.get("edgeCount"):
+        raise SystemExit(f"site workflow graph JSON after {context} edge count changed")
+    edge_pairs = set()
+    for edge in edges:
+        checked = assert_smoke_json_keys(
+            edge,
+            EXPECTED_SITE_WORKFLOW_GRAPH_EDGE_KEYS,
+            label="edges entry",
+            context=context,
+            command_label="site workflow graph JSON",
+        )
+        edge_pairs.add((checked.get("from"), checked.get("to"), checked.get("type")))
+        if checked.get("from") not in node_ids or checked.get("to") not in node_ids:
+            raise SystemExit(f"site workflow graph JSON after {context} edge references an unknown node")
+
+    required_edges = {
+        ("workspace:intake", "profile:sample-korean-saas", "profile"),
+        ("audit:visual-design", "task:task-homepage-cta", "finding-to-task"),
+        ("task:task-homepage-cta", "prompt:codex-implementation", "implementation-prompt"),
+        ("handoff:bundle", "handoff:target-repo", "handoff"),
+    }
+    for expected_edge in required_edges:
+        if expected_edge not in edge_pairs:
+            raise SystemExit(f"site workflow graph JSON after {context} missing edge {expected_edge}")
+
+    boundaries = payload.get("boundaries")
+    if not isinstance(boundaries, list) or "no-external-mcp-calls" not in boundaries or "no-target-repo-mutation" not in boundaries:
+        raise SystemExit(f"site workflow graph JSON after {context} boundary markers changed")
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -9055,6 +9371,8 @@ def run_self_test() -> None:
     assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
     site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
     assert_site_mcp_plan_markdown(passing_site_mcp_plan_markdown(), context=context, cmd=site_mcp_plan_cmd)
+    site_workflow_graph_cmd = ["design-ai", "site", "--stdin", "--graph", "--json"]
+    assert_site_workflow_graph_json(passing_site_workflow_graph_json(), context=context, cmd=site_workflow_graph_cmd)
     expect_self_test_failure(
         lambda: assert_site_json("\x1b[31m{}", context=context, cmd=site_cmd),
         expected="ANSI escape",
@@ -9092,6 +9410,11 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_site_mcp_plan_markdown("\x1b[31m# Website improvement MCP action plan", context=context, cmd=site_mcp_plan_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_workflow_graph_json("\x1b[31m{}", context=context, cmd=site_workflow_graph_cmd),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -9294,6 +9617,56 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_cmd,
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    reordered_site_workflow_graph_payload = json.loads(passing_site_workflow_graph_json())
+    reordered_site_workflow_graph_payload = {
+        "kind": reordered_site_workflow_graph_payload["kind"],
+        "version": reordered_site_workflow_graph_payload["version"],
+        "generatedAt": reordered_site_workflow_graph_payload["generatedAt"],
+        "filePath": reordered_site_workflow_graph_payload["filePath"],
+        "status": reordered_site_workflow_graph_payload["status"],
+        "workspaceStatus": reordered_site_workflow_graph_payload["workspaceStatus"],
+        "mcpStatus": reordered_site_workflow_graph_payload["mcpStatus"],
+        "externalCalls": reordered_site_workflow_graph_payload["externalCalls"],
+        "site": reordered_site_workflow_graph_payload["site"],
+        "summary": reordered_site_workflow_graph_payload["summary"],
+        "nodes": reordered_site_workflow_graph_payload["nodes"],
+        "edges": reordered_site_workflow_graph_payload["edges"],
+        "boundaries": reordered_site_workflow_graph_payload["boundaries"],
+    }
+    expect_self_test_failure(
+        lambda: assert_site_workflow_graph_json(
+            json.dumps(reordered_site_workflow_graph_payload),
+            context=context,
+            cmd=site_workflow_graph_cmd,
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    stale_site_workflow_graph_payload = json.loads(passing_site_workflow_graph_json())
+    stale_site_workflow_graph_payload["externalCalls"] = True
+    expect_self_test_failure(
+        lambda: assert_site_workflow_graph_json(
+            json.dumps(stale_site_workflow_graph_payload),
+            context=context,
+            cmd=site_workflow_graph_cmd,
+        ),
+        expected="external calls",
+        scope="smoke assertions",
+    )
+    missing_site_workflow_graph_node_payload = json.loads(passing_site_workflow_graph_json())
+    missing_site_workflow_graph_node_payload["nodes"] = [
+        node for node in missing_site_workflow_graph_node_payload["nodes"]
+        if node.get("id") != "prompt:codex-implementation"
+    ]
+    expect_self_test_failure(
+        lambda: assert_site_workflow_graph_json(
+            json.dumps(missing_site_workflow_graph_node_payload),
+            context=context,
+            cmd=site_workflow_graph_cmd,
+        ),
+        expected="node count changed",
         scope="smoke assertions",
     )
     assert_command_alias_output(

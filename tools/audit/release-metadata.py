@@ -277,6 +277,27 @@ RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_GRAPH_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --stdin --graph --json`",
+        "design-ai site --stdin --graph --json",
+        "site --stdin --graph --json",
+        "site --graph --json",
+    ),
+    (
+        "Website Console workflow graph",
+        "Website Improvement workflow graph",
+        "site workflow graph JSON",
+        "Website Console workflow graph export",
+        "Website Console workflow graph 생성",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_BUNDLE_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --bundle --out <dir>`",
@@ -1702,6 +1723,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site prompt-list package smoke phrase",
     "site mcp-check package smoke phrase",
     "site mcp-plan package smoke phrase",
+    "site workflow graph package smoke phrase",
     "site bundle package smoke phrase",
     "site bundle-check package smoke phrase",
     "site bundle-compare package smoke phrase",
@@ -1878,6 +1900,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site mcp-plan package smoke phrase",
         RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site workflow graph package smoke phrase",
+        RELEASE_SITE_GRAPH_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site bundle package smoke phrase",
@@ -2479,6 +2505,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
+`design-ai site --stdin --graph --json` Website Console workflow graph export,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification and bundle digest fingerprint verification,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
@@ -2573,6 +2600,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe 검증도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
+`design-ai site --stdin --graph --json` Website Console workflow graph 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증과 bundle digest 검증도 확인하고,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
@@ -3091,6 +3119,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site mcp-check package smoke phrase"
         in site_mcp_probe_package_smoke_drift_errors,
         "release policy docs should mention Website Console MCP probe smoke",
+    )
+
+    site_workflow_graph_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai site --stdin --graph --json` Website Console workflow graph export",
+                "Website Console graph coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    site_workflow_graph_package_smoke_drift_errors = "\n".join(
+        site_workflow_graph_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site workflow graph package smoke phrase"
+        in site_workflow_graph_package_smoke_drift_errors,
+        "release policy docs should mention Website Console workflow graph smoke",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(

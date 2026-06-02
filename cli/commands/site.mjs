@@ -11,6 +11,7 @@ import {
   buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
+  buildSiteWorkflowGraph,
   createSampleSiteWorkspace,
   formatSiteJson,
   formatSiteBundleCompareHuman,
@@ -23,6 +24,8 @@ import {
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
   formatSitePromptTemplatesJson,
+  formatSiteWorkflowGraphJson,
+  formatSiteWorkflowGraphMarkdown,
   generateSiteRefactorTasks,
   parseSiteArgs,
 } from "../lib/site.mjs";
@@ -36,6 +39,7 @@ function printHelp() {
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --graph [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
@@ -56,6 +60,8 @@ function printHelp() {
   console.log("              Add read-only local URL/path/tool-handoff probes to --mcp-check or --mcp-plan; no external writes or MCP calls");
   console.log("  --mcp-plan");
   console.log("              Generate a Markdown MCP readiness action plan without external MCP calls");
+  console.log("  --graph");
+  console.log("              Export a portable Website Improvement workflow graph without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --bundle    Write a complete local handoff bundle directory");
   console.log("  --bundle-check");
@@ -71,7 +77,7 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
@@ -80,6 +86,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --mcp-check --json");
   console.log("  design-ai site website-workspace.json --mcp-check --probes --json");
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
+  console.log("  design-ai site website-workspace.json --graph --json --out website-workflow-graph.json");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
   console.log("  design-ai site website-handoff-bundle --bundle-check --json");
@@ -133,6 +140,7 @@ function printHumanSummary(summary) {
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --task 1 --out codex-implementation.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-check --json`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-plan --out mcp-action-plan.md`);
+  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --graph --json --out website-workflow-graph.json`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --bundle --out website-handoff-bundle`);
 }
 
@@ -265,6 +273,10 @@ export async function runSite(args) {
     const mcpReport = buildSiteMcpCheckReport(workspace, summary, { probes: parsed.probes });
     status = mcpReport.status;
     content = `${buildSiteMcpActionPlan(workspace, summary, { probes: parsed.probes })}\n`;
+  } else if (parsed.graph) {
+    const graph = buildSiteWorkflowGraph(workspace, summary);
+    status = graph.status;
+    content = `${parsed.json ? formatSiteWorkflowGraphJson(graph) : formatSiteWorkflowGraphMarkdown(graph)}\n`;
   } else if (parsed.report) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {
@@ -295,7 +307,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
+  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.graph || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);
