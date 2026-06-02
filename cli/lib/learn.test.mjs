@@ -19,6 +19,7 @@ import {
   clearLearning,
   defaultLearningArchiveFile,
   defaultLearningUsageFile,
+  diffLearningProfiles,
   forgetLearning,
   importLearningProfile,
   initializeLearningProfile,
@@ -211,6 +212,15 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(verifyStdinArgs.action, "verify");
   assert.equal(verifyStdinArgs.stdin, true);
 
+  const diffArgs = parseLearnArgs(["--diff", "--from-file", "learning-backup.json", "--json"]);
+  assert.equal(diffArgs.action, "diff");
+  assert.equal(diffArgs.fromFile, "learning-backup.json");
+  assert.equal(diffArgs.json, true);
+
+  const diffStdinArgs = parseLearnArgs(["--diff", "--stdin"]);
+  assert.equal(diffStdinArgs.action, "diff");
+  assert.equal(diffStdinArgs.stdin, true);
+
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
   assert.equal(auditFixDryRunArgs.fix, true);
@@ -363,6 +373,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--eval"]),
     /--eval requires --from-file or --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--diff"]),
+    /--diff requires --from-file or --stdin/,
   );
 });
 
@@ -599,6 +613,144 @@ test("buildLearningBackup returns a full importable learning profile payload", (
   assert.deepEqual(backup.auditSummary, { status: "pass", failures: 0, warnings: 0 });
   assert.deepEqual(backup.entries.map((entry) => entry.category), ["korean", "workflow"]);
   assert.equal(backup.entries[0].text, "Prefer dense Korean product UI");
+}));
+
+test("diffLearningProfiles compares active and portable profiles without mutation", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+      {
+        id: "learn-conflict",
+        category: "accessibility",
+        text: "Always include keyboard focus notes",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const before = readFileSync(filePath, "utf8");
+  const diff = diffLearningProfiles({
+    filePath,
+    source: "learning-backup.json",
+    now: new Date("2026-05-22T00:01:00.000Z"),
+    compareText: JSON.stringify({
+      version: 1,
+      updatedAt: "2026-05-22T00:00:04.000Z",
+      entries: [
+        {
+          id: "learn-a-restored",
+          category: "brand",
+          text: "Use quiet enterprise language",
+          source: "backup",
+          createdAt: "2026-05-22T00:00:04.000Z",
+        },
+        {
+          id: "learn-c",
+          category: "korean",
+          text: "Prefer compact Korean mobile layouts",
+          source: "backup",
+          createdAt: "2026-05-22T00:00:05.000Z",
+        },
+        {
+          id: "learn-conflict",
+          category: "workflow",
+          text: "Use a release checklist before handoff",
+          source: "backup",
+          createdAt: "2026-05-22T00:00:06.000Z",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(diff.file, filePath);
+  assert.equal(diff.source, "learning-backup.json");
+  assert.equal(diff.generatedAt, "2026-05-22T00:01:00.000Z");
+  assert.equal(diff.profileCount, 3);
+  assert.equal(diff.comparisonCount, 3);
+  assert.equal(diff.sameTextCount, 1);
+  assert.equal(diff.profileOnlyCount, 2);
+  assert.equal(diff.comparisonOnlyCount, 2);
+  assert.equal(diff.metadataChangedCount, 1);
+  assert.equal(diff.idConflictCount, 1);
+  assert.deepEqual(diff.metadataChanged[0].changedFields, ["id", "source", "createdAt"]);
+  assert.equal(diff.idConflicts[0].id, "learn-conflict");
+  assert.deepEqual(diff.profileAuditSummary, { status: "pass", failures: 0, warnings: 0 });
+  assert.deepEqual(diff.comparisonAuditSummary, { status: "pass", failures: 0, warnings: 0 });
+  assert.equal(diff.privacy.mutatesProfile, false);
+  assert.ok(diff.recommendations.some((item) => item.text.includes("comparison-only entries")));
+  assert.equal(readFileSync(filePath, "utf8"), before);
+}));
+
+test("runLearn emits profile diff JSON without importing comparison entries", async () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const comparisonPath = path.join(dir, "comparison.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(comparisonPath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "cli",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+      {
+        id: "learn-b",
+        category: "workflow",
+        text: "Keep release notes evidence-led",
+        source: "backup",
+        createdAt: "2026-05-22T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const output = await captureStdout(() => runLearn([
+    "--diff",
+    "--from-file",
+    comparisonPath,
+    "--file",
+    filePath,
+    "--json",
+  ]));
+  const payload = JSON.parse(output);
+
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.source, comparisonPath);
+  assert.equal(payload.profileOnlyCount, 0);
+  assert.equal(payload.comparisonOnlyCount, 1);
+  assert.equal(payload.comparisonOnly[0].id, "learn-b");
+  assert.equal(loadLearningProfile(filePath).entries.length, 1);
 }));
 
 test("buildRedactedLearningBackup returns an importable profile with sensitive text redacted", () => withTempDir((dir) => {

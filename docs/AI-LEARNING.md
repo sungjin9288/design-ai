@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.46:
+What ships in v4.47:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -16,6 +16,7 @@ What ships in v4.46:
 - `design-ai learn --redact` prints a portable JSON backup with sensitive-looking entry text redacted from the local profile, `--from-file`, or `--stdin`.
 - `design-ai learn --out file` writes JSON result artifacts, `learn --export --out file` writes the Markdown context block, and `learn --curate --report --out file` writes the Markdown curation report, while `--force` controls overwrites.
 - `design-ai learn --verify` validates a portable learning JSON payload without importing it.
+- `design-ai learn --diff --from-file learning.json` compares the active profile against a portable learning JSON payload without importing it, reporting profile-only entries, comparison-only entries, metadata changes, and id conflicts.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
@@ -187,6 +188,16 @@ cat learning-backup.json | design-ai learn --verify --stdin --json
 
 Verify mode parses the same `entries` payload accepted by import, normalizes imported entry metadata, and reports audit warnings such as duplicate ids or sensitive-looking text. It never reads or writes the target local profile.
 
+Compare a portable learning payload against the active profile:
+
+```bash
+design-ai learn --diff --from-file learning-backup.json
+design-ai learn --diff --from-file learning-backup.json --json --out learning-diff.json
+cat learning-backup.json | design-ai learn --diff --stdin --json
+```
+
+Diff mode is read-only. It compares the active profile with a portable profile by category plus normalized text, then reports profile-only entries, comparison-only entries, metadata changes for matching notes, and id conflicts where the same id points at different learning text.
+
 Import a portable learning profile:
 
 ```bash
@@ -194,6 +205,7 @@ design-ai learn --backup --json --out learning-backup.json
 design-ai learn --redact --json --out learning-redacted.json
 design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force
 design-ai learn --verify --from-file learning-backup.json
+design-ai learn --diff --from-file learning-backup.json --json
 design-ai learn --import --from-file learning-backup.json --dry-run
 cat learning-backup.json | design-ai learn --import --stdin --yes
 ```
@@ -330,6 +342,8 @@ Use `design-ai learn --stats` when you need a quick read on profile size, catego
 Use `design-ai learn --feedback` only for durable preferences you want future prompts to see. Do not store one-off task corrections, private project facts, credentials, contact details, or unresolved critique as feedback entries.
 
 Use `design-ai learn --verify --from-file` before reviewing or applying a profile from another machine or repository. It confirms the payload is importable without touching your current local profile.
+
+Use `design-ai learn --diff --from-file` after verification when you need to understand what would be new, missing, or metadata-changed before deciding whether to import or restore a portable profile.
 
 Use `design-ai learn --redact --json --out learning-redacted.json` before sending a local learning profile to another person, repository, or support channel. If you already have a portable backup artifact, use `design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force` or pipe it through `design-ai learn --redact --stdin --json --out learning-redacted.json --force` so the original artifact remains unchanged. Review the resulting `redactions` list and then run `design-ai learn --verify --from-file learning-redacted.json` if the redacted profile will be imported elsewhere.
 

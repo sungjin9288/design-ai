@@ -12,6 +12,7 @@ import {
   buildLearningEvalTemplate,
   buildLearningBackup,
   buildLearningContext,
+  diffLearningProfiles,
   buildRedactedLearningBackup,
   clearLearning,
   forgetLearning,
@@ -48,6 +49,8 @@ function printHelp() {
   console.log("        cat learning-backup.json | design-ai learn --redact --stdin [--json] [--out file] [--force]");
   console.log("        design-ai learn --verify --from-file learning.json [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --verify --stdin [--json] [--out file] [--force]");
+  console.log("        design-ai learn --diff --from-file learning.json [--json] [--out file] [--force]");
+  console.log("        cat learning.json | design-ai learn --diff --stdin [--json] [--out file] [--force]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
@@ -68,8 +71,8 @@ function printHelp() {
   console.log("  --remember text      Remember an inline preference or project constraint");
   console.log("  --feedback text      Convert outcome feedback into a reusable local learning note");
   console.log(`  --outcome kind       Feedback outcome: ${LEARNING_FEEDBACK_OUTCOMES.join(", ")}. Default: improve`);
-  console.log("  --from-file file     Read remember/feedback text or import/verify/redact JSON from a file");
-  console.log("  --stdin              Read remember/feedback text or import/verify/redact JSON from standard input");
+  console.log("  --from-file file     Read remember/feedback text or import/verify/diff/redact JSON from a file");
+  console.log("  --stdin              Read remember/feedback text or import/verify/diff/redact JSON from standard input");
   console.log("  --category kind      preference, brand, workflow, constraint, accessibility, korean, other");
   console.log("  --query text         Filter list/export output to entries whose category or text matches the query");
   console.log("  --explain            With --list, include selection score, matched tokens, and reason");
@@ -79,6 +82,7 @@ function printHelp() {
   console.log("  --backup             Print a full portable learning-profile backup; use --json for importable JSON");
   console.log("  --redact             Print a portable JSON backup with sensitive-looking text redacted");
   console.log("  --verify             Validate a portable learning JSON payload without importing it");
+  console.log("  --diff               Compare the active profile against a portable learning JSON payload without importing it");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
@@ -117,6 +121,7 @@ function printHelp() {
   console.log("  design-ai learn --redact --json --out learning-redacted.json");
   console.log("  design-ai learn --redact --from-file learning-backup.json --json --out learning-redacted.json --force");
   console.log("  design-ai learn --verify --from-file learning-backup.json");
+  console.log("  design-ai learn --diff --from-file learning-backup.json --json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -498,6 +503,76 @@ function printUsage(payload) {
   console.log("Privacy: usage events store selected entry ids and a short brief hash, not raw brief text.");
 }
 
+function printDiff(payload) {
+  header("design-ai learn", "Learning profile diff");
+  info(`File: ${payload.file}`);
+  info(`Compare: ${payload.source}`);
+  info(`Profile entries: ${payload.profileCount}`);
+  info(`Comparison entries: ${payload.comparisonCount}`);
+  info(`Profile-only: ${payload.profileOnlyCount}`);
+  info(`Comparison-only: ${payload.comparisonOnlyCount}`);
+  info(`Metadata changes: ${payload.metadataChangedCount}`);
+  info(`ID conflicts: ${payload.idConflictCount}`);
+  info(`Profile audit: ${payload.profileAuditSummary.status} (${payload.profileAuditSummary.failures} failure(s), ${payload.profileAuditSummary.warnings} warning(s))`);
+  info(`Comparison audit: ${payload.comparisonAuditSummary.status} (${payload.comparisonAuditSummary.failures} failure(s), ${payload.comparisonAuditSummary.warnings} warning(s))`);
+  console.log();
+
+  if (
+    payload.profileOnly.length === 0
+    && payload.comparisonOnly.length === 0
+    && payload.metadataChanged.length === 0
+    && payload.idConflicts.length === 0
+  ) {
+    console.log("Profiles match by category, normalized text, id, source, and createdAt metadata.");
+  }
+
+  if (payload.profileOnly.length > 0) {
+    console.log("Profile-only entries:");
+    for (const entry of payload.profileOnly) {
+      console.log(`- ${entry.id}: [${entry.category}] ${entry.textPreview}`);
+    }
+    console.log();
+  }
+
+  if (payload.comparisonOnly.length > 0) {
+    console.log("Comparison-only entries:");
+    for (const entry of payload.comparisonOnly) {
+      console.log(`- ${entry.id}: [${entry.category}] ${entry.textPreview}`);
+    }
+    console.log();
+  }
+
+  if (payload.metadataChanged.length > 0) {
+    console.log("Metadata changes:");
+    for (const item of payload.metadataChanged) {
+      console.log(`- ${item.profile.id}: ${item.changedFields.join(", ")}`);
+      console.log(`  ${dim(`profile ${item.profile.source} · ${item.profile.createdAt}`)}`);
+      console.log(`  ${dim(`comparison ${item.comparison.source} · ${item.comparison.createdAt}`)}`);
+    }
+    console.log();
+  }
+
+  if (payload.idConflicts.length > 0) {
+    console.log("ID conflicts:");
+    for (const item of payload.idConflicts) {
+      console.log(`- ${item.id}`);
+      console.log(`  profile: [${item.profile.category}] ${item.profile.textPreview}`);
+      console.log(`  comparison: [${item.comparison.category}] ${item.comparison.textPreview}`);
+    }
+    console.log();
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+    console.log();
+  }
+
+  console.log("No changes made. Use `design-ai learn --import --dry-run` if comparison-only entries should be added.");
+}
+
 function printEval(payload) {
   header("design-ai learn", "Local learning eval report");
   info(`File: ${payload.file}`);
@@ -832,6 +907,21 @@ export async function runLearn(args) {
     }
 
     printLearningImportVerification(payload);
+    return;
+  }
+
+  if (parsed.action === "diff") {
+    const payload = diffLearningProfiles({
+      filePath: parsed.filePath,
+      compareText: readLearningInput(parsed),
+      source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+
+    printDiff(payload);
     return;
   }
 

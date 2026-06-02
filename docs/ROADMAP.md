@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 262 — Learning Profile Diff (v4.47.0) ✓ shipped
+
+`design-ai learn --diff` now compares the active local learning profile against a portable JSON profile without importing or mutating entries. Operators can run it after backup/redaction/verification and before import or restore decisions to see profile-only entries, comparison-only entries, metadata changes, and id conflicts.
+
+### Changed
+- Added `design-ai learn --diff --from-file learning.json [--json] [--out file]` and stdin support.
+- Added read-only human and JSON diff output with profile counts, comparison counts, audit summaries, same-text counts, profile-only entries, comparison-only entries, metadata changes, id conflicts, recommendations, and privacy metadata.
+- Kept the comparison deterministic by matching entries on `category + normalized text`, while separately flagging id conflicts when the same id points at different learning text.
+- Added unit coverage for parser validation, helper output, command JSON output, and no-mutation behavior.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` diff JSON paths.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.47.0`.
+
+### Impact
+- Local learning migration, backup review, redaction review, and company rollout preparation can now inspect profile drift before applying imports.
+- Existing learning profile, archive, usage sidecar, eval checkpoint, and curation schemas remain compatible.
+
+### What this enables
+- A safer local learning operations loop: backup/redact, verify, diff, then import only after the expected additions and conflicts are clear.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.46.0 → 4.47.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 261 — Workspace Curation Report Next Actions (v4.46.0) ✓ shipped
 
 `design-ai workspace` now pairs learning curation warnings with a Markdown report artifact command. Operators can keep the existing `learn --curate` preview path, or first run `learn --curate --report --out learning-curation-report.md` from the workspace next actions to save a readable audit trail before applying archive-first cleanup.

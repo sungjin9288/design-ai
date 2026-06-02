@@ -10,7 +10,7 @@ This catches release-only packaging regressions that unit tests miss:
 
 Usage:
   python3 tools/audit/package-smoke.py --pack
-  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.46.0.tgz
+  python3 tools/audit/package-smoke.py dist/design-ai-cli-4.47.0.tgz
 """
 from __future__ import annotations
 
@@ -2272,6 +2272,40 @@ def learning_import_payload_text() -> str:
     )
 
 
+def learning_diff_payload_text() -> str:
+    return json.dumps(
+        {
+            "file": "/portable/learning-diff.json",
+            "version": 1,
+            "updatedAt": "2026-05-22T00:00:03.000Z",
+            "entries": [
+                {
+                    "id": "learn-existing-restored",
+                    "category": "brand",
+                    "text": "Use quiet enterprise language",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                },
+                {
+                    "id": "learn-new",
+                    "category": "korean",
+                    "text": "Prefer dense Korean mobile layouts",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                },
+                {
+                    "id": "learn-existing",
+                    "category": "workflow",
+                    "text": "Use a release checklist before handoff",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:03.000Z",
+                },
+            ],
+        },
+        indent=2,
+    )
+
+
 def assert_learning_import_json(
     raw: str,
     *,
@@ -2864,6 +2898,141 @@ def assert_learning_verify_smoke(
         expected_status="warn",
         context=f"{context} stdin",
         cmd=stdin_cmd,
+    )
+
+
+def assert_learning_diff_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    source: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn diff JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn diff JSON must be an object")
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn diff JSON file path differs from the smoke profile",
+    )
+    require_package_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn diff source changed")
+    require_package_smoke(payload.get("profileCount") == 1, context=context, cmd=cmd, message="learn diff profile count changed")
+    require_package_smoke(payload.get("comparisonCount") == 3, context=context, cmd=cmd, message="learn diff comparison count changed")
+    require_package_smoke(payload.get("sameTextCount") == 1, context=context, cmd=cmd, message="learn diff same text count changed")
+    require_package_smoke(payload.get("profileOnlyCount") == 0, context=context, cmd=cmd, message="learn diff profile-only count changed")
+    require_package_smoke(payload.get("comparisonOnlyCount") == 2, context=context, cmd=cmd, message="learn diff comparison-only count changed")
+    require_package_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn diff metadata change count changed")
+    require_package_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn diff id conflict count changed")
+
+    metadata_changed = payload.get("metadataChanged")
+    comparison_only = payload.get("comparisonOnly")
+    id_conflicts = payload.get("idConflicts")
+    require_package_smoke(
+        isinstance(metadata_changed, list)
+        and len(metadata_changed) == 1
+        and metadata_changed[0].get("changedFields") == ["id", "source", "createdAt"],
+        context=context,
+        cmd=cmd,
+        message="learn diff metadata change details changed",
+    )
+    require_package_smoke(
+        isinstance(comparison_only, list)
+        and len(comparison_only) == 2
+        and {entry.get("id") for entry in comparison_only} == {"learn-new", "learn-existing"},
+        context=context,
+        cmd=cmd,
+        message="learn diff comparison-only entries changed",
+    )
+    require_package_smoke(
+        isinstance(id_conflicts, list)
+        and len(id_conflicts) == 1
+        and id_conflicts[0].get("id") == "learn-existing",
+        context=context,
+        cmd=cmd,
+        message="learn diff id conflict details changed",
+    )
+
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
+        context=context,
+        cmd=cmd,
+        message="learn diff should report read-only privacy behavior",
+    )
+
+
+def assert_learning_diff_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_import_target_fixture(profile_path)
+    diff_file = profile_path.with_name(f"{profile_path.stem}-diff.json")
+    diff_file.write_text(f"{learning_diff_payload_text()}\n", encoding="utf-8")
+
+    cmd = command_factory(
+        "learn",
+        "--diff",
+        "--from-file",
+        str(diff_file),
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_learning_diff_json(
+        result.stdout,
+        profile_path=profile_path,
+        source=str(diff_file),
+        context=context,
+        cmd=cmd,
+    )
+
+    out_path = profile_path.with_name(f"{profile_path.stem}-diff-out.json")
+    out_path.write_text("stale output\n", encoding="utf-8")
+    out_cmd = command_factory(
+        "learn",
+        "--diff",
+        "--from-file",
+        str(diff_file),
+        "--file",
+        str(profile_path),
+        "--json",
+        "--out",
+        str(out_path),
+        "--force",
+    )
+    out_result = run_plain(out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        out_result.stdout,
+        context=f"{context} out",
+        cmd=out_cmd,
+        expected_path=str(out_path),
+    )
+    assert_learning_diff_json(
+        out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        source=str(diff_file),
+        context=f"{context} out file",
+        cmd=out_cmd,
+    )
+
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    require_package_smoke(
+        len(profile.get("entries", [])) == 1,
+        context=f"{context} profile mutation",
+        cmd=cmd,
+        message="learn diff should not import or remove active profile entries",
     )
 
 
@@ -5360,6 +5529,140 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        learning_diff_path = Path(tmp) / "learning-diff.json"
+        learning_diff_payload = {
+            "file": str(learning_profile_path),
+            "source": str(learning_diff_path),
+            "generatedAt": "2026-05-22T00:01:00.000Z",
+            "profileExists": True,
+            "profileUpdatedAt": "2026-05-22T00:00:00.000Z",
+            "comparisonUpdatedAt": "2026-05-22T00:00:03.000Z",
+            "profileCount": 1,
+            "comparisonCount": 3,
+            "profileAuditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "comparisonAuditSummary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+            "sameTextCount": 1,
+            "profileOnlyCount": 0,
+            "comparisonOnlyCount": 2,
+            "metadataChangedCount": 1,
+            "idConflictCount": 1,
+            "profileOnly": [],
+            "comparisonOnly": [
+                {
+                    "id": "learn-new",
+                    "category": "korean",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                    "textPreview": "Prefer dense Korean mobile layouts",
+                },
+                {
+                    "id": "learn-existing",
+                    "category": "workflow",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:03.000Z",
+                    "textPreview": "Use a release checklist before handoff",
+                },
+            ],
+            "metadataChanged": [
+                {
+                    "key": "brand\nuse quiet enterprise language",
+                    "changedFields": ["id", "source", "createdAt"],
+                    "profile": {
+                        "id": "learn-existing",
+                        "category": "brand",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                        "textPreview": "Use quiet enterprise language",
+                    },
+                    "comparison": {
+                        "id": "learn-existing-restored",
+                        "category": "brand",
+                        "source": "backup",
+                        "createdAt": "2026-05-22T00:00:01.000Z",
+                        "textPreview": "Use quiet enterprise language",
+                    },
+                },
+            ],
+            "idConflicts": [
+                {
+                    "id": "learn-existing",
+                    "profile": {
+                        "id": "learn-existing",
+                        "category": "brand",
+                        "source": "package-smoke",
+                        "createdAt": "2026-05-22T00:00:00.000Z",
+                        "textPreview": "Use quiet enterprise language",
+                    },
+                    "comparison": {
+                        "id": "learn-existing",
+                        "category": "workflow",
+                        "source": "backup",
+                        "createdAt": "2026-05-22T00:00:03.000Z",
+                        "textPreview": "Use a release checklist before handoff",
+                    },
+                },
+            ],
+            "recommendations": [],
+            "privacy": {
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+                "mutatesProfile": False,
+            },
+        }
+        learn_diff_cmd = [
+            "design-ai",
+            "learn",
+            "--diff",
+            "--from-file",
+            str(learning_diff_path),
+            "--file",
+            str(learning_profile_path),
+            "--json",
+        ]
+        assert_learning_diff_json(
+            json.dumps(learning_diff_payload),
+            profile_path=learning_profile_path,
+            source=str(learning_diff_path),
+            context=context,
+            cmd=learn_diff_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_diff_json(
+                json.dumps({**learning_diff_payload, "comparisonOnlyCount": 1}),
+                profile_path=learning_profile_path,
+                source=str(learning_diff_path),
+                context=context,
+                cmd=learn_diff_cmd,
+            ),
+            expected="learn diff comparison-only count changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_diff_json(
+                json.dumps({
+                    **learning_diff_payload,
+                    "privacy": {
+                        **learning_diff_payload["privacy"],
+                        "mutatesProfile": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                source=str(learning_diff_path),
+                context=context,
+                cmd=learn_diff_cmd,
+            ),
+            expected="learn diff should report read-only privacy behavior",
+            scope="package smoke",
+        )
+
         learning_stats_payload = {
             "file": str(learning_profile_path),
             "exists": True,
@@ -7330,6 +7633,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin learn verify",
         )
+        assert_learning_diff_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-diff-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin learn diff",
+        )
         assert_learning_stats_smoke(
             lambda *args: [str(bin_path), *args],
             tmp_root / "installed-stats-learning.json",
@@ -8118,6 +8427,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec learn verify",
+        )
+        assert_learning_diff_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-diff-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec learn diff",
         )
         assert_learning_stats_smoke(
             lambda *args: npm_exec_cmd(tarball, *args),

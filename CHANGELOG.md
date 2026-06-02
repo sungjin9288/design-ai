@@ -2,6 +2,34 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.47.0 — Learning Profile Diff (2026-06)
+
+Added a read-only comparison path for local learning profiles. `design-ai learn --diff --from-file learning.json` now compares the active profile with a portable profile before import/restore decisions, reporting profile-only entries, comparison-only entries, metadata changes, and id conflicts without mutating `learning.json`.
+
+### Added
+- `design-ai learn --diff --from-file learning.json [--json] [--out file]` and stdin support.
+- Human and JSON diff output with active/comparison audit summaries, profile-only entries, comparison-only entries, metadata drift for matching notes, id conflicts, recommendations, and read-only privacy metadata.
+- Safe `--out` artifact writing for diff JSON output through the existing overwrite protection.
+- Unit coverage for parser validation, read-only diff payload generation, and command-level JSON output.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` `learn --diff --json` paths.
+- README, Korean README, Product Readiness, AI Learning docs, Roadmap, and Session Log coverage.
+
+### Preserved
+- The learning profile schema remains unchanged.
+- `learn --diff` does not import entries, archive entries, write sidecars, or mutate active profiles.
+
+### What this enables
+- Operators can compare backup, redacted, or portable profiles against the active local profile before deciding whether to import, restore, or share learning data.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.46.0 → 4.47.0.
+
 ## v4.46.0 — Workspace Curation Report Next Actions (2026-06)
 
 Added a read-only workspace bridge from learning curation warnings to durable Markdown report artifacts. `design-ai workspace` now suggests `design-ai learn --curate --report --out <learning-dir>/learning-curation-report.md` beside existing curation preview commands, so operators can save an audit trail before applying archive actions.
