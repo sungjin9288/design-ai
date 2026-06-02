@@ -24,6 +24,7 @@ import {
   forgetLearning,
   importLearningProfile,
   initializeLearningProfile,
+  listLearningRestoreBackups,
   learningEvalReport,
   learningStats,
   learningUsageStats,
@@ -234,6 +235,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(restoreStdinArgs.action, "restore");
   assert.equal(restoreStdinArgs.stdin, true);
   assert.equal(restoreStdinArgs.yes, true);
+
+  const restoreBackupsArgs = parseLearnArgs(["--restore-backups", "--limit", "3", "--json"]);
+  assert.equal(restoreBackupsArgs.action, "restore-backups");
+  assert.equal(restoreBackupsArgs.limit, 3);
+  assert.equal(restoreBackupsArgs.json, true);
 
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
@@ -900,6 +906,87 @@ test("restoreLearningProfile protects rollback backup paths before apply", () =>
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-restored"]);
 }));
 
+test("listLearningRestoreBackups scans sibling rollback backups without mutation", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const olderBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:01:00.000Z"));
+  const invalidBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:02:00.000Z"));
+  const newerBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:03:00.000Z"));
+  const activeProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:04:00.000Z",
+    entries: [
+      {
+        id: "learn-active",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:04:00.000Z",
+      },
+    ],
+  };
+  const olderProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:01:00.000Z",
+    entries: [
+      {
+        id: "learn-older",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "backup",
+        createdAt: "2026-05-22T00:01:00.000Z",
+      },
+    ],
+  };
+  const newerProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:03:00.000Z",
+    entries: [
+      {
+        id: "learn-newer-a",
+        category: "accessibility",
+        text: "Include keyboard focus evidence",
+        source: "backup",
+        createdAt: "2026-05-22T00:03:00.000Z",
+      },
+      {
+        id: "learn-newer-b",
+        category: "korean",
+        text: "Use Korean line-height guidance",
+        source: "backup",
+        createdAt: "2026-05-22T00:03:01.000Z",
+      },
+    ],
+  };
+  writeFileSync(filePath, JSON.stringify(activeProfile), "utf8");
+  writeFileSync(olderBackupPath, JSON.stringify(olderProfile), "utf8");
+  writeFileSync(invalidBackupPath, "{", "utf8");
+  writeFileSync(newerBackupPath, JSON.stringify(newerProfile), "utf8");
+  writeFileSync(path.join(dir, "learning.unrelated.json"), JSON.stringify(olderProfile), "utf8");
+
+  const payload = listLearningRestoreBackups({
+    filePath,
+    limit: 2,
+    now: new Date("2026-05-22T00:05:00.000Z"),
+  });
+
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.directory, dir);
+  assert.equal(payload.pattern, "learning.restore-backup-*.json");
+  assert.equal(payload.totalCount, 3);
+  assert.equal(payload.count, 2);
+  assert.equal(payload.backups[0].file, newerBackupPath);
+  assert.equal(payload.backups[0].createdAt, "2026-05-22T00:03:00.000Z");
+  assert.equal(payload.backups[0].entryCount, 2);
+  assert.equal(payload.backups[0].auditSummary.status, "pass");
+  assert.equal(payload.backups[0].issueCount, 0);
+  assert.equal(payload.backups[0].restorePreviewCommand, `design-ai learn --restore --from-file ${newerBackupPath} --file ${filePath} --dry-run`);
+  assert.equal(payload.backups[1].file, invalidBackupPath);
+  assert.equal(payload.backups[1].auditSummary.status, "fail");
+  assert.equal(payload.backups[1].issueCount, 1);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
+}));
+
 test("restoreLearningProfile reports audit failures in preview and blocks apply", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   writeFileSync(filePath, JSON.stringify({
@@ -1090,6 +1177,52 @@ test("runLearn restore previews by default and applies only with confirmation", 
   assert.match(applied.rollbackCommand, /learning-rollback\.json/);
   assert.deepEqual(loadLearningProfile(rollbackPath).entries.map((entry) => entry.id), ["learn-active"]);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-restored"]);
+}));
+
+test("runLearn restore-backups lists rollback backup inventory", async () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const backupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:01:00.000Z"));
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:02:00.000Z",
+    entries: [
+      {
+        id: "learn-active",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:02:00.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(backupPath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-05-22T00:01:00.000Z",
+    entries: [
+      {
+        id: "learn-backup",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "backup",
+        createdAt: "2026-05-22T00:01:00.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const humanOutput = await captureStdout(() => runLearn(["--restore-backups", "--file", filePath]));
+  assert.match(humanOutput, /Learning restore rollback backups/);
+  assert.match(humanOutput, /learning\.restore-backup-20260522T000100000Z\.json/);
+  assert.match(humanOutput, /Preview: design-ai learn --restore --from-file/);
+
+  const jsonOutput = await captureStdout(() => runLearn(["--restore-backups", "--file", filePath, "--json"]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.totalCount, 1);
+  assert.equal(payload.backups[0].file, backupPath);
+  assert.equal(payload.backups[0].entryCount, 1);
+  assert.equal(payload.backups[0].auditSummary.status, "pass");
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
 }));
 
 test("buildRedactedLearningBackup returns an importable profile with sensitive text redacted", () => withTempDir((dir) => {

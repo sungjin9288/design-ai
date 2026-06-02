@@ -4,7 +4,7 @@ design-ai supports a local learning profile. This is not model training, fine-tu
 
 ## Scope
 
-What ships in v4.49:
+What ships in v4.50:
 
 - `design-ai learn --init` previews starter local learning entries for dogfood use, and `--init --yes` writes them to the selected profile.
 - `design-ai learn --remember ...` stores user or project preferences in a local JSON profile.
@@ -19,6 +19,7 @@ What ships in v4.49:
 - `design-ai learn --diff --from-file learning.json` compares the active profile against a portable learning JSON payload without importing it, reporting profile-only entries, comparison-only entries, metadata changes, and id conflicts.
 - `design-ai learn --restore --from-file learning-backup.json` previews a full active-profile replacement from a portable backup, and `--restore --yes` applies it only when the source audit has no failures.
 - Confirmed `learn --restore --yes` writes a rollback backup of the previous active profile before replacement; use `--backup-file path` to choose the rollback file.
+- `design-ai learn --restore-backups` lists sibling restore rollback backups for the active profile without mutating the profile.
 - `design-ai learn --import` merges entries from a JSON learning profile or `learn --export --json` payload.
 - `design-ai learn --audit` inspects profile shape, duplicates, possible sensitive content, and cleanup suggestions without changing the profile.
 - `design-ai learn --audit --fix --dry-run` previews safe cleanup suggestions that can be applied automatically.
@@ -209,10 +210,14 @@ design-ai learn --diff --from-file learning-backup.json --json
 design-ai learn --restore --from-file learning-backup.json
 design-ai learn --restore --from-file learning-backup.json --yes --json
 design-ai learn --restore --from-file learning-backup.json --yes --backup-file learning-before-restore.json
+design-ai learn --restore-backups
+design-ai learn --restore-backups --json --out restore-backups.json
 cat learning-backup.json | design-ai learn --restore --stdin --yes
 ```
 
 Restore is preview-first and replaces the active profile only when `--yes` is present. It requires `--from-file` or `--stdin`, rejects `--dry-run` combined with `--yes`, and refuses to apply a source payload whose audit has failures. Confirmed apply writes the previous active profile to a rollback backup before the replacement. The default rollback path is a sibling timestamped file such as `learning.restore-backup-20260602T010203000Z.json`; pass `--backup-file path` to choose a specific file. Existing explicit rollback files require `--force`, and the rollback path cannot be the active profile or restore source. JSON output reports the target file, dry-run/apply state, restorable state, rollback `backupFile`, `backupCreated`, `backupEntryCount`, rollback preview command, previous/restored counts, removed/added counts, same-text count, metadata changes, id conflicts, audit summary, diff details, and privacy metadata. Use restore when the backup should become the complete active profile; use import when you only want to merge new entries while keeping the existing profile.
+
+`learn --restore-backups` is read-only. It searches for sibling files matching `learning.restore-backup-*.json`, reports the latest backups first, audits each backup file, and prints a restore dry-run preview command for each candidate. Use this when you need to find the automatic rollback file from a previous confirmed restore before deciding whether to preview or apply a rollback.
 
 Import a portable learning profile:
 

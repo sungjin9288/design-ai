@@ -3126,6 +3126,61 @@ def assert_learning_restore_json(
     )
 
 
+def assert_learning_restore_backups_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    backup_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn restore-backups JSON") from error
+
+    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups JSON must be an object")
+    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups file path changed")
+    require_package_smoke(
+        payload.get("directory") == str(profile_path.parent)
+        and payload.get("pattern") == f"{profile_path.stem}.restore-backup-*.json",
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups search pattern changed",
+    )
+    require_package_smoke(payload.get("totalCount", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups should find rollback backups")
+    require_package_smoke(payload.get("count", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups limited count changed")
+    backups = payload.get("backups")
+    require_package_smoke(isinstance(backups, list) and backups, context=context, cmd=cmd, message="learn restore-backups backups array missing")
+    first = backups[0]
+    require_package_smoke(first.get("file") == str(backup_path), context=context, cmd=cmd, message="learn restore-backups latest file changed")
+    require_package_smoke(first.get("entryCount") == 1, context=context, cmd=cmd, message="learn restore-backups entry count changed")
+    require_package_smoke(
+        first.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups audit summary changed",
+    )
+    restore_preview_command = first.get("restorePreviewCommand")
+    require_package_smoke(
+        isinstance(restore_preview_command, str)
+        and "design-ai learn --restore --from-file" in restore_preview_command
+        and str(backup_path) in restore_preview_command
+        and str(profile_path) in restore_preview_command,
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups preview command changed",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
+        context=context,
+        cmd=cmd,
+        message="learn restore-backups privacy mutation flag changed",
+    )
+
+
 def assert_learning_restore_smoke(
     command_factory,
     profile_path: Path,
@@ -3253,6 +3308,58 @@ def assert_learning_restore_smoke(
         context=f"{context} apply profile",
         cmd=apply_cmd,
         message="learn restore apply should replace target profile with restore source",
+    )
+
+    restore_inventory_path = profile_path.with_name(f"{profile_path.stem}.restore-backup-20260522T000500000Z.json")
+    restore_inventory_path.write_text(json.dumps(backup_profile, indent=2), encoding="utf-8")
+    backups_human_cmd = command_factory("learn", "--restore-backups", "--file", str(profile_path), "--limit", "1")
+    backups_human_result = run_plain(backups_human_cmd, cwd=cwd, env=env)
+    require_package_smoke(
+        "Learning restore rollback backups" in backups_human_result.stdout
+        and restore_inventory_path.name in backups_human_result.stdout
+        and "Preview: design-ai learn --restore --from-file" in backups_human_result.stdout,
+        context=f"{context} restore-backups human",
+        cmd=backups_human_cmd,
+        message="learn restore-backups human output changed",
+    )
+
+    backups_json_cmd = command_factory("learn", "--restore-backups", "--file", str(profile_path), "--limit", "1", "--json")
+    backups_json_result = run_plain(backups_json_cmd, cwd=cwd, env=env)
+    assert_learning_restore_backups_json(
+        backups_json_result.stdout,
+        profile_path=profile_path,
+        backup_path=restore_inventory_path,
+        context=f"{context} restore-backups JSON",
+        cmd=backups_json_cmd,
+    )
+
+    backups_out_path = profile_path.with_name(f"{profile_path.stem}-restore-backups-out.json")
+    backups_out_path.write_text("stale output\n", encoding="utf-8")
+    backups_out_cmd = command_factory(
+        "learn",
+        "--restore-backups",
+        "--file",
+        str(profile_path),
+        "--limit",
+        "1",
+        "--json",
+        "--out",
+        str(backups_out_path),
+        "--force",
+    )
+    backups_out_result = run_plain(backups_out_cmd, cwd=cwd, env=env)
+    assert_output_write_success(
+        backups_out_result.stdout,
+        context=f"{context} restore-backups out",
+        cmd=backups_out_cmd,
+        expected_path=str(backups_out_path),
+    )
+    assert_learning_restore_backups_json(
+        backups_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        backup_path=restore_inventory_path,
+        context=f"{context} restore-backups out file",
+        cmd=backups_out_cmd,
     )
 
 
@@ -5988,6 +6095,84 @@ def run_self_test() -> None:
                 cmd=learn_restore_cmd,
             ),
             expected="learn restore privacy mutation flag changed",
+            scope="package smoke",
+        )
+
+        learning_restore_backups_payload = {
+            "file": str(learning_profile_path),
+            "directory": str(learning_profile_path.parent),
+            "pattern": "learning.restore-backup-*.json",
+            "generatedAt": "2026-05-22T00:02:00.000Z",
+            "limit": 1,
+            "totalCount": 1,
+            "count": 1,
+            "backups": [
+                {
+                    "file": str(learning_restore_backup_path),
+                    "name": learning_restore_backup_path.name,
+                    "createdAt": "2026-05-22T00:01:00.000Z",
+                    "modifiedAt": "2026-05-22T00:01:00.000Z",
+                    "sizeBytes": 512,
+                    "updatedAt": "2026-05-22T00:00:00.000Z",
+                    "entryCount": 1,
+                    "auditSummary": {
+                        "status": "pass",
+                        "failures": 0,
+                        "warnings": 0,
+                    },
+                    "issueCount": 0,
+                    "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
+                },
+            ],
+            "privacy": {
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": False,
+                "mutatesProfile": False,
+            },
+        }
+        learn_restore_backups_cmd = [
+            "design-ai",
+            "learn",
+            "--restore-backups",
+            "--file",
+            str(learning_profile_path),
+            "--limit",
+            "1",
+            "--json",
+        ]
+        assert_learning_restore_backups_json(
+            json.dumps(learning_restore_backups_payload),
+            profile_path=learning_profile_path,
+            backup_path=learning_restore_backup_path,
+            context=context,
+            cmd=learn_restore_backups_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_json(
+                json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
+                profile_path=learning_profile_path,
+                backup_path=learning_restore_backup_path,
+                context=context,
+                cmd=learn_restore_backups_cmd,
+            ),
+            expected="learn restore-backups should find rollback backups",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_backups_json(
+                json.dumps({
+                    **learning_restore_backups_payload,
+                    "privacy": {
+                        **learning_restore_backups_payload["privacy"],
+                        "mutatesProfile": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                backup_path=learning_restore_backup_path,
+                context=context,
+                cmd=learn_restore_backups_cmd,
+            ),
+            expected="learn restore-backups privacy mutation flag changed",
             scope="package smoke",
         )
 
