@@ -2,6 +2,7 @@
 
 import {
   existsSync,
+  unlinkSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -40,6 +41,7 @@ const LEARN_OPTIONS = [
   "--diff",
   "--restore",
   "--restore-backups",
+  "--prune",
   "--redact",
   "--audit",
   "--stats",
@@ -56,6 +58,7 @@ const LEARN_OPTIONS = [
   "--clear",
   "--category",
   "--limit",
+  "--keep",
   "--file",
   "--usage-file",
   "--backup-file",
@@ -208,6 +211,14 @@ export function parseLearningLimit(rawLimit) {
   return limit;
 }
 
+export function parseLearningKeep(rawKeep) {
+  const keep = Number(rawKeep);
+  if (!Number.isInteger(keep) || keep < 1 || keep > 100) {
+    throw new Error("--keep expects an integer from 1 to 100");
+  }
+  return keep;
+}
+
 export function parseLearnArgs(args) {
   const out = {
     action: "",
@@ -227,7 +238,9 @@ export function parseLearnArgs(args) {
     explain: false,
     forgetTarget: "",
     limit: 0,
+    keep: 0,
     fix: false,
+    prune: false,
     dryRun: false,
     strict: false,
     report: false,
@@ -266,6 +279,8 @@ export function parseLearnArgs(args) {
       setAction(out, "restore");
     } else if (arg === "--restore-backups") {
       setAction(out, "restore-backups");
+    } else if (arg === "--prune") {
+      out.prune = true;
     } else if (arg === "--redact") {
       setAction(out, "redact");
     } else if (arg === "--audit") {
@@ -322,6 +337,11 @@ export function parseLearnArgs(args) {
       if (!limit || limit.startsWith("--")) throw new Error("--limit expects an integer from 1 to 100");
       out.limit = parseLearningLimit(limit);
       i += 1;
+    } else if (arg === "--keep") {
+      const keep = args[i + 1];
+      if (!keep || keep.startsWith("--")) throw new Error("--keep expects an integer from 1 to 100");
+      out.keep = parseLearningKeep(keep);
+      i += 1;
     } else if (arg === "--file") {
       const filePath = args[i + 1];
       if (!filePath || filePath.startsWith("--")) throw new Error("--file expects a path");
@@ -366,8 +386,14 @@ export function parseLearnArgs(args) {
   if (out.fix && out.action !== "audit") {
     throw new Error("--fix can only be used with --audit");
   }
-  if (out.dryRun && !out.fix && !["import", "init", "curate", "restore"].includes(out.action)) {
-    throw new Error("--dry-run requires --fix, --init, --import, --restore, or --curate");
+  if (out.prune && out.action !== "restore-backups") {
+    throw new Error("--prune can only be used with --restore-backups");
+  }
+  if (out.keep && !(out.action === "restore-backups" && out.prune)) {
+    throw new Error("--keep can only be used with --restore-backups --prune");
+  }
+  if (out.dryRun && !out.fix && !["import", "init", "curate", "restore"].includes(out.action) && !(out.action === "restore-backups" && out.prune)) {
+    throw new Error("--dry-run requires --fix, --init, --import, --restore, --curate, or --restore-backups --prune");
   }
   if (out.fix && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --audit --fix");
@@ -383,6 +409,12 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "curate" && out.dryRun && out.yes) {
     throw new Error("Choose either --dry-run or --yes for --curate");
+  }
+  if (out.action === "restore-backups" && out.prune && out.dryRun && out.yes) {
+    throw new Error("Choose either --dry-run or --yes for --restore-backups --prune");
+  }
+  if (out.action === "restore-backups" && out.yes && !out.prune) {
+    throw new Error("--yes can only be used with --restore-backups --prune");
   }
   if (out.action === "feedback" && !out.categorySpecified) {
     out.category = "workflow";
@@ -1296,6 +1328,67 @@ export function listLearningRestoreBackups({
       storesRawBriefText: false,
       exposesEntryTextPreview: false,
       mutatesProfile: false,
+    },
+  };
+}
+
+export function pruneLearningRestoreBackups({
+  filePath = defaultLearningFile(),
+  keep = 5,
+  limit = 10,
+  dryRun = true,
+  now = new Date(),
+} = {}) {
+  const maxKeep = Number.isInteger(keep) && keep > 0 ? keep : 5;
+  const visibleLimit = Number.isInteger(limit) && limit > 0 ? limit : 10;
+  const inventory = listLearningRestoreBackups({
+    filePath,
+    limit: Number.MAX_SAFE_INTEGER,
+    now,
+  });
+  const retained = inventory.backups.slice(0, maxKeep);
+  const candidates = inventory.backups.slice(maxKeep);
+  const deleted = [];
+  const failures = [];
+
+  if (!dryRun) {
+    for (const backup of candidates) {
+      try {
+        unlinkSync(backup.file);
+        deleted.push(backup);
+      } catch (error) {
+        failures.push({
+          file: backup.file,
+          name: backup.name,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  }
+
+  return {
+    ...inventory,
+    limit: visibleLimit,
+    count: inventory.backups.slice(0, visibleLimit).length,
+    backups: inventory.backups.slice(0, visibleLimit),
+    prune: {
+      dryRun,
+      applied: !dryRun,
+      keep: maxKeep,
+      retainedCount: retained.length,
+      candidateCount: candidates.length,
+      deletedCount: deleted.length,
+      failureCount: failures.length,
+      retained,
+      candidates,
+      deleted,
+      failures,
+    },
+    privacy: {
+      storesRawBriefText: false,
+      exposesEntryTextPreview: false,
+      mutatesProfile: false,
+      deletesBackupFiles: !dryRun && deleted.length > 0,
     },
   };
 }

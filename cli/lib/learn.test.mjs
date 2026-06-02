@@ -34,6 +34,7 @@ import {
   normalizeCategory,
   normalizeFeedbackOutcome,
   parseLearnArgs,
+  pruneLearningRestoreBackups,
   recordLearningUsage,
   recordLearningFeedback,
   rememberLearning,
@@ -241,6 +242,19 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(restoreBackupsArgs.limit, 3);
   assert.equal(restoreBackupsArgs.json, true);
 
+  const restoreBackupsPruneArgs = parseLearnArgs(["--restore-backups", "--prune", "--keep", "2", "--dry-run", "--json"]);
+  assert.equal(restoreBackupsPruneArgs.action, "restore-backups");
+  assert.equal(restoreBackupsPruneArgs.prune, true);
+  assert.equal(restoreBackupsPruneArgs.keep, 2);
+  assert.equal(restoreBackupsPruneArgs.dryRun, true);
+  assert.equal(restoreBackupsPruneArgs.json, true);
+
+  const restoreBackupsPruneApplyArgs = parseLearnArgs(["--restore-backups", "--prune", "--keep", "2", "--yes"]);
+  assert.equal(restoreBackupsPruneApplyArgs.action, "restore-backups");
+  assert.equal(restoreBackupsPruneApplyArgs.prune, true);
+  assert.equal(restoreBackupsPruneApplyArgs.keep, 2);
+  assert.equal(restoreBackupsPruneApplyArgs.yes, true);
+
   const auditFixDryRunArgs = parseLearnArgs(["--audit", "--fix", "--dry-run", "--json"]);
   assert.equal(auditFixDryRunArgs.action, "audit");
   assert.equal(auditFixDryRunArgs.fix, true);
@@ -315,12 +329,24 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /--limit expects an integer from 1 to 100/,
   );
   assert.throws(
+    () => parseLearnArgs(["--keep", "0"]),
+    /--keep expects an integer from 1 to 100/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--query"]),
     /--query expects search text/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--query", "brand"]),
     /--query can only be used with --list, --export, or --eval-template/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--prune"]),
+    /--prune can only be used with --restore-backups/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--restore-backups", "--keep", "2"]),
+    /--keep can only be used with --restore-backups --prune/,
   );
   assert.throws(
     () => parseLearnArgs(["--list", "extra"]),
@@ -349,6 +375,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--curate", "--dry-run", "--yes"]),
     /Choose either --dry-run or --yes/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--restore-backups", "--prune", "--dry-run", "--yes"]),
+    /Choose either --dry-run or --yes/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--restore-backups", "--yes"]),
+    /--yes can only be used with --restore-backups --prune/,
   );
   assert.throws(
     () => parseLearnArgs(["--import", "--dry-run", "--yes"]),
@@ -987,6 +1021,84 @@ test("listLearningRestoreBackups scans sibling rollback backups without mutation
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
 }));
 
+test("pruneLearningRestoreBackups previews and deletes only older rollback backups", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const oldestBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:01:00.000Z"));
+  const middleBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:02:00.000Z"));
+  const newestBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:03:00.000Z"));
+  const activeProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:04:00.000Z",
+    entries: [
+      {
+        id: "learn-active",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:04:00.000Z",
+      },
+    ],
+  };
+  const backupProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-backup",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "backup",
+        createdAt: "2026-05-22T00:00:00.000Z",
+      },
+    ],
+  };
+  writeFileSync(filePath, JSON.stringify(activeProfile), "utf8");
+  writeFileSync(oldestBackupPath, JSON.stringify(backupProfile), "utf8");
+  writeFileSync(middleBackupPath, JSON.stringify(backupProfile), "utf8");
+  writeFileSync(newestBackupPath, JSON.stringify(backupProfile), "utf8");
+
+  const preview = pruneLearningRestoreBackups({
+    filePath,
+    keep: 1,
+    dryRun: true,
+    now: new Date("2026-05-22T00:05:00.000Z"),
+  });
+
+  assert.equal(preview.prune.dryRun, true);
+  assert.equal(preview.prune.applied, false);
+  assert.equal(preview.prune.keep, 1);
+  assert.equal(preview.prune.retainedCount, 1);
+  assert.equal(preview.prune.candidateCount, 2);
+  assert.equal(preview.prune.deletedCount, 0);
+  assert.equal(preview.prune.retained[0].file, newestBackupPath);
+  assert.deepEqual(preview.prune.candidates.map((backup) => backup.file), [middleBackupPath, oldestBackupPath]);
+  assert.equal(preview.privacy.mutatesProfile, false);
+  assert.equal(preview.privacy.deletesBackupFiles, false);
+  assert.equal(existsSync(oldestBackupPath), true);
+  assert.equal(existsSync(middleBackupPath), true);
+  assert.equal(existsSync(newestBackupPath), true);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
+
+  const applied = pruneLearningRestoreBackups({
+    filePath,
+    keep: 1,
+    dryRun: false,
+    now: new Date("2026-05-22T00:06:00.000Z"),
+  });
+
+  assert.equal(applied.prune.dryRun, false);
+  assert.equal(applied.prune.applied, true);
+  assert.equal(applied.prune.deletedCount, 2);
+  assert.equal(applied.prune.failureCount, 0);
+  assert.deepEqual(applied.prune.deleted.map((backup) => backup.file), [middleBackupPath, oldestBackupPath]);
+  assert.equal(applied.privacy.mutatesProfile, false);
+  assert.equal(applied.privacy.deletesBackupFiles, true);
+  assert.equal(existsSync(oldestBackupPath), false);
+  assert.equal(existsSync(middleBackupPath), false);
+  assert.equal(existsSync(newestBackupPath), true);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
+}));
+
 test("restoreLearningProfile reports audit failures in preview and blocks apply", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   writeFileSync(filePath, JSON.stringify({
@@ -1222,6 +1334,77 @@ test("runLearn restore-backups lists rollback backup inventory", async () => wit
   assert.equal(payload.backups[0].entryCount, 1);
   assert.equal(payload.backups[0].auditSummary.status, "pass");
   assert.equal(payload.privacy.mutatesProfile, false);
+  assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
+}));
+
+test("runLearn restore-backups prune previews and applies backup file deletion", async () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const olderBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:01:00.000Z"));
+  const newerBackupPath = defaultLearningRestoreBackupFile(filePath, new Date("2026-05-22T00:02:00.000Z"));
+  const activeProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:03:00.000Z",
+    entries: [
+      {
+        id: "learn-active",
+        category: "workflow",
+        text: "Run verification before handoff",
+        source: "cli",
+        createdAt: "2026-05-22T00:03:00.000Z",
+      },
+    ],
+  };
+  const backupProfile = {
+    version: 1,
+    updatedAt: "2026-05-22T00:01:00.000Z",
+    entries: [
+      {
+        id: "learn-backup",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "backup",
+        createdAt: "2026-05-22T00:01:00.000Z",
+      },
+    ],
+  };
+  writeFileSync(filePath, JSON.stringify(activeProfile), "utf8");
+  writeFileSync(olderBackupPath, JSON.stringify(backupProfile), "utf8");
+  writeFileSync(newerBackupPath, JSON.stringify(backupProfile), "utf8");
+
+  const previewOutput = await captureStdout(() => runLearn([
+    "--restore-backups",
+    "--prune",
+    "--keep",
+    "1",
+    "--file",
+    filePath,
+  ]));
+  assert.match(previewOutput, /Learning restore backup prune preview/);
+  assert.match(previewOutput, /Would delete:/);
+  assert.match(previewOutput, /learning\.restore-backup-20260522T000100000Z\.json/);
+  assert.equal(existsSync(olderBackupPath), true);
+  assert.equal(existsSync(newerBackupPath), true);
+
+  const applyOutput = await captureStdout(() => runLearn([
+    "--restore-backups",
+    "--prune",
+    "--keep",
+    "1",
+    "--file",
+    filePath,
+    "--yes",
+    "--json",
+  ]));
+  const applied = JSON.parse(applyOutput);
+  assert.equal(applied.prune.applied, true);
+  assert.equal(applied.prune.keep, 1);
+  assert.equal(applied.prune.candidateCount, 1);
+  assert.equal(applied.prune.deletedCount, 1);
+  assert.equal(applied.prune.deleted[0].file, olderBackupPath);
+  assert.equal(applied.privacy.mutatesProfile, false);
+  assert.equal(applied.privacy.deletesBackupFiles, true);
+  assert.equal(existsSync(olderBackupPath), false);
+  assert.equal(existsSync(newerBackupPath), true);
   assert.deepEqual(loadLearningProfile(filePath).entries.map((entry) => entry.id), ["learn-active"]);
 }));
 

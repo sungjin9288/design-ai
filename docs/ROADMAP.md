@@ -1,5 +1,42 @@
 # Roadmap
 
+## Phase 266 — Learning Restore Backup Prune (v4.51.0) ✓ shipped
+
+`design-ai learn --restore-backups --prune` now turns rollback backup discovery into a safe retention workflow. It previews older sibling restore rollback backup files by default, keeps the newest backups, and deletes only older backup files after explicit `--yes`.
+
+### Changed
+- Added `design-ai learn --restore-backups --prune [--keep N] [--dry-run|--yes] [--json] [--out file]`.
+- Added default retention of the 5 newest rollback backups and explicit `--keep N` retention control.
+- Added prune JSON metadata for dry-run/apply state, retained backups, delete candidates, deleted backups, delete failures, and privacy flags.
+- Kept the active learning profile unchanged during both preview and confirmed prune.
+- Added unit coverage for parser validation, helper preview/apply behavior, command human output, command JSON output, and help text.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` restore-backups prune preview/apply paths.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.51.0`.
+
+### Impact
+- Solo and company rollout flows can keep rollback backup folders tidy without losing the newest recovery points.
+- Existing learning profile, archive, usage sidecar, eval checkpoint, curation, import, diff, restore, and restore-backups inventory schemas remain compatible.
+
+### What this enables
+- A complete rollback backup maintenance loop: list backups, preview prune candidates, keep the newest recovery points, and delete older backup files only after explicit confirmation.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.50.0 → 4.51.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 265 — Learning Restore Backup Inventory (v4.50.0) ✓ shipped
 
 `design-ai learn --restore-backups` now lists sibling restore rollback backups for the selected learning profile without changing any files. The command audits each backup candidate and prints a restore dry-run preview command so operators can find the right rollback file before applying any restore.

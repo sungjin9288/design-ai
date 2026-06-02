@@ -25,6 +25,7 @@ import {
   listLearningRestoreBackups,
   loadLearningProfile,
   parseLearnArgs,
+  pruneLearningRestoreBackups,
   recordLearningFeedback,
   rememberLearning,
   renderLearningCurationReport,
@@ -56,6 +57,7 @@ function printHelp() {
   console.log("        design-ai learn --restore --from-file learning-backup.json [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
   console.log("        cat learning-backup.json | design-ai learn --restore --stdin [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --restore-backups [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --restore-backups --prune [--keep N] [--dry-run|--yes] [--json] [--out file] [--force]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
@@ -90,13 +92,15 @@ function printHelp() {
   console.log("  --diff               Compare the active profile against a portable learning JSON payload without importing it");
   console.log("  --restore            Preview or apply replacing the active profile with a portable learning JSON payload");
   console.log("  --restore-backups    List sibling restore rollback backups for the active learning profile");
+  console.log("  --prune              With --restore-backups, preview or delete older rollback backup files");
+  console.log("  --keep N             With --restore-backups --prune, keep the N newest backups. Default: 5");
   console.log("  --backup-file path   With --restore, override the automatic rollback backup file path");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
   console.log("  --report             With --curate, emit a Markdown curation report instead of human console output");
-  console.log("  --dry-run            Preview --init, --import, --restore, --curate, or --audit --fix without changing the profile");
+  console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
@@ -133,6 +137,8 @@ function printHelp() {
   console.log("  design-ai learn --restore --from-file learning-backup.json --dry-run");
   console.log("  design-ai learn --restore --from-file learning-backup.json --yes --backup-file learning-before-restore.json");
   console.log("  design-ai learn --restore-backups --json");
+  console.log("  design-ai learn --restore-backups --prune --keep 5");
+  console.log("  design-ai learn --restore-backups --prune --keep 5 --yes");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -678,6 +684,55 @@ function printRestoreBackups(payload) {
   console.log("No changes made. Run the preview command first, then add `--yes` only after reviewing the restore diff.");
 }
 
+function printRestoreBackupPrune(payload) {
+  const prune = payload.prune;
+  header("design-ai learn", prune.dryRun ? "Learning restore backup prune preview" : "Learning restore backup prune applied");
+  info(`File: ${payload.file}`);
+  info(`Directory: ${payload.directory}`);
+  info(`Pattern: ${payload.pattern}`);
+  info(`Backups: ${payload.totalCount}`);
+  info(`Keep newest: ${prune.keep}`);
+  info(`Prune candidates: ${prune.candidateCount}`);
+  if (!prune.dryRun) {
+    info(`Deleted: ${prune.deletedCount}`);
+    if (prune.failureCount > 0) {
+      info(`Failures: ${prune.failureCount}`);
+    }
+  }
+  console.log();
+
+  if (prune.candidateCount === 0) {
+    console.log("No restore rollback backups are old enough to prune.");
+    console.log("No changes made.");
+    return;
+  }
+
+  const candidateLabel = prune.dryRun ? "Would delete:" : "Deleted:";
+  const rows = prune.dryRun ? prune.candidates : prune.deleted;
+  console.log(candidateLabel);
+  for (const backup of rows) {
+    console.log(`- ${backup.name}`);
+    console.log(`  ${dim(`created ${backup.createdAt || "unknown"} · modified ${backup.modifiedAt} · ${backup.sizeBytes} bytes · audit ${backup.auditSummary.status}`)}`);
+  }
+
+  if (prune.failures.length > 0) {
+    console.log();
+    console.log("Delete failures:");
+    for (const failure of prune.failures) {
+      console.log(`- ${failure.name}: ${failure.message}`);
+    }
+  }
+
+  console.log();
+  if (prune.dryRun) {
+    console.log("No changes made. Re-run with `--yes` after reviewing the prune candidates.");
+  } else if (prune.failureCount > 0) {
+    console.log("Some backup files could not be deleted. Review the failure list before retrying.");
+  } else {
+    console.log("Prune complete. Active learning profile was not changed.");
+  }
+}
+
 function printEval(payload) {
   header("design-ai learn", "Local learning eval report");
   info(`File: ${payload.file}`);
@@ -1049,16 +1104,27 @@ export async function runLearn(args) {
   }
 
   if (parsed.action === "restore-backups") {
-    const payload = listLearningRestoreBackups({
-      filePath: parsed.filePath,
-      limit: parsed.limit || 10,
-    });
+    const payload = parsed.prune
+      ? pruneLearningRestoreBackups({
+        filePath: parsed.filePath,
+        keep: parsed.keep || 5,
+        limit: parsed.limit || 10,
+        dryRun: parsed.dryRun || !parsed.yes,
+      })
+      : listLearningRestoreBackups({
+        filePath: parsed.filePath,
+        limit: parsed.limit || 10,
+      });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
       return;
     }
 
-    printRestoreBackups(payload);
+    if (parsed.prune) {
+      printRestoreBackupPrune(payload);
+    } else {
+      printRestoreBackups(payload);
+    }
     return;
   }
 

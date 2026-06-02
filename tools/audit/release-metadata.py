@@ -1341,6 +1341,18 @@ RELEASE_LEARN_RESTORE_BACKUPS_TERM_GROUPS = (
         "rollback backup inventory",
     ),
 )
+RELEASE_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS = (
+    (
+        "learn restore-backups --prune",
+        "design-ai learn --restore-backups --prune",
+        "restore-backups --prune",
+    ),
+    (
+        "restore rollback backup pruning",
+        "learning restore rollback backup pruning",
+        "rollback backup pruning",
+    ),
+)
 RELEASE_LEARN_IMPORT_TERM_GROUPS = (
     (
         "`design-ai learn --import` dry-run/apply output",
@@ -1681,6 +1693,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn restore smoke phrase",
     "learn restore rollback backup smoke phrase",
     "learn restore-backups smoke phrase",
+    "learn restore-backups prune smoke phrase",
     "learn import smoke phrase",
     "registry learn import smoke phrase",
     "learn stats smoke phrase",
@@ -1880,6 +1893,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("learn restore smoke phrase", RELEASE_LEARN_RESTORE_TERM_GROUPS),
     ("learn restore rollback backup smoke phrase", RELEASE_LEARN_RESTORE_ROLLBACK_TERM_GROUPS),
     ("learn restore-backups smoke phrase", RELEASE_LEARN_RESTORE_BACKUPS_TERM_GROUPS),
+    ("learn restore-backups prune smoke phrase", RELEASE_LEARN_RESTORE_BACKUPS_PRUNE_TERM_GROUPS),
     ("learn import smoke phrase", RELEASE_LEARN_IMPORT_TERM_GROUPS),
     ("registry learn import smoke phrase", RELEASE_REGISTRY_LEARN_IMPORT_TERM_GROUPS),
     ("learn stats smoke phrase", RELEASE_LEARN_STATS_TERM_GROUPS),
@@ -2365,6 +2379,7 @@ JSON `design-ai learn --verify` output plus learn verify `--out` file-write conf
 JSON `design-ai learn --restore` preview/apply output plus learn restore `--out` file-write confirmation,
 learn restore rollback backup verification plus learn restore `--backup-file` path coverage,
 design-ai learn --restore-backups restore rollback backup inventory coverage,
+design-ai learn --restore-backups --prune restore rollback backup pruning coverage,
 JSON `design-ai learn --import` dry-run/apply output plus learn import `--out` file-write confirmation,
 human / JSON `design-ai learn --stats` profile summary output plus learn stats `--out` file-write confirmation,
 query-filtered learn list explanation/export JSON output,
@@ -2451,6 +2466,7 @@ JSON `design-ai learn --verify` output과 learn verify `--out` file-write confir
 JSON `design-ai learn --restore` preview/apply output과 learn restore `--out` file-write confirmation도 확인하며,
 learn restore rollback backup verification과 learn restore `--backup-file` path coverage도 확인하며,
 design-ai learn --restore-backups restore rollback backup inventory coverage도 확인하며,
+design-ai learn --restore-backups --prune restore rollback backup pruning coverage도 확인하며,
 JSON `design-ai learn --import` dry-run/apply output과 learn import `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --stats` profile summary output과 learn stats `--out` file-write confirmation도 확인하며,
 query-filtered learn list explanation/export JSON output도 확인하며,
@@ -5065,6 +5081,10 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             .replace(
                 "design-ai learn --restore-backups restore rollback backup inventory coverage",
                 "design-ai learn --restore-backups rollback file inventory coverage",
+            )
+            .replace(
+                "design-ai learn --restore-backups --prune restore rollback backup pruning coverage",
+                "design-ai learn --restore-backups --prune rollback file pruning coverage",
             ),
         },
         audit_count=8,
@@ -5115,6 +5135,26 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing learn restore-backups smoke phrase"
         in learn_restore_backups_drift_errors,
         "release policy docs should mention learn restore-backups smoke",
+    )
+    learn_restore_backups_prune_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "design-ai learn --restore-backups --prune restore rollback backup pruning coverage",
+                "learning restore rollback cleanup coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_restore_backups_prune_drift_errors = "\n".join(learn_restore_backups_prune_drift["errors"])
+    assert_condition(
+        "README.md is missing learn restore-backups prune smoke phrase"
+        in learn_restore_backups_prune_drift_errors,
+        "release policy docs should mention learn restore-backups prune smoke",
     )
 
     learn_import_drift = release_metadata_summary(
