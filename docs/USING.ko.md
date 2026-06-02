@@ -13,6 +13,31 @@ codex "한국 핀테크 앱을 위한 컬러 팔레트를 만들어 주세요"
 
 Codex가 `AGENTS.md`를 읽고, `knowledge/`를 탐색해서, 적절한 스킬 플레이북을 적용해요. 별도 설정 필요 없어요.
 
+## Route eval checkpoints
+
+키워드, 스킬, 에이전트 문서를 수정한 뒤 작업 brief가 여전히 의도한 design-ai route를 선택하는지 검증할 때 route eval을 사용하세요.
+
+```bash
+design-ai route --eval-template --json > route-eval.json
+design-ai route --eval --from-file route-eval.json --strict --json
+```
+
+이 eval은 deterministic하고 read-only예요. AI provider를 호출하지 않고, learning profile을 수정하지 않고, 설치된 skill도 바꾸지 않아요. 더 깊은 prompt, learning, Website Console eval을 만들기 전 agent routing conformance check로 쓰면 됩니다.
+
+## Prompt and pack eval checkpoints
+
+Route eval이 통과한 뒤에는 prompt/pack eval로 agent prompt와 context bundle이 기대한 route, playbook file, checklist, context coverage를 유지하는지 확인하세요.
+
+```bash
+design-ai prompt --eval-template --json > prompt-eval.json
+design-ai prompt --eval --from-file prompt-eval.json --strict --json
+
+design-ai pack --eval-template --json > pack-eval.json
+design-ai pack --eval --from-file pack-eval.json --strict --json
+```
+
+Prompt eval은 context bundle을 만들기 전 prompt plan을 검사합니다. Pack eval은 bundled file set과 context status를 검사하되 eval JSON에는 전체 context file body를 출력하지 않습니다. 두 경로 모두 deterministic, local, read-only입니다.
+
 ## Claude Code
 
 Claude Code는 `CLAUDE.md`를 자동으로 읽어요. **슬래시 커맨드**와 **스킬 자동 로딩**을 쓰려면 심볼릭 링크를 거는 게 좋아요:

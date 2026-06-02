@@ -1,5 +1,52 @@
 # Roadmap
 
+## Phase 272 — Agent Prompt and Pack Eval Harness (unreleased)
+
+`design-ai prompt` and `design-ai pack` now have deterministic eval surfaces for prompt plans and context bundles. This extends the Phase 271 route eval pattern into the actual agent handoff payloads used by design-ai.
+
+### Changed
+- Added `design-ai prompt --eval-template [--json]` to generate runnable prompt-plan checkpoint JSON.
+- Added `design-ai prompt --eval --from-file prompt-eval.json [--strict] [--json]` and stdin support for local prompt-plan conformance checks.
+- Added prompt eval assertions for expected route id, required files to read, required checklist items, required prompt fragments, and optional learning context.
+- Added `design-ai pack --eval-template [--json]` to generate runnable prompt-pack checkpoint JSON.
+- Added `design-ai pack --eval --from-file pack-eval.json [--strict] [--json]` and stdin support for local context-bundle conformance checks.
+- Added pack eval assertions for expected route id, planned files, included context files, context status, and optional learning context.
+- Kept pack eval JSON readable by returning context file metadata and markdown byte counts instead of embedding full context file bodies.
+- Added packed-tarball smoke coverage for route eval, prompt eval, and pack eval checkpoints in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added release metadata guard coverage for the route/prompt/pack eval smoke phrase in release policy docs.
+- Added help and unit coverage for eval argument parsing, template generation, passing checkpoints, strict failure fixtures, invalid combinations, and machine-readable help catalog drift.
+
+### Impact
+- Agent prompt generation and context bundling can now be checked after route selection but before deeper learning or Website Console automation depends on them.
+- The eval harness is deterministic and read-only; it does not add dependencies, external AI calls, background telemetry, or learning-profile mutation.
+
+### Verified
+- `node --test cli/lib/pack.test.mjs cli/lib/prompt.test.mjs cli/lib/help-command.test.mjs`
+- `design-ai prompt --eval-template --json | design-ai prompt --eval --stdin --strict --json`
+- `design-ai pack --eval-template --json | design-ai pack --eval --stdin --strict --json`
+- Package smoke and release metadata self-tests.
+
+### What's still ahead
+- Joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+
+## Phase 271 — Agent Route Eval Harness (unreleased)
+
+`design-ai route` now has a deterministic eval surface for agent routing. This is the first AI/agent development step after reviewing Hermes, Harness, Strands, Superpowers, ECC, OpenCode, Langflow, Dify, Anthropic Skills, LangChain, Gemini CLI, CC Switch, TradingAgents, and related reference repos.
+
+### Changed
+- Added `design-ai route --eval-template [--json]` to generate a runnable route-selection checkpoint JSON file.
+- Added `design-ai route --eval --from-file route-eval.json [--strict] [--json]` and stdin support for local conformance checks.
+- Added route eval JSON reports with status, summary counts, expected route, top route, confidence, score, matched keywords, and full candidate routes.
+- Added unit coverage for eval argument parsing, template generation, passing checkpoints, mismatched checkpoints, invalid route ids, and invalid payloads.
+- Added `docs/AGENT-DEVELOPMENT.md` with reference-repo analysis and the phased plan for future prompt/learning/skill evolution work.
+
+### Impact
+- Agent routing can now be checked before prompt generation, learning capture, or Website Console workflows depend on a route.
+- The eval harness is deterministic and read-only; it does not add dependencies, external AI calls, background telemetry, or learning-profile mutation.
+
+### What's still ahead
+- Joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+
 ## Phase 270 — Public Registry Website Console Smoke Coverage (v4.55.0) ✓ shipped
 
 `npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, generated tasks, and task-selected prompt flows.

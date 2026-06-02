@@ -3758,6 +3758,67 @@ def assert_route_stdin_smoke(
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
+def assert_route_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse route eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="route eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="route eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="route eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="route eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"design-review-a11y", "component-spec-contract", "website-improvement-control-tower"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="route eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("topRouteId") == case.get("expectedRouteId")
+            and case.get("issues", []) == []
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="route eval case result changed",
+    )
+
+
+def assert_route_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("route", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("route", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_route_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
+
+
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
@@ -4186,6 +4247,141 @@ def assert_pack_stdin_smoke(
         context=context,
         cmd=cmd,
     )
+
+
+def assert_prompt_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse prompt eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="prompt eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="prompt eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="prompt eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="prompt eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"component-spec-prompt-plan", "website-improvement-prompt-plan"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="prompt eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("routeId") == case.get("expectedRouteId")
+            and case.get("missingRequiredFiles") == []
+            and case.get("missingChecklist") == []
+            and case.get("missingPromptFragments") == []
+            and case.get("issues") == []
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="prompt eval case result changed",
+    )
+
+
+def assert_pack_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse pack eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="pack eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="pack eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="pack eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="pack eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"component-spec-pack", "website-improvement-pack"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="pack eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("routeId") == case.get("expectedRouteId")
+            and case.get("contextStatus") == "complete"
+            and case.get("missingRequiredFiles") == []
+            and case.get("missingIncludedFiles") == []
+            and case.get("issues") == []
+            and isinstance(case.get("pack"), dict)
+            and isinstance(case["pack"].get("markdownBytes"), int)
+            and case["pack"]["markdownBytes"] > 0
+            and all(
+                isinstance(file, dict) and "content" not in file
+                for file in case["pack"].get("files", [])
+            )
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="pack eval case result changed",
+    )
+
+
+def assert_prompt_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("prompt", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("prompt", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_prompt_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
+
+
+def assert_pack_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("pack", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("pack", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_pack_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
 
 
 def write_learning_relevance_fixture(profile_path: Path) -> None:
@@ -8097,6 +8293,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin route stdin",
         )
+        assert_route_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin route eval",
+        )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         assert_prompt_smoke(
             [
@@ -8201,6 +8402,11 @@ def smoke_tarball(tarball: Path) -> None:
             installed_prompt_stdin_json,
             env=smoke_env,
             context="package smoke installed bin prompt stdin",
+        )
+        assert_prompt_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin prompt eval",
         )
         installed_pack_json = tmp_root / "installed-pack.json"
         assert_pack_smoke(
@@ -8320,6 +8526,11 @@ def smoke_tarball(tarball: Path) -> None:
             installed_pack_stdin_json,
             env=smoke_env,
             context="package smoke installed bin pack stdin",
+        )
+        assert_pack_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin pack eval",
         )
         assert_examples_smoke(
             [str(bin_path), "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"],
@@ -8901,6 +9112,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec route stdin",
         )
+        assert_route_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route eval",
+        )
         npx_prompt_json = npx_root / "npx-prompt.json"
         assert_prompt_smoke(
             npm_exec_cmd(
@@ -9012,6 +9229,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec prompt stdin",
+        )
+        assert_prompt_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec prompt eval",
         )
         npx_pack_json = npx_root / "npx-pack.json"
         assert_pack_smoke(
@@ -9138,6 +9361,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec pack stdin",
+        )
+        assert_pack_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pack eval",
         )
         assert_examples_smoke(
             npm_exec_cmd(tarball, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),

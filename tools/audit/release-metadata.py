@@ -752,6 +752,20 @@ RELEASE_ROUTE_STDIN_INPUT_TERM_GROUPS = (
         "route stdin 입력",
     ),
 )
+RELEASE_AGENT_EVAL_SMOKE_TERM_GROUPS = (
+    (
+        "route eval",
+        "route eval checkpoint",
+    ),
+    (
+        "prompt eval",
+        "prompt eval checkpoint",
+    ),
+    (
+        "pack eval",
+        "pack eval checkpoint",
+    ),
+)
 RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS = (
     (
         "show --lines",
@@ -1727,6 +1741,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "route JSON output phrase",
     "route catalog output phrase",
     "route stdin input phrase",
+    "agent eval smoke phrase",
     "show-lines route-explain smoke phrase",
     "show-lines output phrase",
     "route-explain output phrase",
@@ -1933,6 +1948,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("route JSON output phrase", RELEASE_ROUTE_JSON_OUTPUT_TERM_GROUPS),
     ("route catalog output phrase", RELEASE_ROUTE_CATALOG_OUTPUT_TERM_GROUPS),
     ("route stdin input phrase", RELEASE_ROUTE_STDIN_INPUT_TERM_GROUPS),
+    ("agent eval smoke phrase", RELEASE_AGENT_EVAL_SMOKE_TERM_GROUPS),
     ("show-lines route-explain smoke phrase", RELEASE_EXPLICIT_OUTPUT_TERM_GROUPS),
     ("show-lines output phrase", RELEASE_SHOW_LINES_OUTPUT_TERM_GROUPS),
     ("route-explain output phrase", RELEASE_ROUTE_EXPLAIN_OUTPUT_TERM_GROUPS),
@@ -2515,6 +2531,7 @@ command-specific help topic output,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
+route eval, prompt eval, and pack eval checkpoint output in local package paths,
 explicit `show --lines` output and `route --explain` output,
 unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure,
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure,
@@ -2607,6 +2624,7 @@ command-specific help topic 출력도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
+route eval, prompt eval, pack eval checkpoint output도 local package paths에서 확인해요.
 명시적 `show --lines` 출력과 `route --explain` 출력도 확인해요.
 unknown command failure, unknown help-topic failure, unknown list-domain failure, unknown search-dir failure 검증도 확인해요.
 unknown route-id suggestion, unknown option suggestion, unknown value suggestion, numeric range failure도 확인해요.
@@ -3845,6 +3863,26 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.ko.md is missing route stdin input phrase"
         in route_stdin_input_drift_errors,
         "release policy docs should mention route stdin input smoke",
+    )
+
+    agent_eval_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "route eval, prompt eval, and pack eval checkpoint output",
+                "agent eval checkpoint output",
+            ),
+        },
+        audit_count=8,
+    )
+    agent_eval_smoke_drift_errors = "\n".join(agent_eval_smoke_drift["errors"])
+    assert_condition(
+        "README.md is missing agent eval smoke phrase" in agent_eval_smoke_drift_errors,
+        "release policy docs should mention route/prompt/pack eval smoke",
     )
 
     check_command_drift = release_metadata_summary(

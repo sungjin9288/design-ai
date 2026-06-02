@@ -2,6 +2,27 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## Unreleased — Agent Eval Harness
+
+Added deterministic route, prompt-plan, and prompt-pack eval surfaces for agent development.
+
+### Added
+- `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
+- `design-ai route --eval --from-file route-eval.json [--strict] [--json]` checks that briefs still select the expected route.
+- Route eval JSON reports include status, pass/warn/fail summary, matched keywords, top route, expected route, and full route candidates.
+- `design-ai prompt --eval-template [--json]` generates runnable prompt-plan checkpoints.
+- `design-ai prompt --eval --from-file prompt-eval.json [--strict] [--json]` checks expected routes, required files, checklist items, prompt fragments, and optional learning context.
+- `design-ai pack --eval-template [--json]` generates runnable prompt-pack checkpoints.
+- `design-ai pack --eval --from-file pack-eval.json [--strict] [--json]` checks expected routes, planned files, included context files, context status, and optional learning context.
+- Pack eval JSON reports include context metadata and markdown byte counts without embedding full context file bodies.
+- Packed-tarball smoke now verifies route eval, prompt eval, and pack eval checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Release metadata now guards the route/prompt/pack eval smoke phrase in release policy docs.
+- `docs/AGENT-DEVELOPMENT.md` records the Hermes/Harness-centered reference analysis and the next AI/agent development phases.
+
+### Notes
+- Agent evals are read-only. They do not call external AI APIs, mutate the learning profile, or install new dependencies.
+- npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
+
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)
 
 Extended post-publish registry smoke coverage for the Website Improvement Console CLI surface. `npm run registry:smoke` now verifies the public `npm exec --package @design-ai/cli@<version>` path for `design-ai site` workspace validation, sample generation, MCP readiness, handoff bundles, bundle verification, task generation, and task-selected prompt output.

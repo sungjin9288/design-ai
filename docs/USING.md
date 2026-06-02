@@ -13,6 +13,31 @@ codex "Generate a color palette for a Korean fintech app"
 
 Codex will consume `AGENTS.md`, navigate `knowledge/`, and apply the relevant skill playbook. No setup required.
 
+## Route eval checkpoints
+
+Use route evals when you want to verify that task briefs still select the intended design-ai command, skill, agents, and knowledge set after changing keywords, skills, or agent docs.
+
+```bash
+design-ai route --eval-template --json > route-eval.json
+design-ai route --eval --from-file route-eval.json --strict --json
+```
+
+The eval is deterministic and read-only. It does not call an AI provider, write to the learning profile, or mutate installed skills. Treat it as the first agent-routing conformance check before deeper prompt, learning, or Website Console evals.
+
+## Prompt and pack eval checkpoints
+
+Use prompt and pack evals after route evals pass. They verify that generated agent prompts and context bundles still include the expected route, playbook files, checklist items, and context coverage.
+
+```bash
+design-ai prompt --eval-template --json > prompt-eval.json
+design-ai prompt --eval --from-file prompt-eval.json --strict --json
+
+design-ai pack --eval-template --json > pack-eval.json
+design-ai pack --eval --from-file pack-eval.json --strict --json
+```
+
+Prompt evals check the plan before context bundling. Pack evals check the bundled file set and context status without printing the full context file bodies in eval JSON. Both paths are deterministic, local, and read-only.
+
 ## Claude Code
 
 Claude Code reads `CLAUDE.md` automatically. To get **slash commands** and **skill auto-loading**, optionally symlink:

@@ -31,6 +31,11 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ## Phase log
 
+### Active after v4.55 — Agent eval harness
+
+- **Phase 272 (unreleased)** — Added deterministic `design-ai prompt --eval-template`, `design-ai prompt --eval`, `design-ai pack --eval-template`, and `design-ai pack --eval` checkpoints. Prompt eval protects expected routes, required files, checklist items, prompt fragments, and learning context; pack eval protects planned files, included context files, and context status without dumping full context bodies into eval JSON. Packed-tarball smoke now covers route/prompt/pack eval checkpoints in installed-bin and one-shot package paths.
+- **Phase 271 (unreleased)** — Added deterministic `design-ai route --eval-template` and `design-ai route --eval` checkpoints after reviewing Hermes/Harness-centered agent references. This gives design-ai a read-only route conformance gate before deeper prompt, learning, skill-evolution, and Website Console eval work.
+
 ### v4.55 — Public registry Website Console smoke coverage
 
 - **v4.55 (Phase 270)** — Extended `npm run registry:smoke` so the public `npm exec --package @design-ai/cli@<version>` path verifies `design-ai site` Website Console export validation, sample workspace generation, prompt template listing, MCP readiness checks, MCP action plans, handoff bundles, bundle-check/compare/handoff, refactor task generation, and task-selected prompt output.
