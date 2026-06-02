@@ -35,6 +35,7 @@ const LEARN_OPTIONS = [
   "--import",
   "--backup",
   "--verify",
+  "--diff",
   "--redact",
   "--audit",
   "--stats",
@@ -221,6 +222,8 @@ export function parseLearnArgs(args) {
       setAction(out, "backup");
     } else if (arg === "--verify") {
       setAction(out, "verify");
+    } else if (arg === "--diff") {
+      setAction(out, "diff");
     } else if (arg === "--redact") {
       setAction(out, "redact");
     } else if (arg === "--audit") {
@@ -290,7 +293,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "redact", "eval"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "redact", "eval"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -354,6 +357,9 @@ export function parseLearnArgs(args) {
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.action === "diff" && !out.fromFile && !out.stdin) {
+    throw new Error("--diff requires --from-file or --stdin");
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
     || (out.action === "curate" && out.report);
@@ -2268,6 +2274,177 @@ export function buildLearningBackup({ filePath = defaultLearningFile(), now = ne
     count: profile.entries.length,
     auditSummary: audit.summary,
     entries: profile.entries,
+  };
+}
+
+function firstEntryByMergeKey(entries) {
+  const map = new Map();
+  for (const entry of entries) {
+    const key = learningEntryMergeKey(entry);
+    if (!map.has(key)) map.set(key, entry);
+  }
+  return map;
+}
+
+function firstEntryById(entries) {
+  const map = new Map();
+  for (const entry of entries) {
+    if (entry.id && !map.has(entry.id)) map.set(entry.id, entry);
+  }
+  return map;
+}
+
+function metadataDiffFields(profileEntry, comparisonEntry) {
+  return ["id", "source", "createdAt"].filter((field) => (
+    String(profileEntry?.[field] || "") !== String(comparisonEntry?.[field] || "")
+  ));
+}
+
+function learningDiffItem({ key, profileEntry, comparisonEntry, changedFields }) {
+  return {
+    key,
+    changedFields,
+    profile: statsEntry(profileEntry),
+    comparison: statsEntry(comparisonEntry),
+  };
+}
+
+function learningIdConflict({ id, profileEntry, comparisonEntry }) {
+  return {
+    id,
+    profile: statsEntry(profileEntry),
+    comparison: statsEntry(comparisonEntry),
+  };
+}
+
+export function diffLearningProfiles({
+  filePath = defaultLearningFile(),
+  compareText = "",
+  source = "input",
+  now = new Date(),
+} = {}) {
+  const resolvedFile = path.resolve(filePath);
+  const resolvedSource = source === "stdin" ? "stdin" : String(source || "input");
+  const profileExists = existsSync(resolvedFile);
+  const profile = loadLearningProfile(resolvedFile);
+  const profileAudit = auditLearningProfile({ filePath: resolvedFile });
+  const rawComparison = parseLearningProfilePayload(String(compareText || ""), "Learning diff comparison");
+  const comparison = normalizeLearningProfile(rawComparison);
+  const comparisonAudit = auditLearningProfileObject(rawComparison, {
+    filePath: resolvedSource,
+    exists: true,
+  });
+
+  const profileByKey = firstEntryByMergeKey(profile.entries);
+  const comparisonByKey = firstEntryByMergeKey(comparison.entries);
+  const profileKeys = new Set(profileByKey.keys());
+  const comparisonKeys = new Set(comparisonByKey.keys());
+  const commonKeys = [...profileKeys].filter((key) => comparisonKeys.has(key)).sort();
+  const profileOnly = [...profile.entries]
+    .filter((entry) => !comparisonKeys.has(learningEntryMergeKey(entry)))
+    .map(statsEntry);
+  const comparisonOnly = [...comparison.entries]
+    .filter((entry) => !profileKeys.has(learningEntryMergeKey(entry)))
+    .map(statsEntry);
+  const metadataChanged = commonKeys
+    .map((key) => {
+      const profileEntry = profileByKey.get(key);
+      const comparisonEntry = comparisonByKey.get(key);
+      const changedFields = metadataDiffFields(profileEntry, comparisonEntry);
+      return changedFields.length > 0
+        ? learningDiffItem({ key, profileEntry, comparisonEntry, changedFields })
+        : null;
+    })
+    .filter(Boolean);
+
+  const profileById = firstEntryById(profile.entries);
+  const comparisonById = firstEntryById(comparison.entries);
+  const idConflicts = [...profileById.keys()]
+    .filter((id) => comparisonById.has(id))
+    .map((id) => {
+      const profileEntry = profileById.get(id);
+      const comparisonEntry = comparisonById.get(id);
+      return learningEntryMergeKey(profileEntry) !== learningEntryMergeKey(comparisonEntry)
+        ? learningIdConflict({ id, profileEntry, comparisonEntry })
+        : null;
+    })
+    .filter(Boolean);
+
+  const recommendations = [];
+  if (!profileExists) {
+    recommendations.push({
+      level: "warning",
+      text: "Active learning profile does not exist; comparison is against an empty local profile.",
+    });
+  }
+  if (profileAudit.summary.status !== "pass") {
+    recommendations.push({
+      level: profileAudit.summary.failures > 0 ? "warning" : "info",
+      text: "Run `design-ai learn --audit` on the active profile before applying import or restore decisions.",
+    });
+  }
+  if (comparisonAudit.summary.status !== "pass") {
+    recommendations.push({
+      level: comparisonAudit.summary.failures > 0 ? "warning" : "info",
+      text: "Review comparison profile audit issues before importing or restoring entries from it.",
+    });
+  }
+  if (idConflicts.length > 0) {
+    recommendations.push({
+      level: "warning",
+      text: "Matching ids with different learning text were found; inspect manually before importing or restoring.",
+    });
+  }
+  if (comparisonOnly.length > 0) {
+    recommendations.push({
+      level: "info",
+      text: "Run `design-ai learn --import --from-file <profile.json> --dry-run` to preview adding comparison-only entries.",
+    });
+  }
+  if (profileOnly.length > 0) {
+    recommendations.push({
+      level: "info",
+      text: "Profile-only entries would be absent if the comparison profile were used as the restore source.",
+    });
+  }
+  if (
+    profileOnly.length === 0
+    && comparisonOnly.length === 0
+    && metadataChanged.length === 0
+    && idConflicts.length === 0
+  ) {
+    recommendations.push({
+      level: "info",
+      text: "No learning profile diff action is needed.",
+    });
+  }
+
+  return {
+    file: resolvedFile,
+    source: resolvedSource,
+    generatedAt: now.toISOString(),
+    profileExists,
+    profileUpdatedAt: profile.updatedAt,
+    comparisonUpdatedAt: comparison.updatedAt,
+    profileCount: profile.entries.length,
+    comparisonCount: comparison.entries.length,
+    profileAuditSummary: profileAudit.summary,
+    comparisonAuditSummary: comparisonAudit.summary,
+    sameTextCount: commonKeys.length,
+    profileOnlyCount: profileOnly.length,
+    comparisonOnlyCount: comparisonOnly.length,
+    metadataChangedCount: metadataChanged.length,
+    idConflictCount: idConflicts.length,
+    profileOnly,
+    comparisonOnly,
+    metadataChanged,
+    idConflicts,
+    recommendations,
+    privacy: {
+      storesRawBriefText: false,
+      exposesEntryTextPreview: true,
+      mutatesProfile: false,
+    },
   };
 }
 
