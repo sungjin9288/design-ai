@@ -3042,6 +3042,7 @@ def assert_learning_restore_json(
     profile_path: Path,
     source: str,
     dry_run: bool,
+    backup_path: Path | None = None,
     context: str,
     cmd: list[str],
 ) -> None:
@@ -3066,6 +3067,33 @@ def assert_learning_restore_json(
         message="learn restore dry-run/apply flags changed",
     )
     require_package_smoke(payload.get("restorable") is True, context=context, cmd=cmd, message="learn restore should be restorable")
+    backup_file = payload.get("backupFile")
+    require_package_smoke(isinstance(backup_file, str) and backup_file, context=context, cmd=cmd, message="learn restore backup file is missing")
+    if backup_path is not None:
+        require_package_smoke(backup_file == str(backup_path), context=context, cmd=cmd, message="learn restore backup file path changed")
+    else:
+        require_package_smoke(
+            f"{profile_path.stem}.restore-backup-" in backup_file,
+            context=context,
+            cmd=cmd,
+            message="learn restore default backup file naming changed",
+        )
+    require_package_smoke(
+        payload.get("backupCreated") is (not dry_run),
+        context=context,
+        cmd=cmd,
+        message="learn restore backup created flag changed",
+    )
+    require_package_smoke(payload.get("backupEntryCount") == 1, context=context, cmd=cmd, message="learn restore backup entry count changed")
+    rollback_command = payload.get("rollbackCommand")
+    require_package_smoke(
+        isinstance(rollback_command, str)
+        and "design-ai learn --restore --from-file" in rollback_command
+        and str(profile_path) in rollback_command,
+        context=context,
+        cmd=cmd,
+        message="learn restore rollback command changed",
+    )
     require_package_smoke(payload.get("previousCount") == 1, context=context, cmd=cmd, message="learn restore previous count changed")
     require_package_smoke(payload.get("restoredCount") == 3, context=context, cmd=cmd, message="learn restore restored count changed")
     require_package_smoke(payload.get("removedCount") == 0, context=context, cmd=cmd, message="learn restore removed count changed")
@@ -3129,6 +3157,13 @@ def assert_learning_restore_smoke(
         context=f"{context} from-file dry-run",
         cmd=dry_run_cmd,
     )
+    dry_run_payload = json.loads(dry_run_result.stdout)
+    require_package_smoke(
+        not Path(dry_run_payload["backupFile"]).exists(),
+        context=f"{context} dry-run rollback backup",
+        cmd=dry_run_cmd,
+        message="learn restore dry-run should not create rollback backup file",
+    )
     dry_run_profile = json.loads(profile_path.read_text(encoding="utf-8"))
     require_package_smoke(
         len(dry_run_profile.get("entries", [])) == 1,
@@ -3175,6 +3210,7 @@ def assert_learning_restore_smoke(
         message="learn restore --out dry-run should leave target profile unchanged",
     )
 
+    backup_path = profile_path.with_name(f"{profile_path.stem}-rollback.json")
     apply_cmd = command_factory(
         "learn",
         "--restore",
@@ -3182,6 +3218,8 @@ def assert_learning_restore_smoke(
         "--yes",
         "--file",
         str(profile_path),
+        "--backup-file",
+        str(backup_path),
         "--json",
     )
     apply_result = run_plain_with_input(
@@ -3195,8 +3233,17 @@ def assert_learning_restore_smoke(
         profile_path=profile_path,
         source="stdin",
         dry_run=False,
+        backup_path=backup_path,
         context=f"{context} stdin apply",
         cmd=apply_cmd,
+    )
+    backup_profile = json.loads(backup_path.read_text(encoding="utf-8"))
+    backup_ids = {entry.get("id") for entry in backup_profile.get("entries", [])}
+    require_package_smoke(
+        backup_ids == {"learn-existing"},
+        context=f"{context} rollback backup profile",
+        cmd=apply_cmd,
+        message="learn restore apply should save the previous active profile as rollback backup",
     )
     applied_profile = json.loads(profile_path.read_text(encoding="utf-8"))
     applied_ids = {entry.get("id") for entry in applied_profile.get("entries", [])}
@@ -5837,6 +5884,7 @@ def run_self_test() -> None:
         )
 
         learning_restore_path = Path(tmp) / "learning-restore.json"
+        learning_restore_backup_path = Path(tmp) / "learning.restore-backup-20260522T000100000Z.json"
         learning_restore_payload = {
             "file": str(learning_profile_path),
             "source": str(learning_restore_path),
@@ -5845,6 +5893,11 @@ def run_self_test() -> None:
             "applied": False,
             "restorable": True,
             "profileExists": True,
+            "backupFile": str(learning_restore_backup_path),
+            "backupCreated": False,
+            "backupEntryCount": 1,
+            "backupUpdatedAt": "2026-05-22T00:00:00.000Z",
+            "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
             "previousUpdatedAt": "2026-05-22T00:00:00.000Z",
             "restoredUpdatedAt": "2026-05-22T00:00:03.000Z",
             "previousCount": 1,
@@ -5905,6 +5958,18 @@ def run_self_test() -> None:
                 cmd=learn_restore_cmd,
             ),
             expected="learn restore restored count changed",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_restore_json(
+                json.dumps({**learning_restore_payload, "backupCreated": True}),
+                profile_path=learning_profile_path,
+                source=str(learning_restore_path),
+                dry_run=True,
+                context=context,
+                cmd=learn_restore_cmd,
+            ),
+            expected="learn restore backup created flag changed",
             scope="package smoke",
         )
         expect_self_test_failure(

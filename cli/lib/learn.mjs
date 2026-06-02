@@ -55,6 +55,7 @@ const LEARN_OPTIONS = [
   "--limit",
   "--file",
   "--usage-file",
+  "--backup-file",
   "--yes",
 ];
 export const LEARNING_CATEGORIES = [
@@ -141,6 +142,17 @@ export function defaultLearningUsageFile(filePath = defaultLearningFile()) {
   return path.join(parsed.dir, `${parsed.name}.usage${ext}`);
 }
 
+export function defaultLearningRestoreBackupFile(filePath = defaultLearningFile(), now = new Date()) {
+  const resolvedFile = path.resolve(filePath);
+  const parsed = path.parse(resolvedFile);
+  const ext = parsed.ext || ".json";
+  const timestamp = (now instanceof Date ? now : new Date(now))
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\./g, "");
+  return path.join(parsed.dir, `${parsed.name}.restore-backup-${timestamp}${ext}`);
+}
+
 function setAction(out, action) {
   if (out.action && out.action !== action) {
     throw new Error(`Choose only one learning action: --${out.action} or --${action}`);
@@ -184,6 +196,7 @@ export function parseLearnArgs(args) {
     outcomeSpecified: false,
     filePath: "",
     usageFilePath: "",
+    backupFilePath: "",
     outPath: "",
     force: false,
     query: "",
@@ -293,6 +306,11 @@ export function parseLearnArgs(args) {
       if (!usageFilePath || usageFilePath.startsWith("--")) throw new Error("--usage-file expects a path");
       out.usageFilePath = usageFilePath;
       i += 1;
+    } else if (arg === "--backup-file") {
+      const backupFilePath = args[i + 1];
+      if (!backupFilePath || backupFilePath.startsWith("--")) throw new Error("--backup-file expects a path");
+      out.backupFilePath = backupFilePath;
+      i += 1;
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
@@ -352,6 +370,9 @@ export function parseLearnArgs(args) {
   if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
     throw new Error("--usage-file can only be used with --usage or --curate");
   }
+  if (out.backupFilePath && out.action !== "restore") {
+    throw new Error("--backup-file can only be used with --restore");
+  }
   if (out.report && out.action !== "curate") {
     throw new Error("--report can only be used with --curate");
   }
@@ -383,6 +404,7 @@ export function parseLearnArgs(args) {
     briefParts: out.noteParts,
     filePath: resolvedFilePath,
     usageFilePath: path.resolve(out.usageFilePath || defaultLearningUsageFile(resolvedFilePath)),
+    backupFilePath: out.backupFilePath ? path.resolve(out.backupFilePath) : "",
     category: normalizeCategory(out.category),
     feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),
     query: out.query,
@@ -1148,12 +1170,16 @@ export function verifyLearningImportPayload({
 export function restoreLearningProfile({
   restoreText,
   filePath = defaultLearningFile(),
+  backupFilePath = "",
+  forceBackup = false,
   source = "input",
   dryRun = true,
   now = new Date(),
 } = {}) {
   const resolvedFile = path.resolve(filePath);
   const resolvedSource = source === "stdin" ? "stdin" : String(source || "input");
+  const generatedAt = now.toISOString();
+  const resolvedBackupFile = path.resolve(backupFilePath || defaultLearningRestoreBackupFile(resolvedFile, now));
   const rawRestore = parseLearningProfilePayload(String(restoreText || ""), "Learning restore");
   const restoreAudit = auditLearningProfileObject(rawRestore, {
     filePath: resolvedSource,
@@ -1165,6 +1191,15 @@ export function restoreLearningProfile({
 
   if (!dryRun && !restorable) {
     throw new Error("Refusing to restore learning profile with audit failures");
+  }
+  if (!dryRun && resolvedBackupFile === resolvedFile) {
+    throw new Error("Learning restore backup file must be different from the active learning profile");
+  }
+  if (!dryRun && resolvedSource !== "stdin" && path.resolve(resolvedSource) === resolvedBackupFile) {
+    throw new Error("Learning restore backup file must be different from the restore source");
+  }
+  if (!dryRun && existsSync(resolvedBackupFile) && !forceBackup) {
+    throw new Error("Learning restore backup file already exists; pass --force to overwrite or choose another --backup-file path");
   }
 
   const restoredProfile = restorable ? normalizeLearningProfile(rawRestore) : emptyLearningProfile();
@@ -1190,20 +1225,35 @@ export function restoreLearningProfile({
       comparisonOnly: [],
       metadataChanged: [],
       idConflicts: [],
-    };
+  };
 
   if (!dryRun) {
+    writeLearningProfile(resolvedBackupFile, currentProfile);
     writeLearningProfile(resolvedFile, targetProfile);
   }
 
   return {
     file: resolvedFile,
     source: resolvedSource,
-    generatedAt: now.toISOString(),
+    generatedAt,
     dryRun,
     applied: !dryRun,
     restorable,
     profileExists,
+    backupFile: resolvedBackupFile,
+    backupCreated: !dryRun,
+    backupEntryCount: currentProfile.entries.length,
+    backupUpdatedAt: currentProfile.updatedAt,
+    rollbackCommand: commandFromArgs([
+      "design-ai",
+      "learn",
+      "--restore",
+      "--from-file",
+      resolvedBackupFile,
+      "--file",
+      resolvedFile,
+      "--dry-run",
+    ]),
     previousUpdatedAt: currentProfile.updatedAt,
     restoredUpdatedAt: targetProfile.updatedAt,
     previousCount: currentProfile.entries.length,

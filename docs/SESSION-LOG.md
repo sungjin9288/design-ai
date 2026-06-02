@@ -1,13 +1,13 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.48 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore / diff / usage / eval readiness gates). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.49 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, and privacy-preserving local learning restore rollback / diff / usage / eval readiness gates). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## At a glance
 
-| Surface | v2.0 (start) | v3.12 | v4.48 (now) |
+| Surface | v2.0 (start) | v3.12 | v4.49 (now) |
 |---|---|---|---|
 | Knowledge files | 55 | 91 | 92 |
 | Worked examples | 83 | 160 | 223 |
@@ -30,6 +30,10 @@ v2.0 was the foundation: design tokens, components synthesized from Ant + MUI + 
 v3.x extended the corpus across **six adjacent design domains** (motion, illustration, print, video, game UI, conversational, spatial), then made the result **distributable** (npm CLI, Homebrew tap, public doc site, VS Code extension), then **localized for the primary market** (Korean translations of high-traffic pages + integration walkthroughs), then **prepared for stable release** (versioned frontmatter, stale-content audit, release checklist).
 
 ## Phase log
+
+### v4.49 — Learning restore rollback backup
+
+- **v4.49 (Phase 264)** — Added automatic rollback backup creation for confirmed `learn --restore --yes` profile replacement, plus `--backup-file` path override and rollback preview command metadata.
 
 ### v4.48 — Learning profile restore
 
@@ -383,6 +387,7 @@ Build the leverage tool, then push coverage further.
 - **v4.46 (Phase 261)** — Added workspace curation report next actions: `workspace` now suggests privacy-preserving Markdown curation report artifacts alongside learning profile and usage sidecar curation warnings.
 - **v4.47 (Phase 262)** — Added read-only learning profile diff: `learn --diff --from-file/--stdin` compares active and portable profiles before import or restore decisions.
 - **v4.48 (Phase 263)** — Added preview-first learning profile restore: `learn --restore --from-file/--stdin` replaces the active profile only with explicit `--yes` after source audit and diff review.
+- **v4.49 (Phase 264)** — Added restore rollback backups: confirmed `learn --restore --yes` writes the previous active profile to a rollback file before replacement, with `--backup-file` override and rollback preview command metadata.
 
 ## Patterns that didn't work
 

@@ -52,8 +52,8 @@ function printHelp() {
   console.log("        cat learning.json | design-ai learn --verify --stdin [--json] [--out file] [--force]");
   console.log("        design-ai learn --diff --from-file learning.json [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --diff --stdin [--json] [--out file] [--force]");
-  console.log("        design-ai learn --restore --from-file learning-backup.json [--dry-run|--yes] [--json] [--out file] [--force]");
-  console.log("        cat learning-backup.json | design-ai learn --restore --stdin [--dry-run|--yes] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --restore --from-file learning-backup.json [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
+  console.log("        cat learning-backup.json | design-ai learn --restore --stdin [--dry-run|--yes] [--backup-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --import --from-file learning.json --dry-run [--json] [--out file] [--force]");
   console.log("        cat learning.json | design-ai learn --import --stdin --yes [--json] [--out file] [--force]");
   console.log("        design-ai learn --audit [--json] [--out file] [--force]");
@@ -87,6 +87,7 @@ function printHelp() {
   console.log("  --verify             Validate a portable learning JSON payload without importing it");
   console.log("  --diff               Compare the active profile against a portable learning JSON payload without importing it");
   console.log("  --restore            Preview or apply replacing the active profile with a portable learning JSON payload");
+  console.log("  --backup-file path   With --restore, override the automatic rollback backup file path");
   console.log("  --import             Merge entries from a JSON learning profile or learn --export --json payload");
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
@@ -105,7 +106,7 @@ function printHelp() {
   console.log("  --usage-file path    Override the learning usage sidecar path used by --usage or --curate");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
-  console.log("  --force              Overwrite an existing --out file");
+  console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
   console.log("");
   console.log("Environment:");
   console.log("  DESIGN_AI_LEARNING_FILE=/path/learning.json       Override the default profile path");
@@ -127,6 +128,7 @@ function printHelp() {
   console.log("  design-ai learn --verify --from-file learning-backup.json");
   console.log("  design-ai learn --diff --from-file learning-backup.json --json");
   console.log("  design-ai learn --restore --from-file learning-backup.json --dry-run");
+  console.log("  design-ai learn --restore --from-file learning-backup.json --yes --backup-file learning-before-restore.json");
   console.log("  design-ai learn --import --from-file learning.json --dry-run");
   console.log("  design-ai learn --audit");
   console.log("  design-ai learn --audit --fix --dry-run");
@@ -589,6 +591,8 @@ function printRestore(payload) {
   info(`${payload.dryRun ? "Would add" : "Added"}: ${payload.addedCount}`);
   info(`Metadata changes: ${payload.metadataChangedCount}`);
   info(`ID conflicts: ${payload.idConflictCount}`);
+  info(`${payload.dryRun ? "Rollback backup target" : "Rollback backup"}: ${payload.backupFile}`);
+  info(`Backup created: ${payload.backupCreated ? "yes" : "no"}`);
   info(`Restore audit: ${payload.auditSummary.status} (${payload.auditSummary.failures} failure(s), ${payload.auditSummary.warnings} warning(s))`);
   console.log();
 
@@ -634,6 +638,9 @@ function printRestore(payload) {
 
   if (payload.dryRun) {
     console.log("No changes made. Re-run with `--yes` instead of `--dry-run` to replace the active learning profile.");
+    console.log(`Rollback backup will be written before apply: ${payload.backupFile}`);
+  } else {
+    console.log(`Rollback preview: ${payload.rollbackCommand}`);
   }
 }
 
@@ -992,6 +999,8 @@ export async function runLearn(args) {
   if (parsed.action === "restore") {
     const payload = restoreLearningProfile({
       filePath: parsed.filePath,
+      backupFilePath: parsed.backupFilePath,
+      forceBackup: parsed.force,
       restoreText: readLearningInput(parsed),
       source: parsed.fromFile ? path.resolve(parsed.fromFile) : "stdin",
       dryRun: parsed.dryRun || !parsed.yes,

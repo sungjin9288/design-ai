@@ -2,6 +2,37 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.49.0 — Learning Restore Rollback Backup (2026-06)
+
+Added an automatic rollback backup for confirmed learning profile restores. `design-ai learn --restore --yes` now saves the current active profile before replacing it, so operators can preview and apply a rollback with the same restore flow if the replacement is not desired.
+
+### Added
+- Automatic sibling rollback backup creation before confirmed `learn --restore --yes` writes the restored profile.
+- `--backup-file path` for `learn --restore` so operators can choose the rollback backup location.
+- Human and JSON restore output fields for `backupFile`, `backupCreated`, `backupEntryCount`, `backupUpdatedAt`, and a rollback preview command.
+- Apply protection that rejects rollback backup paths equal to the active profile, equal to the restore source, or already existing unless `--force` is supplied.
+- Unit coverage for parser validation, rollback backup creation, backup path protection, command-level JSON output, and help text.
+- Packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` restore rollback backup behavior.
+- README, Korean README, Product Readiness, AI Learning docs, Distribution docs, Release Checklist, Roadmap, and Session Log coverage.
+
+### Preserved
+- The learning profile schema remains unchanged at version 1.
+- `learn --restore` remains preview-first and does not create rollback backup files during preview.
+- Restore still blocks apply when the source payload audit has failures.
+
+### What this enables
+- Operators can run the complete local learning operations loop with a rollback path: backup or redact, verify, diff, preview restore, apply restore with automatic rollback backup, then restore from that rollback backup if needed.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/learn.mjs`
+- `node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.48.0 → 4.49.0.
+
 ## v4.48.0 — Learning Profile Restore (2026-06)
 
 Added a preview-first full-profile restore path for local learning backups. `design-ai learn --restore --from-file learning-backup.json` now shows exactly how the active `learning.json` would change, and `--restore --yes` replaces the active profile only after the portable source passes audit.
