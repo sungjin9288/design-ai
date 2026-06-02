@@ -980,6 +980,10 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
     if payload.get("counts", {}).get("checksumFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no checksum failures")
+    if payload.get("counts", {}).get("verifiedGeneratedFiles") != 7:
+        raise SystemExit(f"site bundle check after {context} expected 7 current-contract generated files")
+    if payload.get("counts", {}).get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle check after {context} expected no generated bundle contract failures")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
@@ -1032,6 +1036,8 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+        if payload.get(side, {}).get("verifiedGeneratedFiles") != 7 or payload.get(side, {}).get("generatedFailures") != 0:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
         evidence_counts = payload.get(side, {}).get("implementationEvidence")
         if not isinstance(evidence_counts, dict):
             raise SystemExit(f"site bundle compare after {context} {side} implementationEvidence counts missing")
@@ -1068,6 +1074,8 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    if bundle.get("verifiedGeneratedFiles") != 7 or bundle.get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     evidence_counts = bundle.get("implementationEvidence")
     if not isinstance(evidence_counts, dict):
         raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
@@ -1085,6 +1093,7 @@ def assert_site_bundle_handoff_json_smoke(
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Primary Codex Implementation Prompt",
         "Task ID: task-accessibility",
+        "Generated files: 7/7 match the current CLI bundle contract",
         "Required Final Response",
     ):
         if fragment not in prompt:

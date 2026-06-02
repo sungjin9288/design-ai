@@ -1,6 +1,6 @@
 # Session log
 
-A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, public registry Website Console smoke coverage, verified Website Console evidence metadata, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval / restore-backup readiness gates with public registry smoke coverage). Useful for adopters, contributors, and future maintainers.
+A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (mature, dogfooded, 90%+ canonical coverage, a website improvement control tower, public registry Website Console smoke coverage, verified Website Console evidence metadata, generated bundle contract verification, and privacy-preserving local learning restore rollback / pruning / diff / usage / eval / restore-backup readiness gates with public registry smoke coverage). Useful for adopters, contributors, and future maintainers.
 
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 282 (unreleased)** — Added generated bundle contract verification for Website Console handoff bundles. `design-ai site <bundle-dir> --bundle-check --json` now verifies that the seven checksum-managed bundle artifacts match the current CLI output from `website-workspace.tasks.json`; `--bundle-compare` and `--bundle-handoff` carry generated contract counts forward. Package smoke now verifies those counts in installed-bin and one-shot `npm exec --package <tarball>` paths.
 - **Phase 281 (unreleased)** — Added verified bundle evidence metadata for Website Console handoff bundles. `design-ai site <bundle-dir> --bundle-check --json`, `--bundle-compare other-bundle-dir --json`, and `--bundle-handoff --json` now expose `implementationEvidence` counts, and bundle-check fails when summary evidence counts drift from `website-workspace.tasks.json`. Package smoke now verifies non-empty evidence counts through evidence bundle check, compare, and handoff JSON in installed-bin and one-shot `npm exec --package <tarball>` paths.
 - **Phase 280 (unreleased)** — Expanded packed-tarball Website Console evidence smoke coverage. Package smoke now verifies non-empty `implementationEvidence` through `design-ai site --stdin --report`, `--tasks`, and `--bundle --out` in both installed-bin and one-shot `npm exec --package <tarball>` paths, with self-test drift fixtures for evidence payload and Markdown assertions.
 - **Phase 279 (unreleased)** — Added CLI and bundle export support for Website Console handoff evidence. `design-ai site` now preserves `implementationEvidence`, reports evidence counts in JSON summaries, carries evidence through generated task workspaces and bundles, and renders executed work, verification results, remaining risks, and next actions in CLI-generated handoff reports.

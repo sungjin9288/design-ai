@@ -2131,6 +2131,20 @@ function addBundleMarkdownIssue(directory, relativePath, fragments, issues) {
   }
 }
 
+function addBundleGeneratedContractIssues(directory, workspace, source, issues) {
+  const expectedBundle = buildSiteHandoffBundle(workspace, { filePath: source || "website-workspace.tasks.json" });
+  const expectedFiles = new Map(expectedBundle.files.map((file) => [file.path, file.content]));
+  for (const filePath of SITE_BUNDLE_CHECKSUM_FILES) {
+    const expectedContent = expectedFiles.get(filePath);
+    const targetPath = path.join(directory, filePath);
+    if (typeof expectedContent !== "string" || !existsSync(targetPath) || !statSync(targetPath).isFile()) continue;
+    const actualContent = readFileSync(targetPath, "utf8");
+    if (actualContent !== expectedContent) {
+      addIssue(issues, "fail", `bundle-generated-${filePath}`, `${filePath} does not match the current CLI-generated bundle contract`);
+    }
+  }
+}
+
 function summarizeBundlePayload(summaryPayload) {
   const taskGeneration = normalizeObject(summaryPayload?.taskGeneration);
   const site = normalizeObject(summaryPayload?.site);
@@ -2323,6 +2337,9 @@ export function buildSiteBundleCheckReport({
     } else {
       summary.implementationEvidence = workspaceEvidenceCounts;
     }
+    if (canReadDirectory && workspaceSummary.status !== "fail") {
+      addBundleGeneratedContractIssues(directory, analyzed.workspace, summary.source, issues);
+    }
     recomputedMcp = buildSiteMcpCheckReport(analyzed.workspace, analyzed.summary);
   }
 
@@ -2385,6 +2402,14 @@ export function buildSiteBundleCheckReport({
         return sha256Hex(readFileSync(targetPath, "utf8")) === expectedDigest;
       }).length,
       checksumFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-checksum-")).length,
+      expectedGeneratedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+      verifiedGeneratedFiles: SITE_BUNDLE_CHECKSUM_FILES.filter((filePath) => {
+        if (!canReadDirectory || !workspacePayload || workspaceSummary?.status === "fail") return false;
+        const targetPath = path.join(directory, filePath);
+        if (!existsSync(targetPath) || !statSync(targetPath).isFile()) return false;
+        return !issues.some((issue) => issue.id === `bundle-generated-${filePath}`);
+      }).length,
+      generatedFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-generated-")).length,
       issues: issues.length,
       warnings: issues.filter((issue) => issue.level === "warn").length,
       failures: issues.filter((issue) => issue.level === "fail").length,
@@ -2409,6 +2434,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Status: ${report.status}`,
     `Files: ${report.counts.presentFiles}/${report.counts.expectedFiles}`,
     `Checksums: ${report.counts.verifiedChecksumFiles}/${report.counts.expectedChecksumFiles} verified`,
+    `Generated contract: ${report.counts.verifiedGeneratedFiles}/${report.counts.expectedGeneratedFiles} verified`,
     `Bundle digest: ${report.summary.checksumBundleDigest || "not recorded"}`,
     `Unexpected files: ${report.unexpectedFiles.length ? report.unexpectedFiles.join(", ") : "none"}`,
     `Source: ${report.summary.source || "unknown"}`,
@@ -2439,6 +2465,8 @@ function summarizeBundleForCompare(report) {
     checksumAlgorithm: report.summary.checksumAlgorithm || "",
     checksumBundleDigest: report.summary.checksumBundleDigest || "",
     checksumFailures: report.counts.checksumFailures,
+    generatedFailures: report.counts.generatedFailures,
+    verifiedGeneratedFiles: report.counts.verifiedGeneratedFiles,
     issueCount: report.issues.length,
   };
 }
@@ -2534,6 +2562,7 @@ export function formatSiteBundleCompareHuman(report) {
     `Right digest: ${report.right.checksumBundleDigest || "not recorded"}`,
     `Changed files: ${report.counts.changedFiles}`,
     `Metadata changes: ${report.counts.metadataChanges}`,
+    `Generated contract: left ${report.left.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${report.right.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}`,
     "",
     "Changed files:",
     ...(report.changedFiles.length
@@ -2583,6 +2612,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- MCP status: ${checkReport.mcpStatus}`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
     `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
+    `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
     `- SHA-256 bundle digest: ${bundleDigest}`,
     `- Checksums: ${checksumStatus}`,
     "",
@@ -2656,6 +2686,9 @@ export function buildSiteBundleHandoffReport({
       expectedChecksumFiles: checkReport.counts.expectedChecksumFiles,
       verifiedChecksumFiles: checkReport.counts.verifiedChecksumFiles,
       checksumFailures: checkReport.counts.checksumFailures,
+      expectedGeneratedFiles: checkReport.counts.expectedGeneratedFiles,
+      verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
+      generatedFailures: checkReport.counts.generatedFailures,
     },
     prompt,
     files: checkReport.files.map((file) => ({

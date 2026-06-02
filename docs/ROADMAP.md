@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 282 — Website Console Bundle Generated Contract Guard (unreleased)
+
+Verified Website Console handoff bundle checks now confirm that the generated bundle artifacts still match the current CLI output contract. This protects target-repo handoff against coherent manual edits where a bundle file and `summary.json` checksums are changed together.
+
+### Changed
+- Added generated contract verification to `design-ai site <bundle-dir> --bundle-check --json` for the seven checksum-managed bundle artifacts.
+- Added `expectedGeneratedFiles`, `verifiedGeneratedFiles`, and `generatedFailures` counts to bundle-check JSON.
+- Added generated contract metadata to bundle-compare summaries and target-repo bundle-handoff JSON/prompt output.
+- Added a coherent tamper regression test where `website-handoff.md` is edited and `summary.json` checksums are recomputed; bundle-check now fails on `bundle-generated-website-handoff.md`.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/compare/handoff JSON verify the generated bundle contract counts.
+- Extended release metadata guidance so release-facing docs keep generated bundle contract verification visible.
+
+### Impact
+- Website Improvement operators can trust that a verified handoff bundle is not only checksum-consistent, but also reproducible from `website-workspace.tasks.json` under the current CLI.
+- `summary.json` remains validated through manifest, checksum, digest, evidence count, and workspace drift checks; exact regeneration is applied to the seven checksum-managed artifacts where the task-generation summary does not depend on original pre-generation state.
+- The feature remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims automatically, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 281 — Website Console Verified Bundle Evidence Metadata (unreleased)
 
 Verified Website Console handoff bundle flows now keep implementation evidence counts visible after bundle verification. This closes the gap between evidence-preserving bundle export and the later `--bundle-check`, `--bundle-compare`, and `--bundle-handoff` JSON summaries used before target-repo implementation.
