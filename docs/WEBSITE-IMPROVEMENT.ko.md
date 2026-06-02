@@ -18,6 +18,8 @@
 | Prompt Generator | Codex/Claude에 넘길 8개 prompt template 생성 |
 | Handoff Report | 실행한 작업, 검증 결과, 남은 리스크, 다음 작업을 기록하고 Markdown report로 정리 |
 
+브라우저에서 기록한 `implementationEvidence`는 JSON export 뒤에도 유지됩니다. `design-ai site --json`은 evidence count를 보고하고, `--tasks`는 evidence block을 보존하며, `--report`와 `--bundle`은 실행 작업 / 검증 결과 / 남은 리스크 / 다음 작업을 handoff artifact에 반영합니다.
+
 ## Boundary
 
 MVP에서 하지 않는 것:

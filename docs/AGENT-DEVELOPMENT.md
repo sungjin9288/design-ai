@@ -153,6 +153,17 @@ Implemented browser-local Website Console evidence tracking for the handoff phas
 
 The Handoff Report tab stores those fields in the workspace JSON, shows compact evidence counts, and injects the evidence into copied/exported Markdown reports. This keeps the closed loop between generated prompts and final operator evidence without mutating the target repo, calling external MCPs, adding a backend, or adding dependencies.
 
+### Phase 279: CLI handoff evidence export
+
+Implemented `implementationEvidence` support in `design-ai site` so browser-captured evidence survives the file-first CLI workflow:
+
+- `--json` reports evidence counts
+- `--tasks` preserves the evidence block
+- `--report` renders executed work, verification results, remaining risks, and next actions
+- `--bundle` stores evidence in `website-workspace.tasks.json`, `website-handoff.md`, and `summary.json`
+
+The CLI validates malformed evidence array shapes, but it does not verify target-repo claims automatically. Evidence remains operator-entered, deterministic, local, and dependency-free.
+
 ## Current MVP boundary
 
 In scope:

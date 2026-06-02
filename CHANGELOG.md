@@ -4,7 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, and browser-local Website Console handoff evidence tracking for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, and CLI/bundle handoff evidence export for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -24,6 +24,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site --graph [--json]` exports a portable Website Improvement workflow graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edges.
 - The static Website Improvement Console now includes a `Workflow Graph` tab with lane-based node rendering, 35-node/67-edge sample graph coverage, boundary markers, edge table, and graph JSON copy/export actions.
 - The static Website Improvement Console `Handoff Report` tab now tracks executed work, verification results, remaining risks, and next actions in localStorage and injects that evidence into copied/exported Markdown reports.
+- `design-ai site` now preserves `implementationEvidence` from Website Console JSON exports, reports evidence counts in JSON summaries, carries evidence through `--tasks` and `--bundle`, and renders executed work / verification / risks / next actions in CLI-generated handoff reports.
 - Packed-tarball smoke now verifies route eval, prompt eval, and pack eval checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --signals` human, JSON, and `--out` registry reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --propose-skills` human, JSON, and `--out` preview reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
@@ -39,6 +40,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Website Console probes are opt-in and read-only. They do not call external MCPs, write to external systems, crawl target sites, or add dependencies.
 - Website Console workflow graphs are deterministic and read-only in both CLI export and static-console rendering. They do not call external MCPs, mutate target repos, crawl pages, or add dependencies.
 - Website Console handoff evidence tracking is browser-local. It records operator-entered target-repo evidence only and does not call external MCPs, mutate target repos, or add dependencies.
+- Website Console CLI evidence export remains deterministic and local. It does not validate target-repo claims automatically; it preserves operator-entered evidence in generated artifacts.
 - npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
 
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)

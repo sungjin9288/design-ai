@@ -898,6 +898,10 @@ EXPECTED_SITE_COUNTS_KEYS = [
     "auditCategories",
     "auditFindings",
     "refactorTasks",
+    "executedWork",
+    "verificationResults",
+    "remainingRisks",
+    "nextActions",
     "requiredMcp",
     "optionalMcp",
     "unavailableMcp",
@@ -911,6 +915,7 @@ EXPECTED_SITE_SAMPLE_KEYS = [
     "auditChecklist",
     "mcpReadiness",
     "refactorTasks",
+    "implementationEvidence",
     "reportNotes",
 ]
 EXPECTED_SITE_SAMPLE_PROFILE_KEYS = [
@@ -4014,6 +4019,10 @@ def passing_site_json() -> str:
                 "auditCategories": 9,
                 "auditFindings": 3,
                 "refactorTasks": 1,
+                "executedWork": 0,
+                "verificationResults": 0,
+                "remainingRisks": 3,
+                "nextActions": 0,
                 "requiredMcp": 3,
                 "optionalMcp": 6,
                 "unavailableMcp": 0,
@@ -4141,6 +4150,16 @@ def passing_site_sample_json() -> str:
                     "risks": ["Could change conversion copy without stakeholder approval"],
                 },
             ],
+            "implementationEvidence": {
+                "executedWork": [],
+                "verificationResults": [],
+                "remainingRisks": [
+                    "MCP readiness gaps may limit verification depth.",
+                    "Copy or brand changes may require stakeholder review.",
+                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+                ],
+                "nextActions": [],
+            },
             "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
         },
         ensure_ascii=False,
@@ -5691,6 +5710,10 @@ def assert_site_json(raw: str, *, context: str, cmd: list[str]) -> None:
         "auditCategories": 9,
         "auditFindings": 3,
         "refactorTasks": 1,
+        "executedWork": 0,
+        "verificationResults": 0,
+        "remainingRisks": 3,
+        "nextActions": 0,
         "requiredMcp": 3,
         "optionalMcp": 6,
         "unavailableMcp": 0,
@@ -5804,6 +5827,17 @@ def assert_site_sample_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"site sample JSON after {context} task differs from expected sample workspace")
     if "browser" not in task.get("recommendedMcp", []):
         raise SystemExit(f"site sample JSON after {context} task should recommend browser MCP")
+
+    evidence = payload.get("implementationEvidence")
+    if not isinstance(evidence, dict):
+        raise SystemExit(f"site sample JSON after {context} implementationEvidence must be an object")
+    for key in ("executedWork", "verificationResults", "remainingRisks", "nextActions"):
+        if not isinstance(evidence.get(key), list):
+            raise SystemExit(f"site sample JSON after {context} implementationEvidence.{key} must be an array")
+    if evidence.get("executedWork") or evidence.get("verificationResults") or evidence.get("nextActions"):
+        raise SystemExit(f"site sample JSON after {context} sample evidence should start empty")
+    if len(evidence.get("remainingRisks", [])) != 3 or "MCP readiness gaps" not in evidence["remainingRisks"][0]:
+        raise SystemExit(f"site sample JSON after {context} sample remaining risks changed")
 
     if not isinstance(payload.get("reportNotes"), str) or "target website repo" not in payload["reportNotes"]:
         raise SystemExit(f"site sample JSON after {context} reportNotes must preserve target repo boundary")
@@ -9488,6 +9522,28 @@ def run_self_test() -> None:
             cmd=site_sample_cmd,
         ),
         expected="one sample refactor task",
+        scope="smoke assertions",
+    )
+    missing_site_sample_evidence_payload = json.loads(passing_site_sample_json())
+    missing_site_sample_evidence_payload.pop("implementationEvidence")
+    expect_self_test_failure(
+        lambda: assert_site_sample_json(
+            json.dumps(missing_site_sample_evidence_payload),
+            context=context,
+            cmd=site_sample_cmd,
+        ),
+        expected="top-level keys changed",
+        scope="smoke assertions",
+    )
+    stale_site_sample_evidence_payload = json.loads(passing_site_sample_json())
+    stale_site_sample_evidence_payload["implementationEvidence"]["remainingRisks"] = []
+    expect_self_test_failure(
+        lambda: assert_site_sample_json(
+            json.dumps(stale_site_sample_evidence_payload),
+            context=context,
+            cmd=site_sample_cmd,
+        ),
+        expected="sample remaining risks changed",
         scope="smoke assertions",
     )
     stale_site_tasks_payload = json.loads(passing_site_tasks_json())

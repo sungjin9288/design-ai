@@ -135,6 +135,11 @@ const MCP_STATUS_OPTIONS = ["required", "optional", "unused", "unavailable"];
 const PRIORITY_OPTIONS = ["p0", "p1", "p2", "p3"];
 const IMPACT_OPTIONS = ["high", "medium", "low"];
 const EFFORT_OPTIONS = ["high", "medium", "low"];
+const DEFAULT_IMPLEMENTATION_RISKS = [
+  "MCP readiness gaps may limit verification depth.",
+  "Copy or brand changes may require stakeholder review.",
+  "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+];
 export const SITE_PROMPT_TEMPLATE_IDS = [
   "codex-repo-intake",
   "codex-implementation",
@@ -607,6 +612,12 @@ export function createSampleSiteWorkspace() {
         risks: ["Could change conversion copy without stakeholder approval"],
       },
     ],
+    implementationEvidence: {
+      executedWork: [],
+      verificationResults: [],
+      remainingRisks: [...DEFAULT_IMPLEMENTATION_RISKS],
+      nextActions: [],
+    },
     reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
   };
 }
@@ -694,6 +705,16 @@ function normalizeTasks(value) {
   });
 }
 
+function normalizeImplementationEvidence(value) {
+  const source = normalizeObject(value);
+  return {
+    executedWork: normalizeStringArray(source.executedWork),
+    verificationResults: normalizeStringArray(source.verificationResults),
+    remainingRisks: normalizeStringArray(source.remainingRisks, DEFAULT_IMPLEMENTATION_RISKS),
+    nextActions: normalizeStringArray(source.nextActions),
+  };
+}
+
 export function normalizeSiteWorkspace(raw) {
   const fallback = createSampleSiteWorkspace();
   const source = normalizeObject(raw);
@@ -723,6 +744,7 @@ export function normalizeSiteWorkspace(raw) {
     auditChecklist: normalizeChecklist(source.auditChecklist || fallback.auditChecklist),
     mcpReadiness: normalizeMcpReadiness(source.mcpReadiness || fallback.mcpReadiness),
     refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
+    implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
     reportNotes: String(source.reportNotes || ""),
   };
 }
@@ -762,6 +784,18 @@ function validateRawWorkspace(raw) {
   }
   if (!Array.isArray(root.refactorTasks)) {
     addIssue(issues, "fail", "refactor-tasks", "refactorTasks array is required");
+  }
+  if (root.implementationEvidence !== undefined) {
+    const evidence = normalizeObject(root.implementationEvidence);
+    if (root.implementationEvidence === null || typeof root.implementationEvidence !== "object" || Array.isArray(root.implementationEvidence)) {
+      addIssue(issues, "fail", "implementation-evidence", "implementationEvidence must be an object when provided");
+    } else {
+      for (const key of ["executedWork", "verificationResults", "remainingRisks", "nextActions"]) {
+        if (evidence[key] !== undefined && !Array.isArray(evidence[key])) {
+          addIssue(issues, "fail", `implementation-evidence-${key}`, `implementationEvidence.${key} must be an array`);
+        }
+      }
+    }
   }
 
   if (!String(profile.name || "").trim()) {
@@ -875,6 +909,7 @@ function summarizeWorkspace(workspace, issues, filePath) {
   }));
   const totalFindings = auditRows.reduce((sum, item) => sum + item.row.findings.length, 0);
   const requiredMcp = mcpRows.filter((item) => item.status === "required").map((item) => item.key);
+  const evidence = normalizeImplementationEvidence(workspace.implementationEvidence);
   const topTasks = workspace.refactorTasks
     .slice()
     .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
@@ -913,6 +948,10 @@ function summarizeWorkspace(workspace, issues, filePath) {
       auditCategories: AUDIT_CATEGORIES.length,
       auditFindings: totalFindings,
       refactorTasks: workspace.refactorTasks.length,
+      executedWork: evidence.executedWork.length,
+      verificationResults: evidence.verificationResults.length,
+      remainingRisks: evidence.remainingRisks.length,
+      nextActions: evidence.nextActions.length,
       requiredMcp: requiredMcp.length,
       optionalMcp: mcpRows.filter((item) => item.status === "optional").length,
       unavailableMcp: mcpRows.filter((item) => item.status === "unavailable").length,
@@ -1904,6 +1943,7 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     `- Live URL: ${workspace.siteProfile.liveUrl || "not provided"}`,
     `- Repo: ${workspace.siteProfile.repoUrl || workspace.siteProfile.localPath || "not provided"}`,
     `- Tasks: ${bundleSummary.taskGeneration.totalTasks}`,
+    `- Evidence entries: ${bundleSummary.implementationEvidence.executedWork + bundleSummary.implementationEvidence.verificationResults}`,
     `- MCP ready: ${mcpReport.counts.ready}/${mcpReport.counts.total}`,
     "",
     "## Suggested Sequence",
@@ -1912,7 +1952,7 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
     "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
     "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
-    "6. Paste target-repo verification results into `website-handoff.md` after implementation.",
+    "6. Record target-repo executed work, verification results, remaining risks, and next actions in `website-handoff.md` after implementation.",
     "",
     "## Regenerate",
     `- \`design-ai site ${commandTarget} --bundle --out website-handoff-bundle --force\``,
@@ -1978,6 +2018,12 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
         category: task.category,
         priority: task.priority,
       })),
+    },
+    implementationEvidence: {
+      executedWork: taskWorkspace.implementationEvidence.executedWork.length,
+      verificationResults: taskWorkspace.implementationEvidence.verificationResults.length,
+      remainingRisks: taskWorkspace.implementationEvidence.remainingRisks.length,
+      nextActions: taskWorkspace.implementationEvidence.nextActions.length,
     },
     mcp: {
       status: mcpReport.status,
@@ -2801,6 +2847,7 @@ export function buildSitePromptBundle(workspace) {
 export function buildSiteHandoffReport(workspace) {
   const profile = workspace.siteProfile;
   const tasks = workspace.refactorTasks;
+  const evidence = normalizeImplementationEvidence(workspace.implementationEvidence);
   return [
     `# Website improvement handoff: ${profile.name}`,
     "",
@@ -2847,17 +2894,19 @@ export function buildSiteHandoffReport(workspace) {
     "",
     "## Executed work",
     "",
-    "- Not recorded in this MVP. Add implementation notes after running Codex in the target repo.",
+    markdownList(evidence.executedWork, "Not recorded yet. Add implementation notes after running Codex in the target repo."),
     "",
     "## Verification results",
     "",
-    "- Not recorded in this MVP. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here.",
+    markdownList(evidence.verificationResults, "Not recorded yet. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here."),
     "",
     "## Remaining risks",
     "",
-    "- MCP readiness gaps may limit verification depth.",
-    "- Copy or brand changes may require stakeholder review.",
-    "- Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+    markdownList(evidence.remainingRisks, "No remaining risks recorded."),
+    "",
+    "## Next actions",
+    "",
+    markdownList(evidence.nextActions, "No next actions recorded."),
     "",
     "## Notes",
     "",

@@ -764,6 +764,12 @@ test("formatSiteJson preserves summary payload order and readable Korean text", 
 
 test("buildSiteHandoffReport and prompt bundle include operational boundaries", () => {
   const workspace = createSampleSiteWorkspace();
+  workspace.implementationEvidence = {
+    executedWork: ["Updated hero CTA hierarchy in the target repo"],
+    verificationResults: ["npm run build passed in the target repo"],
+    remainingRisks: ["Stakeholder copy approval remains open"],
+    nextActions: ["Run Lighthouse after preview deploy"],
+  };
   const generatedWorkspace = generateSiteRefactorTasks(workspace).workspace;
   const report = buildSiteHandoffReport(workspace);
   const prompt = buildSitePrompt(workspace, "codex-implementation");
@@ -779,7 +785,10 @@ test("buildSiteHandoffReport and prompt bundle include operational boundaries", 
   assert.match(report, /# Website improvement handoff: Korean SaaS marketing site/);
   assert.match(report, /## MCP Readiness/);
   assert.match(report, /Clarify homepage CTA hierarchy/);
-  assert.match(report, /Not recorded in this MVP/);
+  assert.match(report, /Updated hero CTA hierarchy in the target repo/);
+  assert.match(report, /npm run build passed in the target repo/);
+  assert.match(report, /Stakeholder copy approval remains open/);
+  assert.match(report, /Run Lighthouse after preview deploy/);
   assert.match(prompt, /# Codex implementation prompt/);
   assert.match(prompt, /Selected task:/);
   assert.match(prompt, /Task ID: task-homepage-cta/);
@@ -814,6 +823,54 @@ test("buildSiteReport supports file and stdin input", () => withTempDir((dir) =>
   assert.equal(fromStdin.summary.filePath, "stdin");
   assert.equal(fromStdin.summary.counts.refactorTasks, 1);
 }));
+
+test("site workspace normalization preserves handoff evidence for reports and bundles", () => {
+  const workspace = createSampleSiteWorkspace();
+  workspace.implementationEvidence = {
+    executedWork: ["Implemented pricing CTA cleanup"],
+    verificationResults: ["npm run lint passed"],
+    remainingRisks: ["Preview deploy still needs analytics review"],
+    nextActions: ["Attach before/after screenshots"],
+  };
+
+  const { workspace: normalized, summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
+  const taskWorkspace = generateSiteRefactorTasks(normalized).workspace;
+  const report = buildSiteHandoffReport(taskWorkspace);
+  const bundle = buildSiteHandoffBundle(normalized, summary);
+  const summaryJson = JSON.parse(bundle.files.find((file) => file.path === "summary.json").content);
+  const bundleWorkspace = JSON.parse(bundle.files.find((file) => file.path === "website-workspace.tasks.json").content);
+
+  assert.equal(summary.counts.executedWork, 1);
+  assert.equal(summary.counts.verificationResults, 1);
+  assert.equal(summary.counts.remainingRisks, 1);
+  assert.equal(summary.counts.nextActions, 1);
+  assert.match(report, /Implemented pricing CTA cleanup/);
+  assert.match(report, /npm run lint passed/);
+  assert.match(report, /Preview deploy still needs analytics review/);
+  assert.match(report, /Attach before\/after screenshots/);
+  assert.deepEqual(summaryJson.implementationEvidence, {
+    executedWork: 1,
+    verificationResults: 1,
+    remainingRisks: 1,
+    nextActions: 1,
+  });
+  assert.deepEqual(bundleWorkspace.implementationEvidence.executedWork, ["Implemented pricing CTA cleanup"]);
+});
+
+test("analyzeSiteWorkspace validates optional handoff evidence shape", () => {
+  const workspace = createSampleSiteWorkspace();
+  workspace.implementationEvidence = {
+    executedWork: "not-an-array",
+    verificationResults: [],
+    remainingRisks: [],
+    nextActions: [],
+  };
+
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
+
+  assert.equal(summary.status, "fail");
+  assert.ok(summary.issues.some((issue) => issue.id === "implementation-evidence-executedWork"));
+});
 
 test("runSite prints JSON and writes report/prompt artifacts", async () => {
   await withTempDir(async (dir) => {
@@ -933,6 +990,8 @@ test("runSite emits and writes a valid sample workspace", async () => {
     assert.equal(sample.version, 1);
     assert.equal(sample.siteProfile.name, "Korean SaaS marketing site");
     assert.deepEqual(sample.siteProfile.viewports, ["desktop", "tablet", "mobile"]);
+    assert.deepEqual(sample.implementationEvidence.executedWork, []);
+    assert.equal(sample.implementationEvidence.remainingRisks.length, 3);
     assert.equal(sampleOutput.exitCode, undefined);
 
     const writeOutput = await captureConsole(() => runSite(["--sample", "--out", outFile]));

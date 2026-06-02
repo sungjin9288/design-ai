@@ -595,6 +595,16 @@ def site_workspace_fixture_json() -> str:
                     "risks": ["Could change conversion copy without stakeholder approval"],
                 },
             ],
+            "implementationEvidence": {
+                "executedWork": [],
+                "verificationResults": [],
+                "remainingRisks": [
+                    "MCP readiness gaps may limit verification depth.",
+                    "Copy or brand changes may require stakeholder review.",
+                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+                ],
+                "nextActions": [],
+            },
             "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
         },
         ensure_ascii=False,
@@ -772,6 +782,15 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} summary status changed: {summary.get('status')!r}")
     if summary.get("taskGeneration", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
+    evidence_counts = summary.get("implementationEvidence")
+    if (
+        not isinstance(evidence_counts, dict)
+        or evidence_counts.get("executedWork") != 0
+        or evidence_counts.get("verificationResults") != 0
+        or evidence_counts.get("remainingRisks") != 3
+        or evidence_counts.get("nextActions") != 0
+    ):
+        raise SystemExit(f"site bundle after {context} implementation evidence counts changed")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site bundle after {context} file manifest changed")
     checksums = summary.get("checksums", {})
@@ -792,6 +811,9 @@ def assert_site_bundle_smoke(
     task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
     if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
         raise SystemExit(f"site bundle after {context} task ids changed: {task_ids!r}")
+    evidence = tasks.get("implementationEvidence")
+    if not isinstance(evidence, dict) or len(evidence.get("remainingRisks", [])) != 3:
+        raise SystemExit(f"site bundle after {context} did not preserve implementationEvidence in workspace JSON")
 
     mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
     assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
