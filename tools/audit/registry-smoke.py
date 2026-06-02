@@ -83,6 +83,13 @@ from smoke_assertions import (
     assert_show_human_range_output,
     assert_show_json_range,
     assert_show_json_line,
+    assert_site_json,
+    assert_site_mcp_check_json,
+    assert_site_mcp_plan_markdown,
+    assert_site_prompt_markdown,
+    assert_site_prompt_templates_json,
+    assert_site_sample_json,
+    assert_site_tasks_json,
     assert_status_json,
     assert_search_dir_value_failure,
     assert_update_dry_run_json,
@@ -108,6 +115,13 @@ from smoke_assertions import (
     parse_help_topics,
     passing_doctor_report_json,
     passing_check_artifact_content,
+    passing_site_json,
+    passing_site_mcp_check_json,
+    passing_site_mcp_plan_markdown,
+    passing_site_prompt_markdown,
+    passing_site_prompt_templates_json,
+    passing_site_sample_json,
+    passing_site_tasks_json,
     passing_workspace_json,
     passing_workspace_strict_clean_json,
     seed_force_overwrite_target,
@@ -2658,6 +2672,283 @@ def assert_workspace_strict_failure_smoke(
     )
 
 
+def site_workspace_fixture_json() -> str:
+    return passing_site_sample_json()
+
+
+def assert_site_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_sample_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_sample_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_tasks_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_prompt_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_prompt_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_prompt_templates_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_prompt_templates_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_check_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    expected_files = [
+        "README.md",
+        "summary.json",
+        "website-workspace.tasks.json",
+        "mcp-check.json",
+        "mcp-action-plan.md",
+        "website-handoff.md",
+        "website-prompts.md",
+        "codex-implementation.md",
+    ]
+    for name in expected_files:
+        target = out_dir / name
+        if not target.is_file():
+            raise SystemExit(f"site bundle after {context} missing {target}")
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    if summary.get("status") != "pass":
+        raise SystemExit(f"site bundle after {context} summary status changed: {summary.get('status')!r}")
+    if summary.get("taskGeneration", {}).get("totalTasks") != 3:
+        raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
+    if summary.get("files") != expected_files:
+        raise SystemExit(f"site bundle after {context} file manifest changed")
+    checksums = summary.get("checksums", {})
+    checksum_files = checksums.get("files", {})
+    if checksums.get("algorithm") != "sha256":
+        raise SystemExit(f"site bundle after {context} checksum algorithm changed")
+    bundle_digest = checksums.get("bundleDigest")
+    if not isinstance(bundle_digest, str) or len(bundle_digest) != 64:
+        raise SystemExit(f"site bundle after {context} bundle digest is not a SHA-256 hex digest")
+    expected_checksum_files = [name for name in expected_files if name != "summary.json"]
+    if list(checksum_files.keys()) != expected_checksum_files:
+        raise SystemExit(f"site bundle after {context} checksum file manifest changed")
+    for name, digest in checksum_files.items():
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise SystemExit(f"site bundle after {context} checksum for {name} is not a SHA-256 hex digest")
+
+    tasks = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
+    task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
+    if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
+        raise SystemExit(f"site bundle after {context} task ids changed: {task_ids!r}")
+
+    mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
+    assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
+    assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
+    implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
+    assert_no_ansi(implementation_prompt, cmd)
+    for fragment in (
+        "# Codex implementation prompt",
+        "Task ID: task-accessibility",
+        "Focus state is not yet documented for the mobile menu",
+        "Work in the target website repository, not in this design-ai repository.",
+    ):
+        if fragment not in implementation_prompt:
+            raise SystemExit(f"site bundle after {context} implementation prompt missing fragment: {fragment!r}")
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
+        raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+
+
+def assert_site_bundle_check_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    payload = json.loads(result.stdout)
+    if payload.get("status") != "pass" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle check after {context} expected pass/valid output")
+    if payload.get("counts", {}).get("presentFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 present files")
+    if payload.get("counts", {}).get("verifiedChecksumFiles") != 7:
+        raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
+    if payload.get("counts", {}).get("checksumFailures") != 0:
+        raise SystemExit(f"site bundle check after {context} expected no checksum failures")
+    if payload.get("summary", {}).get("totalTasks") != 3:
+        raise SystemExit(f"site bundle check after {context} expected 3 tasks")
+    if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
+        raise SystemExit(f"site bundle check after {context} site name changed")
+    if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
+        raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
+    bundle_digest = payload.get("summary", {}).get("checksumBundleDigest")
+    if not isinstance(bundle_digest, str) or len(bundle_digest) != 64:
+        raise SystemExit(f"site bundle check after {context} bundle digest changed")
+    if payload.get("mcpStatus") != "pass":
+        raise SystemExit(f"site bundle check after {context} MCP status changed")
+    issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
+    if issue_ids != ["bundle-ready"]:
+        raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
+
+
+def assert_site_bundle_compare_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    payload = json.loads(result.stdout)
+    if payload.get("status") != "pass" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle compare after {context} expected pass/valid output")
+    if payload.get("sameBundle") is not True or payload.get("digestMatch") is not True:
+        raise SystemExit(f"site bundle compare after {context} expected identical bundle digest")
+    if payload.get("counts", {}).get("changedFiles") != 0:
+        raise SystemExit(f"site bundle compare after {context} expected no changed files")
+    for side in ("left", "right"):
+        digest = payload.get(side, {}).get("checksumBundleDigest")
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
+        if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
+            raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+    issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
+    if issue_ids != ["bundle-compare-identical"]:
+        raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
+
+
+def assert_site_bundle_handoff_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    payload = json.loads(result.stdout)
+    if payload.get("status") != "pass" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle handoff after {context} expected pass/valid output")
+    bundle = payload.get("bundle", {})
+    if bundle.get("siteName") != "Korean SaaS marketing site":
+        raise SystemExit(f"site bundle handoff after {context} site name changed")
+    if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
+        raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    digest = bundle.get("checksumBundleDigest")
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise SystemExit(f"site bundle handoff after {context} bundle digest changed")
+    prompt = payload.get("prompt")
+    if not isinstance(prompt, str):
+        raise SystemExit(f"site bundle handoff after {context} prompt missing")
+    for fragment in (
+        "Website improvement target-repo handoff prompt",
+        "Bundle digest:",
+        "Run `design-ai site",
+        "Work inside the target website repository, not inside the design-ai repository.",
+        "# Codex implementation prompt",
+    ):
+        if fragment not in prompt:
+            raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
+
+
 def assert_command_alias_smoke(
     cmd: list[str],
     *,
@@ -4099,6 +4390,82 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec workspace restore-backups JSON",
         )
+        assert_site_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site JSON",
+        )
+        assert_site_sample_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--sample"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site sample JSON",
+        )
+        assert_site_prompt_templates_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--prompt-list", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site prompt template listing JSON",
+        )
+        assert_site_mcp_check_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check JSON",
+        )
+        assert_site_mcp_plan_markdown_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-plan markdown",
+        )
+        registry_site_bundle_dir = npx_root / "registry-site-handoff-bundle"
+        assert_site_bundle_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_bundle_dir)),
+            out_dir=registry_site_bundle_dir,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site handoff bundle",
+        )
+        assert_site_bundle_check_json_smoke(
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site bundle-check JSON",
+        )
+        assert_site_bundle_compare_json_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                str(registry_site_bundle_dir),
+                "--bundle-compare",
+                str(registry_site_bundle_dir),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site bundle-compare JSON",
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_tasks_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--tasks"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site tasks JSON",
+        )
+        assert_site_prompt_markdown_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site task-selected prompt markdown",
+        )
         assert_main_help_smoke(
             npm_exec_cmd(package_spec, "help"),
             cwd=npx_root,
@@ -4975,6 +5342,65 @@ def run_self_test() -> None:
                 cmd=workspace_strict_cmd,
             ),
             expected="readiness warnings/failures",
+            scope="registry smoke",
+        )
+
+        site_cmd = ["design-ai", "site", "--stdin", "--json"]
+        site_sample_cmd = ["design-ai", "site", "--sample"]
+        site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
+        site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
+        site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
+        site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
+        site_prompt_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--prompt",
+            "codex-implementation",
+            "--task",
+            "task-homepage-cta",
+        ]
+        assert_site_json(passing_site_json(), context="registry smoke self-test site JSON", cmd=site_cmd)
+        assert_site_sample_json(
+            passing_site_sample_json(),
+            context="registry smoke self-test site sample",
+            cmd=site_sample_cmd,
+        )
+        assert_site_prompt_templates_json(
+            passing_site_prompt_templates_json(),
+            context="registry smoke self-test site prompt list",
+            cmd=site_prompt_list_cmd,
+        )
+        assert_site_mcp_check_json(
+            passing_site_mcp_check_json(),
+            context="registry smoke self-test site mcp-check",
+            cmd=site_mcp_check_cmd,
+        )
+        assert_site_mcp_plan_markdown(
+            passing_site_mcp_plan_markdown(),
+            context="registry smoke self-test site mcp-plan",
+            cmd=site_mcp_plan_cmd,
+        )
+        assert_site_tasks_json(
+            passing_site_tasks_json(),
+            context="registry smoke self-test site tasks",
+            cmd=site_tasks_cmd,
+        )
+        assert_site_prompt_markdown(
+            passing_site_prompt_markdown(),
+            context="registry smoke self-test site prompt",
+            cmd=site_prompt_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_prompt_markdown(
+                passing_site_prompt_markdown().replace(
+                    "Work in the target website repository, not in this design-ai repository.",
+                    "Work in this design-ai repository.",
+                ),
+                context="registry smoke self-test site prompt drift",
+                cmd=site_prompt_cmd,
+            ),
+            expected="missing expected content",
             scope="registry smoke",
         )
 
