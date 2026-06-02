@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.46.0 — Workspace Curation Report Next Actions (2026-06)
+
+Added a read-only workspace bridge from learning curation warnings to durable Markdown report artifacts. `design-ai workspace` now suggests `design-ai learn --curate --report --out <learning-dir>/learning-curation-report.md` beside existing curation preview commands, so operators can save an audit trail before applying archive actions.
+
+### Added
+- Learning profile audit warnings in `design-ai workspace` now include an info next action for `design-ai learn --curate --report --out <learning-dir>/learning-curation-report.md`.
+- Learning usage sidecar readiness warnings now include the same report next action with `--usage-file <learning.usage.json>` when usage evidence is part of the readiness warning.
+- Report next actions reuse shell-safe quoting for learning profile, usage sidecar, and report output paths.
+- Unit coverage verifies profile-warning and usage-warning report next actions, including local paths with spaces and apostrophes.
+
+### Preserved
+- `design-ai workspace` remains read-only and does not create reports, mutate learning profiles, mutate usage sidecars, mutate eval checkpoints, or change git/release state.
+- Existing `learn --curate`, `learn --curate --report`, workspace JSON shape, strict readiness behavior, learning profile schema, archive schema, usage sidecar schema, and eval checkpoint schema remain compatible.
+
+### What this enables
+- Operators can move from `workspace --strict` warnings to a durable curation report first, then run the existing preview/apply curation flow only after review.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/workspace.mjs`
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.45.0 → 4.46.0.
+
 ## v4.45.0 — Learning Curation Markdown Reports (2026-06)
 
 Added a shareable Markdown report mode for archive-first learning curation. `design-ai learn --curate --report` now renders the same preview/apply payload as a durable audit trail, and `--out file` writes it without requiring `--json`.

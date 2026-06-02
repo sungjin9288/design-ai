@@ -39,6 +39,7 @@ const UNIQUE_RELEASE_SCRIPT_NAMES = [...new Set(RELEASE_SCRIPT_NAMES)];
 const CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai";
 const CANONICAL_REPOSITORY_URL = `https://github.com/${CANONICAL_REPOSITORY_SLUG}`;
 const DEFAULT_LEARNING_EVAL_FILE = "learning-eval.json";
+const DEFAULT_LEARNING_CURATION_REPORT_FILE = "learning-curation-report.md";
 
 export function parseWorkspaceArgs(args) {
   const flags = {
@@ -458,6 +459,14 @@ function learningCurationCommand(learning, learningUsage = null) {
   return `design-ai learn --curate --file ${quoteShellArg(learning.file)}${usagePart}`;
 }
 
+export function defaultLearningCurationReportPath(learningFilePath = defaultLearningFile()) {
+  return path.join(path.dirname(path.resolve(learningFilePath)), DEFAULT_LEARNING_CURATION_REPORT_FILE);
+}
+
+function learningCurationReportCommand(learning, learningUsage = null) {
+  return `${learningCurationCommand(learning, learningUsage)} --report --out ${quoteShellArg(defaultLearningCurationReportPath(learning.file))}`;
+}
+
 function parsedTimestamp(value) {
   const time = Date.parse(String(value || ""));
   return Number.isNaN(time) ? null : time;
@@ -686,6 +695,11 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningU
       "Preview archive-first learning curation before dogfooding prompts.",
       learningCurationCommand(learning, learningUsage),
     ));
+    pushUniqueAction(actions, action(
+      "info",
+      "Save a Markdown learning curation report before applying archive actions.",
+      learningCurationReportCommand(learning, learningUsage),
+    ));
   } else if (learning.count === 0) {
     actions.push(action("info", "Capture reviewed feedback after checks to make dogfood runs improve over time.", "design-ai check artifact.md --learn --yes"));
   } else if (!learningEval) {
@@ -705,6 +719,11 @@ export function buildWorkspaceNextActions({ git, repository, learning, learningU
         "warn",
         "Preview usage-aware learning curation before curating learning entries.",
         learningCurationCommand(learning, learningUsage),
+      ));
+      pushUniqueAction(actions, action(
+        "info",
+        "Save a Markdown usage-aware learning curation report before applying archive actions.",
+        learningCurationReportCommand(learning, learningUsage),
       ));
     } else if (learningUsage.readiness?.status === "pass") {
       actions.push(action("pass", "Learning usage sidecar is aligned with the active profile.", usageCommand));

@@ -14,6 +14,7 @@ import {
   collectLearningUsageReport,
   collectRepositoryReport,
   collectWorkspaceReport,
+  defaultLearningCurationReportPath,
   defaultLearningEvalPath,
   defaultLearningUsagePath,
   formatWorkspaceJson,
@@ -200,6 +201,8 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.match(report.nextActions.map((item) => item.text).join("\n"), /Review local changes/);
   assert.match(report.nextActions.map((item) => item.text).join("\n"), /Preview archive-first learning curation/);
   assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --curate --file/);
+  assert.match(report.nextActions.map((item) => item.text).join("\n"), /Markdown learning curation report/);
+  assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /--report --out/);
 }));
 
 test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failures", () => {
@@ -452,6 +455,53 @@ test("collectWorkspaceReport shell-quotes learning usage and eval next action pa
   assert.equal(
     evalAction?.command,
     `design-ai learn --eval --from-file ${quoteShellArg(evalFile)} --file ${quoteShellArg(learningFile)} --strict`,
+  );
+
+  const warningReport = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    learningUsagePath: usageFile,
+    gitRunner,
+    learningStatsProvider: ({ filePath }) => ({
+      file: filePath,
+      exists: true,
+      count: 2,
+      categoryCounts: { workflow: 2 },
+      sourceCounts: { test: 2 },
+      latestEntry: null,
+      auditSummary: { status: "warn", failures: 0, warnings: 1 },
+    }),
+    learningUsageStatsProvider: ({ filePath, usageFile }) => ({
+      file: filePath,
+      usageFile,
+      exists: true,
+      profileExists: true,
+      profileFile: filePath,
+      version: 1,
+      updatedAt: "2026-05-22T00:00:03.000Z",
+      eventCount: 1,
+      profileEntryCount: 2,
+      usedEntryCount: 1,
+      unusedEntryCount: 1,
+      staleSelectedEntryCount: 1,
+      commandCounts: { prompt: 1 },
+      routeCounts: { "component-spec": 1 },
+      categoryCounts: { accessibility: 1 },
+      auditStatusCounts: { pass: 1 },
+      latestEvent: null,
+      recommendations: [],
+      privacy: {
+        storesRawBriefText: false,
+        storesBriefHash: true,
+        storesSelectedEntryIds: true,
+      },
+    }),
+  });
+  const curationReportAction = warningReport.nextActions.find((item) => (item.command || "").includes("--report --out"));
+  assert.equal(
+    curationReportAction?.command,
+    `design-ai learn --curate --file ${quoteShellArg(learningFile)} --usage-file ${quoteShellArg(usageFile)} --report --out ${quoteShellArg(defaultLearningCurationReportPath(learningFile))}`,
   );
 }));
 
@@ -1013,6 +1063,11 @@ test("runWorkspace prints learning usage section and strict fails usage warnings
   assert.equal(curationAction?.level, "warn");
   assert.match(curationAction?.text || "", /usage-aware learning curation/);
   assert.match(curationAction?.command || "", /--usage-file/);
+  const reportAction = payload.nextActions.find((item) => (item.command || "").includes("--report --out"));
+  assert.equal(reportAction?.level, "info");
+  assert.match(reportAction?.text || "", /Markdown usage-aware learning curation report/);
+  assert.match(reportAction?.command || "", /--usage-file/);
+  assert.match(reportAction?.command || "", /learning-curation-report\.md/);
 }));
 
 test("runWorkspace strict fails readiness warnings and passes info-only readiness", async () => withTempDir(async (dir) => {

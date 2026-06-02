@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 261 — Workspace Curation Report Next Actions (v4.46.0) ✓ shipped
+
+`design-ai workspace` now pairs learning curation warnings with a Markdown report artifact command. Operators can keep the existing `learn --curate` preview path, or first run `learn --curate --report --out learning-curation-report.md` from the workspace next actions to save a readable audit trail before applying archive-first cleanup.
+
+### Changed
+- Added workspace next actions that recommend `design-ai learn --curate --file <learning.json> --report --out <learning-file-dir>/learning-curation-report.md` when the active learning profile audit is not clean.
+- Added usage-aware report next actions that preserve `--usage-file <learning.usage.json>` when learning usage sidecar readiness warns.
+- Kept `workspace` read-only: no profile, sidecar, checkpoint, git, release, report, or archive mutation occurs from the readiness snapshot.
+- Reused existing shell-safe path quoting for learning profile, usage sidecar, and report output paths.
+- Added unit coverage for profile-warning and usage-warning report next actions, including paths with spaces and apostrophes.
+- Updated README, Korean README, Product Readiness, AI Learning docs, Changelog, Roadmap, and Session Log coverage.
+- Updated package/plugin metadata to `4.46.0`.
+
+### Impact
+- Local learning maintenance now has a clearer review sequence: inspect workspace warnings, save a Markdown curation report, then decide whether to apply archive-first cleanup.
+- Existing learning profile, archive, usage sidecar, eval checkpoint, workspace readiness, and JSON/Markdown curation schemas remain compatible.
+
+### What this enables
+- A safer solo-to-company rollout loop where curation evidence can be reviewed or shared as a local Markdown artifact before mutating `learning.json`.
+
+### Verified
+- All 8 audits pass.
+- `node --check cli/lib/workspace.mjs`
+- `node --test cli/lib/workspace.test.mjs`
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.45.0 → 4.46.0.
+
+### What's still ahead
+- Semantic embeddings, fine-tuning, hosted sync, and broader product UI surfaces remain future phases.
+- External release remains held until owner review and Real-CI are green.
+
 ## Phase 260 — Learning Curation Markdown Reports (v4.45.0) ✓ shipped
 
 `design-ai learn --curate` now has a Markdown report mode for local learning maintenance. Operators can preview curation normally, or run `learn --curate --report --out learning-curation-report.md` to save a readable audit trail before applying archive-first cleanup.
