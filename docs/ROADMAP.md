@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 287 — Website Console Bundle Repair Report Command Guidance (unreleased)
+
+Website Console repair guidance now tells operators how to preserve repair evidence as files. Bundle-check, bundle-handoff, and bundle-repair outputs include preview/apply report commands with `--out file`, using paths outside the handoff bundle directory so saved reports do not create unexpected bundle files.
+
+### Changed
+- Added `previewReportCommand` and `applyReportCommand` to Website Console bundle `repairGuidance` JSON metadata.
+- Added `Preview report` and `Apply report` lines to human repair guidance and the generated target-repo handoff prompt.
+- Extended site unit coverage so bundle-check, bundle-handoff, and bundle-repair JSON/human/prompt outputs assert the report command contract.
+- Extended packed-tarball and public-registry smoke assertions so repair guidance drift is caught in installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths.
+
+### Impact
+- Operators can copy deterministic evidence-preservation commands directly from the guidance instead of manually appending `--out`.
+- Report output paths are generated beside the handoff bundle, not inside it, avoiding unexpected bundle-file drift.
+- The change does not add dependencies, call external MCPs, mutate target website repos, or change the explicit `--yes` requirement for applying repairs.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `python3 -B tools/audit/registry-smoke.py --self-test`.
+- `git diff --check`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:metadata`.
+- `npm run package:check`.
+- `npm run package:smoke`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 286 — Website Console Bundle Repair Report Output Persistence (unreleased)
 
 Website Console bundle repair reports now match the other bundle evidence commands: operators can save preview and apply reports with `--out file`, while repair preview stays read-only and confirmed apply remains scoped to the local handoff bundle directory.

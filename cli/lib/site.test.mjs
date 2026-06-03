@@ -548,6 +548,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.repairGuidance.targetRepoMutation, false);
   assert.equal(report.repairGuidance.externalCalls, false);
   assert.match(report.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
+  assert.match(report.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(report.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.match(report.repairGuidance.verifyCommand, /--bundle-check --strict --json/);
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
@@ -575,6 +577,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Generated contract drift:\n- none/);
   assert.match(human, /Repair guidance:\n- Available: yes/);
   assert.match(human, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
+  assert.match(human, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(human, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(human, /bundle-ready/);
@@ -658,6 +662,8 @@ test("buildSiteBundleRepairPreview reports local bundle repair without mutating 
   assert.equal(preview.repairGuidance.targetRepoMutation, false);
   assert.equal(preview.repairGuidance.externalCalls, false);
   assert.match(preview.repairGuidance.applyCommand, /--bundle-repair --yes --json/);
+  assert.match(preview.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(preview.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.equal(preview.before.status, "fail");
   assert.deepEqual(preview.before.generatedDriftFiles, ["website-handoff.md"]);
   assert.equal(preview.after, null);
@@ -666,6 +672,8 @@ test("buildSiteBundleRepairPreview reports local bundle repair without mutating 
   assert.match(human, /Website Improvement handoff bundle repair/);
   assert.match(human, /Dry run: yes/);
   assert.match(human, /Apply repair: design-ai site .* --bundle-repair --yes --json/);
+  assert.match(human, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(human, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.equal(readFileSync(handoffPath, "utf8"), tamperedHandoff);
 
   const repair = buildSiteBundleRepairBundle({ target: dir });
@@ -762,6 +770,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.repairGuidance.available, true);
   assert.equal(report.bundle.repairGuidance.targetRepoMutation, false);
   assert.match(report.bundle.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
+  assert.match(report.bundle.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(report.bundle.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.equal(report.files.find((file) => file.path === "codex-implementation.md").included, true);
   assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
@@ -771,6 +781,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Generated drift files: none/);
   assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
   assert.match(report.prompt, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
+  assert.match(report.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
+  assert.match(report.prompt, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.match(report.prompt, /# Codex implementation prompt/);
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
@@ -1138,6 +1150,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.deepEqual(bundleCheckPayload.generatedContract.driftFiles, []);
     assert.equal(bundleCheckPayload.repairGuidance.available, true);
     assert.match(bundleCheckPayload.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
+    assert.match(bundleCheckPayload.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+    assert.match(bundleCheckPayload.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
     assert.deepEqual(bundleCheckPayload.summary.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1182,6 +1196,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
     assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
     assert.equal(bundleHandoffPayload.bundle.repairGuidance.available, true);
+    assert.match(bundleHandoffPayload.bundle.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+    assert.match(bundleHandoffPayload.bundle.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
     assert.deepEqual(bundleHandoffPayload.bundle.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1190,6 +1206,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
     assert.match(bundleHandoffPayload.prompt, /Repair guidance:\n- Available: yes/);
+    assert.match(bundleHandoffPayload.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
+    assert.match(bundleHandoffPayload.prompt, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
 
     const bundleHandoffFile = path.join(dir, "out", "target-repo-handoff.md");
     const bundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--out", bundleHandoffFile]));
@@ -1208,6 +1226,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(repairPreviewPayload.applied, false);
     assert.equal(repairPreviewPayload.before.status, "fail");
     assert.deepEqual(repairPreviewPayload.before.generatedDriftFiles, ["website-handoff.md"]);
+    assert.match(repairPreviewPayload.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
+    assert.match(repairPreviewPayload.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
     assert.equal(readFileSync(repairHandoffPath, "utf8"), tamperedRepairHandoff);
 
     const repairPreviewFile = path.join(dir, "bundle-repair-preview.json");

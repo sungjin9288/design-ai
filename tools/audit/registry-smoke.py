@@ -2979,6 +2979,24 @@ def assert_site_bundle_repair_json_smoke(
     apply_command = guidance.get("applyCommand")
     if not isinstance(apply_command, str) or "--bundle-repair --yes --json" not in apply_command:
         raise SystemExit(f"site bundle repair preview after {context} apply command changed: {apply_command!r}")
+    preview_report_command = guidance.get("previewReportCommand")
+    if (
+        not isinstance(preview_report_command, str)
+        or "--bundle-repair --json --out " not in preview_report_command
+        or "repair-preview.json" not in preview_report_command
+    ):
+        raise SystemExit(
+            f"site bundle repair preview after {context} preview report command changed: {preview_report_command!r}"
+        )
+    apply_report_command = guidance.get("applyReportCommand")
+    if (
+        not isinstance(apply_report_command, str)
+        or "--bundle-repair --yes --json --out " not in apply_report_command
+        or "repair-applied.json" not in apply_report_command
+    ):
+        raise SystemExit(
+            f"site bundle repair preview after {context} apply report command changed: {apply_report_command!r}"
+        )
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
         raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
 

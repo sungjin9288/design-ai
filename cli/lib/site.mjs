@@ -2226,6 +2226,10 @@ function formatGeneratedContractDriftSummary(generatedContract) {
 
 function buildBundleRepairGuidance(directory, generatedContract) {
   const workspacePath = path.join(directory, "website-workspace.tasks.json");
+  const reportBaseName = path.basename(directory);
+  const reportDirectory = path.dirname(directory);
+  const previewReportPath = path.join(reportDirectory, `${reportBaseName}-repair-preview.json`);
+  const appliedReportPath = path.join(reportDirectory, `${reportBaseName}-repair-applied.json`);
   const hasWorkspace = existsSync(workspacePath) && statSync(workspacePath).isFile();
   const available = Boolean(generatedContract.available && hasWorkspace);
   return {
@@ -2236,6 +2240,8 @@ function buildBundleRepairGuidance(directory, generatedContract) {
     command: available ? `design-ai site ${shellQuote(workspacePath)} --bundle --out ${shellQuote(directory)} --force` : "",
     previewCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --json` : "",
     applyCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --yes --json` : "",
+    previewReportCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --json --out ${shellQuote(previewReportPath)}` : "",
+    applyReportCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --yes --json --out ${shellQuote(appliedReportPath)}` : "",
     verifyCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-check --strict --json` : "",
     mutates: available ? "handoff-bundle-directory-only" : "none",
     targetRepoMutation: false,
@@ -2256,6 +2262,8 @@ function formatBundleRepairGuidanceLines(repairGuidance) {
     `- Regenerate: ${repairGuidance.command}`,
     `- Preview repair: ${repairGuidance.previewCommand}`,
     `- Apply repair: ${repairGuidance.applyCommand}`,
+    `- Preview report: ${repairGuidance.previewReportCommand}`,
+    `- Apply report: ${repairGuidance.applyReportCommand}`,
     `- Verify: ${repairGuidance.verifyCommand}`,
     `- Scope: ${repairGuidance.mutates}; target repo mutation ${repairGuidance.targetRepoMutation ? "yes" : "no"}; external calls ${repairGuidance.externalCalls ? "yes" : "no"}`,
   ];

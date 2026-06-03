@@ -4,7 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, and repair report output-file persistence, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, and repair report command guidance, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -33,6 +33,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site <bundle-dir> --bundle-check --json` now includes `repairGuidance` with a local regenerate command and strict verify command; `--bundle-handoff --json` and the generated target-repo handoff prompt carry the same guidance forward.
 - `design-ai site <bundle-dir> --bundle-repair [--json]` now previews local handoff bundle repair, and `--bundle-repair --yes [--json]` rewrites only the handoff bundle directory from embedded `website-workspace.tasks.json` before re-running bundle-check verification.
 - `design-ai site <bundle-dir> --bundle-repair [--yes] [--json] --out file [--force]` now writes preview/applied repair reports to disk, preserving read-only preview behavior and confirmed apply behavior.
+- `repairGuidance` now includes preview/apply report output commands so bundle-check, bundle-handoff, and bundle-repair outputs show how to preserve repair evidence with `--out file`.
 - Packed-tarball smoke now verifies Website Console generated bundle contract counts through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies Website Console generated contract diagnostics and empty drift lists through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies Website Console bundle repair guidance through bundle-check and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
@@ -57,7 +58,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Verified bundle evidence metadata remains deterministic and local. It reports counts and detects summary/workspace drift without verifying the truth of target-repo implementation claims.
 - Generated bundle contract verification remains deterministic and local. It checks reproducibility of generated bundle artifacts from `website-workspace.tasks.json`; it does not validate real target-repo implementation claims.
 - Generated bundle contract diagnostics expose SHA-256 digests and file paths only. They do not expose generated Markdown bodies, call external MCPs, or mutate target repos.
-- Bundle repair is explicit and local. Guidance provides a `--bundle --out <bundle-dir> --force` regeneration command and `--bundle-repair` preview/apply path, and repair reports can be saved with `--out file`; repair only runs after `--yes`, rewrites the handoff bundle directory, and does not touch the target website repo.
+- Bundle repair is explicit and local. Guidance provides a `--bundle --out <bundle-dir> --force` regeneration command, `--bundle-repair` preview/apply paths, and preview/apply report output commands; repair only runs after `--yes`, rewrites the handoff bundle directory, and does not touch the target website repo.
 - npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
 
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)
