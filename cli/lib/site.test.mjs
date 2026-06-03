@@ -518,6 +518,14 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.counts.expectedGeneratedFiles, 7);
   assert.equal(report.counts.verifiedGeneratedFiles, 7);
   assert.equal(report.counts.generatedFailures, 0);
+  assert.equal(report.generatedContract.available, true);
+  assert.equal(report.generatedContract.expectedFiles, 7);
+  assert.equal(report.generatedContract.verifiedFiles, 7);
+  assert.deepEqual(report.generatedContract.driftFiles, []);
+  assert.equal(report.generatedContract.files.length, 7);
+  assert.ok(report.generatedContract.files.every((file) => file.present && file.matches));
+  assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.expectedDigest)));
+  assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.actualDigest)));
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
   assert.deepEqual(report.summary.implementationEvidence, {
@@ -529,6 +537,7 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.summary.checksumAlgorithm, "sha256");
   assert.match(report.summary.checksumBundleDigest, /^[a-f0-9]{64}$/);
   assert.equal(json.issues[0].id, "bundle-ready");
+  assert.deepEqual(json.generatedContract.driftFiles, []);
   assert.deepEqual(json.summary.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -539,6 +548,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Files: 8\/8/);
   assert.match(human, /Checksums: 7\/7 verified/);
   assert.match(human, /Generated contract: 7\/7 verified/);
+  assert.match(human, /Generated drift files: none/);
+  assert.match(human, /Generated contract drift:\n- none/);
   assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(human, /bundle-ready/);
@@ -564,7 +575,17 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   const generatedMismatchReport = buildSiteBundleCheckReport({ target: dir });
   assert.equal(generatedMismatchReport.status, "fail");
   assert.equal(generatedMismatchReport.counts.checksumFailures, 0);
-  assert.ok(generatedMismatchReport.issues.some((issue) => issue.id === "bundle-generated-website-handoff.md"));
+  assert.equal(generatedMismatchReport.counts.generatedFailures, 1);
+  assert.deepEqual(generatedMismatchReport.generatedContract.driftFiles, ["website-handoff.md"]);
+  const handoffDrift = generatedMismatchReport.generatedContract.files.find((file) => file.path === "website-handoff.md");
+  assert.equal(handoffDrift.matches, false);
+  assert.equal(handoffDrift.actualDigest, sha256HexForTest(coherentlyTamperedHandoff));
+  assert.notEqual(handoffDrift.expectedDigest, handoffDrift.actualDigest);
+  assert.ok(generatedMismatchReport.issues.some((issue) => (
+    issue.id === "bundle-generated-website-handoff.md"
+    && issue.message.includes(handoffDrift.expectedDigest.slice(0, 12))
+    && issue.message.includes(handoffDrift.actualDigest.slice(0, 12))
+  )));
   writeFileSync(handoffPath, originalHandoff, "utf8");
   writeFileSync(summaryPath, originalSummary, "utf8");
 
@@ -610,6 +631,8 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
   assert.equal(identical.counts.changedFiles, 0);
   assert.equal(identical.issues[0].id, "bundle-compare-identical");
   assert.equal(identicalJson.left.siteName, "Korean SaaS marketing site");
+  assert.deepEqual(identicalJson.left.generatedDriftFiles, []);
+  assert.deepEqual(identicalJson.right.generatedDriftFiles, []);
   assert.deepEqual(identicalJson.left.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -618,6 +641,7 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
   });
   assert.match(identicalHuman, /Same bundle: yes/);
   assert.match(identicalHuman, /Generated contract: left 7\/7, right 7\/7/);
+  assert.match(identicalHuman, /Generated drift files: left none, right none/);
 
   const changedWorkspace = createSampleSiteWorkspace();
   changedWorkspace.auditChecklist["content-quality"].findings.push("FAQ page lacks proof for enterprise procurement teams");
@@ -665,12 +689,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.verifiedChecksumFiles, 7);
   assert.equal(report.bundle.verifiedGeneratedFiles, 7);
   assert.equal(report.bundle.generatedFailures, 0);
+  assert.deepEqual(report.bundle.generatedDriftFiles, []);
   assert.equal(report.files.find((file) => file.path === "codex-implementation.md").included, true);
   assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
   assert.match(report.prompt, /SHA-256 bundle digest: [a-f0-9]{64}/);
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, /Generated files: 7\/7 match the current CLI bundle contract/);
+  assert.match(report.prompt, /Generated drift files: none/);
   assert.match(report.prompt, /# Codex implementation prompt/);
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
@@ -683,6 +709,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   });
   assert.equal(json.bundle.verifiedGeneratedFiles, 7);
   assert.equal(json.bundle.generatedFailures, 0);
+  assert.deepEqual(json.bundle.generatedDriftFiles, []);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);
 
@@ -1032,6 +1059,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleCheckPayload.counts.presentFiles, 8);
     assert.equal(bundleCheckPayload.counts.verifiedGeneratedFiles, 7);
     assert.equal(bundleCheckPayload.counts.generatedFailures, 0);
+    assert.equal(bundleCheckPayload.generatedContract.available, true);
+    assert.deepEqual(bundleCheckPayload.generatedContract.driftFiles, []);
     assert.deepEqual(bundleCheckPayload.summary.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1050,6 +1079,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleComparePayload.sameBundle, true);
     assert.equal(bundleComparePayload.left.verifiedGeneratedFiles, 7);
     assert.equal(bundleComparePayload.right.verifiedGeneratedFiles, 7);
+    assert.deepEqual(bundleComparePayload.left.generatedDriftFiles, []);
+    assert.deepEqual(bundleComparePayload.right.generatedDriftFiles, []);
     assert.deepEqual(bundleComparePayload.left.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1072,6 +1103,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, 7);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
+    assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
     assert.deepEqual(bundleHandoffPayload.bundle.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,

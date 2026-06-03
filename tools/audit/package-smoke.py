@@ -984,6 +984,23 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} expected 7 current-contract generated files")
     if payload.get("counts", {}).get("generatedFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no generated bundle contract failures")
+    generated_contract = payload.get("generatedContract")
+    if not isinstance(generated_contract, dict) or generated_contract.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} generated contract diagnostics missing")
+    if generated_contract.get("expectedFiles") != 7 or generated_contract.get("verifiedFiles") != 7:
+        raise SystemExit(f"site bundle check after {context} generated contract file counts changed")
+    if generated_contract.get("driftFiles") != []:
+        raise SystemExit(f"site bundle check after {context} expected no generated contract drift files")
+    generated_files = generated_contract.get("files")
+    if not isinstance(generated_files, list) or len(generated_files) != 7:
+        raise SystemExit(f"site bundle check after {context} expected 7 generated contract file diagnostics")
+    for item in generated_files:
+        if item.get("present") is not True or item.get("matches") is not True:
+            raise SystemExit(f"site bundle check after {context} generated contract file did not match: {item!r}")
+        for key in ("expectedDigest", "actualDigest"):
+            digest = item.get(key)
+            if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+                raise SystemExit(f"site bundle check after {context} generated contract {key} is not a SHA-256 hex digest")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
@@ -1038,6 +1055,8 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
         if payload.get(side, {}).get("verifiedGeneratedFiles") != 7 or payload.get(side, {}).get("generatedFailures") != 0:
             raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
+        if payload.get(side, {}).get("generatedDriftFiles") != []:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract drift changed")
         evidence_counts = payload.get(side, {}).get("implementationEvidence")
         if not isinstance(evidence_counts, dict):
             raise SystemExit(f"site bundle compare after {context} {side} implementationEvidence counts missing")
@@ -1076,6 +1095,8 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
     if bundle.get("verifiedGeneratedFiles") != 7 or bundle.get("generatedFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
+    if bundle.get("generatedDriftFiles") != []:
+        raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
     evidence_counts = bundle.get("implementationEvidence")
     if not isinstance(evidence_counts, dict):
         raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
@@ -1094,6 +1115,7 @@ def assert_site_bundle_handoff_json_smoke(
         "Primary Codex Implementation Prompt",
         "Task ID: task-accessibility",
         "Generated files: 7/7 match the current CLI bundle contract",
+        "Generated drift files: none",
         "Required Final Response",
     ):
         if fragment not in prompt:

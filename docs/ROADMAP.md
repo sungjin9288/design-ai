@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 283 — Website Console Bundle Generated Contract Diagnostics (unreleased)
+
+Verified Website Console handoff bundle checks now expose per-file generated contract diagnostics. Operators can see which checksum-managed artifact drifted from the current CLI output contract, including expected and actual SHA-256 digests, without exposing artifact contents.
+
+### Changed
+- Added a `generatedContract` JSON block to `design-ai site <bundle-dir> --bundle-check --json` with availability, source, expected/verified counts, drift file paths, and per-file expected/actual SHA-256 digests.
+- Added generated drift file summaries to bundle-check human output, bundle-compare summaries, and target-repo bundle-handoff JSON/prompt output.
+- Extended the coherent tamper regression test so `website-handoff.md` drift verifies both the mismatch path and digest diagnostics.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/compare/handoff paths verify generated contract diagnostics and empty drift lists.
+
+### Impact
+- Website Improvement operators can distinguish checksum mismatch, coherent manual bundle edits, and current CLI contract drift without inspecting every bundle artifact manually.
+- Diagnostics remain deterministic and local: they expose digests and file paths only, not generated Markdown contents, and do not mutate target repos, call external MCPs, crawl pages, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 282 — Website Console Bundle Generated Contract Guard (unreleased)
 
 Verified Website Console handoff bundle checks now confirm that the generated bundle artifacts still match the current CLI output contract. This protects target-repo handoff against coherent manual edits where a bundle file and `summary.json` checksums are changed together.

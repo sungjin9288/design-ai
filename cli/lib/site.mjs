@@ -2131,18 +2131,71 @@ function addBundleMarkdownIssue(directory, relativePath, fragments, issues) {
   }
 }
 
-function addBundleGeneratedContractIssues(directory, workspace, source, issues) {
-  const expectedBundle = buildSiteHandoffBundle(workspace, { filePath: source || "website-workspace.tasks.json" });
+function shortDigest(digest) {
+  return digest ? String(digest).slice(0, 12) : "missing";
+}
+
+function emptyBundleGeneratedContract(source = "") {
+  return {
+    available: false,
+    source: source || "",
+    expectedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+    verifiedFiles: 0,
+    driftFiles: [],
+    files: [],
+  };
+}
+
+function buildBundleGeneratedContract(directory, workspace, source) {
+  const contractSource = source || "website-workspace.tasks.json";
+  const expectedBundle = buildSiteHandoffBundle(workspace, { filePath: contractSource });
   const expectedFiles = new Map(expectedBundle.files.map((file) => [file.path, file.content]));
-  for (const filePath of SITE_BUNDLE_CHECKSUM_FILES) {
+  const files = SITE_BUNDLE_CHECKSUM_FILES.map((filePath) => {
     const expectedContent = expectedFiles.get(filePath);
+    const expectedDigest = typeof expectedContent === "string" ? sha256Hex(expectedContent) : "";
     const targetPath = path.join(directory, filePath);
-    if (typeof expectedContent !== "string" || !existsSync(targetPath) || !statSync(targetPath).isFile()) continue;
-    const actualContent = readFileSync(targetPath, "utf8");
-    if (actualContent !== expectedContent) {
-      addIssue(issues, "fail", `bundle-generated-${filePath}`, `${filePath} does not match the current CLI-generated bundle contract`);
-    }
+    const present = existsSync(targetPath) && statSync(targetPath).isFile();
+    const actualDigest = present ? sha256Hex(readFileSync(targetPath, "utf8")) : "";
+    return {
+      path: filePath,
+      present,
+      matches: Boolean(present && expectedDigest && actualDigest === expectedDigest),
+      expectedDigest,
+      actualDigest,
+    };
+  });
+  return {
+    available: true,
+    source: contractSource,
+    expectedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+    verifiedFiles: files.filter((file) => file.matches).length,
+    driftFiles: files.filter((file) => file.present && !file.matches).map((file) => file.path),
+    files,
+  };
+}
+
+function addBundleGeneratedContractIssues(generatedContract, issues) {
+  if (!generatedContract.available) return;
+  for (const file of generatedContract.files) {
+    if (!file.present || file.matches) continue;
+    addIssue(
+      issues,
+      "fail",
+      `bundle-generated-${file.path}`,
+      `${file.path} does not match the current CLI-generated bundle contract (expected ${shortDigest(file.expectedDigest)}, actual ${shortDigest(file.actualDigest)})`,
+    );
   }
+}
+
+function formatGeneratedContractDriftLines(generatedContract) {
+  const driftFiles = generatedContract.files.filter((file) => file.present && !file.matches);
+  if (driftFiles.length === 0) return ["- none"];
+  return driftFiles.map((file) => `- ${file.path}: expected ${shortDigest(file.expectedDigest)}, actual ${shortDigest(file.actualDigest)}`);
+}
+
+function formatGeneratedContractDriftSummary(generatedContract) {
+  if (!generatedContract.driftFiles.length) return "none";
+  return generatedContract.driftFiles.join(", ");
 }
 
 function summarizeBundlePayload(summaryPayload) {
@@ -2215,6 +2268,7 @@ export function buildSiteBundleCheckReport({
 
   let workspaceSummary = null;
   let recomputedMcp = null;
+  let generatedContract = emptyBundleGeneratedContract(summary.source);
 
   if (summaryPayload) {
     if (summaryPayload.version !== 1) {
@@ -2338,7 +2392,8 @@ export function buildSiteBundleCheckReport({
       summary.implementationEvidence = workspaceEvidenceCounts;
     }
     if (canReadDirectory && workspaceSummary.status !== "fail") {
-      addBundleGeneratedContractIssues(directory, analyzed.workspace, summary.source, issues);
+      generatedContract = buildBundleGeneratedContract(directory, analyzed.workspace, summary.source);
+      addBundleGeneratedContractIssues(generatedContract, issues);
     }
     recomputedMcp = buildSiteMcpCheckReport(analyzed.workspace, analyzed.summary);
   }
@@ -2402,13 +2457,8 @@ export function buildSiteBundleCheckReport({
         return sha256Hex(readFileSync(targetPath, "utf8")) === expectedDigest;
       }).length,
       checksumFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-checksum-")).length,
-      expectedGeneratedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
-      verifiedGeneratedFiles: SITE_BUNDLE_CHECKSUM_FILES.filter((filePath) => {
-        if (!canReadDirectory || !workspacePayload || workspaceSummary?.status === "fail") return false;
-        const targetPath = path.join(directory, filePath);
-        if (!existsSync(targetPath) || !statSync(targetPath).isFile()) return false;
-        return !issues.some((issue) => issue.id === `bundle-generated-${filePath}`);
-      }).length,
+      expectedGeneratedFiles: generatedContract.expectedFiles,
+      verifiedGeneratedFiles: generatedContract.verifiedFiles,
       generatedFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-generated-")).length,
       issues: issues.length,
       warnings: issues.filter((issue) => issue.level === "warn").length,
@@ -2419,6 +2469,7 @@ export function buildSiteBundleCheckReport({
     mcpStatus: mcpPayload?.status || "unknown",
     files,
     unexpectedFiles,
+    generatedContract,
     issues,
   };
 }
@@ -2437,6 +2488,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Generated contract: ${report.counts.verifiedGeneratedFiles}/${report.counts.expectedGeneratedFiles} verified`,
     `Bundle digest: ${report.summary.checksumBundleDigest || "not recorded"}`,
     `Unexpected files: ${report.unexpectedFiles.length ? report.unexpectedFiles.join(", ") : "none"}`,
+    `Generated drift files: ${formatGeneratedContractDriftSummary(report.generatedContract)}`,
     `Source: ${report.summary.source || "unknown"}`,
     `Site: ${report.summary.siteName || "unknown"}`,
     `Tasks: ${report.summary.totalTasks}`,
@@ -2445,6 +2497,9 @@ export function formatSiteBundleCheckHuman(report) {
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
+    "",
+    "Generated contract drift:",
+    ...formatGeneratedContractDriftLines(report.generatedContract),
     "",
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
@@ -2467,6 +2522,7 @@ function summarizeBundleForCompare(report) {
     checksumFailures: report.counts.checksumFailures,
     generatedFailures: report.counts.generatedFailures,
     verifiedGeneratedFiles: report.counts.verifiedGeneratedFiles,
+    generatedDriftFiles: [...report.generatedContract.driftFiles],
     issueCount: report.issues.length,
   };
 }
@@ -2563,6 +2619,7 @@ export function formatSiteBundleCompareHuman(report) {
     `Changed files: ${report.counts.changedFiles}`,
     `Metadata changes: ${report.counts.metadataChanges}`,
     `Generated contract: left ${report.left.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${report.right.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}`,
+    `Generated drift files: left ${report.left.generatedDriftFiles.length ? report.left.generatedDriftFiles.join(", ") : "none"}, right ${report.right.generatedDriftFiles.length ? report.right.generatedDriftFiles.join(", ") : "none"}`,
     "",
     "Changed files:",
     ...(report.changedFiles.length
@@ -2613,6 +2670,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Tasks: ${checkReport.summary.totalTasks}`,
     `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
     `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
+    `- Generated drift files: ${formatGeneratedContractDriftSummary(checkReport.generatedContract)}`,
     `- SHA-256 bundle digest: ${bundleDigest}`,
     `- Checksums: ${checksumStatus}`,
     "",
@@ -2689,6 +2747,7 @@ export function buildSiteBundleHandoffReport({
       expectedGeneratedFiles: checkReport.counts.expectedGeneratedFiles,
       verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
       generatedFailures: checkReport.counts.generatedFailures,
+      generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
     },
     prompt,
     files: checkReport.files.map((file) => ({
