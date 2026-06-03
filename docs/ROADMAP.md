@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 290 — Shared Repair Guidance Release Metadata Guard (unreleased)
+
+Release metadata now treats the shared Website Console repair guidance smoke helper contract as release-facing policy. The guard requires release docs to mention shared repair guidance smoke helpers alongside the bundle repair preview/apply and repair report `--out file` smoke coverage, and the self-test includes a drift fixture that removes that phrase from README guidance.
+
+### Changed
+- Added a shared repair guidance helper term group to the existing site bundle-repair package smoke release metadata guard.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared repair guidance smoke helper coverage.
+- Added a release metadata self-test fixture that fails when the shared helper phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document bundle repair smoke without preserving the shared helper contract.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 289 — Shared Repair Guidance Smoke Helpers (unreleased)
 
 Website Console repair guidance smoke now has a single helper contract for parsing copy/paste commands. The packed-tarball and public-registry smoke runners both use `smoke_assertions.py` helpers for `repairGuidance` command parsing and `--out` path extraction, reducing duplicated release-gate logic after Phase 288 made the guidance executable.
