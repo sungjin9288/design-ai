@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 285 — Website Console Bundle Repair Preview/Apply (unreleased)
+
+Website Console handoff bundle repair guidance is now a first-class local CLI flow. Operators can preview a repair plan without changing files, then explicitly apply the repair to regenerate only the handoff bundle directory from its embedded `website-workspace.tasks.json`.
+
+### Changed
+- Added `design-ai site <bundle-dir> --bundle-repair [--json]` as a read-only repair preview mode.
+- Added `design-ai site <bundle-dir> --bundle-repair --yes [--json]` to rewrite the local handoff bundle directory and immediately re-run bundle-check verification.
+- Added `previewCommand` and `applyCommand` to bundle `repairGuidance` metadata.
+- Extended site unit coverage so drifted generated artifacts show a fail-to-pass repair transition and preview mode does not mutate files.
+- Extended packed-tarball and public-registry smoke assertions so installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths verify bundle repair preview/apply behavior.
+
+### Impact
+- Operators no longer have to copy the regeneration command manually after bundle drift; the CLI can perform the local repair after explicit `--yes`.
+- Repair remains scoped to the handoff bundle directory. It does not mutate the target website repo, call external MCPs, crawl pages, run Lighthouse/axe, add dependencies, or modify learning profiles.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `node --check cli/commands/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 284 — Website Console Bundle Repair Guidance (unreleased)
 
 Verified Website Console handoff bundle checks now include deterministic repair guidance. When generated contract drift is found, operators can see the exact local command to regenerate the bundle from its embedded `website-workspace.tasks.json`, plus the follow-up strict verification command.
@@ -329,7 +353,7 @@ The static Website Improvement Console now renders the portable workflow graph d
 
 ## Phase 270 — Public Registry Website Console Smoke Coverage (v4.55.0) ✓ shipped
 
-`npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, generated tasks, and task-selected prompt flows.
+`npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, generated tasks, and task-selected prompt flows.
 
 ### Changed
 - Added public registry smoke coverage for `design-ai site --stdin --json`, `design-ai site --sample`, and `design-ai site --prompt-list --json`.

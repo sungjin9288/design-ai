@@ -2949,6 +2949,61 @@ def assert_site_bundle_handoff_json_smoke(
             raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
 
 
+def assert_site_bundle_repair_json_smoke(
+    preview_cmd: list[str],
+    apply_cmd: list[str],
+    check_cmd: list[str],
+    *,
+    bundle_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    handoff_path = bundle_dir / "website-handoff.md"
+    original_handoff = handoff_path.read_text(encoding="utf-8")
+    tampered_handoff = f"{original_handoff}\nRegistry smoke drift before bundle repair.\n"
+    handoff_path.write_text(tampered_handoff, encoding="utf-8")
+
+    preview_result = run_plain(preview_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_result.stdout, preview_cmd)
+    preview = json.loads(preview_result.stdout)
+    if preview.get("status") != "pass" or preview.get("dryRun") is not True or preview.get("applied") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} expected pass dry-run output")
+    if preview.get("before", {}).get("status") != "fail":
+        raise SystemExit(f"site bundle repair preview after {context} expected failing pre-repair bundle")
+    if "website-handoff.md" not in preview.get("before", {}).get("generatedDriftFiles", []):
+        raise SystemExit(f"site bundle repair preview after {context} expected website-handoff.md generated drift")
+    guidance = preview.get("repairGuidance")
+    if not isinstance(guidance, dict) or guidance.get("available") is not True:
+        raise SystemExit(f"site bundle repair preview after {context} guidance missing")
+    apply_command = guidance.get("applyCommand")
+    if not isinstance(apply_command, str) or "--bundle-repair --yes --json" not in apply_command:
+        raise SystemExit(f"site bundle repair preview after {context} apply command changed: {apply_command!r}")
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
+
+    apply_result = run_plain(apply_cmd, cwd=cwd, env=env)
+    assert_no_ansi(apply_result.stdout, apply_cmd)
+    applied = json.loads(apply_result.stdout)
+    if applied.get("status") != "pass" or applied.get("dryRun") is not False or applied.get("applied") is not True:
+        raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
+    if applied.get("before", {}).get("status") != "fail" or applied.get("after", {}).get("status") != "pass":
+        raise SystemExit(f"site bundle repair apply after {context} expected fail -> pass transition")
+    if applied.get("after", {}).get("generatedDriftFiles") != []:
+        raise SystemExit(f"site bundle repair apply after {context} expected no generated drift after repair")
+    if applied.get("written", {}).get("count") != 8:
+        raise SystemExit(f"site bundle repair apply after {context} expected 8 rewritten files")
+    if handoff_path.read_text(encoding="utf-8") != original_handoff:
+        raise SystemExit(f"site bundle repair apply after {context} did not restore generated handoff")
+
+    assert_site_bundle_check_json_smoke(
+        check_cmd,
+        cwd=cwd,
+        env=env,
+        context=f"{context} repaired bundle-check JSON",
+    )
+
+
 def assert_command_alias_smoke(
     cmd: list[str],
     *,
@@ -4453,6 +4508,15 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_repair_json_smoke(
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--json"),
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--yes", "--json"),
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+            bundle_dir=registry_site_bundle_dir,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site bundle-repair JSON",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--tasks"),

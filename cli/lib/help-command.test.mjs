@@ -53,7 +53,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals\|--propose-skills\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
-  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--graph\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
+  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--graph\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site <bundle-dir> --bundle-repair \[--yes\] \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
     output,
     /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt and prompt-plan eval checkpoints/,
@@ -116,7 +116,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "workspace").aliases, ["ws"]);
@@ -170,7 +170,7 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.match(formatted, /"topics": \[\n    \{\n      "topic": "install",/);
 });
@@ -277,6 +277,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-handoff \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-repair \[--yes\] \[--strict\] \[--json\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(siteOutput, /--prompt-list\s+List Website Improvement prompt template ids/);
@@ -289,6 +290,8 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /--bundle-check\s+Validate a generated handoff bundle directory/);
   assert.match(siteOutput, /--bundle-compare dir\s+Compare two generated handoff bundles/);
   assert.match(siteOutput, /--bundle-handoff\s+Generate a target-repo Codex handoff prompt/);
+  assert.match(siteOutput, /--bundle-repair\s+Preview or apply local handoff bundle regeneration/);
+  assert.match(siteOutput, /--yes\s+With --bundle-repair, rewrite the handoff bundle directory/);
   assert.match(siteOutput, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(siteOutput, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(siteOutput, /--prompt id Generate one Markdown prompt template/);

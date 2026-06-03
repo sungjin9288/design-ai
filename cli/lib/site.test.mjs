@@ -14,6 +14,8 @@ import {
   buildSiteBundleCheckReport,
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
+  buildSiteBundleRepairBundle,
+  buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
   buildSiteMcpProbeReport,
@@ -31,6 +33,8 @@ import {
   formatSiteJson,
   formatSiteBundleHandoffHuman,
   formatSiteBundleHandoffJson,
+  formatSiteBundleRepairHuman,
+  formatSiteBundleRepairJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
@@ -89,6 +93,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     bundleCheck: false,
     bundleCompareTarget: "",
     bundleHandoff: false,
+    bundleRepair: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -102,6 +107,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     prompts: false,
     outPath: "",
     force: false,
+    yes: false,
     help: false,
   });
 
@@ -114,6 +120,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     bundleCheck: false,
     bundleCompareTarget: "",
     bundleHandoff: false,
+    bundleRepair: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -127,6 +134,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     prompts: false,
     outPath: "handoff.md",
     force: true,
+    yes: false,
     help: false,
   });
 
@@ -146,6 +154,8 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-check", "--json"]).bundleCheck, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-compare", "handoff-bundle.previous", "--json"]).bundleCompareTarget, "handoff-bundle.previous");
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-handoff", "--json"]).bundleHandoff, true);
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json"]).bundleRepair, true);
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--yes", "--json"]).yes, true);
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
@@ -161,6 +171,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-check"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-handoff"]), /Use --prompt-list without --sample/);
+  assert.throws(() => parseSiteArgs(["--prompt-list", "--bundle-repair"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["--prompt-list", "--strict"]), /Use --prompt-list without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--tasks"]), /Use --mcp-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--report"]), /Use --mcp-check without --sample/);
@@ -186,6 +197,13 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--bundle-check"]), /Use --bundle-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-handoff", "--report"]), /Use --bundle-handoff without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-handoff"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--bundle-repair"]), /Use --bundle-repair with a handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["--bundle-repair"]), /--bundle-repair requires a handoff bundle directory path/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--bundle-check"]), /Use --bundle-check without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--report"]), /Use --bundle-repair without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--out", "repair.json"]), /Use --bundle-repair without --out/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-repair"]), /Use --mcp-plan without --sample/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--yes"]), /Use --yes only with --bundle-repair/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
   assert.throws(() => parseSiteArgs(["--sample", "--prompt", "codex-repo-intake"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
   assert.throws(() => parseSiteArgs(["--sample", "--graph"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
@@ -613,6 +631,48 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(missingReport.status, "fail");
   assert.equal(missingReport.valid, false);
   assert.ok(missingReport.issues.some((issue) => issue.id === "bundle-missing-mcp-check.json"));
+}));
+
+test("buildSiteBundleRepairPreview reports local bundle repair without mutating files", () => withTempDir((dir) => {
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
+  const bundle = buildSiteHandoffBundle(workspace, summary);
+  for (const file of bundle.files) {
+    writeFileSync(path.join(dir, file.path), file.content, "utf8");
+  }
+
+  const handoffPath = path.join(dir, "website-handoff.md");
+  const originalHandoff = readFileSync(handoffPath, "utf8");
+  const tamperedHandoff = `${originalHandoff}\nManual edit before repair.\n`;
+  writeFileSync(handoffPath, tamperedHandoff, "utf8");
+
+  const preview = buildSiteBundleRepairPreview({ target: dir });
+  const json = JSON.parse(formatSiteBundleRepairJson(preview));
+  const human = formatSiteBundleRepairHuman(preview);
+
+  assert.equal(preview.status, "pass");
+  assert.equal(preview.valid, true);
+  assert.equal(preview.dryRun, true);
+  assert.equal(preview.applied, false);
+  assert.equal(preview.repairGuidance.available, true);
+  assert.equal(preview.repairGuidance.targetRepoMutation, false);
+  assert.equal(preview.repairGuidance.externalCalls, false);
+  assert.match(preview.repairGuidance.applyCommand, /--bundle-repair --yes --json/);
+  assert.equal(preview.before.status, "fail");
+  assert.deepEqual(preview.before.generatedDriftFiles, ["website-handoff.md"]);
+  assert.equal(preview.after, null);
+  assert.equal(preview.written, null);
+  assert.equal(json.dryRun, true);
+  assert.match(human, /Website Improvement handoff bundle repair/);
+  assert.match(human, /Dry run: yes/);
+  assert.match(human, /Apply repair: design-ai site .* --bundle-repair --yes --json/);
+  assert.equal(readFileSync(handoffPath, "utf8"), tamperedHandoff);
+
+  const repair = buildSiteBundleRepairBundle({ target: dir });
+  assert.equal(repair.preview.dryRun, true);
+  assert.equal(repair.beforeReport.status, "fail");
+  assert.equal(repair.bundle.files.length, 8);
+  assert.equal(repair.bundle.files.find((file) => file.path === "website-handoff.md").content, originalHandoff);
 }));
 
 test("buildSiteBundleCompareReport compares handoff bundle fingerprints and changed files", () => withTempDir((dir) => {
@@ -1135,6 +1195,34 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--out", bundleHandoffFile]));
     assert.match(bundleHandoffWriteOutput.stdout, /Wrote /);
     assert.match(readFileSync(bundleHandoffFile, "utf8"), /Website improvement target-repo handoff prompt/);
+
+    const repairHandoffPath = path.join(bundleDir, "website-handoff.md");
+    const originalRepairHandoff = readFileSync(repairHandoffPath, "utf8");
+    const tamperedRepairHandoff = `${originalRepairHandoff}\nManual edit before bundle repair.\n`;
+    writeFileSync(repairHandoffPath, tamperedRepairHandoff, "utf8");
+
+    const repairPreviewOutput = await captureConsole(() => runSite([bundleDir, "--bundle-repair", "--json"]));
+    const repairPreviewPayload = JSON.parse(repairPreviewOutput.stdout);
+    assert.equal(repairPreviewPayload.status, "pass");
+    assert.equal(repairPreviewPayload.dryRun, true);
+    assert.equal(repairPreviewPayload.applied, false);
+    assert.equal(repairPreviewPayload.before.status, "fail");
+    assert.deepEqual(repairPreviewPayload.before.generatedDriftFiles, ["website-handoff.md"]);
+    assert.equal(readFileSync(repairHandoffPath, "utf8"), tamperedRepairHandoff);
+
+    const repairApplyOutput = await captureConsole(() => runSite([bundleDir, "--bundle-repair", "--yes", "--json"]));
+    const repairApplyPayload = JSON.parse(repairApplyOutput.stdout);
+    assert.equal(repairApplyPayload.status, "pass");
+    assert.equal(repairApplyPayload.dryRun, false);
+    assert.equal(repairApplyPayload.applied, true);
+    assert.equal(repairApplyPayload.before.status, "fail");
+    assert.equal(repairApplyPayload.after.status, "pass");
+    assert.deepEqual(repairApplyPayload.after.generatedDriftFiles, []);
+    assert.equal(repairApplyPayload.written.count, 8);
+    assert.equal(readFileSync(repairHandoffPath, "utf8"), originalRepairHandoff);
+
+    const repairedBundleCheckOutput = await captureConsole(() => runSite([bundleDir, "--bundle-check", "--strict", "--json"]));
+    assert.equal(JSON.parse(repairedBundleCheckOutput.stdout).status, "pass");
   });
 });
 

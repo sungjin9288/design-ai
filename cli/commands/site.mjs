@@ -6,6 +6,9 @@ import {
   buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
   buildSiteBundleHandoffReport,
+  buildSiteBundleRepairAppliedReport,
+  buildSiteBundleRepairBundle,
+  buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
   buildSiteMcpCheckReport,
   buildSitePrompt,
@@ -20,6 +23,8 @@ import {
   formatSiteBundleCheckJson,
   formatSiteBundleHandoffHuman,
   formatSiteBundleHandoffJson,
+  formatSiteBundleRepairHuman,
+  formatSiteBundleRepairJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
   formatSitePromptTemplatesHuman,
@@ -45,6 +50,7 @@ function printHelp() {
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]\n");
@@ -70,6 +76,9 @@ function printHelp() {
   console.log("              Compare two generated handoff bundles by bundle digest, checksums, and summary metadata");
   console.log("  --bundle-handoff");
   console.log("              Generate a target-repo Codex handoff prompt from a validated handoff bundle");
+  console.log("  --bundle-repair");
+  console.log("              Preview or apply local handoff bundle regeneration from embedded website-workspace.tasks.json");
+  console.log("  --yes       With --bundle-repair, rewrite the handoff bundle directory and re-run bundle-check");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
@@ -92,6 +101,8 @@ function printHelp() {
   console.log("  design-ai site website-handoff-bundle --bundle-check --json");
   console.log("  design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --json");
   console.log("  design-ai site website-handoff-bundle --bundle-handoff --out target-repo-prompt.md");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --json");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --yes --json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
@@ -252,6 +263,38 @@ export async function runSite(args) {
       console.log(content.trimEnd());
     }
     if (shouldFail(handoffReport, parsed.strict)) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
+  if (parsed.bundleRepair) {
+    let repairReport;
+    if (parsed.yes) {
+      const repair = buildSiteBundleRepairBundle({
+        target: parsed.target,
+      });
+      if (!repair.bundle) {
+        repairReport = repair.preview;
+      } else {
+        const written = writeOutputFiles({
+          outPath: repair.preview.directory,
+          files: repair.bundle.files,
+          force: true,
+        });
+        repairReport = buildSiteBundleRepairAppliedReport({
+          beforeReport: repair.beforeReport,
+          written,
+        });
+      }
+    } else {
+      repairReport = buildSiteBundleRepairPreview({
+        target: parsed.target,
+      });
+    }
+    const content = `${parsed.json ? formatSiteBundleRepairJson(repairReport) : formatSiteBundleRepairHuman(repairReport)}\n`;
+    console.log(content.trimEnd());
+    if (shouldFail(repairReport, parsed.strict)) {
       process.exitCode = 1;
     }
     return;

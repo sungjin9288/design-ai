@@ -414,6 +414,34 @@ RELEASE_SITE_BUNDLE_HANDOFF_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_BUNDLE_REPAIR_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site <bundle-dir> --bundle-repair --yes --json`",
+        "design-ai site <bundle-dir> --bundle-repair --yes --json",
+        "site --bundle-repair --yes --json",
+        "site --bundle-repair",
+    ),
+    (
+        "Website Console bundle repair",
+        "Website Improvement bundle repair",
+        "site bundle-repair JSON",
+        "handoff bundle repair",
+        "Website Console bundle repair 적용",
+    ),
+    (
+        "preview/apply",
+        "preview and apply",
+        "drift repair",
+        "drift recovery",
+        "repair preview/apply",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --stdin --tasks`",
@@ -517,6 +545,7 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
     (
         "bundle-check",
         "bundle-check/compare/handoff",
+        "bundle-check/compare/handoff/repair",
     ),
     (
         "task-selected prompt generation",
@@ -1735,6 +1764,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site bundle-check package smoke phrase",
     "site bundle-compare package smoke phrase",
     "site bundle-handoff package smoke phrase",
+    "site bundle-repair package smoke phrase",
     "site tasks package smoke phrase",
     "site prompt package smoke phrase",
     "workspace strict registry smoke phrase",
@@ -1927,6 +1957,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site bundle-handoff package smoke phrase",
         RELEASE_SITE_BUNDLE_HANDOFF_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site bundle-repair package smoke phrase",
+        RELEASE_SITE_BUNDLE_REPAIR_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site tasks package smoke phrase",
@@ -2517,6 +2551,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification, bundle digest fingerprint verification, and generated bundle contract verification,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console target-repo handoff prompt from a verified bundle digest,
+`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery in installed-bin and one-shot paths,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2524,7 +2559,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
-including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, refactor task generation, and task-selected prompt generation,
+including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2612,6 +2647,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증, bundle digest 검증, generated bundle contract 검증도 확인하고,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console 대상 repo handoff prompt와 검증된 handoff bundle digest도 확인하고,
+`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
@@ -2619,7 +2655,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
-공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, refactor task 생성, task-selected prompt 생성도 확인하고,
+공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -2872,6 +2908,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             ).replace(
                 "restore rollback backup inventory in installed-bin and one-shot paths",
                 "restore rollback backup inventory in packaged paths",
+            ).replace(
+                "bundle repair preview/apply drift recovery in installed-bin and one-shot paths",
+                "bundle repair preview/apply drift recovery in packaged paths",
             ),
         },
         audit_count=8,
@@ -3093,7 +3132,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, refactor task generation, and task-selected prompt generation",
+                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
                 "including public registry Website Console coverage",
             ),
         },
