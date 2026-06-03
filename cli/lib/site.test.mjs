@@ -156,6 +156,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-handoff", "--json"]).bundleHandoff, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json"]).bundleRepair, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--yes", "--json"]).yes, true);
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json", "--out", "repair.json"]).outPath, "repair.json");
 });
 
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
@@ -201,7 +202,6 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--bundle-repair"]), /--bundle-repair requires a handoff bundle directory path/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--bundle-check"]), /Use --bundle-check without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--report"]), /Use --bundle-repair without --sample/);
-  assert.throws(() => parseSiteArgs(["workspace.json", "--bundle-repair", "--out", "repair.json"]), /Use --bundle-repair without --out/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--bundle-repair"]), /Use --mcp-plan without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--yes"]), /Use --yes only with --bundle-repair/);
   assert.throws(() => parseSiteArgs(["--sample", "--report"]), /Use --sample without --report, --prompts, --prompt, or --graph/);
@@ -1210,8 +1210,18 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.deepEqual(repairPreviewPayload.before.generatedDriftFiles, ["website-handoff.md"]);
     assert.equal(readFileSync(repairHandoffPath, "utf8"), tamperedRepairHandoff);
 
-    const repairApplyOutput = await captureConsole(() => runSite([bundleDir, "--bundle-repair", "--yes", "--json"]));
-    const repairApplyPayload = JSON.parse(repairApplyOutput.stdout);
+    const repairPreviewFile = path.join(dir, "bundle-repair-preview.json");
+    const repairPreviewWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-repair", "--json", "--out", repairPreviewFile]));
+    assert.match(repairPreviewWriteOutput.stdout, /Wrote /);
+    const repairPreviewFilePayload = JSON.parse(readFileSync(repairPreviewFile, "utf8"));
+    assert.equal(repairPreviewFilePayload.dryRun, true);
+    assert.equal(repairPreviewFilePayload.applied, false);
+    assert.equal(readFileSync(repairHandoffPath, "utf8"), tamperedRepairHandoff);
+
+    const repairApplyFile = path.join(dir, "bundle-repair-applied.json");
+    const repairApplyOutput = await captureConsole(() => runSite([bundleDir, "--bundle-repair", "--yes", "--json", "--out", repairApplyFile]));
+    assert.match(repairApplyOutput.stdout, /Wrote /);
+    const repairApplyPayload = JSON.parse(readFileSync(repairApplyFile, "utf8"));
     assert.equal(repairApplyPayload.status, "pass");
     assert.equal(repairApplyPayload.dryRun, false);
     assert.equal(repairApplyPayload.applied, true);

@@ -399,9 +399,6 @@ export function parseSiteArgs(args) {
   if (out.bundleRepair && !out.target) {
     throw new Error("--bundle-repair requires a handoff bundle directory path");
   }
-  if (out.bundleRepair && out.outPath) {
-    throw new Error("Use --bundle-repair without --out; it prints a repair report and --yes rewrites the bundle directory itself");
-  }
   if (out.bundleRepair && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
     throw new Error("Use --bundle-repair without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
@@ -439,8 +436,8 @@ export function parseSiteArgs(args) {
   if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
     throw new Error("--json is only supported for the site summary, --mcp-check, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --prompt-list, --mcp-check, --mcp-plan, or --graph");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
   const { index, ...parsed } = out;

@@ -50,7 +50,7 @@ function printHelp() {
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json]");
+  console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]\n");
@@ -86,7 +86,7 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
@@ -102,6 +102,7 @@ function printHelp() {
   console.log("  design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --json");
   console.log("  design-ai site website-handoff-bundle --bundle-handoff --out target-repo-prompt.md");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --json");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --json --out bundle-repair-preview.json");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --yes --json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
@@ -293,7 +294,16 @@ export async function runSite(args) {
       });
     }
     const content = `${parsed.json ? formatSiteBundleRepairJson(repairReport) : formatSiteBundleRepairHuman(repairReport)}\n`;
-    console.log(content.trimEnd());
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
     if (shouldFail(repairReport, parsed.strict)) {
       process.exitCode = 1;
     }

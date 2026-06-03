@@ -1,5 +1,40 @@
 # Roadmap
 
+## Phase 286 — Website Console Bundle Repair Report Output Persistence (unreleased)
+
+Website Console bundle repair reports now match the other bundle evidence commands: operators can save preview and apply reports with `--out file`, while repair preview stays read-only and confirmed apply remains scoped to the local handoff bundle directory.
+
+### Changed
+- Added `design-ai site <bundle-dir> --bundle-repair [--yes] [--json] --out file [--force]` support.
+- Reused the existing safe file-write path so repair reports print `Wrote <path>` and respect overwrite protection unless `--force` is provided.
+- Extended site unit coverage so repair preview `--out` does not mutate a drifted bundle and repair apply `--out` records the fail-to-pass transition.
+- Extended packed-tarball and public-registry smoke assertions so installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths verify repair report output-file persistence.
+- Extended help, README, Distribution docs, release checklist, and release metadata guards to document and enforce the new `--out` contract.
+
+### Impact
+- Operators can archive deterministic repair evidence without shell redirection, which makes handoff and release evidence easier to preserve.
+- The change does not add dependencies, call external MCPs, mutate target website repos, or change the explicit `--yes` requirement for applying repairs.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `node --check cli/commands/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `python3 -B tools/audit/registry-smoke.py --self-test`.
+- `python3 -B tools/audit/release-metadata.py --self-test`.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`.
+- `npm run release:metadata`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:self-test`.
+- `npm run package:check`.
+- `npm run package:smoke`.
+- `git diff --check`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 285 — Website Console Bundle Repair Preview/Apply (unreleased)
 
 Website Console handoff bundle repair guidance is now a first-class local CLI flow. Operators can preview a repair plan without changing files, then explicitly apply the repair to regenerate only the handoff bundle directory from its embedded `website-workspace.tasks.json`.

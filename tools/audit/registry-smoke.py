@@ -2982,9 +2982,25 @@ def assert_site_bundle_repair_json_smoke(
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
         raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
 
-    apply_result = run_plain(apply_cmd, cwd=cwd, env=env)
-    assert_no_ansi(apply_result.stdout, apply_cmd)
-    applied = json.loads(apply_result.stdout)
+    preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
+    preview_out_cmd = [*preview_cmd, "--out", str(preview_out), "--force"]
+    preview_out_result = run_plain(preview_out_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_out_result.stdout, preview_out_cmd)
+    if "Wrote " not in preview_out_result.stdout:
+        raise SystemExit(f"site bundle repair preview after {context} expected --out write confirmation")
+    preview_out_payload = json.loads(preview_out.read_text(encoding="utf-8"))
+    if preview_out_payload.get("dryRun") is not True or preview_out_payload.get("applied") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} --out payload changed")
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview --out after {context} mutated the bundle")
+
+    apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
+    apply_out_cmd = [*apply_cmd, "--out", str(apply_out), "--force"]
+    apply_result = run_plain(apply_out_cmd, cwd=cwd, env=env)
+    assert_no_ansi(apply_result.stdout, apply_out_cmd)
+    if "Wrote " not in apply_result.stdout:
+        raise SystemExit(f"site bundle repair apply after {context} expected --out write confirmation")
+    applied = json.loads(apply_out.read_text(encoding="utf-8"))
     if applied.get("status") != "pass" or applied.get("dryRun") is not False or applied.get("applied") is not True:
         raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
     if applied.get("before", {}).get("status") != "fail" or applied.get("after", {}).get("status") != "pass":
