@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -111,6 +110,7 @@ from smoke_assertions import (
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
+    guidance_out_path,
     help_alias_script,
     help_topic_script,
     parse_help_topics,
@@ -126,6 +126,7 @@ from smoke_assertions import (
     passing_workspace_json,
     passing_workspace_strict_clean_json,
     seed_force_overwrite_target,
+    site_guidance_command,
     unknown_option_args,
 )
 
@@ -145,28 +146,6 @@ def npm_exec_cmd(package_spec: str, *args: str) -> list[str]:
         "design-ai",
         *args,
     ]
-
-
-def site_guidance_command(guidance_command: str, reference_cmd: list[str], *, context: str) -> list[str]:
-    tokens = shlex.split(guidance_command)
-    if len(tokens) < 2 or tokens[0] != "design-ai" or tokens[1] != "site":
-        raise SystemExit(f"{context} guidance command is not a design-ai site command: {guidance_command!r}")
-    try:
-        site_index = reference_cmd.index("site")
-    except ValueError as exc:
-        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
-    return [*reference_cmd[:site_index], *tokens[1:]]
-
-
-def guidance_out_path(guidance_command: str, *, context: str) -> Path:
-    tokens = shlex.split(guidance_command)
-    try:
-        out_index = tokens.index("--out")
-    except ValueError as exc:
-        raise SystemExit(f"{context} guidance command missing --out: {guidance_command!r}") from exc
-    if out_index + 1 >= len(tokens):
-        raise SystemExit(f"{context} guidance command has no --out path: {guidance_command!r}")
-    return Path(tokens[out_index + 1])
 
 
 def npm_exec_shell_cmd(package_spec: str, script: str) -> list[str]:

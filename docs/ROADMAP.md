@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 289 — Shared Repair Guidance Smoke Helpers (unreleased)
+
+Website Console repair guidance smoke now has a single helper contract for parsing copy/paste commands. The packed-tarball and public-registry smoke runners both use `smoke_assertions.py` helpers for `repairGuidance` command parsing and `--out` path extraction, reducing duplicated release-gate logic after Phase 288 made the guidance executable.
+
+### Changed
+- Moved `site_guidance_command` and `guidance_out_path` into `tools/audit/smoke_assertions.py`.
+- Added smoke assertion self-test fixtures for quoted report paths, invalid non-site guidance, missing `site` runner prefixes, missing `--out`, and dangling `--out`.
+- Updated `tools/audit/package-smoke.py` and `tools/audit/registry-smoke.py` to import the shared helpers instead of maintaining duplicate local copies.
+
+### Impact
+- Package and registry smoke now fail consistently if repair guidance command parsing drifts.
+- This is a test architecture cleanup only: no CLI runtime behavior, dependencies, external MCP calls, target website repo mutation, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 288 — Website Console Executable Repair Guidance Smoke (unreleased)
 
 Website Console repair report guidance is now smoke-tested as an executable operator instruction. Instead of only checking that `previewReportCommand` and `applyReportCommand` strings contain `--out`, package and registry smoke parse the emitted guidance commands, map them onto the active installed-bin or `npm exec --package` runner, execute them, and verify the written preview/applied report payloads.

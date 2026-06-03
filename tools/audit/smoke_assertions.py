@@ -1081,6 +1081,28 @@ def format_cmd(cmd: list[str]) -> str:
     return shlex.join(cmd)
 
 
+def site_guidance_command(guidance_command: str, reference_cmd: list[str], *, context: str) -> list[str]:
+    tokens = shlex.split(guidance_command)
+    if len(tokens) < 2 or tokens[0] != "design-ai" or tokens[1] != "site":
+        raise SystemExit(f"{context} guidance command is not a design-ai site command: {guidance_command!r}")
+    try:
+        site_index = reference_cmd.index("site")
+    except ValueError as exc:
+        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
+    return [*reference_cmd[:site_index], *tokens[1:]]
+
+
+def guidance_out_path(guidance_command: str, *, context: str) -> Path:
+    tokens = shlex.split(guidance_command)
+    try:
+        out_index = tokens.index("--out")
+    except ValueError as exc:
+        raise SystemExit(f"{context} guidance command missing --out: {guidance_command!r}") from exc
+    if out_index + 1 >= len(tokens):
+        raise SystemExit(f"{context} guidance command has no --out path: {guidance_command!r}")
+    return Path(tokens[out_index + 1])
+
+
 def load_run_all_audit_scripts() -> tuple[str, ...]:
     text = (ROOT / "tools/audit/run-all.py").read_text(encoding="utf-8")
     match = re.search(
@@ -6819,6 +6841,47 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_no_ansi("\x1b[31mred", cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    guidance_reference_cmd = ["npm", "exec", "--yes", "--package", "pkg.tgz", "--", "design-ai", "site", "bundle"]
+    guidance_command = "design-ai site bundle --bundle-repair --json --out '/tmp/repair report.json' --force"
+    if site_guidance_command(guidance_command, guidance_reference_cmd, context=context) != [
+        "npm",
+        "exec",
+        "--yes",
+        "--package",
+        "pkg.tgz",
+        "--",
+        "design-ai",
+        "site",
+        "bundle",
+        "--bundle-repair",
+        "--json",
+        "--out",
+        "/tmp/repair report.json",
+        "--force",
+    ]:
+        raise SystemExit("site guidance command mapping self-test failed")
+    if guidance_out_path(guidance_command, context=context) != Path("/tmp/repair report.json"):
+        raise SystemExit("site guidance out path self-test failed")
+    expect_self_test_failure(
+        lambda: site_guidance_command("design-ai learn --stats", guidance_reference_cmd, context=context),
+        expected="not a design-ai site command",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: site_guidance_command(guidance_command, ["design-ai", "learn"], context=context),
+        expected="reference command does not include site",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: guidance_out_path("design-ai site bundle --bundle-repair --json", context=context),
+        expected="missing --out",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: guidance_out_path("design-ai site bundle --bundle-repair --out", context=context),
+        expected="no --out path",
         scope="smoke assertions",
     )
     assert_unknown_command_failure(
