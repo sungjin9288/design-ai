@@ -2135,6 +2135,12 @@ function shortDigest(digest) {
   return digest ? String(digest).slice(0, 12) : "missing";
 }
 
+function shellQuote(value) {
+  const text = String(value || "");
+  if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(text)) return text;
+  return `'${text.replaceAll("'", "'\"'\"'")}'`;
+}
+
 function emptyBundleGeneratedContract(source = "") {
   return {
     available: false,
@@ -2196,6 +2202,39 @@ function formatGeneratedContractDriftLines(generatedContract) {
 function formatGeneratedContractDriftSummary(generatedContract) {
   if (!generatedContract.driftFiles.length) return "none";
   return generatedContract.driftFiles.join(", ");
+}
+
+function buildBundleRepairGuidance(directory, generatedContract) {
+  const workspacePath = path.join(directory, "website-workspace.tasks.json");
+  const hasWorkspace = existsSync(workspacePath) && statSync(workspacePath).isFile();
+  const available = Boolean(generatedContract.available && hasWorkspace);
+  return {
+    available,
+    reason: available
+      ? "Regenerate the bundle from its embedded website-workspace.tasks.json when generated contract drift is reported."
+      : "Repair guidance requires a readable website-workspace.tasks.json and generated contract analysis.",
+    command: available ? `design-ai site ${shellQuote(workspacePath)} --bundle --out ${shellQuote(directory)} --force` : "",
+    verifyCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-check --strict --json` : "",
+    mutates: available ? "handoff-bundle-directory-only" : "none",
+    targetRepoMutation: false,
+    externalCalls: false,
+  };
+}
+
+function formatBundleRepairGuidanceLines(repairGuidance) {
+  if (!repairGuidance.available) {
+    return [
+      `- Available: no`,
+      `- Reason: ${repairGuidance.reason}`,
+    ];
+  }
+  return [
+    "- Available: yes",
+    `- Reason: ${repairGuidance.reason}`,
+    `- Regenerate: ${repairGuidance.command}`,
+    `- Verify: ${repairGuidance.verifyCommand}`,
+    `- Scope: ${repairGuidance.mutates}; target repo mutation ${repairGuidance.targetRepoMutation ? "yes" : "no"}; external calls ${repairGuidance.externalCalls ? "yes" : "no"}`,
+  ];
 }
 
 function summarizeBundlePayload(summaryPayload) {
@@ -2439,6 +2478,7 @@ export function buildSiteBundleCheckReport({
   }
 
   const status = statusFromIssues(issues);
+  const repairGuidance = buildBundleRepairGuidance(directory, generatedContract);
   return {
     directory,
     valid: status !== "fail",
@@ -2470,6 +2510,7 @@ export function buildSiteBundleCheckReport({
     files,
     unexpectedFiles,
     generatedContract,
+    repairGuidance,
     issues,
   };
 }
@@ -2500,6 +2541,9 @@ export function formatSiteBundleCheckHuman(report) {
     "",
     "Generated contract drift:",
     ...formatGeneratedContractDriftLines(report.generatedContract),
+    "",
+    "Repair guidance:",
+    ...formatBundleRepairGuidanceLines(report.repairGuidance),
     "",
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
@@ -2678,6 +2722,9 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     bundleReadinessLine,
     formatBundleHandoffIssueLines(checkReport.issues),
     "",
+    "Repair guidance:",
+    ...formatBundleRepairGuidanceLines(checkReport.repairGuidance),
+    "",
     "## Operating Rules",
     "1. Confirm the current working directory is the target website repo before editing files.",
     "2. Inspect the target repo architecture, existing components, design tokens, routing, styling, and test scripts before implementation.",
@@ -2748,6 +2795,7 @@ export function buildSiteBundleHandoffReport({
       verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
       generatedFailures: checkReport.counts.generatedFailures,
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
+      repairGuidance: { ...checkReport.repairGuidance },
     },
     prompt,
     files: checkReport.files.map((file) => ({

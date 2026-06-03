@@ -4,7 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics and repair guidance, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -30,8 +30,10 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Packed-tarball smoke now verifies non-empty Website Console evidence counts through evidence bundle check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - `design-ai site <bundle-dir> --bundle-check --json` now verifies that the seven checksum-managed handoff bundle artifacts match the current CLI-generated bundle contract, and `--bundle-compare` / `--bundle-handoff` carry generated contract counts forward.
 - `design-ai site <bundle-dir> --bundle-check --json` now includes `generatedContract` per-file diagnostics with expected/actual SHA-256 digests and drift file paths, and `--bundle-compare` / `--bundle-handoff` carry generated drift file summaries forward.
+- `design-ai site <bundle-dir> --bundle-check --json` now includes `repairGuidance` with a local regenerate command and strict verify command; `--bundle-handoff --json` and the generated target-repo handoff prompt carry the same guidance forward.
 - Packed-tarball smoke now verifies Website Console generated bundle contract counts through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies Website Console generated contract diagnostics and empty drift lists through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Packed-tarball smoke now verifies Website Console bundle repair guidance through bundle-check and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies route eval, prompt eval, and pack eval checkpoints through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --signals` human, JSON, and `--out` registry reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --propose-skills` human, JSON, and `--out` preview reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
@@ -51,6 +53,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Verified bundle evidence metadata remains deterministic and local. It reports counts and detects summary/workspace drift without verifying the truth of target-repo implementation claims.
 - Generated bundle contract verification remains deterministic and local. It checks reproducibility of generated bundle artifacts from `website-workspace.tasks.json`; it does not validate real target-repo implementation claims.
 - Generated bundle contract diagnostics expose SHA-256 digests and file paths only. They do not expose generated Markdown bodies, call external MCPs, or mutate target repos.
+- Bundle repair guidance is explicit and local. It provides a `--bundle --out <bundle-dir> --force` regeneration command and follow-up strict check, but does not execute the repair automatically or touch the target website repo.
 - npm public publish remains pending until the owner supplies npm 2FA OTP or a suitable publish token.
 
 ## v4.55.0 — Public Registry Website Console Smoke Coverage (2026-06)

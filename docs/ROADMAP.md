@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 284 — Website Console Bundle Repair Guidance (unreleased)
+
+Verified Website Console handoff bundle checks now include deterministic repair guidance. When generated contract drift is found, operators can see the exact local command to regenerate the bundle from its embedded `website-workspace.tasks.json`, plus the follow-up strict verification command.
+
+### Changed
+- Added top-level `repairGuidance` metadata to `design-ai site <bundle-dir> --bundle-check --json`.
+- Added repair guidance to bundle-check human output, including regenerate command, verify command, mutation scope, target-repo mutation flag, and external-call flag.
+- Added repair guidance to `design-ai site <bundle-dir> --bundle-handoff --json` bundle metadata and the generated target-repo handoff prompt.
+- Extended unit coverage so passing bundles and coherent generated-contract drift both expose a regeneration command.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/handoff paths verify repair guidance.
+
+### Impact
+- Website Improvement operators now get an actionable next step after drift detection instead of only a failing issue and digest comparison.
+- Repair remains explicit and local: the command rewrites only the handoff bundle directory with `--force`, does not mutate the target website repo, does not call external MCPs, and does not add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 283 — Website Console Bundle Generated Contract Diagnostics (unreleased)
 
 Verified Website Console handoff bundle checks now expose per-file generated contract diagnostics. Operators can see which checksum-managed artifact drifted from the current CLI output contract, including expected and actual SHA-256 digests, without exposing artifact contents.

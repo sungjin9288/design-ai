@@ -526,6 +526,11 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.ok(report.generatedContract.files.every((file) => file.present && file.matches));
   assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.expectedDigest)));
   assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.actualDigest)));
+  assert.equal(report.repairGuidance.available, true);
+  assert.equal(report.repairGuidance.targetRepoMutation, false);
+  assert.equal(report.repairGuidance.externalCalls, false);
+  assert.match(report.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
+  assert.match(report.repairGuidance.verifyCommand, /--bundle-check --strict --json/);
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
   assert.deepEqual(report.summary.implementationEvidence, {
@@ -550,6 +555,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Generated contract: 7\/7 verified/);
   assert.match(human, /Generated drift files: none/);
   assert.match(human, /Generated contract drift:\n- none/);
+  assert.match(human, /Repair guidance:\n- Available: yes/);
+  assert.match(human, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(human, /bundle-ready/);
@@ -577,6 +584,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(generatedMismatchReport.counts.checksumFailures, 0);
   assert.equal(generatedMismatchReport.counts.generatedFailures, 1);
   assert.deepEqual(generatedMismatchReport.generatedContract.driftFiles, ["website-handoff.md"]);
+  assert.equal(generatedMismatchReport.repairGuidance.available, true);
+  assert.match(generatedMismatchReport.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
   const handoffDrift = generatedMismatchReport.generatedContract.files.find((file) => file.path === "website-handoff.md");
   assert.equal(handoffDrift.matches, false);
   assert.equal(handoffDrift.actualDigest, sha256HexForTest(coherentlyTamperedHandoff));
@@ -690,6 +699,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.verifiedGeneratedFiles, 7);
   assert.equal(report.bundle.generatedFailures, 0);
   assert.deepEqual(report.bundle.generatedDriftFiles, []);
+  assert.equal(report.bundle.repairGuidance.available, true);
+  assert.equal(report.bundle.repairGuidance.targetRepoMutation, false);
+  assert.match(report.bundle.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.equal(report.files.find((file) => file.path === "codex-implementation.md").included, true);
   assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
@@ -697,6 +709,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, /Generated files: 7\/7 match the current CLI bundle contract/);
   assert.match(report.prompt, /Generated drift files: none/);
+  assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
+  assert.match(report.prompt, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.match(report.prompt, /# Codex implementation prompt/);
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
@@ -710,6 +724,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.bundle.verifiedGeneratedFiles, 7);
   assert.equal(json.bundle.generatedFailures, 0);
   assert.deepEqual(json.bundle.generatedDriftFiles, []);
+  assert.equal(json.bundle.repairGuidance.available, true);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);
 
@@ -1061,6 +1076,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleCheckPayload.counts.generatedFailures, 0);
     assert.equal(bundleCheckPayload.generatedContract.available, true);
     assert.deepEqual(bundleCheckPayload.generatedContract.driftFiles, []);
+    assert.equal(bundleCheckPayload.repairGuidance.available, true);
+    assert.match(bundleCheckPayload.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
     assert.deepEqual(bundleCheckPayload.summary.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1104,6 +1121,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, 7);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
     assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
+    assert.equal(bundleHandoffPayload.bundle.repairGuidance.available, true);
     assert.deepEqual(bundleHandoffPayload.bundle.implementationEvidence, {
       executedWork: 0,
       verificationResults: 0,
@@ -1111,6 +1129,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       nextActions: 0,
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
+    assert.match(bundleHandoffPayload.prompt, /Repair guidance:\n- Available: yes/);
 
     const bundleHandoffFile = path.join(dir, "out", "target-repo-handoff.md");
     const bundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--out", bundleHandoffFile]));

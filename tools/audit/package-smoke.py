@@ -1001,6 +1001,21 @@ def assert_site_bundle_check_json_smoke(
             digest = item.get(key)
             if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
                 raise SystemExit(f"site bundle check after {context} generated contract {key} is not a SHA-256 hex digest")
+    repair_guidance = payload.get("repairGuidance")
+    if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} repair guidance missing")
+    if repair_guidance.get("targetRepoMutation") is not False or repair_guidance.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle check after {context} repair guidance boundary flags changed")
+    repair_command = repair_guidance.get("command")
+    verify_command = repair_guidance.get("verifyCommand")
+    if (
+        not isinstance(repair_command, str)
+        or "website-workspace.tasks.json --bundle --out " not in repair_command
+        or " --force" not in repair_command
+    ):
+        raise SystemExit(f"site bundle check after {context} repair command changed: {repair_command!r}")
+    if not isinstance(verify_command, str) or "--bundle-check --strict --json" not in verify_command:
+        raise SystemExit(f"site bundle check after {context} repair verify command changed: {verify_command!r}")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
@@ -1097,6 +1112,16 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+    repair_guidance = bundle.get("repairGuidance")
+    if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
+        raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
+    repair_command = repair_guidance.get("command")
+    if (
+        not isinstance(repair_command, str)
+        or "website-workspace.tasks.json --bundle --out " not in repair_command
+        or " --force" not in repair_command
+    ):
+        raise SystemExit(f"site bundle handoff after {context} repair command changed: {repair_command!r}")
     evidence_counts = bundle.get("implementationEvidence")
     if not isinstance(evidence_counts, dict):
         raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
@@ -1116,6 +1141,9 @@ def assert_site_bundle_handoff_json_smoke(
         "Task ID: task-accessibility",
         "Generated files: 7/7 match the current CLI bundle contract",
         "Generated drift files: none",
+        "Repair guidance:",
+        "Regenerate: design-ai site ",
+        "website-workspace.tasks.json --bundle --out ",
         "Required Final Response",
     ):
         if fragment not in prompt:
