@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 291 — Shared Repair Report Smoke Assertions (unreleased)
+
+Website Console repair report smoke now shares the detailed assertion contract for report guidance commands. Package and registry smoke still execute their own installed-bin / npm exec paths, but `smoke_assertions.py` owns the command shape, output path, preview payload, and applied payload checks.
+
+### Changed
+- Added shared smoke assertion helpers for repair guidance report command shape, expected `repair-preview.json` / `repair-applied.json` output paths, preview report payloads, and applied repair report payloads.
+- Updated `tools/audit/package-smoke.py` and `tools/audit/registry-smoke.py` to call the shared helpers instead of duplicating the same report command and payload assertions.
+- Added smoke assertion self-test fixtures for the shared repair report helpers, including invalid preview command and generated drift failure cases.
+
+### Impact
+- Package and registry smoke now fail consistently if repair report command shape, output path, or payload semantics drift.
+- This is a test architecture cleanup only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 290 — Shared Repair Guidance Release Metadata Guard (unreleased)
 
 Release metadata now treats the shared Website Console repair guidance smoke helper contract as release-facing policy. The guard requires release docs to mention shared repair guidance smoke helpers alongside the bundle repair preview/apply and repair report `--out file` smoke coverage, and the self-test includes a drift fixture that removes that phrase from README guidance.

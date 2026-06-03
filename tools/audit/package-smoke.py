@@ -66,6 +66,9 @@ from smoke_assertions import (
     assert_numeric_value_failure,
     assert_output_overwrite_failure,
     assert_output_write_success,
+    assert_site_repair_apply_report_payload,
+    assert_site_repair_guidance_report_contract,
+    assert_site_repair_preview_report_payload,
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
@@ -112,7 +115,6 @@ from smoke_assertions import (
     doctor_report_json_missing,
     expect_self_test_failure,
     format_cmd,
-    guidance_out_path,
     help_alias_script,
     help_topic_script,
     passing_doctor_report_json,
@@ -1185,41 +1187,16 @@ def assert_site_bundle_repair_json_smoke(
         raise SystemExit(f"site bundle repair preview after {context} expected website-handoff.md generated drift")
     if preview.get("after") is not None or preview.get("written") is not None:
         raise SystemExit(f"site bundle repair preview after {context} must not report applied artifacts")
-    guidance = preview.get("repairGuidance")
-    if not isinstance(guidance, dict) or guidance.get("available") is not True:
-        raise SystemExit(f"site bundle repair preview after {context} guidance missing")
-    if guidance.get("targetRepoMutation") is not False or guidance.get("externalCalls") is not False:
-        raise SystemExit(f"site bundle repair preview after {context} boundary flags changed")
-    apply_command = guidance.get("applyCommand")
-    if not isinstance(apply_command, str) or "--bundle-repair --yes --json" not in apply_command:
-        raise SystemExit(f"site bundle repair preview after {context} apply command changed: {apply_command!r}")
-    preview_report_command = guidance.get("previewReportCommand")
-    if (
-        not isinstance(preview_report_command, str)
-        or "--bundle-repair --json --out " not in preview_report_command
-        or "repair-preview.json" not in preview_report_command
-    ):
-        raise SystemExit(
-            f"site bundle repair preview after {context} preview report command changed: {preview_report_command!r}"
+    preview_report_command, apply_report_command, preview_out, apply_out = (
+        assert_site_repair_guidance_report_contract(
+            preview.get("repairGuidance"),
+            bundle_dir=bundle_dir,
+            context=context,
         )
-    apply_report_command = guidance.get("applyReportCommand")
-    if (
-        not isinstance(apply_report_command, str)
-        or "--bundle-repair --yes --json --out " not in apply_report_command
-        or "repair-applied.json" not in apply_report_command
-    ):
-        raise SystemExit(
-            f"site bundle repair preview after {context} apply report command changed: {apply_report_command!r}"
-        )
+    )
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
         raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
 
-    preview_out = guidance_out_path(preview_report_command, context=f"{context} preview report")
-    expected_preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
-    if preview_out != expected_preview_out:
-        raise SystemExit(
-            f"site bundle repair preview after {context} guidance report path changed: {preview_out!s}"
-        )
     preview_report_cmd = site_guidance_command(
         preview_report_command,
         preview_cmd,
@@ -1230,17 +1207,10 @@ def assert_site_bundle_repair_json_smoke(
     if "Wrote " not in preview_out_result.stdout:
         raise SystemExit(f"site bundle repair preview after {context} expected guidance --out write confirmation")
     preview_out_payload = json.loads(preview_out.read_text(encoding="utf-8"))
-    if preview_out_payload.get("dryRun") is not True or preview_out_payload.get("applied") is not False:
-        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload changed")
+    assert_site_repair_preview_report_payload(preview_out_payload, context=context)
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
         raise SystemExit(f"site bundle repair preview guidance --out after {context} mutated the bundle")
 
-    apply_out = guidance_out_path(apply_report_command, context=f"{context} apply report")
-    expected_apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
-    if apply_out != expected_apply_out:
-        raise SystemExit(
-            f"site bundle repair apply after {context} guidance report path changed: {apply_out!s}"
-        )
     apply_report_cmd = site_guidance_command(
         apply_report_command,
         apply_cmd,
@@ -1251,14 +1221,7 @@ def assert_site_bundle_repair_json_smoke(
     if "Wrote " not in apply_result.stdout:
         raise SystemExit(f"site bundle repair apply after {context} expected guidance --out write confirmation")
     applied = json.loads(apply_out.read_text(encoding="utf-8"))
-    if applied.get("status") != "pass" or applied.get("dryRun") is not False or applied.get("applied") is not True:
-        raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
-    if applied.get("before", {}).get("status") != "fail" or applied.get("after", {}).get("status") != "pass":
-        raise SystemExit(f"site bundle repair apply after {context} expected fail -> pass transition")
-    if applied.get("after", {}).get("generatedDriftFiles") != []:
-        raise SystemExit(f"site bundle repair apply after {context} expected no generated drift after repair")
-    if applied.get("written", {}).get("count") != 8:
-        raise SystemExit(f"site bundle repair apply after {context} expected 8 rewritten files")
+    assert_site_repair_apply_report_payload(applied, context=context)
     if handoff_path.read_text(encoding="utf-8") != original_handoff:
         raise SystemExit(f"site bundle repair apply after {context} did not restore generated handoff")
 

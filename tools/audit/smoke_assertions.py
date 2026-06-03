@@ -1103,6 +1103,78 @@ def guidance_out_path(guidance_command: str, *, context: str) -> Path:
     return Path(tokens[out_index + 1])
 
 
+def assert_site_repair_guidance_report_contract(
+    guidance: object,
+    *,
+    bundle_dir: Path,
+    context: str,
+) -> tuple[str, str, Path, Path]:
+    if not isinstance(guidance, dict) or guidance.get("available") is not True:
+        raise SystemExit(f"site bundle repair preview after {context} guidance missing")
+    if guidance.get("targetRepoMutation") is not False or guidance.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} boundary flags changed")
+
+    apply_command = guidance.get("applyCommand")
+    if not isinstance(apply_command, str) or "--bundle-repair --yes --json" not in apply_command:
+        raise SystemExit(f"site bundle repair preview after {context} apply command changed: {apply_command!r}")
+
+    preview_report_command = guidance.get("previewReportCommand")
+    if (
+        not isinstance(preview_report_command, str)
+        or "--bundle-repair --json --out " not in preview_report_command
+        or "repair-preview.json" not in preview_report_command
+    ):
+        raise SystemExit(
+            f"site bundle repair preview after {context} preview report command changed: {preview_report_command!r}"
+        )
+
+    apply_report_command = guidance.get("applyReportCommand")
+    if (
+        not isinstance(apply_report_command, str)
+        or "--bundle-repair --yes --json --out " not in apply_report_command
+        or "repair-applied.json" not in apply_report_command
+    ):
+        raise SystemExit(
+            f"site bundle repair preview after {context} apply report command changed: {apply_report_command!r}"
+        )
+
+    preview_out = guidance_out_path(preview_report_command, context=f"{context} preview report")
+    expected_preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
+    if preview_out != expected_preview_out:
+        raise SystemExit(
+            f"site bundle repair preview after {context} guidance report path changed: {preview_out!s}"
+        )
+
+    apply_out = guidance_out_path(apply_report_command, context=f"{context} apply report")
+    expected_apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
+    if apply_out != expected_apply_out:
+        raise SystemExit(
+            f"site bundle repair apply after {context} guidance report path changed: {apply_out!s}"
+        )
+
+    return preview_report_command, apply_report_command, preview_out, apply_out
+
+
+def assert_site_repair_preview_report_payload(payload: object, *, context: str) -> None:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload must be an object")
+    if payload.get("dryRun") is not True or payload.get("applied") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload changed")
+
+
+def assert_site_repair_apply_report_payload(payload: object, *, context: str) -> None:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"site bundle repair apply after {context} guidance --out payload must be an object")
+    if payload.get("status") != "pass" or payload.get("dryRun") is not False or payload.get("applied") is not True:
+        raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
+    if payload.get("before", {}).get("status") != "fail" or payload.get("after", {}).get("status") != "pass":
+        raise SystemExit(f"site bundle repair apply after {context} expected fail -> pass transition")
+    if payload.get("after", {}).get("generatedDriftFiles") != []:
+        raise SystemExit(f"site bundle repair apply after {context} expected no generated drift after repair")
+    if payload.get("written", {}).get("count") != 8:
+        raise SystemExit(f"site bundle repair apply after {context} expected 8 rewritten files")
+
+
 def load_run_all_audit_scripts() -> tuple[str, ...]:
     text = (ROOT / "tools/audit/run-all.py").read_text(encoding="utf-8")
     match = re.search(
@@ -6864,6 +6936,72 @@ def run_self_test() -> None:
         raise SystemExit("site guidance command mapping self-test failed")
     if guidance_out_path(guidance_command, context=context) != Path("/tmp/repair report.json"):
         raise SystemExit("site guidance out path self-test failed")
+    repair_bundle_dir = Path("/tmp/smoke-bundle")
+    repair_guidance = {
+        "available": True,
+        "targetRepoMutation": False,
+        "externalCalls": False,
+        "applyCommand": "design-ai site /tmp/smoke-bundle --bundle-repair --yes --json",
+        "previewReportCommand": (
+            "design-ai site /tmp/smoke-bundle --bundle-repair --json "
+            "--out /tmp/smoke-bundle-repair-preview.json"
+        ),
+        "applyReportCommand": (
+            "design-ai site /tmp/smoke-bundle --bundle-repair --yes --json "
+            "--out /tmp/smoke-bundle-repair-applied.json"
+        ),
+    }
+    repair_contract = assert_site_repair_guidance_report_contract(
+        repair_guidance,
+        bundle_dir=repair_bundle_dir,
+        context=context,
+    )
+    if repair_contract != (
+        repair_guidance["previewReportCommand"],
+        repair_guidance["applyReportCommand"],
+        Path("/tmp/smoke-bundle-repair-preview.json"),
+        Path("/tmp/smoke-bundle-repair-applied.json"),
+    ):
+        raise SystemExit("site repair guidance report contract self-test failed")
+    assert_site_repair_preview_report_payload(
+        {"dryRun": True, "applied": False},
+        context=context,
+    )
+    assert_site_repair_apply_report_payload(
+        {
+            "status": "pass",
+            "dryRun": False,
+            "applied": True,
+            "before": {"status": "fail"},
+            "after": {"status": "pass", "generatedDriftFiles": []},
+            "written": {"count": 8},
+        },
+        context=context,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_repair_guidance_report_contract(
+            {**repair_guidance, "previewReportCommand": "design-ai site /tmp/smoke-bundle --bundle-repair --json"},
+            bundle_dir=repair_bundle_dir,
+            context=context,
+        ),
+        expected="preview report command changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_repair_apply_report_payload(
+            {
+                "status": "pass",
+                "dryRun": False,
+                "applied": True,
+                "before": {"status": "fail"},
+                "after": {"status": "pass", "generatedDriftFiles": ["website-handoff.md"]},
+                "written": {"count": 8},
+            },
+            context=context,
+        ),
+        expected="expected no generated drift after repair",
+        scope="smoke assertions",
+    )
     expect_self_test_failure(
         lambda: site_guidance_command("design-ai learn --stats", guidance_reference_cmd, context=context),
         expected="not a design-ai site command",
