@@ -4,7 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, and repair report command guidance, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, repair report command guidance, executable repair guidance smoke coverage, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -34,6 +34,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site <bundle-dir> --bundle-repair [--json]` now previews local handoff bundle repair, and `--bundle-repair --yes [--json]` rewrites only the handoff bundle directory from embedded `website-workspace.tasks.json` before re-running bundle-check verification.
 - `design-ai site <bundle-dir> --bundle-repair [--yes] [--json] --out file [--force]` now writes preview/applied repair reports to disk, preserving read-only preview behavior and confirmed apply behavior.
 - `repairGuidance` now includes preview/apply report output commands so bundle-check, bundle-handoff, and bundle-repair outputs show how to preserve repair evidence with `--out file`.
+- Packed-tarball and public-registry smoke now execute the repair report commands emitted by `repairGuidance`, verifying that the copy/paste guidance writes the expected preview/applied report files.
 - Packed-tarball smoke now verifies Website Console generated bundle contract counts through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies Website Console generated contract diagnostics and empty drift lists through bundle-check, compare, and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies Website Console bundle repair guidance through bundle-check and handoff JSON in both installed-bin and one-shot `npm exec --package <tarball>` paths.

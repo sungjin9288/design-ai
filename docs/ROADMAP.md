@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 288 — Website Console Executable Repair Guidance Smoke (unreleased)
+
+Website Console repair report guidance is now smoke-tested as an executable operator instruction. Instead of only checking that `previewReportCommand` and `applyReportCommand` strings contain `--out`, package and registry smoke parse the emitted guidance commands, map them onto the active installed-bin or `npm exec --package` runner, execute them, and verify the written preview/applied report payloads.
+
+### Changed
+- Added shared smoke helpers that parse `design-ai site ...` repair guidance with `shlex.split` and preserve the smoke runner prefix.
+- Updated packed-tarball smoke so the installed-bin and one-shot `npm exec --package <tarball>` repair report checks execute the emitted guidance commands directly.
+- Updated public-registry smoke so post-publish verification catches broken repair guidance quoting, path generation, or missing `--out` behavior.
+- Kept report paths beside the handoff bundle and asserted those paths before execution.
+
+### Impact
+- Copy/paste repair guidance is now covered as a real executable contract, not just a documented string shape.
+- This remains local and deterministic: no new dependencies, no external MCP calls, no target website repo mutation, and no change to the explicit `--yes` apply requirement.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `git diff --check`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 287 — Website Console Bundle Repair Report Command Guidance (unreleased)
 
 Website Console repair guidance now tells operators how to preserve repair evidence as files. Bundle-check, bundle-handoff, and bundle-repair outputs include preview/apply report commands with `--out file`, using paths outside the handoff bundle directory so saved reports do not create unexpected bundle files.

@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -155,6 +156,28 @@ def npm_exec_shell_cmd(tarball: Path, script: str) -> list[str]:
         "-c",
         script,
     ]
+
+
+def site_guidance_command(guidance_command: str, reference_cmd: list[str], *, context: str) -> list[str]:
+    tokens = shlex.split(guidance_command)
+    if len(tokens) < 2 or tokens[0] != "design-ai" or tokens[1] != "site":
+        raise SystemExit(f"{context} guidance command is not a design-ai site command: {guidance_command!r}")
+    try:
+        site_index = reference_cmd.index("site")
+    except ValueError as exc:
+        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
+    return [*reference_cmd[:site_index], *tokens[1:]]
+
+
+def guidance_out_path(guidance_command: str, *, context: str) -> Path:
+    tokens = shlex.split(guidance_command)
+    try:
+        out_index = tokens.index("--out")
+    except ValueError as exc:
+        raise SystemExit(f"{context} guidance command missing --out: {guidance_command!r}") from exc
+    if out_index + 1 >= len(tokens):
+        raise SystemExit(f"{context} guidance command has no --out path: {guidance_command!r}")
+    return Path(tokens[out_index + 1])
 
 
 def is_npm_exec_cache_enoent(cmd: list[str], result: subprocess.CompletedProcess[str]) -> bool:
@@ -1212,30 +1235,42 @@ def assert_site_bundle_repair_json_smoke(
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
         raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
 
-    preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
-    preview_out_result = run_plain(
-        [*preview_cmd, "--out", str(preview_out), "--force"],
-        cwd=cwd,
-        env=env,
+    preview_out = guidance_out_path(preview_report_command, context=f"{context} preview report")
+    expected_preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
+    if preview_out != expected_preview_out:
+        raise SystemExit(
+            f"site bundle repair preview after {context} guidance report path changed: {preview_out!s}"
+        )
+    preview_report_cmd = site_guidance_command(
+        preview_report_command,
+        preview_cmd,
+        context=f"site bundle repair preview after {context}",
     )
-    assert_no_ansi(preview_out_result.stdout, [*preview_cmd, "--out", str(preview_out), "--force"])
+    preview_out_result = run_plain(preview_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_out_result.stdout, preview_report_cmd)
     if "Wrote " not in preview_out_result.stdout:
-        raise SystemExit(f"site bundle repair preview after {context} expected --out write confirmation")
+        raise SystemExit(f"site bundle repair preview after {context} expected guidance --out write confirmation")
     preview_out_payload = json.loads(preview_out.read_text(encoding="utf-8"))
     if preview_out_payload.get("dryRun") is not True or preview_out_payload.get("applied") is not False:
-        raise SystemExit(f"site bundle repair preview after {context} --out payload changed")
+        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload changed")
     if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
-        raise SystemExit(f"site bundle repair preview --out after {context} mutated the bundle")
+        raise SystemExit(f"site bundle repair preview guidance --out after {context} mutated the bundle")
 
-    apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
-    apply_result = run_plain(
-        [*apply_cmd, "--out", str(apply_out), "--force"],
-        cwd=cwd,
-        env=env,
+    apply_out = guidance_out_path(apply_report_command, context=f"{context} apply report")
+    expected_apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
+    if apply_out != expected_apply_out:
+        raise SystemExit(
+            f"site bundle repair apply after {context} guidance report path changed: {apply_out!s}"
+        )
+    apply_report_cmd = site_guidance_command(
+        apply_report_command,
+        apply_cmd,
+        context=f"site bundle repair apply after {context}",
     )
-    assert_no_ansi(apply_result.stdout, [*apply_cmd, "--out", str(apply_out), "--force"])
+    apply_result = run_plain(apply_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(apply_result.stdout, apply_report_cmd)
     if "Wrote " not in apply_result.stdout:
-        raise SystemExit(f"site bundle repair apply after {context} expected --out write confirmation")
+        raise SystemExit(f"site bundle repair apply after {context} expected guidance --out write confirmation")
     applied = json.loads(apply_out.read_text(encoding="utf-8"))
     if applied.get("status") != "pass" or applied.get("dryRun") is not False or applied.get("applied") is not True:
         raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
