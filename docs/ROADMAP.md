@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 294 — MCP Plan Probe Smoke Parity (unreleased)
+
+Packed-tarball and public-registry smoke now verify the Website Console read-only MCP probe section in Markdown action plans. The installed-bin, one-shot `npm exec --package <tarball>`, and public `npm exec --package @design-ai/cli@<version>` paths now run `design-ai site --stdin --mcp-plan --probes` and validate the shared Markdown probe contract.
+
+### Changed
+- Added shared smoke assertions for `design-ai site --stdin --mcp-plan --probes` Markdown output, including the read-only probe heading, status, mode, no-external-call boundary, table header, and expected probe rows.
+- Added packed-tarball smoke coverage for MCP probe action plan output in both installed-bin and one-shot package paths.
+- Added public registry smoke coverage and registry self-test coverage for MCP probe action plan output.
+- Extended release metadata policy guards so release-facing docs must retain the MCP probe action plan smoke phrase.
+
+### Impact
+- Smoke now catches drift where `--mcp-plan --probes` loses probe rows or read-only boundary text while the JSON `--mcp-check --probes` path still passes.
+- This is a smoke/release-policy parity change only: no CLI runtime behavior, package output format outside the opt-in command, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 293 — Public Registry MCP Probe Smoke Parity (unreleased)
 
 Public registry smoke now verifies the same Website Console read-only MCP probe JSON contract as packed-tarball smoke. The post-publish `npm exec --package @design-ai/cli@<version>` path now runs `design-ai site --stdin --mcp-check --probes --json` and checks the shared probe payload assertion contract.

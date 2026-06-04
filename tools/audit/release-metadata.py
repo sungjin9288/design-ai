@@ -264,11 +264,23 @@ RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS = (
         "site --mcp-plan",
     ),
     (
+        "`design-ai site --stdin --mcp-plan --probes`",
+        "design-ai site --stdin --mcp-plan --probes",
+        "site --stdin --mcp-plan --probes",
+        "site --mcp-plan --probes",
+    ),
+    (
         "Website Console MCP action plan",
         "Website Improvement MCP action plan",
         "site mcp-plan Markdown",
         "Website Console MCP action plan",
         "Website Console MCP action plan 생성",
+    ),
+    (
+        "Website Console MCP probe action plan",
+        "Website Improvement MCP probe action plan",
+        "site mcp-plan probes Markdown",
+        "Website Console MCP probe action plan 생성",
     ),
     (
         "installed-bin and one-shot",
@@ -2574,6 +2586,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
+`design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan,
 `design-ai site --stdin --graph --json` Website Console workflow graph export,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification, bundle digest fingerprint verification, and generated bundle contract verification,
@@ -2670,6 +2683,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe 검증도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
+`design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan 생성도 확인하고,
 `design-ai site --stdin --graph --json` Website Console workflow graph 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증, bundle digest 검증, generated bundle contract 검증도 확인하고,
@@ -3257,6 +3271,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site mcp-check package smoke phrase"
         in site_mcp_probe_package_smoke_drift_errors,
         "release policy docs should mention Website Console MCP probe smoke",
+    )
+
+    site_mcp_plan_probe_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan",
+                "Website Console MCP probe plan coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    site_mcp_plan_probe_package_smoke_drift_errors = "\n".join(
+        site_mcp_plan_probe_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site mcp-plan package smoke phrase"
+        in site_mcp_plan_probe_package_smoke_drift_errors,
+        "release policy docs should mention Website Console MCP probe action plan smoke",
     )
 
     site_workflow_graph_package_smoke_drift = release_metadata_summary(

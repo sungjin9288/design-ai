@@ -4684,6 +4684,27 @@ def passing_site_mcp_plan_markdown() -> str:
 """
 
 
+def passing_site_mcp_plan_probes_markdown() -> str:
+    return passing_site_mcp_plan_markdown().replace(
+        "\n## Blocking Items",
+        """
+## Read-Only Probes
+
+- Probe status: pass
+- Mode: read-only-local
+- External calls: no
+
+| Probe | MCP | Level | Result | Evidence | Next Action |
+| --- | --- | --- | --- | --- | --- |
+| GitHub repo reference | github | pass | pass | github repo: acme/korean-saas-site | none |
+| Figma file reference | figma | pass | pass | figma reference: file/example | none |
+| Browser smoke target | browser | pass | pass | liveUrl host: example.com; viewports: desktop, tablet, mobile | none |
+| Deployment provider reference | deploy | pass | pass | deployProvider: vercel; liveUrl host: example.com | none |
+
+## Blocking Items""",
+    )
+
+
 def passing_site_workflow_graph_json() -> str:
     categories = [
         ("visual-design", "Visual Design", "in-progress"),
@@ -6249,6 +6270,27 @@ def assert_site_mcp_plan_markdown(raw: str, *, context: str, cmd: list[str]) -> 
         ),
         context=context,
         label="site mcp-plan markdown",
+    )
+
+
+def assert_site_mcp_plan_probes_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_site_mcp_plan_markdown(raw, context=context, cmd=cmd)
+
+    assert_contains_fragments(
+        raw,
+        (
+            "## Read-Only Probes",
+            "- Probe status: pass",
+            "- Mode: read-only-local",
+            "- External calls: no",
+            "| Probe | MCP | Level | Result | Evidence | Next Action |",
+            "| GitHub repo reference | github | pass | pass |",
+            "| Figma file reference | figma | pass | pass |",
+            "| Browser smoke target | browser | pass | pass |",
+            "| Deployment provider reference | deploy | pass | pass |",
+        ),
+        context=context,
+        label="site mcp-plan probes markdown",
     )
 
 
@@ -9610,6 +9652,12 @@ def run_self_test() -> None:
     assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
     site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
     assert_site_mcp_plan_markdown(passing_site_mcp_plan_markdown(), context=context, cmd=site_mcp_plan_cmd)
+    site_mcp_plan_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes"]
+    assert_site_mcp_plan_probes_markdown(
+        passing_site_mcp_plan_probes_markdown(),
+        context=context,
+        cmd=site_mcp_plan_probes_cmd,
+    )
     site_workflow_graph_cmd = ["design-ai", "site", "--stdin", "--graph", "--json"]
     assert_site_workflow_graph_json(passing_site_workflow_graph_json(), context=context, cmd=site_workflow_graph_cmd)
     expect_self_test_failure(
@@ -9649,6 +9697,15 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_site_mcp_plan_markdown("\x1b[31m# Website improvement MCP action plan", context=context, cmd=site_mcp_plan_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_markdown(
+            "\x1b[31m# Website improvement MCP action plan",
+            context=context,
+            cmd=site_mcp_plan_probes_cmd,
+        ),
         expected="ANSI escape",
         scope="smoke assertions",
     )
@@ -9878,6 +9935,24 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_cmd,
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_markdown(
+            passing_site_mcp_plan_probes_markdown().replace("## Read-Only Probes", "## Probe Notes"),
+            context=context,
+            cmd=site_mcp_plan_probes_cmd,
+        ),
+        expected="Read-Only Probes",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_markdown(
+            passing_site_mcp_plan_probes_markdown().replace("- External calls: no", "- External calls: yes"),
+            context=context,
+            cmd=site_mcp_plan_probes_cmd,
+        ),
+        expected="External calls: no",
         scope="smoke assertions",
     )
     reordered_site_workflow_graph_payload = json.loads(passing_site_workflow_graph_json())
