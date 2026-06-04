@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 297 — MCP Action Plan JSON Output Persistence Smoke (unreleased)
+
+Website Console MCP probe action plan JSON now has output-file persistence smoke coverage. The installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke paths verify that `design-ai site --stdin --mcp-plan --probes --json --out file --force` writes a file and that the saved file still matches the structured `website-improvement-mcp-action-plan` contract.
+
+### Changed
+- Added package smoke and registry smoke helpers that run the MCP probe action plan JSON command with `--out file --force`, confirm the write message, and validate the saved JSON payload.
+- Added package/registry self-test fixtures for MCP probe action plan JSON output-file persistence and boundary drift.
+- Extended release metadata policy guards and release-facing docs so the output-file smoke phrase cannot be dropped from packed-tarball or public-registry release guidance.
+
+### Impact
+- Release smoke now catches regressions where the JSON action plan works on stdout but fails to persist, writes artifact text to stdout instead of a confirmation, or saves a payload that drifts from the action-plan contract.
+- This is smoke/release-policy hardening only: no CLI runtime behavior, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 296 — MCP Action Plan JSON Export (unreleased)
 
 Website Console MCP action plans now support a structured JSON output for agent and CI handoff workflows. `design-ai site --mcp-plan [--probes] --json` emits the same deterministic readiness/action-plan data as Markdown, including optional read-only probes, without calling external MCPs or mutating target repos.

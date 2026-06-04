@@ -2837,6 +2837,29 @@ def assert_site_mcp_plan_probes_json_smoke(
     assert_site_mcp_plan_probes_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_mcp_plan_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    assert_site_mcp_plan_probes_json(
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
 def assert_site_bundle_smoke(
     cmd: list[str],
     *,
@@ -4567,6 +4590,24 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site mcp-plan probes JSON",
         )
+        registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(registry_site_mcp_plan_json_path),
+                "--force",
+            ),
+            registry_site_mcp_plan_json_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-plan probes JSON out file",
+        )
         registry_site_bundle_dir = npx_root / "registry-site-handoff-bundle"
         assert_site_bundle_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_bundle_dir)),
@@ -5554,6 +5595,42 @@ def run_self_test() -> None:
             passing_site_mcp_plan_json(probes=True),
             context="registry smoke self-test site mcp-plan probes JSON",
             cmd=site_mcp_plan_probes_json_cmd,
+        )
+        site_mcp_plan_json_out_path = tmp_root / "registry-site-mcp-plan-probes.json"
+        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_json_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-plan",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_plan_json_out_path),
+            "--force",
+        ]
+        assert_output_write_success(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            context="registry smoke self-test site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+            expected_path=str(site_mcp_plan_json_out_path),
+        )
+        assert_site_mcp_plan_probes_json(
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+            context="registry smoke self-test site mcp-plan probes JSON out file",
+            cmd=site_mcp_plan_json_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json(
+                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                    '"targetRepoMutation": false',
+                    '"targetRepoMutation": true',
+                ),
+                context="registry smoke self-test site mcp-plan probes JSON out file",
+                cmd=site_mcp_plan_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="registry smoke",
         )
         assert_site_tasks_json(
             passing_site_tasks_json(),

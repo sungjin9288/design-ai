@@ -122,6 +122,7 @@ from smoke_assertions import (
     help_topic_script,
     passing_doctor_report_json,
     passing_check_artifact_content,
+    passing_site_mcp_plan_json,
     parse_help_topics,
     seed_force_overwrite_target,
     site_guidance_command,
@@ -841,6 +842,29 @@ def assert_site_mcp_plan_probes_json_smoke(
         env=env,
     )
     assert_site_mcp_plan_probes_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    assert_site_mcp_plan_probes_json(
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        context=f"{context} out file",
+        cmd=cmd,
+    )
 
 
 def assert_site_workflow_graph_json_smoke(
@@ -6421,6 +6445,43 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        site_mcp_plan_json_out_path = Path(tmp) / "site-mcp-plan-probes.json"
+        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_json_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-plan",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_plan_json_out_path),
+            "--force",
+        ]
+        assert_output_write_success(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            context=f"{context} site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+            expected_path=str(site_mcp_plan_json_out_path),
+        )
+        assert_site_mcp_plan_probes_json(
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+            context=f"{context} site mcp-plan probes JSON out file",
+            cmd=site_mcp_plan_json_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json(
+                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                context=f"{context} site mcp-plan probes JSON out file",
+                cmd=site_mcp_plan_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="package smoke",
+        )
+
         check_learning_profile_path = Path(tmp) / "check-learning.json"
         check_learning_entries = [
             {
@@ -9173,6 +9234,24 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-plan probes JSON",
         )
+        installed_site_mcp_plan_json_path = install_root / "installed-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(installed_site_mcp_plan_json_path),
+                "--force",
+            ],
+            installed_site_mcp_plan_json_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-plan probes JSON out file",
+        )
         assert_site_workflow_graph_json_smoke(
             [str(bin_path), "site", "--stdin", "--graph", "--json"],
             cwd=install_root,
@@ -10044,6 +10123,24 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-plan probes JSON",
+        )
+        npx_site_mcp_plan_json_path = npx_root / "npx-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(npx_site_mcp_plan_json_path),
+                "--force",
+            ),
+            npx_site_mcp_plan_json_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-plan probes JSON out file",
         )
         assert_site_workflow_graph_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--graph", "--json"),
