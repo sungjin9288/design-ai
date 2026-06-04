@@ -562,8 +562,13 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
         "공개 npm registry `design-ai site` Website Console export validation",
     ),
     (
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP action plan, handoff bundle",
+        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, handoff bundle",
+    ),
+    (
+        "MCP readiness probes",
+        "MCP readiness probe",
+        "MCP readiness probe 검증",
     ),
     (
         "bundle-check",
@@ -2582,7 +2587,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
-including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
+including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2678,7 +2683,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
-공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
+공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -3199,7 +3204,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
+                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
                 "including public registry Website Console coverage",
             ),
         },
@@ -3209,6 +3214,26 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing site registry smoke phrase" in site_registry_smoke_drift_errors,
         "release policy docs should mention public registry Website Console smoke",
+    )
+
+    site_registry_mcp_probe_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "MCP readiness probes, ",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_registry_mcp_probe_drift_errors = "\n".join(site_registry_mcp_probe_drift["errors"])
+    assert_condition(
+        "README.md is missing site registry smoke phrase" in site_registry_mcp_probe_drift_errors,
+        "release policy docs should mention public registry Website Console MCP probe smoke",
     )
 
     site_mcp_probe_package_smoke_drift = release_metadata_summary(

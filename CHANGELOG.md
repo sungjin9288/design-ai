@@ -4,7 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
-Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, repair report command guidance, executable repair guidance smoke coverage, shared repair guidance smoke helpers, shared repair report assertion helpers, release metadata guard coverage for shared repair guidance smoke helpers and shared repair report assertion helpers, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
+Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry, preview-only skill evolution proposals, optional Website Console MCP probes, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, repair report command guidance, executable repair guidance smoke coverage, shared repair guidance smoke helpers, shared repair report assertion helpers, release metadata guard coverage for shared repair guidance smoke helpers and shared repair report assertion helpers, public registry Website Console MCP probe smoke coverage, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.
 
 ### Added
 - `design-ai route --eval-template [--json]` generates a runnable route checkpoint template.
@@ -48,6 +48,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Packed-tarball smoke now verifies `learn --signals` human, JSON, and `--out` registry reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `learn --propose-skills` human, JSON, and `--out` preview reports through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Packed-tarball smoke now verifies `design-ai site --stdin --mcp-check --probes --json` probe output through installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Public-registry smoke now verifies `design-ai site --stdin --mcp-check --probes --json` probe output from the published package path.
 - Packed-tarball smoke now verifies `design-ai site --stdin --graph --json` workflow graph output through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Release metadata now guards the route/prompt/pack eval smoke phrase in release policy docs.
 - `docs/AGENT-DEVELOPMENT.md` records the Hermes/Harness-centered reference analysis and the next AI/agent development phases.

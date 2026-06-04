@@ -88,6 +88,7 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_site_json,
     assert_site_mcp_check_json,
+    assert_site_mcp_check_probes_json,
     assert_site_mcp_plan_markdown,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
@@ -120,6 +121,7 @@ from smoke_assertions import (
     passing_check_artifact_content,
     passing_site_json,
     passing_site_mcp_check_json,
+    passing_site_mcp_check_probes_json,
     passing_site_mcp_plan_markdown,
     passing_site_prompt_markdown,
     passing_site_prompt_templates_json,
@@ -2766,6 +2768,22 @@ def assert_site_mcp_check_json_smoke(
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_mcp_check_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json(result.stdout, context=context, cmd=cmd)
+
+
 def assert_site_mcp_plan_markdown_smoke(
     cmd: list[str],
     *,
@@ -4488,6 +4506,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site mcp-check JSON",
         )
+        assert_site_mcp_check_probes_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check probes JSON",
+        )
         assert_site_mcp_plan_markdown_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan"),
             cwd=npx_root,
@@ -5432,6 +5456,7 @@ def run_self_test() -> None:
         site_sample_cmd = ["design-ai", "site", "--sample"]
         site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
         site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
+        site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
         site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
         site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
         site_prompt_cmd = [
@@ -5458,6 +5483,11 @@ def run_self_test() -> None:
             passing_site_mcp_check_json(),
             context="registry smoke self-test site mcp-check",
             cmd=site_mcp_check_cmd,
+        )
+        assert_site_mcp_check_probes_json(
+            passing_site_mcp_check_probes_json(),
+            context="registry smoke self-test site mcp-check probes",
+            cmd=site_mcp_check_probes_cmd,
         )
         assert_site_mcp_plan_markdown(
             passing_site_mcp_plan_markdown(),

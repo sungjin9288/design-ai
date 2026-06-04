@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 293 — Public Registry MCP Probe Smoke Parity (unreleased)
+
+Public registry smoke now verifies the same Website Console read-only MCP probe JSON contract as packed-tarball smoke. The post-publish `npm exec --package @design-ai/cli@<version>` path now runs `design-ai site --stdin --mcp-check --probes --json` and checks the shared probe payload assertion contract.
+
+### Changed
+- Added a registry smoke wrapper for Website Console MCP probe JSON output using the existing shared smoke assertion helper.
+- Added the public registry MCP probe smoke command to the `npm exec --package @design-ai/cli@<version>` Website Console smoke sequence.
+- Extended registry smoke self-test and release metadata drift fixtures so public registry Website Console guidance must retain MCP readiness probe coverage.
+
+### Impact
+- Published-package smoke now catches drift in Website Console MCP probe payload shape, read-only mode, external-call boundary, probe count, and probe item order.
+- This is a smoke/release-policy parity change only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run registry:smoke:self-test`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 292 — Shared Repair Report Release Metadata Guard (unreleased)
 
 Release metadata now treats the shared Website Console repair report assertion helper contract as release-facing policy. The guard requires release docs to mention shared repair report assertion helpers alongside bundle repair preview/apply, repair report `--out file` persistence, and shared repair guidance smoke helpers.
