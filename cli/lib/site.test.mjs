@@ -17,6 +17,7 @@ import {
   buildSiteBundleRepairBundle,
   buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
+  buildSiteMcpActionPlanData,
   buildSiteMcpCheckReport,
   buildSiteMcpProbeReport,
   buildSiteBundleHandoffReport,
@@ -37,6 +38,7 @@ import {
   formatSiteBundleRepairJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
+  formatSiteMcpActionPlanJson,
   formatSitePromptTemplatesHuman,
   formatSitePromptTemplatesJson,
   formatSiteWorkflowGraphJson,
@@ -146,6 +148,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--prompt-list", "--json"]).promptList, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]).json, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--probes", "--json"]).probes, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--json"]).graph, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--out", "website-workflow-graph.md"]).outPath, "website-workflow-graph.md");
@@ -220,7 +223,6 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--graph", "--report"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--probes"]), /Use --probes only with --mcp-check or --mcp-plan/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--json"]), /--json is only supported/);
-  assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]), /--json is only supported/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt"]), /--prompt requires a template id/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "bad-template"]), /--prompt must be one of/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--task"]), /--task requires a refactor task id/);
@@ -365,8 +367,41 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
 test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidance", () => {
   const workspace = createSampleSiteWorkspace();
   const { summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
+  const data = buildSiteMcpActionPlanData(workspace, summary);
+  const json = JSON.parse(formatSiteMcpActionPlanJson(data));
   const plan = buildSiteMcpActionPlan(workspace, summary);
 
+  assert.equal(data.kind, "website-improvement-mcp-action-plan");
+  assert.equal(data.version, 1);
+  assert.equal(data.status, "pass");
+  assert.equal(data.filePath, "sample.json");
+  assert.equal(data.externalCalls, false);
+  assert.equal(data.targetRepoMutation, false);
+  assert.equal(data.readinessMatrix[0].key, "github");
+  assert.equal(data.taskAlignment[0].task, "task-homepage-cta");
+  assert.match(data.commands.mcpCheck, /design-ai site sample\.json --mcp-check --strict --json/);
+  assert.deepEqual(Object.keys(json), [
+    "kind",
+    "version",
+    "filePath",
+    "status",
+    "workspaceStatus",
+    "site",
+    "counts",
+    "readinessMatrix",
+    "probes",
+    "blockingItems",
+    "warnings",
+    "taskAlignment",
+    "taskGaps",
+    "workspaceIssues",
+    "nextActions",
+    "executionSequence",
+    "commands",
+    "boundaries",
+    "externalCalls",
+    "targetRepoMutation",
+  ]);
   assert.match(plan, /# Website improvement MCP action plan: Korean SaaS marketing site/);
   assert.match(plan, /## Readiness Matrix/);
   assert.match(plan, /\| GitHub \| required \| ready \| pass \|/);
@@ -377,6 +412,10 @@ test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidanc
   assert.match(plan, /does not call external MCPs, mutate the target website repo/);
 
   const probePlan = buildSiteMcpActionPlan(workspace, summary, { probes: true });
+  const probeJson = JSON.parse(formatSiteMcpActionPlanJson(buildSiteMcpActionPlanData(workspace, summary, { probes: true })));
+  assert.equal(probeJson.probes.status, "pass");
+  assert.equal(probeJson.probes.externalCalls, false);
+  assert.equal(probeJson.probes.items[0].id, "github-repo-reference");
   assert.match(probePlan, /## Read-Only Probes/);
   assert.match(probePlan, /External calls: no/);
   assert.match(probePlan, /\| GitHub repo reference \| github \| pass \| pass \|/);
@@ -856,6 +895,15 @@ test("runSite prints and writes MCP readiness action plan output", async () => {
     assert.match(probePlanOutput.stdout, /## Read-Only Probes/);
     assert.match(probePlanOutput.stdout, /External calls: no/);
 
+    const jsonOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--probes", "--json"]));
+    const json = JSON.parse(jsonOutput.stdout);
+    assert.equal(json.kind, "website-improvement-mcp-action-plan");
+    assert.equal(json.probes.status, "pass");
+    assert.equal(json.externalCalls, false);
+    assert.equal(json.targetRepoMutation, false);
+    assert.match(json.commands.mcpCheck, /--mcp-check --strict --json/);
+    assert.equal(jsonOutput.exitCode, undefined);
+
     const writeOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", outFile]));
     assert.match(writeOutput.stdout, /Wrote /);
     assert.match(readFileSync(outFile, "utf8"), /Task\/MCP Alignment/);
@@ -1327,7 +1375,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --graph \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
@@ -1339,7 +1387,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(output.stdout, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
-  assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
+  assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory/);

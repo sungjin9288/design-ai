@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 296 — MCP Action Plan JSON Export (unreleased)
+
+Website Console MCP action plans now support a structured JSON output for agent and CI handoff workflows. `design-ai site --mcp-plan [--probes] --json` emits the same deterministic readiness/action-plan data as Markdown, including optional read-only probes, without calling external MCPs or mutating target repos.
+
+### Changed
+- Added `buildSiteMcpActionPlanData` and `formatSiteMcpActionPlanJson` so Markdown and JSON action plans share one deterministic data contract.
+- Updated `design-ai site --mcp-plan` to accept `--json`, including the `--probes --json` path for read-only probe action plans.
+- Added site unit tests, shared smoke assertion helpers, package smoke, and public registry smoke coverage for structured MCP probe action plan JSON.
+- Updated Website Improvement docs, README/Distribution/Release Checklist guidance, and release metadata guard fixtures for the new JSON smoke phrase.
+
+### Impact
+- Agent runners, CI smoke, and handoff scripts can consume MCP action plans without parsing Markdown.
+- Existing Markdown `--mcp-plan` output remains unchanged for operators.
+- This is deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe/browser automation, new dependencies, or `--yes` apply behavior changed.
+
+### Verified
+- `node --check cli/lib/site.mjs && node --check cli/commands/site.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-plan --probes --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 295 — Public Registry MCP Probe Action Plan Release Guard (unreleased)
 
 Release metadata now protects the post-publish public registry Website Console guidance for MCP probe action plans. The public registry smoke already runs `design-ai site --stdin --mcp-plan --probes`; release-facing docs now have to say that explicitly instead of only mentioning MCP readiness probes and the base MCP action plan.

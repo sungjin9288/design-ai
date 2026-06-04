@@ -433,8 +433,8 @@ export function parseSiteArgs(args) {
   if (outputModes.length > 1) {
     throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
   }
-  if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
-    throw new Error("--json is only supported for the site summary, --mcp-check, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
+  if (out.json && (out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("--json is only supported for the site summary, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
   if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
     throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, or --graph");
@@ -1557,7 +1557,7 @@ function mcpActionPlanTaskRows(workspace, report) {
   });
 }
 
-export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
+export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}) {
   const report = buildSiteMcpCheckReport(workspace, summary, options);
   const filePath = report.filePath || "workspace.json";
   const commandTarget = filePath === "stdin" ? "<workspace.json>" : filePath;
@@ -1572,24 +1572,79 @@ export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
     ...optionalGaps.map((item) => `${item.label}: ${item.actions.join(" ") || "Add optional readiness evidence or mark unused."}`),
     ...report.taskGaps.map((gap) => `${gap.taskId}: ${gap.message}`),
   ];
+  const taskAlignment = mcpActionPlanTaskRows(workspace, report).map((row) => ({
+    task: row[0],
+    priorityImpact: row[1],
+    recommendedMcp: row[2],
+    readinessState: row[3],
+  }));
+  const commands = {
+    mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
+    implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
+    handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
+  };
+  const executionSequence = [
+    "Fix every blocking item before target-repo implementation handoff.",
+    "Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
+    "Re-run the strict readiness gate and keep the JSON output with the handoff package.",
+    "Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
+    "Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
+  ];
+  const boundaries = [
+    "This plan is deterministic and local.",
+    "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
+    "Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
+  ];
+
+  return {
+    kind: "website-improvement-mcp-action-plan",
+    version: 1,
+    filePath,
+    status: report.status,
+    workspaceStatus: report.workspaceStatus,
+    site: report.site,
+    counts: report.counts,
+    readinessMatrix: report.items,
+    probes: report.probes || null,
+    blockingItems: blockingIssues,
+    warnings: warningIssues,
+    taskAlignment,
+    taskGaps: report.taskGaps,
+    workspaceIssues: report.workspaceIssues,
+    nextActions: report.nextActions,
+    executionSequence,
+    commands,
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
+  };
+}
+
+export function formatSiteMcpActionPlanJson(plan) {
+  return JSON.stringify(plan, null, 2);
+}
+
+export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
+  const plan = buildSiteMcpActionPlanData(workspace, summary, options);
 
   return [
-    `# Website improvement MCP action plan: ${report.site.name}`,
+    `# Website improvement MCP action plan: ${plan.site.name}`,
     "",
     "## Summary",
-    `- Source: ${filePath}`,
-    `- Status: ${report.status}`,
-    `- Workspace status: ${report.workspaceStatus}`,
-    `- Live URL: ${report.site.liveUrl || "not provided"}`,
-    `- Repo: ${report.site.repoUrl || report.site.localPath || "not provided"}`,
-    `- Ready MCP: ${report.counts.ready}/${report.counts.total}`,
-    `- Missing MCP: ${report.counts.missing}`,
-    `- Task/MCP gaps: ${report.counts.taskGaps}`,
+    `- Source: ${plan.filePath}`,
+    `- Status: ${plan.status}`,
+    `- Workspace status: ${plan.workspaceStatus}`,
+    `- Live URL: ${plan.site.liveUrl || "not provided"}`,
+    `- Repo: ${plan.site.repoUrl || plan.site.localPath || "not provided"}`,
+    `- Ready MCP: ${plan.counts.ready}/${plan.counts.total}`,
+    `- Missing MCP: ${plan.counts.missing}`,
+    `- Task/MCP gaps: ${plan.counts.taskGaps}`,
     "",
     "## Readiness Matrix",
     markdownTable(
       ["MCP", "Requested", "State", "Level", "Evidence"],
-      report.items.map((item) => [
+      plan.readinessMatrix.map((item) => [
         item.label,
         item.requestedStatus,
         item.state,
@@ -1597,17 +1652,17 @@ export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
         item.evidence.length ? item.evidence.join("; ") : "none",
       ]),
     ),
-    ...(report.probes ? [
+    ...(plan.probes ? [
       "",
       "## Read-Only Probes",
       "",
-      `- Probe status: ${report.probes.status}`,
-      `- Mode: ${report.probes.mode}`,
-      `- External calls: ${report.probes.externalCalls ? "yes" : "no"}`,
+      `- Probe status: ${plan.probes.status}`,
+      `- Mode: ${plan.probes.mode}`,
+      `- External calls: ${plan.probes.externalCalls ? "yes" : "no"}`,
       "",
       markdownTable(
         ["Probe", "MCP", "Level", "Result", "Evidence", "Next Action"],
-        report.probes.items.map((item) => [
+        plan.probes.items.map((item) => [
           item.label,
           item.key,
           item.level,
@@ -1619,34 +1674,30 @@ export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
     ] : []),
     "",
     "## Blocking Items",
-    markdownList(blockingIssues, "No blocking readiness issues."),
+    markdownList(plan.blockingItems, "No blocking readiness issues."),
     "",
     "## Warnings",
-    markdownList(warningIssues, "No optional readiness or task/MCP warnings."),
+    markdownList(plan.warnings, "No optional readiness or task/MCP warnings."),
     "",
     "## Task/MCP Alignment",
     markdownTable(
       ["Task", "Priority / impact", "Recommended MCP", "Readiness state"],
-      mcpActionPlanTaskRows(workspace, report),
+      plan.taskAlignment.map((item) => [
+        item.task,
+        item.priorityImpact,
+        item.recommendedMcp,
+        item.readinessState,
+      ]),
     ),
     "",
     "## Execution Sequence",
-    "1. Fix every blocking item before target-repo implementation handoff.",
-    "2. Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
-    "3. Re-run the strict readiness gate and keep the JSON output with the handoff package.",
-    "4. Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
-    "5. Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
+    ...plan.executionSequence.map((item, index) => `${index + 1}. ${item}`),
     "",
     "## Commands",
-    `- \`design-ai site ${commandTarget} --mcp-check --strict --json\``,
-    `- \`design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json\``,
-    `- \`design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md\``,
-    `- \`design-ai site ${commandTarget} --report --out website-handoff.md\``,
+    ...Object.values(plan.commands).map((command) => `- \`${command}\``),
     "",
     "## Boundaries",
-    "- This plan is deterministic and local.",
-    "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
-    "- Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
+    ...plan.boundaries.map((boundary) => `- ${boundary}`),
   ].join("\n");
 }
 

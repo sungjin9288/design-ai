@@ -270,7 +270,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --graph \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
@@ -283,7 +283,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(siteOutput, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(siteOutput, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
-  assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
+  assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
   assert.match(siteOutput, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(siteOutput, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(siteOutput, /--bundle\s+Write a complete local handoff bundle directory/);
