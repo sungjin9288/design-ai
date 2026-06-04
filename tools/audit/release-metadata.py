@@ -250,6 +250,18 @@ RELEASE_SITE_MCP_CHECK_PACKAGE_SMOKE_TERM_GROUPS = (
         "Website Console MCP readiness check",
     ),
     (
+        "Website Console MCP readiness probe JSON with `--out` file-write confirmation",
+        "Website Console MCP readiness probe JSON `--out` file-write confirmation",
+        "Website Console MCP readiness probe JSON with --out file-write confirmation",
+        "Website Console MCP readiness probe JSON --out file-write confirmation",
+        "MCP readiness probe JSON with `--out` file-write confirmation",
+        "MCP readiness probe JSON `--out` file-write confirmation",
+        "MCP readiness probe JSON with --out file-write confirmation",
+        "MCP readiness probe JSON --out file-write confirmation",
+        "MCP readiness probe JSON output-file persistence",
+        "MCP readiness probe JSON `--out` file 저장 확인",
+    ),
+    (
         "installed-bin and one-shot",
         "installed-bin plus one-shot",
         "both installed-bin and one-shot",
@@ -598,16 +610,22 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
         "공개 npm registry `design-ai site` Website Console export validation",
     ),
     (
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, MCP probe action plan, MCP probe action plan JSON, handoff bundle",
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, MCP probe action plan, MCP probe action plan JSON, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인, handoff bundle",
+        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인, handoff bundle",
     ),
     (
         "MCP readiness probes",
         "MCP readiness probe",
         "MCP readiness probe 검증",
+    ),
+    (
+        "MCP readiness probe JSON with `--out` file-write confirmation",
+        "MCP readiness probe JSON `--out` file-write confirmation",
+        "MCP readiness probe JSON with --out file-write confirmation",
+        "MCP readiness probe JSON --out file-write confirmation",
+        "MCP readiness probe JSON output-file persistence",
+        "MCP readiness probe JSON `--out` file 저장 확인",
     ),
     (
         "MCP probe action plan",
@@ -2627,7 +2645,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
-`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check,
+`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON with `--out` file-write confirmation,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
 `design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan,
 `design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation,
@@ -2644,7 +2662,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
-including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
+including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2725,7 +2743,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
-`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe 검증도 확인하고,
+`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON `--out` file 저장 확인도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
 `design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan 생성도 확인하고,
 `design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON 생성과 `--out` file 저장 확인도 확인하고,
@@ -2742,7 +2760,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
-공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
+공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -3263,7 +3281,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
+                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
                 "including public registry Website Console coverage",
             ),
         },
@@ -3293,6 +3311,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing site registry smoke phrase" in site_registry_mcp_probe_drift_errors,
         "release policy docs should mention public registry Website Console MCP probe smoke",
+    )
+
+    site_registry_mcp_probe_json_out_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "MCP readiness probe JSON with `--out` file-write confirmation, ",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_registry_mcp_probe_json_out_drift_errors = "\n".join(
+        site_registry_mcp_probe_json_out_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site registry smoke phrase"
+        in site_registry_mcp_probe_json_out_drift_errors,
+        "release policy docs should mention public registry Website Console MCP readiness probe JSON out-file smoke",
     )
 
     site_registry_mcp_probe_action_plan_drift = release_metadata_summary(
@@ -3372,7 +3413,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe check",
+                "`design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON with `--out` file-write confirmation",
                 "Website Console MCP probe coverage",
             ),
         },
@@ -3385,6 +3426,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site mcp-check package smoke phrase"
         in site_mcp_probe_package_smoke_drift_errors,
         "release policy docs should mention Website Console MCP probe smoke",
+    )
+
+    site_mcp_probe_json_out_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "MCP readiness probe JSON with `--out` file-write confirmation",
+                "MCP readiness probe JSON",
+            ),
+        },
+        audit_count=8,
+    )
+    site_mcp_probe_json_out_package_smoke_drift_errors = "\n".join(
+        site_mcp_probe_json_out_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site mcp-check package smoke phrase"
+        in site_mcp_probe_json_out_package_smoke_drift_errors,
+        "release policy docs should mention Website Console MCP readiness probe JSON out-file smoke",
     )
 
     site_mcp_plan_probe_package_smoke_drift = release_metadata_summary(
