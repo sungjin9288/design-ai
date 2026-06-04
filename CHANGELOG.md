@@ -51,6 +51,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Public-registry smoke now verifies `design-ai site --stdin --mcp-check --probes --json` probe output from the published package path.
 - Packed-tarball and public-registry smoke now verify `design-ai site --stdin --mcp-plan --probes` Markdown probe action plan output through installed-bin, one-shot `npm exec --package <tarball>`, and published package paths.
 - Release metadata now guards the Website Console MCP probe action plan smoke phrase across release policy docs.
+- Release metadata now also guards the public registry Website Console MCP probe action plan phrase, so post-publish registry smoke guidance cannot omit the `--mcp-plan --probes` coverage.
 - Packed-tarball smoke now verifies `design-ai site --stdin --graph --json` workflow graph output through installed-bin and one-shot `npm exec --package <tarball>` paths.
 - Release metadata now guards the route/prompt/pack eval smoke phrase in release policy docs.
 - `docs/AGENT-DEVELOPMENT.md` records the Hermes/Harness-centered reference analysis and the next AI/agent development phases.

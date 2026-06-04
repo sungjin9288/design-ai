@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 295 — Public Registry MCP Probe Action Plan Release Guard (unreleased)
+
+Release metadata now protects the post-publish public registry Website Console guidance for MCP probe action plans. The public registry smoke already runs `design-ai site --stdin --mcp-plan --probes`; release-facing docs now have to say that explicitly instead of only mentioning MCP readiness probes and the base MCP action plan.
+
+### Changed
+- Extended the public registry Website Console release metadata term group to require `MCP probe action plan` next to MCP readiness probes and MCP action plan coverage.
+- Updated README, Korean README, Distribution docs, and Release Checklist post-publish registry smoke guidance with the new phrase.
+- Added a release metadata self-test drift fixture that fails when the public registry MCP probe action plan phrase is removed.
+
+### Impact
+- Release docs now stay aligned with the actual `registry-smoke.py` coverage for `design-ai site --stdin --mcp-plan --probes`.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 294 — MCP Plan Probe Smoke Parity (unreleased)
 
 Packed-tarball and public-registry smoke now verify the Website Console read-only MCP probe section in Markdown action plans. The installed-bin, one-shot `npm exec --package <tarball>`, and public `npm exec --package @design-ai/cli@<version>` paths now run `design-ai site --stdin --mcp-plan --probes` and validate the shared Markdown probe contract.
