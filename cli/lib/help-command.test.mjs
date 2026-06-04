@@ -284,6 +284,8 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(siteOutput, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
   assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(siteOutput, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(siteOutput, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(siteOutput, /--bundle\s+Write a complete local handoff bundle directory/);

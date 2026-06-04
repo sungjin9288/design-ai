@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 301 (unreleased)** — Added `design-ai site --help` examples for saving MCP readiness probe JSON and MCP probe action plan JSON with `--out file`, then pinned those examples in help and site command tests.
 - **Phase 300 (unreleased)** — Added release metadata guard coverage for shared Website Console MCP probe output-file smoke assertions. Release-facing docs now have to mention the shared helper contract next to MCP readiness probe JSON `--out` smoke guidance.
 - **Phase 299 (unreleased)** — Shared the Website Console MCP probe output-file smoke assertions. `smoke_assertions.py` now owns the write confirmation plus saved JSON payload contract for MCP readiness probe JSON and MCP probe action plan JSON, while package and registry smoke keep their runner-specific command execution paths.
 - **Phase 298 (unreleased)** — Added Website Console MCP readiness probe JSON output-file persistence smoke. Packed-tarball installed-bin, one-shot npm exec, and public registry smoke now verify `design-ai site --stdin --mcp-check --probes --json --out file --force` write confirmation plus saved read-only MCP probe payload contract.

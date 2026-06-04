@@ -26,6 +26,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Packed-tarball and public-registry smoke now verify `design-ai site --stdin --mcp-plan --probes --json --out file` output-file persistence for the structured MCP probe action plan payload.
 - Shared smoke assertions now own the MCP readiness probe JSON and MCP probe action plan JSON output-file contracts, so packed-tarball and public-registry smoke validate write confirmation plus saved JSON payload drift through the same helper path.
 - Release metadata now guards the shared MCP probe output-file smoke assertion phrase across release-facing docs, with a self-test fixture that fails when README guidance drops the shared helper contract.
+- `design-ai site --help` now shows copy/paste examples for saving MCP readiness probe JSON and MCP probe action plan JSON with `--out file`.
 - `design-ai site --graph [--json]` exports a portable Website Improvement workflow graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edges.
 - The static Website Improvement Console now includes a `Workflow Graph` tab with lane-based node rendering, 35-node/67-edge sample graph coverage, boundary markers, edge table, and graph JSON copy/export actions.
 - The static Website Improvement Console `Handoff Report` tab now tracks executed work, verification results, remaining risks, and next actions in localStorage and injects that evidence into copied/exported Markdown reports.

@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 301 — MCP Probe Output-File Help Examples (unreleased)
+
+`design-ai site --help` now surfaces the MCP probe JSON output-file workflows directly in the examples list. Operators can copy the exact `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json` commands without reconstructing them from release smoke guidance.
+
+### Changed
+- Added explicit Website Console MCP readiness probe JSON and MCP probe action plan JSON `--out` examples to the `site` command help.
+- Added help-command and site command unit assertions so the examples cannot silently disappear.
+- Updated CHANGELOG and SESSION-LOG entries for the operator-facing help improvement.
+
+### Impact
+- This is help/documentation hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node cli/bin/design-ai.mjs help site`
+- `node --test cli/lib/help-command.test.mjs cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 300 — Shared MCP Probe Output-File Release Guard (unreleased)
 
 Release metadata now treats the shared Website Console MCP probe output-file smoke assertion contract as release-facing policy. The guard requires release docs to mention shared MCP probe output-file smoke assertions next to MCP readiness probe JSON `--out` coverage, and the self-test fails if that helper phrase disappears from README release guidance.

@@ -96,8 +96,10 @@ function printHelp() {
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
   console.log("  design-ai site website-workspace.json --mcp-check --probes --json");
+  console.log("  design-ai site website-workspace.json --mcp-check --probes --json --out mcp-check-probes.json");
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
   console.log("  design-ai site website-workspace.json --mcp-plan --probes --json");
+  console.log("  design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
   console.log("  design-ai site website-workspace.json --graph --json --out website-workflow-graph.json");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
