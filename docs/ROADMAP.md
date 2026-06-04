@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 292 — Shared Repair Report Release Metadata Guard (unreleased)
+
+Release metadata now treats the shared Website Console repair report assertion helper contract as release-facing policy. The guard requires release docs to mention shared repair report assertion helpers alongside bundle repair preview/apply, repair report `--out file` persistence, and shared repair guidance smoke helpers.
+
+### Changed
+- Added a shared repair report assertion helper term group to the existing site bundle-repair package smoke release metadata guard.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared repair report assertion helper coverage.
+- Added a release metadata self-test fixture that fails when the shared repair report assertion helper phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document shared bundle repair guidance without preserving the shared repair report assertion helper contract.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 291 — Shared Repair Report Smoke Assertions (unreleased)
 
 Website Console repair report smoke now shares the detailed assertion contract for report guidance commands. Package and registry smoke still execute their own installed-bin / npm exec paths, but `smoke_assertions.py` owns the command shape, output path, preview payload, and applied payload checks.

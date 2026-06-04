@@ -457,6 +457,13 @@ RELEASE_SITE_BUNDLE_REPAIR_PACKAGE_SMOKE_TERM_GROUPS = (
         "repair guidance shared helper",
         "공용 repair guidance smoke helper",
     ),
+    (
+        "shared repair report assertion helpers",
+        "shared repair report assertion helper",
+        "repair report assertion helpers",
+        "repair report shared assertion helper",
+        "공용 repair report assertion helper",
+    ),
 )
 RELEASE_SITE_TASKS_PACKAGE_SMOKE_TERM_GROUPS = (
     (
@@ -2567,7 +2574,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification, bundle digest fingerprint verification, and generated bundle contract verification,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console target-repo handoff prompt from a verified bundle digest,
-`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence and shared repair guidance smoke helpers,
+`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence, shared repair guidance smoke helpers, and shared repair report assertion helpers,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected single prompt generation,
 the one-shot `npm exec --package <tarball>` packed-tarball path,
@@ -2663,7 +2670,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증, bundle digest 검증, generated bundle contract 검증도 확인하고,
 `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console 대상 repo handoff prompt와 검증된 handoff bundle digest도 확인하고,
-`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery와 repair report --out file 저장 및 공용 repair guidance smoke helper도 installed-bin과 one-shot 경로에서 확인하고,
+`design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery와 repair report --out file 저장, 공용 repair guidance smoke helper, 공용 repair report assertion helper도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
 `design-ai site --stdin --prompt codex-implementation --task task-homepage-cta` Website Console task-selected 단일 prompt 생성도 확인하고,
 npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
@@ -2925,7 +2932,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
                 "restore rollback backup inventory in installed-bin and one-shot paths",
                 "restore rollback backup inventory in packaged paths",
             ).replace(
-                "bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence and shared repair guidance smoke helpers",
+                "bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence, shared repair guidance smoke helpers, and shared repair report assertion helpers",
                 "bundle repair preview/apply drift recovery in packaged paths with repair report output-file persistence",
             ),
         },
@@ -2948,7 +2955,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " and shared repair guidance smoke helpers",
+                ", shared repair guidance smoke helpers",
                 "",
             ),
         },
@@ -2959,6 +2966,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site bundle-repair package smoke phrase"
         in repair_guidance_helper_drift_errors,
         "release policy docs should mention shared repair guidance smoke helpers",
+    )
+
+    repair_report_assertion_helper_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                ", and shared repair report assertion helpers",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    repair_report_assertion_helper_drift_errors = "\n".join(
+        repair_report_assertion_helper_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site bundle-repair package smoke phrase"
+        in repair_report_assertion_helper_drift_errors,
+        "release policy docs should mention shared repair report assertion helpers",
     )
 
     packed_tarball_smoke_drift = release_metadata_summary(
