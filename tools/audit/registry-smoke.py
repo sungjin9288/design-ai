@@ -89,9 +89,11 @@ from smoke_assertions import (
     assert_site_json,
     assert_site_mcp_check_json,
     assert_site_mcp_check_probes_json,
+    assert_site_mcp_check_probes_json_file_output,
     assert_site_mcp_plan_json,
     assert_site_mcp_plan_markdown,
     assert_site_mcp_plan_probes_json,
+    assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
@@ -2804,10 +2806,11 @@ def assert_site_mcp_check_probes_json_file_smoke(
         cwd=cwd,
         env=env,
     )
-    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
-    assert_site_mcp_check_probes_json(
+    assert_site_mcp_check_probes_json_file_output(
+        result.stdout,
         read_forced_json_output_file(output_path, context=context, cmd=cmd),
-        context=f"{context} out file",
+        output_path=str(output_path),
+        context=context,
         cmd=cmd,
     )
 
@@ -2875,10 +2878,11 @@ def assert_site_mcp_plan_probes_json_file_smoke(
         cwd=cwd,
         env=env,
     )
-    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
-    assert_site_mcp_plan_probes_json(
+    assert_site_mcp_plan_probes_json_file_output(
+        result.stdout,
         read_forced_json_output_file(output_path, context=context, cmd=cmd),
-        context=f"{context} out file",
+        output_path=str(output_path),
+        context=context,
         cmd=cmd,
     )
 
@@ -5635,24 +5639,22 @@ def run_self_test() -> None:
             str(site_mcp_check_probes_out_path),
             "--force",
         ]
-        assert_output_write_success(
+        assert_site_mcp_check_probes_json_file_output(
             f"Wrote {site_mcp_check_probes_out_path}\n",
-            context="registry smoke self-test site mcp-check probes JSON out",
-            cmd=site_mcp_check_probes_out_cmd,
-            expected_path=str(site_mcp_check_probes_out_path),
-        )
-        assert_site_mcp_check_probes_json(
             site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
-            context="registry smoke self-test site mcp-check probes JSON out file",
+            output_path=str(site_mcp_check_probes_out_path),
+            context="registry smoke self-test site mcp-check probes JSON out",
             cmd=site_mcp_check_probes_out_cmd,
         )
         expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_json(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_check_probes_out_path}\n",
                 site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
                     '"externalCalls": false',
                     '"externalCalls": true',
                 ),
-                context="registry smoke self-test site mcp-check probes JSON out file",
+                output_path=str(site_mcp_check_probes_out_path),
+                context="registry smoke self-test site mcp-check probes JSON out",
                 cmd=site_mcp_check_probes_out_cmd,
             ),
             expected="without external calls",
@@ -5686,24 +5688,22 @@ def run_self_test() -> None:
             str(site_mcp_plan_json_out_path),
             "--force",
         ]
-        assert_output_write_success(
+        assert_site_mcp_plan_probes_json_file_output(
             f"Wrote {site_mcp_plan_json_out_path}\n",
-            context="registry smoke self-test site mcp-plan probes JSON out",
-            cmd=site_mcp_plan_json_out_cmd,
-            expected_path=str(site_mcp_plan_json_out_path),
-        )
-        assert_site_mcp_plan_probes_json(
             site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
-            context="registry smoke self-test site mcp-plan probes JSON out file",
+            output_path=str(site_mcp_plan_json_out_path),
+            context="registry smoke self-test site mcp-plan probes JSON out",
             cmd=site_mcp_plan_json_out_cmd,
         )
         expect_self_test_failure(
-            lambda: assert_site_mcp_plan_probes_json(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_json_out_path}\n",
                 site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
                     '"targetRepoMutation": false',
                     '"targetRepoMutation": true',
                 ),
-                context="registry smoke self-test site mcp-plan probes JSON out file",
+                output_path=str(site_mcp_plan_json_out_path),
+                context="registry smoke self-test site mcp-plan probes JSON out",
                 cmd=site_mcp_plan_json_out_cmd,
             ),
             expected="local/read-only",

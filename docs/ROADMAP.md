@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 299 — Shared MCP Probe Output-File Smoke Assertions (unreleased)
+
+Website Console MCP probe output-file smoke now uses shared assertion helpers. The packed-tarball and public-registry smoke runners still execute their own installed-bin, one-shot npm exec, and published-package commands, but `smoke_assertions.py` now owns the write-confirmation plus saved JSON payload contract for both MCP readiness probe JSON and MCP probe action plan JSON.
+
+### Changed
+- Added shared `assert_site_mcp_check_probes_json_file_output` and `assert_site_mcp_plan_probes_json_file_output` helpers to `tools/audit/smoke_assertions.py`.
+- Refactored package and registry smoke helpers/self-tests to use the shared output-file assertion contract after runner-specific command execution.
+- Added smoke assertion self-test fixtures for successful output-file validation, missing write confirmation, and saved payload drift.
+
+### Impact
+- Package and registry smoke can no longer drift apart on MCP probe output-file semantics while still keeping their separate runner setup and command execution paths.
+- This is smoke assertion hardening only: no CLI runtime behavior, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 298 — MCP Readiness Probe JSON Output Persistence Smoke (unreleased)
 
 Website Console MCP readiness probe JSON now has output-file persistence smoke coverage. The installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke paths verify that `design-ai site --stdin --mcp-check --probes --json --out file --force` writes a file and that the saved file still matches the read-only MCP probe contract.

@@ -6331,6 +6331,22 @@ def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str])
         raise SystemExit(f"site mcp-check probes JSON after {context} probe item order changed")
 
 
+def assert_site_mcp_check_probes_json_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_mcp_check_probes_json(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
 def assert_site_mcp_plan_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     stripped = raw.lstrip()
@@ -6496,6 +6512,22 @@ def assert_site_mcp_plan_probes_json(raw: str, *, context: str, cmd: list[str]) 
         )
         if checked.get("level") != "pass" or checked.get("passed") is not True:
             raise SystemExit(f"site mcp-plan probes JSON after {context} sample probe should pass: {checked.get('id')}")
+
+
+def assert_site_mcp_plan_probes_json_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_mcp_plan_probes_json(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
 
 
 def assert_site_workflow_graph_json(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -9854,6 +9886,24 @@ def run_self_test() -> None:
     assert_site_mcp_check_json(passing_site_mcp_check_json(), context=context, cmd=site_mcp_check_cmd)
     site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
     assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
+    site_mcp_check_probes_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-check-probes.json",
+        "--force",
+    ]
+    assert_site_mcp_check_probes_json_file_output(
+        "Wrote /tmp/site-mcp-check-probes.json\n",
+        passing_site_mcp_check_probes_json(),
+        output_path="/tmp/site-mcp-check-probes.json",
+        context=context,
+        cmd=site_mcp_check_probes_out_cmd,
+    )
     site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
     assert_site_mcp_plan_markdown(passing_site_mcp_plan_markdown(), context=context, cmd=site_mcp_plan_cmd)
     site_mcp_plan_json_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--json"]
@@ -9869,6 +9919,24 @@ def run_self_test() -> None:
         passing_site_mcp_plan_json(probes=True),
         context=context,
         cmd=site_mcp_plan_probes_json_cmd,
+    )
+    site_mcp_plan_probes_json_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-plan",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-plan-probes.json",
+        "--force",
+    ]
+    assert_site_mcp_plan_probes_json_file_output(
+        "Wrote /tmp/site-mcp-plan-probes.json\n",
+        passing_site_mcp_plan_json(probes=True),
+        output_path="/tmp/site-mcp-plan-probes.json",
+        context=context,
+        cmd=site_mcp_plan_probes_json_out_cmd,
     )
     site_workflow_graph_cmd = ["design-ai", "site", "--stdin", "--graph", "--json"]
     assert_site_workflow_graph_json(passing_site_workflow_graph_json(), context=context, cmd=site_workflow_graph_cmd)
@@ -10134,6 +10202,30 @@ def run_self_test() -> None:
         expected="external calls",
         scope="smoke assertions",
     )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
+            "Updated /tmp/site-mcp-check-probes.json\n",
+            passing_site_mcp_check_probes_json(),
+            output_path="/tmp/site-mcp-check-probes.json",
+            context=context,
+            cmd=site_mcp_check_probes_out_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_check_probes_out_payload = json.loads(passing_site_mcp_check_probes_json())
+    stale_site_mcp_check_probes_out_payload["probes"]["externalCalls"] = True
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
+            "Wrote /tmp/site-mcp-check-probes.json\n",
+            json.dumps(stale_site_mcp_check_probes_out_payload),
+            output_path="/tmp/site-mcp-check-probes.json",
+            context=context,
+            cmd=site_mcp_check_probes_out_cmd,
+        ),
+        expected="external calls",
+        scope="smoke assertions",
+    )
     missing_site_mcp_probe_payload = json.loads(passing_site_mcp_check_probes_json())
     missing_site_mcp_probe_payload["probes"]["items"] = missing_site_mcp_probe_payload["probes"]["items"][:3]
     expect_self_test_failure(
@@ -10170,6 +10262,30 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_probes_cmd,
         ),
         expected="External calls: no",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
+            "Updated /tmp/site-mcp-plan-probes.json\n",
+            passing_site_mcp_plan_json(probes=True),
+            output_path="/tmp/site-mcp-plan-probes.json",
+            context=context,
+            cmd=site_mcp_plan_probes_json_out_cmd,
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_plan_probes_out_payload = json.loads(passing_site_mcp_plan_json(probes=True))
+    stale_site_mcp_plan_probes_out_payload["probes"]["items"][0]["level"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
+            "Wrote /tmp/site-mcp-plan-probes.json\n",
+            json.dumps(stale_site_mcp_plan_probes_out_payload),
+            output_path="/tmp/site-mcp-plan-probes.json",
+            context=context,
+            cmd=site_mcp_plan_probes_json_out_cmd,
+        ),
+        expected="sample probe should pass",
         scope="smoke assertions",
     )
     reordered_site_workflow_graph_payload = json.loads(passing_site_workflow_graph_json())
