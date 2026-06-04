@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 300 — Shared MCP Probe Output-File Release Guard (unreleased)
+
+Release metadata now treats the shared Website Console MCP probe output-file smoke assertion contract as release-facing policy. The guard requires release docs to mention shared MCP probe output-file smoke assertions next to MCP readiness probe JSON `--out` coverage, and the self-test fails if that helper phrase disappears from README release guidance.
+
+### Changed
+- Added `RELEASE_SITE_MCP_SHARED_OUTPUT_ASSERTION_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared MCP probe output-file smoke assertion coverage.
+- Added a release metadata self-test drift fixture that fails when the shared MCP probe output-file smoke assertion phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document MCP probe output-file smoke without preserving the shared assertion helper contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 299 — Shared MCP Probe Output-File Smoke Assertions (unreleased)
 
 Website Console MCP probe output-file smoke now uses shared assertion helpers. The packed-tarball and public-registry smoke runners still execute their own installed-bin, one-shot npm exec, and published-package commands, but `smoke_assertions.py` now owns the write-confirmation plus saved JSON payload contract for both MCP readiness probe JSON and MCP probe action plan JSON.
