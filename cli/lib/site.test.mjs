@@ -418,6 +418,10 @@ test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidanc
   assert.equal(data.taskAlignment[0].task, "task-homepage-cta");
   assert.match(data.commands.mcpCheck, /design-ai site sample\.json --mcp-check --strict --json/);
   assert.equal(
+    data.commands.mcpCheckProbesHumanOut,
+    "design-ai site sample.json --mcp-check --probes --out mcp-check-probes.txt",
+  );
+  assert.equal(
     data.commands.mcpCheckProbesJsonOut,
     "design-ai site sample.json --mcp-check --probes --json --out mcp-check-probes.json",
   );
@@ -454,6 +458,7 @@ test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidanc
   assert.match(plan, /## Task\/MCP Alignment/);
   assert.match(plan, /task-homepage-cta/);
   assert.match(plan, /design-ai site sample\.json --mcp-check --strict --json/);
+  assert.match(plan, /design-ai site sample\.json --mcp-check --probes --out mcp-check-probes\.txt/);
   assert.match(plan, /design-ai site sample\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(plan, /design-ai site sample\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(plan, /does not call external MCPs, mutate the target website repo/);
@@ -967,6 +972,7 @@ test("runSite prints and writes MCP readiness action plan output", async () => {
     assert.equal(json.externalCalls, false);
     assert.equal(json.targetRepoMutation, false);
     assert.match(json.commands.mcpCheck, /--mcp-check --strict --json/);
+    assert.match(json.commands.mcpCheckProbesHumanOut, /--mcp-check --probes --out mcp-check-probes\.txt/);
     assert.match(json.commands.mcpCheckProbesJsonOut, /--mcp-check --probes --json --out mcp-check-probes\.json/);
     assert.match(json.commands.mcpPlanProbesJsonOut, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
     assert.equal(jsonOutput.exitCode, undefined);

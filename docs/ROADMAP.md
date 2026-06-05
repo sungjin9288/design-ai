@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 318 — MCP Action Plan Human Report Command Parity (unreleased)
+
+`design-ai site --mcp-plan --probes --json` now carries `commands.mcpCheckProbesHumanOut` alongside the existing probe JSON preservation commands. Operators can use a single MCP action-plan payload to discover both the human readiness report archive command and the machine-readable probe JSON archive command.
+
+### Changed
+- Added `mcpCheckProbesHumanOut` to the structured MCP action plan JSON command map.
+- Updated MCP action plan Markdown output indirectly through the shared command map so the human report archive command appears in the command list.
+- Updated site unit tests for action-plan data, Markdown output, and `runSite --mcp-plan --probes --json`.
+- Updated shared smoke assertion schema, fixture payload, command validation, and self-test drift coverage for the action-plan human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the command parity change.
+
+### Impact
+- MCP check probe JSON and MCP action plan JSON now both expose the human readiness report preservation command.
+- This is deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 317 — MCP Check Human Output Command Release Guard (unreleased)
 
 Release metadata now guards the embedded MCP check probe human report output command phrase across release-facing docs. The guard keeps the `mcpCheckProbesHumanOut` command contract visible beside human MCP check probe command guidance and output-file smoke coverage.

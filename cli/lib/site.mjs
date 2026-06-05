@@ -1603,6 +1603,7 @@ export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}
   }));
   const commands = {
     mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    mcpCheckProbesHumanOut: probeCommands.mcpCheckProbesHumanOut,
     mcpCheckProbesJsonOut: probeCommands.mcpCheckProbesJsonOut,
     mcpPlanProbesJsonOut: probeCommands.mcpPlanProbesJsonOut,
     tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
