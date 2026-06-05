@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 334 — Website Console Next Actions Output-File Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --json --out file --force` output-file persistence. This closes the remaining release-smoke gap after Phase 331 and Phase 332 covered stdout JSON execution for the next-action operator checklist.
+
+### Changed
+- Added a shared `assert_site_next_actions_json_file_output` helper that validates write confirmation plus the saved next-action JSON contract.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` next-action JSON output files.
+- Added public-registry smoke coverage for published-package `npm exec --package @design-ai/cli@<version>` next-action JSON output files.
+- Added package, registry, and shared assertion self-test fixtures for next-action JSON file-output persistence.
+
+### Impact
+- Release smoke now checks both stdout and saved-file next-action reports, including forced overwrite replacement and local/read-only boundary fields.
+- This is smoke/runtime coverage only: no CLI schema, command semantics, external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 333 — Website Console Next Actions Registry Smoke Release Guard (unreleased)
 
 Release metadata now guards the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase across release-facing docs. This keeps Phase 332's post-publish registry coverage visible beside the broader Website Console public registry smoke guidance.

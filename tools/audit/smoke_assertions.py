@@ -6321,6 +6321,22 @@ def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> 
             raise SystemExit(f"site next-actions JSON after {context} boundary guidance missing {fragment!r}")
 
 
+def assert_site_next_actions_json_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_next_actions_json(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
 def assert_site_sample_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 
@@ -10348,6 +10364,34 @@ def run_self_test() -> None:
     assert_site_json(passing_site_json(), context=context, cmd=site_cmd)
     site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
     assert_site_next_actions_json(passing_site_next_actions_json(), context=context, cmd=site_next_actions_cmd)
+    site_next_actions_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--json",
+        "--out",
+        "/tmp/site-next-actions.json",
+        "--force",
+    ]
+    assert_site_next_actions_json_file_output(
+        "Wrote /tmp/site-next-actions.json\n",
+        passing_site_next_actions_json(),
+        output_path="/tmp/site-next-actions.json",
+        context=context,
+        cmd=site_next_actions_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_next_actions_json_file_output(
+            "Wrote /tmp/site-next-actions.json\n",
+            passing_site_next_actions_json().replace('"externalCalls": false', '"externalCalls": true'),
+            output_path="/tmp/site-next-actions.json",
+            context=context,
+            cmd=site_next_actions_out_cmd,
+        ),
+        expected="boundary flags",
+        scope="smoke assertions",
+    )
     site_sample_cmd = ["design-ai", "site", "--sample"]
     assert_site_sample_json(passing_site_sample_json(), context=context, cmd=site_sample_cmd)
     site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]

@@ -98,6 +98,7 @@ from smoke_assertions import (
     assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
     assert_site_next_actions_json,
+    assert_site_next_actions_json_file_output,
     assert_site_workflow_graph_json,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
@@ -130,6 +131,7 @@ from smoke_assertions import (
     passing_site_mcp_check_probes_human,
     passing_site_mcp_check_probes_json,
     passing_site_mcp_plan_json,
+    passing_site_next_actions_json,
     parse_help_topics,
     seed_force_overwrite_target,
     site_guidance_command,
@@ -722,6 +724,30 @@ def assert_site_next_actions_json_smoke(
         env=env,
     )
     assert_site_next_actions_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_next_actions_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_site_report_evidence_markdown_smoke(
@@ -6536,6 +6562,26 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        site_next_actions_out_path = Path(tmp) / "site-next-actions.json"
+        site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
+        site_next_actions_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--json",
+            "--out",
+            str(site_next_actions_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_json_file_output(
+            f"Wrote {site_next_actions_out_path}\n",
+            site_next_actions_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_out_path),
+            context=f"{context} site next-actions JSON out",
+            cmd=site_next_actions_out_cmd,
+        )
+
         site_mcp_check_probes_out_path = Path(tmp) / "site-mcp-check-probes.json"
         site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
         site_mcp_check_probes_out_cmd = [
@@ -9436,6 +9482,23 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site next-actions JSON",
         )
+        installed_site_next_actions_out = install_root / "site-next-actions.json"
+        assert_site_next_actions_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(installed_site_next_actions_out),
+                "--force",
+            ],
+            installed_site_next_actions_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site next-actions JSON out file",
+        )
         assert_site_sample_json_smoke(
             [str(bin_path), "site", "--sample"],
             cwd=install_root,
@@ -10468,6 +10531,23 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site next-actions JSON",
+        )
+        npx_site_next_actions_out = npx_root / "site-next-actions.json"
+        assert_site_next_actions_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(npx_site_next_actions_out),
+                "--force",
+            ),
+            npx_site_next_actions_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site next-actions JSON out file",
         )
         assert_site_sample_json_smoke(
             npm_exec_cmd(tarball, "site", "--sample"),
