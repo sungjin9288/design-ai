@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 325 — MCP Action Plan Self-Archive Release Guard (unreleased)
+
+Release metadata now guards the `MCP action plan emitted self-archive command smoke coverage` phrase across release-facing docs. The guard keeps Phase 324's `mcpPlanProbesJsonOut` action-plan payload execution visible beside the existing action-plan human report command smoke guidance.
+
+### Changed
+- Added a release metadata term group for MCP action plan emitted self-archive command smoke coverage.
+- Added a release policy label/check for the self-archive command smoke phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention action-plan emitted self-archive command smoke coverage.
+- Added a self-test drift fixture that fails when README guidance drops the self-archive smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted `mcpPlanProbesJsonOut` is smoke-executed, not only present as schema guidance.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 324 — MCP Action Plan Self-Archive Command Smoke Execution (unreleased)
 
 Packed-tarball and public-registry smoke now execute the `mcpPlanProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json` action-plan payloads themselves. This closes the last action-plan emitted command parity gap: the payload can now prove its own JSON archive command works, not only the human readiness report and MCP check probe JSON archive commands.

@@ -307,16 +307,16 @@ RELEASE_SITE_MCP_PLAN_PACKAGE_SMOKE_TERM_GROUPS = (
         "Website Console MCP probe action plan JSON 생성",
     ),
     (
-        "Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "Website Console MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "Website Console MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "Website Console MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "Website Console MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "Website Console MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "Website Console MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
         "MCP probe action plan JSON output-file persistence",
-        "MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
     ),
     (
         "installed-bin and one-shot",
@@ -381,30 +381,40 @@ RELEASE_SITE_MCP_CHECK_HUMAN_OUTPUT_COMMAND_TERM_GROUPS = (
 )
 RELEASE_SITE_MCP_ACTION_PLAN_COMMANDS_TERM_GROUPS = (
     (
-        "embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
         "MCP action plan embedded probe output-file commands",
         "MCP action plan probe output-file commands",
         "embedded probe output-file commands",
-        "MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
     ),
 )
 RELEASE_SITE_MCP_ACTION_PLAN_HUMAN_OUTPUT_COMMAND_TERM_GROUPS = (
     (
-        "MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
         "MCP action plan human report output command",
         "MCP action plan JSON human report output command",
         "structured MCP action plan human report output command",
         "mcp-plan human report output command parity",
-        "MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage 검증",
+        "MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage 검증",
     ),
 )
 RELEASE_SITE_MCP_ACTION_PLAN_HUMAN_OUTPUT_COMMAND_SMOKE_TERM_GROUPS = (
     (
-        "MCP action plan emitted human report command smoke coverage",
+        "MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
         "MCP action plan emitted human report command execution smoke coverage",
         "MCP action plan JSON emitted human report command smoke coverage",
         "mcp-plan emitted human report command smoke coverage",
         "MCP action plan emitted human report command smoke 검증",
+    ),
+)
+RELEASE_SITE_MCP_ACTION_PLAN_SELF_ARCHIVE_COMMAND_SMOKE_TERM_GROUPS = (
+    (
+        "MCP action plan emitted self-archive command smoke coverage",
+        "MCP action plan emitted self-archive command execution smoke coverage",
+        "MCP action plan JSON emitted self-archive command smoke coverage",
+        "mcp-plan emitted self-archive command smoke coverage",
+        "mcpPlanProbesJsonOut action plan emitted command smoke coverage",
+        "MCP action plan emitted self-archive command smoke 검증",
     ),
 )
 RELEASE_SITE_GRAPH_PACKAGE_SMOKE_TERM_GROUPS = (
@@ -692,15 +702,15 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
         "공개 npm registry `design-ai site` Website Console export validation",
     ),
     (
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
-        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle",
+        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
+        "sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle",
     ),
     (
         "MCP readiness probes",
@@ -724,12 +734,12 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
         "MCP probe action plan JSON 생성",
     ),
     (
-        "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
-        "MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON with --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+        "MCP probe action plan JSON --out file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
         "MCP probe action plan JSON output-file persistence",
-        "MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
     ),
     (
         "bundle-check",
@@ -1972,6 +1982,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site MCP action plan embedded command phrase",
     "site MCP action plan human output command parity phrase",
     "site MCP action plan human output command smoke phrase",
+    "site MCP action plan self-archive command smoke phrase",
     "site workflow graph package smoke phrase",
     "site bundle package smoke phrase",
     "site bundle-check package smoke phrase",
@@ -2184,6 +2195,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site MCP action plan human output command smoke phrase",
         RELEASE_SITE_MCP_ACTION_PLAN_HUMAN_OUTPUT_COMMAND_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site MCP action plan self-archive command smoke phrase",
+        RELEASE_SITE_MCP_ACTION_PLAN_SELF_ARCHIVE_COMMAND_SMOKE_TERM_GROUPS,
     ),
     (
         "site workflow graph package smoke phrase",
@@ -2796,7 +2811,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan,
 `design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan,
-`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage,
+`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage,
 `design-ai site --stdin --graph --json` Website Console workflow graph export,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification, bundle digest fingerprint verification, and generated bundle contract verification,
@@ -2810,7 +2825,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
-including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
+including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2894,7 +2909,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, MCP check 내장 probe next-step commands, MCP check 내장 command 실행 smoke coverage, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command도 확인하고,
 `design-ai site --stdin --mcp-plan` Website Console MCP action plan 생성도 확인하고,
 `design-ai site --stdin --mcp-plan --probes` Website Console MCP probe action plan 생성도 확인하고,
-`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON 생성과 `--out` file 저장 확인 및 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage도 확인하고,
+`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON 생성과 `--out` file 저장 확인 및 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage도 확인하고,
 `design-ai site --stdin --graph --json` Website Console workflow graph 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증, bundle digest 검증, generated bundle contract 검증도 확인하고,
@@ -2908,7 +2923,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
-공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
+공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -3550,7 +3565,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
+                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
                 "including public registry Website Console coverage",
             ),
         },
@@ -3636,7 +3651,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage, ",
+                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage, ",
                 "",
             ),
         },
@@ -3659,7 +3674,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
                 "MCP probe action plan JSON",
             ),
         },
@@ -3751,7 +3766,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+                "`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
                 "Website Console MCP probe plan JSON coverage",
             ),
         },
@@ -3797,7 +3812,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+                " plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
                 "",
             ),
         },
@@ -3811,7 +3826,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "README.md is missing site MCP action plan embedded command phrase"
             in site_mcp_action_plan_embedded_command_drift_errors
         ),
-        "release policy docs should mention embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "release policy docs should mention embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
     )
 
     site_mcp_action_plan_human_output_command_drift = release_metadata_summary(
@@ -3822,7 +3837,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+                " plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
                 "",
             ),
         },
@@ -3836,7 +3851,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "README.md is missing site MCP action plan human output command parity phrase"
             in site_mcp_action_plan_human_output_command_drift_errors
         ),
-        "release policy docs should mention MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage",
+        "release policy docs should mention MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
     )
 
     site_mcp_action_plan_human_output_command_smoke_drift = release_metadata_summary(
@@ -3847,7 +3862,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " plus MCP action plan emitted human report command smoke coverage",
+                " plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
                 "",
             ),
         },
@@ -3861,7 +3876,32 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
             "README.md is missing site MCP action plan human output command smoke phrase"
             in site_mcp_action_plan_human_output_command_smoke_drift_errors
         ),
-        "release policy docs should mention MCP action plan emitted human report command smoke coverage",
+        "release policy docs should mention MCP action plan emitted human report command smoke coverage plus MCP action plan emitted self-archive command smoke coverage",
+    )
+
+    site_mcp_action_plan_self_archive_command_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                " plus MCP action plan emitted self-archive command smoke coverage",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_mcp_action_plan_self_archive_command_smoke_drift_errors = "\n".join(
+        site_mcp_action_plan_self_archive_command_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing site MCP action plan self-archive command smoke phrase"
+            in site_mcp_action_plan_self_archive_command_smoke_drift_errors
+        ),
+        "release policy docs should mention MCP action plan emitted self-archive command smoke coverage",
     )
 
     site_workflow_graph_package_smoke_drift = release_metadata_summary(

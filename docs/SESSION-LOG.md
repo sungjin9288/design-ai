@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 325 (unreleased)** — Added release metadata guard coverage for MCP action plan emitted self-archive command smoke coverage, so release-facing docs must keep Phase 324's `mcpPlanProbesJsonOut` execution visible.
 - **Phase 324 (unreleased)** — Executed the `mcpPlanProbesJsonOut` self-archive command emitted by structured MCP action plan JSON in package and public-registry smoke.
 - **Phase 323 (unreleased)** — Executed the `mcpCheckProbesJsonOut` command emitted by structured MCP action plan JSON in package and public-registry smoke, preserving machine-readable MCP readiness probe JSON directly from action-plan payloads.
 - **Phase 322 (unreleased)** — Added package and registry smoke self-test negative drift fixtures so action-plan emitted human readiness report output fails if it loses `Probe commands` guidance.
