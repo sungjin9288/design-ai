@@ -97,6 +97,7 @@ from smoke_assertions import (
     assert_site_mcp_plan_probes_json,
     assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
+    assert_site_next_actions_human_file_output,
     assert_site_next_actions_json,
     assert_site_next_actions_json_file_output,
     assert_site_prompt_markdown,
@@ -135,6 +136,7 @@ from smoke_assertions import (
     passing_site_mcp_plan_json,
     passing_site_mcp_plan_markdown,
     passing_site_mcp_plan_probes_markdown,
+    passing_site_next_actions_human,
     passing_site_next_actions_json,
     passing_site_prompt_markdown,
     passing_site_prompt_templates_json,
@@ -2752,6 +2754,30 @@ def assert_site_next_actions_json_file_smoke(
     )
 
 
+def assert_site_next_actions_human_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_human_file_output(
+        result.stdout,
+        read_forced_markdown_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_site_sample_json_smoke(
     cmd: list[str],
     *,
@@ -4687,6 +4713,22 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site next-actions JSON out file",
         )
+        registry_site_next_actions_human_out = npx_root / "site-next-actions.md"
+        assert_site_next_actions_human_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(registry_site_next_actions_human_out),
+                "--force",
+            ),
+            registry_site_next_actions_human_out,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site next-actions human out file",
+        )
         assert_site_sample_json_smoke(
             npm_exec_cmd(package_spec, "site", "--sample"),
             cwd=npx_root,
@@ -5861,6 +5903,35 @@ def run_self_test() -> None:
             output_path=str(site_next_actions_out_path),
             context="registry smoke self-test site next-actions JSON out",
             cmd=site_next_actions_out_cmd,
+        )
+        site_next_actions_human_out_path = tmp_root / "registry-site-next-actions.md"
+        site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
+        site_next_actions_human_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--out",
+            str(site_next_actions_human_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_human_file_output(
+            f"Wrote {site_next_actions_human_out_path}\n",
+            site_next_actions_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_human_out_path),
+            context="registry smoke self-test site next-actions human out",
+            cmd=site_next_actions_human_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_next_actions_human_file_output(
+                f"Wrote {site_next_actions_human_out_path}\n",
+                passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
+                output_path=str(site_next_actions_human_out_path),
+                context="registry smoke self-test site next-actions human out",
+                cmd=site_next_actions_human_out_cmd,
+            ),
+            expected="missing fragment",
+            scope="registry smoke",
         )
         assert_site_sample_json(
             passing_site_sample_json(),

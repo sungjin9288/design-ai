@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 336 — Website Console Next Actions Human Output-File Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --out file --force` human Markdown output-file persistence. This complements the Phase 334 JSON saved-file smoke by checking the operator-facing report that humans copy into local runbooks.
+
+### Changed
+- Added shared smoke assertions for Website Console next-actions human output files.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` next-actions Markdown output files.
+- Added public-registry smoke coverage for published-package `npm exec --package @design-ai/cli@<version>` next-actions Markdown output files.
+- Added package, registry, and shared assertion self-test fixtures for Markdown output-file persistence and boundary drift.
+- Added release metadata guard coverage and release-facing docs guidance for the human output-file smoke phrase.
+
+### Impact
+- Release smoke now checks both machine-readable JSON and human-readable Markdown saved-file next-action reports, including forced overwrite replacement and local/read-only boundary text.
+- This is smoke/assertion/documentation coverage only: no CLI runtime behavior, JSON schema, command semantics, external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 335 — Website Console Next Actions Output-File Release Guard (unreleased)
 
 Release metadata now guards the `design-ai site --stdin --next-actions --json --out file --force` next-action output-file smoke phrase across release-facing docs. This keeps Phase 334's installed-bin, one-shot, and public-registry output-file coverage visible in the release ritual.

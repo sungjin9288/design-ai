@@ -4383,6 +4383,38 @@ def passing_site_next_actions_json() -> str:
     )
 
 
+def passing_site_next_actions_human() -> str:
+    return "\n".join(
+        [
+            "Website Improvement next actions: Korean SaaS marketing site",
+            "",
+            "Status: pass",
+            "Workspace status: pass",
+            "MCP status: pass",
+            "Actions: 3 (0 blocking, 0 warning)",
+            "",
+            "Prioritized actions:",
+            "1. [implementation] Prepare Codex implementation prompt for task-homepage-cta",
+            "   Why: Clarify homepage CTA hierarchy is the highest-priority available refactor task.",
+            "   Command: `design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md`",
+            "   References: task-homepage-cta",
+            "2. [handoff] Create implementation evidence trail",
+            "   Why: Executed work or verification results are still empty, so the handoff report should capture what remains unverified.",
+            "   Command: `design-ai site <workspace.json> --report --out website-handoff.md`",
+            "   References: implementationEvidence",
+            "3. [handoff] Export portable handoff bundle",
+            "   Why: A bundle keeps summary, tasks, MCP evidence, prompts, and handoff report together for the target website repo workflow.",
+            "   Command: `design-ai site <workspace.json> --bundle --out website-handoff-bundle`",
+            "   References: bundle",
+            "",
+            "Boundaries:",
+            "- This next-action report is deterministic and local.",
+            "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+            "- Run implementation commands in the target website workflow after readiness blockers are cleared.",
+        ]
+    )
+
+
 def passing_site_sample_json() -> str:
     return json.dumps(
         {
@@ -6331,6 +6363,50 @@ def assert_site_next_actions_json_file_output(
 ) -> None:
     assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
     assert_site_next_actions_json(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
+def assert_site_next_actions_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    required_fragments = (
+        "Website Improvement next actions: Korean SaaS marketing site",
+        "Status: pass",
+        "Workspace status: pass",
+        "MCP status: pass",
+        "Actions: 3 (0 blocking, 0 warning)",
+        "Prioritized actions:",
+        "1. [implementation] Prepare Codex implementation prompt for task-homepage-cta",
+        "Create implementation evidence trail",
+        "Export portable handoff bundle",
+        "Command: `design-ai site",
+        "--prompt codex-implementation --task 1 --out codex-implementation.md",
+        "--report --out website-handoff.md",
+        "--bundle --out website-handoff-bundle",
+        "Boundaries:",
+        "deterministic and local",
+        "does not call external MCPs",
+        "mutate the target website repo",
+    )
+    missing = [fragment for fragment in required_fragments if fragment not in raw]
+    if missing:
+        raise SystemExit(f"site next-actions human after {context} missing fragment: {missing[0]!r}")
+    if '"kind": "website-improvement-next-actions"' in raw:
+        raise SystemExit(f"site next-actions human after {context} unexpectedly emitted JSON")
+
+
+def assert_site_next_actions_human_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_next_actions_human(
         file_contents,
         context=f"{context} out file",
         cmd=cmd,
@@ -10364,6 +10440,12 @@ def run_self_test() -> None:
     assert_site_json(passing_site_json(), context=context, cmd=site_cmd)
     site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
     assert_site_next_actions_json(passing_site_next_actions_json(), context=context, cmd=site_next_actions_cmd)
+    site_next_actions_human_cmd = ["design-ai", "site", "--stdin", "--next-actions"]
+    assert_site_next_actions_human(
+        passing_site_next_actions_human(),
+        context=context,
+        cmd=site_next_actions_human_cmd,
+    )
     site_next_actions_out_cmd = [
         "design-ai",
         "site",
@@ -10381,6 +10463,22 @@ def run_self_test() -> None:
         context=context,
         cmd=site_next_actions_out_cmd,
     )
+    site_next_actions_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--out",
+        "/tmp/site-next-actions.md",
+        "--force",
+    ]
+    assert_site_next_actions_human_file_output(
+        "Wrote /tmp/site-next-actions.md\n",
+        passing_site_next_actions_human(),
+        output_path="/tmp/site-next-actions.md",
+        context=context,
+        cmd=site_next_actions_human_out_cmd,
+    )
     expect_self_test_failure(
         lambda: assert_site_next_actions_json_file_output(
             "Wrote /tmp/site-next-actions.json\n",
@@ -10390,6 +10488,17 @@ def run_self_test() -> None:
             cmd=site_next_actions_out_cmd,
         ),
         expected="boundary flags",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_next_actions_human_file_output(
+            "Wrote /tmp/site-next-actions.md\n",
+            passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
+            output_path="/tmp/site-next-actions.md",
+            context=context,
+            cmd=site_next_actions_human_out_cmd,
+        ),
+        expected="missing fragment",
         scope="smoke assertions",
     )
     site_sample_cmd = ["design-ai", "site", "--sample"]
