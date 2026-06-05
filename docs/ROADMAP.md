@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 302 — Site Probe Usage in Top-Level Help (unreleased)
+
+Top-level `design-ai help` and machine-readable `design-ai help --json` now expose the Website Console probe-capable site modes. The site usage line names `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, so operators and tool wrappers can discover probe support before opening command-specific help.
+
+### Changed
+- Updated the `site` entry in `HELP_COMMANDS` to include probe-capable MCP readiness and action-plan modes.
+- Updated help catalog tests for human and JSON output so top-level usage cannot silently fall back to the older probe-less shape.
+- Updated CHANGELOG and SESSION-LOG entries for the top-level help/catalog improvement.
+
+### Impact
+- This is help/catalog hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node cli/bin/design-ai.mjs help`
+- `node cli/bin/design-ai.mjs help --json`
+- `node --test cli/lib/help-command.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 301 — MCP Probe Output-File Help Examples (unreleased)
 
 `design-ai site --help` now surfaces the MCP probe JSON output-file workflows directly in the examples list. Operators can copy the exact `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json` commands without reconstructing them from release smoke guidance.
