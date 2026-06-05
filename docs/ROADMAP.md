@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 331 — Website Console Next Actions Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now directly executes `design-ai site --stdin --next-actions --json` through both installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between Phase 330's unit coverage and release-package runtime coverage for the next-action operator checklist.
+
+### Changed
+- Added shared `assert_site_next_actions_json` smoke assertions for the `website-improvement-next-actions` JSON contract.
+- Added negative self-test fixtures for ANSI output, boundary flag drift, missing ranked actions, and implementation prompt command drift.
+- Added installed-bin and one-shot npm exec package smoke calls for `site --stdin --next-actions --json`.
+
+### Impact
+- Release smoke now verifies that packed artifacts can execute the next-action checklist, not only advertise it through help text.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 330 — Website Console Next Actions CLI (unreleased)
 
 `design-ai site --next-actions [--json]` now turns a Website Improvement workspace into a prioritized local operator checklist. The report helps decide whether to fix validation/MCP blockers, generate tasks, prepare the selected Codex implementation prompt, preserve handoff evidence, or export a bundle before touching the target website repo.

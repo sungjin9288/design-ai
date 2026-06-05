@@ -97,6 +97,7 @@ from smoke_assertions import (
     assert_site_mcp_plan_probes_json,
     assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
+    assert_site_next_actions_json,
     assert_site_workflow_graph_json,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
@@ -705,6 +706,22 @@ def assert_site_tasks_json_smoke(
         env=env,
     )
     assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_site_report_evidence_markdown_smoke(
@@ -9413,6 +9430,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site JSON",
         )
+        assert_site_next_actions_json_smoke(
+            [str(bin_path), "site", "--stdin", "--next-actions", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site next-actions JSON",
+        )
         assert_site_sample_json_smoke(
             [str(bin_path), "site", "--sample"],
             cwd=install_root,
@@ -10439,6 +10462,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site JSON",
+        )
+        assert_site_next_actions_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site next-actions JSON",
         )
         assert_site_sample_json_smoke(
             npm_exec_cmd(tarball, "site", "--sample"),
