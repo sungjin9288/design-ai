@@ -1135,6 +1135,55 @@ def site_guidance_command(guidance_command: str, reference_cmd: list[str], *, co
     return [*reference_cmd[:site_index], *tokens[1:]]
 
 
+def site_mcp_probe_embedded_command(
+    payload: object,
+    command_key: str,
+    reference_cmd: list[str],
+    *,
+    context: str,
+    output_path: Path | str | None = None,
+) -> list[str]:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"{context} MCP probe payload is not an object")
+    commands = payload.get("commands")
+    if not isinstance(commands, dict):
+        raise SystemExit(f"{context} MCP probe payload missing commands")
+    command = commands.get(command_key)
+    if not isinstance(command, str):
+        raise SystemExit(f"{context} MCP probe command missing or invalid: {command_key}")
+
+    expected_tails = {
+        "mcpCheckProbesJsonOut": ["--mcp-check", "--probes", "--json", "--out", "mcp-check-probes.json"],
+        "mcpPlanProbesJson": ["--mcp-plan", "--probes", "--json"],
+        "mcpPlanProbesJsonOut": ["--mcp-plan", "--probes", "--json", "--out", "mcp-action-plan-probes.json"],
+    }
+    expected_tail = expected_tails.get(command_key)
+    if expected_tail is None:
+        raise SystemExit(f"{context} unsupported MCP probe command key: {command_key}")
+
+    tokens = shlex.split(command)
+    if tokens[:3] != ["design-ai", "site", "<workspace.json>"] or tokens[3:] != expected_tail:
+        raise SystemExit(f"{context} MCP probe command changed: {command!r}")
+
+    try:
+        site_index = reference_cmd.index("site")
+    except ValueError as exc:
+        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
+
+    site_args = ["site", "--stdin", *tokens[3:]]
+    if "--out" in site_args:
+        if output_path is None:
+            raise SystemExit(f"{context} output path is required for embedded command: {command_key}")
+        out_index = site_args.index("--out")
+        site_args[out_index + 1] = str(output_path)
+        if "--force" not in site_args:
+            site_args.append("--force")
+    elif output_path is not None:
+        raise SystemExit(f"{context} output path is only valid for --out embedded commands: {command_key}")
+
+    return [*reference_cmd[:site_index], *site_args]
+
+
 def guidance_out_path(guidance_command: str, *, context: str) -> Path:
     tokens = shlex.split(guidance_command)
     try:
@@ -9960,6 +10009,58 @@ def run_self_test() -> None:
     assert_site_mcp_check_json(passing_site_mcp_check_json(), context=context, cmd=site_mcp_check_cmd)
     site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
     assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
+    site_mcp_check_probes_payload = json.loads(passing_site_mcp_check_probes_json())
+    expected_mcp_check_probe_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-check-probes.json",
+        "--force",
+    ]
+    actual_mcp_check_probe_command = site_mcp_probe_embedded_command(
+        site_mcp_check_probes_payload,
+        "mcpCheckProbesJsonOut",
+        site_mcp_check_probes_cmd,
+        output_path="/tmp/site-mcp-check-probes.json",
+        context=context,
+    )
+    if actual_mcp_check_probe_command != expected_mcp_check_probe_command:
+        raise SystemExit("site MCP probe output command should map to stdin and forced output path")
+
+    expected_mcp_plan_probe_command = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"]
+    actual_mcp_plan_probe_command = site_mcp_probe_embedded_command(
+        site_mcp_check_probes_payload,
+        "mcpPlanProbesJson",
+        site_mcp_check_probes_cmd,
+        context=context,
+    )
+    if actual_mcp_plan_probe_command != expected_mcp_plan_probe_command:
+        raise SystemExit("site MCP probe plan JSON command should map to stdin")
+
+    expected_mcp_plan_probe_output_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-plan",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-plan-probes.json",
+        "--force",
+    ]
+    actual_mcp_plan_probe_output_command = site_mcp_probe_embedded_command(
+        site_mcp_check_probes_payload,
+        "mcpPlanProbesJsonOut",
+        site_mcp_check_probes_cmd,
+        output_path="/tmp/site-mcp-plan-probes.json",
+        context=context,
+    )
+    if actual_mcp_plan_probe_output_command != expected_mcp_plan_probe_output_command:
+        raise SystemExit("site MCP probe plan output command should map to stdin and forced output path")
     site_mcp_check_probes_out_cmd = [
         "design-ai",
         "site",
@@ -10287,6 +10388,16 @@ def run_self_test() -> None:
             cmd=site_mcp_check_probes_cmd,
         ),
         expected="mcp-plan probe JSON command changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: site_mcp_probe_embedded_command(
+            stale_site_mcp_check_probe_command_payload,
+            "mcpPlanProbesJson",
+            site_mcp_check_probes_cmd,
+            context=context,
+        ),
+        expected="MCP probe command changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(

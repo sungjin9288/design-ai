@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 311 — MCP Check Probe Embedded Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the embedded commands emitted by `design-ai site --mcp-check --probes --json`. Instead of only checking that the `commands` payload shape is present, the smoke runners rewrite the `<workspace.json>` placeholder to `--stdin`, map the command onto the active installed-bin / one-shot npm exec / published-package runner, and verify the emitted readiness probe `--out`, action-plan JSON, and action-plan JSON `--out` commands.
+
+### Changed
+- Added `site_mcp_probe_embedded_command` to `tools/audit/smoke_assertions.py`.
+- Added self-test coverage that verifies embedded MCP probe commands map to stdin and forced output paths, and fail when the command body drifts.
+- Updated package smoke and registry smoke helpers so `assert_site_mcp_check_probes_json_smoke` returns the parsed payload after validation.
+- Updated packed-tarball installed-bin, packed-tarball one-shot npm exec, and public-registry smoke flows to execute `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` from the emitted payload.
+- Updated CHANGELOG and SESSION-LOG entries for the executable embedded command smoke coverage.
+
+### Impact
+- The `commands` object in MCP readiness probe JSON is now verified as executable guidance, not just a static JSON shape.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- A release metadata guard for the executable embedded command smoke phrase can be added if release-facing docs need to distinguish executable command coverage from static embedded command guidance.
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 310 — MCP Check Probe Embedded Command Release Guard (unreleased)
 
 Release metadata now protects the release-facing documentation phrase for embedded MCP check probe next-step commands. The guard ties Phase 309's `design-ai site --mcp-check --probes --json` `commands` payload to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP readiness probe JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJson` / `mcpPlanProbesJsonOut` command contract.
