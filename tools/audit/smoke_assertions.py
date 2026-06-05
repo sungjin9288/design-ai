@@ -228,6 +228,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site website-workspace.json --mcp-check --probes --json --out mcp-check-probes.json",
         "design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json",
         "design-ai site website-workspace.json --next-actions --json",
+        "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
         "--sample",
         "--prompt-list",
         "--mcp-check",
@@ -10031,6 +10032,19 @@ def run_self_test() -> None:
             passing_help_topic_output("site").replace(
                 "design-ai site website-workspace.json --mcp-check --probes --json --out mcp-check-probes.json",
                 "design-ai site website-workspace.json --mcp-check --probes --json",
+            ),
+            topic="site",
+            context=context,
+            cmd=["design-ai", "help", "site"],
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("site").replace(
+                "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
+                "design-ai site website-workspace.json --next-actions",
             ),
             topic="site",
             context=context,

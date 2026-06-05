@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 337 — Website Console Next Actions Help Example Coverage (unreleased)
+
+Website Console help now shows the human Markdown next-actions output-file workflow directly in `design-ai site --help`. This keeps the operator-facing runbook checkpoint discoverable without requiring users to infer it from the generic `--out file` option.
+
+### Changed
+- Added `design-ai site website-workspace.json --next-actions --out website-next-actions.md` to the `site` command help examples.
+- Added CLI help unit coverage for the new next-actions Markdown output-file example.
+- Added shared package/public-registry smoke assertion coverage so `design-ai help site` must retain the human next-actions output-file example.
+- Updated English and Korean Website Improvement docs to show and explain the Markdown next-actions checkpoint alongside JSON next-actions output.
+
+### Impact
+- Operators can discover both machine-readable next-actions JSON and human-readable next-actions Markdown from command help and docs.
+- This is help/documentation/smoke assertion coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/help-command.test.mjs`
+- `node cli/bin/design-ai.mjs help site | rg -n "next-actions|website-next-actions"`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 336 — Website Console Next Actions Human Output-File Smoke Coverage (unreleased)
 
 Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --out file --force` human Markdown output-file persistence. This complements the Phase 334 JSON saved-file smoke by checking the operator-facing report that humans copy into local runbooks.

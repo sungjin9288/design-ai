@@ -107,6 +107,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --mcp-plan --probes --json");
   console.log("  design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
   console.log("  design-ai site website-workspace.json --next-actions --json");
+  console.log("  design-ai site website-workspace.json --next-actions --out website-next-actions.md");
   console.log("  design-ai site website-workspace.json --graph --json --out website-workflow-graph.json");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
