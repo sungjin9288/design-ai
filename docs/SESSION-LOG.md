@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 335 (unreleased)** — Added release metadata guard coverage for the `design-ai site --stdin --next-actions --json --out file --force` next-action output-file smoke phrase across release-facing docs.
 - **Phase 334 (unreleased)** — Added packed-tarball and public-registry output-file smoke coverage for `design-ai site --stdin --next-actions --json --out file --force`, reusing a shared file-output assertion for write confirmation, forced overwrite replacement, and saved next-action JSON drift checks.
 - **Phase 333 (unreleased)** — Added release metadata guard coverage for the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase across release-facing docs.
 - **Phase 332 (unreleased)** — Added public-registry `npm exec --package @design-ai/cli@<version>` smoke coverage for `design-ai site --stdin --next-actions --json`, reusing the shared next-action JSON assertions already used by packed-tarball smoke.

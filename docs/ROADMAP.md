@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 335 — Website Console Next Actions Output-File Release Guard (unreleased)
+
+Release metadata now guards the `design-ai site --stdin --next-actions --json --out file --force` next-action output-file smoke phrase across release-facing docs. This keeps Phase 334's installed-bin, one-shot, and public-registry output-file coverage visible in the release ritual.
+
+### Changed
+- Added a release metadata term group for Website Console next-actions output-file smoke coverage.
+- Added the term group to the required release policy phrase labels and checks.
+- Added a self-test drift fixture that fails when README guidance drops the next-actions output-file phrase.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the installed-bin, one-shot, and public-registry output-file smoke contract.
+
+### Impact
+- Release-facing docs cannot silently drop the saved-file next-action smoke guidance while retaining stdout next-action smoke coverage.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 334 — Website Console Next Actions Output-File Smoke Coverage (unreleased)
 
 Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --json --out file --force` output-file persistence. This closes the remaining release-smoke gap after Phase 331 and Phase 332 covered stdout JSON execution for the next-action operator checklist.
