@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 341 — Website Console Next Actions Strict Failure Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the fail-state path where required MCP readiness is missing. This keeps the operator checklist honest when it should block target-repo implementation instead of only covering the pass and saved-file paths.
+
+### Changed
+- Extended `buildSiteNextActionsReport` assertions for a missing GitHub readiness scenario.
+- Verified fail-state JSON and human next-actions output rank the required MCP readiness blocker first.
+- Added `runSite([workspace, "--next-actions", "--strict", "--json"])` coverage to ensure strict mode exits non-zero for fail-state next-actions output.
+- Updated changelog and session history beside the Phase 330-340 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where next-actions keeps rendering but stops enforcing blocking MCP readiness through strict exit behavior.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 340 — Website Console Next Actions Help Usage Unit Coverage (unreleased)
 
 Website Console help unit coverage now verifies the `design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]` Usage line directly. This keeps command discovery aligned with the JSON and human Markdown next-actions output-file workflows added and hardened in Phases 330-339.

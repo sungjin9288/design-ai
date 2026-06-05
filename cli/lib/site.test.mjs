@@ -462,10 +462,17 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   };
   const blockedSummary = analyzeSiteWorkspace(blockedWorkspace, { filePath: "blocked.json" }).summary;
   const blockedReport = buildSiteNextActionsReport(blockedWorkspace, blockedSummary);
+  const blockedJson = JSON.parse(formatSiteNextActionsJson(blockedReport));
+  const blockedHuman = formatSiteNextActionsHuman(blockedReport);
   assert.equal(blockedReport.status, "fail");
   assert.equal(blockedReport.counts.blocking, 1);
   assert.equal(blockedReport.actions[0].title, "Add required MCP readiness: GitHub");
   assert.match(blockedReport.actions[0].reason, /siteProfile\.repoUrl/);
+  assert.equal(blockedJson.counts.requiredMcpMissing, 1);
+  assert.equal(blockedJson.actions[0].severity, "blocking");
+  assert.equal(blockedJson.actions[0].command, "design-ai site blocked.json --mcp-check --strict --json");
+  assert.match(blockedHuman, /1\. \[blocking\] Add required MCP readiness: GitHub/);
+  assert.match(blockedHuman, /Command: `design-ai site blocked\.json --mcp-check --strict --json`/);
 });
 
 test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidance", () => {
@@ -1530,6 +1537,14 @@ test("runSite strict exits non-zero on warnings", async () => {
     const strict = await captureConsole(() => runSite([file, "--strict", "--json"]));
     assert.equal(JSON.parse(strict.stdout).status, "warn");
     assert.equal(strict.exitCode, 1);
+
+    const nextActionsStrict = await captureConsole(() => runSite([file, "--next-actions", "--strict", "--json"]));
+    const nextActionsPayload = JSON.parse(nextActionsStrict.stdout);
+    assert.equal(nextActionsPayload.status, "fail");
+    assert.equal(nextActionsPayload.counts.blocking, 1);
+    assert.equal(nextActionsPayload.actions[0].severity, "blocking");
+    assert.match(nextActionsPayload.actions[0].command, /--mcp-check --strict --json/);
+    assert.equal(nextActionsStrict.exitCode, 1);
   });
 });
 

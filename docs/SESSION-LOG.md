@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 341 (unreleased)** — Added fail-state CLI unit coverage for Website Console next-actions so missing required MCP readiness ranks as the first blocking action and `--next-actions --strict --json` exits non-zero.
 - **Phase 340 (unreleased)** — Added direct CLI help unit coverage for the `design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]` Usage line so command discovery stays aligned with next-actions output-file workflows.
 - **Phase 339 (unreleased)** — Added direct CLI unit coverage for `design-ai site <workspace.json> --next-actions --out file --force` human Markdown output-file persistence, including forced overwrite replacement and non-JSON saved output checks.
 - **Phase 338 (unreleased)** — Added release metadata guard coverage for the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example across release-facing docs.
