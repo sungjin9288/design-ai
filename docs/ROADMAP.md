@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 303 — Probe-Capable Site Help Smoke Assertions (unreleased)
+
+Shared package/public-registry smoke assertions now require the same probe-capable Website Console site usage that top-level help exposes. The help JSON contract and main help output fixtures now include `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, and the self-test fails if the site usage drifts back to the older probe-less shape.
+
+### Changed
+- Updated `tools/audit/smoke_assertions.py` expected help topic usage for the `site` command.
+- Updated main help fixture fragments so packed-tarball and public-registry smoke validate probe-capable site usage.
+- Added a smoke assertion self-test fixture that fails when help JSON reports stale probe-less site usage.
+
+### Impact
+- Package and registry smoke now catch drift where top-level help/catalog loses Website Console probe discovery while command-specific help still passes.
+- This is smoke assertion hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 302 — Site Probe Usage in Top-Level Help (unreleased)
 
 Top-level `design-ai help` and machine-readable `design-ai help --json` now expose the Website Console probe-capable site modes. The site usage line names `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, so operators and tool wrappers can discover probe support before opening command-specific help.

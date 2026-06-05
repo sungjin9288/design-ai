@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals|--propose-skills|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -266,7 +266,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "site <workspace.json|--stdin>",
     "site --sample",
     "site --prompt-list",
-    "[--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
+    "[--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
     "site <bundle-dir> --bundle-check",
     "site <bundle-dir> --bundle-compare",
     "site <bundle-dir> --bundle-handoff",
@@ -3992,7 +3992,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -9311,6 +9311,26 @@ def run_self_test() -> None:
             cmd=help_cmd,
         ),
         expected="usage differs for topic install",
+        scope="smoke assertions",
+    )
+    stale_site_usage_catalog = json.loads(passing_help_catalog_json())
+    site_topic_index = list(EXPECTED_HELP_TOPICS).index("site")
+    stale_site_usage_catalog["topics"][site_topic_index]["usage"] = (
+        "design-ai site <workspace.json|--stdin> [--strict] "
+        "[--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] "
+        "[--out file] | site <bundle-dir> --bundle-check [--json] | "
+        "site <bundle-dir> --bundle-compare other-bundle-dir [--json] | "
+        "site <bundle-dir> --bundle-handoff [--json] | "
+        "site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | "
+        "site --sample [--out file] | site --prompt-list [--json]"
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(
+            json.dumps(stale_site_usage_catalog),
+            context=context,
+            cmd=help_cmd,
+        ),
+        expected="usage differs for topic site",
         scope="smoke assertions",
     )
     invalid_topic_key_catalog = json.loads(passing_help_catalog_json())
