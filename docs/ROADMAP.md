@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 317 — MCP Check Human Output Command Release Guard (unreleased)
+
+Release metadata now guards the embedded MCP check probe human report output command phrase across release-facing docs. The guard keeps the `mcpCheckProbesHumanOut` command contract visible beside human MCP check probe command guidance and output-file smoke coverage.
+
+### Changed
+- Added a release metadata term group for embedded MCP check probe human report output commands.
+- Added a release policy label/check for the human report output command phrase.
+- Added a self-test drift fixture that fails when README guidance drops the embedded human report output command phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention the embedded human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve the `mcpCheckProbesHumanOut` contract independently from the broader human command guidance phrase.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 316 — MCP Check Probe Embedded Human Report Command (unreleased)
 
 `design-ai site --mcp-check --probes --json` now embeds `commands.mcpCheckProbesHumanOut` alongside the existing probe JSON and action-plan commands. Human probe output also shows a matching `Save readiness probe report` command, and package/public-registry smoke executes the embedded command to verify that it writes a preserved human report with the `Probe commands` section intact.
