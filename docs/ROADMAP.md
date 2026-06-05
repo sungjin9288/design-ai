@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 315 — MCP Check Probe Human Output Persistence Smoke (unreleased)
+
+`design-ai site --stdin --mcp-check --probes --out file` is now covered by unit and distribution smoke tests. The persisted human report must retain the readiness summary, read-only probe section, and `Probe commands` guidance so operators can archive the exact human handoff output alongside JSON probe evidence.
+
+### Changed
+- Added site unit coverage for writing the probe-enabled MCP check human report to `--out file`.
+- Added `assert_site_mcp_check_probes_human_file_output` to shared smoke assertions.
+- Wired packed-tarball installed-bin and one-shot `npm exec --package <tarball>` smoke to verify human probe report `--out file` persistence.
+- Wired public-registry smoke to verify the same human probe report persistence from the published package path.
+- Updated release metadata phrase guards and release-facing docs to name human MCP check probe command guidance and output-file smoke coverage.
+
+### Impact
+- Human MCP readiness probe reports are now preservation-tested like the existing JSON probe payloads.
+- This is verification coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 314 — MCP Check Probe Human Smoke Coverage (unreleased)
 
 Packed-tarball and public-registry smoke now verify `design-ai site --stdin --mcp-check --probes` human output. The shared smoke assertion checks the readiness summary, read-only probe section, and the `Probe commands` copy/paste guidance that points operators to readiness JSON preservation and structured MCP action plan JSON generation.

@@ -924,6 +924,14 @@ test("runSite prints and writes MCP readiness check output", async () => {
     assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json/);
     assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
 
+    const probeHumanOutFile = path.join(dir, "mcp-check-probes.txt");
+    const probeHumanWriteOutput = await captureConsole(() => runSite([file, "--mcp-check", "--probes", "--out", probeHumanOutFile]));
+    assert.match(probeHumanWriteOutput.stdout, /Wrote /);
+    const probeHumanFile = readFileSync(probeHumanOutFile, "utf8");
+    assert.match(probeHumanFile, /Read-only probes:/);
+    assert.match(probeHumanFile, /Probe commands:/);
+    assert.match(probeHumanFile, /--mcp-check --probes --json --out mcp-check-probes\.json/);
+
     const writeOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", outFile]));
     assert.match(writeOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(outFile, "utf8")).status, "pass");

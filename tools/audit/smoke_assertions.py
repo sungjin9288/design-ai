@@ -6495,6 +6495,22 @@ def assert_site_mcp_check_probes_human(raw: str, *, context: str, cmd: list[str]
         raise SystemExit(f"site mcp-check probes human after {context} includes duplicated JSON flags")
 
 
+def assert_site_mcp_check_probes_human_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_mcp_check_probes_human(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
 def assert_site_mcp_check_probes_json_file_output(
     raw_stdout: str,
     file_contents: str,
@@ -10099,6 +10115,23 @@ def run_self_test() -> None:
         context=context,
         cmd=site_mcp_check_probes_human_cmd,
     )
+    site_mcp_check_probes_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--out",
+        "/tmp/site-mcp-check-probes.txt",
+        "--force",
+    ]
+    assert_site_mcp_check_probes_human_file_output(
+        "Wrote /tmp/site-mcp-check-probes.txt\n",
+        passing_site_mcp_check_probes_human(),
+        output_path="/tmp/site-mcp-check-probes.txt",
+        context=context,
+        cmd=site_mcp_check_probes_human_out_cmd,
+    )
     site_mcp_check_probes_payload = json.loads(passing_site_mcp_check_probes_json())
     expected_mcp_check_probe_command = [
         "design-ai",
@@ -10245,6 +10278,17 @@ def run_self_test() -> None:
             passing_site_mcp_check_probes_human().replace("Probe commands:", "Probe notes:"),
             context=context,
             cmd=site_mcp_check_probes_human_cmd,
+        ),
+        expected="Probe commands",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_human_file_output(
+            "Wrote /tmp/site-mcp-check-probes.txt\n",
+            passing_site_mcp_check_probes_human().replace("Probe commands:", "Probe notes:"),
+            output_path="/tmp/site-mcp-check-probes.txt",
+            context=context,
+            cmd=site_mcp_check_probes_human_out_cmd,
         ),
         expected="Probe commands",
         scope="smoke assertions",
