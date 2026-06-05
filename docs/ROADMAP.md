@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 333 — Website Console Next Actions Registry Smoke Release Guard (unreleased)
+
+Release metadata now guards the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase across release-facing docs. This keeps Phase 332's post-publish registry coverage visible beside the broader Website Console public registry smoke guidance.
+
+### Changed
+- Added a release metadata term group for public registry Website Console next-actions smoke coverage.
+- Added the term group to the required release policy phrase labels and checks.
+- Added a self-test drift fixture that fails when README guidance drops the public registry next-actions phrase.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the public registry next-actions operator checklist contract.
+
+### Impact
+- Release-facing docs cannot silently keep generic Website Console registry smoke wording while dropping the specific next-actions JSON smoke contract.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 332 — Website Console Next Actions Public Registry Smoke Coverage (unreleased)
 
 Public-registry smoke now directly executes `design-ai site --stdin --next-actions --json` through the published-package `npm exec --package @design-ai/cli@<version>` path. This aligns next-action release verification with the Website Console smoke pattern used for MCP probe outputs and handoff bundle checks after publish.

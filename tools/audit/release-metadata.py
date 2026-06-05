@@ -770,6 +770,23 @@ RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS = (
         "task-selected prompt 생성",
     ),
 )
+RELEASE_SITE_NEXT_ACTIONS_REGISTRY_SMOKE_TERM_GROUPS = (
+    (
+        "public registry `design-ai site --stdin --next-actions --json`",
+        "public registry design-ai site --stdin --next-actions --json",
+        "registry `design-ai site --stdin --next-actions --json`",
+        "공개 npm registry `design-ai site --stdin --next-actions --json`",
+    ),
+    (
+        "next-action operator checklist",
+        "next-actions operator checklist",
+        "Website Console next-actions",
+        "next-actions JSON",
+        "next-action checklist",
+        "next-action operator checklist contract",
+        "next-action operator checklist 계약",
+    ),
+)
 RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS = (
     (
         "one-shot `npm exec --package <tarball>`",
@@ -2016,6 +2033,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "workspace learning-eval registry smoke phrase",
     "workspace restore-backups registry smoke phrase",
     "site registry smoke phrase",
+    "site next-actions registry smoke phrase",
     "packed tarball installed-bin smoke phrase",
     "packed tarball npm exec smoke phrase",
     "public registry npm exec smoke phrase",
@@ -2276,6 +2294,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site registry smoke phrase",
         RELEASE_SITE_REGISTRY_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site next-actions registry smoke phrase",
+        RELEASE_SITE_NEXT_ACTIONS_REGISTRY_SMOKE_TERM_GROUPS,
     ),
     ("packed tarball installed-bin smoke phrase", RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS),
     ("packed tarball npm exec smoke phrase", RELEASE_PACKED_TARBALL_NPM_EXEC_TERM_GROUPS),
@@ -2854,7 +2876,7 @@ the public `npm exec --package @design-ai/cli@<version>` registry path,
 including public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
 including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries,
 including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory,
-including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
+including public registry `design-ai site` Website Console export validation, including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation,
 and after npm publish completes, `npm run registry:smoke` verifies the public install path,
 public registry JSON `design-ai learn --feedback` output plus public registry learn feedback `--out` file-write confirmation including public registry `design-ai learn --feedback --from-file` and public registry `design-ai learn --feedback --stdin`,
 public registry JSON `design-ai learn --init` preview/apply output plus public registry learn init duplicate-skip output,
@@ -2952,7 +2974,7 @@ npm exec --package <tarball> 경로도 packed-tarball smoke로 확인하고,
 공개 npm registry `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
 공개 npm registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summary도 확인하고,
 공개 npm registry `design-ai workspace` workspace restore-backups readiness와 restore rollback backup inventory도 확인하고,
-공개 npm registry `design-ai site` Website Console export validation, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
+공개 npm registry `design-ai site` Website Console export validation, 공개 npm registry `design-ai site --stdin --next-actions --json` next-action operator checklist 계약, sample workspace, prompt template 목록, MCP readiness, MCP readiness probe, MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON `--out` file 저장 확인과 MCP action plan 내장 probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task 생성, task-selected prompt 생성도 확인하고,
 npm publish가 끝난 뒤 `npm run registry:smoke`로 공개 설치 경로도 확인하고,
 public registry JSON `design-ai learn --feedback` output과 public registry learn feedback `--out` file-write confirmation, public registry `design-ai learn --feedback --from-file`, public registry `design-ai learn --feedback --stdin`도 확인하고,
 public registry JSON `design-ai learn --init` preview/apply output과 public registry learn init duplicate-skip output도 확인하고,
@@ -3594,7 +3616,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
+                "including public registry `design-ai site` Website Console export validation, including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check/compare/handoff/repair, refactor task generation, and task-selected prompt generation",
                 "including public registry Website Console coverage",
             ),
         },
@@ -3604,6 +3626,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing site registry smoke phrase" in site_registry_smoke_drift_errors,
         "release policy docs should mention public registry Website Console smoke",
+    )
+
+    site_next_actions_registry_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract, ",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_next_actions_registry_smoke_drift_errors = "\n".join(
+        site_next_actions_registry_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing site next-actions registry smoke phrase"
+            in site_next_actions_registry_smoke_drift_errors
+        ),
+        "release policy docs should mention public registry Website Console next-actions smoke",
     )
 
     site_registry_mcp_probe_drift = release_metadata_summary(
