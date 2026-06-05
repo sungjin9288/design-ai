@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 340 — Website Console Next Actions Help Usage Unit Coverage (unreleased)
+
+Website Console help unit coverage now verifies the `design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]` Usage line directly. This keeps command discovery aligned with the JSON and human Markdown next-actions output-file workflows added and hardened in Phases 330-339.
+
+### Changed
+- Added a `runSite(["--help"])` assertion for the next-actions Usage line.
+- Updated changelog and session history so the help coverage sits beside the existing next-actions output-file smoke, help example, release guard, and unit persistence work.
+
+### Impact
+- Local tests now catch a stale `site --help` Usage block that drops the `--next-actions` output-file workflow while the runtime still supports it.
+- This is CLI help test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 339 — Website Console Next Actions Markdown Output-File Unit Coverage (unreleased)
 
 Website Console unit coverage now verifies the human Markdown `design-ai site --next-actions --out file --force` path directly in `cli/lib/site.test.mjs`. This complements the existing packed/public smoke coverage with a faster local regression check for the operator-facing next-actions runbook artifact.
