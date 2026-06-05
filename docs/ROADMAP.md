@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 324 — MCP Action Plan Self-Archive Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpPlanProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json` action-plan payloads themselves. This closes the last action-plan emitted command parity gap: the payload can now prove its own JSON archive command works, not only the human readiness report and MCP check probe JSON archive commands.
+
+### Changed
+- Added package smoke execution for action-plan emitted `mcpPlanProbesJsonOut` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added public-registry smoke execution for the same action-plan self-archive command.
+- Added package and registry smoke self-test fixtures that replay the action-plan emitted plan JSON command through shared JSON file-output assertions.
+- Updated CHANGELOG and SESSION-LOG entries for the self-archive command execution coverage.
+
+### Impact
+- Action-plan payload command smoke coverage now covers all emitted output-preservation commands from the action-plan payload itself.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 323 — MCP Action Plan Check JSON Command Smoke Execution (unreleased)
 
 Packed-tarball and public-registry smoke now execute the `mcpCheckProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the remaining action-plan command execution gap: a structured action-plan payload can now preserve both the human readiness probe report and the machine-readable MCP readiness probe JSON without requiring operators to open the original MCP check payload.
