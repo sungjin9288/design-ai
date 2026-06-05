@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 314 — MCP Check Probe Human Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --mcp-check --probes` human output. The shared smoke assertion checks the readiness summary, read-only probe section, and the `Probe commands` copy/paste guidance that points operators to readiness JSON preservation and structured MCP action plan JSON generation.
+
+### Changed
+- Added `passing_site_mcp_check_probes_human` and `assert_site_mcp_check_probes_human` to `tools/audit/smoke_assertions.py`.
+- Added self-test drift coverage for losing the `Probe commands` section from MCP check probe human output.
+- Wired packed-tarball installed-bin and one-shot `npm exec --package <tarball>` smoke to run `site --stdin --mcp-check --probes` without `--json`.
+- Wired public-registry smoke to run the same human output check through `npm exec --package @design-ai/cli@<version>`.
+- Updated release-facing smoke guidance and project history docs for the human probe command guidance smoke coverage.
+
+### Impact
+- The Phase 313 human output guidance is now protected at the same distribution boundaries as the existing JSON probe command contract.
+- This is smoke coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 313 — MCP Check Probe Human Command Guidance (unreleased)
 
 `design-ai site --mcp-check --probes` now shows the same probe follow-up commands in human output that probe-enabled JSON already carries. Operators can save the readiness probe JSON, generate the structured probe action plan JSON, and save that action plan from the visible report without switching to `--json`. The default `--mcp-check` human output remains unchanged.

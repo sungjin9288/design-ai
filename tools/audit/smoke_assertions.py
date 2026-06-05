@@ -4730,6 +4730,62 @@ def passing_site_mcp_check_probes_json() -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
+def passing_site_mcp_check_probes_human() -> str:
+    return """Website Improvement MCP readiness: Korean SaaS marketing site
+
+Status: pass
+Workspace status: pass
+Required MCP: 3
+Ready: 9
+Missing: 0
+Task gaps: 0
+
+MCP checks:
+- [pass] GitHub (required) -> ready
+   Evidence: repoUrl: https://github.com/acme/korean-saas-site; localPath: /Users/you/dev/korean-saas-site
+- [pass] Figma (optional) -> ready
+   Evidence: figmaUrl: https://figma.com/file/example
+- [pass] Browser/Playwright (required) -> ready
+   Evidence: liveUrl: https://example.com; viewports: desktop, tablet, mobile
+- [pass] Chrome DevTools (optional) -> ready
+   Evidence: liveUrl: https://example.com
+- [pass] Deploy (required) -> ready
+   Evidence: deployProvider: vercel; liveUrl: https://example.com
+- [pass] Sentry (optional) -> ready
+   Evidence: sentryProject: acme/korean-saas-web
+- [pass] Database (unused) -> unused
+   Evidence: Marked unused in mcpReadiness.
+- [pass] CMS (optional) -> ready
+   Evidence: cms: sanity
+- [pass] Collaboration (optional) -> ready
+   Evidence: Optional collaboration is tracked in handoff notes for this local MVP.
+- [pass] Research (optional) -> ready
+   Evidence: liveUrl: https://example.com
+
+Task MCP gaps:
+- none
+
+Read-only probes:
+Mode: read-only-local; external calls: no; status: pass
+- [pass] GitHub repo reference (required) -> pass
+   Evidence: github repo: acme/korean-saas-site
+- [pass] Figma file reference (optional) -> pass
+   Evidence: figma reference: file/example
+- [pass] Browser smoke target (required) -> pass
+   Evidence: liveUrl host: example.com; viewports: desktop, tablet, mobile
+- [pass] Deployment provider reference (required) -> pass
+   Evidence: deployProvider: vercel; liveUrl host: example.com
+
+Probe commands:
+- Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`
+- Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`
+- Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`
+
+Next actions:
+- none
+"""
+
+
 def passing_site_mcp_plan_markdown() -> str:
     return """# Website improvement MCP action plan: Korean SaaS marketing site
 
@@ -6409,6 +6465,34 @@ def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str])
             raise SystemExit(f"site mcp-check probes JSON after {context} probe actions must be an array")
     if checked_ids != expected_ids:
         raise SystemExit(f"site mcp-check probes JSON after {context} probe item order changed")
+
+
+def assert_site_mcp_check_probes_human(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    required_fragments = [
+        "Website Improvement MCP readiness: Korean SaaS marketing site",
+        "Status: pass",
+        "Workspace status: pass",
+        "MCP checks:",
+        "- [pass] GitHub (required) -> ready",
+        "Task MCP gaps:\n- none",
+        "Read-only probes:",
+        "Mode: read-only-local; external calls: no; status: pass",
+        "- [pass] GitHub repo reference (required) -> pass",
+        "- [pass] Browser smoke target (required) -> pass",
+        "Probe commands:",
+        "- Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`",
+        "- Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`",
+        "- Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`",
+        "Next actions:\n- none",
+    ]
+    for fragment in required_fragments:
+        if fragment not in raw:
+            raise SystemExit(f"site mcp-check probes human after {context} missing fragment: {fragment}")
+
+    if "--json --json" in raw:
+        raise SystemExit(f"site mcp-check probes human after {context} includes duplicated JSON flags")
 
 
 def assert_site_mcp_check_probes_json_file_output(
@@ -10009,6 +10093,12 @@ def run_self_test() -> None:
     assert_site_mcp_check_json(passing_site_mcp_check_json(), context=context, cmd=site_mcp_check_cmd)
     site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
     assert_site_mcp_check_probes_json(passing_site_mcp_check_probes_json(), context=context, cmd=site_mcp_check_probes_cmd)
+    site_mcp_check_probes_human_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes"]
+    assert_site_mcp_check_probes_human(
+        passing_site_mcp_check_probes_human(),
+        context=context,
+        cmd=site_mcp_check_probes_human_cmd,
+    )
     site_mcp_check_probes_payload = json.loads(passing_site_mcp_check_probes_json())
     expected_mcp_check_probe_command = [
         "design-ai",
@@ -10148,6 +10238,15 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_site_mcp_check_probes_json("\x1b[31m{}", context=context, cmd=site_mcp_check_probes_cmd),
         expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_human(
+            passing_site_mcp_check_probes_human().replace("Probe commands:", "Probe notes:"),
+            context=context,
+            cmd=site_mcp_check_probes_human_cmd,
+        ),
+        expected="Probe commands",
         scope="smoke assertions",
     )
     expect_self_test_failure(
