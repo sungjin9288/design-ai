@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 308 — MCP Action Plan Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for embedded MCP action plan probe output-file commands. The guard ties Phase 307's structured JSON command fields to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP probe action plan JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJsonOut` command contract.
+
+### Changed
+- Added `RELEASE_SITE_MCP_ACTION_PLAN_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP action plan embedded command phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name embedded MCP action plan probe output-file commands.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the embedded command phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they keep MCP probe action plan JSON `--out` coverage but drop the embedded command contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 307 — MCP Action Plan Probe Output Commands (unreleased)
 
 Structured Website Console MCP action plan JSON now carries the MCP probe JSON output-file commands directly in its `commands` object. Operators and automation can read one action-plan payload and discover both preservation paths without opening help text: `mcpCheckProbesJsonOut` for readiness probe JSON and `mcpPlanProbesJsonOut` for probe action-plan JSON.
