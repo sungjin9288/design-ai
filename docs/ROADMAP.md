@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 326 — MCP Action Plan Emitted JSON Drift Fixtures (unreleased)
+
+Package and registry smoke self-tests now include negative drift fixtures for action-plan emitted JSON outputs. The local self-test path fails if the action-plan emitted `mcpCheckProbesJsonOut` report claims external calls or if the action-plan emitted `mcpPlanProbesJsonOut` self-archive report claims target-repo mutation.
+
+### Changed
+- Added a package smoke negative self-test fixture for action-plan emitted MCP check probe JSON output.
+- Added a package smoke negative self-test fixture for action-plan emitted MCP action-plan self-archive JSON output.
+- Added the same registry smoke negative self-test fixtures for the published-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the emitted JSON drift fixture coverage.
+
+### Impact
+- The action-plan emitted JSON output self-tests now guard both command mapping and local/read-only boundary drift.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 325 — MCP Action Plan Self-Archive Release Guard (unreleased)
 
 Release metadata now guards the `MCP action plan emitted self-archive command smoke coverage` phrase across release-facing docs. The guard keeps Phase 324's `mcpPlanProbesJsonOut` action-plan payload execution visible beside the existing action-plan human report command smoke guidance.

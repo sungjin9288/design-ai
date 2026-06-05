@@ -5947,6 +5947,34 @@ def run_self_test() -> None:
             scope="registry smoke",
         )
         expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_plan_check_json_out_path}\n",
+                site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_plan_check_json_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted check JSON out",
+                cmd=site_mcp_plan_check_json_out_cmd,
+            ),
+            expected="external calls",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+                site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
+                    '"targetRepoMutation": false',
+                    '"targetRepoMutation": true',
+                ),
+                output_path=str(site_mcp_plan_emitted_json_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
+                cmd=site_mcp_plan_emitted_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
             lambda: assert_site_mcp_plan_probes_json_file_output(
                 f"Wrote {site_mcp_plan_json_out_path}\n",
                 site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
