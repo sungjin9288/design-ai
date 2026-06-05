@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 310 — MCP Check Probe Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for embedded MCP check probe next-step commands. The guard ties Phase 309's `design-ai site --mcp-check --probes --json` `commands` payload to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP readiness probe JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJson` / `mcpPlanProbesJsonOut` command contract.
+
+### Changed
+- Added `RELEASE_SITE_MCP_CHECK_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP check embedded command phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name embedded MCP check probe next-step commands.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the embedded MCP check command phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they keep MCP readiness probe JSON `--out` coverage but drop the embedded probe payload command contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 309 — MCP Check Probe Output Commands (unreleased)
 
 `design-ai site --mcp-check --probes --json` now embeds the preservation and next-step command hints directly in the probe payload. The default non-probe MCP check JSON shape stays unchanged, while probe-enabled reports include `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` so operators can save readiness evidence and continue into the structured MCP action plan from the same machine-readable output.
