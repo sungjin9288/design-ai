@@ -97,6 +97,7 @@ from smoke_assertions import (
     assert_site_mcp_plan_probes_json,
     assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
+    assert_site_next_actions_json,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
     assert_site_sample_json,
@@ -133,6 +134,7 @@ from smoke_assertions import (
     passing_site_mcp_plan_json,
     passing_site_mcp_plan_markdown,
     passing_site_mcp_plan_probes_markdown,
+    passing_site_next_actions_json,
     passing_site_prompt_markdown,
     passing_site_prompt_templates_json,
     passing_site_sample_json,
@@ -2709,6 +2711,22 @@ def assert_site_json_smoke(
     assert_site_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json(result.stdout, context=context, cmd=cmd)
+
+
 def assert_site_sample_json_smoke(
     cmd: list[str],
     *,
@@ -4621,6 +4639,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site JSON",
         )
+        assert_site_next_actions_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site next-actions JSON",
+        )
         assert_site_sample_json_smoke(
             npm_exec_cmd(package_spec, "site", "--sample"),
             cwd=npx_root,
@@ -5753,6 +5777,7 @@ def run_self_test() -> None:
         )
 
         site_cmd = ["design-ai", "site", "--stdin", "--json"]
+        site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
         site_sample_cmd = ["design-ai", "site", "--sample"]
         site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
         site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
@@ -5771,6 +5796,11 @@ def run_self_test() -> None:
             "task-homepage-cta",
         ]
         assert_site_json(passing_site_json(), context="registry smoke self-test site JSON", cmd=site_cmd)
+        assert_site_next_actions_json(
+            passing_site_next_actions_json(),
+            context="registry smoke self-test site next-actions JSON",
+            cmd=site_next_actions_cmd,
+        )
         assert_site_sample_json(
             passing_site_sample_json(),
             context="registry smoke self-test site sample",

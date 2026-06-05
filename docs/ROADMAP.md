@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 332 — Website Console Next Actions Public Registry Smoke Coverage (unreleased)
+
+Public-registry smoke now directly executes `design-ai site --stdin --next-actions --json` through the published-package `npm exec --package @design-ai/cli@<version>` path. This aligns next-action release verification with the Website Console smoke pattern used for MCP probe outputs and handoff bundle checks after publish.
+
+### Changed
+- Added `assert_site_next_actions_json` to the registry smoke assertion imports and self-test path.
+- Added a registry smoke helper that feeds the shared Website Console sample workspace through stdin and verifies the next-action JSON contract.
+- Added the published-package npm exec smoke call immediately after the baseline `site --stdin --json` registry check.
+
+### Impact
+- Post-publish smoke now catches registry-only regressions in the next-action operator checklist, including boundary flags, ranked actions, top task selection, and follow-up commands.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 331 — Website Console Next Actions Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now directly executes `design-ai site --stdin --next-actions --json` through both installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between Phase 330's unit coverage and release-package runtime coverage for the next-action operator checklist.
