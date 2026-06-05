@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 330 — Website Console Next Actions CLI (unreleased)
+
+`design-ai site --next-actions [--json]` now turns a Website Improvement workspace into a prioritized local operator checklist. The report helps decide whether to fix validation/MCP blockers, generate tasks, prepare the selected Codex implementation prompt, preserve handoff evidence, or export a bundle before touching the target website repo.
+
+### Changed
+- Added `--next-actions` as a read-only `design-ai site` output mode with human and JSON formats.
+- Built the next-action payload from existing workspace validation, MCP readiness, task/MCP gap, refactor task, implementation evidence, and bundle command data.
+- Updated command-specific help, top-level help catalog expectations, README command lists, Website Improvement docs, Distribution docs, and Product Readiness notes.
+- Added unit coverage for argument parsing, invalid mode combinations, payload shape, human formatting, and `--out` file persistence.
+
+### Impact
+- Operators can ask the CLI "what should I do next?" without opening the static console or manually reading the MCP action plan.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --check cli/lib/site.mjs && node --check cli/commands/site.mjs && node --check cli/commands/help.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 329 — MCP Action Plan Command Mapping Self-Test Release Guard (unreleased)
 
 Release metadata now guards the `shared MCP action plan command mapping self-test coverage` phrase across release-facing docs. The guard keeps Phase 328's shared `smoke_assertions.py --self-test` parity coverage visible beside the action-plan emitted human report, check JSON, and self-archive command smoke guidance.

@@ -24,6 +24,7 @@ export const SITE_OPTIONS = [
   "--bundle-compare",
   "--bundle-handoff",
   "--bundle-repair",
+  "--next-actions",
   "--prompt-list",
   "--mcp-check",
   "--mcp-plan",
@@ -249,6 +250,7 @@ export function parseSiteArgs(args) {
     bundleCompareTarget: "",
     bundleHandoff: false,
     bundleRepair: false,
+    nextActions: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
@@ -295,6 +297,8 @@ export function parseSiteArgs(args) {
       out.bundleHandoff = true;
     } else if (arg === "--bundle-repair") {
       out.bundleRepair = true;
+    } else if (arg === "--next-actions") {
+      out.nextActions = true;
     } else if (arg === "--prompt-list") {
       out.promptList = true;
     } else if (arg === "--mcp-check") {
@@ -351,17 +355,17 @@ export function parseSiteArgs(args) {
   if (out.promptList && sources.length > 0) {
     throw new Error("Use --prompt-list without a workspace JSON file path or --stdin");
   }
-  if (out.sample && (out.report || out.prompts || out.promptTemplate || out.graph)) {
-    throw new Error("Use --sample without --report, --prompts, --prompt, or --graph");
+  if (out.sample && (out.report || out.prompts || out.promptTemplate || out.nextActions || out.graph)) {
+    throw new Error("Use --sample without --report, --prompts, --prompt, --next-actions, or --graph");
   }
-  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
   }
-  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.graph || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --graph, --report, --prompts, or --prompt");
+  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, or --prompt");
   }
-  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.graph || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --graph, --report, --prompts, or --prompt");
+  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, or --prompt");
   }
   if (out.probes && !(out.mcpCheck || out.mcpPlan)) {
     throw new Error("Use --probes only with --mcp-check or --mcp-plan");
@@ -372,8 +376,8 @@ export function parseSiteArgs(args) {
   if (out.bundleCheck && out.stdin) {
     throw new Error("Use --bundle-check with a handoff bundle directory path, not --stdin");
   }
-  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.bundleHandoff || out.bundleRepair || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --bundle-handoff, --bundle-repair, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleCompareTarget && out.stdin) {
     throw new Error("Use --bundle-compare with handoff bundle directory paths, not --stdin");
@@ -381,8 +385,8 @@ export function parseSiteArgs(args) {
   if (out.bundleCompareTarget && !out.target) {
     throw new Error("--bundle-compare requires a primary handoff bundle directory path");
   }
-  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleHandoff || out.bundleRepair || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --bundle-handoff, --bundle-repair, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleHandoff && out.stdin) {
     throw new Error("Use --bundle-handoff with a handoff bundle directory path, not --stdin");
@@ -390,8 +394,8 @@ export function parseSiteArgs(args) {
   if (out.bundleHandoff && !out.target) {
     throw new Error("--bundle-handoff requires a handoff bundle directory path");
   }
-  if (out.bundleHandoff && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleRepair || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-handoff without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-repair, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleHandoff && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-handoff without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleRepair && out.stdin) {
     throw new Error("Use --bundle-repair with a handoff bundle directory path, not --stdin");
@@ -399,8 +403,8 @@ export function parseSiteArgs(args) {
   if (out.bundleRepair && !out.target) {
     throw new Error("--bundle-repair requires a handoff bundle directory path");
   }
-  if (out.bundleRepair && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-repair without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleRepair && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-repair without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.yes && !out.bundleRepair) {
     throw new Error("Use --yes only with --bundle-repair");
@@ -417,8 +421,8 @@ export function parseSiteArgs(args) {
   if (out.taskSelector && out.promptTemplate !== "codex-implementation") {
     throw new Error("Use --task only with --prompt codex-implementation");
   }
-  if (out.tasks && (out.json || out.graph || out.report || out.prompts)) {
-    throw new Error("Use --tasks without --json, --graph, --report, or --prompts; validate the generated file in a separate command");
+  if (out.tasks && (out.json || out.nextActions || out.graph || out.report || out.prompts)) {
+    throw new Error("Use --tasks without --json, --next-actions, --graph, --report, or --prompts; validate the generated file in a separate command");
   }
   if (out.tasks && out.promptTemplate) {
     throw new Error("Use --tasks without --prompt; generate tasks in a separate command first");
@@ -429,15 +433,15 @@ export function parseSiteArgs(args) {
   if (out.bundle && !out.outPath) {
     throw new Error("--bundle requires --out directory");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.graph ? "--graph" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : "", out.bundleRepair ? "--bundle-repair" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.nextActions ? "--next-actions" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.graph ? "--graph" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : "", out.bundleRepair ? "--bundle-repair" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
   }
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("--json is only supported for the site summary, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
+    throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, or --graph");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
   const { index, ...parsed } = out;
@@ -1724,6 +1728,201 @@ export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
     "",
     "## Boundaries",
     ...plan.boundaries.map((boundary) => `- ${boundary}`),
+  ].join("\n");
+}
+
+function nextActionEntry({ severity, title, reason, command = "", references = [] }) {
+  return {
+    severity,
+    title,
+    reason,
+    command,
+    references,
+  };
+}
+
+function buildSiteNextActionCommandSet(commandTarget) {
+  return {
+    summary: `design-ai site ${commandTarget} --json`,
+    mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    mcpPlan: `design-ai site ${commandTarget} --mcp-plan --out mcp-action-plan.md`,
+    tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
+    implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
+    handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
+    handoffBundle: `design-ai site ${commandTarget} --bundle --out website-handoff-bundle`,
+  };
+}
+
+export function buildSiteNextActionsReport(workspace, summary = {}) {
+  const filePath = summary.filePath || "workspace.json";
+  const commandTarget = siteMcpCommandTarget(filePath);
+  const commands = buildSiteNextActionCommandSet(commandTarget);
+  const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+  const topTasks = workspace.refactorTasks
+    .slice()
+    .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
+    .slice(0, 3);
+  const actions = [];
+
+  for (const issue of (summary.issues || []).filter((item) => item.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: issue.level === "fail" ? "blocking" : "warning",
+      title: `Fix workspace validation: ${issue.id}`,
+      reason: issue.message,
+      command: commands.summary,
+      references: [issue.id],
+    }));
+  }
+
+  for (const item of mcpReport.items.filter((mcp) => mcp.requestedStatus === "required" && mcp.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: "blocking",
+      title: `Add required MCP readiness: ${item.label}`,
+      reason: item.actions.join(" ") || "Required MCP readiness is missing.",
+      command: commands.mcpCheck,
+      references: [item.key],
+    }));
+  }
+
+  for (const item of mcpReport.items.filter((mcp) => mcp.requestedStatus === "optional" && mcp.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: "warning",
+      title: `Clarify optional MCP readiness: ${item.label}`,
+      reason: item.actions.join(" ") || "Optional MCP readiness is missing; add evidence or mark it unused.",
+      command: commands.mcpPlan,
+      references: [item.key],
+    }));
+  }
+
+  for (const gap of mcpReport.taskGaps) {
+    actions.push(nextActionEntry({
+      severity: "warning",
+      title: `Align MCP status for ${gap.taskId}`,
+      reason: gap.message,
+      command: commands.mcpPlan,
+      references: [gap.taskId, gap.mcp],
+    }));
+  }
+
+  if (workspace.refactorTasks.length === 0) {
+    actions.push(nextActionEntry({
+      severity: "setup",
+      title: "Generate starter refactor tasks",
+      reason: "No refactor tasks exist yet; generate task scaffolding from audit findings before implementation handoff.",
+      command: commands.tasks,
+      references: ["refactorTasks"],
+    }));
+  } else {
+    const selected = topTasks[0];
+    actions.push(nextActionEntry({
+      severity: "implementation",
+      title: `Prepare Codex implementation prompt for ${selected.id}`,
+      reason: `${selected.title} is the highest-priority available refactor task.`,
+      command: commands.implementationPrompt,
+      references: [selected.id],
+    }));
+  }
+
+  const evidenceCounts = countImplementationEvidence(summary.counts || workspace.implementationEvidence);
+  if (evidenceCounts.executedWork === 0 || evidenceCounts.verificationResults === 0) {
+    actions.push(nextActionEntry({
+      severity: "handoff",
+      title: "Create implementation evidence trail",
+      reason: "Executed work or verification results are still empty, so the handoff report should capture what remains unverified.",
+      command: commands.handoffReport,
+      references: ["implementationEvidence"],
+    }));
+  }
+
+  actions.push(nextActionEntry({
+    severity: "handoff",
+    title: "Export portable handoff bundle",
+    reason: "A bundle keeps summary, tasks, MCP evidence, prompts, and handoff report together for the target website repo workflow.",
+    command: commands.handoffBundle,
+    references: ["bundle"],
+  }));
+
+  const severityOrder = {
+    blocking: 0,
+    warning: 1,
+    setup: 2,
+    implementation: 3,
+    handoff: 4,
+  };
+  const rankedActions = actions
+    .map((action, index) => ({ action, index }))
+    .sort((a, b) => {
+      const severityDiff = (severityOrder[a.action.severity] ?? 99) - (severityOrder[b.action.severity] ?? 99);
+      return severityDiff || a.index - b.index;
+    })
+    .map(({ action }, index) => ({
+      rank: index + 1,
+      ...action,
+    }));
+
+  return {
+    kind: "website-improvement-next-actions",
+    version: 1,
+    filePath,
+    status: combineStatuses(summary.status || "pass", mcpReport.status),
+    workspaceStatus: summary.status || "unknown",
+    mcpStatus: mcpReport.status,
+    site: {
+      name: workspace.siteProfile.name,
+      liveUrl: workspace.siteProfile.liveUrl,
+      repoUrl: workspace.siteProfile.repoUrl,
+      localPath: workspace.siteProfile.localPath,
+    },
+    counts: {
+      actions: rankedActions.length,
+      blocking: rankedActions.filter((action) => action.severity === "blocking").length,
+      warnings: rankedActions.filter((action) => action.severity === "warning").length,
+      tasks: workspace.refactorTasks.length,
+      requiredMcpMissing: mcpReport.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass").length,
+      taskGaps: mcpReport.taskGaps.length,
+    },
+    topTasks: topTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      priority: task.priority,
+      category: task.category,
+      impact: task.impact,
+      effort: task.effort,
+    })),
+    actions: rankedActions,
+    commands,
+    boundaries: [
+      "This next-action report is deterministic and local.",
+      "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+      "Run implementation commands in the target website workflow after readiness blockers are cleared.",
+    ],
+    externalCalls: false,
+    targetRepoMutation: false,
+  };
+}
+
+export function formatSiteNextActionsJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteNextActionsHuman(report) {
+  return [
+    `Website Improvement next actions: ${report.site.name}`,
+    "",
+    `Status: ${report.status}`,
+    `Workspace status: ${report.workspaceStatus}`,
+    `MCP status: ${report.mcpStatus}`,
+    `Actions: ${report.counts.actions} (${report.counts.blocking} blocking, ${report.counts.warnings} warning)`,
+    "",
+    "Prioritized actions:",
+    ...report.actions.map((action) => {
+      const command = action.command ? `\n   Command: \`${action.command}\`` : "";
+      const refs = action.references.length ? `\n   References: ${action.references.join(", ")}` : "";
+      return `${action.rank}. [${action.severity}] ${action.title}\n   Why: ${action.reason}${command}${refs}`;
+    }),
+    "",
+    "Boundaries:",
+    ...report.boundaries.map((boundary) => `- ${boundary}`),
   ].join("\n");
 }
 

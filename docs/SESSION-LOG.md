@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 330 (unreleased)** — Added `design-ai site --next-actions [--json]`, a deterministic local operator checklist for workspace validation, MCP readiness, task gaps, implementation prompt prep, evidence handoff, and bundle export before target-repo work.
 - **Phase 329 (unreleased)** — Added release metadata guard coverage for shared MCP action plan command mapping self-test coverage, so release-facing docs must keep Phase 328's common assertion parity visible.
 - **Phase 328 (unreleased)** — Added shared smoke assertion self-test parity for action-plan emitted `mcpCheckProbesJsonOut` and `mcpPlanProbesJsonOut` command mapping, catching JSON archive command drift before package/public-registry smoke.
 - **Phase 327 (unreleased)** — Added release metadata guard coverage for MCP action plan emitted check JSON command smoke coverage, so release-facing docs must keep Phase 323's `mcpCheckProbesJsonOut` execution visible.
