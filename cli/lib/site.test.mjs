@@ -452,6 +452,22 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.match(human, /Command: `design-ai site sample\.json --prompt codex-implementation --task 1 --out codex-implementation\.md`/);
   assert.match(human, /does not call external MCPs, mutate the target website repo/);
 
+  const setupWorkspace = {
+    ...workspace,
+    refactorTasks: [],
+  };
+  const setupSummary = analyzeSiteWorkspace(setupWorkspace, { filePath: "setup.json" }).summary;
+  const setupReport = buildSiteNextActionsReport(setupWorkspace, setupSummary);
+  const setupHuman = formatSiteNextActionsHuman(setupReport);
+  assert.equal(setupReport.status, "pass");
+  assert.equal(setupReport.counts.tasks, 0);
+  assert.deepEqual(setupReport.topTasks, []);
+  assert.equal(setupReport.actions[0].severity, "setup");
+  assert.equal(setupReport.actions[0].title, "Generate starter refactor tasks");
+  assert.equal(setupReport.actions[0].command, "design-ai site setup.json --tasks --out website-workspace.tasks.json");
+  assert.match(setupHuman, /1\. \[setup\] Generate starter refactor tasks/);
+  assert.match(setupHuman, /Command: `design-ai site setup\.json --tasks --out website-workspace\.tasks\.json`/);
+
   const blockedWorkspace = {
     ...workspace,
     siteProfile: {

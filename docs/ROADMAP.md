@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 342 — Website Console Next Actions Setup Path Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the no-task setup path. When a workspace has no `refactorTasks`, the operator checklist must recommend generating starter tasks before preparing implementation prompts.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for an empty `refactorTasks` workspace.
+- Verified the next-actions report stays pass, reports zero tasks, has no top tasks, and ranks `Generate starter refactor tasks` as the first setup action.
+- Verified the generated command and human Markdown output point to `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`.
+- Updated changelog and session history beside the Phase 330-341 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where no-task workspaces skip task generation and jump directly to implementation or handoff guidance.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 341 — Website Console Next Actions Strict Failure Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies the fail-state path where required MCP readiness is missing. This keeps the operator checklist honest when it should block target-repo implementation instead of only covering the pass and saved-file paths.
