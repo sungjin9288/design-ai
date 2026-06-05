@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 304 — Probe-Capable Site Help Release Guard (unreleased)
+
+Release metadata now protects the probe-capable Website Console site help usage that package and registry smoke assertions validate. Release-facing docs must mention the `design-ai help --json` topic catalog together with probe-capable Website Console site help usage, so the docs cannot keep generic help catalog wording while dropping the `--mcp-check [--probes]` / `--mcp-plan [--probes] [--json]` discovery contract.
+
+### Changed
+- Added `RELEASE_SITE_HELP_USAGE_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site help usage phrase` to the release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name probe-capable Website Console site help usage next to help JSON catalog coverage.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the probe-capable site help usage phrase.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if help JSON catalog guidance omits the Website Console site probe usage contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 303 — Probe-Capable Site Help Smoke Assertions (unreleased)
 
 Shared package/public-registry smoke assertions now require the same probe-capable Website Console site usage that top-level help exposes. The help JSON contract and main help output fixtures now include `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, and the self-test fails if the site usage drifts back to the older probe-less shape.
