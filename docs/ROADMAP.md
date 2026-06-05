@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 312 — MCP Check Executable Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for executable embedded MCP check probe command smoke coverage. The guard ties Phase 311's package/public-registry smoke execution of `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` to README, Release Checklist, and Distribution guidance, so docs cannot describe static embedded command guidance while omitting that the emitted commands are executed by smoke.
+
+### Changed
+- Added `RELEASE_SITE_MCP_CHECK_EXECUTABLE_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP check executable embedded command smoke phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name executable embedded MCP check probe command smoke coverage.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the executable embedded command smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they describe MCP readiness probe JSON `--out` plus embedded command guidance but omit executable embedded command smoke coverage.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 311 — MCP Check Probe Embedded Command Smoke Execution (unreleased)
 
 Packed-tarball and public-registry smoke now execute the embedded commands emitted by `design-ai site --mcp-check --probes --json`. Instead of only checking that the `commands` payload shape is present, the smoke runners rewrite the `<workspace.json>` placeholder to `--stdin`, map the command onto the active installed-bin / one-shot npm exec / published-package runner, and verify the emitted readiness probe `--out`, action-plan JSON, and action-plan JSON `--out` commands.
@@ -26,7 +51,6 @@ Packed-tarball and public-registry smoke now execute the embedded commands emitt
 - `git diff --check`
 
 ### What's still ahead
-- A release metadata guard for the executable embedded command smoke phrase can be added if release-facing docs need to distinguish executable command coverage from static embedded command guidance.
 - Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
 
 ## Phase 310 — MCP Check Probe Embedded Command Release Guard (unreleased)
