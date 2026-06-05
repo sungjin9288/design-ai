@@ -1440,6 +1440,7 @@ function siteMcpCommandTarget(filePath) {
 
 function buildSiteMcpProbeCommandSet(commandTarget) {
   return {
+    mcpCheckProbesHumanOut: `design-ai site ${commandTarget} --mcp-check --probes --out mcp-check-probes.txt`,
     mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
     mcpPlanProbesJson: `design-ai site ${commandTarget} --mcp-plan --probes --json`,
     mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
@@ -1530,6 +1531,7 @@ export function formatSiteMcpCheckHuman(report) {
     ...(report.commands ? [
       "",
       "Probe commands:",
+      `- Save readiness probe report: \`${report.commands.mcpCheckProbesHumanOut}\``,
       `- Save readiness probe JSON: \`${report.commands.mcpCheckProbesJsonOut}\``,
       `- Generate probe action plan JSON: \`${report.commands.mcpPlanProbesJson}\``,
       `- Save probe action plan JSON: \`${report.commands.mcpPlanProbesJsonOut}\``,

@@ -355,6 +355,10 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
     "commands",
   ]);
   assert.equal(
+    probeJson.commands.mcpCheckProbesHumanOut,
+    "design-ai site sample.json --mcp-check --probes --out mcp-check-probes.txt",
+  );
+  assert.equal(
     probeJson.commands.mcpCheckProbesJsonOut,
     "design-ai site sample.json --mcp-check --probes --json --out mcp-check-probes.json",
   );
@@ -370,6 +374,7 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
   assert.match(human, /Read-only probes:/);
   assert.match(human, /GitHub repo reference/);
   assert.match(human, /Probe commands:/);
+  assert.match(human, /Save readiness probe report: `design-ai site sample\.json --mcp-check --probes --out mcp-check-probes\.txt`/);
   assert.match(human, /Save readiness probe JSON: `design-ai site sample\.json --mcp-check --probes --json --out mcp-check-probes\.json`/);
   assert.match(human, /Generate probe action plan JSON: `design-ai site sample\.json --mcp-plan --probes --json`/);
   assert.match(human, /Save probe action plan JSON: `design-ai site sample\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json`/);
@@ -907,6 +912,7 @@ test("runSite prints and writes MCP readiness check output", async () => {
     assert.equal(probePayload.status, "pass");
     assert.equal(probePayload.probes.status, "pass");
     assert.equal(probePayload.probes.externalCalls, false);
+    assert.match(probePayload.commands.mcpCheckProbesHumanOut, /--mcp-check --probes --out mcp-check-probes\.txt/);
     assert.match(probePayload.commands.mcpCheckProbesJsonOut, /--mcp-check --probes --json --out mcp-check-probes\.json/);
     assert.match(probePayload.commands.mcpPlanProbesJson, /--mcp-plan --probes --json/);
     assert.match(probePayload.commands.mcpPlanProbesJsonOut, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
@@ -920,6 +926,7 @@ test("runSite prints and writes MCP readiness check output", async () => {
     assert.match(probeHumanOutput.stdout, /Read-only probes:/);
     assert.match(probeHumanOutput.stdout, /Browser smoke target/);
     assert.match(probeHumanOutput.stdout, /Probe commands:/);
+    assert.match(probeHumanOutput.stdout, /--mcp-check --probes --out mcp-check-probes\.txt/);
     assert.match(probeHumanOutput.stdout, /--mcp-check --probes --json --out mcp-check-probes\.json/);
     assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json/);
     assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);

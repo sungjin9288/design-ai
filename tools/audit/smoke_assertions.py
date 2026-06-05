@@ -1029,6 +1029,7 @@ EXPECTED_SITE_MCP_PROBE_ITEM_KEYS = [
     "actions",
 ]
 EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS = [
+    "mcpCheckProbesHumanOut",
     "mcpCheckProbesJsonOut",
     "mcpPlanProbesJson",
     "mcpPlanProbesJsonOut",
@@ -1153,6 +1154,7 @@ def site_mcp_probe_embedded_command(
         raise SystemExit(f"{context} MCP probe command missing or invalid: {command_key}")
 
     expected_tails = {
+        "mcpCheckProbesHumanOut": ["--mcp-check", "--probes", "--out", "mcp-check-probes.txt"],
         "mcpCheckProbesJsonOut": ["--mcp-check", "--probes", "--json", "--out", "mcp-check-probes.json"],
         "mcpPlanProbesJson": ["--mcp-plan", "--probes", "--json"],
         "mcpPlanProbesJsonOut": ["--mcp-plan", "--probes", "--json", "--out", "mcp-action-plan-probes.json"],
@@ -4723,6 +4725,7 @@ def passing_site_mcp_check_probes_json() -> str:
         ],
     }
     payload["commands"] = {
+        "mcpCheckProbesHumanOut": "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt",
         "mcpCheckProbesJsonOut": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
         "mcpPlanProbesJson": "design-ai site <workspace.json> --mcp-plan --probes --json",
         "mcpPlanProbesJsonOut": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
@@ -4777,6 +4780,7 @@ Mode: read-only-local; external calls: no; status: pass
    Evidence: deployProvider: vercel; liveUrl host: example.com
 
 Probe commands:
+- Save readiness probe report: `design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt`
 - Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`
 - Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`
 - Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`
@@ -6415,6 +6419,8 @@ def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str])
         context=context,
         command_label="site mcp-check probes JSON",
     )
+    if commands.get("mcpCheckProbesHumanOut") != "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt":
+        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-check probe human output command changed")
     if commands.get("mcpCheckProbesJsonOut") != "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json":
         raise SystemExit(f"site mcp-check probes JSON after {context} mcp-check probe output command changed")
     if commands.get("mcpPlanProbesJson") != "design-ai site <workspace.json> --mcp-plan --probes --json":
@@ -6482,6 +6488,7 @@ def assert_site_mcp_check_probes_human(raw: str, *, context: str, cmd: list[str]
         "- [pass] GitHub repo reference (required) -> pass",
         "- [pass] Browser smoke target (required) -> pass",
         "Probe commands:",
+        "- Save readiness probe report: `design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt`",
         "- Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`",
         "- Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`",
         "- Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`",
@@ -10133,6 +10140,26 @@ def run_self_test() -> None:
         cmd=site_mcp_check_probes_human_out_cmd,
     )
     site_mcp_check_probes_payload = json.loads(passing_site_mcp_check_probes_json())
+    expected_mcp_check_probe_human_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--out",
+        "/tmp/site-mcp-check-probes.txt",
+        "--force",
+    ]
+    actual_mcp_check_probe_human_command = site_mcp_probe_embedded_command(
+        site_mcp_check_probes_payload,
+        "mcpCheckProbesHumanOut",
+        site_mcp_check_probes_cmd,
+        output_path="/tmp/site-mcp-check-probes.txt",
+        context=context,
+    )
+    if actual_mcp_check_probe_human_command != expected_mcp_check_probe_human_command:
+        raise SystemExit("site MCP probe human output command should map to stdin and forced output path")
+
     expected_mcp_check_probe_command = [
         "design-ai",
         "site",

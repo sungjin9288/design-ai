@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 316 (unreleased)** — Added `mcpCheckProbesHumanOut` to probe-enabled MCP check JSON and human `Probe commands`, then executed that embedded command in packed-tarball and public-registry smoke to preserve the human readiness probe report.
 - **Phase 315 (unreleased)** — Added unit, packed-tarball, and public-registry smoke coverage for `design-ai site --stdin --mcp-check --probes --out file`, preserving the human MCP readiness probe report and its `Probe commands` guidance.
 - **Phase 314 (unreleased)** — Added shared packed-tarball and public-registry smoke coverage for `design-ai site --stdin --mcp-check --probes` human output, including the `Probe commands` guidance introduced in Phase 313.
 - **Phase 313 (unreleased)** — Added human-readable `Probe commands` guidance to `design-ai site --mcp-check --probes`, giving operators the same readiness JSON save, probe action plan JSON, and action plan save commands that probe JSON already exposes while leaving default MCP check output unchanged.

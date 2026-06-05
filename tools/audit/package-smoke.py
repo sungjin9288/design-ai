@@ -9370,6 +9370,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-check probes human out file",
         )
+        installed_site_mcp_check_probes_human_emitted_path = install_root / "installed-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                installed_site_mcp_check_probes_cmd,
+                output_path=installed_site_mcp_check_probes_human_emitted_path,
+                context="package smoke installed bin emitted site mcp-check probes human command",
+            ),
+            installed_site_mcp_check_probes_human_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-check probes human out file",
+        )
         installed_site_mcp_check_probes_json_path = install_root / "installed-site-mcp-check-probes.json"
         assert_site_mcp_check_probes_json_file_smoke(
             [
@@ -10340,6 +10354,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-check probes human out file",
+        )
+        npx_site_mcp_check_probes_human_emitted_path = npx_root / "npx-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                npx_site_mcp_check_probes_cmd,
+                output_path=npx_site_mcp_check_probes_human_emitted_path,
+                context="package smoke npm exec emitted site mcp-check probes human command",
+            ),
+            npx_site_mcp_check_probes_human_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-check probes human out file",
         )
         npx_site_mcp_check_probes_json_path = npx_root / "npx-site-mcp-check-probes.json"
         assert_site_mcp_check_probes_json_file_smoke(

@@ -4668,6 +4668,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site mcp-check probes human out file",
         )
+        registry_site_mcp_check_probes_human_emitted_path = npx_root / "registry-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                registry_site_mcp_check_probes_cmd,
+                output_path=registry_site_mcp_check_probes_human_emitted_path,
+                context="registry smoke npm exec emitted site mcp-check probes human command",
+            ),
+            registry_site_mcp_check_probes_human_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-check probes human out file",
+        )
         registry_site_mcp_check_probes_json_path = npx_root / "registry-site-mcp-check-probes.json"
         assert_site_mcp_check_probes_json_file_smoke(
             npm_exec_cmd(

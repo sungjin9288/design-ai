@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 316 — MCP Check Probe Embedded Human Report Command (unreleased)
+
+`design-ai site --mcp-check --probes --json` now embeds `commands.mcpCheckProbesHumanOut` alongside the existing probe JSON and action-plan commands. Human probe output also shows a matching `Save readiness probe report` command, and package/public-registry smoke executes the embedded command to verify that it writes a preserved human report with the `Probe commands` section intact.
+
+### Changed
+- Added `mcpCheckProbesHumanOut` to `buildSiteMcpProbeCommandSet`.
+- Added `Save readiness probe report` to the `Probe commands` section in MCP check probe human output.
+- Updated site unit tests to verify the new JSON command field and human output command line.
+- Extended shared smoke assertions and embedded command parsing to support `mcpCheckProbesHumanOut`.
+- Wired packed-tarball installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke to execute the embedded human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the embedded human report command.
+
+### Impact
+- Machine-readable MCP readiness probe payloads now expose both human report and JSON report preservation commands.
+- Existing non-probe MCP check JSON remains unchanged; this only expands probe-enabled `commands`.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 315 — MCP Check Probe Human Output Persistence Smoke (unreleased)
 
 `design-ai site --stdin --mcp-check --probes --out file` is now covered by unit and distribution smoke tests. The persisted human report must retain the readiness summary, read-only probe section, and `Probe commands` guidance so operators can archive the exact human handoff output alongside JSON probe evidence.
