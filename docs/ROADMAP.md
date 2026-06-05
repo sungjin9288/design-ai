@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 329 — MCP Action Plan Command Mapping Self-Test Release Guard (unreleased)
+
+Release metadata now guards the `shared MCP action plan command mapping self-test coverage` phrase across release-facing docs. The guard keeps Phase 328's shared `smoke_assertions.py --self-test` parity coverage visible beside the action-plan emitted human report, check JSON, and self-archive command smoke guidance.
+
+### Changed
+- Added a release metadata term group for shared MCP action plan command mapping self-test coverage.
+- Added a release policy label/check for the shared command mapping self-test phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention shared MCP action plan command mapping self-test coverage.
+- Added a self-test drift fixture that fails when README guidance drops the shared command mapping self-test phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted JSON command mapping is guarded by shared self-tests, not only by package/public-registry runtime smoke.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 328 — MCP Action Plan Embedded Command Self-Test Parity (unreleased)
 
 Shared smoke assertion self-tests now map the action-plan emitted `mcpCheckProbesJsonOut` and `mcpPlanProbesJsonOut` commands back to executable `design-ai site --stdin ... --out file --force` argv. This keeps the common assertion layer aligned with the packed-tarball and public-registry smoke paths that already execute those action-plan emitted commands.
