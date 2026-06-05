@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 322 — MCP Action Plan Human Report Drift Fixtures (unreleased)
+
+Package and registry smoke self-tests now include negative fixtures for the human readiness report generated from action-plan emitted `mcpCheckProbesHumanOut` commands. The local self-test path fails if the saved report loses the `Probe commands` guidance, matching the distribution smoke assertion that operators rely on for copy/paste follow-up commands.
+
+### Changed
+- Added a package smoke negative self-test fixture for action-plan emitted human readiness report output.
+- Added the same registry smoke negative self-test fixture for the public-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the drift fixture coverage.
+
+### Impact
+- The action-plan emitted human report self-test now guards both command mapping and content drift.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 321 — MCP Action Plan Human Command Self-Test Hardening (unreleased)
 
 Package and registry smoke self-tests now replay the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json` through the same human readiness report file-output assertion used by distribution smoke. This keeps the local `--self-test` path aligned with the installed-bin, one-shot npm exec, and public-registry command execution coverage added in Phase 320.

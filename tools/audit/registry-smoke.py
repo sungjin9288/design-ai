@@ -5873,6 +5873,20 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_human_out_cmd,
         )
         expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_human_file_output(
+                f"Wrote {site_mcp_plan_human_out_path}\n",
+                site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
+                    "Probe commands:",
+                    "Probe notes:",
+                ),
+                output_path=str(site_mcp_plan_human_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted human out",
+                cmd=site_mcp_plan_human_out_cmd,
+            ),
+            expected="Probe commands",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
             lambda: assert_site_mcp_plan_probes_json_file_output(
                 f"Wrote {site_mcp_plan_json_out_path}\n",
                 site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
