@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 320 (unreleased)** — Executed the `mcpCheckProbesHumanOut` command emitted by structured MCP action plan JSON in packed-tarball and public-registry smoke, preserving the human readiness report from action-plan payloads as well as MCP check probe payloads.
 - **Phase 319 (unreleased)** — Added release metadata guard coverage for MCP action plan human report output command parity, so release-facing docs must keep Phase 318's `mcpCheckProbesHumanOut` action-plan JSON command contract visible.
 - **Phase 318 (unreleased)** — Added `mcpCheckProbesHumanOut` to structured MCP action plan JSON commands, keeping human readiness report preservation discoverable from both MCP check probe payloads and MCP action-plan payloads.
 - **Phase 317 (unreleased)** — Added release metadata guard coverage for the embedded MCP check probe human report output command, so release-facing docs must keep the `mcpCheckProbesHumanOut` command contract visible beside human guidance and output-file smoke coverage.

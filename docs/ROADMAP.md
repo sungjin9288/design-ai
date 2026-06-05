@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 320 — MCP Action Plan Human Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the gap between action-plan JSON command parity and distribution verification: the action-plan payload must now produce a preserved human readiness probe report in installed-bin, one-shot npm exec, and published-package paths.
+
+### Changed
+- Updated package smoke and registry smoke helpers so MCP action plan probe JSON smoke returns the parsed payload.
+- Executed the action-plan emitted `mcpCheckProbesHumanOut` command in packed-tarball installed-bin smoke.
+- Executed the same action-plan emitted command in one-shot `npm exec --package <tarball>` smoke.
+- Executed the same action-plan emitted command in public-registry smoke.
+- Added shared smoke assertion self-test coverage for mapping the action-plan payload's human report command to `--stdin`, `--out`, and `--force`.
+- Added release metadata guard coverage and release-facing docs wording for MCP action plan emitted human report command smoke coverage.
+- Updated CHANGELOG and SESSION-LOG entries for the smoke execution.
+
+### Impact
+- Action-plan JSON command parity is now executable smoke coverage, not only schema guidance.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 319 — MCP Action Plan Human Command Release Guard (unreleased)
 
 Release metadata now guards the MCP action plan human report output command parity phrase across release-facing docs. The guard keeps Phase 318's `mcpCheckProbesHumanOut` action-plan JSON parity visible beside the existing MCP probe action plan JSON output-file command guidance.

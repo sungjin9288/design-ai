@@ -2898,7 +2898,7 @@ def assert_site_mcp_plan_probes_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
-) -> None:
+) -> object:
     result = run_plain_with_input(
         cmd,
         input_text=site_workspace_fixture_json(),
@@ -2906,6 +2906,7 @@ def assert_site_mcp_plan_probes_json_smoke(
         env=env,
     )
     assert_site_mcp_plan_probes_json(result.stdout, context=context, cmd=cmd)
+    return json.loads(result.stdout)
 
 
 def assert_site_mcp_plan_probes_json_file_smoke(
@@ -4751,11 +4752,25 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site mcp-plan probes markdown",
         )
-        assert_site_mcp_plan_probes_json_smoke(
+        registry_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec site mcp-plan probes JSON",
+        )
+        registry_site_mcp_plan_human_emitted_path = npx_root / "registry-site-mcp-plan-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_plan_probes_payload,
+                "mcpCheckProbesHumanOut",
+                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=registry_site_mcp_plan_human_emitted_path,
+                context="registry smoke npm exec emitted site mcp-plan probes human command",
+            ),
+            registry_site_mcp_plan_human_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes human out file",
         )
         registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
         assert_site_mcp_plan_probes_json_file_smoke(

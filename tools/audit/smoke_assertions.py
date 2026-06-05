@@ -10249,6 +10249,26 @@ def run_self_test() -> None:
         context=context,
         cmd=site_mcp_plan_probes_json_cmd,
     )
+    site_mcp_plan_probes_payload = json.loads(passing_site_mcp_plan_json(probes=True))
+    expected_mcp_plan_probe_human_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--out",
+        "/tmp/site-mcp-plan-probes-human.txt",
+        "--force",
+    ]
+    actual_mcp_plan_probe_human_command = site_mcp_probe_embedded_command(
+        site_mcp_plan_probes_payload,
+        "mcpCheckProbesHumanOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path="/tmp/site-mcp-plan-probes-human.txt",
+        context=context,
+    )
+    if actual_mcp_plan_probe_human_command != expected_mcp_plan_probe_human_command:
+        raise SystemExit("site MCP plan human output command should map to stdin and forced output path")
     site_mcp_plan_probes_json_out_cmd = [
         "design-ai",
         "site",
