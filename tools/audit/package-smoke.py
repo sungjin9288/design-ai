@@ -6598,6 +6598,22 @@ def run_self_test() -> None:
             context=f"{context} site mcp-plan probes JSON out",
             cmd=site_mcp_plan_json_out_cmd,
         )
+        site_mcp_plan_human_out_path = Path(tmp) / "site-mcp-plan-probes-human.txt"
+        site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+        site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesHumanOut",
+            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            output_path=str(site_mcp_plan_human_out_path),
+            context=f"{context} site mcp-plan probes emitted human out command",
+        )
+        assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_plan_human_out_path}\n",
+            site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_human_out_path),
+            context=f"{context} site mcp-plan probes emitted human out",
+            cmd=site_mcp_plan_human_out_cmd,
+        )
         expect_self_test_failure(
             lambda: assert_site_mcp_plan_probes_json_file_output(
                 f"Wrote {site_mcp_plan_json_out_path}\n",

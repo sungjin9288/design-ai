@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 321 — MCP Action Plan Human Command Self-Test Hardening (unreleased)
+
+Package and registry smoke self-tests now replay the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json` through the same human readiness report file-output assertion used by distribution smoke. This keeps the local `--self-test` path aligned with the installed-bin, one-shot npm exec, and public-registry command execution coverage added in Phase 320.
+
+### Changed
+- Added a package smoke self-test fixture that maps the action-plan JSON command to `--stdin`, `--out`, and `--force`, then validates the saved human MCP readiness probe report.
+- Added the same registry smoke self-test fixture for the published-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the self-test hardening.
+
+### Impact
+- Distribution smoke command execution is now backed by local runner-level self-tests, not only by shared assertion self-tests.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 320 — MCP Action Plan Human Command Smoke Execution (unreleased)
 
 Packed-tarball and public-registry smoke now execute the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the gap between action-plan JSON command parity and distribution verification: the action-plan payload must now produce a preserved human readiness probe report in installed-bin, one-shot npm exec, and published-package paths.
