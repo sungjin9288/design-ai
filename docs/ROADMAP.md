@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 327 — MCP Action Plan Check JSON Release Guard (unreleased)
+
+Release metadata now guards the `MCP action plan emitted check JSON command smoke coverage` phrase across release-facing docs. The guard keeps Phase 323's action-plan emitted `mcpCheckProbesJsonOut` execution visible beside the existing human report and self-archive action-plan command smoke guidance.
+
+### Changed
+- Added a release metadata term group for MCP action plan emitted check JSON command smoke coverage.
+- Added a release policy label/check for the check JSON command smoke phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention action-plan emitted check JSON command smoke coverage.
+- Added a self-test drift fixture that fails when README guidance drops the check JSON smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted `mcpCheckProbesJsonOut` is smoke-executed, not only present as schema guidance.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 326 — MCP Action Plan Emitted JSON Drift Fixtures (unreleased)
 
 Package and registry smoke self-tests now include negative drift fixtures for action-plan emitted JSON outputs. The local self-test path fails if the action-plan emitted `mcpCheckProbesJsonOut` report claims external calls or if the action-plan emitted `mcpPlanProbesJsonOut` self-archive report claims target-repo mutation.
