@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 339 (unreleased)** — Added direct CLI unit coverage for `design-ai site <workspace.json> --next-actions --out file --force` human Markdown output-file persistence, including forced overwrite replacement and non-JSON saved output checks.
 - **Phase 338 (unreleased)** — Added release metadata guard coverage for the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example across release-facing docs.
 - **Phase 337 (unreleased)** — Added `design-ai site --help` and shared help-topic smoke coverage for the human next-actions Markdown output-file example, plus English/Korean Website Improvement docs guidance.
 - **Phase 336 (unreleased)** — Added packed-tarball and public-registry smoke coverage for `design-ai site --stdin --next-actions --out file --force` human Markdown output-file persistence, plus release metadata guard coverage for the human output-file smoke phrase.

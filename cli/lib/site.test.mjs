@@ -1264,6 +1264,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const mcpCheck = path.join(dir, "out", "mcp-check.json");
     const mcpPlan = path.join(dir, "out", "mcp-action-plan.md");
     const nextActions = path.join(dir, "out", "next-actions.json");
+    const nextActionsHuman = path.join(dir, "out", "next-actions.md");
     const workflowGraph = path.join(dir, "out", "website-workflow-graph.json");
     writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
 
@@ -1303,6 +1304,17 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const nextActionsHumanOutput = await captureConsole(() => runSite([file, "--next-actions"]));
     assert.match(nextActionsHumanOutput.stdout, /Website Improvement next actions/);
     assert.match(nextActionsHumanOutput.stdout, /Prepare Codex implementation prompt/);
+
+    writeFileSync(nextActionsHuman, "stale next actions\n", "utf8");
+    const nextActionsHumanWriteOutput = await captureConsole(() => runSite([file, "--next-actions", "--out", nextActionsHuman, "--force"]));
+    assert.match(nextActionsHumanWriteOutput.stdout, /Wrote /);
+    const nextActionsHumanFile = readFileSync(nextActionsHuman, "utf8");
+    assert.match(nextActionsHumanFile, /Website Improvement next actions: Korean SaaS marketing site/);
+    assert.match(nextActionsHumanFile, /Actions: 3 \(0 blocking, 0 warning\)/);
+    assert.match(nextActionsHumanFile, new RegExp(`Command: \`design-ai site ${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} --prompt codex-implementation --task 1 --out codex-implementation\\.md\``));
+    assert.match(nextActionsHumanFile, /does not call external MCPs, mutate the target website repo/);
+    assert.doesNotMatch(nextActionsHumanFile, /stale next actions/);
+    assert.doesNotMatch(nextActionsHumanFile, /"kind": "website-improvement-next-actions"/);
 
     const nextActionsOutput = await captureConsole(() => runSite([file, "--next-actions", "--json", "--out", nextActions]));
     assert.match(nextActionsOutput.stdout, /Wrote /);
