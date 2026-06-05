@@ -842,6 +842,13 @@ RELEASE_SITE_HELP_USAGE_TERM_GROUPS = (
         "Website Console site usage",
     ),
 )
+RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS = (
+    (
+        "shared Website Console site help topic example smoke assertions",
+        "Website Console site help topic example smoke assertions",
+        "site help topic example smoke assertions",
+    ),
+)
 RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS = (
     (
         "command alias help",
@@ -1917,6 +1924,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "help JSON command phrase",
     "help JSON topic catalog phrase",
     "site help usage phrase",
+    "site help topic example phrase",
     "alias smoke phrase",
     "command alias smoke phrase",
     "functional alias smoke phrase",
@@ -2137,6 +2145,7 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("help JSON command phrase", RELEASE_HELP_JSON_COMMAND_TERM_GROUPS),
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("site help usage phrase", RELEASE_SITE_HELP_USAGE_TERM_GROUPS),
+    ("site help topic example phrase", RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
     ("command alias smoke phrase", RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS),
     ("functional alias smoke phrase", RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS),
@@ -2733,7 +2742,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audi
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output,
 command alias help and functional alias output,
-command-specific help topic output,
+command-specific help topic output, shared Website Console site help topic example smoke assertions,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
@@ -2831,7 +2840,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit 
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
-command-specific help topic 출력도 확인해요.
+command-specific help topic 출력과 shared Website Console site help topic example smoke assertions도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
@@ -4702,6 +4711,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
     assert_condition(
         "README.md is missing site help usage phrase" in site_help_usage_drift_errors,
         "release policy docs should mention probe-capable Website Console site help usage",
+    )
+
+    site_help_topic_example_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                ", shared Website Console site help topic example smoke assertions",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_help_topic_example_drift_errors = "\n".join(
+        site_help_topic_example_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site help topic example phrase"
+        in site_help_topic_example_drift_errors,
+        "release policy docs should mention shared Website Console site help topic example smoke assertions",
     )
 
     alias_smoke_drift = release_metadata_summary(

@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 306 (unreleased)** — Added release metadata guard coverage for shared Website Console site help topic example smoke assertions, so release-facing docs must keep the command-specific `design-ai help site` MCP probe JSON `--out` example contract visible.
 - **Phase 305 (unreleased)** — Updated shared package/public-registry smoke assertions so command-specific `design-ai help site` output must retain MCP probe JSON `--out` examples, with a drift fixture for losing the saved probe command.
 - **Phase 304 (unreleased)** — Added release metadata guard coverage for probe-capable Website Console site help usage, so release-facing docs must keep the help JSON catalog wording tied to the `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]` discovery contract.
 - **Phase 303 (unreleased)** — Updated shared package/public-registry smoke assertions so help JSON and main help output must retain probe-capable Website Console site usage, with a drift fixture for stale probe-less site usage.

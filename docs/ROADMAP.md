@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 306 — Site Help Topic Example Release Guard (unreleased)
+
+Release metadata now protects the shared Website Console site help topic example smoke assertion phrase that Phase 305 added to package and registry smoke assertions. Release-facing docs must mention the command-specific `design-ai help site` example guard alongside help topic smoke coverage, so docs cannot describe generic help topic validation while dropping the MCP probe JSON `--out` example contract.
+
+### Changed
+- Added `RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site help topic example phrase` to the release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name shared Website Console site help topic example smoke assertions.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the shared site help topic example phrase.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if help topic smoke guidance omits the Website Console `site` help example guard.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 305 — Site Help Topic Probe Output Smoke Assertions (unreleased)
 
 Shared package/public-registry smoke assertions now protect the command-specific Website Console `site` help examples for MCP probe JSON output files. The `site` help topic fixture must include copy/paste commands for `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json`, so package and registry smoke catch drift where top-level help still advertises probes but the detailed topic loses the save-to-file workflow.
