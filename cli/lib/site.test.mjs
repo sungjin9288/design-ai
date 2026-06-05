@@ -322,10 +322,12 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
   const { summary } = analyzeSiteWorkspace(workspace, { filePath: "sample.json" });
   const defaultReport = buildSiteMcpCheckReport(workspace, summary);
   const probeReport = buildSiteMcpCheckReport(workspace, summary, { probes: true });
+  const probeJson = JSON.parse(formatSiteMcpCheckJson(probeReport));
   const standaloneProbeReport = buildSiteMcpProbeReport(workspace);
   const human = formatSiteMcpCheckHuman(probeReport);
 
   assert.equal(Object.hasOwn(defaultReport, "probes"), false);
+  assert.equal(Object.hasOwn(defaultReport, "commands"), false);
   assert.equal(probeReport.status, "pass");
   assert.equal(probeReport.probes.status, "pass");
   assert.equal(probeReport.probes.externalCalls, false);
@@ -338,6 +340,31 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
     "browser-smoke-target",
     "deploy-provider-reference",
   ]);
+  assert.deepEqual(Object.keys(probeJson), [
+    "filePath",
+    "status",
+    "workspaceStatus",
+    "site",
+    "counts",
+    "items",
+    "taskGaps",
+    "workspaceIssues",
+    "nextActions",
+    "probes",
+    "commands",
+  ]);
+  assert.equal(
+    probeJson.commands.mcpCheckProbesJsonOut,
+    "design-ai site sample.json --mcp-check --probes --json --out mcp-check-probes.json",
+  );
+  assert.equal(
+    probeJson.commands.mcpPlanProbesJson,
+    "design-ai site sample.json --mcp-plan --probes --json",
+  );
+  assert.equal(
+    probeJson.commands.mcpPlanProbesJsonOut,
+    "design-ai site sample.json --mcp-plan --probes --json --out mcp-action-plan-probes.json",
+  );
   assert.equal(standaloneProbeReport.status, "pass");
   assert.match(human, /Read-only probes:/);
   assert.match(human, /GitHub repo reference/);
@@ -875,6 +902,9 @@ test("runSite prints and writes MCP readiness check output", async () => {
     assert.equal(probePayload.status, "pass");
     assert.equal(probePayload.probes.status, "pass");
     assert.equal(probePayload.probes.externalCalls, false);
+    assert.match(probePayload.commands.mcpCheckProbesJsonOut, /--mcp-check --probes --json --out mcp-check-probes\.json/);
+    assert.match(probePayload.commands.mcpPlanProbesJson, /--mcp-plan --probes --json/);
+    assert.match(probePayload.commands.mcpPlanProbesJsonOut, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
 
     const humanOutput = await captureConsole(() => runSite([file, "--mcp-check"]));
     assert.match(humanOutput.stdout, /Website Improvement MCP readiness/);

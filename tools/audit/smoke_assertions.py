@@ -1005,7 +1005,7 @@ EXPECTED_SITE_MCP_CHECK_ITEM_KEYS = [
     "evidence",
     "actions",
 ]
-EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS = EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS + ["probes"]
+EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS = EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS + ["probes", "commands"]
 EXPECTED_SITE_MCP_PROBES_KEYS = [
     "enabled",
     "mode",
@@ -1027,6 +1027,11 @@ EXPECTED_SITE_MCP_PROBE_ITEM_KEYS = [
     "message",
     "evidence",
     "actions",
+]
+EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS = [
+    "mcpCheckProbesJsonOut",
+    "mcpPlanProbesJson",
+    "mcpPlanProbesJsonOut",
 ]
 EXPECTED_SITE_MCP_CHECK_TASK_GAP_KEYS = ["taskId", "title", "mcp", "status", "level", "message"]
 EXPECTED_SITE_MCP_ACTION_PLAN_PAYLOAD_KEYS = [
@@ -4668,6 +4673,11 @@ def passing_site_mcp_check_probes_json() -> str:
             },
         ],
     }
+    payload["commands"] = {
+        "mcpCheckProbesJsonOut": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
+        "mcpPlanProbesJson": "design-ai site <workspace.json> --mcp-plan --probes --json",
+        "mcpPlanProbesJsonOut": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
+    }
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
@@ -6290,7 +6300,22 @@ def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str])
     )
     base_payload = dict(payload)
     probes = base_payload.pop("probes")
+    commands = base_payload.pop("commands")
     assert_site_mcp_check_json(json.dumps(base_payload), context=context, cmd=cmd)
+
+    commands = assert_smoke_json_keys(
+        commands,
+        EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS,
+        label="commands",
+        context=context,
+        command_label="site mcp-check probes JSON",
+    )
+    if commands.get("mcpCheckProbesJsonOut") != "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json":
+        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-check probe output command changed")
+    if commands.get("mcpPlanProbesJson") != "design-ai site <workspace.json> --mcp-plan --probes --json":
+        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-plan probe JSON command changed")
+    if commands.get("mcpPlanProbesJsonOut") != "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json":
+        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-plan probe output command changed")
 
     probes = assert_smoke_json_keys(
         probes,
@@ -10249,6 +10274,19 @@ def run_self_test() -> None:
             cmd=site_mcp_check_probes_cmd,
         ),
         expected="external calls",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_check_probe_command_payload = json.loads(passing_site_mcp_check_probes_json())
+    stale_site_mcp_check_probe_command_payload["commands"]["mcpPlanProbesJson"] = (
+        "design-ai site <workspace.json> --mcp-plan --json"
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json(
+            json.dumps(stale_site_mcp_check_probe_command_payload),
+            context=context,
+            cmd=site_mcp_check_probes_cmd,
+        ),
+        expected="mcp-plan probe JSON command changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(

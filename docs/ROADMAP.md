@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 309 — MCP Check Probe Output Commands (unreleased)
+
+`design-ai site --mcp-check --probes --json` now embeds the preservation and next-step command hints directly in the probe payload. The default non-probe MCP check JSON shape stays unchanged, while probe-enabled reports include `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` so operators can save readiness evidence and continue into the structured MCP action plan from the same machine-readable output.
+
+### Changed
+- Added shared Website Console MCP command target helpers in `cli/lib/site.mjs`.
+- Added a `commands` object only to probe-enabled MCP check JSON reports.
+- Reused the same probe output command builder for structured MCP action plan JSON output-file commands without expanding the action-plan command key set.
+- Updated site unit tests to verify the default MCP check JSON remains stable and the probe JSON exposes the embedded command hints.
+- Updated shared package/public-registry smoke assertion fixtures, validators, and self-test drift coverage for the probe report command contract.
+- Updated CHANGELOG and SESSION-LOG entries for the MCP check probe command payload.
+
+### Impact
+- Machine-readable MCP readiness probe reports now carry copy/paste preservation and next-step commands alongside probe evidence.
+- Existing consumers of `design-ai site --mcp-check --json` without `--probes` keep the same top-level JSON contract.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-check --probes --json`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 308 — MCP Action Plan Embedded Command Release Guard (unreleased)
 
 Release metadata now protects the release-facing documentation phrase for embedded MCP action plan probe output-file commands. The guard ties Phase 307's structured JSON command fields to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP probe action plan JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJsonOut` command contract.

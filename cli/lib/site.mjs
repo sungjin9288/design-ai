@@ -1434,6 +1434,18 @@ function siteMcpCheckStatus(items, taskGaps, workspaceIssues) {
   return "pass";
 }
 
+function siteMcpCommandTarget(filePath) {
+  return filePath === "stdin" ? "<workspace.json>" : filePath;
+}
+
+function buildSiteMcpProbeCommandSet(commandTarget) {
+  return {
+    mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
+    mcpPlanProbesJson: `design-ai site ${commandTarget} --mcp-plan --probes --json`,
+    mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
+  };
+}
+
 export function buildSiteMcpCheckReport(workspace, summary = {}, options = {}) {
   const items = MCP_ITEMS.map(([key, label]) => mcpItemReport(workspace, key, label));
   const taskGaps = mcpTaskGaps(workspace);
@@ -1474,6 +1486,7 @@ export function buildSiteMcpCheckReport(workspace, summary = {}, options = {}) {
   };
   if (probes) {
     report.probes = probes;
+    report.commands = buildSiteMcpProbeCommandSet(siteMcpCommandTarget(report.filePath));
   }
   return report;
 }
@@ -1560,7 +1573,8 @@ function mcpActionPlanTaskRows(workspace, report) {
 export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}) {
   const report = buildSiteMcpCheckReport(workspace, summary, options);
   const filePath = report.filePath || "workspace.json";
-  const commandTarget = filePath === "stdin" ? "<workspace.json>" : filePath;
+  const commandTarget = siteMcpCommandTarget(filePath);
+  const probeCommands = buildSiteMcpProbeCommandSet(commandTarget);
   const requiredGaps = report.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass");
   const optionalGaps = report.items.filter((item) => item.requestedStatus === "optional" && item.level !== "pass");
   const blockingIssues = [
@@ -1580,8 +1594,8 @@ export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}
   }));
   const commands = {
     mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
-    mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
-    mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
+    mcpCheckProbesJsonOut: probeCommands.mcpCheckProbesJsonOut,
+    mcpPlanProbesJsonOut: probeCommands.mcpPlanProbesJsonOut,
     tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
     implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
     handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
