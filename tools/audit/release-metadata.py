@@ -1030,6 +1030,24 @@ RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS = (
         "site help topic example smoke assertions",
     ),
 )
+RELEASE_SITE_NEXT_ACTIONS_HELP_EXAMPLE_TERM_GROUPS = (
+    (
+        "`design-ai site website-workspace.json --next-actions --out website-next-actions.md`",
+        "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
+    ),
+    (
+        "next-actions Markdown help example",
+        "next-actions Markdown help example coverage",
+        "next-actions Markdown 도움말 예시",
+        "next-actions Markdown help 예시",
+    ),
+    (
+        "site help topic",
+        "help topic example",
+        "help-topic",
+        "도움말 예시",
+    ),
+)
 RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS = (
     (
         "command alias help",
@@ -2119,6 +2137,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "help JSON topic catalog phrase",
     "site help usage phrase",
     "site help topic example phrase",
+    "site next-actions help example phrase",
     "alias smoke phrase",
     "command alias smoke phrase",
     "functional alias smoke phrase",
@@ -2392,6 +2411,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("help JSON topic catalog phrase", RELEASE_HELP_JSON_TERM_GROUPS),
     ("site help usage phrase", RELEASE_SITE_HELP_USAGE_TERM_GROUPS),
     ("site help topic example phrase", RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS),
+    (
+        "site next-actions help example phrase",
+        RELEASE_SITE_NEXT_ACTIONS_HELP_EXAMPLE_TERM_GROUPS,
+    ),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
     ("command alias smoke phrase", RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS),
     ("functional alias smoke phrase", RELEASE_FUNCTIONAL_ALIAS_SMOKE_TERM_GROUPS),
@@ -2990,7 +3013,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audi
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output,
 command alias help and functional alias output,
-command-specific help topic output, shared Website Console site help topic example smoke assertions,
+command-specific help topic output, shared Website Console site help topic example smoke assertions including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example,
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
@@ -3090,7 +3113,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit 
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
-command-specific help topic 출력과 shared Website Console site help topic example smoke assertions도 확인해요.
+command-specific help topic 출력과 shared Website Console site help topic example smoke assertions 및 `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown 도움말 예시도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
@@ -5323,6 +5346,29 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site help topic example phrase"
         in site_help_topic_example_drift_errors,
         "release policy docs should mention shared Website Console site help topic example smoke assertions",
+    )
+
+    site_next_actions_help_example_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                " including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_next_actions_help_example_drift_errors = "\n".join(
+        site_next_actions_help_example_drift["errors"]
+    )
+    assert_condition(
+        "README.md is missing site next-actions help example phrase"
+        in site_next_actions_help_example_drift_errors,
+        "release policy docs should mention Website Console next-actions Markdown help example",
     )
 
     alias_smoke_drift = release_metadata_summary(

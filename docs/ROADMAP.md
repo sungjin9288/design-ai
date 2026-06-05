@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 338 — Website Console Next Actions Help Example Release Guard (unreleased)
+
+Release metadata now guards the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` help example across release-facing docs. This keeps Phase 337's human Markdown next-actions runbook example visible in the release ritual, not only in CLI help smoke assertions.
+
+### Changed
+- Added a release metadata term group for the Website Console next-actions Markdown help example.
+- Added the term group to required release policy phrase labels and checks.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the concrete help example.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the next-actions Markdown help example beside shared site help topic smoke assertions.
+
+### Impact
+- Release-facing docs cannot silently drop the human next-actions Markdown help example while retaining generic site help topic smoke wording.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, smoke command execution, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 337 — Website Console Next Actions Help Example Coverage (unreleased)
 
 Website Console help now shows the human Markdown next-actions output-file workflow directly in `design-ai site --help`. This keeps the operator-facing runbook checkpoint discoverable without requiring users to infer it from the generic `--out file` option.
