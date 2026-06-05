@@ -1059,6 +1059,8 @@ EXPECTED_SITE_MCP_ACTION_PLAN_TASK_KEYS = [
 ]
 EXPECTED_SITE_MCP_ACTION_PLAN_COMMAND_KEYS = [
     "mcpCheck",
+    "mcpCheckProbesJsonOut",
+    "mcpPlanProbesJsonOut",
     "tasks",
     "implementationPrompt",
     "handoffReport",
@@ -4775,6 +4777,8 @@ def passing_site_mcp_plan_json(*, probes: bool = False) -> str:
         ],
         "commands": {
             "mcpCheck": "design-ai site <workspace.json> --mcp-check --strict --json",
+            "mcpCheckProbesJsonOut": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
+            "mcpPlanProbesJsonOut": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
             "tasks": "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
             "implementationPrompt": "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
             "handoffReport": "design-ai site <workspace.json> --report --out website-handoff.md",
@@ -6480,6 +6484,10 @@ def assert_site_mcp_plan_json(raw: str, *, context: str, cmd: list[str]) -> None
     )
     if commands.get("mcpCheck") != "design-ai site <workspace.json> --mcp-check --strict --json":
         raise SystemExit(f"site mcp-plan JSON after {context} strict mcp-check command changed")
+    if commands.get("mcpCheckProbesJsonOut") != "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json":
+        raise SystemExit(f"site mcp-plan JSON after {context} mcp-check probe output command changed")
+    if commands.get("mcpPlanProbesJsonOut") != "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json":
+        raise SystemExit(f"site mcp-plan JSON after {context} mcp-plan probe output command changed")
     if not isinstance(payload.get("executionSequence"), list) or len(payload["executionSequence"]) != 5:
         raise SystemExit(f"site mcp-plan JSON after {context} execution sequence changed")
     boundaries = payload.get("boundaries")
@@ -10285,6 +10293,19 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_cmd,
         ),
         expected="missing expected content",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_plan_command_payload = json.loads(passing_site_mcp_plan_json())
+    stale_site_mcp_plan_command_payload["commands"]["mcpCheckProbesJsonOut"] = (
+        "design-ai site <workspace.json> --mcp-check --probes --json"
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_json(
+            json.dumps(stale_site_mcp_plan_command_payload),
+            context=context,
+            cmd=site_mcp_plan_json_cmd,
+        ),
+        expected="mcp-check probe output command changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(

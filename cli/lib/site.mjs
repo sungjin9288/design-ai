@@ -1580,6 +1580,8 @@ export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}
   }));
   const commands = {
     mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
+    mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
     tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
     implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
     handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,

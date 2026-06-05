@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 307 — MCP Action Plan Probe Output Commands (unreleased)
+
+Structured Website Console MCP action plan JSON now carries the MCP probe JSON output-file commands directly in its `commands` object. Operators and automation can read one action-plan payload and discover both preservation paths without opening help text: `mcpCheckProbesJsonOut` for readiness probe JSON and `mcpPlanProbesJsonOut` for probe action-plan JSON.
+
+### Changed
+- Added `commands.mcpCheckProbesJsonOut` and `commands.mcpPlanProbesJsonOut` to `buildSiteMcpActionPlanData`.
+- Updated site unit tests so Markdown and JSON MCP action plans must include the probe `--out` commands.
+- Updated shared package/public-registry smoke assertion fixtures and validators for the expanded action-plan `commands` contract.
+- Added a smoke assertion self-test fixture that fails when the MCP readiness probe output command drops the `--out` target.
+- Updated CHANGELOG and SESSION-LOG entries for the structured JSON command improvement.
+
+### Impact
+- Machine-readable Website Console MCP action plans now expose the same saved-probe workflows that `design-ai site --help` documents.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-plan --probes --json`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 306 — Site Help Topic Example Release Guard (unreleased)
 
 Release metadata now protects the shared Website Console site help topic example smoke assertion phrase that Phase 305 added to package and registry smoke assertions. Release-facing docs must mention the command-specific `design-ai help site` example guard alongside help topic smoke coverage, so docs cannot describe generic help topic validation while dropping the MCP probe JSON `--out` example contract.
