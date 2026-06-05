@@ -10269,6 +10269,48 @@ def run_self_test() -> None:
     )
     if actual_mcp_plan_probe_human_command != expected_mcp_plan_probe_human_command:
         raise SystemExit("site MCP plan human output command should map to stdin and forced output path")
+
+    expected_mcp_plan_probe_check_json_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-plan-probes-check.json",
+        "--force",
+    ]
+    actual_mcp_plan_probe_check_json_command = site_mcp_probe_embedded_command(
+        site_mcp_plan_probes_payload,
+        "mcpCheckProbesJsonOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path="/tmp/site-mcp-plan-probes-check.json",
+        context=context,
+    )
+    if actual_mcp_plan_probe_check_json_command != expected_mcp_plan_probe_check_json_command:
+        raise SystemExit("site MCP plan check JSON output command should map to stdin and forced output path")
+
+    expected_mcp_plan_probe_self_archive_command = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-plan",
+        "--probes",
+        "--json",
+        "--out",
+        "/tmp/site-mcp-plan-probes-self-archive.json",
+        "--force",
+    ]
+    actual_mcp_plan_probe_self_archive_command = site_mcp_probe_embedded_command(
+        site_mcp_plan_probes_payload,
+        "mcpPlanProbesJsonOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path="/tmp/site-mcp-plan-probes-self-archive.json",
+        context=context,
+    )
+    if actual_mcp_plan_probe_self_archive_command != expected_mcp_plan_probe_self_archive_command:
+        raise SystemExit("site MCP plan self-archive JSON output command should map to stdin and forced output path")
     site_mcp_plan_probes_json_out_cmd = [
         "design-ai",
         "site",
@@ -10662,6 +10704,30 @@ def run_self_test() -> None:
             cmd=site_mcp_plan_json_cmd,
         ),
         expected="mcp-check probe output command changed",
+        scope="smoke assertions",
+    )
+    stale_site_mcp_plan_command_payload = json.loads(passing_site_mcp_plan_json())
+    stale_site_mcp_plan_command_payload["commands"]["mcpPlanProbesJsonOut"] = (
+        "design-ai site <workspace.json> --mcp-plan --probes --json"
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_json(
+            json.dumps(stale_site_mcp_plan_command_payload),
+            context=context,
+            cmd=site_mcp_plan_json_cmd,
+        ),
+        expected="mcp-plan probe output command changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: site_mcp_probe_embedded_command(
+            stale_site_mcp_plan_command_payload,
+            "mcpPlanProbesJsonOut",
+            site_mcp_plan_probes_json_cmd,
+            output_path="/tmp/site-mcp-plan-probes-self-archive.json",
+            context=context,
+        ),
+        expected="MCP probe command changed",
         scope="smoke assertions",
     )
     expect_self_test_failure(

@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 328 — MCP Action Plan Embedded Command Self-Test Parity (unreleased)
+
+Shared smoke assertion self-tests now map the action-plan emitted `mcpCheckProbesJsonOut` and `mcpPlanProbesJsonOut` commands back to executable `design-ai site --stdin ... --out file --force` argv. This keeps the common assertion layer aligned with the packed-tarball and public-registry smoke paths that already execute those action-plan emitted commands.
+
+### Changed
+- Added action-plan payload self-test coverage for the emitted MCP readiness probe JSON archive command.
+- Added action-plan payload self-test coverage for the emitted MCP action-plan self-archive JSON command.
+- Added a negative drift fixture for action-plan emitted `mcpPlanProbesJsonOut` command shape changes.
+- Updated CHANGELOG and SESSION-LOG entries for the shared self-test parity coverage.
+
+### Impact
+- Local `smoke_assertions.py --self-test` now catches action-plan emitted JSON command mapping drift before package or public registry smoke executes the commands.
+- This changes shared test coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 327 — MCP Action Plan Check JSON Release Guard (unreleased)
 
 Release metadata now guards the `MCP action plan emitted check JSON command smoke coverage` phrase across release-facing docs. The guard keeps Phase 323's action-plan emitted `mcpCheckProbesJsonOut` execution visible beside the existing human report and self-archive action-plan command smoke guidance.
