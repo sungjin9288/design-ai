@@ -287,6 +287,7 @@ test("buildSiteMcpCheckReport summarizes evidence and task/MCP gaps", () => {
   assert.match(human, /Website Improvement MCP readiness/);
   assert.match(human, /GitHub \(required\) -> ready/);
   assert.match(human, /Task MCP gaps:\n- none/);
+  assert.doesNotMatch(human, /Probe commands:/);
 
   const gapWorkspace = {
     ...workspace,
@@ -368,6 +369,10 @@ test("buildSiteMcpCheckReport can include read-only MCP probes without changing 
   assert.equal(standaloneProbeReport.status, "pass");
   assert.match(human, /Read-only probes:/);
   assert.match(human, /GitHub repo reference/);
+  assert.match(human, /Probe commands:/);
+  assert.match(human, /Save readiness probe JSON: `design-ai site sample\.json --mcp-check --probes --json --out mcp-check-probes\.json`/);
+  assert.match(human, /Generate probe action plan JSON: `design-ai site sample\.json --mcp-plan --probes --json`/);
+  assert.match(human, /Save probe action plan JSON: `design-ai site sample\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json`/);
 
   const missingProbeWorkspace = {
     ...workspace,
@@ -909,10 +914,15 @@ test("runSite prints and writes MCP readiness check output", async () => {
     const humanOutput = await captureConsole(() => runSite([file, "--mcp-check"]));
     assert.match(humanOutput.stdout, /Website Improvement MCP readiness/);
     assert.match(humanOutput.stdout, /Task MCP gaps:\n- none/);
+    assert.doesNotMatch(humanOutput.stdout, /Probe commands:/);
 
     const probeHumanOutput = await captureConsole(() => runSite([file, "--mcp-check", "--probes"]));
     assert.match(probeHumanOutput.stdout, /Read-only probes:/);
     assert.match(probeHumanOutput.stdout, /Browser smoke target/);
+    assert.match(probeHumanOutput.stdout, /Probe commands:/);
+    assert.match(probeHumanOutput.stdout, /--mcp-check --probes --json --out mcp-check-probes\.json/);
+    assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json/);
+    assert.match(probeHumanOutput.stdout, /--mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
 
     const writeOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", outFile]));
     assert.match(writeOutput.stdout, /Wrote /);

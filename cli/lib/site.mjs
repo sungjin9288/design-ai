@@ -1527,6 +1527,13 @@ export function formatSiteMcpCheckHuman(report) {
         return `- [${item.level}] ${item.label} (${item.requestedStatus}) -> ${item.passed ? "pass" : "needs attention"}\n   Evidence: ${evidence}${action}`;
       }),
     ] : []),
+    ...(report.commands ? [
+      "",
+      "Probe commands:",
+      `- Save readiness probe JSON: \`${report.commands.mcpCheckProbesJsonOut}\``,
+      `- Generate probe action plan JSON: \`${report.commands.mcpPlanProbesJson}\``,
+      `- Save probe action plan JSON: \`${report.commands.mcpPlanProbesJsonOut}\``,
+    ] : []),
     "",
     "Next actions:",
     ...(report.nextActions.length ? report.nextActions.map((action) => `- ${action}`) : ["- none"]),

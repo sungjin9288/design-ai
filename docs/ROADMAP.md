@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 313 — MCP Check Probe Human Command Guidance (unreleased)
+
+`design-ai site --mcp-check --probes` now shows the same probe follow-up commands in human output that probe-enabled JSON already carries. Operators can save the readiness probe JSON, generate the structured probe action plan JSON, and save that action plan from the visible report without switching to `--json`. The default `--mcp-check` human output remains unchanged.
+
+### Changed
+- Added a `Probe commands` section to `formatSiteMcpCheckHuman` when the report includes read-only probe commands.
+- Kept the default non-probe MCP readiness human output free of probe command guidance.
+- Added site unit tests for formatted probe reports and `runSite` human output to verify the command section and default-output boundary.
+- Updated CHANGELOG and SESSION-LOG entries for the human command guidance.
+
+### Impact
+- Human operators get the same copy/paste next-step path as JSON consumers when they run MCP readiness probes.
+- This is presentation-only CLI behavior: no external MCP call, target website repo mutation, smoke runner behavior, release metadata policy, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-check --probes`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 312 — MCP Check Executable Embedded Command Release Guard (unreleased)
 
 Release metadata now protects the release-facing documentation phrase for executable embedded MCP check probe command smoke coverage. The guard ties Phase 311's package/public-registry smoke execution of `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` to README, Release Checklist, and Distribution guidance, so docs cannot describe static embedded command guidance while omitting that the emitted commands are executed by smoke.
