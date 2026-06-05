@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 305 — Site Help Topic Probe Output Smoke Assertions (unreleased)
+
+Shared package/public-registry smoke assertions now protect the command-specific Website Console `site` help examples for MCP probe JSON output files. The `site` help topic fixture must include copy/paste commands for `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json`, so package and registry smoke catch drift where top-level help still advertises probes but the detailed topic loses the save-to-file workflow.
+
+### Changed
+- Added Website Console MCP probe JSON output-file example fragments to `EXPECTED_HELP_TOPIC_FRAGMENTS["site"]` in `tools/audit/smoke_assertions.py`.
+- Added a positive self-test assertion for the `site` help topic fixture.
+- Added a drift fixture that fails when the MCP readiness probe example drops the `--out mcp-check-probes.json` save target.
+- Updated CHANGELOG and SESSION-LOG entries for the shared help-topic smoke assertion hardening.
+
+### Impact
+- Packed-tarball and public-registry smoke now validate the command-specific Website Console help topic examples through the shared helper path, not only the help JSON usage line and top-level help summary.
+- This is smoke assertion hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 304 — Probe-Capable Site Help Release Guard (unreleased)
 
 Release metadata now protects the probe-capable Website Console site help usage that package and registry smoke assertions validate. Release-facing docs must mention the `design-ai help --json` topic catalog together with probe-capable Website Console site help usage, so the docs cannot keep generic help catalog wording while dropping the `--mcp-check [--probes]` / `--mcp-plan [--probes] [--json]` discovery contract.
