@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 323 (unreleased)** — Executed the `mcpCheckProbesJsonOut` command emitted by structured MCP action plan JSON in package and public-registry smoke, preserving machine-readable MCP readiness probe JSON directly from action-plan payloads.
 - **Phase 322 (unreleased)** — Added package and registry smoke self-test negative drift fixtures so action-plan emitted human readiness report output fails if it loses `Probe commands` guidance.
 - **Phase 321 (unreleased)** — Hardened package and registry smoke self-tests so the action-plan emitted `mcpCheckProbesHumanOut` command is replayed through the same human readiness report file-output assertions used by distribution smoke.
 - **Phase 320 (unreleased)** — Executed the `mcpCheckProbesHumanOut` command emitted by structured MCP action plan JSON in packed-tarball and public-registry smoke, preserving the human readiness report from action-plan payloads as well as MCP check probe payloads.

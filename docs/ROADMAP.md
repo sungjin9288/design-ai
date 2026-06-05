@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 323 — MCP Action Plan Check JSON Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpCheckProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the remaining action-plan command execution gap: a structured action-plan payload can now preserve both the human readiness probe report and the machine-readable MCP readiness probe JSON without requiring operators to open the original MCP check payload.
+
+### Changed
+- Added package smoke execution for action-plan emitted `mcpCheckProbesJsonOut` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added public-registry smoke execution for the same action-plan emitted readiness probe JSON preservation command.
+- Added package and registry smoke self-test fixtures that replay the action-plan emitted check JSON command through shared JSON file-output assertions.
+- Updated CHANGELOG and SESSION-LOG entries for the command execution coverage.
+
+### Impact
+- Action-plan payload command smoke coverage now includes human report output, MCP check probe JSON output, action-plan JSON output, and direct action-plan JSON generation.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 322 — MCP Action Plan Human Report Drift Fixtures (unreleased)
 
 Package and registry smoke self-tests now include negative fixtures for the human readiness report generated from action-plan emitted `mcpCheckProbesHumanOut` commands. The local self-test path fails if the saved report loses the `Probe commands` guidance, matching the distribution smoke assertion that operators rely on for copy/paste follow-up commands.

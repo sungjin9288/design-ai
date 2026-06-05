@@ -6614,6 +6614,22 @@ def run_self_test() -> None:
             context=f"{context} site mcp-plan probes emitted human out",
             cmd=site_mcp_plan_human_out_cmd,
         )
+        site_mcp_plan_check_json_out_path = Path(tmp) / "site-mcp-plan-probes-check.json"
+        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesJsonOut",
+            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context=f"{context} site mcp-plan probes emitted check JSON out command",
+        )
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_plan_check_json_out_path}\n",
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context=f"{context} site mcp-plan probes emitted check JSON out",
+            cmd=site_mcp_plan_check_json_out_cmd,
+        )
         expect_self_test_failure(
             lambda: assert_site_mcp_check_probes_human_file_output(
                 f"Wrote {site_mcp_plan_human_out_path}\n",
@@ -9504,6 +9520,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin emitted site mcp-plan probes human out file",
         )
+        installed_site_mcp_plan_check_json_emitted_path = install_root / "installed-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+                output_path=installed_site_mcp_plan_check_json_emitted_path,
+                context="package smoke installed bin emitted site mcp-plan probes check JSON command",
+            ),
+            installed_site_mcp_plan_check_json_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes check JSON out file",
+        )
         installed_site_mcp_plan_json_path = install_root / "installed-site-mcp-plan-probes.json"
         assert_site_mcp_plan_probes_json_file_smoke(
             [
@@ -10502,6 +10532,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec emitted site mcp-plan probes human out file",
+        )
+        npx_site_mcp_plan_check_json_emitted_path = npx_root / "npx-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=npx_site_mcp_plan_check_json_emitted_path,
+                context="package smoke npm exec emitted site mcp-plan probes check JSON command",
+            ),
+            npx_site_mcp_plan_check_json_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes check JSON out file",
         )
         npx_site_mcp_plan_json_path = npx_root / "npx-site-mcp-plan-probes.json"
         assert_site_mcp_plan_probes_json_file_smoke(

@@ -4772,6 +4772,20 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec emitted site mcp-plan probes human out file",
         )
+        registry_site_mcp_plan_check_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=registry_site_mcp_plan_check_json_emitted_path,
+                context="registry smoke npm exec emitted site mcp-plan probes check JSON command",
+            ),
+            registry_site_mcp_plan_check_json_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes check JSON out file",
+        )
         registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
         assert_site_mcp_plan_probes_json_file_smoke(
             npm_exec_cmd(
@@ -5871,6 +5885,22 @@ def run_self_test() -> None:
             output_path=str(site_mcp_plan_human_out_path),
             context="registry smoke self-test site mcp-plan probes emitted human out",
             cmd=site_mcp_plan_human_out_cmd,
+        )
+        site_mcp_plan_check_json_out_path = tmp_root / "registry-site-mcp-plan-probes-check.json"
+        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesJsonOut",
+            site_mcp_plan_probes_json_cmd,
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted check JSON out command",
+        )
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_plan_check_json_out_path}\n",
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted check JSON out",
+            cmd=site_mcp_plan_check_json_out_cmd,
         )
         expect_self_test_failure(
             lambda: assert_site_mcp_check_probes_human_file_output(
