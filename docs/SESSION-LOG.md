@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 355 (unreleased)** — Added warning-only strict exit unit coverage for Website Console handoff bundle checks so valid bundles with optional MCP readiness warnings make `--bundle-check --strict --json` exit non-zero and report `bundle-readiness-warn`.
 - **Phase 354 (unreleased)** — Added warning-only strict exit unit coverage for Website Console handoff bundle generation so optional MCP readiness warnings make `--bundle --strict` exit non-zero while preserving warning status in generated bundle files.
 - **Phase 353 (unreleased)** — Added warning-only strict exit unit coverage for Website Console workflow graph exports so optional MCP readiness warnings make `--graph --strict --json` exit non-zero while preserving graph `mcpStatus: "warn"`.
 - **Phase 352 (unreleased)** — Added warning-only strict exit unit coverage for Website Console MCP readiness checks so optional MCP readiness warnings make `--mcp-check --strict --json` exit non-zero at the source gate.

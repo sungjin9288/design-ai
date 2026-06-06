@@ -1747,6 +1747,17 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.equal(JSON.parse(readFileSync(path.join(warningOnlyBundleDir, "summary.json"), "utf8")).status, "warn");
     assert.equal(JSON.parse(readFileSync(path.join(warningOnlyBundleDir, "mcp-check.json"), "utf8")).status, "warn");
     assert.equal(warningOnlyBundleStrict.exitCode, 1);
+
+    const warningOnlyBundleCheckStrict = await captureConsole(() =>
+      runSite([warningOnlyBundleDir, "--bundle-check", "--strict", "--json"]),
+    );
+    const warningOnlyBundleCheckPayload = JSON.parse(warningOnlyBundleCheckStrict.stdout);
+    assert.equal(warningOnlyBundleCheckPayload.status, "warn");
+    assert.equal(warningOnlyBundleCheckPayload.valid, true);
+    assert.equal(warningOnlyBundleCheckPayload.summary.status, "warn");
+    assert.equal(warningOnlyBundleCheckPayload.mcpStatus, "warn");
+    assert.ok(warningOnlyBundleCheckPayload.issues.some((issue) => issue.id === "bundle-readiness-warn"));
+    assert.equal(warningOnlyBundleCheckStrict.exitCode, 1);
   });
 });
 
