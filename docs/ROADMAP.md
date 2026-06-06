@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 349 — Website Console Next Actions Rank Sequence Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies action rank sequencing after severity sorting. Human checklist numbering and JSON `rank` fields should always start at 1 and remain gapless across pass, warning, and blocking paths.
+
+### Changed
+- Added pass-state rank assertions for the default implementation, evidence, and bundle actions.
+- Added warning-state rank assertions for optional MCP readiness guidance.
+- Added blocking-state rank assertions to ensure severity sorting still renumbers the final action list from 1.
+- Updated changelog and session history beside the Phase 330-348 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where sorted next-actions keep stale rank numbers or produce gaps in operator checklists.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 348 — Website Console Next Actions Top-Task Cap Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies the top-task cap. The payload should report the total task count while exposing only the three highest-priority tasks for operator focus.

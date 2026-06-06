@@ -428,6 +428,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.counts.blocking, 0);
   assert.equal(report.counts.tasks, 1);
+  assert.deepEqual(report.actions.map((action) => action.rank), [1, 2, 3]);
   assert.deepEqual(report.commands, {
     summary: "design-ai site sample.json --json",
     mcpCheck: "design-ai site sample.json --mcp-check --strict --json",
@@ -556,6 +557,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   const optionalMissingReport = buildSiteNextActionsReport(optionalMissingWorkspace, optionalMissingSummary);
   const optionalMissingHuman = formatSiteNextActionsHuman(optionalMissingReport);
   assert.equal(optionalMissingReport.status, "warn");
+  assert.deepEqual(optionalMissingReport.actions.map((action) => action.rank), [1, 2, 3, 4]);
   assert.equal(optionalMissingReport.actions[0].severity, "warning");
   assert.equal(optionalMissingReport.actions[0].title, "Clarify optional MCP readiness: Sentry");
   assert.equal(optionalMissingReport.actions[0].command, "design-ai site optional-missing.json --mcp-plan --out mcp-action-plan.md");
@@ -610,6 +612,8 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   const blockedHuman = formatSiteNextActionsHuman(blockedReport);
   assert.equal(blockedReport.status, "fail");
   assert.equal(blockedReport.counts.blocking, 1);
+  assert.deepEqual(blockedReport.actions.map((action) => action.rank), blockedReport.actions.map((_, index) => index + 1));
+  assert.equal(blockedReport.actions[0].rank, 1);
   assert.equal(blockedReport.actions[0].title, "Add required MCP readiness: GitHub");
   assert.match(blockedReport.actions[0].reason, /siteProfile\.repoUrl/);
   assert.equal(blockedJson.counts.requiredMcpMissing, 1);
