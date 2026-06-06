@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 361 — Product Readiness Warning Strict Compare Accuracy (unreleased)
+
+Product readiness now reflects the warning-state Website Console bundle-compare strict smoke coverage added in Phases 357-360. The readiness summary previously mentioned bundle digest comparison, but it did not explicitly say that warning-state identical bundles keep `sameBundle: true` while still exiting non-zero under `--strict`.
+
+### Changed
+- Updated Product Readiness release confidence wording for Website Console bundle compare.
+- Made the verified compare path include warning-state strict smoke coverage, identical warning bundles, `sameBundle: true`, and strict non-zero exits.
+- Updated changelog, roadmap, and session history so completion status stays aligned with the current smoke contract.
+
+### Impact
+- Product readiness no longer implies that only pass-state bundle comparison is covered.
+- This is documentation accuracy only: no CLI runtime behavior, package smoke runner behavior, release metadata table, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 360 — Website Console Bundle Compare Warning Strict Release Metadata Guard (unreleased)
 
 Release metadata now guards the warning-state Website Console bundle-compare strict smoke phrase across release-facing docs. Phase 359 added the packed-tarball and public-registry smoke execution; this phase makes sure release guidance cannot silently regress to only mentioning pass-state bundle comparison.
