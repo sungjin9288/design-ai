@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 356 — Website Console Bundle Handoff Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console bundle handoff unit coverage now verifies warning-only strict exits. Target-repo handoff prompts generated from structurally valid but warning-state bundles should preserve the bundle warning context and fail `--bundle-handoff --strict --json` before implementation handoff.
+
+### Changed
+- Reused the warning-only handoff bundle generated from the Website Console fixture where `siteProfile.sentryProject` is empty.
+- Verified `design-ai site <bundle-dir> --bundle-handoff --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the handoff payload remains `valid: true`, preserves `bundle.mcpStatus: "warn"`, reports `bundle-readiness-warn`, and includes the local bundle-check warning in the target-repo prompt.
+- Updated changelog and session history beside the Phase 330-355 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle handoff prompt generation treats warning-only bundles as strict-pass implementation inputs.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 355 — Website Console Bundle Check Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console handoff bundle check unit coverage now verifies warning-only strict exits. A generated bundle with optional MCP readiness warnings should remain structurally valid, but `--bundle-check --strict --json` should return non-zero and surface the readiness warning before target-repo handoff.

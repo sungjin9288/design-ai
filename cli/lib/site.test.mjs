@@ -1758,6 +1758,17 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.equal(warningOnlyBundleCheckPayload.mcpStatus, "warn");
     assert.ok(warningOnlyBundleCheckPayload.issues.some((issue) => issue.id === "bundle-readiness-warn"));
     assert.equal(warningOnlyBundleCheckStrict.exitCode, 1);
+
+    const warningOnlyBundleHandoffStrict = await captureConsole(() =>
+      runSite([warningOnlyBundleDir, "--bundle-handoff", "--strict", "--json"]),
+    );
+    const warningOnlyBundleHandoffPayload = JSON.parse(warningOnlyBundleHandoffStrict.stdout);
+    assert.equal(warningOnlyBundleHandoffPayload.status, "warn");
+    assert.equal(warningOnlyBundleHandoffPayload.valid, true);
+    assert.equal(warningOnlyBundleHandoffPayload.bundle.mcpStatus, "warn");
+    assert.ok(warningOnlyBundleHandoffPayload.issues.some((issue) => issue.id === "bundle-readiness-warn"));
+    assert.match(warningOnlyBundleHandoffPayload.prompt, /did not fully pass local bundle-check validation/);
+    assert.equal(warningOnlyBundleHandoffStrict.exitCode, 1);
   });
 });
 
