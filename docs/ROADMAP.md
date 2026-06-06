@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 350 — Website Console Next Actions Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should still fail `--strict` so operators resolve readiness planning before target-repo implementation.
+
+### Changed
+- Added a `runSite` warning-only fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --next-actions --strict --json` emits `status: "warn"` with zero blocking actions.
+- Verified the first action is the optional Sentry readiness warning and strict mode exits with code 1.
+- Updated changelog and session history beside the Phase 330-349 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where `--next-actions --strict` only fails hard blockers and accidentally allows warning-only MCP planning gaps through.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 349 — Website Console Next Actions Rank Sequence Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies action rank sequencing after severity sorting. Human checklist numbering and JSON `rank` fields should always start at 1 and remain gapless across pass, warning, and blocking paths.
