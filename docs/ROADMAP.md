@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 363 — Product Readiness Warning Strict Release Metadata Guard (unreleased)
+
+Release metadata now checks Product Readiness for the warning-state Website Console bundle-compare strict coverage wording. Phases 361-362 corrected the human-readable readiness summary; this phase makes that correction durable by failing release metadata when Product Readiness drops the warning-state compare contract.
+
+### Changed
+- Added `docs/PRODUCT-READINESS.md` as a release metadata text input.
+- Added a Product Readiness-specific warning strict compare phrase guard.
+- Added a self-test drift fixture that removes warning-state bundle-compare strict coverage wording and expects release metadata to fail.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release metadata now catches Product Readiness regressions where Website Console compare coverage falls back to generic bundle comparison wording.
+- This is release guard coverage only: no CLI runtime behavior, package/registry smoke runner behavior, release policy doc set, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 362 — Product Readiness Public Registry Warning Strict Compare Accuracy (unreleased)
 
 Product readiness public-registry summaries now name the warning-state Website Console bundle-compare strict smoke path. Phase 361 fixed the local release-confidence wording; this phase aligns the post-publish registry-smoke summary so it does not hide the warning-state compare contract inside generic bundle-check/compare/handoff/repair coverage.

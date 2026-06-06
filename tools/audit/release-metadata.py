@@ -23,6 +23,7 @@ PACKAGE_JSON = ROOT / "package.json"
 PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 ROADMAP = ROOT / "docs" / "ROADMAP.md"
+PRODUCT_READINESS = ROOT / "docs" / "PRODUCT-READINESS.md"
 RUN_ALL = ROOT / "tools" / "audit" / "run-all.py"
 CANONICAL_REPOSITORY_SLUG = "sungjin9288/design-ai"
 CANONICAL_REPOSITORY_URL = f"https://github.com/{CANONICAL_REPOSITORY_SLUG}"
@@ -36,6 +37,29 @@ REQUIRED_RELEASE_POLICY_DOC_LABELS = (
 )
 RELEASE_POLICY_DOC_PATHS = tuple(
     (label, ROOT / label) for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
+)
+PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS = (
+    (
+        "warning-state Website Console bundle-compare strict smoke coverage",
+        "warning-state bundle-compare strict smoke coverage",
+        "warning-state Website Console bundle-compare strict failures",
+        "warning-state bundle-compare strict failures",
+    ),
+    (
+        "identical warning bundles",
+        "`sameBundle: true`",
+        "sameBundle: true",
+    ),
+    (
+        "exiting non-zero under `--strict`",
+        "non-zero under `--strict`",
+        "strict non-zero",
+    ),
+    (
+        "public registry",
+        "published-package",
+        "post-publish",
+    ),
 )
 
 CHANGELOG_HEADER_RE = re.compile(
@@ -2815,6 +2839,18 @@ def release_policy_phrase_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def product_readiness_phrase_doc_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(
+                f"{label} is missing product readiness warning strict compare phrase: {expected}"
+            )
+    return errors
+
+
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
     required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
     missing_errors = [
@@ -2844,6 +2880,7 @@ def release_metadata_summary(
     roadmap_text: str,
     release_policy_docs: dict[str, str],
     audit_count: int | None,
+    product_readiness_text: str | None = None,
 ) -> dict:
     errors: list[str] = []
     version = package_json.get("version")
@@ -2901,6 +2938,13 @@ def release_metadata_summary(
     errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
         errors.extend(release_policy_phrase_doc_errors(label, text))
+    if product_readiness_text is not None:
+        errors.extend(
+            product_readiness_phrase_doc_errors(
+                "docs/PRODUCT-READINESS.md",
+                product_readiness_text,
+            )
+        )
 
     return {
         "version": version,
@@ -3185,6 +3229,9 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.md": english_policy_doc,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
+    product_readiness_doc = """
+Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish.
+"""
     passing = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -3192,6 +3239,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         roadmap_text=roadmap,
         release_policy_docs=release_policy_docs,
         audit_count=8,
+        product_readiness_text=product_readiness_doc,
     )
     assert_condition(passing["errors"] == [], "complete fixture should pass without errors")
     assert_condition(
@@ -4256,6 +4304,32 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site workflow graph package smoke phrase"
         in site_workflow_graph_package_smoke_drift_errors,
         "release policy docs should mention Website Console workflow graph smoke",
+    )
+
+    product_readiness_warning_strict_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc.replace(
+            "warning-state bundle-compare strict smoke coverage",
+            "generic bundle compare coverage",
+        ).replace(
+            "warning-state strict smoke coverage",
+            "generic strict smoke coverage",
+        ),
+    )
+    product_readiness_warning_strict_drift_errors = "\n".join(
+        product_readiness_warning_strict_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/PRODUCT-READINESS.md is missing product readiness warning strict compare phrase"
+            in product_readiness_warning_strict_drift_errors
+        ),
+        "product readiness should mention warning-state bundle-compare strict coverage",
     )
 
     site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(
@@ -7444,6 +7518,10 @@ def main() -> int:
     plugin_json, plugin_json_errors = load_json_input(".claude-plugin/plugin.json", PLUGIN_JSON)
     changelog_text, changelog_errors = load_text_input("CHANGELOG.md", CHANGELOG)
     roadmap_text, roadmap_errors = load_text_input("docs/ROADMAP.md", ROADMAP)
+    product_readiness_text, product_readiness_errors = load_text_input(
+        "docs/PRODUCT-READINESS.md",
+        PRODUCT_READINESS,
+    )
     audit_count, audit_count_load_errors = load_audit_count()
     summary = release_metadata_summary(
         package_json=package_json,
@@ -7452,12 +7530,14 @@ def main() -> int:
         roadmap_text=roadmap_text,
         release_policy_docs=release_policy_docs,
         audit_count=audit_count,
+        product_readiness_text=product_readiness_text,
     )
     summary["errors"] = (
         package_json_errors
         + plugin_json_errors
         + changelog_errors
         + roadmap_errors
+        + product_readiness_errors
         + release_policy_doc_load_errors
         + audit_count_load_errors
         + summary["errors"]

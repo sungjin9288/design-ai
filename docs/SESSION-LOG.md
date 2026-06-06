@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 363 (unreleased)** — Added release metadata guard coverage for Product Readiness warning-state Website Console bundle-compare strict wording so readiness status cannot regress to generic bundle comparison coverage.
 - **Phase 362 (unreleased)** — Clarified Product Readiness public-registry Website Console coverage so the post-publish smoke summary explicitly includes warning-state bundle-compare strict smoke coverage instead of only generic bundle-check/compare/handoff/repair wording.
 - **Phase 361 (unreleased)** — Clarified Product Readiness so Website Console bundle-compare completion status explicitly includes warning-state strict smoke coverage for identical warning bundles that keep `sameBundle: true` while exiting non-zero under `--strict`.
 - **Phase 360 (unreleased)** — Added release metadata guard coverage for the warning-state Website Console bundle-compare strict smoke phrase so release-facing docs cannot drop the packed-tarball/public-registry warning strict contract.
