@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 344 — Website Console Next Actions Warning Path Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies warning-state MCP guidance. Optional MCP readiness gaps and task/MCP status mismatches should warn operators and route them to the MCP action plan before target-repo implementation starts.
+
+### Changed
+- Added a missing optional Sentry readiness scenario where `siteProfile.sentryProject` is empty while `mcpReadiness.sentry` remains optional.
+- Verified the optional MCP warning ranks first, explains the missing evidence, and points to `design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md`.
+- Added a task/MCP gap scenario where a refactor task recommends Figma while `mcpReadiness.figma` is marked unused.
+- Verified the task gap warning preserves task/MCP references and uses the same MCP action-plan command.
+- Updated changelog and session history beside the Phase 330-343 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where warning-state Website Console workspaces skip MCP planning and jump straight to implementation guidance.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 343 — Website Console Next Actions Evidence Trail Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies the implementation evidence handoff reminder. The operator checklist should ask for `website-handoff.md` evidence when executed work or verification results are empty, and skip that reminder once both are recorded.

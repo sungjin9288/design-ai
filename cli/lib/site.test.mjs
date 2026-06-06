@@ -473,6 +473,41 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(evidenceReadyReport.actions[0].severity, "implementation");
   assert.equal(evidenceReadyReport.actions.at(-1).command, "design-ai site evidence-ready.json --bundle --out website-handoff-bundle");
 
+  const optionalMissingWorkspace = {
+    ...workspace,
+    siteProfile: {
+      ...workspace.siteProfile,
+      sentryProject: "",
+    },
+  };
+  const optionalMissingSummary = analyzeSiteWorkspace(optionalMissingWorkspace, { filePath: "optional-missing.json" }).summary;
+  const optionalMissingReport = buildSiteNextActionsReport(optionalMissingWorkspace, optionalMissingSummary);
+  const optionalMissingHuman = formatSiteNextActionsHuman(optionalMissingReport);
+  assert.equal(optionalMissingReport.status, "warn");
+  assert.equal(optionalMissingReport.actions[0].severity, "warning");
+  assert.equal(optionalMissingReport.actions[0].title, "Clarify optional MCP readiness: Sentry");
+  assert.equal(optionalMissingReport.actions[0].command, "design-ai site optional-missing.json --mcp-plan --out mcp-action-plan.md");
+  assert.match(optionalMissingReport.actions[0].reason, /siteProfile\.sentryProject/);
+  assert.match(optionalMissingHuman, /1\. \[warning\] Clarify optional MCP readiness: Sentry/);
+  assert.match(optionalMissingHuman, /Command: `design-ai site optional-missing\.json --mcp-plan --out mcp-action-plan\.md`/);
+
+  const taskGapWorkspace = {
+    ...workspace,
+    mcpReadiness: {
+      ...workspace.mcpReadiness,
+      figma: "unused",
+    },
+  };
+  const taskGapSummary = analyzeSiteWorkspace(taskGapWorkspace, { filePath: "task-gap.json" }).summary;
+  const taskGapReport = buildSiteNextActionsReport(taskGapWorkspace, taskGapSummary);
+  assert.equal(taskGapReport.status, "warn");
+  assert.equal(taskGapReport.counts.taskGaps, 1);
+  assert.equal(taskGapReport.actions[0].severity, "warning");
+  assert.equal(taskGapReport.actions[0].title, "Align MCP status for task-homepage-cta");
+  assert.equal(taskGapReport.actions[0].command, "design-ai site task-gap.json --mcp-plan --out mcp-action-plan.md");
+  assert.deepEqual(taskGapReport.actions[0].references, ["task-homepage-cta", "figma"]);
+  assert.match(taskGapReport.actions[0].reason, /recommends figma/);
+
   const setupWorkspace = {
     ...workspace,
     refactorTasks: [],
