@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 346 — Website Console Next Actions Stdin Command Target Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies stdin command targets. When the workspace source is `stdin`, the JSON follow-up commands should use the portable `<workspace.json>` placeholder instead of leaking a filesystem path.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for a summary with `filePath: "stdin"`.
+- Verified the full stdin `commands` block uses `<workspace.json>` for summary, MCP check, MCP plan, task generation, implementation prompt, handoff report, and handoff bundle commands.
+- Verified formatted next-actions JSON preserves the same stdin command object as the in-memory report.
+- Updated changelog and session history beside the Phase 330-345 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where stdin-based next-actions payloads emit unusable or environment-specific follow-up commands.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 345 — Website Console Next Actions Command Set Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies the full JSON `commands` block. This complements package/public smoke checks that inspect selected commands by ensuring the local unit suite catches drift in every follow-up command emitted by the operator checklist.

@@ -438,6 +438,22 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
     handoffBundle: "design-ai site sample.json --bundle --out website-handoff-bundle",
   });
   assert.deepEqual(json.commands, report.commands);
+
+  const stdinSummary = analyzeSiteWorkspace(workspace, { filePath: "stdin" }).summary;
+  const stdinReport = buildSiteNextActionsReport(workspace, stdinSummary);
+  const stdinJson = JSON.parse(formatSiteNextActionsJson(stdinReport));
+  assert.equal(stdinReport.filePath, "stdin");
+  assert.deepEqual(stdinReport.commands, {
+    summary: "design-ai site <workspace.json> --json",
+    mcpCheck: "design-ai site <workspace.json> --mcp-check --strict --json",
+    mcpPlan: "design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md",
+    tasks: "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
+    implementationPrompt: "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
+    handoffReport: "design-ai site <workspace.json> --report --out website-handoff.md",
+    handoffBundle: "design-ai site <workspace.json> --bundle --out website-handoff-bundle",
+  });
+  assert.deepEqual(stdinJson.commands, stdinReport.commands);
+
   assert.equal(report.actions[0].severity, "implementation");
   assert.equal(report.actions[0].command, "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md");
   const evidenceAction = report.actions.find((action) => action.title === "Create implementation evidence trail");
