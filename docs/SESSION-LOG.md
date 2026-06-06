@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 351 (unreleased)** — Added warning-only strict exit unit coverage for Website Console MCP action plans so optional MCP readiness warnings make `--mcp-plan --strict --json` exit non-zero.
 - **Phase 350 (unreleased)** — Added warning-only strict exit unit coverage for Website Console next-actions so optional MCP readiness warnings still make `--next-actions --strict --json` exit non-zero.
 - **Phase 349 (unreleased)** — Added action rank sequence unit coverage for Website Console next-actions so pass, warning, and blocking action lists renumber from 1 after severity sorting.
 - **Phase 348 (unreleased)** — Added top-task cap unit coverage for Website Console next-actions so four-task workspaces keep the full task count while exposing only the three highest-priority tasks.

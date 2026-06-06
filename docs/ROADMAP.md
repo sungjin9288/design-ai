@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 351 — Website Console MCP Plan Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console MCP action-plan unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should fail `--mcp-plan --strict --json` the same way they fail summary and next-actions strict gates, so planning gaps do not pass through CI or operator checks unnoticed.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --mcp-plan --strict --json` emits `status: "warn"` with zero blocking items.
+- Verified the action-plan warning list includes the optional Sentry readiness gap and still exposes the strict MCP check follow-up command.
+- Updated changelog and session history beside the Phase 330-350 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where MCP action-plan strict mode exits cleanly for warning-only readiness gaps.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 350 — Website Console Next Actions Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should still fail `--strict` so operators resolve readiness planning before target-repo implementation.
