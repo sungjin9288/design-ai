@@ -1699,6 +1699,18 @@ test("runSite strict exits non-zero on warnings", async () => {
     const warningOnlyFile = path.join(dir, "warning-only.json");
     writeFileSync(warningOnlyFile, JSON.stringify(warningOnlyRaw), "utf8");
 
+    const warningOnlyMcpCheckStrict = await captureConsole(() =>
+      runSite([warningOnlyFile, "--mcp-check", "--strict", "--json"]),
+    );
+    const warningOnlyMcpCheckPayload = JSON.parse(warningOnlyMcpCheckStrict.stdout);
+    const warningOnlySentryItem = warningOnlyMcpCheckPayload.items.find((item) => item.key === "sentry");
+    assert.equal(warningOnlyMcpCheckPayload.status, "warn");
+    assert.equal(warningOnlyMcpCheckPayload.counts.missing, 1);
+    assert.equal(warningOnlySentryItem.requestedStatus, "optional");
+    assert.equal(warningOnlySentryItem.state, "missing");
+    assert.equal(warningOnlySentryItem.level, "warn");
+    assert.equal(warningOnlyMcpCheckStrict.exitCode, 1);
+
     const warningOnlyStrict = await captureConsole(() => runSite([warningOnlyFile, "--next-actions", "--strict", "--json"]));
     const warningOnlyPayload = JSON.parse(warningOnlyStrict.stdout);
     assert.equal(warningOnlyPayload.status, "warn");

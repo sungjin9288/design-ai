@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 352 — Website Console MCP Check Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console MCP readiness unit coverage now verifies warning-only strict exits at the source gate. Optional MCP readiness warnings should fail `--mcp-check --strict --json` before action plans or next-actions consume the same readiness state.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --mcp-check --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the Sentry readiness item remains `optional`, `missing`, and `warn`, with exactly one missing readiness item in the report.
+- Updated changelog and session history beside the Phase 330-351 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where the MCP readiness source gate allows optional warning-only gaps through strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 351 — Website Console MCP Plan Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console MCP action-plan unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should fail `--mcp-plan --strict --json` the same way they fail summary and next-actions strict gates, so planning gaps do not pass through CI or operator checks unnoticed.
