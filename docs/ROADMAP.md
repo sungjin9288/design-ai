@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 353 — Website Console Workflow Graph Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console workflow graph unit coverage now verifies warning-only strict exits. Portable graph exports should preserve MCP readiness warnings and fail `--graph --strict --json` when optional readiness gaps remain.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --graph --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the graph keeps `workspaceStatus: "pass"` while propagating `mcpStatus: "warn"` into the top-level graph and summary payload.
+- Updated changelog and session history beside the Phase 330-352 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where portable workflow graph exports drop MCP warning status or bypass strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 352 — Website Console MCP Check Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console MCP readiness unit coverage now verifies warning-only strict exits at the source gate. Optional MCP readiness warnings should fail `--mcp-check --strict --json` before action plans or next-actions consume the same readiness state.

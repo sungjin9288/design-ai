@@ -1728,6 +1728,16 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.ok(warningOnlyMcpPlanPayload.warnings.some((item) => /Sentry/.test(item)));
     assert.match(warningOnlyMcpPlanPayload.commands.mcpCheck, /--mcp-check --strict --json/);
     assert.equal(warningOnlyMcpPlanStrict.exitCode, 1);
+
+    const warningOnlyGraphStrict = await captureConsole(() =>
+      runSite([warningOnlyFile, "--graph", "--strict", "--json"]),
+    );
+    const warningOnlyGraphPayload = JSON.parse(warningOnlyGraphStrict.stdout);
+    assert.equal(warningOnlyGraphPayload.status, "warn");
+    assert.equal(warningOnlyGraphPayload.workspaceStatus, "pass");
+    assert.equal(warningOnlyGraphPayload.mcpStatus, "warn");
+    assert.equal(warningOnlyGraphPayload.summary.mcpStatus, "warn");
+    assert.equal(warningOnlyGraphStrict.exitCode, 1);
   });
 });
 
