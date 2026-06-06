@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 357 — Website Console Bundle Compare Warning Strict Exit Coverage (unreleased)
+
+Website Console bundle compare now preserves warning-state bundle-check results. Identical bundles with optional MCP readiness warnings should still compare as the same bundle, but `--bundle-compare --strict --json` should return non-zero because the compared artifacts are not strict-ready for target-repo handoff.
+
+### Changed
+- Updated `buildSiteBundleCompareReport` to add left/right warning issues when either bundle-check report has `status: "warn"`.
+- Kept `sameBundle` tied to digest, changed-file, and metadata equality instead of overall compare status, so identical warning-state bundles still report `sameBundle: true`.
+- Added CLI coverage for `design-ai site <bundle-dir> --bundle-compare <same-bundle-dir> --strict --json` using a warning-only Website Console handoff bundle.
+- Updated changelog and session history beside the Phase 330-356 Website Console strict/next-actions hardening work.
+
+### Impact
+- Operators can distinguish "the two bundles are identical" from "the identical bundle is strict-ready"; warning-state bundles now fail strict compare without losing identity information.
+- This changes Website Console bundle-compare warning propagation only. It does not add external MCP calls, target website repo mutation, backend storage, dependencies, or schema fields.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 356 — Website Console Bundle Handoff Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console bundle handoff unit coverage now verifies warning-only strict exits. Target-repo handoff prompts generated from structurally valid but warning-state bundles should preserve the bundle warning context and fail `--bundle-handoff --strict --json` before implementation handoff.

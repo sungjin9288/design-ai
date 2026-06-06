@@ -3056,9 +3056,13 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
 
   if (left.status === "fail") {
     addIssue(issues, "fail", "bundle-compare-left-invalid", "Primary bundle must pass bundle-check before comparison can be trusted");
+  } else if (left.status === "warn") {
+    addIssue(issues, "warn", "bundle-compare-left-warn", "Primary bundle has bundle-check warnings; review them before target-repo handoff");
   }
   if (right.status === "fail") {
     addIssue(issues, "fail", "bundle-compare-right-invalid", "Comparison bundle must pass bundle-check before comparison can be trusted");
+  } else if (right.status === "warn") {
+    addIssue(issues, "warn", "bundle-compare-right-warn", "Comparison bundle has bundle-check warnings; review them before target-repo handoff");
   }
 
   const leftDigest = left.summary.checksumBundleDigest || "";
@@ -3066,10 +3070,12 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
   const digestMatch = Boolean(leftDigest && rightDigest && leftDigest === rightDigest);
   const changedFiles = buildBundleFileChanges(left, right);
   const metadataChanges = buildBundleMetadataChanges(left, right);
+  const hasDifferences = !digestMatch || changedFiles.length > 0 || metadataChanges.length > 0;
+  const hasFailures = issues.some((issue) => issue.level === "fail");
 
-  if (issues.length === 0 && digestMatch && changedFiles.length === 0 && metadataChanges.length === 0) {
+  if (issues.length === 0 && !hasDifferences) {
     addIssue(issues, "pass", "bundle-compare-identical", "Handoff bundles have the same bundle digest and checksum manifest");
-  } else if (issues.length === 0) {
+  } else if (!hasFailures && hasDifferences) {
     addIssue(issues, "warn", "bundle-compare-different", "Handoff bundles differ; review changed files before target-repo handoff");
   }
 
@@ -3077,7 +3083,7 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
   return {
     status,
     valid: left.valid && right.valid,
-    sameBundle: status === "pass",
+    sameBundle: !hasDifferences,
     digestMatch,
     left: summarizeBundleForCompare(left),
     right: summarizeBundleForCompare(right),

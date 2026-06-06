@@ -1769,6 +1769,20 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.ok(warningOnlyBundleHandoffPayload.issues.some((issue) => issue.id === "bundle-readiness-warn"));
     assert.match(warningOnlyBundleHandoffPayload.prompt, /did not fully pass local bundle-check validation/);
     assert.equal(warningOnlyBundleHandoffStrict.exitCode, 1);
+
+    const warningOnlyBundleCompareStrict = await captureConsole(() =>
+      runSite([warningOnlyBundleDir, "--bundle-compare", warningOnlyBundleDir, "--strict", "--json"]),
+    );
+    const warningOnlyBundleComparePayload = JSON.parse(warningOnlyBundleCompareStrict.stdout);
+    assert.equal(warningOnlyBundleComparePayload.status, "warn");
+    assert.equal(warningOnlyBundleComparePayload.valid, true);
+    assert.equal(warningOnlyBundleComparePayload.sameBundle, true);
+    assert.equal(warningOnlyBundleComparePayload.digestMatch, true);
+    assert.equal(warningOnlyBundleComparePayload.left.status, "warn");
+    assert.equal(warningOnlyBundleComparePayload.right.status, "warn");
+    assert.ok(warningOnlyBundleComparePayload.issues.some((issue) => issue.id === "bundle-compare-left-warn"));
+    assert.ok(warningOnlyBundleComparePayload.issues.some((issue) => issue.id === "bundle-compare-right-warn"));
+    assert.equal(warningOnlyBundleCompareStrict.exitCode, 1);
   });
 });
 
