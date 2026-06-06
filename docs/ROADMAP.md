@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 345 — Website Console Next Actions Command Set Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the full JSON `commands` block. This complements package/public smoke checks that inspect selected commands by ensuring the local unit suite catches drift in every follow-up command emitted by the operator checklist.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for the full command set: summary, MCP check, MCP plan, task generation, implementation prompt, handoff report, and handoff bundle.
+- Verified the formatted next-actions JSON preserves the same command object as the in-memory report.
+- Updated changelog and session history beside the Phase 330-344 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where a follow-up command disappears or changes in the next-actions JSON payload before package/public smoke runs.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 344 — Website Console Next Actions Warning Path Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies warning-state MCP guidance. Optional MCP readiness gaps and task/MCP status mismatches should warn operators and route them to the MCP action plan before target-repo implementation starts.

@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 345 (unreleased)** — Added full JSON command-set unit coverage for Website Console next-actions, covering summary, MCP check/plan, task generation, implementation prompt, handoff report, and bundle follow-up commands.
 - **Phase 344 (unreleased)** — Added warning-state CLI unit coverage for Website Console next-actions so missing optional MCP readiness evidence and task/MCP gaps route operators to `--mcp-plan --out mcp-action-plan.md`.
 - **Phase 343 (unreleased)** — Added implementation evidence CLI unit coverage for Website Console next-actions so missing executed work or verification results recommends `--report --out website-handoff.md`, while evidence-ready workspaces skip that reminder.
 - **Phase 342 (unreleased)** — Added no-task CLI unit coverage for Website Console next-actions so empty `refactorTasks` workspaces recommend generating starter tasks before implementation prompts.

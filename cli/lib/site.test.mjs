@@ -428,6 +428,16 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.counts.blocking, 0);
   assert.equal(report.counts.tasks, 1);
+  assert.deepEqual(report.commands, {
+    summary: "design-ai site sample.json --json",
+    mcpCheck: "design-ai site sample.json --mcp-check --strict --json",
+    mcpPlan: "design-ai site sample.json --mcp-plan --out mcp-action-plan.md",
+    tasks: "design-ai site sample.json --tasks --out website-workspace.tasks.json",
+    implementationPrompt: "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md",
+    handoffReport: "design-ai site sample.json --report --out website-handoff.md",
+    handoffBundle: "design-ai site sample.json --bundle --out website-handoff-bundle",
+  });
+  assert.deepEqual(json.commands, report.commands);
   assert.equal(report.actions[0].severity, "implementation");
   assert.equal(report.actions[0].command, "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md");
   const evidenceAction = report.actions.find((action) => action.title === "Create implementation evidence trail");
