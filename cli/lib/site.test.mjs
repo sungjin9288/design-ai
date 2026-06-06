@@ -1738,6 +1738,15 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.equal(warningOnlyGraphPayload.mcpStatus, "warn");
     assert.equal(warningOnlyGraphPayload.summary.mcpStatus, "warn");
     assert.equal(warningOnlyGraphStrict.exitCode, 1);
+
+    const warningOnlyBundleDir = path.join(dir, "warning-only-bundle");
+    const warningOnlyBundleStrict = await captureConsole(() =>
+      runSite([warningOnlyFile, "--bundle", "--out", warningOnlyBundleDir, "--strict"]),
+    );
+    assert.match(warningOnlyBundleStrict.stdout, /Wrote Website Improvement handoff bundle/);
+    assert.equal(JSON.parse(readFileSync(path.join(warningOnlyBundleDir, "summary.json"), "utf8")).status, "warn");
+    assert.equal(JSON.parse(readFileSync(path.join(warningOnlyBundleDir, "mcp-check.json"), "utf8")).status, "warn");
+    assert.equal(warningOnlyBundleStrict.exitCode, 1);
   });
 });
 

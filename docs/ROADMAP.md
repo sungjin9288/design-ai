@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 354 — Website Console Bundle Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console handoff bundle unit coverage now verifies warning-only strict exits. Bundle generation should still write the local artifact, preserve MCP readiness warning status inside the bundle, and return non-zero under `--strict` when optional readiness gaps remain.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --bundle --out <dir> --strict` writes the handoff bundle and exits with code 1.
+- Verified generated `summary.json` and `mcp-check.json` both preserve `status: "warn"` for the optional Sentry readiness gap.
+- Updated changelog and session history beside the Phase 330-353 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle generation hides warning-only MCP gaps or returns success under strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 353 — Website Console Workflow Graph Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console workflow graph unit coverage now verifies warning-only strict exits. Portable graph exports should preserve MCP readiness warnings and fail `--graph --strict --json` when optional readiness gaps remain.
