@@ -97,6 +97,7 @@ from smoke_assertions import (
     assert_site_mcp_plan_probes_json,
     assert_site_mcp_plan_probes_json_file_output,
     assert_site_mcp_plan_probes_markdown,
+    assert_site_bundle_compare_warning_strict_json,
     assert_site_next_actions_human_file_output,
     assert_site_next_actions_json,
     assert_site_next_actions_json_file_output,
@@ -2698,6 +2699,12 @@ def site_workspace_fixture_json() -> str:
     return passing_site_sample_json()
 
 
+def site_workspace_warning_fixture_json() -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["siteProfile"]["sentryProject"] = ""
+    return json.dumps(payload, ensure_ascii=False)
+
+
 def assert_site_json_smoke(
     cmd: list[str],
     *,
@@ -3076,6 +3083,56 @@ def assert_site_bundle_smoke(
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
     if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+
+
+def assert_site_warning_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_warning_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
+    if summary.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary status changed: {summary.get('status')!r}")
+    if summary.get("mcp", {}).get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary MCP status changed")
+    if mcp_check.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} mcp-check status changed: {mcp_check.get('status')!r}")
+    sentry_item = next((item for item in mcp_check.get("items", []) if item.get("key") == "sentry"), None)
+    if (
+        not isinstance(sentry_item, dict)
+        or sentry_item.get("state") != "missing"
+        or sentry_item.get("level") != "warn"
+    ):
+        raise SystemExit(f"site warning bundle after {context} did not preserve optional Sentry warning")
+
+
+def assert_site_bundle_compare_warning_strict_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=assert_site_bundle_compare_warning_strict_json,
+    )
 
 
 def assert_site_bundle_check_json_smoke(
@@ -4953,6 +5010,28 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec site bundle-compare JSON",
+        )
+        registry_site_warning_bundle_dir = npx_root / "registry-site-warning-handoff-bundle"
+        assert_site_warning_bundle_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_warning_bundle_dir)),
+            out_dir=registry_site_warning_bundle_dir,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site warning handoff bundle",
+        )
+        assert_site_bundle_compare_warning_strict_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                str(registry_site_warning_bundle_dir),
+                "--bundle-compare",
+                str(registry_site_warning_bundle_dir),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site warning bundle-compare strict JSON",
         )
         assert_site_bundle_handoff_json_smoke(
             npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),

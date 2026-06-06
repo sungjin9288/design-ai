@@ -6131,6 +6131,39 @@ def assert_workspace_strict_failure_json(
         raise SystemExit(f"workspace strict JSON after {context} is missing a strict readiness issue")
 
 
+def assert_site_bundle_compare_warning_strict_json(
+    raw: str,
+    *,
+    returncode: int,
+    context: str,
+    cmd: list[str],
+) -> None:
+    if returncode != 1:
+        raise SystemExit(f"site bundle compare strict after {context} expected exit code 1, got {returncode}")
+    assert_no_ansi(raw, cmd)
+    payload = json.loads(raw)
+    if payload.get("status") != "warn" or payload.get("valid") is not True:
+        raise SystemExit(f"site bundle compare strict after {context} expected warning/valid output")
+    if payload.get("sameBundle") is not True or payload.get("digestMatch") is not True:
+        raise SystemExit(f"site bundle compare strict after {context} expected identical warning bundle identity")
+    if payload.get("counts", {}).get("changedFiles") != 0:
+        raise SystemExit(f"site bundle compare strict after {context} expected no changed files")
+    for side in ("left", "right"):
+        report = payload.get(side)
+        if not isinstance(report, dict):
+            raise SystemExit(f"site bundle compare strict after {context} missing {side} report")
+        if report.get("status") != "warn" or report.get("valid") is not True:
+            raise SystemExit(f"site bundle compare strict after {context} expected {side} warning/valid bundle")
+        if report.get("mcpStatus") != "warn":
+            raise SystemExit(f"site bundle compare strict after {context} expected {side} MCP warning status")
+        digest = report.get("checksumBundleDigest")
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise SystemExit(f"site bundle compare strict after {context} {side} bundle digest changed")
+    issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
+    if "bundle-compare-left-warn" not in issue_ids or "bundle-compare-right-warn" not in issue_ids:
+        raise SystemExit(f"site bundle compare strict after {context} missing left/right warning issues: {issue_ids!r}")
+
+
 def assert_site_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
 

@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 359 — Website Console Bundle Compare Warning Strict Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify warning-state Website Console bundle-compare strict failures. This extends the Phase 357 runtime/unit contract into distribution checks: identical warning bundles should keep `sameBundle: true` and `digestMatch: true`, but `--bundle-compare --strict --json` should still exit non-zero because optional MCP readiness warnings remain.
+
+### Changed
+- Added a warning-only Website Console bundle fixture for smoke runners by omitting optional Sentry evidence while keeping the workspace structurally valid.
+- Added a shared smoke assertion for warning-state bundle-compare strict JSON, checking exit code 1, `status: "warn"`, `valid: true`, unchanged bundle identity, left/right warning states, and left/right compare warning issues.
+- Wired the warning-state compare smoke through packed-tarball installed-bin, packed-tarball one-shot `npm exec --package <tarball>`, and public-registry `npm exec --package @design-ai/cli@<version>` paths.
+- Updated changelog and session history beside the Phase 357-358 Website Console strict warning coverage.
+
+### Impact
+- Distribution smoke now catches regressions where published or packed package paths silently drop warning-state strict failures for identical Website Console handoff bundles.
+- This is smoke assertion and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 358 — Website Console Bundle Repair Warning Strict Exit Unit Coverage (unreleased)
 
 Website Console bundle repair unit coverage now verifies warning-only strict exits on apply. Regenerating a bundle cannot clear optional MCP readiness warnings by itself, so `--bundle-repair --yes --strict --json` should remain non-zero when the repaired bundle still checks as warning-state.
