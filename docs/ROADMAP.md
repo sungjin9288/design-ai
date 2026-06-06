@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 360 — Website Console Bundle Compare Warning Strict Release Metadata Guard (unreleased)
+
+Release metadata now guards the warning-state Website Console bundle-compare strict smoke phrase across release-facing docs. Phase 359 added the packed-tarball and public-registry smoke execution; this phase makes sure release guidance cannot silently regress to only mentioning pass-state bundle comparison.
+
+### Changed
+- Added a dedicated release metadata term group for warning-state Website Console bundle-compare strict failures.
+- Required release policy docs to mention packed-tarball and public-registry smoke, identical warning bundles, `sameBundle: true`, and non-zero strict exits.
+- Added a release metadata self-test drift fixture that removes the warning strict phrase and expects the guard to fail.
+- Updated English/Korean release-facing docs, changelog, roadmap, and session history.
+
+### Impact
+- Release metadata self-tests now catch docs drift where warning-state bundle-compare strict smoke coverage is dropped while the generic bundle-compare phrase remains.
+- This is documentation and release guard coverage only: no CLI runtime behavior, package smoke runner behavior, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 359 — Website Console Bundle Compare Warning Strict Smoke Coverage (unreleased)
 
 Packed-tarball and public-registry smoke now verify warning-state Website Console bundle-compare strict failures. This extends the Phase 357 runtime/unit contract into distribution checks: identical warning bundles should keep `sameBundle: true` and `digestMatch: true`, but `--bundle-compare --strict --json` should still exit non-zero because optional MCP readiness warnings remain.

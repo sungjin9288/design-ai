@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 360 (unreleased)** — Added release metadata guard coverage for the warning-state Website Console bundle-compare strict smoke phrase so release-facing docs cannot drop the packed-tarball/public-registry warning strict contract.
 - **Phase 359 (unreleased)** — Added packed-tarball and public-registry smoke coverage for warning-state Website Console bundle-compare strict failures, so identical warning bundles keep `sameBundle: true` and `digestMatch: true` while exiting non-zero under `--strict`.
 - **Phase 358 (unreleased)** — Added warning-only strict exit unit coverage for Website Console bundle repair apply so regeneration that cannot clear optional MCP readiness warnings makes `--bundle-repair --yes --strict --json` exit non-zero with `bundle-repair-verify-fail`.
 - **Phase 357 (unreleased)** — Preserved warning-state bundle-check results in Website Console bundle compare, so identical warning bundles keep `sameBundle: true` but make `--bundle-compare --strict --json` exit non-zero with left/right warning issues.

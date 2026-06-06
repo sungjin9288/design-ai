@@ -546,6 +546,45 @@ RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_BUNDLE_COMPARE_WARNING_STRICT_SMOKE_TERM_GROUPS = (
+    (
+        "warning-state Website Console bundle-compare strict failures",
+        "warning-state Website Console bundle-compare strict failure",
+        "warning-state bundle-compare strict failures",
+        "warning-state bundle-compare strict failure",
+        "Website Console bundle-compare warning strict failures",
+        "Website Console bundle-compare warning strict failure",
+        "Website Console bundle-compare strict warning failures",
+        "Website Console bundle-compare strict warning failure",
+        "Website Console bundle-compare strict 경고 실패",
+    ),
+    (
+        "identical warning bundles",
+        "identical warning bundle",
+        "sameBundle true",
+        "`sameBundle: true`",
+        "sameBundle: true",
+        "sameBundle true 유지",
+        "동일 warning bundle",
+    ),
+    (
+        "exiting non-zero under `--strict`",
+        "exit non-zero under `--strict`",
+        "exiting non-zero under --strict",
+        "exit non-zero under --strict",
+        "non-zero under `--strict`",
+        "strict에서 non-zero",
+        "strict에서 non-zero 종료",
+    ),
+    (
+        "packed-tarball and public-registry smoke",
+        "packed-tarball and public registry smoke",
+        "packed-tarball plus public-registry smoke",
+        "packed-tarball/public-registry smoke",
+        "packed-tarball과 public-registry smoke",
+        "packed-tarball 및 public-registry smoke",
+    ),
+)
 RELEASE_SITE_BUNDLE_HANDOFF_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site <bundle-dir> --bundle-handoff --strict --json`",
@@ -2101,6 +2140,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site bundle package smoke phrase",
     "site bundle-check package smoke phrase",
     "site bundle-compare package smoke phrase",
+    "site bundle-compare warning strict smoke phrase",
     "site bundle-handoff package smoke phrase",
     "site bundle-repair package smoke phrase",
     "site tasks package smoke phrase",
@@ -2341,6 +2381,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site bundle-compare package smoke phrase",
         RELEASE_SITE_BUNDLE_COMPARE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site bundle-compare warning strict smoke phrase",
+        RELEASE_SITE_BUNDLE_COMPARE_WARNING_STRICT_SMOKE_TERM_GROUPS,
     ),
     (
         "site bundle-handoff package smoke phrase",
@@ -2959,7 +3003,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --graph --json` Website Console workflow graph export,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle check with SHA-256 checksum verification, bundle digest fingerprint verification, and generated bundle contract verification,
-`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison,
+`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle compare with bundle digest comparison plus packed-tarball and public-registry smoke for warning-state Website Console bundle-compare strict failures where identical warning bundles keep `sameBundle: true` while exiting non-zero under `--strict`,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console target-repo handoff prompt from a verified bundle digest,
 `design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence, shared repair guidance smoke helpers, and shared repair report assertion helpers,
 `design-ai site --stdin --tasks` Website Console refactor task generation,
@@ -3059,7 +3103,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --graph --json` Website Console workflow graph 생성도 확인하고,
 `design-ai site --stdin --bundle --out <dir>` Website Console handoff bundle 생성도 확인하고,
 `design-ai site <bundle-dir> --bundle-check --strict --json` Website Console handoff bundle checksum 검증, bundle digest 검증, generated bundle contract 검증도 확인하고,
-`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교도 확인하고,
+`design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` Website Console handoff bundle 비교와 bundle digest 비교 및 packed-tarball과 public-registry smoke에서 warning-state Website Console bundle-compare strict 경고 실패가 동일 warning bundle의 sameBundle true 유지와 strict에서 non-zero 종료를 보존하는지도 확인하고,
 `design-ai site <bundle-dir> --bundle-handoff --strict --json` Website Console 대상 repo handoff prompt와 검증된 handoff bundle digest도 확인하고,
 `design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery와 repair report --out file 저장, 공용 repair guidance smoke helper, 공용 repair report assertion helper도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --tasks` Website Console refactor task 생성도 확인하고,
@@ -4212,6 +4256,31 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "README.md is missing site workflow graph package smoke phrase"
         in site_workflow_graph_package_smoke_drift_errors,
         "release policy docs should mention Website Console workflow graph smoke",
+    )
+
+    site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                " plus packed-tarball and public-registry smoke for warning-state Website Console bundle-compare strict failures where identical warning bundles keep `sameBundle: true` while exiting non-zero under `--strict`",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    site_bundle_compare_warning_strict_smoke_drift_errors = "\n".join(
+        site_bundle_compare_warning_strict_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing site bundle-compare warning strict smoke phrase"
+            in site_bundle_compare_warning_strict_smoke_drift_errors
+        ),
+        "release policy docs should mention warning-state bundle-compare strict smoke coverage",
     )
 
     packed_tarball_npm_exec_drift = release_metadata_summary(
