@@ -430,6 +430,9 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(report.counts.tasks, 1);
   assert.equal(report.actions[0].severity, "implementation");
   assert.equal(report.actions[0].command, "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md");
+  const evidenceAction = report.actions.find((action) => action.title === "Create implementation evidence trail");
+  assert.equal(evidenceAction?.severity, "handoff");
+  assert.equal(evidenceAction?.command, "design-ai site sample.json --report --out website-handoff.md");
   assert.equal(report.actions.at(-1).command, "design-ai site sample.json --bundle --out website-handoff-bundle");
   assert.deepEqual(Object.keys(json), [
     "kind",
@@ -450,7 +453,25 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.match(human, /Website Improvement next actions: Korean SaaS marketing site/);
   assert.match(human, /1\. \[implementation\] Prepare Codex implementation prompt/);
   assert.match(human, /Command: `design-ai site sample\.json --prompt codex-implementation --task 1 --out codex-implementation\.md`/);
+  assert.match(human, /Create implementation evidence trail/);
+  assert.match(human, /Command: `design-ai site sample\.json --report --out website-handoff\.md`/);
   assert.match(human, /does not call external MCPs, mutate the target website repo/);
+
+  const evidenceReadyWorkspace = {
+    ...workspace,
+    implementationEvidence: {
+      executedWork: ["Implemented homepage CTA hierarchy"],
+      verificationResults: ["npm run build passed"],
+      remainingRisks: [],
+      nextActions: [],
+    },
+  };
+  const evidenceReadySummary = analyzeSiteWorkspace(evidenceReadyWorkspace, { filePath: "evidence-ready.json" }).summary;
+  const evidenceReadyReport = buildSiteNextActionsReport(evidenceReadyWorkspace, evidenceReadySummary);
+  assert.equal(evidenceReadyReport.status, "pass");
+  assert.equal(evidenceReadyReport.actions.some((action) => action.title === "Create implementation evidence trail"), false);
+  assert.equal(evidenceReadyReport.actions[0].severity, "implementation");
+  assert.equal(evidenceReadyReport.actions.at(-1).command, "design-ai site evidence-ready.json --bundle --out website-handoff-bundle");
 
   const setupWorkspace = {
     ...workspace,

@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 343 — Website Console Next Actions Evidence Trail Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the implementation evidence handoff reminder. The operator checklist should ask for `website-handoff.md` evidence when executed work or verification results are empty, and skip that reminder once both are recorded.
+
+### Changed
+- Added assertions for the `Create implementation evidence trail` next-actions item in the default sample workspace.
+- Verified the evidence reminder command points to `design-ai site <workspace.json> --report --out website-handoff.md` in JSON-backed actions and human Markdown.
+- Added an evidence-ready workspace scenario with executed work and verification results populated, verifying the handoff reminder is not emitted.
+- Updated changelog and session history beside the Phase 330-342 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where operators lose the handoff evidence reminder or keep seeing it after evidence is already recorded.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 342 — Website Console Next Actions Setup Path Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies the no-task setup path. When a workspace has no `refactorTasks`, the operator checklist must recommend generating starter tasks before preparing implementation prompts.
