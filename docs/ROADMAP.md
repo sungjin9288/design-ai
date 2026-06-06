@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 358 — Website Console Bundle Repair Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console bundle repair unit coverage now verifies warning-only strict exits on apply. Regenerating a bundle cannot clear optional MCP readiness warnings by itself, so `--bundle-repair --yes --strict --json` should remain non-zero when the repaired bundle still checks as warning-state.
+
+### Changed
+- Reused the warning-only handoff bundle generated from the Website Console fixture where `siteProfile.sentryProject` is empty.
+- Added CLI coverage for `design-ai site <bundle-dir> --bundle-repair --yes --strict --json`.
+- Verified the repair applies, preserves `before.status: "warn"` and `after.status: "warn"`, reports `bundle-repair-verify-fail`, and exits with code 1.
+- Updated changelog and session history beside the Phase 330-357 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle repair apply falsely reports strict success even though regenerated bundle readiness warnings remain.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 357 — Website Console Bundle Compare Warning Strict Exit Coverage (unreleased)
 
 Website Console bundle compare now preserves warning-state bundle-check results. Identical bundles with optional MCP readiness warnings should still compare as the same bundle, but `--bundle-compare --strict --json` should return non-zero because the compared artifacts are not strict-ready for target-repo handoff.

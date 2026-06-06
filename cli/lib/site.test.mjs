@@ -1783,6 +1783,17 @@ test("runSite strict exits non-zero on warnings", async () => {
     assert.ok(warningOnlyBundleComparePayload.issues.some((issue) => issue.id === "bundle-compare-left-warn"));
     assert.ok(warningOnlyBundleComparePayload.issues.some((issue) => issue.id === "bundle-compare-right-warn"));
     assert.equal(warningOnlyBundleCompareStrict.exitCode, 1);
+
+    const warningOnlyBundleRepairApplyStrict = await captureConsole(() =>
+      runSite([warningOnlyBundleDir, "--bundle-repair", "--yes", "--strict", "--json"]),
+    );
+    const warningOnlyBundleRepairApplyPayload = JSON.parse(warningOnlyBundleRepairApplyStrict.stdout);
+    assert.equal(warningOnlyBundleRepairApplyPayload.status, "fail");
+    assert.equal(warningOnlyBundleRepairApplyPayload.applied, true);
+    assert.equal(warningOnlyBundleRepairApplyPayload.before.status, "warn");
+    assert.equal(warningOnlyBundleRepairApplyPayload.after.status, "warn");
+    assert.ok(warningOnlyBundleRepairApplyPayload.issues.some((issue) => issue.id === "bundle-repair-verify-fail"));
+    assert.equal(warningOnlyBundleRepairApplyStrict.exitCode, 1);
   });
 });
 
