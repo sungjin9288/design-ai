@@ -454,6 +454,41 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   });
   assert.deepEqual(stdinJson.commands, stdinReport.commands);
 
+  const baseTask = workspace.refactorTasks[0];
+  const priorityWorkspace = {
+    ...workspace,
+    refactorTasks: [
+      baseTask,
+      {
+        ...baseTask,
+        id: "task-secondary-content",
+        title: "Tune secondary content proof",
+        category: "content-quality",
+        priority: "p2",
+        recommendedMcp: ["research"],
+      },
+      {
+        ...baseTask,
+        id: "task-critical-accessibility",
+        title: "Fix critical navigation accessibility",
+        category: "accessibility",
+        priority: "p0",
+        recommendedMcp: ["browser"],
+      },
+    ],
+  };
+  const prioritySummary = analyzeSiteWorkspace(priorityWorkspace, { filePath: "priority.json" }).summary;
+  const priorityReport = buildSiteNextActionsReport(priorityWorkspace, prioritySummary);
+  assert.deepEqual(priorityReport.topTasks.map((task) => task.id), [
+    "task-critical-accessibility",
+    "task-homepage-cta",
+    "task-secondary-content",
+  ]);
+  assert.deepEqual(priorityReport.topTasks.map((task) => task.priority), ["p0", "p1", "p2"]);
+  assert.equal(priorityReport.actions[0].severity, "implementation");
+  assert.equal(priorityReport.actions[0].title, "Prepare Codex implementation prompt for task-critical-accessibility");
+  assert.match(priorityReport.actions[0].reason, /highest-priority available refactor task/);
+
   assert.equal(report.actions[0].severity, "implementation");
   assert.equal(report.actions[0].command, "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md");
   const evidenceAction = report.actions.find((action) => action.title === "Create implementation evidence trail");

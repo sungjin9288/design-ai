@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 347 — Website Console Next Actions Priority Selection Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies multi-task priority selection. When a workspace has P0/P1/P2 refactor tasks, the operator checklist should surface the P0 task first for Codex implementation.
+
+### Changed
+- Added a multi-task `buildSiteNextActionsReport` scenario with P0, P1, and P2 refactor tasks.
+- Verified `topTasks` are sorted in P0/P1/P2 order.
+- Verified the first implementation action targets the P0 task and keeps the highest-priority rationale.
+- Updated changelog and session history beside the Phase 330-346 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where Website Console next-actions selects a lower-priority implementation task before a P0 task.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 346 — Website Console Next Actions Stdin Command Target Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies stdin command targets. When the workspace source is `stdin`, the JSON follow-up commands should use the portable `<workspace.json>` placeholder instead of leaking a filesystem path.
