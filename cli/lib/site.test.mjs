@@ -475,15 +475,26 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
         priority: "p0",
         recommendedMcp: ["browser"],
       },
+      {
+        ...baseTask,
+        id: "task-later-polish",
+        title: "Polish lower-priority page details",
+        category: "visual-design",
+        priority: "p3",
+        recommendedMcp: ["browser"],
+      },
     ],
   };
   const prioritySummary = analyzeSiteWorkspace(priorityWorkspace, { filePath: "priority.json" }).summary;
   const priorityReport = buildSiteNextActionsReport(priorityWorkspace, prioritySummary);
+  assert.equal(priorityReport.counts.tasks, 4);
+  assert.equal(priorityReport.topTasks.length, 3);
   assert.deepEqual(priorityReport.topTasks.map((task) => task.id), [
     "task-critical-accessibility",
     "task-homepage-cta",
     "task-secondary-content",
   ]);
+  assert.equal(priorityReport.topTasks.some((task) => task.id === "task-later-polish"), false);
   assert.deepEqual(priorityReport.topTasks.map((task) => task.priority), ["p0", "p1", "p2"]);
   assert.equal(priorityReport.actions[0].severity, "implementation");
   assert.equal(priorityReport.actions[0].title, "Prepare Codex implementation prompt for task-critical-accessibility");

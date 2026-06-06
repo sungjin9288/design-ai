@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 348 — Website Console Next Actions Top-Task Cap Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the top-task cap. The payload should report the total task count while exposing only the three highest-priority tasks for operator focus.
+
+### Changed
+- Extended the multi-task next-actions scenario to include a fourth P3 refactor task.
+- Verified `counts.tasks` preserves the full task count.
+- Verified `topTasks` remains capped at three entries and excludes the lower-priority P3 task.
+- Updated changelog and session history beside the Phase 330-347 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where next-actions payloads become too noisy or lose the total task count when more than three refactor tasks exist.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 347 — Website Console Next Actions Priority Selection Unit Coverage (unreleased)
 
 Website Console next-actions unit coverage now verifies multi-task priority selection. When a workspace has P0/P1/P2 refactor tasks, the operator checklist should surface the P0 task first for Codex implementation.

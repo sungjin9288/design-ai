@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 348 (unreleased)** — Added top-task cap unit coverage for Website Console next-actions so four-task workspaces keep the full task count while exposing only the three highest-priority tasks.
 - **Phase 347 (unreleased)** — Added multi-task priority selection unit coverage for Website Console next-actions so P0 refactor tasks sort ahead of P1/P2 tasks and drive the first implementation action.
 - **Phase 346 (unreleased)** — Added stdin command-target unit coverage for Website Console next-actions so JSON follow-up commands use `<workspace.json>` placeholders when the source is `stdin`.
 - **Phase 345 (unreleased)** — Added full JSON command-set unit coverage for Website Console next-actions, covering summary, MCP check/plan, task generation, implementation prompt, handoff report, and bundle follow-up commands.
