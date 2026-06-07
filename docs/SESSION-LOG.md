@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 372 (unreleased)** — Added left/right MCP probe count summaries to Website Console bundle-compare human output.
 - **Phase 371 (unreleased)** — Added release metadata guard coverage for Website Console bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry across release-facing docs.
 - **Phase 370 (unreleased)** — Added release metadata guard coverage for Website Console next-actions `mcpProbeCounts` probe count telemetry across release-facing docs.
 - **Phase 369 (unreleased)** — Added `mcpProbeCounts` to Website Console next-actions JSON/human output and shared smoke assertions, making read-only probe pass/warn/fail counts visible before bundle export.

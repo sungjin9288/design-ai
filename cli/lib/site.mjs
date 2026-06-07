@@ -3203,6 +3203,10 @@ export function formatSiteBundleCompareJson(report) {
   return JSON.stringify(report, null, 2);
 }
 
+function formatMcpProbeCounts(counts = {}) {
+  return `${counts.pass || 0}/${counts.count || 0} passing, ${counts.warn || 0} warning, ${counts.fail || 0} failing`;
+}
+
 export function formatSiteBundleCompareHuman(report) {
   return [
     `Website Improvement handoff bundle compare: ${report.left.directory} -> ${report.right.directory}`,
@@ -3216,6 +3220,7 @@ export function formatSiteBundleCompareHuman(report) {
     `Metadata changes: ${report.counts.metadataChanges}`,
     `Generated contract: left ${report.left.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${report.right.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}`,
     `Generated drift files: left ${report.left.generatedDriftFiles.length ? report.left.generatedDriftFiles.join(", ") : "none"}, right ${report.right.generatedDriftFiles.length ? report.right.generatedDriftFiles.join(", ") : "none"}`,
+    `MCP probes: left ${formatMcpProbeCounts(report.left.mcpProbeCounts)}, right ${formatMcpProbeCounts(report.right.mcpProbeCounts)}`,
     "",
     "Changed files:",
     ...(report.changedFiles.length

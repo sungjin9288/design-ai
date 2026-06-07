@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 372 — Website Console Bundle Compare Human Probe Counts (unreleased)
+
+Website Console bundle comparison now keeps MCP probe coverage visible in the human report. Bundle compare JSON already carried left/right `mcpProbeCounts`; this phase exposes the same pass/warn/fail count summary in the Markdown-style CLI output.
+
+### Changed
+- Added a left/right MCP probe count summary line to `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` human output.
+- Added CLI unit coverage so identical bundle comparisons keep the human probe count summary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Operators can inspect bundle comparison readiness from the default human report without switching to `--json`.
+- This is deterministic local CLI formatting and unit coverage only: no external MCP call, target website repo mutation, package smoke runner behavior, backend storage, or dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 371 — Website Console Bundle MCP Probe Count Release Guard (unreleased)
 
 Release metadata now protects the Website Console bundle-check/compare/handoff MCP probe count telemetry wording. Phase 368 exposed `mcpProbeCounts` in bundle consumers; this phase makes release-facing docs keep that public smoke contract visible.

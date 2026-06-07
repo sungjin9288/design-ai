@@ -1136,6 +1136,7 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
   assert.match(identicalHuman, /Same bundle: yes/);
   assert.match(identicalHuman, new RegExp(`Generated contract: left ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length}`));
   assert.match(identicalHuman, /Generated drift files: left none, right none/);
+  assert.match(identicalHuman, /MCP probes: left 4\/4 passing, 0 warning, 0 failing, right 4\/4 passing, 0 warning, 0 failing/);
 
   const changedWorkspace = createSampleSiteWorkspace();
   changedWorkspace.auditChecklist["content-quality"].findings.push("FAQ page lacks proof for enterprise procurement teams");
