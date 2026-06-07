@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 377 — Website Console Next-Actions MCP Probe Count Self-Test Release Guard (unreleased)
+
+Release metadata now protects the release-facing wording for shared smoke assertion self-test coverage around Website Console next-actions MCP probe counts. Phase 376 added the direct drift fixture; this phase makes the public release docs keep mentioning that protection.
+
+### Changed
+- Added a release metadata phrase group for shared smoke assertion self-test coverage of Website Console next-actions MCP probe counts.
+- Added the phrase to release policy labels and checks.
+- Added a release metadata `--self-test` drift fixture that fails if release docs drop the self-test coverage wording.
+- Updated README, Korean README, distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve both the `mcpProbeCounts` public smoke contract and the self-test coverage that guards the assertion.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 376 — Website Console Next-Actions MCP Probe Count Smoke Self-Test (unreleased)
 
 Shared smoke assertion self-tests now protect the Website Console next-actions MCP probe count contract. The next-actions JSON smoke already checked `mcpProbeCounts`; this phase adds a direct drift fixture so that assertion cannot silently weaken.
