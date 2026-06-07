@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 373 — Website Console Bundle Compare Human CLI Coverage (unreleased)
+
+Website Console bundle comparison now has end-to-end CLI coverage for the human MCP probe count summary. Phase 372 added the formatter line; this phase verifies the actual `runSite` human `--bundle-compare` path prints the same left/right probe coverage.
+
+### Changed
+- Added `runSite` test coverage for non-JSON `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` output.
+- Verified the emitted human output includes the left/right MCP probe pass/warn/fail count summary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Future changes cannot keep the formatter unit passing while accidentally breaking the real CLI human output path.
+- This is CLI test coverage and release history only: no runtime behavior, external MCP call, target website repo mutation, package smoke runner behavior, backend storage, or dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 372 — Website Console Bundle Compare Human Probe Counts (unreleased)
 
 Website Console bundle comparison now keeps MCP probe coverage visible in the human report. Bundle compare JSON already carried left/right `mcpProbeCounts`; this phase exposes the same pass/warn/fail count summary in the Markdown-style CLI output.

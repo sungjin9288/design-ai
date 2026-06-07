@@ -1670,6 +1670,10 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       nextActions: 0,
     });
 
+    const bundleCompareHumanOutput = await captureConsole(() => runSite([bundleDir, "--bundle-compare", bundleDir]));
+    assert.match(bundleCompareHumanOutput.stdout, /Website Improvement handoff bundle compare/);
+    assert.match(bundleCompareHumanOutput.stdout, /MCP probes: left 4\/4 passing, 0 warning, 0 failing, right 4\/4 passing, 0 warning, 0 failing/);
+
     const bundleCompareFile = path.join(dir, "out", "handoff-bundle-compare.json");
     const bundleCompareWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-compare", bundleDir, "--json", "--out", bundleCompareFile]));
     assert.match(bundleCompareWriteOutput.stdout, /Wrote /);
