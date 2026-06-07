@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 376 — Website Console Next-Actions MCP Probe Count Smoke Self-Test (unreleased)
+
+Shared smoke assertion self-tests now protect the Website Console next-actions MCP probe count contract. The next-actions JSON smoke already checked `mcpProbeCounts`; this phase adds a direct drift fixture so that assertion cannot silently weaken.
+
+### Changed
+- Added a shared expected MCP probe count constant in `tools/audit/smoke_assertions.py`.
+- Reused the constant in the next-actions JSON smoke assertion.
+- Added a `--self-test` drift fixture that mutates next-actions `mcpProbeCounts` and expects the assertion to fail.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packed-tarball and public-registry next-actions smoke coverage now has self-test protection for probe count drift before package smoke runs.
+- This is smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 375 — Website Console Bundle MCP Probe Count Smoke Surface Completion (unreleased)
 
 Package smoke self-tests now cover every bundle MCP probe count surface asserted by packed smoke. Phase 374 added shared count fixtures for bundle-check summary, bundle-compare left side, and bundle-handoff; this phase adds the remaining bundle-check top-level and bundle-compare right-side drift fixtures.
