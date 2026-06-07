@@ -920,7 +920,19 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
   assert.equal(report.summary.mcpProbeStatus, "pass");
+  assert.deepEqual(report.summary.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.equal(report.mcpProbeStatus, "pass");
+  assert.deepEqual(report.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(report.summary.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -930,6 +942,12 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(report.summary.checksumAlgorithm, "sha256");
   assert.match(report.summary.checksumBundleDigest, /^[a-f0-9]{64}$/);
   assert.equal(json.issues[0].id, "bundle-ready");
+  assert.deepEqual(json.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(json.generatedContract.driftFiles, []);
   assert.deepEqual(json.summary.implementationEvidence, {
     executedWork: 0,
@@ -950,6 +968,7 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(human, /MCP probe status: pass/);
+  assert.match(human, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(human, /bundle-ready/);
 
   const summaryPath = path.join(dir, "summary.json");
@@ -960,6 +979,14 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   const evidenceMismatchReport = buildSiteBundleCheckReport({ target: dir });
   assert.equal(evidenceMismatchReport.status, "fail");
   assert.ok(evidenceMismatchReport.issues.some((issue) => issue.id === "bundle-implementation-evidence-remainingRisks"));
+  writeFileSync(summaryPath, originalSummary, "utf8");
+
+  const probeCountMismatchSummary = JSON.parse(originalSummary);
+  probeCountMismatchSummary.mcp.probeCounts.pass = 3;
+  writeFileSync(summaryPath, `${JSON.stringify(probeCountMismatchSummary, null, 2)}\n`, "utf8");
+  const probeCountMismatchReport = buildSiteBundleCheckReport({ target: dir });
+  assert.equal(probeCountMismatchReport.status, "fail");
+  assert.ok(probeCountMismatchReport.issues.some((issue) => issue.id === "bundle-summary-mcp-probe-counts-pass"));
   writeFileSync(summaryPath, originalSummary, "utf8");
 
   const handoffPath = path.join(dir, "website-handoff.md");
@@ -1077,6 +1104,12 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
   assert.equal(identical.counts.changedFiles, 0);
   assert.equal(identical.issues[0].id, "bundle-compare-identical");
   assert.equal(identicalJson.left.siteName, "Korean SaaS marketing site");
+  assert.deepEqual(identicalJson.left.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(identicalJson.left.generatedDriftFiles, []);
   assert.deepEqual(identicalJson.right.generatedDriftFiles, []);
   assert.deepEqual(identicalJson.left.implementationEvidence, {
@@ -1126,6 +1159,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.valid, true);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
   assert.equal(report.bundle.mcpProbeStatus, "pass");
+  assert.deepEqual(report.bundle.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(report.bundle.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -1149,6 +1188,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
   assert.match(report.prompt, /MCP probe status: pass/);
+  assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);
   assert.match(report.prompt, /Generated drift files: none/);
   assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
@@ -1160,6 +1200,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Required Final Response/);
   assert.equal(json.status, "pass");
   assert.equal(json.bundle.mcpProbeStatus, "pass");
+  assert.deepEqual(json.bundle.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(json.bundle.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,

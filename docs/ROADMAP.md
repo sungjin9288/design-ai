@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 368 — Website Console Bundle MCP Probe Count Contract (unreleased)
+
+Website Console bundle consumers now expose and validate read-only MCP probe counts, not only probe status. Phase 367 preserved `mcp-probes.json` inside the bundle; this phase makes the downstream JSON reports carry the same `count/pass/warn/fail` telemetry through bundle-check, bundle-compare, and target-repo handoff.
+
+### Changed
+- Added normalized `mcpProbeCounts` to Website Console bundle-check reports.
+- Added `mcpProbeCounts` to bundle-compare left/right summaries and metadata drift detection.
+- Added `mcpProbeCounts` to bundle-handoff JSON and target-repo handoff prompt context.
+- Extended bundle-check validation so `summary.json mcp.probeCounts` must match `mcp-probes.json`.
+- Updated CLI unit coverage, packed-tarball package smoke assertions, Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators and downstream automation can verify whether a passing or warning handoff bundle actually checked all expected read-only MCP probe references.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 367 — Website Console Handoff Bundle MCP Probe Evidence (unreleased)
 
 Website Console handoff bundles now preserve read-only MCP probe evidence beside the base MCP readiness gate. Phase 366 made next-actions probe-aware; this phase carries the same local probe evidence into the portable bundle so target-repo handoff packages retain the repo/Figma/Browser/deploy reference checks used before implementation.

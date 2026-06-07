@@ -1295,6 +1295,12 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} bundle digest changed")
     if payload.get("mcpStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP status changed")
+    if payload.get("mcpProbeStatus") != "pass":
+        raise SystemExit(f"site bundle check after {context} MCP probe status changed")
+    if payload.get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site bundle check after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
+    if payload.get("summary", {}).get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site bundle check after {context} summary MCP probe counts changed: {payload.get('summary', {}).get('mcpProbeCounts')!r}")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-ready"]:
         raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
@@ -1330,6 +1336,8 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+        if payload.get(side, {}).get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
+            raise SystemExit(f"site bundle compare after {context} {side} MCP probe counts changed: {payload.get(side, {}).get('mcpProbeCounts')!r}")
         if payload.get(side, {}).get("verifiedGeneratedFiles") != 8 or payload.get(side, {}).get("generatedFailures") != 0:
             raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
         if payload.get(side, {}).get("generatedDriftFiles") != []:
@@ -1368,6 +1376,10 @@ def assert_site_bundle_handoff_json_smoke(
     bundle = payload.get("bundle", {})
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
+    if bundle.get("mcpProbeStatus") != "pass":
+        raise SystemExit(f"site bundle handoff after {context} MCP probe status changed")
+    if bundle.get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site bundle handoff after {context} MCP probe counts changed: {bundle.get('mcpProbeCounts')!r}")
     if bundle.get("verifiedChecksumFiles") != 8 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
     if bundle.get("verifiedGeneratedFiles") != 8 or bundle.get("generatedFailures") != 0:
@@ -1401,7 +1413,8 @@ def assert_site_bundle_handoff_json_smoke(
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Primary Codex Implementation Prompt",
         "Task ID: task-accessibility",
-        "Generated files: 7/7 match the current CLI bundle contract",
+        "MCP probes: 4/4 passing, 0 warning, 0 failing",
+        "Generated files: 8/8 match the current CLI bundle contract",
         "Generated drift files: none",
         "Repair guidance:",
         "Regenerate: design-ai site ",

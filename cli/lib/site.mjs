@@ -2723,6 +2723,7 @@ function summarizeBundlePayload(summaryPayload) {
   const taskGeneration = normalizeObject(summaryPayload?.taskGeneration);
   const site = normalizeObject(summaryPayload?.site);
   const mcp = normalizeObject(summaryPayload?.mcp);
+  const probeCounts = normalizeObject(mcp.probeCounts);
   const checksums = normalizeObject(summaryPayload?.checksums);
   return {
     source: String(summaryPayload?.source || ""),
@@ -2733,6 +2734,12 @@ function summarizeBundlePayload(summaryPayload) {
     implementationEvidence: countImplementationEvidence(summaryPayload?.implementationEvidence),
     mcpStatus: String(mcp.status || "unknown"),
     mcpProbeStatus: String(mcp.probeStatus || "unknown"),
+    mcpProbeCounts: {
+      count: Number.isInteger(probeCounts.count) && probeCounts.count >= 0 ? probeCounts.count : 0,
+      pass: Number.isInteger(probeCounts.pass) && probeCounts.pass >= 0 ? probeCounts.pass : 0,
+      warn: Number.isInteger(probeCounts.warn) && probeCounts.warn >= 0 ? probeCounts.warn : 0,
+      fail: Number.isInteger(probeCounts.fail) && probeCounts.fail >= 0 ? probeCounts.fail : 0,
+    },
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
     checksumAlgorithm: String(checksums.algorithm || ""),
     checksumBundleDigest: String(checksums.bundleDigest || ""),
@@ -2953,6 +2960,13 @@ export function buildSiteBundleCheckReport({
     if (summaryPayload && summary.mcpProbeStatus !== String(mcpProbePayload.status || "")) {
       addIssue(issues, "fail", "bundle-summary-mcp-probe-status", "summary.json mcp.probeStatus does not match mcp-probes.json");
     }
+    if (summaryPayload) {
+      for (const key of ["count", "pass", "warn", "fail"]) {
+        if (summary.mcpProbeCounts[key] !== mcpProbePayload[key]) {
+          addIssue(issues, "fail", `bundle-summary-mcp-probe-counts-${key}`, `summary.json mcp.probeCounts.${key} does not match mcp-probes.json`);
+        }
+      }
+    }
   }
 
   if (canReadDirectory) {
@@ -3015,6 +3029,12 @@ export function buildSiteBundleCheckReport({
     workspaceStatus: workspaceSummary?.status || "unknown",
     mcpStatus: mcpPayload?.status || "unknown",
     mcpProbeStatus: mcpProbePayload?.status || "unknown",
+    mcpProbeCounts: {
+      count: Number.isInteger(mcpProbePayload?.count) && mcpProbePayload.count >= 0 ? mcpProbePayload.count : summary.mcpProbeCounts.count,
+      pass: Number.isInteger(mcpProbePayload?.pass) && mcpProbePayload.pass >= 0 ? mcpProbePayload.pass : summary.mcpProbeCounts.pass,
+      warn: Number.isInteger(mcpProbePayload?.warn) && mcpProbePayload.warn >= 0 ? mcpProbePayload.warn : summary.mcpProbeCounts.warn,
+      fail: Number.isInteger(mcpProbePayload?.fail) && mcpProbePayload.fail >= 0 ? mcpProbePayload.fail : summary.mcpProbeCounts.fail,
+    },
     files,
     unexpectedFiles,
     generatedContract,
@@ -3044,6 +3064,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Evidence: executed work ${report.summary.implementationEvidence.executedWork}, verification ${report.summary.implementationEvidence.verificationResults}, risks ${report.summary.implementationEvidence.remainingRisks}, next actions ${report.summary.implementationEvidence.nextActions}`,
     `MCP status: ${report.mcpStatus}`,
     `MCP probe status: ${report.mcpProbeStatus}`,
+    `MCP probes: ${report.mcpProbeCounts.pass}/${report.mcpProbeCounts.count} passing, ${report.mcpProbeCounts.warn} warning, ${report.mcpProbeCounts.fail} failing`,
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
@@ -3069,6 +3090,7 @@ function summarizeBundleForCompare(report) {
     workspaceStatus: report.workspaceStatus || "unknown",
     mcpStatus: report.mcpStatus || "unknown",
     mcpProbeStatus: report.mcpProbeStatus || "unknown",
+    mcpProbeCounts: { ...report.mcpProbeCounts },
     totalTasks: report.summary.totalTasks || 0,
     implementationEvidence: { ...report.summary.implementationEvidence },
     checksumAlgorithm: report.summary.checksumAlgorithm || "",
@@ -3088,6 +3110,12 @@ function buildBundleMetadataChanges(left, right) {
     ["workspaceStatus", "Workspace status", left.workspaceStatus || "unknown", right.workspaceStatus || "unknown"],
     ["mcpStatus", "MCP status", left.mcpStatus || "unknown", right.mcpStatus || "unknown"],
     ["mcpProbeStatus", "MCP probe status", left.mcpProbeStatus || "unknown", right.mcpProbeStatus || "unknown"],
+    ...["count", "pass", "warn", "fail"].map((key) => [
+      `mcpProbeCounts.${key}`,
+      `MCP probe ${key}`,
+      String(left.summary.mcpProbeCounts[key] || 0),
+      String(right.summary.mcpProbeCounts[key] || 0),
+    ]),
     ["totalTasks", "Task count", String(left.summary.totalTasks || 0), String(right.summary.totalTasks || 0)],
     ...IMPLEMENTATION_EVIDENCE_KEYS.map((key) => [
       `implementationEvidence.${key}`,
@@ -3229,6 +3257,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Workspace status: ${checkReport.workspaceStatus}`,
     `- MCP status: ${checkReport.mcpStatus}`,
     `- MCP probe status: ${checkReport.mcpProbeStatus}`,
+    `- MCP probes: ${checkReport.mcpProbeCounts.pass}/${checkReport.mcpProbeCounts.count} passing, ${checkReport.mcpProbeCounts.warn} warning, ${checkReport.mcpProbeCounts.fail} failing`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
     `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
     `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
@@ -3305,6 +3334,7 @@ export function buildSiteBundleHandoffReport({
       workspaceStatus: checkReport.workspaceStatus || "unknown",
       mcpStatus: checkReport.mcpStatus || "unknown",
       mcpProbeStatus: checkReport.mcpProbeStatus || "unknown",
+      mcpProbeCounts: { ...checkReport.mcpProbeCounts },
       totalTasks: checkReport.summary.totalTasks || 0,
       implementationEvidence: { ...checkReport.summary.implementationEvidence },
       checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",
