@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 369 — Website Console Next-Actions MCP Probe Count Telemetry (unreleased)
+
+Website Console next-actions now exposes read-only MCP probe counts before operators export a bundle. Phase 368 made bundle consumers carry `mcpProbeCounts`; this phase puts the same `count/pass/warn/fail` telemetry into the first operator checklist so malformed repo/Figma/Browser/deploy references are visible without opening a separate probe report.
+
+### Changed
+- Added `mcpProbeCounts` to `design-ai site --next-actions --json`.
+- Added an MCP probe count summary line to human next-actions output.
+- Extended next-actions unit coverage for pass and probe-gap states.
+- Updated shared smoke assertion fixtures so packed/public next-actions smoke requires the new probe count contract.
+- Updated Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can see both probe status and probe volume directly in the prioritized local checklist before target-repo handoff.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 368 — Website Console Bundle MCP Probe Count Contract (unreleased)
 
 Website Console bundle consumers now expose and validate read-only MCP probe counts, not only probe status. Phase 367 preserved `mcp-probes.json` inside the bundle; this phase makes the downstream JSON reports carry the same `count/pass/warn/fail` telemetry through bundle-check, bundle-compare, and target-repo handoff.

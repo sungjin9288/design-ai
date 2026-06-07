@@ -426,6 +426,12 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(report.workspaceStatus, "pass");
   assert.equal(report.mcpStatus, "pass");
   assert.equal(report.mcpProbeStatus, "pass");
+  assert.deepEqual(report.mcpProbeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.equal(report.externalCalls, false);
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.counts.blocking, 0);
@@ -522,6 +528,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
     "workspaceStatus",
     "mcpStatus",
     "mcpProbeStatus",
+    "mcpProbeCounts",
     "site",
     "counts",
     "topTasks",
@@ -533,6 +540,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   ]);
   assert.match(human, /Website Improvement next actions: Korean SaaS marketing site/);
   assert.match(human, /MCP probe status: pass/);
+  assert.match(human, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(human, /1\. \[implementation\] Prepare Codex implementation prompt/);
   assert.match(human, /Command: `design-ai site sample\.json --prompt codex-implementation --task 1 --out codex-implementation\.md`/);
   assert.match(human, /Create implementation evidence trail/);
@@ -606,6 +614,12 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(probeGapReport.status, "fail");
   assert.equal(probeGapReport.mcpStatus, "pass");
   assert.equal(probeGapReport.mcpProbeStatus, "fail");
+  assert.deepEqual(probeGapReport.mcpProbeCounts, {
+    count: 4,
+    pass: 2,
+    warn: 1,
+    fail: 1,
+  });
   assert.equal(probeGapReport.counts.probeGaps, 2);
   assert.deepEqual(probeGapReport.actions.map((action) => action.rank), [1, 2, 3, 4, 5]);
   assert.equal(probeGapReport.actions[0].severity, "blocking");
@@ -617,6 +631,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(probeGapReport.actions[1].command, "design-ai site probe-gap.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
   assert.deepEqual(probeGapReport.actions[1].references, ["figma-url-reference", "figma"]);
   assert.match(probeGapHuman, /MCP probe status: fail/);
+  assert.match(probeGapHuman, /MCP probes: 2\/4 passing, 1 warning, 1 failing/);
   assert.match(probeGapHuman, /Resolve MCP probe readiness: GitHub repo reference/);
   assert.match(probeGapHuman, /Command: `design-ai site probe-gap\.json --mcp-check --probes --json --out mcp-check-probes\.json`/);
 

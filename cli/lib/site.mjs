@@ -1882,6 +1882,12 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
     workspaceStatus: summary.status || "unknown",
     mcpStatus: mcpReport.status,
     mcpProbeStatus: mcpProbeReport.status,
+    mcpProbeCounts: {
+      count: mcpProbeReport.count,
+      pass: mcpProbeReport.pass,
+      warn: mcpProbeReport.warn,
+      fail: mcpProbeReport.fail,
+    },
     site: {
       name: workspace.siteProfile.name,
       liveUrl: workspace.siteProfile.liveUrl,
@@ -1930,6 +1936,7 @@ export function formatSiteNextActionsHuman(report) {
     `Workspace status: ${report.workspaceStatus}`,
     `MCP status: ${report.mcpStatus}`,
     `MCP probe status: ${report.mcpProbeStatus}`,
+    `MCP probes: ${report.mcpProbeCounts.pass}/${report.mcpProbeCounts.count} passing, ${report.mcpProbeCounts.warn} warning, ${report.mcpProbeCounts.fail} failing`,
     `Actions: ${report.counts.actions} (${report.counts.blocking} blocking, ${report.counts.warnings} warning)`,
     "",
     "Prioritized actions:",

@@ -926,6 +926,7 @@ EXPECTED_SITE_NEXT_ACTIONS_PAYLOAD_KEYS = [
     "workspaceStatus",
     "mcpStatus",
     "mcpProbeStatus",
+    "mcpProbeCounts",
     "site",
     "counts",
     "topTasks",
@@ -4317,6 +4318,12 @@ def passing_site_next_actions_json() -> str:
             "workspaceStatus": "pass",
             "mcpStatus": "pass",
             "mcpProbeStatus": "pass",
+            "mcpProbeCounts": {
+                "count": 4,
+                "pass": 4,
+                "warn": 0,
+                "fail": 0,
+            },
             "site": {
                 "name": "Korean SaaS marketing site",
                 "liveUrl": "https://example.com",
@@ -4402,6 +4409,7 @@ def passing_site_next_actions_human() -> str:
             "Workspace status: pass",
             "MCP status: pass",
             "MCP probe status: pass",
+            "MCP probes: 4/4 passing, 0 warning, 0 failing",
             "Actions: 3 (0 blocking, 0 warning)",
             "",
             "Prioritized actions:",
@@ -6308,6 +6316,8 @@ def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> 
         raise SystemExit(f"site next-actions JSON after {context} filePath is missing")
     if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
         raise SystemExit(f"site next-actions JSON after {context} boundary flags must remain false")
+    if payload.get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site next-actions JSON after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
 
     site = assert_smoke_json_keys(
         payload.get("site"),
@@ -6431,6 +6441,8 @@ def assert_site_next_actions_human(raw: str, *, context: str, cmd: list[str]) ->
         "Status: pass",
         "Workspace status: pass",
         "MCP status: pass",
+        "MCP probe status: pass",
+        "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Actions: 3 (0 blocking, 0 warning)",
         "Prioritized actions:",
         "1. [implementation] Prepare Codex implementation prompt for task-homepage-cta",
