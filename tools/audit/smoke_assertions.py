@@ -1310,8 +1310,8 @@ def assert_site_repair_apply_report_payload(payload: object, *, context: str) ->
         raise SystemExit(f"site bundle repair apply after {context} expected fail -> pass transition")
     if payload.get("after", {}).get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle repair apply after {context} expected no generated drift after repair")
-    if payload.get("written", {}).get("count") != 8:
-        raise SystemExit(f"site bundle repair apply after {context} expected 8 rewritten files")
+    if payload.get("written", {}).get("count") != 9:
+        raise SystemExit(f"site bundle repair apply after {context} expected 9 rewritten files")
 
 
 def load_run_all_audit_scripts() -> tuple[str, ...]:
@@ -7832,7 +7832,7 @@ def run_self_test() -> None:
             "applied": True,
             "before": {"status": "fail"},
             "after": {"status": "pass", "generatedDriftFiles": []},
-            "written": {"count": 8},
+            "written": {"count": 9},
         },
         context=context,
     )
@@ -7853,7 +7853,7 @@ def run_self_test() -> None:
                 "applied": True,
                 "before": {"status": "fail"},
                 "after": {"status": "pass", "generatedDriftFiles": ["website-handoff.md"]},
-                "written": {"count": 8},
+                "written": {"count": 9},
             },
             context=context,
         ),

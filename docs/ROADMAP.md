@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 367 — Website Console Handoff Bundle MCP Probe Evidence (unreleased)
+
+Website Console handoff bundles now preserve read-only MCP probe evidence beside the base MCP readiness gate. Phase 366 made next-actions probe-aware; this phase carries the same local probe evidence into the portable bundle so target-repo handoff packages retain the repo/Figma/Browser/deploy reference checks used before implementation.
+
+### Changed
+- Added `mcp-probes.json` to the Website Console handoff bundle manifest.
+- Recorded MCP probe status and probe counts in `summary.json` under the existing `mcp` summary block.
+- Included `mcp-probes.json` in bundle checksums, generated contract verification, repair preview/apply, compare summaries, and target-repo handoff context.
+- Extended bundle-check validation so `mcp-probes.json` must match the recomputed read-only MCP probe report.
+- Updated CLI unit coverage, package smoke bundle assertions, Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can archive or hand off one bundle that contains both MCP readiness evidence and stricter read-only probe evidence.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 366 — Website Console Next-Actions MCP Probe Readiness (unreleased)
 
 Website Console next-actions now includes read-only MCP probe readiness before target-repo handoff. This closes a practical operator gap where base MCP readiness could pass because a field was present, while the stricter local probe check could still detect an invalid GitHub URL, Figma URL, Browser smoke target, or deployment reference.

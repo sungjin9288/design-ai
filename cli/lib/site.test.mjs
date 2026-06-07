@@ -27,6 +27,7 @@ import {
   buildSiteReport,
   buildSiteWorkflowGraph,
   createSampleSiteWorkspace,
+  SITE_BUNDLE_FILES,
   SITE_BUNDLE_CHECKSUM_FILES,
   formatSiteBundleCheckHuman,
   formatSiteBundleCheckJson,
@@ -823,6 +824,7 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
     "summary.json",
     "website-workspace.tasks.json",
     "mcp-check.json",
+    "mcp-probes.json",
     "mcp-action-plan.md",
     "website-handoff.md",
     "website-prompts.md",
@@ -830,6 +832,9 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   ]);
   assert.match(files["README.md"], /Website improvement handoff bundle/);
   assert.match(files["README.md"], /does not call external MCPs/);
+  assert.match(files["README.md"], /MCP probes: 4\/4 passing/);
+  assert.match(files["mcp-probes.json"], /"mode": "read-only-local"/);
+  assert.match(files["mcp-probes.json"], /"externalCalls": false/);
   assert.match(files["mcp-action-plan.md"], /Website improvement MCP action plan/);
   assert.match(files["website-handoff.md"], /Website improvement handoff/);
   assert.match(files["website-prompts.md"], /Website improvement prompt bundle/);
@@ -840,6 +845,13 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   assert.equal(summaryPayload.generatedAt, workspace.updatedAt);
   assert.equal(summaryPayload.taskGeneration.totalTasks, 3);
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
+  assert.equal(summaryPayload.mcp.probeStatus, "pass");
+  assert.deepEqual(summaryPayload.mcp.probeCounts, {
+    count: 4,
+    pass: 4,
+    warn: 0,
+    fail: 0,
+  });
   assert.deepEqual(summaryPayload.files, Object.keys(files));
   assert.equal(summaryPayload.checksums.algorithm, "sha256");
   assert.match(summaryPayload.checksums.bundleDigest, /^[a-f0-9]{64}$/);
@@ -847,6 +859,7 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
     "README.md",
     "website-workspace.tasks.json",
     "mcp-check.json",
+    "mcp-probes.json",
     "mcp-action-plan.md",
     "website-handoff.md",
     "website-prompts.md",
@@ -881,19 +894,19 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
 
   assert.equal(report.status, "pass");
   assert.equal(report.valid, true);
-  assert.equal(report.counts.expectedFiles, 8);
-  assert.equal(report.counts.presentFiles, 8);
-  assert.equal(report.counts.expectedChecksumFiles, 7);
-  assert.equal(report.counts.verifiedChecksumFiles, 7);
+  assert.equal(report.counts.expectedFiles, SITE_BUNDLE_FILES.length);
+  assert.equal(report.counts.presentFiles, SITE_BUNDLE_FILES.length);
+  assert.equal(report.counts.expectedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.equal(report.counts.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.counts.checksumFailures, 0);
-  assert.equal(report.counts.expectedGeneratedFiles, 7);
-  assert.equal(report.counts.verifiedGeneratedFiles, 7);
+  assert.equal(report.counts.expectedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.equal(report.counts.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.counts.generatedFailures, 0);
   assert.equal(report.generatedContract.available, true);
-  assert.equal(report.generatedContract.expectedFiles, 7);
-  assert.equal(report.generatedContract.verifiedFiles, 7);
+  assert.equal(report.generatedContract.expectedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.equal(report.generatedContract.verifiedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.deepEqual(report.generatedContract.driftFiles, []);
-  assert.equal(report.generatedContract.files.length, 7);
+  assert.equal(report.generatedContract.files.length, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.ok(report.generatedContract.files.every((file) => file.present && file.matches));
   assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.expectedDigest)));
   assert.ok(report.generatedContract.files.every((file) => /^[a-f0-9]{64}$/.test(file.actualDigest)));
@@ -906,6 +919,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(report.repairGuidance.verifyCommand, /--bundle-check --strict --json/);
   assert.equal(report.summary.siteName, "Korean SaaS marketing site");
   assert.equal(report.summary.totalTasks, 3);
+  assert.equal(report.summary.mcpProbeStatus, "pass");
+  assert.equal(report.mcpProbeStatus, "pass");
   assert.deepEqual(report.summary.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -923,9 +938,9 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
     nextActions: 0,
   });
   assert.match(human, /Website Improvement handoff bundle check/);
-  assert.match(human, /Files: 8\/8/);
-  assert.match(human, /Checksums: 7\/7 verified/);
-  assert.match(human, /Generated contract: 7\/7 verified/);
+  assert.match(human, new RegExp(`Files: ${SITE_BUNDLE_FILES.length}/${SITE_BUNDLE_FILES.length}`));
+  assert.match(human, new RegExp(`Checksums: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} verified`));
+  assert.match(human, new RegExp(`Generated contract: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} verified`));
   assert.match(human, /Generated drift files: none/);
   assert.match(human, /Generated contract drift:\n- none/);
   assert.match(human, /Repair guidance:\n- Available: yes/);
@@ -934,6 +949,7 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
   assert.match(human, /Bundle digest: [a-f0-9]{64}/);
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
+  assert.match(human, /MCP probe status: pass/);
   assert.match(human, /bundle-ready/);
 
   const summaryPath = path.join(dir, "summary.json");
@@ -977,7 +993,7 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   const tamperedReport = buildSiteBundleCheckReport({ target: dir });
   assert.equal(tamperedReport.status, "fail");
   assert.equal(tamperedReport.valid, false);
-  assert.equal(tamperedReport.counts.verifiedChecksumFiles, 6);
+  assert.equal(tamperedReport.counts.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length - 1);
   assert.equal(tamperedReport.counts.checksumFailures, 2);
   assert.ok(tamperedReport.issues.some((issue) => issue.id === "bundle-checksum-codex-implementation.md"));
   assert.ok(tamperedReport.issues.some((issue) => issue.id === "bundle-checksum-bundle-digest"));
@@ -1032,7 +1048,7 @@ test("buildSiteBundleRepairPreview reports local bundle repair without mutating 
   const repair = buildSiteBundleRepairBundle({ target: dir });
   assert.equal(repair.preview.dryRun, true);
   assert.equal(repair.beforeReport.status, "fail");
-  assert.equal(repair.bundle.files.length, 8);
+  assert.equal(repair.bundle.files.length, SITE_BUNDLE_FILES.length);
   assert.equal(repair.bundle.files.find((file) => file.path === "website-handoff.md").content, originalHandoff);
 }));
 
@@ -1070,7 +1086,7 @@ test("buildSiteBundleCompareReport compares handoff bundle fingerprints and chan
     nextActions: 0,
   });
   assert.match(identicalHuman, /Same bundle: yes/);
-  assert.match(identicalHuman, /Generated contract: left 7\/7, right 7\/7/);
+  assert.match(identicalHuman, new RegExp(`Generated contract: left ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length}`));
   assert.match(identicalHuman, /Generated drift files: left none, right none/);
 
   const changedWorkspace = createSampleSiteWorkspace();
@@ -1109,6 +1125,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.status, "pass");
   assert.equal(report.valid, true);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
+  assert.equal(report.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(report.bundle.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -1116,8 +1133,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActions: 0,
   });
   assert.match(report.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
-  assert.equal(report.bundle.verifiedChecksumFiles, 7);
-  assert.equal(report.bundle.verifiedGeneratedFiles, 7);
+  assert.equal(report.bundle.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.equal(report.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.bundle.generatedFailures, 0);
   assert.deepEqual(report.bundle.generatedDriftFiles, []);
   assert.equal(report.bundle.repairGuidance.available, true);
@@ -1130,7 +1147,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
   assert.match(report.prompt, /SHA-256 bundle digest: [a-f0-9]{64}/);
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
-  assert.match(report.prompt, /Generated files: 7\/7 match the current CLI bundle contract/);
+  assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
+  assert.match(report.prompt, /MCP probe status: pass/);
+  assert.match(report.prompt, /mcp-probes\.json/);
   assert.match(report.prompt, /Generated drift files: none/);
   assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
   assert.match(report.prompt, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
@@ -1140,13 +1159,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
   assert.equal(json.status, "pass");
+  assert.equal(json.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(json.bundle.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
     remainingRisks: 3,
     nextActions: 0,
   });
-  assert.equal(json.bundle.verifiedGeneratedFiles, 7);
+  assert.equal(json.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(json.bundle.generatedFailures, 0);
   assert.deepEqual(json.bundle.generatedDriftFiles, []);
   assert.equal(json.bundle.repairGuidance.available, true);
@@ -1539,19 +1559,21 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(existsSync(path.join(bundleDir, "summary.json")), true);
     assert.equal(existsSync(path.join(bundleDir, "website-workspace.tasks.json")), true);
     assert.equal(existsSync(path.join(bundleDir, "mcp-check.json")), true);
+    assert.equal(existsSync(path.join(bundleDir, "mcp-probes.json")), true);
     assert.equal(existsSync(path.join(bundleDir, "mcp-action-plan.md")), true);
     assert.equal(existsSync(path.join(bundleDir, "website-handoff.md")), true);
     assert.equal(existsSync(path.join(bundleDir, "website-prompts.md")), true);
     assert.equal(existsSync(path.join(bundleDir, "codex-implementation.md")), true);
     assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "summary.json"), "utf8")).taskGeneration.totalTasks, 3);
     assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "mcp-check.json"), "utf8")).status, "pass");
+    assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "mcp-probes.json"), "utf8")).status, "pass");
     assert.match(readFileSync(path.join(bundleDir, "codex-implementation.md"), "utf8"), /Task ID: task-accessibility/);
 
     const bundleCheckOutput = await captureConsole(() => runSite([bundleDir, "--bundle-check", "--json"]));
     const bundleCheckPayload = JSON.parse(bundleCheckOutput.stdout);
     assert.equal(bundleCheckPayload.status, "pass");
-    assert.equal(bundleCheckPayload.counts.presentFiles, 8);
-    assert.equal(bundleCheckPayload.counts.verifiedGeneratedFiles, 7);
+    assert.equal(bundleCheckPayload.counts.presentFiles, SITE_BUNDLE_FILES.length);
+    assert.equal(bundleCheckPayload.counts.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleCheckPayload.counts.generatedFailures, 0);
     assert.equal(bundleCheckPayload.generatedContract.available, true);
     assert.deepEqual(bundleCheckPayload.generatedContract.driftFiles, []);
@@ -1575,8 +1597,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleComparePayload = JSON.parse(bundleCompareOutput.stdout);
     assert.equal(bundleComparePayload.status, "pass");
     assert.equal(bundleComparePayload.sameBundle, true);
-    assert.equal(bundleComparePayload.left.verifiedGeneratedFiles, 7);
-    assert.equal(bundleComparePayload.right.verifiedGeneratedFiles, 7);
+    assert.equal(bundleComparePayload.left.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+    assert.equal(bundleComparePayload.right.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.deepEqual(bundleComparePayload.left.generatedDriftFiles, []);
     assert.deepEqual(bundleComparePayload.right.generatedDriftFiles, []);
     assert.deepEqual(bundleComparePayload.left.implementationEvidence, {
@@ -1599,7 +1621,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleHandoffPayload = JSON.parse(bundleHandoffJsonOutput.stdout);
     assert.equal(bundleHandoffPayload.status, "pass");
     assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
-    assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, 7);
+    assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
     assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
     assert.equal(bundleHandoffPayload.bundle.repairGuidance.available, true);
@@ -1655,7 +1677,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(repairApplyPayload.before.status, "fail");
     assert.equal(repairApplyPayload.after.status, "pass");
     assert.deepEqual(repairApplyPayload.after.generatedDriftFiles, []);
-    assert.equal(repairApplyPayload.written.count, 8);
+    assert.equal(repairApplyPayload.written.count, SITE_BUNDLE_FILES.length);
     assert.equal(readFileSync(repairHandoffPath, "utf8"), originalRepairHandoff);
 
     const repairedBundleCheckOutput = await captureConsole(() => runSite([bundleDir, "--bundle-check", "--strict", "--json"]));

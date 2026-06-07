@@ -160,6 +160,7 @@ export const SITE_BUNDLE_FILES = [
   "summary.json",
   "website-workspace.tasks.json",
   "mcp-check.json",
+  "mcp-probes.json",
   "mcp-action-plan.md",
   "website-handoff.md",
   "website-prompts.md",
@@ -2235,7 +2236,7 @@ export function formatSiteWorkflowGraphMarkdown(graph) {
   ].join("\n");
 }
 
-function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
+function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeReport, filePaths) {
   const commandTarget = bundleSummary.source === "stdin" ? "<workspace.json>" : bundleSummary.source;
   return [
     `# Website improvement handoff bundle: ${workspace.siteProfile.name}`,
@@ -2250,6 +2251,7 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
           "summary.json": "Machine-readable bundle manifest and readiness summary",
           "website-workspace.tasks.json": "Workspace JSON with deterministic starter refactor tasks added",
           "mcp-check.json": "Machine-readable MCP readiness gate output",
+          "mcp-probes.json": "Machine-readable read-only MCP probe readiness output",
           "mcp-action-plan.md": "Operator-facing MCP readiness action plan",
           "website-handoff.md": "Markdown handoff report for implementation planning",
           "website-prompts.md": "Full Codex and Claude prompt bundle",
@@ -2269,10 +2271,11 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     `- Tasks: ${bundleSummary.taskGeneration.totalTasks}`,
     `- Evidence entries: ${bundleSummary.implementationEvidence.executedWork + bundleSummary.implementationEvidence.verificationResults}`,
     `- MCP ready: ${mcpReport.counts.ready}/${mcpReport.counts.total}`,
+    `- MCP probes: ${mcpProbeReport.pass}/${mcpProbeReport.count} passing`,
     "",
     "## Suggested Sequence",
-    "1. Read `summary.json` and `mcp-action-plan.md` first.",
-    "2. Fix required MCP readiness gaps, then re-run the strict gate.",
+    "1. Read `summary.json`, `mcp-check.json`, `mcp-probes.json`, and `mcp-action-plan.md` first.",
+    "2. Fix required MCP readiness or probe gaps, then re-run the strict gate.",
     "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
     "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
     "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
@@ -2323,12 +2326,14 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const source = summary.filePath || "workspace.json";
   const { summary: taskSummary } = analyzeSiteWorkspace(taskWorkspace, { filePath: source });
   const mcpReport = buildSiteMcpCheckReport(taskWorkspace, taskSummary);
+  const mcpProbeReport = buildSiteMcpProbeReport(taskWorkspace);
   const filePaths = SITE_BUNDLE_FILES;
+  const bundleStatus = combineStatuses(mcpReport.status, mcpProbeReport.status);
   const bundleSummary = {
     version: 1,
     generatedAt: taskWorkspace.updatedAt,
     source,
-    status: mcpReport.status,
+    status: bundleStatus,
     workspaceStatus: taskSummary.status,
     site: taskSummary.site,
     counts: taskSummary.counts,
@@ -2348,6 +2353,13 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
       status: mcpReport.status,
       counts: mcpReport.counts,
       taskGaps: mcpReport.taskGaps.length,
+      probeStatus: mcpProbeReport.status,
+      probeCounts: {
+        count: mcpProbeReport.count,
+        pass: mcpProbeReport.pass,
+        warn: mcpProbeReport.warn,
+        fail: mcpProbeReport.fail,
+      },
     },
     files: filePaths,
     boundaries: [
@@ -2361,7 +2373,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const contentFiles = [
     {
       path: "README.md",
-      content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, filePaths)}\n`,
+      content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, mcpProbeReport, filePaths)}\n`,
     },
     {
       path: "website-workspace.tasks.json",
@@ -2370,6 +2382,10 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
     {
       path: "mcp-check.json",
       content: `${formatSiteMcpCheckJson(mcpReport)}\n`,
+    },
+    {
+      path: "mcp-probes.json",
+      content: `${JSON.stringify(mcpProbeReport, null, 2)}\n`,
     },
     {
       path: "mcp-action-plan.md",
@@ -2391,7 +2407,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   bundleSummary.checksums = buildBundleChecksums(contentFiles);
 
   return {
-    status: mcpReport.status,
+    status: bundleStatus,
     summary: bundleSummary,
     files: [
       contentFiles.find((file) => file.path === "README.md"),
@@ -2716,6 +2732,7 @@ function summarizeBundlePayload(summaryPayload) {
     totalTasks: Number.isFinite(taskGeneration.totalTasks) ? taskGeneration.totalTasks : 0,
     implementationEvidence: countImplementationEvidence(summaryPayload?.implementationEvidence),
     mcpStatus: String(mcp.status || "unknown"),
+    mcpProbeStatus: String(mcp.probeStatus || "unknown"),
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
     checksumAlgorithm: String(checksums.algorithm || ""),
     checksumBundleDigest: String(checksums.bundleDigest || ""),
@@ -2769,10 +2786,12 @@ export function buildSiteBundleCheckReport({
   const summaryPayload = canReadDirectory ? parseBundleJson(directory, "summary.json", issues) : null;
   const workspacePayload = canReadDirectory ? parseBundleJson(directory, "website-workspace.tasks.json", issues) : null;
   const mcpPayload = canReadDirectory ? parseBundleJson(directory, "mcp-check.json", issues) : null;
+  const mcpProbePayload = canReadDirectory ? parseBundleJson(directory, "mcp-probes.json", issues) : null;
   const summary = summarizeBundlePayload(summaryPayload);
 
   let workspaceSummary = null;
   let recomputedMcp = null;
+  let recomputedMcpProbes = null;
   let generatedContract = emptyBundleGeneratedContract(summary.source);
 
   if (summaryPayload) {
@@ -2901,6 +2920,7 @@ export function buildSiteBundleCheckReport({
       addBundleGeneratedContractIssues(generatedContract, issues);
     }
     recomputedMcp = buildSiteMcpCheckReport(analyzed.workspace, analyzed.summary);
+    recomputedMcpProbes = buildSiteMcpProbeReport(analyzed.workspace);
   }
 
   if (mcpPayload && recomputedMcp) {
@@ -2918,6 +2938,23 @@ export function buildSiteBundleCheckReport({
     }
   }
 
+  if (mcpProbePayload && recomputedMcpProbes) {
+    if (mcpProbePayload.status !== recomputedMcpProbes.status) {
+      addIssue(issues, "fail", "bundle-mcp-probe-status", "mcp-probes.json status does not match recomputed MCP probe readiness");
+    }
+    if (!arraysEqual((mcpProbePayload.items || []).map((item) => item.id), recomputedMcpProbes.items.map((item) => item.id))) {
+      addIssue(issues, "fail", "bundle-mcp-probe-items", "mcp-probes.json item order does not match the current MCP probe contract");
+    }
+    for (const key of ["count", "pass", "warn", "fail"]) {
+      if (mcpProbePayload[key] !== recomputedMcpProbes[key]) {
+        addIssue(issues, "fail", `bundle-mcp-probe-${key}`, `mcp-probes.json ${key} does not match recomputed MCP probe readiness`);
+      }
+    }
+    if (summaryPayload && summary.mcpProbeStatus !== String(mcpProbePayload.status || "")) {
+      addIssue(issues, "fail", "bundle-summary-mcp-probe-status", "summary.json mcp.probeStatus does not match mcp-probes.json");
+    }
+  }
+
   if (canReadDirectory) {
     addBundleMarkdownIssue(directory, "README.md", [
       "Website improvement handoff bundle",
@@ -2925,6 +2962,10 @@ export function buildSiteBundleCheckReport({
     ], issues);
     addBundleMarkdownIssue(directory, "mcp-action-plan.md", [
       "# Website improvement MCP action plan",
+    ], issues);
+    addBundleMarkdownIssue(directory, "mcp-probes.json", [
+      "\"mode\": \"read-only-local\"",
+      "\"externalCalls\": false",
     ], issues);
     addBundleMarkdownIssue(directory, "website-handoff.md", [
       "# Website improvement handoff",
@@ -2973,6 +3014,7 @@ export function buildSiteBundleCheckReport({
     summary,
     workspaceStatus: workspaceSummary?.status || "unknown",
     mcpStatus: mcpPayload?.status || "unknown",
+    mcpProbeStatus: mcpProbePayload?.status || "unknown",
     files,
     unexpectedFiles,
     generatedContract,
@@ -3001,6 +3043,7 @@ export function formatSiteBundleCheckHuman(report) {
     `Tasks: ${report.summary.totalTasks}`,
     `Evidence: executed work ${report.summary.implementationEvidence.executedWork}, verification ${report.summary.implementationEvidence.verificationResults}, risks ${report.summary.implementationEvidence.remainingRisks}, next actions ${report.summary.implementationEvidence.nextActions}`,
     `MCP status: ${report.mcpStatus}`,
+    `MCP probe status: ${report.mcpProbeStatus}`,
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
@@ -3025,6 +3068,7 @@ function summarizeBundleForCompare(report) {
     source: report.summary.source || "",
     workspaceStatus: report.workspaceStatus || "unknown",
     mcpStatus: report.mcpStatus || "unknown",
+    mcpProbeStatus: report.mcpProbeStatus || "unknown",
     totalTasks: report.summary.totalTasks || 0,
     implementationEvidence: { ...report.summary.implementationEvidence },
     checksumAlgorithm: report.summary.checksumAlgorithm || "",
@@ -3043,6 +3087,7 @@ function buildBundleMetadataChanges(left, right) {
     ["source", "Source", left.summary.source || "", right.summary.source || ""],
     ["workspaceStatus", "Workspace status", left.workspaceStatus || "unknown", right.workspaceStatus || "unknown"],
     ["mcpStatus", "MCP status", left.mcpStatus || "unknown", right.mcpStatus || "unknown"],
+    ["mcpProbeStatus", "MCP probe status", left.mcpProbeStatus || "unknown", right.mcpProbeStatus || "unknown"],
     ["totalTasks", "Task count", String(left.summary.totalTasks || 0), String(right.summary.totalTasks || 0)],
     ...IMPLEMENTATION_EVIDENCE_KEYS.map((key) => [
       `implementationEvidence.${key}`,
@@ -3183,6 +3228,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Bundle status: ${checkReport.status}`,
     `- Workspace status: ${checkReport.workspaceStatus}`,
     `- MCP status: ${checkReport.mcpStatus}`,
+    `- MCP probe status: ${checkReport.mcpProbeStatus}`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
     `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
     `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
@@ -3212,6 +3258,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "## Additional Bundle Context",
     "Use these files only as supporting evidence:",
     "- `website-handoff.md`: audit summary, priority recommendations, and remaining risk context.",
+    "- `mcp-probes.json`: read-only MCP probe evidence for repo, Figma, Browser, and deployment references.",
     "- `mcp-action-plan.md`: MCP readiness gaps and operator sequence.",
     "- `website-prompts.md`: alternate Codex/Claude review, QA, deployment, research, and copy prompts.",
     "- `summary.json`: bundle manifest, source workspace, task count, and checksum digest.",
@@ -3236,6 +3283,7 @@ export function buildSiteBundleHandoffReport({
   const checkReport = buildSiteBundleCheckReport({ target, cwd });
   const includedFilePaths = [
     "summary.json",
+    "mcp-probes.json",
     "mcp-action-plan.md",
     "website-handoff.md",
     "website-prompts.md",
@@ -3256,6 +3304,7 @@ export function buildSiteBundleHandoffReport({
       source: checkReport.summary.source || "",
       workspaceStatus: checkReport.workspaceStatus || "unknown",
       mcpStatus: checkReport.mcpStatus || "unknown",
+      mcpProbeStatus: checkReport.mcpProbeStatus || "unknown",
       totalTasks: checkReport.summary.totalTasks || 0,
       implementationEvidence: { ...checkReport.summary.implementationEvidence },
       checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",

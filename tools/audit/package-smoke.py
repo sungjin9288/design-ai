@@ -1055,6 +1055,7 @@ def assert_site_bundle_smoke(
         "summary.json",
         "website-workspace.tasks.json",
         "mcp-check.json",
+        "mcp-probes.json",
         "mcp-action-plan.md",
         "website-handoff.md",
         "website-prompts.md",
@@ -1105,6 +1106,8 @@ def assert_site_bundle_smoke(
 
     mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
     assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
+    mcp_probes = json.loads((out_dir / "mcp-probes.json").read_text(encoding="utf-8"))
+    assert_site_mcp_check_probes_json(json.dumps(mcp_probes), context=context, cmd=cmd)
     assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
     implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
     assert_no_ansi(implementation_prompt, cmd)
@@ -1233,26 +1236,26 @@ def assert_site_bundle_check_json_smoke(
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle check after {context} expected pass/valid output")
-    if payload.get("counts", {}).get("presentFiles") != 8:
-        raise SystemExit(f"site bundle check after {context} expected 8 present files")
-    if payload.get("counts", {}).get("verifiedChecksumFiles") != 7:
-        raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
+    if payload.get("counts", {}).get("presentFiles") != 9:
+        raise SystemExit(f"site bundle check after {context} expected 9 present files")
+    if payload.get("counts", {}).get("verifiedChecksumFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 verified checksum files")
     if payload.get("counts", {}).get("checksumFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no checksum failures")
-    if payload.get("counts", {}).get("verifiedGeneratedFiles") != 7:
-        raise SystemExit(f"site bundle check after {context} expected 7 current-contract generated files")
+    if payload.get("counts", {}).get("verifiedGeneratedFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 current-contract generated files")
     if payload.get("counts", {}).get("generatedFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no generated bundle contract failures")
     generated_contract = payload.get("generatedContract")
     if not isinstance(generated_contract, dict) or generated_contract.get("available") is not True:
         raise SystemExit(f"site bundle check after {context} generated contract diagnostics missing")
-    if generated_contract.get("expectedFiles") != 7 or generated_contract.get("verifiedFiles") != 7:
+    if generated_contract.get("expectedFiles") != 8 or generated_contract.get("verifiedFiles") != 8:
         raise SystemExit(f"site bundle check after {context} generated contract file counts changed")
     if generated_contract.get("driftFiles") != []:
         raise SystemExit(f"site bundle check after {context} expected no generated contract drift files")
     generated_files = generated_contract.get("files")
-    if not isinstance(generated_files, list) or len(generated_files) != 7:
-        raise SystemExit(f"site bundle check after {context} expected 7 generated contract file diagnostics")
+    if not isinstance(generated_files, list) or len(generated_files) != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 generated contract file diagnostics")
     for item in generated_files:
         if item.get("present") is not True or item.get("matches") is not True:
             raise SystemExit(f"site bundle check after {context} generated contract file did not match: {item!r}")
@@ -1327,7 +1330,7 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
-        if payload.get(side, {}).get("verifiedGeneratedFiles") != 7 or payload.get(side, {}).get("generatedFailures") != 0:
+        if payload.get(side, {}).get("verifiedGeneratedFiles") != 8 or payload.get(side, {}).get("generatedFailures") != 0:
             raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
         if payload.get(side, {}).get("generatedDriftFiles") != []:
             raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract drift changed")
@@ -1365,9 +1368,9 @@ def assert_site_bundle_handoff_json_smoke(
     bundle = payload.get("bundle", {})
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
-    if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
+    if bundle.get("verifiedChecksumFiles") != 8 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
-    if bundle.get("verifiedGeneratedFiles") != 7 or bundle.get("generatedFailures") != 0:
+    if bundle.get("verifiedGeneratedFiles") != 8 or bundle.get("generatedFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
