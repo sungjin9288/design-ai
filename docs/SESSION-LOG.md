@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 366 (unreleased)** — Extended Website Console next-actions with read-only MCP probe readiness, `mcpProbeStatus`, `counts.probeGaps`, probe follow-up commands, and probe-gap action ranking before target-repo handoff.
 - **Phase 365 (unreleased)** — Added release policy guard coverage for the release metadata JSON `product_readiness_checked: true` Product Readiness summary phrase across release-facing docs.
 - **Phase 364 (unreleased)** — Exposed Product Readiness guard coverage in release metadata JSON through `product_readiness_checked: true`.
 - **Phase 363 (unreleased)** — Added release metadata guard coverage for Product Readiness warning-state Website Console bundle-compare strict wording so readiness status cannot regress to generic bundle comparison coverage.

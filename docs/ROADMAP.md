@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 366 — Website Console Next-Actions MCP Probe Readiness (unreleased)
+
+Website Console next-actions now includes read-only MCP probe readiness before target-repo handoff. This closes a practical operator gap where base MCP readiness could pass because a field was present, while the stricter local probe check could still detect an invalid GitHub URL, Figma URL, Browser smoke target, or deployment reference.
+
+### Changed
+- Added `mcpProbeStatus` and `counts.probeGaps` to `design-ai site --next-actions --json`.
+- Added probe follow-up commands to the next-actions `commands` block: `mcpCheckProbes` and `mcpPlanProbes`.
+- Ranked failing/warning MCP probe gaps as blocking or warning next-actions before implementation and bundle handoff steps.
+- Updated next-actions human output with MCP probe status and the read-only probe boundary.
+- Updated CLI unit coverage, shared smoke assertion fixtures, Website Improvement docs, changelog, roadmap, and session history.
+
+### Impact
+- Operators can catch malformed local handoff references directly from the prioritized next-actions report, without running a separate probe command first.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 365 — Product Readiness JSON Release Policy Guard (unreleased)
 
 Release metadata now guards release-facing docs against dropping the Product Readiness JSON summary phrase. Phase 364 exposed `product_readiness_checked: true`; this phase makes README, release checklist, and distribution docs keep documenting that machine-readable guard signal.

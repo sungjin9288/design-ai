@@ -925,6 +925,7 @@ EXPECTED_SITE_NEXT_ACTIONS_PAYLOAD_KEYS = [
     "status",
     "workspaceStatus",
     "mcpStatus",
+    "mcpProbeStatus",
     "site",
     "counts",
     "topTasks",
@@ -942,6 +943,7 @@ EXPECTED_SITE_NEXT_ACTIONS_COUNTS_KEYS = [
     "tasks",
     "requiredMcpMissing",
     "taskGaps",
+    "probeGaps",
 ]
 EXPECTED_SITE_NEXT_ACTIONS_TOP_TASK_KEYS = ["id", "title", "priority", "category", "impact", "effort"]
 EXPECTED_SITE_NEXT_ACTION_KEYS = ["rank", "severity", "title", "reason", "command", "references"]
@@ -949,6 +951,8 @@ EXPECTED_SITE_NEXT_ACTION_COMMAND_KEYS = [
     "summary",
     "mcpCheck",
     "mcpPlan",
+    "mcpCheckProbes",
+    "mcpPlanProbes",
     "tasks",
     "implementationPrompt",
     "handoffReport",
@@ -4312,6 +4316,7 @@ def passing_site_next_actions_json() -> str:
             "status": "pass",
             "workspaceStatus": "pass",
             "mcpStatus": "pass",
+            "mcpProbeStatus": "pass",
             "site": {
                 "name": "Korean SaaS marketing site",
                 "liveUrl": "https://example.com",
@@ -4325,6 +4330,7 @@ def passing_site_next_actions_json() -> str:
                 "tasks": 1,
                 "requiredMcpMissing": 0,
                 "taskGaps": 0,
+                "probeGaps": 0,
             },
             "topTasks": [
                 {
@@ -4366,6 +4372,8 @@ def passing_site_next_actions_json() -> str:
                 "summary": "design-ai site <workspace.json> --json",
                 "mcpCheck": "design-ai site <workspace.json> --mcp-check --strict --json",
                 "mcpPlan": "design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md",
+                "mcpCheckProbes": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
+                "mcpPlanProbes": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
                 "tasks": "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
                 "implementationPrompt": "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
                 "handoffReport": "design-ai site <workspace.json> --report --out website-handoff.md",
@@ -4374,6 +4382,7 @@ def passing_site_next_actions_json() -> str:
             "boundaries": [
                 "This next-action report is deterministic and local.",
                 "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+                "MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
                 "Run implementation commands in the target website workflow after readiness blockers are cleared.",
             ],
             "externalCalls": False,
@@ -4392,6 +4401,7 @@ def passing_site_next_actions_human() -> str:
             "Status: pass",
             "Workspace status: pass",
             "MCP status: pass",
+            "MCP probe status: pass",
             "Actions: 3 (0 blocking, 0 warning)",
             "",
             "Prioritized actions:",
@@ -4411,6 +4421,7 @@ def passing_site_next_actions_human() -> str:
             "Boundaries:",
             "- This next-action report is deterministic and local.",
             "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+            "- MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
             "- Run implementation commands in the target website workflow after readiness blockers are cleared.",
         ]
     )
@@ -6286,7 +6297,12 @@ def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> 
     )
     if payload.get("kind") != "website-improvement-next-actions" or payload.get("version") != 1:
         raise SystemExit(f"site next-actions JSON after {context} kind/version changed")
-    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass" or payload.get("mcpStatus") != "pass":
+    if (
+        payload.get("status") != "pass"
+        or payload.get("workspaceStatus") != "pass"
+        or payload.get("mcpStatus") != "pass"
+        or payload.get("mcpProbeStatus") != "pass"
+    ):
         raise SystemExit(f"site next-actions JSON after {context} expected pass status fields")
     if not isinstance(payload.get("filePath"), str) or not payload["filePath"]:
         raise SystemExit(f"site next-actions JSON after {context} filePath is missing")
@@ -6319,6 +6335,7 @@ def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> 
         "tasks": 1,
         "requiredMcpMissing": 0,
         "taskGaps": 0,
+        "probeGaps": 0,
     }
     for key, expected in expected_counts.items():
         if counts.get(key) != expected:
@@ -6371,6 +6388,10 @@ def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> 
     )
     if "--mcp-check --strict --json" not in commands.get("mcpCheck", ""):
         raise SystemExit(f"site next-actions JSON after {context} mcpCheck command changed")
+    if "--mcp-check --probes --json --out mcp-check-probes.json" not in commands.get("mcpCheckProbes", ""):
+        raise SystemExit(f"site next-actions JSON after {context} mcpCheckProbes command changed")
+    if "--mcp-plan --probes --json --out mcp-action-plan-probes.json" not in commands.get("mcpPlanProbes", ""):
+        raise SystemExit(f"site next-actions JSON after {context} mcpPlanProbes command changed")
     if "--tasks --out website-workspace.tasks.json" not in commands.get("tasks", ""):
         raise SystemExit(f"site next-actions JSON after {context} tasks command changed")
     if "--prompt codex-implementation --task 1" not in commands.get("implementationPrompt", ""):

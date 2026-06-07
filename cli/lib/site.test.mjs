@@ -424,15 +424,19 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(report.status, "pass");
   assert.equal(report.workspaceStatus, "pass");
   assert.equal(report.mcpStatus, "pass");
+  assert.equal(report.mcpProbeStatus, "pass");
   assert.equal(report.externalCalls, false);
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.counts.blocking, 0);
   assert.equal(report.counts.tasks, 1);
+  assert.equal(report.counts.probeGaps, 0);
   assert.deepEqual(report.actions.map((action) => action.rank), [1, 2, 3]);
   assert.deepEqual(report.commands, {
     summary: "design-ai site sample.json --json",
     mcpCheck: "design-ai site sample.json --mcp-check --strict --json",
     mcpPlan: "design-ai site sample.json --mcp-plan --out mcp-action-plan.md",
+    mcpCheckProbes: "design-ai site sample.json --mcp-check --probes --json --out mcp-check-probes.json",
+    mcpPlanProbes: "design-ai site sample.json --mcp-plan --probes --json --out mcp-action-plan-probes.json",
     tasks: "design-ai site sample.json --tasks --out website-workspace.tasks.json",
     implementationPrompt: "design-ai site sample.json --prompt codex-implementation --task 1 --out codex-implementation.md",
     handoffReport: "design-ai site sample.json --report --out website-handoff.md",
@@ -448,6 +452,8 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
     summary: "design-ai site <workspace.json> --json",
     mcpCheck: "design-ai site <workspace.json> --mcp-check --strict --json",
     mcpPlan: "design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md",
+    mcpCheckProbes: "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
+    mcpPlanProbes: "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
     tasks: "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
     implementationPrompt: "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
     handoffReport: "design-ai site <workspace.json> --report --out website-handoff.md",
@@ -514,6 +520,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
     "status",
     "workspaceStatus",
     "mcpStatus",
+    "mcpProbeStatus",
     "site",
     "counts",
     "topTasks",
@@ -524,6 +531,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
     "targetRepoMutation",
   ]);
   assert.match(human, /Website Improvement next actions: Korean SaaS marketing site/);
+  assert.match(human, /MCP probe status: pass/);
   assert.match(human, /1\. \[implementation\] Prepare Codex implementation prompt/);
   assert.match(human, /Command: `design-ai site sample\.json --prompt codex-implementation --task 1 --out codex-implementation\.md`/);
   assert.match(human, /Create implementation evidence trail/);
@@ -582,6 +590,35 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.deepEqual(taskGapReport.actions[0].references, ["task-homepage-cta", "figma"]);
   assert.match(taskGapReport.actions[0].reason, /recommends figma/);
 
+  const probeGapWorkspace = {
+    ...workspace,
+    siteProfile: {
+      ...workspace.siteProfile,
+      repoUrl: "https://example.com/not-github",
+      localPath: "/definitely/not/a/repo",
+      figmaUrl: "not-a-figma-url",
+    },
+  };
+  const probeGapSummary = analyzeSiteWorkspace(probeGapWorkspace, { filePath: "probe-gap.json" }).summary;
+  const probeGapReport = buildSiteNextActionsReport(probeGapWorkspace, probeGapSummary);
+  const probeGapHuman = formatSiteNextActionsHuman(probeGapReport);
+  assert.equal(probeGapReport.status, "fail");
+  assert.equal(probeGapReport.mcpStatus, "pass");
+  assert.equal(probeGapReport.mcpProbeStatus, "fail");
+  assert.equal(probeGapReport.counts.probeGaps, 2);
+  assert.deepEqual(probeGapReport.actions.map((action) => action.rank), [1, 2, 3, 4, 5]);
+  assert.equal(probeGapReport.actions[0].severity, "blocking");
+  assert.equal(probeGapReport.actions[0].title, "Resolve MCP probe readiness: GitHub repo reference");
+  assert.equal(probeGapReport.actions[0].command, "design-ai site probe-gap.json --mcp-check --probes --json --out mcp-check-probes.json");
+  assert.deepEqual(probeGapReport.actions[0].references, ["github-repo-reference", "github"]);
+  assert.equal(probeGapReport.actions[1].severity, "warning");
+  assert.equal(probeGapReport.actions[1].title, "Resolve MCP probe readiness: Figma file reference");
+  assert.equal(probeGapReport.actions[1].command, "design-ai site probe-gap.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
+  assert.deepEqual(probeGapReport.actions[1].references, ["figma-url-reference", "figma"]);
+  assert.match(probeGapHuman, /MCP probe status: fail/);
+  assert.match(probeGapHuman, /Resolve MCP probe readiness: GitHub repo reference/);
+  assert.match(probeGapHuman, /Command: `design-ai site probe-gap\.json --mcp-check --probes --json --out mcp-check-probes\.json`/);
+
   const setupWorkspace = {
     ...workspace,
     refactorTasks: [],
@@ -611,7 +648,7 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   const blockedJson = JSON.parse(formatSiteNextActionsJson(blockedReport));
   const blockedHuman = formatSiteNextActionsHuman(blockedReport);
   assert.equal(blockedReport.status, "fail");
-  assert.equal(blockedReport.counts.blocking, 1);
+  assert.equal(blockedReport.counts.blocking, 2);
   assert.deepEqual(blockedReport.actions.map((action) => action.rank), blockedReport.actions.map((_, index) => index + 1));
   assert.equal(blockedReport.actions[0].rank, 1);
   assert.equal(blockedReport.actions[0].title, "Add required MCP readiness: GitHub");
@@ -619,8 +656,11 @@ test("buildSiteNextActionsReport ranks local operator actions", () => {
   assert.equal(blockedJson.counts.requiredMcpMissing, 1);
   assert.equal(blockedJson.actions[0].severity, "blocking");
   assert.equal(blockedJson.actions[0].command, "design-ai site blocked.json --mcp-check --strict --json");
+  assert.equal(blockedJson.actions[1].title, "Resolve MCP probe readiness: GitHub repo reference");
+  assert.equal(blockedJson.actions[1].command, "design-ai site blocked.json --mcp-check --probes --json --out mcp-check-probes.json");
   assert.match(blockedHuman, /1\. \[blocking\] Add required MCP readiness: GitHub/);
   assert.match(blockedHuman, /Command: `design-ai site blocked\.json --mcp-check --strict --json`/);
+  assert.match(blockedHuman, /2\. \[blocking\] Resolve MCP probe readiness: GitHub repo reference/);
 });
 
 test("buildSiteMcpActionPlan turns MCP readiness into Markdown execution guidance", () => {
@@ -1689,9 +1729,10 @@ test("runSite strict exits non-zero on warnings", async () => {
     const nextActionsStrict = await captureConsole(() => runSite([file, "--next-actions", "--strict", "--json"]));
     const nextActionsPayload = JSON.parse(nextActionsStrict.stdout);
     assert.equal(nextActionsPayload.status, "fail");
-    assert.equal(nextActionsPayload.counts.blocking, 1);
+    assert.equal(nextActionsPayload.counts.blocking, 2);
     assert.equal(nextActionsPayload.actions[0].severity, "blocking");
     assert.match(nextActionsPayload.actions[0].command, /--mcp-check --strict --json/);
+    assert.match(nextActionsPayload.actions[1].command, /--mcp-check --probes --json/);
     assert.equal(nextActionsStrict.exitCode, 1);
 
     const warningOnlyRaw = createSampleSiteWorkspace();

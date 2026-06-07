@@ -1746,6 +1746,8 @@ function buildSiteNextActionCommandSet(commandTarget) {
     summary: `design-ai site ${commandTarget} --json`,
     mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
     mcpPlan: `design-ai site ${commandTarget} --mcp-plan --out mcp-action-plan.md`,
+    mcpCheckProbes: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
+    mcpPlanProbes: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
     tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
     implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
     handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
@@ -1758,6 +1760,7 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
   const commandTarget = siteMcpCommandTarget(filePath);
   const commands = buildSiteNextActionCommandSet(commandTarget);
   const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+  const mcpProbeReport = buildSiteMcpProbeReport(workspace);
   const topTasks = workspace.refactorTasks
     .slice()
     .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
@@ -1801,6 +1804,16 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
       reason: gap.message,
       command: commands.mcpPlan,
       references: [gap.taskId, gap.mcp],
+    }));
+  }
+
+  for (const item of mcpProbeReport.items.filter((probe) => probe.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: item.level === "fail" ? "blocking" : "warning",
+      title: `Resolve MCP probe readiness: ${item.label}`,
+      reason: item.actions.join(" ") || item.message,
+      command: item.level === "fail" ? commands.mcpCheckProbes : commands.mcpPlanProbes,
+      references: [item.id, item.key],
     }));
   }
 
@@ -1864,9 +1877,10 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
     kind: "website-improvement-next-actions",
     version: 1,
     filePath,
-    status: combineStatuses(summary.status || "pass", mcpReport.status),
+    status: combineStatuses(summary.status || "pass", mcpReport.status, mcpProbeReport.status),
     workspaceStatus: summary.status || "unknown",
     mcpStatus: mcpReport.status,
+    mcpProbeStatus: mcpProbeReport.status,
     site: {
       name: workspace.siteProfile.name,
       liveUrl: workspace.siteProfile.liveUrl,
@@ -1880,6 +1894,7 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
       tasks: workspace.refactorTasks.length,
       requiredMcpMissing: mcpReport.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass").length,
       taskGaps: mcpReport.taskGaps.length,
+      probeGaps: mcpProbeReport.items.filter((item) => item.level !== "pass").length,
     },
     topTasks: topTasks.map((task) => ({
       id: task.id,
@@ -1894,6 +1909,7 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
     boundaries: [
       "This next-action report is deterministic and local.",
       "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+      "MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
       "Run implementation commands in the target website workflow after readiness blockers are cleared.",
     ],
     externalCalls: false,
@@ -1912,6 +1928,7 @@ export function formatSiteNextActionsHuman(report) {
     `Status: ${report.status}`,
     `Workspace status: ${report.workspaceStatus}`,
     `MCP status: ${report.mcpStatus}`,
+    `MCP probe status: ${report.mcpProbeStatus}`,
     `Actions: ${report.counts.actions} (${report.counts.blocking} blocking, ${report.counts.warnings} warning)`,
     "",
     "Prioritized actions:",
