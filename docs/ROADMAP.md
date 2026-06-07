@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 374 — Website Console Bundle MCP Probe Count Smoke Self-Test (unreleased)
+
+Package smoke self-tests now protect the Website Console bundle MCP probe count assertions. The packed-tarball smoke already checked bundle-check, bundle-compare, and bundle-handoff `mcpProbeCounts`; this phase adds direct self-test drift fixtures so those assertions cannot silently weaken.
+
+### Changed
+- Added a shared package-smoke helper for the expected Website Console MCP probe count payload.
+- Reused the helper in bundle-check, bundle-compare, and bundle-handoff package smoke assertions.
+- Added package smoke self-test drift fixtures for bundle-check summary, bundle-compare left side, and bundle-handoff MCP probe counts.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packed-tarball smoke assertion drift around bundle `mcpProbeCounts` is now caught by `tools/audit/package-smoke.py --self-test` before release smoke runs.
+- This is smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 373 — Website Console Bundle Compare Human CLI Coverage (unreleased)
 
 Website Console bundle comparison now has end-to-end CLI coverage for the human MCP probe count summary. Phase 372 added the formatter line; this phase verifies the actual `runSite` human `--bundle-compare` path prints the same left/right probe coverage.

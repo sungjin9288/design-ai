@@ -149,6 +149,17 @@ SITE_EVIDENCE_VALUES = {
     "nextActions": "Attach before/after screenshots",
 }
 SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
+EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
+
+
+def assert_site_mcp_probe_counts(
+    actual: object,
+    *,
+    context: str,
+    label: str,
+) -> None:
+    if actual != EXPECTED_SITE_MCP_PROBE_COUNTS:
+        raise SystemExit(f"{label} after {context} MCP probe counts changed: {actual!r}")
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -1297,10 +1308,16 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} MCP status changed")
     if payload.get("mcpProbeStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP probe status changed")
-    if payload.get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
-        raise SystemExit(f"site bundle check after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
-    if payload.get("summary", {}).get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
-        raise SystemExit(f"site bundle check after {context} summary MCP probe counts changed: {payload.get('summary', {}).get('mcpProbeCounts')!r}")
+    assert_site_mcp_probe_counts(
+        payload.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check",
+    )
+    assert_site_mcp_probe_counts(
+        payload.get("summary", {}).get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check summary",
+    )
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-ready"]:
         raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
@@ -1336,8 +1353,11 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
-        if payload.get(side, {}).get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
-            raise SystemExit(f"site bundle compare after {context} {side} MCP probe counts changed: {payload.get(side, {}).get('mcpProbeCounts')!r}")
+        assert_site_mcp_probe_counts(
+            payload.get(side, {}).get("mcpProbeCounts"),
+            context=context,
+            label=f"site bundle compare {side}",
+        )
         if payload.get(side, {}).get("verifiedGeneratedFiles") != 8 or payload.get(side, {}).get("generatedFailures") != 0:
             raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
         if payload.get(side, {}).get("generatedDriftFiles") != []:
@@ -1378,8 +1398,11 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("mcpProbeStatus") != "pass":
         raise SystemExit(f"site bundle handoff after {context} MCP probe status changed")
-    if bundle.get("mcpProbeCounts") != {"count": 4, "pass": 4, "warn": 0, "fail": 0}:
-        raise SystemExit(f"site bundle handoff after {context} MCP probe counts changed: {bundle.get('mcpProbeCounts')!r}")
+    assert_site_mcp_probe_counts(
+        bundle.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle handoff",
+    )
     if bundle.get("verifiedChecksumFiles") != 8 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
     if bundle.get("verifiedGeneratedFiles") != 8 or bundle.get("generatedFailures") != 0:
@@ -6646,6 +6669,25 @@ def run_self_test() -> None:
         expected="missing evidence fragment",
         scope="package smoke",
     )
+    assert_site_mcp_probe_counts(
+        EXPECTED_SITE_MCP_PROBE_COUNTS,
+        context=f"{context} site bundle check",
+        label="site bundle check",
+    )
+    for label in (
+        "site bundle check summary",
+        "site bundle compare left",
+        "site bundle handoff",
+    ):
+        expect_self_test_failure(
+            lambda label=label: assert_site_mcp_probe_counts(
+                {**EXPECTED_SITE_MCP_PROBE_COUNTS, "warn": 1},
+                context=context,
+                label=label,
+            ),
+            expected=f"{label} after {context} MCP probe counts changed",
+            scope="package smoke",
+        )
 
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
         report_path = Path(tmp) / "doctor.json"
