@@ -97,7 +97,7 @@ The workflow:
 - Runs `npm test` CLI unit tests before publishing or attaching release assets.
 - Runs whitespace checks with `git diff --check` before packaging.
 - Runs `npm run package:check` to confirm the tarball has required runtime files and excludes test/cache/source-only files.
-- Runs `npm run release:metadata` to verify release metadata checks before release self-tests.
+- Runs `npm run release:metadata` to verify release metadata checks with release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage before release self-tests.
 - Runs `npm run release:self-test` to validate release assertion fixtures before package smoke.
 - Runs `npm run package:smoke` as the packed-tarball smoke gate for installed-bin and one-shot npm exec coverage.
 - Packed-tarball smoke also verifies route eval, prompt eval, and pack eval checkpoint output for installed-bin and one-shot `npm exec --package <tarball>` paths.

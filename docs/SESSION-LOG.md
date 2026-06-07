@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 365 (unreleased)** — Added release policy guard coverage for the release metadata JSON `product_readiness_checked: true` Product Readiness summary phrase across release-facing docs.
 - **Phase 364 (unreleased)** — Exposed Product Readiness guard coverage in release metadata JSON through `product_readiness_checked: true`.
 - **Phase 363 (unreleased)** — Added release metadata guard coverage for Product Readiness warning-state Website Console bundle-compare strict wording so readiness status cannot regress to generic bundle comparison coverage.
 - **Phase 362 (unreleased)** — Clarified Product Readiness public-registry Website Console coverage so the post-publish smoke summary explicitly includes warning-state bundle-compare strict smoke coverage instead of only generic bundle-check/compare/handoff/repair wording.

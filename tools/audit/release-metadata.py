@@ -968,6 +968,21 @@ RELEASE_METADATA_CHECK_TERM_GROUPS = (
         "release metadata 검증",
     ),
 )
+RELEASE_METADATA_PRODUCT_READINESS_JSON_TERM_GROUPS = (
+    (
+        "release metadata JSON",
+        "release metadata JSON summary",
+        "release metadata JSON output",
+    ),
+    (
+        "`product_readiness_checked: true`",
+        "product_readiness_checked",
+    ),
+    (
+        "Product Readiness guard coverage",
+        "Product Readiness guard",
+    ),
+)
 RELEASE_METADATA_COMMAND_TERM_GROUPS = (
     ("`npm run release:metadata`", "npm run release:metadata"),
     (
@@ -2184,6 +2199,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "package contents check phrase",
     "release metadata command phrase",
     "release metadata check phrase",
+    "release metadata Product Readiness JSON phrase",
     "CLI unit test command phrase",
     "CLI unit test phrase",
     "repository audit command phrase",
@@ -2462,6 +2478,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ("package contents check phrase", RELEASE_PACKAGE_CONTENTS_TERM_GROUPS),
     ("release metadata command phrase", RELEASE_METADATA_COMMAND_TERM_GROUPS),
     ("release metadata check phrase", RELEASE_METADATA_CHECK_TERM_GROUPS),
+    (
+        "release metadata Product Readiness JSON phrase",
+        RELEASE_METADATA_PRODUCT_READINESS_JSON_TERM_GROUPS,
+    ),
     ("CLI unit test command phrase", RELEASE_CLI_UNIT_TEST_COMMAND_TERM_GROUPS),
     ("CLI unit test phrase", RELEASE_CLI_UNIT_TEST_TERM_GROUPS),
     ("repository audit command phrase", RELEASE_REPOSITORY_AUDIT_COMMAND_TERM_GROUPS),
@@ -3077,6 +3097,7 @@ public registry human / JSON `design-ai learn --audit` cleanup suggestion output
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
 `npm run release:metadata` release metadata check,
+release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage,
 `npm test` CLI unit tests,
 `npm run audit:strict` all 8 audits,
 `git diff --check` whitespace checks,
@@ -3177,6 +3198,7 @@ public registry human / JSON `design-ai learn --audit` cleanup suggestion output
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,
 `npm run release:metadata` release metadata 검증도 확인하고,
+release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage도 확인하고,
 `npm test` CLI unit test 실행도 확인하고,
 `npm run audit:strict` 8개 audit도 확인하고,
 `git diff --check` whitespace check 검증도 확인하고,
@@ -4908,6 +4930,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "README.md is missing release metadata check phrase"
         in release_metadata_check_drift_errors,
         "release policy docs should mention release metadata checks",
+    )
+
+    release_metadata_product_readiness_json_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage",
+                "release metadata JSON summary",
+            ),
+        },
+        audit_count=8,
+    )
+    release_metadata_product_readiness_json_drift_errors = "\n".join(
+        release_metadata_product_readiness_json_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing release metadata Product Readiness JSON phrase"
+            in release_metadata_product_readiness_json_drift_errors
+        ),
+        "release policy docs should mention Product Readiness release metadata JSON coverage",
     )
 
     cli_unit_test_command_drift = release_metadata_summary(
