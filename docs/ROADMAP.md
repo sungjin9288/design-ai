@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 364 — Product Readiness Release Metadata JSON Visibility (unreleased)
+
+Release metadata JSON now exposes whether Product Readiness guard coverage ran. Phase 363 made Product Readiness part of the release metadata check; this phase makes the machine-readable summary show that state through `product_readiness_checked: true`.
+
+### Changed
+- Added `product_readiness_checked` to the release metadata summary key order.
+- Set the field to `true` when Product Readiness text is provided to the release metadata summary.
+- Updated release metadata self-test coverage for the new JSON field and key order.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Operators and automation can now confirm that Product Readiness guard coverage ran without parsing release metadata errors.
+- This changes release metadata JSON shape only. It does not change CLI runtime behavior, package/registry smoke runner behavior, release policy doc set, external MCP calls, target website repo mutation, backend storage, or dependencies.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 363 — Product Readiness Warning Strict Release Metadata Guard (unreleased)
 
 Release metadata now checks Product Readiness for the warning-state Website Console bundle-compare strict coverage wording. Phases 361-362 corrected the human-readable readiness summary; this phase makes that correction durable by failing release metadata when Product Readiness drops the warning-state compare contract.

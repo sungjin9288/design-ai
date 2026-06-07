@@ -2633,6 +2633,7 @@ RELEASE_METADATA_SUMMARY_KEYS = (
     "roadmap_entry_found",
     "audit_count",
     "release_policy_docs_checked",
+    "product_readiness_checked",
     "errors",
 )
 
@@ -2954,6 +2955,7 @@ def release_metadata_summary(
         "roadmap_entry_found": bool(roadmap_entry),
         "audit_count": audit_count,
         "release_policy_docs_checked": list(release_policy_docs),
+        "product_readiness_checked": product_readiness_text is not None,
         "errors": errors,
     }
 
@@ -3247,6 +3249,10 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "complete fixture should report the required release policy docs in order",
     )
     assert_condition(
+        passing["product_readiness_checked"] is True,
+        "complete fixture should report Product Readiness guard coverage",
+    )
+    assert_condition(
         tuple(passing) == RELEASE_METADATA_SUMMARY_KEYS,
         "complete fixture should preserve the release metadata summary key order",
     )
@@ -3258,6 +3264,10 @@ Product readiness covers Website Console handoff bundle compare through `design-
     assert_condition(
         '"release_policy_docs_checked": [\n    "README.md",' in passing_json_output,
         "JSON formatter should preserve readable indentation and checked-doc order",
+    )
+    assert_condition(
+        '"product_readiness_checked": true' in passing_json_output,
+        "JSON formatter should expose Product Readiness guard coverage",
     )
     assert_condition(
         format_human_summary(passing) == "Release metadata check passed: v1.2.3, 8 audits, CHANGELOG 2026-05",
