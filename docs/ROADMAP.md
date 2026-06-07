@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 371 — Website Console Bundle MCP Probe Count Release Guard (unreleased)
+
+Release metadata now protects the Website Console bundle-check/compare/handoff MCP probe count telemetry wording. Phase 368 exposed `mcpProbeCounts` in bundle consumers; this phase makes release-facing docs keep that public smoke contract visible.
+
+### Changed
+- Added a release metadata phrase guard for Website Console bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry.
+- Added a release metadata self-test drift fixture that removes only the bundle `mcpProbeCounts` phrase and expects the guard to fail.
+- Updated README, Korean README, Release Checklist, English/Korean Distribution docs, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs can no longer silently regress to generic bundle-check/compare/handoff smoke wording while omitting the probe count telemetry contract.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package/registry smoke runner behavior, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 370 — Website Console Next-Actions MCP Probe Count Release Guard (unreleased)
 
 Release metadata now protects the Website Console next-actions MCP probe count telemetry wording. Phase 369 added `mcpProbeCounts` to next-actions JSON/human output; this phase makes release-facing docs keep documenting that public smoke contract.
