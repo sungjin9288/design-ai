@@ -6675,8 +6675,10 @@ def run_self_test() -> None:
         label="site bundle check",
     )
     for label in (
+        "site bundle check",
         "site bundle check summary",
         "site bundle compare left",
+        "site bundle compare right",
         "site bundle handoff",
     ):
         expect_self_test_failure(

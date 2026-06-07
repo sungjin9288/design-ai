@@ -31,6 +31,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` human output now shows left/right MCP probe counts so operators can see probe coverage without switching to JSON.
 - CLI tests now cover the real `runSite` human `--bundle-compare` path for the left/right MCP probe count summary.
 - Package smoke self-tests now include bundle check/compare/handoff MCP probe count drift fixtures, so packed smoke assertions fail if the count contract is weakened.
+- Package smoke self-tests now also cover bundle-check top-level and bundle-compare right-side MCP probe count drift, completing the bundle count assertion surface.
 - Release metadata now guards release-facing docs against dropping the Website Console bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry phrase.
 - Release metadata now guards release-facing docs against dropping the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase.
 - Public-registry smoke now directly executes `design-ai site --stdin --next-actions --json` through `npm exec --package @design-ai/cli@<version>`, matching packed-tarball coverage for the next-action operator checklist contract.
