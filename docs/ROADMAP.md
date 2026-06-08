@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 404 — Release Policy Product Readiness Full Gate Evidence Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the Product Readiness release policy full gate `npm run release:check` evidence phrase for Website Console bundle boundary metadata full `release:check` evidence. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke wording recorded in Phase 403.
+
+### Changed
+- Added a release policy phrase group for Product Readiness release policy full gate `release:check` evidence.
+- Added a release metadata `--self-test` drift fixture that fails if release-facing docs drop that evidence phrase.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep Phase 403 full release gate evidence aligned with Product Readiness.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 403 — Product Readiness Release Policy Full Gate Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the Product Readiness guard for release-facing policy docs Website Console bundle boundary metadata full `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 402 made the readiness evidence durable.

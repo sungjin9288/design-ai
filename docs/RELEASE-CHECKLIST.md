@@ -14,6 +14,7 @@ This runs CLI unit tests, `npm run audit:strict` all eight repository audits, wh
 
 The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.
 The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+The same `npm run release:check` gate now also preserves the Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
 
 Post-publish registry smoke guidance must also retain public registry query-filtered learn list explanation/export JSON output plus public registry brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording with public registry prompt/pack --with-learning.
 
