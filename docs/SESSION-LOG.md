@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 393 (unreleased)** — Added release-facing docs and release metadata guard coverage for Website Console bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata wording.
 - **Phase 392 (unreleased)** — Added Product Readiness release metadata guard coverage for Website Console bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata wording.
 - **Phase 391 (unreleased)** — Added Website Console bundle-handoff boundary metadata to JSON and target-repo prompt output, preserving deterministic-local, no-external-call, and no-target-repo-mutation handoff generation boundaries with unit and package smoke assertion coverage.
 - **Phase 390 (unreleased)** — Added Website Console bundle-check boundary metadata to JSON/human output, preserving deterministic-local, no-external-call, and no-target-repo-mutation handoff boundaries with unit and package smoke assertion coverage.

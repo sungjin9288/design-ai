@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 393 — Release Policy Bundle Boundary Metadata Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping Website Console bundle boundary metadata wording. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same bundle-check JSON/human and bundle-handoff JSON/prompt boundary contract already protected in Product Readiness.
+
+### Changed
+- Added bundle boundary metadata wording to release-facing docs that summarize public registry Website Console coverage.
+- Added a release policy phrase guard for Website Console bundle-check and bundle-handoff boundary metadata.
+- Added a release metadata `--self-test` drift fixture that fails if README regresses to generic bundle boundary wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep deterministic-local, no-external-call, and no-target-repo-mutation handoff boundary wording visible next to public registry Website Console smoke coverage.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 392 — Product Readiness Bundle Boundary Metadata Guard (unreleased)
 
 Release metadata now guards Product Readiness against dropping the Website Console bundle boundary metadata wording added across bundle-check and bundle-handoff. This keeps the release-facing readiness summary explicit that handoff validation exposes deterministic-local, no-external-call, and no-target-repo-mutation boundaries in bundle-check JSON/human output and bundle-handoff JSON/prompt output.
