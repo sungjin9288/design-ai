@@ -1,5 +1,23 @@
 # Roadmap
 
+## Phase 380 — MCP Probe Count Guard Release Self-Test Chain Evidence (unreleased)
+
+The full release self-test chain now passes after the Website Console MCP probe count self-test and release metadata guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together through `npm run release:self-test`.
+
+### Changed
+- Recorded full `npm run release:self-test` evidence after the Website Console MCP probe count guard phases.
+- Updated changelog, Product Readiness, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the MCP probe count assertion hardening is covered by the top-level release self-test command, not only by isolated targeted commands.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 379 — Product Readiness MCP Probe Count Self-Test Coverage Guard (unreleased)
 
 Product Readiness now reflects the MCP probe count self-test coverage that was added across Website Console next-actions and bundle smoke assertions. Release metadata also guards that Product Readiness wording so the readiness summary cannot drift back to generic MCP probe coverage.

@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 380 (unreleased)** — Recorded full `npm run release:self-test` chain evidence after the Website Console MCP probe count guard phases.
 - **Phase 379 (unreleased)** — Added Product Readiness and release metadata guard coverage for Website Console MCP probe count self-test coverage wording.
 - **Phase 378 (unreleased)** — Added release metadata guard coverage for the package smoke self-test wording around Website Console bundle MCP probe counts.
 - **Phase 377 (unreleased)** — Added release metadata guard coverage for the shared smoke assertion self-test wording around Website Console next-actions MCP probe counts.
