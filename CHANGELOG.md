@@ -41,6 +41,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - The full `npm run release:check` gate now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases, covering unit tests, strict audits, package contents, release metadata, release self-tests, and packed-tarball smoke together.
 - Release metadata now guards Product Readiness against dropping the `npm run release:check` evidence for Website Console bundle `mcp-probes.json` saved-payload guard phases.
 - Release metadata now guards release-facing docs against dropping the Website Console bundle `mcp-probes.json` saved-payload `npm run release:check` evidence phrase.
+- The full `npm run release:self-test` chain now passes after the Product Readiness and release-facing policy docs `mcp-probes.json` saved-payload `release:check` evidence guards.
 - Release metadata now guards release-facing docs against dropping the package smoke self-test coverage phrase for Website Console bundle MCP probe counts.
 - Product Readiness now states that Website Console MCP probe count telemetry is protected by package/shared smoke self-test coverage, and release metadata guards that Product Readiness wording.
 - The full `npm run release:self-test` chain now passes after the Website Console MCP probe count self-test and release metadata guard phases, covering shared smoke assertions, package smoke, registry smoke, release metadata, local CI, and token extractor self-tests together.

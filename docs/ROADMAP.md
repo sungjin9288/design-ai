@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 388 — MCP Probe Release Gate Guard Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence. This confirms the new Product Readiness phrase guard, release policy phrase guard, and their drift fixtures run together with shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 386-387.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the saved-payload `release:check` wording is covered by the full release self-test chain, not only by direct `release-metadata.py --self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 387 — Release Policy MCP Probe Release Gate Guard (unreleased)
 
 Release metadata now guards release-facing policy docs against dropping the `npm run release:check` evidence that ties Website Console bundle `mcp-probes.json` saved-payload guard phases to package contents, release self-tests, and packed-tarball smoke. Phase 386 guarded Product Readiness; this phase extends the same release gate evidence to README, Korean README, Distribution docs, and the release checklist.
