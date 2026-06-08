@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 387 — Release Policy MCP Probe Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping the `npm run release:check` evidence that ties Website Console bundle `mcp-probes.json` saved-payload guard phases to package contents, release self-tests, and packed-tarball smoke. Phase 386 guarded Product Readiness; this phase extends the same release gate evidence to README, Korean README, Distribution docs, and the release checklist.
+
+### Changed
+- Added a release policy phrase group for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence.
+- Added short release-facing doc guidance in README, Korean README, English/Korean Distribution docs, and the release checklist.
+- Added a release metadata `--self-test` drift fixture that fails if README drops the saved-payload release gate evidence phrase.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve the link between the saved-payload boundary and the full local release gate, not only the standalone `release:check` command or standalone bundle payload assertion.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 386 — Product Readiness MCP Probe Release Gate Guard (unreleased)
 
 Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for the Website Console bundle `mcp-probes.json` saved-payload guard phases. Phase 385 recorded the full release gate result; this phase makes the Product Readiness evidence less likely to drift when release-facing docs are edited later.
