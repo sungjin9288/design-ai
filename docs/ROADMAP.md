@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 397 — Bundle Boundary Release Gate Guard Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata `release:check` evidence. This confirms the new Product Readiness phrase guard, release policy phrase guard, and their drift fixtures run together with shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 395-396.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the bundle boundary metadata `release:check` evidence guards are covered by the full release self-test chain.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 396 — Release Policy Bundle Boundary Release Gate Guard (unreleased)
 
 Release metadata now guards release-facing policy docs against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now keep the same bundle-check JSON/human and bundle-handoff JSON/prompt release gate evidence that Product Readiness protects.
