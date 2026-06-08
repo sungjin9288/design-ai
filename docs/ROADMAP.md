@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 394 — Bundle Boundary Metadata Guard Full Release Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the bundle-check JSON/human and bundle-handoff JSON/prompt boundary wording guards.
+
+### Changed
+- Ran `npm run release:check` after Phases 390-393.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the bundle boundary metadata wording is covered by the full pre-push release gate, not only targeted metadata checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 393 — Release Policy Bundle Boundary Metadata Guard (unreleased)
 
 Release metadata now guards release-facing policy docs against dropping Website Console bundle boundary metadata wording. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same bundle-check JSON/human and bundle-handoff JSON/prompt boundary contract already protected in Product Readiness.
