@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 395 — Product Readiness Bundle Boundary Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. Phase 394 recorded the full release gate result; this phase makes the Product Readiness evidence durable when readiness docs are edited later.
+
+### Changed
+- Added a Product Readiness phrase group for `npm run release:check` coverage after Website Console bundle boundary metadata guard phases.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the bundle boundary metadata full release gate evidence, matching the existing mcp-probes saved-payload release gate evidence guard.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 394 — Bundle Boundary Metadata Guard Full Release Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the bundle-check JSON/human and bundle-handoff JSON/prompt boundary wording guards.
