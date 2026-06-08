@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 386 — Product Readiness MCP Probe Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for the Website Console bundle `mcp-probes.json` saved-payload guard phases. Phase 385 recorded the full release gate result; this phase makes the Product Readiness evidence less likely to drift when release-facing docs are edited later.
+
+### Changed
+- Added a Product Readiness phrase group for `npm run release:check` coverage after Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has a deterministic guard for the saved-payload full release gate evidence, matching the existing payload-boundary and self-test coverage guards.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 385 — Bundle MCP Probe Evidence Full Release Gate Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the saved-payload assertion fix and docs/Product Readiness guards.
