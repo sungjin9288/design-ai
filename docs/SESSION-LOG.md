@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 384 (unreleased)** — Recorded full `npm run release:self-test` chain evidence after the Website Console bundle `mcp-probes.json` saved-payload guard phases.
 - **Phase 383 (unreleased)** — Added Product Readiness and release metadata guard coverage for the bundled Website Console `mcp-probes.json` saved probe evidence payload boundary.
 - **Phase 382 (unreleased)** — Added release metadata guard coverage for the bundled Website Console `mcp-probes.json` saved probe evidence payload wording, keeping docs clear that bundle files are not the full MCP check probe CLI response.
 - **Phase 381 (unreleased)** — Fixed package smoke validation for bundled Website Console `mcp-probes.json` by asserting the saved probe evidence payload instead of the full MCP check probe CLI response.

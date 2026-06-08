@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 384 — Bundle MCP Probe Evidence Release Self-Test Chain Evidence (unreleased)
+
+The full release self-test chain now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together after the package smoke assertion fix, release-facing docs guard, and Product Readiness guard.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 381-383.
+- Updated Product Readiness release confidence to name the Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the saved-payload boundary is covered by the top-level release self-test command, not only by isolated package smoke and release metadata checks.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 383 — Product Readiness Bundle MCP Probe Evidence Guard (unreleased)
 
 Product Readiness now carries the same Website Console bundle probe evidence boundary as release-facing docs. Bundled `mcp-probes.json` is explicitly documented as a saved probe evidence payload, not the full `site --mcp-check --probes --json` response, and release metadata now guards that readiness wording.
