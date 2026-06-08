@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 379 — Product Readiness MCP Probe Count Self-Test Coverage Guard (unreleased)
+
+Product Readiness now reflects the MCP probe count self-test coverage that was added across Website Console next-actions and bundle smoke assertions. Release metadata also guards that Product Readiness wording so the readiness summary cannot drift back to generic MCP probe coverage.
+
+### Changed
+- Added Product Readiness phrase checks for Website Console MCP probe count self-test coverage.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops the MCP probe count self-test coverage wording.
+- Updated Product Readiness to mention MCP probe count telemetry with package/shared smoke self-test coverage for Website Console MCP probe counts.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now matches the recently hardened next-actions and bundle `mcpProbeCounts` smoke assertion surface.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 378 — Website Console Bundle MCP Probe Count Self-Test Release Guard (unreleased)
 
 Release metadata now protects the release-facing wording for package smoke self-test coverage around Website Console bundle MCP probe counts. Phases 374 and 375 completed the bundle count drift fixtures; this phase makes the public release docs keep mentioning that package smoke self-test protection.

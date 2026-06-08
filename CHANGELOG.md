@@ -35,6 +35,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Package smoke self-tests now include bundle check/compare/handoff MCP probe count drift fixtures, so packed smoke assertions fail if the count contract is weakened.
 - Package smoke self-tests now also cover bundle-check top-level and bundle-compare right-side MCP probe count drift, completing the bundle count assertion surface.
 - Release metadata now guards release-facing docs against dropping the package smoke self-test coverage phrase for Website Console bundle MCP probe counts.
+- Product Readiness now states that Website Console MCP probe count telemetry is protected by package/shared smoke self-test coverage, and release metadata guards that Product Readiness wording.
 - Release metadata now guards release-facing docs against dropping the Website Console bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry phrase.
 - Release metadata now guards release-facing docs against dropping the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase.
 - Public-registry smoke now directly executes `design-ai site --stdin --next-actions --json` through `npm exec --package @design-ai/cli@<version>`, matching packed-tarball coverage for the next-action operator checklist contract.

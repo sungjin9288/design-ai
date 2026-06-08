@@ -61,6 +61,32 @@ PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS = (
         "post-publish",
     ),
 )
+PRODUCT_READINESS_MCP_PROBE_COUNT_SELF_TEST_TERM_GROUPS = (
+    (
+        "Website Console MCP probe count self-test coverage",
+        "package/shared smoke self-test coverage for Website Console MCP probe counts",
+        "MCP probe count self-test coverage",
+    ),
+    (
+        "MCP probe count telemetry",
+        "mcpProbeCounts",
+    ),
+    (
+        "package smoke self-test",
+        "shared smoke assertion self-test",
+        "self-test coverage",
+    ),
+)
+PRODUCT_READINESS_PHRASE_CHECKS = (
+    (
+        "product readiness warning strict compare phrase",
+        PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS,
+    ),
+    (
+        "product readiness Website Console MCP probe count self-test phrase",
+        PRODUCT_READINESS_MCP_PROBE_COUNT_SELF_TEST_TERM_GROUPS,
+    ),
+)
 
 CHANGELOG_HEADER_RE = re.compile(
     r"^## v(?P<version>\d+\.\d+\.\d+) — (?P<title>.+?) "
@@ -2916,12 +2942,11 @@ def release_policy_phrase_doc_errors(label: str, text: str) -> list[str]:
 def product_readiness_phrase_doc_errors(label: str, text: str) -> list[str]:
     errors: list[str] = []
     normalized = text.casefold()
-    for term_group in PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS:
-        if not any(term.casefold() in normalized for term in term_group):
-            expected = " or ".join(term_group)
-            errors.append(
-                f"{label} is missing product readiness warning strict compare phrase: {expected}"
-            )
+    for phrase_label, term_groups in PRODUCT_READINESS_PHRASE_CHECKS:
+        for term_group in term_groups:
+            if not any(term.casefold() in normalized for term in term_group):
+                expected = " or ".join(term_group)
+                errors.append(f"{label} is missing {phrase_label}: {expected}")
     return errors
 
 
@@ -3307,7 +3332,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
-Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish.
+Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts.
 """
     passing = release_metadata_summary(
         package_json=package_json,
@@ -4468,6 +4493,29 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in product_readiness_warning_strict_drift_errors
         ),
         "product readiness should mention warning-state bundle-compare strict coverage",
+    )
+
+    product_readiness_mcp_probe_count_self_test_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc.replace(
+            " plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts",
+            "",
+        ),
+    )
+    product_readiness_mcp_probe_count_self_test_drift_errors = "\n".join(
+        product_readiness_mcp_probe_count_self_test_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/PRODUCT-READINESS.md is missing product readiness Website Console MCP probe count self-test phrase"
+            in product_readiness_mcp_probe_count_self_test_drift_errors
+        ),
+        "product readiness should mention Website Console MCP probe count self-test coverage",
     )
 
     site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(
