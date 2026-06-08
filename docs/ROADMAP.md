@@ -1,5 +1,23 @@
 # Roadmap
 
+## Phase 403 — Product Readiness Release Policy Full Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness guard for release-facing policy docs Website Console bundle boundary metadata full `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 402 made the readiness evidence durable.
+
+### Changed
+- Ran `npm run release:check` after Phase 402.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the Product Readiness release policy full gate guard is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 402 — Product Readiness Bundle Boundary Release Policy Full Gate Guard (unreleased)
 
 Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence recorded after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence. Product Readiness now keeps that Phase 401 evidence tied to unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
