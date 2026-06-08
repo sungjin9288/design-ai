@@ -189,6 +189,26 @@ PRODUCT_READINESS_BUNDLE_BOUNDARY_RELEASE_POLICY_FULL_RELEASE_CHECK_TERM_GROUPS 
         "release:check now passes",
     ),
 )
+PRODUCT_READINESS_RELEASE_POLICY_PRODUCT_READINESS_FULL_GATE_RELEASE_CHECK_TERM_GROUPS = (
+    (
+        "release-facing policy docs Product Readiness release policy full gate evidence guard",
+        "release-facing docs and release metadata guard coverage for Product Readiness release policy full gate",
+        "Product Readiness release policy full gate evidence guard",
+    ),
+    (
+        "`npm run release:check` now passes",
+        "`npm run release:check` passes",
+        "npm run release:check now passes",
+        "release:check now passes",
+    ),
+    ("unit tests",),
+    ("strict audits",),
+    ("whitespace checks",),
+    ("package contents",),
+    ("release metadata",),
+    ("release self-tests",),
+    ("packed-tarball smoke",),
+)
 PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness warning strict compare phrase",
@@ -221,6 +241,10 @@ PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness Website Console bundle boundary release policy full release-check phrase",
         PRODUCT_READINESS_BUNDLE_BOUNDARY_RELEASE_POLICY_FULL_RELEASE_CHECK_TERM_GROUPS,
+    ),
+    (
+        "product readiness release policy Product Readiness full gate release-check phrase",
+        PRODUCT_READINESS_RELEASE_POLICY_PRODUCT_READINESS_FULL_GATE_RELEASE_CHECK_TERM_GROUPS,
     ),
 )
 
@@ -3622,7 +3646,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
-Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases, after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, and after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases, after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence, and after the release-facing policy docs Product Readiness release policy full gate evidence guard, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
 """
     passing = release_metadata_summary(
         package_json=package_json,
@@ -5022,7 +5046,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
             release_policy_docs=release_policy_docs,
             audit_count=8,
             product_readiness_text=product_readiness_doc.replace(
-                ", and after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence",
+                ", after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence",
                 "",
             ),
         )
@@ -5040,6 +5064,35 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in product_readiness_bundle_boundary_release_policy_full_release_check_drift_errors
         ),
         "product readiness should mention full release:check coverage after release-facing policy docs full evidence guard",
+    )
+
+    product_readiness_release_policy_product_readiness_full_gate_drift = (
+        release_metadata_summary(
+            package_json=package_json,
+            plugin_json=plugin_json,
+            changelog_text=changelog,
+            roadmap_text=roadmap,
+            release_policy_docs=release_policy_docs,
+            audit_count=8,
+            product_readiness_text=product_readiness_doc.replace(
+                ", and after the release-facing policy docs Product Readiness release policy full gate evidence guard",
+                "",
+            ),
+        )
+    )
+    product_readiness_release_policy_product_readiness_full_gate_drift_errors = (
+        "\n".join(
+            product_readiness_release_policy_product_readiness_full_gate_drift[
+                "errors"
+            ]
+        )
+    )
+    assert_condition(
+        (
+            "docs/PRODUCT-READINESS.md is missing product readiness release policy Product Readiness full gate release-check phrase"
+            in product_readiness_release_policy_product_readiness_full_gate_drift_errors
+        ),
+        "product readiness should mention full release:check coverage after release-facing Product Readiness full gate evidence guard",
     )
 
     site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(

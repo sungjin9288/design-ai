@@ -33,6 +33,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 406 (unreleased)** — Added Product Readiness and release metadata guard coverage for full `npm run release:check` evidence after the release-facing policy docs Product Readiness release policy full gate evidence guard.
 - **Phase 405 (unreleased)** — Recorded full `npm run release:check` gate evidence after release-facing docs and release metadata guard coverage for Product Readiness release policy full gate `npm run release:check` evidence.
 - **Phase 404 (unreleased)** — Added release-facing docs and release metadata guard coverage for Product Readiness release policy full gate `npm run release:check` evidence after Website Console bundle boundary metadata full `release:check` evidence.
 - **Phase 403 (unreleased)** — Recorded full `npm run release:check` gate evidence after the Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence.

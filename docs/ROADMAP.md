@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 406 — Product Readiness Release Policy Full Gate Evidence Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence after the release-facing policy docs Product Readiness release policy full gate evidence guard. Product Readiness now keeps the Phase 405 evidence tied to unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+
+### Changed
+- Added a Product Readiness phrase group for release-facing policy docs Product Readiness release policy full gate `release:check` evidence.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the Phase 405 full release gate evidence.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 405 — Release Policy Product Readiness Full Gate Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the release-facing policy docs Product Readiness release policy full gate evidence guard. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 404 made the release-facing policy docs guard durable.
