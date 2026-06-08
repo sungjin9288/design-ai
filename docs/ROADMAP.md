@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 392 — Product Readiness Bundle Boundary Metadata Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the Website Console bundle boundary metadata wording added across bundle-check and bundle-handoff. This keeps the release-facing readiness summary explicit that handoff validation exposes deterministic-local, no-external-call, and no-target-repo-mutation boundaries in bundle-check JSON/human output and bundle-handoff JSON/prompt output.
+
+### Changed
+- Added a Product Readiness phrase guard for Website Console bundle-check and bundle-handoff boundary metadata.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness regresses to generic handoff boundary wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release metadata now protects the boundary contract introduced in Phases 390 and 391 at the product readiness layer.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 391 — Bundle Handoff Boundary Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff [--json]` now exposes handoff generation boundary metadata directly in the target-repo handoff output. JSON reports include top-level and bundle-level `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; the generated handoff prompt includes boundary flags and the boundary list so operators can distinguish local handoff generation from later target-repo implementation work.
