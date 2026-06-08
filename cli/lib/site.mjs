@@ -3271,6 +3271,7 @@ function formatBundleHandoffIssueLines(issues) {
 function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
   const bundleDigest = checkReport.summary.checksumBundleDigest || "not recorded";
   const checksumStatus = `${checkReport.counts.verifiedChecksumFiles}/${checkReport.counts.expectedChecksumFiles} verified`;
+  const handoffBoundaries = buildSiteBundleHandoffBoundaries(checkReport);
   const bundleReadinessLine = checkReport.status === "pass"
     ? "The bundle passed local bundle-check validation. Proceed in the target website repo after confirming the repo path."
     : "The bundle did not fully pass local bundle-check validation. Resolve the listed bundle issues before treating this as implementation authority.";
@@ -3295,6 +3296,8 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Generated drift files: ${formatGeneratedContractDriftSummary(checkReport.generatedContract)}`,
     `- SHA-256 bundle digest: ${bundleDigest}`,
     `- Checksums: ${checksumStatus}`,
+    `- Handoff generation boundary flags: external calls no; target repo mutation no`,
+    `- Handoff boundaries: ${handoffBoundaries.join(", ")}`,
     "",
     "## Bundle Gate",
     bundleReadinessLine,
@@ -3336,6 +3339,13 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
   ].join("\n");
 }
 
+function buildSiteBundleHandoffBoundaries(checkReport) {
+  return Array.from(new Set([
+    ...normalizeStringArray(checkReport?.boundaries),
+    "target-repo-work-after-handoff",
+  ]));
+}
+
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
@@ -3354,10 +3364,14 @@ export function buildSiteBundleHandoffReport({
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
   };
   const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
+  const boundaries = buildSiteBundleHandoffBoundaries(checkReport);
   return {
     status: checkReport.status,
     valid: checkReport.valid,
     directory: checkReport.directory,
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
     bundle: {
       directory: checkReport.directory,
       siteName: checkReport.summary.siteName || "",
@@ -3377,6 +3391,9 @@ export function buildSiteBundleHandoffReport({
       verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
       generatedFailures: checkReport.counts.generatedFailures,
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
+      boundaries,
+      externalCalls: false,
+      targetRepoMutation: false,
       repairGuidance: { ...checkReport.repairGuidance },
     },
     prompt,

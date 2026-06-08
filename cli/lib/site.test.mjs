@@ -1191,6 +1191,15 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
 
   assert.equal(report.status, "pass");
   assert.equal(report.valid, true);
+  assert.deepEqual(report.boundaries, [
+    "deterministic-local",
+    "no-external-mcp-calls",
+    "no-target-repo-mutation",
+    "no-lighthouse-axe-visual-diff",
+    "target-repo-work-after-handoff",
+  ]);
+  assert.equal(report.externalCalls, false);
+  assert.equal(report.targetRepoMutation, false);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
   assert.equal(report.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(report.bundle.mcpProbeCounts, {
@@ -1210,6 +1219,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.bundle.generatedFailures, 0);
   assert.deepEqual(report.bundle.generatedDriftFiles, []);
+  assert.deepEqual(report.bundle.boundaries, report.boundaries);
+  assert.equal(report.bundle.externalCalls, false);
+  assert.equal(report.bundle.targetRepoMutation, false);
   assert.equal(report.bundle.repairGuidance.available, true);
   assert.equal(report.bundle.repairGuidance.targetRepoMutation, false);
   assert.match(report.bundle.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
@@ -1225,6 +1237,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);
   assert.match(report.prompt, /Generated drift files: none/);
+  assert.match(report.prompt, /Handoff generation boundary flags: external calls no; target repo mutation no/);
+  assert.match(report.prompt, /Handoff boundaries: deterministic-local, no-external-mcp-calls, no-target-repo-mutation, no-lighthouse-axe-visual-diff, target-repo-work-after-handoff/);
   assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
   assert.match(report.prompt, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.match(report.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
@@ -1233,6 +1247,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
   assert.equal(json.status, "pass");
+  assert.deepEqual(json.boundaries, report.boundaries);
+  assert.equal(json.externalCalls, false);
+  assert.equal(json.targetRepoMutation, false);
   assert.equal(json.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(json.bundle.mcpProbeCounts, {
     count: 4,
@@ -1249,6 +1266,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(json.bundle.generatedFailures, 0);
   assert.deepEqual(json.bundle.generatedDriftFiles, []);
+  assert.deepEqual(json.bundle.boundaries, report.boundaries);
+  assert.equal(json.bundle.externalCalls, false);
+  assert.equal(json.bundle.targetRepoMutation, false);
   assert.equal(json.bundle.repairGuidance.available, true);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);

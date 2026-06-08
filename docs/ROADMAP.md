@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 391 — Bundle Handoff Boundary Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff [--json]` now exposes handoff generation boundary metadata directly in the target-repo handoff output. JSON reports include top-level and bundle-level `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; the generated handoff prompt includes boundary flags and the boundary list so operators can distinguish local handoff generation from later target-repo implementation work.
+
+### Changed
+- Added bundle-handoff boundary metadata to `buildSiteBundleHandoffReport`.
+- Added boundary flags and boundary list context to the generated target-repo handoff prompt.
+- Extended CLI unit coverage and package smoke assertions for bundle-handoff boundary flags and boundary list preservation.
+- Updated changelog, Product Readiness, roadmap, and session history.
+
+### Impact
+- Target-repo handoff reviews can now confirm that handoff prompt generation is deterministic, local, non-mutating, and free of external MCP calls without opening the originating bundle-check output.
+- This does not change bundle generation, checksums, generated contract verification, MCP probe payloads, external MCP behavior, target repo mutation behavior, backend storage, or dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 390 — Bundle Check Boundary Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-check [--json]` now exposes handoff bundle boundary metadata directly in bundle-check output. JSON reports include `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; human reports include boundary flags and the recorded bundle boundary list so operators can confirm the check is deterministic, local, non-mutating, and not a real MCP/Lighthouse/axe execution before handing work to a target website repo.

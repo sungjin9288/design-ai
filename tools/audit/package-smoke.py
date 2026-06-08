@@ -1475,9 +1475,24 @@ def assert_site_bundle_handoff_json_smoke(
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle handoff after {context} expected pass/valid output")
+    expected_boundaries = [
+        "deterministic-local",
+        "no-external-mcp-calls",
+        "no-target-repo-mutation",
+        "no-lighthouse-axe-visual-diff",
+        "target-repo-work-after-handoff",
+    ]
+    if payload.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} boundary list changed: {payload.get('boundaries')!r}")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} boundary flags changed")
     bundle = payload.get("bundle", {})
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
+    if bundle.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
+    if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
     if bundle.get("mcpProbeStatus") != "pass":
         raise SystemExit(f"site bundle handoff after {context} MCP probe status changed")
     assert_site_mcp_probe_counts(
@@ -1521,6 +1536,8 @@ def assert_site_bundle_handoff_json_smoke(
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Generated files: 8/8 match the current CLI bundle contract",
         "Generated drift files: none",
+        "Handoff generation boundary flags: external calls no; target repo mutation no",
+        "Handoff boundaries: deterministic-local, no-external-mcp-calls, no-target-repo-mutation, no-lighthouse-axe-visual-diff, target-repo-work-after-handoff",
         "Repair guidance:",
         "Regenerate: design-ai site ",
         "website-workspace.tasks.json --bundle --out ",
