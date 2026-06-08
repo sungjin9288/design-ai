@@ -86,6 +86,7 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_status_json,
     assert_status_output,
+    assert_smoke_json_keys,
     assert_site_json,
     assert_site_mcp_check_json,
     assert_site_mcp_check_probes_human,
@@ -150,6 +151,34 @@ SITE_EVIDENCE_VALUES = {
 }
 SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
 EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
+EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS = [
+    "enabled",
+    "mode",
+    "externalCalls",
+    "status",
+    "count",
+    "pass",
+    "warn",
+    "fail",
+    "items",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS = [
+    "id",
+    "key",
+    "label",
+    "requestedStatus",
+    "level",
+    "passed",
+    "message",
+    "evidence",
+    "actions",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS = [
+    "github-repo-reference",
+    "figma-url-reference",
+    "browser-smoke-target",
+    "deploy-provider-reference",
+]
 
 
 def assert_site_mcp_probe_counts(
@@ -160,6 +189,49 @@ def assert_site_mcp_probe_counts(
 ) -> None:
     if actual != EXPECTED_SITE_MCP_PROBE_COUNTS:
         raise SystemExit(f"{label} after {context} MCP probe counts changed: {actual!r}")
+
+
+def assert_site_bundle_mcp_probes_payload(payload: object, *, context: str) -> None:
+    checked = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS,
+        label="mcp-probes.json",
+        context=context,
+        command_label="site bundle",
+    )
+    if checked.get("enabled") is not True or checked.get("mode") != "read-only-local":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json mode changed")
+    if checked.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json must remain read-only")
+    if checked.get("status") != "pass":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json status changed")
+    assert_site_mcp_probe_counts(
+        {key: checked.get(key) for key in ("count", "pass", "warn", "fail")},
+        context=context,
+        label="site bundle mcp-probes.json",
+    )
+
+    items = checked.get("items")
+    if not isinstance(items, list) or len(items) != len(EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS):
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item count changed")
+    checked_ids = []
+    for item in items:
+        checked_item = assert_smoke_json_keys(
+            item,
+            EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS,
+            label="mcp-probes.json item",
+            context=context,
+            command_label="site bundle",
+        )
+        checked_ids.append(checked_item.get("id"))
+        if checked_item.get("level") != "pass" or checked_item.get("passed") is not True:
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item should pass: {checked_item.get('id')}")
+        if not isinstance(checked_item.get("evidence"), list) or not checked_item.get("evidence"):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item evidence missing")
+        if not isinstance(checked_item.get("actions"), list):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item actions must be an array")
+    if checked_ids != EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item order changed")
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -1118,7 +1190,7 @@ def assert_site_bundle_smoke(
     mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
     assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
     mcp_probes = json.loads((out_dir / "mcp-probes.json").read_text(encoding="utf-8"))
-    assert_site_mcp_check_probes_json(json.dumps(mcp_probes), context=context, cmd=cmd)
+    assert_site_bundle_mcp_probes_payload(mcp_probes, context=context)
     assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
     implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
     assert_no_ansi(implementation_prompt, cmd)
@@ -6674,6 +6746,11 @@ def run_self_test() -> None:
         context=f"{context} site bundle check",
         label="site bundle check",
     )
+    site_bundle_mcp_probes_payload = json.loads(passing_site_mcp_check_probes_json())["probes"]
+    assert_site_bundle_mcp_probes_payload(
+        site_bundle_mcp_probes_payload,
+        context=f"{context} site bundle mcp-probes.json",
+    )
     for label in (
         "site bundle check",
         "site bundle check summary",
@@ -6690,6 +6767,16 @@ def run_self_test() -> None:
             expected=f"{label} after {context} MCP probe counts changed",
             scope="package smoke",
         )
+    stale_site_bundle_mcp_probes_payload = json.loads(json.dumps(site_bundle_mcp_probes_payload))
+    stale_site_bundle_mcp_probes_payload["items"][0]["level"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_site_bundle_mcp_probes_payload(
+            stale_site_bundle_mcp_probes_payload,
+            context=f"{context} site bundle mcp-probes.json",
+        ),
+        expected="mcp-probes.json item should pass",
+        scope="package smoke",
+    )
 
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
         report_path = Path(tmp) / "doctor.json"

@@ -34,6 +34,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - CLI tests now cover the real `runSite` human `--bundle-compare` path for the left/right MCP probe count summary.
 - Package smoke self-tests now include bundle check/compare/handoff MCP probe count drift fixtures, so packed smoke assertions fail if the count contract is weakened.
 - Package smoke self-tests now also cover bundle-check top-level and bundle-compare right-side MCP probe count drift, completing the bundle count assertion surface.
+- Package smoke now validates bundled Website Console `mcp-probes.json` as saved probe evidence instead of the full `site --mcp-check --probes --json` response, with a self-test drift fixture for bundle probe item status.
 - Release metadata now guards release-facing docs against dropping the package smoke self-test coverage phrase for Website Console bundle MCP probe counts.
 - Product Readiness now states that Website Console MCP probe count telemetry is protected by package/shared smoke self-test coverage, and release metadata guards that Product Readiness wording.
 - The full `npm run release:self-test` chain now passes after the Website Console MCP probe count self-test and release metadata guard phases, covering shared smoke assertions, package smoke, registry smoke, release metadata, local CI, and token extractor self-tests together.

@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 381 — Website Console Bundle MCP Probe Evidence Smoke Assertion Fix (unreleased)
+
+Package smoke now checks bundled Website Console `mcp-probes.json` with the correct payload contract. The bundle file stores the probe evidence object saved inside handoff bundles, not the full `design-ai site --mcp-check --probes --json` CLI response, so this phase adds a bundle-specific assertion and self-test drift fixture.
+
+### Changed
+- Added bundle-specific `mcp-probes.json` expected key and probe item assertions in `tools/audit/package-smoke.py`.
+- Updated Website Console bundle smoke to validate the saved probe evidence payload instead of reusing the full MCP check probe JSON assertion.
+- Added a package smoke `--self-test` fixture that mutates a bundled probe item status and expects the bundle assertion to fail.
+
+### Impact
+- `npm run package:smoke` now matches the actual handoff bundle file shape while still guarding read-only mode, external-call boundaries, pass/warn/fail counts, item order, evidence, and action arrays.
+- This is package smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 380 — MCP Probe Count Guard Release Self-Test Chain Evidence (unreleased)
 
 The full release self-test chain now passes after the Website Console MCP probe count self-test and release metadata guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together through `npm run release:self-test`.
