@@ -150,6 +150,27 @@ PRODUCT_READINESS_BUNDLE_BOUNDARY_RELEASE_CHECK_TERM_GROUPS = (
         "release self-tests",
     ),
 )
+PRODUCT_READINESS_BUNDLE_BOUNDARY_FULL_RELEASE_CHECK_TERM_GROUPS = (
+    (
+        "`npm run release:check` now passes",
+        "`npm run release:check` passes",
+        "npm run release:check now passes",
+        "release:check now passes",
+    ),
+    (
+        "full `release:self-test` evidence recording",
+        "full release:self-test evidence recording",
+        "`release:self-test` evidence recording",
+        "release:self-test evidence recording",
+    ),
+    ("unit tests",),
+    ("strict audits",),
+    ("whitespace checks",),
+    ("package contents",),
+    ("release metadata",),
+    ("release self-tests",),
+    ("packed-tarball smoke",),
+)
 PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness warning strict compare phrase",
@@ -174,6 +195,10 @@ PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness Website Console bundle boundary release-check phrase",
         PRODUCT_READINESS_BUNDLE_BOUNDARY_RELEASE_CHECK_TERM_GROUPS,
+    ),
+    (
+        "product readiness Website Console bundle boundary full release-check phrase",
+        PRODUCT_READINESS_BUNDLE_BOUNDARY_FULL_RELEASE_CHECK_TERM_GROUPS,
     ),
 )
 
@@ -3519,7 +3544,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
-Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases and after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata, covering package contents, release self-tests, and packed-tarball smoke.
+Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases and after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
 """
     passing = release_metadata_summary(
         package_json=package_json,
@@ -4854,6 +4879,29 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in product_readiness_bundle_boundary_release_check_drift_errors
         ),
         "product readiness should mention full release:check coverage after bundle boundary metadata guards",
+    )
+
+    product_readiness_bundle_boundary_full_release_check_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc.replace(
+            " plus full `release:self-test` evidence recording, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke",
+            ", covering package contents, release self-tests, and packed-tarball smoke",
+        ),
+    )
+    product_readiness_bundle_boundary_full_release_check_drift_errors = "\n".join(
+        product_readiness_bundle_boundary_full_release_check_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/PRODUCT-READINESS.md is missing product readiness Website Console bundle boundary full release-check phrase"
+            in product_readiness_bundle_boundary_full_release_check_drift_errors
+        ),
+        "product readiness should mention full release:check coverage after bundle boundary self-test evidence",
     )
 
     site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(

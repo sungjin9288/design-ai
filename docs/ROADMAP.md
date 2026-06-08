@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 399 — Product Readiness Bundle Boundary Full Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence recorded after Website Console bundle boundary metadata `release:check` guards and their full `release:self-test` evidence recording. Product Readiness now explicitly keeps unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke tied to that full release gate evidence.
+
+### Changed
+- Added a Product Readiness phrase group for bundle boundary metadata full `release:check` coverage after `release:self-test` evidence recording.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the Phase 398 full release gate evidence, not only the earlier bundle boundary `release:check` and `release:self-test` evidence phrases.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 398 — Bundle Boundary Release Gate Guard Full Release Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata `release:check` evidence plus their full `release:self-test` evidence recording. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the bundle boundary release gate guard phases.
