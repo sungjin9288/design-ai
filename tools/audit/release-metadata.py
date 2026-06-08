@@ -77,6 +77,19 @@ PRODUCT_READINESS_MCP_PROBE_COUNT_SELF_TEST_TERM_GROUPS = (
         "self-test coverage",
     ),
 )
+PRODUCT_READINESS_MCP_PROBES_PAYLOAD_TERM_GROUPS = (
+    (
+        "bundled Website Console `mcp-probes.json` saved probe evidence payload",
+        "bundled Website Console mcp-probes.json saved probe evidence payload",
+        "Website Console bundle `mcp-probes.json` saved probe evidence payload",
+        "bundle mcp-probes.json saved probe evidence payload",
+    ),
+    (
+        "instead of the full `site --mcp-check --probes --json` response",
+        "not the full `site --mcp-check --probes --json` response",
+        "not the full site --mcp-check --probes --json response",
+    ),
+)
 PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness warning strict compare phrase",
@@ -85,6 +98,10 @@ PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness Website Console MCP probe count self-test phrase",
         PRODUCT_READINESS_MCP_PROBE_COUNT_SELF_TEST_TERM_GROUPS,
+    ),
+    (
+        "product readiness Website Console mcp-probes payload phrase",
+        PRODUCT_READINESS_MCP_PROBES_PAYLOAD_TERM_GROUPS,
     ),
 )
 
@@ -3352,7 +3369,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
-Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts.
+Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response.
 """
     passing = release_metadata_summary(
         package_json=package_json,
@@ -4539,6 +4556,29 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in product_readiness_mcp_probe_count_self_test_drift_errors
         ),
         "product readiness should mention Website Console MCP probe count self-test coverage",
+    )
+
+    product_readiness_mcp_probes_payload_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc.replace(
+            ", plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response",
+            "",
+        ),
+    )
+    product_readiness_mcp_probes_payload_drift_errors = "\n".join(
+        product_readiness_mcp_probes_payload_drift["errors"]
+    )
+    assert_condition(
+        (
+            "docs/PRODUCT-READINESS.md is missing product readiness Website Console mcp-probes payload phrase"
+            in product_readiness_mcp_probes_payload_drift_errors
+        ),
+        "product readiness should mention Website Console bundle mcp-probes payload boundary",
     )
 
     site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(

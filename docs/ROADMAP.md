@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 383 — Product Readiness Bundle MCP Probe Evidence Guard (unreleased)
+
+Product Readiness now carries the same Website Console bundle probe evidence boundary as release-facing docs. Bundled `mcp-probes.json` is explicitly documented as a saved probe evidence payload, not the full `site --mcp-check --probes --json` response, and release metadata now guards that readiness wording.
+
+### Changed
+- Added a Product Readiness phrase group for bundled Website Console `mcp-probes.json` saved probe evidence payload wording.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops the saved-payload boundary.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now matches the Phase 381 package smoke assertion boundary and the Phase 382 release-facing docs guard.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 382 — Website Console Bundle MCP Probe Evidence Release Guard (unreleased)
 
 Release metadata now protects the release-facing wording that clarifies bundled Website Console `mcp-probes.json` is a saved probe evidence payload, not the full `site --mcp-check --probes --json` response. Phase 381 fixed the package smoke assertion boundary; this phase prevents README, distribution, and release checklist docs from drifting back to the wrong payload contract.
