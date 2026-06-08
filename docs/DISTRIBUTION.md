@@ -160,6 +160,7 @@ Before tagging a release:
 - [ ] Website Console bundle `mcp-probes.json` saved-payload guard phases remain covered by `npm run release:check`, package contents, release self-tests, and packed-tarball smoke
 - [ ] Website Console bundle boundary metadata guard phases remain covered by `npm run release:check`, bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke
 - [ ] Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence remains covered by `npm run release:check`, unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke
+- [ ] Product Readiness release policy full gate evidence guard remains covered by `npm run release:check`, unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke
 - [ ] Release assertion self-tests pass: `npm run release:self-test`
 - [ ] All audits pass: `design-ai audit --strict`
 - [ ] `package.json` and `.claude-plugin/plugin.json` versions match

@@ -128,6 +128,7 @@ npm run release:check
 같은 `npm run release:check` gate는 Website Console bundle `mcp-probes.json` saved-payload guard 단계를 package contents, release self-tests, packed-tarball smoke로 함께 보존해요.
 같은 `npm run release:check` gate는 Website Console bundle boundary metadata guard 단계도 bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke와 함께 보존해요.
 같은 `npm run release:check` gate는 Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence도 unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, packed-tarball smoke와 함께 보존해요.
+같은 `npm run release:check` gate는 Product Readiness release policy full gate evidence guard도 unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, packed-tarball smoke와 함께 보존해요.
 `npm run package:smoke`는 이 packed-tarball smoke gate를 직접 실행해 installed-bin과 one-shot npm exec 경로를 함께 확인해요.
 
 GitHub CI에 올리기 전에는 더 넓은 로컬 parity gate도 실행하세요:
