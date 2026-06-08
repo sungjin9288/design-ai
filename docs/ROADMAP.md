@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 400 — Release Policy Bundle Boundary Full Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases after full `release:self-test` evidence recording. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now keep the same unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke wording that Product Readiness protects.
+
+### Changed
+- Extended the release policy phrase group for Website Console bundle boundary metadata full `release:check` evidence.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist with the full gate evidence wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep Phase 398 full release gate evidence aligned with Product Readiness, including full `release:self-test` evidence recording and the full pre-push gate components.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 399 — Product Readiness Bundle Boundary Full Release Gate Guard (unreleased)
 
 Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence recorded after Website Console bundle boundary metadata `release:check` guards and their full `release:self-test` evidence recording. Product Readiness now explicitly keeps unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke tied to that full release gate evidence.
