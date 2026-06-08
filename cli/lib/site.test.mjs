@@ -948,6 +948,14 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
     warn: 0,
     fail: 0,
   });
+  assert.deepEqual(report.boundaries, [
+    "deterministic-local",
+    "no-external-mcp-calls",
+    "no-target-repo-mutation",
+    "no-lighthouse-axe-visual-diff",
+  ]);
+  assert.equal(report.externalCalls, false);
+  assert.equal(report.targetRepoMutation, false);
   assert.deepEqual(report.summary.implementationEvidence, {
     executedWork: 0,
     verificationResults: 0,
@@ -963,6 +971,14 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
     warn: 0,
     fail: 0,
   });
+  assert.deepEqual(json.boundaries, [
+    "deterministic-local",
+    "no-external-mcp-calls",
+    "no-target-repo-mutation",
+    "no-lighthouse-axe-visual-diff",
+  ]);
+  assert.equal(json.externalCalls, false);
+  assert.equal(json.targetRepoMutation, false);
   assert.deepEqual(json.generatedContract.driftFiles, []);
   assert.deepEqual(json.summary.implementationEvidence, {
     executedWork: 0,
@@ -984,6 +1000,8 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.match(human, /Evidence: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(human, /MCP probe status: pass/);
   assert.match(human, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
+  assert.match(human, /Boundary flags: external calls no; target repo mutation no/);
+  assert.match(human, /Bundle boundaries:\n- deterministic-local\n- no-external-mcp-calls\n- no-target-repo-mutation\n- no-lighthouse-axe-visual-diff/);
   assert.match(human, /bundle-ready/);
 
   const summaryPath = path.join(dir, "summary.json");

@@ -2754,6 +2754,17 @@ function summarizeBundlePayload(summaryPayload) {
   };
 }
 
+function summarizeBundleBoundaries(summaryPayload) {
+  const boundaries = Array.isArray(summaryPayload?.boundaries)
+    ? summaryPayload.boundaries.map(String)
+    : [];
+  return {
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
+  };
+}
+
 export function buildSiteBundleCheckReport({
   target,
   cwd = process.cwd(),
@@ -2802,6 +2813,7 @@ export function buildSiteBundleCheckReport({
   const mcpPayload = canReadDirectory ? parseBundleJson(directory, "mcp-check.json", issues) : null;
   const mcpProbePayload = canReadDirectory ? parseBundleJson(directory, "mcp-probes.json", issues) : null;
   const summary = summarizeBundlePayload(summaryPayload);
+  const boundarySummary = summarizeBundleBoundaries(summaryPayload);
 
   let workspaceSummary = null;
   let recomputedMcp = null;
@@ -3042,6 +3054,9 @@ export function buildSiteBundleCheckReport({
       warn: Number.isInteger(mcpProbePayload?.warn) && mcpProbePayload.warn >= 0 ? mcpProbePayload.warn : summary.mcpProbeCounts.warn,
       fail: Number.isInteger(mcpProbePayload?.fail) && mcpProbePayload.fail >= 0 ? mcpProbePayload.fail : summary.mcpProbeCounts.fail,
     },
+    boundaries: boundarySummary.boundaries,
+    externalCalls: boundarySummary.externalCalls,
+    targetRepoMutation: boundarySummary.targetRepoMutation,
     files,
     unexpectedFiles,
     generatedContract,
@@ -3072,6 +3087,7 @@ export function formatSiteBundleCheckHuman(report) {
     `MCP status: ${report.mcpStatus}`,
     `MCP probe status: ${report.mcpProbeStatus}`,
     `MCP probes: ${report.mcpProbeCounts.pass}/${report.mcpProbeCounts.count} passing, ${report.mcpProbeCounts.warn} warning, ${report.mcpProbeCounts.fail} failing`,
+    `Boundary flags: external calls ${report.externalCalls ? "yes" : "no"}; target repo mutation ${report.targetRepoMutation ? "yes" : "no"}`,
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
@@ -3081,6 +3097,9 @@ export function formatSiteBundleCheckHuman(report) {
     "",
     "Repair guidance:",
     ...formatBundleRepairGuidanceLines(report.repairGuidance),
+    "",
+    "Bundle boundaries:",
+    ...(report.boundaries.length ? report.boundaries.map((boundary) => `- ${boundary}`) : ["- none recorded"]),
     "",
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),

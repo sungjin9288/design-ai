@@ -1319,6 +1319,16 @@ def assert_site_bundle_check_json_smoke(
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle check after {context} expected pass/valid output")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle check after {context} boundary flags changed")
+    boundaries = payload.get("boundaries")
+    if (
+        not isinstance(boundaries, list)
+        or "deterministic-local" not in boundaries
+        or "no-external-mcp-calls" not in boundaries
+        or "no-target-repo-mutation" not in boundaries
+    ):
+        raise SystemExit(f"site bundle check after {context} boundary list changed: {boundaries!r}")
     if payload.get("counts", {}).get("presentFiles") != 9:
         raise SystemExit(f"site bundle check after {context} expected 9 present files")
     if payload.get("counts", {}).get("verifiedChecksumFiles") != 8:

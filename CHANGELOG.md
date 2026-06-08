@@ -30,6 +30,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - Release metadata now guards release-facing docs against dropping the `design-ai site --stdin --next-actions --json` `mcpProbeCounts` probe count telemetry phrase.
 - `design-ai site --bundle --out <dir>` now preserves read-only MCP probe evidence in `mcp-probes.json`, records probe status/counts in `summary.json`, and includes that probe file in checksum, generated contract, compare, repair, and target-repo handoff validation.
 - `design-ai site <bundle-dir> --bundle-check/--bundle-compare/--bundle-handoff --json` now surfaces MCP probe counts alongside probe status, and bundle-check validates `summary.json` probe counts against `mcp-probes.json`.
+- `design-ai site <bundle-dir> --bundle-check [--json]` now surfaces bundle boundary metadata in JSON and human output, including deterministic-local boundaries plus `externalCalls: false` and `targetRepoMutation: false`, so target-repo handoff reviews can confirm the check is local and non-mutating without opening `summary.json`.
 - `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` human output now shows left/right MCP probe counts so operators can see probe coverage without switching to JSON.
 - CLI tests now cover the real `runSite` human `--bundle-compare` path for the left/right MCP probe count summary.
 - Package smoke self-tests now include bundle check/compare/handoff MCP probe count drift fixtures, so packed smoke assertions fail if the count contract is weakened.

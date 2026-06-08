@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 390 — Bundle Check Boundary Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-check [--json]` now exposes handoff bundle boundary metadata directly in bundle-check output. JSON reports include `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; human reports include boundary flags and the recorded bundle boundary list so operators can confirm the check is deterministic, local, non-mutating, and not a real MCP/Lighthouse/axe execution before handing work to a target website repo.
+
+### Changed
+- Added bundle-check boundary metadata to `buildSiteBundleCheckReport`.
+- Added human bundle-check output for boundary flags and bundle boundary lines.
+- Extended CLI unit coverage and package smoke assertions for bundle-check boundary flags and boundary list preservation.
+- Updated changelog, Product Readiness, roadmap, and session history.
+
+### Impact
+- Target-repo handoff reviews no longer require opening `summary.json` just to confirm bundle-check safety boundaries.
+- This does not change bundle generation, checksums, generated contract verification, MCP probe payloads, external MCP behavior, target repo mutation behavior, backend storage, or dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 389 — MCP Probe Release Gate Guard Full Release Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the saved-payload release gate phrase guards.
