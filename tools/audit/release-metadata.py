@@ -230,6 +230,30 @@ RELEASE_MCP_PROBES_RELEASE_CHECK_TERM_GROUPS = (
         "release self-tests",
     ),
 )
+RELEASE_BUNDLE_BOUNDARY_RELEASE_CHECK_TERM_GROUPS = (
+    (
+        "Website Console bundle boundary metadata guard phases",
+        "Website Console bundle boundary metadata guard 단계",
+        "bundle boundary metadata guard phases",
+        "bundle boundary metadata guard 단계",
+    ),
+    (
+        "bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata",
+        "bundle-check JSON/human plus bundle-handoff JSON/prompt boundary metadata",
+        "bundle-check and bundle-handoff boundary metadata",
+    ),
+    (
+        "`npm run release:check`",
+        "npm run release:check",
+        "release:check",
+    ),
+    (
+        "packed-tarball smoke",
+        "packed tarball smoke",
+        "package contents",
+        "release self-tests",
+    ),
+)
 RELEASE_PACKED_TARBALL_INSTALLED_BIN_TERM_GROUPS = (
     (
         "packed-tarball installed-bin",
@@ -2357,6 +2381,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "local CI command phrase",
     "release check command phrase",
     "Website Console mcp-probes release-check evidence phrase",
+    "Website Console bundle boundary release-check evidence phrase",
     "packed tarball smoke phrase",
     "package smoke command phrase",
     "workspace strict package smoke phrase",
@@ -2540,6 +2565,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "Website Console mcp-probes release-check evidence phrase",
         RELEASE_MCP_PROBES_RELEASE_CHECK_TERM_GROUPS,
+    ),
+    (
+        "Website Console bundle boundary release-check evidence phrase",
+        RELEASE_BUNDLE_BOUNDARY_RELEASE_CHECK_TERM_GROUPS,
     ),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
@@ -3286,7 +3315,7 @@ def run_self_test() -> int:
 Before tagging any release, the release workflow runs `npm run release:check`
 as the core automated gate and `npm run ci:local`, including the MkDocs warning policy
 that allows only intentional `refs/` source-link warnings and caps refs-only
-warnings at the accepted baseline. The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke. It also smoke-tests human `design-ai version` output,
+warnings at the accepted baseline. The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke. The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata through package contents, release self-tests, and packed-tarball smoke. It also smoke-tests human `design-ai version` output,
 the packed-tarball smoke gate that covers the packed-tarball installed-bin path,
 `npm run package:smoke` for installed-bin and one-shot npm exec package coverage,
 including `design-ai workspace --strict --json` workspace strict failure/success readiness checks,
@@ -3387,7 +3416,7 @@ machine-readable diagnostics output from `design-ai doctor --json` before releas
 태그 전에는 `npm run release:check` core gate와 `npm run ci:local`을 실행해요.
 `npm run ci:local`은 MkDocs 경고 정책을 확인해요. non-`refs/` warning은
 차단하고, 의도된 `refs/` 소스 링크와 refs-only warning은 승인된 기준선
-안에 있어야 해요. 같은 `npm run release:check` gate는 Website Console bundle `mcp-probes.json` saved-payload guard 단계를 package contents, release self-tests, packed-tarball smoke로 함께 보존해요. human `design-ai version` 출력도 smoke test하고,
+안에 있어야 해요. 같은 `npm run release:check` gate는 Website Console bundle `mcp-probes.json` saved-payload guard 단계를 package contents, release self-tests, packed-tarball smoke로 함께 보존해요. 같은 `npm run release:check` gate는 Website Console bundle boundary metadata guard 단계도 bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata, package contents, release self-tests, packed-tarball smoke와 함께 보존해요. human `design-ai version` 출력도 smoke test하고,
 packed-tarball installed-bin 경로도 확인하고,
 `npm run package:smoke`로 installed-bin과 one-shot npm exec package smoke를 확인하고,
 `design-ai workspace --strict --json` strict 실패/성공 readiness checks도 확인하고,
@@ -3688,6 +3717,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should tie release:check to mcp-probes saved-payload guard evidence",
     )
 
+    bundle_boundary_release_check_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                " The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata through package contents, release self-tests, and packed-tarball smoke.",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    bundle_boundary_release_check_drift_errors = "\n".join(
+        bundle_boundary_release_check_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing Website Console bundle boundary release-check evidence phrase"
+            in bundle_boundary_release_check_drift_errors
+        ),
+        "release policy docs should tie release:check to bundle boundary metadata guard evidence",
+    )
+
     packed_tarball_installed_bin_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -3906,6 +3960,9 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "the package runtime gate",
             ).replace(
                 " The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.",
+                "",
+            ).replace(
+                " The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata through package contents, release self-tests, and packed-tarball smoke.",
                 "",
             ),
         },
@@ -5649,6 +5706,9 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "release assertion checks",
             ).replace(
                 " The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.",
+                "",
+            ).replace(
+                " The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata through package contents, release self-tests, and packed-tarball smoke.",
                 "",
             ),
         },

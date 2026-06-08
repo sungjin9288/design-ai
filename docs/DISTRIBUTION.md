@@ -158,6 +158,7 @@ Before tagging a release:
 - [ ] Local CI parity gate passes, including the MkDocs warning policy and refs-only baseline cap: `npm run ci:local`
 - [ ] Core automated gate passes: `npm run release:check`
 - [ ] Website Console bundle `mcp-probes.json` saved-payload guard phases remain covered by `npm run release:check`, package contents, release self-tests, and packed-tarball smoke
+- [ ] Website Console bundle boundary metadata guard phases remain covered by `npm run release:check`, bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata, package contents, release self-tests, and packed-tarball smoke
 - [ ] Release assertion self-tests pass: `npm run release:self-test`
 - [ ] All audits pass: `design-ai audit --strict`
 - [ ] `package.json` and `.claude-plugin/plugin.json` versions match

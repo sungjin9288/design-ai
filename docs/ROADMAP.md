@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 396 — Release Policy Bundle Boundary Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now keep the same bundle-check JSON/human and bundle-handoff JSON/prompt release gate evidence that Product Readiness protects.
+
+### Changed
+- Added bundle boundary metadata `release:check` wording to release-facing docs.
+- Added a release policy phrase guard for Website Console bundle boundary metadata release gate evidence.
+- Added a release metadata `--self-test` drift fixture that fails if README drops the phrase.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep `npm run release:check`, package contents, release self-tests, and packed-tarball smoke tied to Website Console bundle boundary metadata guard phases.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 395 — Product Readiness Bundle Boundary Release Gate Guard (unreleased)
 
 Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. Phase 394 recorded the full release gate result; this phase makes the Product Readiness evidence durable when readiness docs are edited later.
