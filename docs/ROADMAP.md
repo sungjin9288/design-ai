@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 385 — Bundle MCP Probe Evidence Full Release Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the saved-payload assertion fix and docs/Product Readiness guards.
+
+### Changed
+- Ran `npm run release:check` after Phases 381-384.
+- Updated Product Readiness release confidence to name the full release gate after the Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release evidence now shows the saved-payload boundary is covered by the full pre-push release gate, not only targeted checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
 ## Phase 384 — Bundle MCP Probe Evidence Release Self-Test Chain Evidence (unreleased)
 
 The full release self-test chain now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together after the package smoke assertion fix, release-facing docs guard, and Product Readiness guard.
