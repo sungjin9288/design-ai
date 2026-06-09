@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 409 (unreleased)** — Ran the full `npm run release:check` gate after the release-facing docs Product Readiness release policy full gate evidence guard and recorded the passing evidence.
 - **Phase 408 (unreleased)** — Added release-facing docs and release metadata guard coverage for Product Readiness release policy full gate evidence `npm run release:check` wording.
 
 ## At a glance
