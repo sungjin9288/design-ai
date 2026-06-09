@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 410 — Post-Release Scope Decision Boundary (unreleased)
+
+After the Phase 409 full `npm run release:check` evidence, the next work is no longer another release hardening pass. The roadmap now separates three paths: push/Real-CI/public launch evidence, deeper AI learning work with explicit data boundaries, and broader product-surface expansion for Website Console automation, VS Code Webview reuse, Figma/plugin surfaces, or agent SDK workflows.
+
+### Changed
+- Recorded the post-release hardening scope boundary in the roadmap.
+- Kept push/Real-CI/public launch as external-system work that requires explicit approval.
+- Kept embeddings, fine-tuning, backend storage, auth, and multi-user sync outside shipped scope until a dedicated phase defines privacy and data boundaries.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Future development can choose a concrete product path instead of continuing redundant release evidence loops.
+- This is planning documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Choose one path explicitly: push/Real-CI launch, deeper AI learning architecture, or broader product-surface work.
+
 ## Phase 409 — Release Policy Product Readiness Full Gate Evidence (unreleased)
 
 The full `npm run release:check` gate now passes after the release-facing docs Product Readiness release policy full gate evidence guard. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 408 made the release-facing docs evidence guard durable.
