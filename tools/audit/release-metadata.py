@@ -427,6 +427,25 @@ RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS = (
         "one-shot npm exec",
     ),
 )
+RELEASE_LEARN_SIGNALS_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai learn --signals --strict --json`",
+        "design-ai learn --signals --strict --json",
+        "`design-ai learn --signals` learning signal registry coverage for human, JSON, `--strict --json`",
+    ),
+    (
+        "strict gate",
+        "strict gate output",
+        "strict learning signal",
+        "strict learning signal registry",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "installed-bin과 one-shot",
+        "one-shot `npm exec --package <tarball>`",
+    ),
+)
 RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai workspace --strict --json`",
@@ -2526,6 +2545,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "Product Readiness release policy full gate evidence guard release-check phrase",
     "packed tarball smoke phrase",
     "package smoke command phrase",
+    "learn signals strict package smoke phrase",
     "workspace strict package smoke phrase",
     "workspace learning-eval package smoke phrase",
     "workspace restore-backups package smoke phrase",
@@ -2722,6 +2742,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
+    (
+        "learn signals strict package smoke phrase",
+        RELEASE_LEARN_SIGNALS_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
     (
         "workspace strict package smoke phrase",
         RELEASE_WORKSPACE_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
@@ -3533,6 +3557,7 @@ human / JSON `design-ai learn --stats` profile summary output plus learn stats `
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
+human / JSON `design-ai learn --signals` learning signal registry plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation in installed-bin and one-shot paths,
 human / JSON `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation,
 human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
@@ -3634,6 +3659,7 @@ human / JSON `design-ai learn --stats` profile summary output과 learn stats `--
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
+human / JSON `design-ai learn --signals` learning signal registry plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation도 installed-bin과 one-shot 경로에서 확인하며,
 human / JSON `design-ai learn --eval-template` checkpoint generation과 generated checkpoint strict validation도 확인하며,
 human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
@@ -3968,6 +3994,9 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "restore rollback backup inventory in installed-bin and one-shot paths",
                 "restore rollback backup inventory in packaged paths",
             ).replace(
+                "learn signals `--out` file-write confirmation in installed-bin and one-shot paths",
+                "learn signals output-file confirmation in packaged paths",
+            ).replace(
                 "bundle repair preview/apply drift recovery in installed-bin and one-shot paths with repair report --out file output-file persistence, shared repair guidance smoke helpers, and shared repair report assertion helpers",
                 "bundle repair preview/apply drift recovery in packaged paths with repair report output-file persistence",
             ),
@@ -4198,6 +4227,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
     assert_condition(
         "README.md is missing package smoke command phrase" in package_smoke_command_drift_errors,
         "release policy docs should mention package:smoke command guidance",
+    )
+
+    learn_signals_strict_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "human / JSON `design-ai learn --signals` learning signal registry plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation in installed-bin and one-shot paths",
+                "human / JSON learning signal registry coverage",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_signals_strict_package_smoke_drift_errors = "\n".join(
+        learn_signals_strict_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing learn signals strict package smoke phrase"
+            in learn_signals_strict_package_smoke_drift_errors
+        ),
+        "release policy docs should mention learn signals strict package smoke",
     )
 
     workspace_strict_package_smoke_drift = release_metadata_summary(

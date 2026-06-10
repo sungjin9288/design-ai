@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 414 — Learning Signals Strict Package Smoke Metadata Guard (unreleased)
+
+Release metadata now guards the packed-tarball `design-ai learn --signals --strict --json` smoke phrase in release-facing docs. This keeps the Phase 413 package evidence visible in README, Distribution, and Release checklist guidance instead of allowing the strict local AI/agent readiness gate to drift out silently.
+
+### Changed
+- Added a release metadata phrase guard for packed strict learning signal smoke coverage.
+- Added release metadata self-test drift coverage that fails when README drops the strict signal package smoke phrase.
+- Tightened Release checklist wording so it names the exact `design-ai learn --signals --strict --json` command.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release docs now preserve the installed-bin and one-shot package strict AI/agent readiness gate alongside package smoke coverage.
+- This remains docs/metadata only: no runtime CLI behavior change, learning schema change, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict path after publish if post-publish AI/agent readiness evidence becomes required.
+
 ## Phase 413 — Learning Signals Strict Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now executes `design-ai learn --signals --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the Phase 412 hardening follow-up by proving the local signal registry and deterministic `agentDevelopment` backlog strict gate still passes after packaging.
