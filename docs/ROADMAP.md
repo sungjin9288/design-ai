@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 411 — Learning Signals Agent Development Backlog (unreleased)
+
+`design-ai learn --signals` now turns the existing local learning, usage sidecar, eval checkpoint, check-capture, and workspace readiness summaries into a deterministic `agentDevelopment` backlog. The backlog ranks profile audit, usage recording, eval harness replay, check-capture skill evolution, and workspace readiness actions without adding dependencies, changing `learning.json`, editing skill files, or calling external AI APIs.
+
+### Changed
+- Added `agentDevelopment` to the learning signal registry JSON payload with ranked `p0`/`p1`/`p2`/`p3` actions, commands, evidence, and local privacy boundaries.
+- Added an `Agent development backlog` section to human `design-ai learn --signals` output.
+- Extended unit and package smoke assertions so the new backlog shape and local/preview-only privacy boundary cannot drift silently.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Local AI/agent development can now move from raw signal summaries to an ordered next-action queue that fits the Hermes/Harness-style eval loop while staying deterministic and local.
+- This does not add embeddings, fine-tuning, online model calls, telemetry, backend storage, auth, multi-user sync, target website repo mutation, or new dependencies.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Add a future apply path only after explicit approval; v1 stays preview-only and local.
+
 ## Phase 410 — Post-Release Scope Decision Boundary (unreleased)
 
 After the Phase 409 full `npm run release:check` evidence, the next work is no longer another release hardening pass. The roadmap now separates three paths: push/Real-CI/public launch evidence, deeper AI learning work with explicit data boundaries, and broader product-surface expansion for Website Console automation, VS Code Webview reuse, Figma/plugin surfaces, or agent SDK workflows.

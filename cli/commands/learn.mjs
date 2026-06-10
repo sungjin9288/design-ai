@@ -570,6 +570,15 @@ function printSignals(payload) {
   console.log(`- learning eval: ${payload.workspace.learningEval?.status || "not checked"}`);
   console.log();
 
+  if (payload.agentDevelopment?.actions?.length > 0) {
+    console.log("Agent development backlog:");
+    for (const action of payload.agentDevelopment.actions.slice(0, 6)) {
+      console.log(`- ${action.rank}. ${action.priority} ${action.category}: ${action.title}`);
+      if (action.command) console.log(`  ${dim(action.command)}`);
+    }
+    console.log();
+  }
+
   if (payload.recommendations.length > 0) {
     console.log("Recommendations:");
     for (const recommendation of payload.recommendations) {

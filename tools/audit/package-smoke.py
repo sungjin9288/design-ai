@@ -5560,6 +5560,28 @@ def assert_learning_signal_report_json(
         cmd=cmd,
         message="learn signals JSON should include workspace readiness summary",
     )
+    agent_development = payload.get("agentDevelopment")
+    agent_actions = agent_development.get("actions") if isinstance(agent_development, dict) else None
+    require_package_smoke(
+        isinstance(agent_development, dict)
+        and isinstance(agent_actions, list)
+        and isinstance(agent_development.get("actionCount"), int)
+        and agent_development.get("actionCount") == len(agent_actions)
+        and any(isinstance(item, dict) and item.get("category") == "skill-evolution" for item in agent_actions),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include agent development backlog actions",
+    )
+    agent_privacy = agent_development.get("privacy") if isinstance(agent_development, dict) else None
+    require_package_smoke(
+        isinstance(agent_privacy, dict)
+        and agent_privacy.get("mutatesProfile") is False
+        and agent_privacy.get("mutatesSkillFiles") is False
+        and agent_privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should keep agent development backlog local and preview-only",
+    )
     privacy = payload.get("privacy")
     require_package_smoke(
         isinstance(privacy, dict)
@@ -5583,6 +5605,7 @@ def assert_learning_signal_report_human(
         "Learning audit:",
         "Eval signals:",
         "Workspace readiness:",
+        "Agent development backlog:",
         "Privacy: signal registry is read-only",
     ):
         require_package_smoke(
@@ -8764,6 +8787,32 @@ def run_self_test() -> None:
                 "nextActionCounts": {},
                 "nextActionCount": 0,
             },
+            "agentDevelopment": {
+                "status": "pass",
+                "actionCount": 1,
+                "p0Count": 0,
+                "p1Count": 0,
+                "p2Count": 1,
+                "p3Count": 0,
+                "actions": [
+                    {
+                        "rank": 1,
+                        "id": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "evidence": {"checkCaptureCount": 1},
+                    },
+                ],
+                "privacy": {
+                    "mutatesProfile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "storesRawBriefText": False,
+                },
+            },
             "recommendations": [],
             "privacy": {
                 "mutatesProfile": False,
@@ -8787,6 +8836,7 @@ def run_self_test() -> None:
                 "Learning audit: pass",
                 "Eval signals:",
                 "Workspace readiness:",
+                "Agent development backlog:",
                 "Privacy: signal registry is read-only",
             ]),
             context=context,
@@ -8807,6 +8857,26 @@ def run_self_test() -> None:
                 cmd=learn_signals_cmd,
             ),
             expected="learn signals JSON should include route eval signal files",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "agentDevelopment": {
+                        **learning_signal_payload["agentDevelopment"],
+                        "privacy": {
+                            **learning_signal_payload["agentDevelopment"]["privacy"],
+                            "callsExternalAiApis": True,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals JSON should keep agent development backlog local and preview-only",
             scope="package smoke",
         )
         expect_self_test_failure(

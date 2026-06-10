@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 411 (unreleased)** — Added deterministic `agentDevelopment` backlog actions to `design-ai learn --signals`, ranking local AI/agent development next steps across profile audit, usage, eval harness, check-capture skill evolution, and workspace readiness without mutating files or calling external AI APIs.
 - **Phase 410 (unreleased)** — Recorded the post-Phase 409 scope decision boundary so future work chooses between push/Real-CI launch, deeper AI learning architecture, or broader product-surface expansion instead of continuing redundant release hardening.
 - **Phase 409 (unreleased)** — Ran the full `npm run release:check` gate after the release-facing docs Product Readiness release policy full gate evidence guard and recorded the passing evidence.
 - **Phase 408 (unreleased)** — Added release-facing docs and release metadata guard coverage for Product Readiness release policy full gate evidence `npm run release:check` wording.
@@ -37,6 +38,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 411 (unreleased)** — Added deterministic `agentDevelopment` backlog actions to `design-ai learn --signals`, ranking local AI/agent development next steps across profile audit, usage, eval harness, check-capture skill evolution, and workspace readiness without mutating files or calling external AI APIs.
 - **Phase 410 (unreleased)** — Recorded the post-Phase 409 scope decision boundary so future work chooses between push/Real-CI launch, deeper AI learning architecture, or broader product-surface expansion instead of continuing redundant release hardening.
 - **Phase 407 (unreleased)** — Recorded full `npm run release:check` gate evidence after the Product Readiness release policy full gate evidence guard.
 - **Phase 406 (unreleased)** — Added Product Readiness and release metadata guard coverage for full `npm run release:check` evidence after the release-facing policy docs Product Readiness release policy full gate evidence guard.

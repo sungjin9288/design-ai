@@ -3286,6 +3286,9 @@ test("runLearn --signals reports registry JSON and human output without mutating
   assert.equal(payload.file, filePath);
   assert.equal(payload.evals.count, 1);
   assert.equal(payload.checkCapture.count, 1);
+  assert.equal(payload.agentDevelopment.privacy.callsExternalAiApis, false);
+  assert.equal(payload.agentDevelopment.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
+  assert.match(payload.agentDevelopment.actions.find((item) => item.id === "agent-skill-proposal-preview")?.command || "", /learn --propose-skills/);
   assert.equal(payload.privacy.mutatesProfile, false);
   assert.equal(readFileSync(filePath, "utf8"), before);
 
@@ -3301,6 +3304,8 @@ test("runLearn --signals reports registry JSON and human output without mutating
   assert.match(humanOutput, /Learning signal registry/);
   assert.match(humanOutput, /Eval signals:/);
   assert.match(humanOutput, /Recent check captures:/);
+  assert.match(humanOutput, /Agent development backlog:/);
+  assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: signal registry is read-only/);
 }));
 

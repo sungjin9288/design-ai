@@ -51,6 +51,12 @@ function worstStatus(statuses, fallback = "pass") {
   return [...statuses].sort((a, b) => statusRank(b) - statusRank(a))[0] || fallback;
 }
 
+function shellQuote(value) {
+  const text = String(value || "");
+  if (/^[A-Za-z0-9_./:=@+-]+$/.test(text)) return text;
+  return `'${text.replace(/'/g, "'\\''")}'`;
+}
+
 function inferSignalKind(payload, filePath = "") {
   const sourceName = path.basename(filePath).toLowerCase();
   const cases = Array.isArray(payload?.cases) ? payload.cases : [];
@@ -275,6 +281,226 @@ function buildRecommendations({ audit, usage, evals, checkCapture, workspace }) 
   return recommendations;
 }
 
+function agentAction({
+  id,
+  priority,
+  category,
+  title,
+  rationale,
+  command = "",
+  evidence = {},
+}) {
+  return {
+    id,
+    priority,
+    category,
+    title,
+    rationale,
+    command,
+    evidence,
+  };
+}
+
+function agentDevelopmentStatus(actions) {
+  if ((actions || []).some((item) => item.priority === "p0")) return "fail";
+  if ((actions || []).some((item) => item.priority === "p1")) return "warn";
+  return "pass";
+}
+
+function buildAgentDevelopmentBacklog({
+  audit,
+  usage,
+  evals,
+  checkCapture,
+  workspace,
+  filePath,
+  usageFile,
+  signalSource,
+}) {
+  const actions = [];
+  const fileArg = shellQuote(filePath);
+  const usageArg = shellQuote(usageFile);
+  const signalArg = shellQuote(signalSource || ".");
+
+  if (!audit.exists) {
+    actions.push(agentAction({
+      id: "agent-learning-profile-init",
+      priority: "p1",
+      category: "learning-profile",
+      title: "Initialize the local learning profile before agent development review.",
+      rationale: "Signal registry output is incomplete until a profile exists.",
+      command: `design-ai learn --init --file ${fileArg}`,
+      evidence: {
+        profileExists: false,
+      },
+    }));
+  } else if (audit.summary.failures > 0) {
+    actions.push(agentAction({
+      id: "agent-learning-profile-audit-fix",
+      priority: "p0",
+      category: "learning-profile",
+      title: "Fix learning profile audit failures before using signals as a development gate.",
+      rationale: "Audit failures can make learned context selection and downstream signal summaries unreliable.",
+      command: `design-ai learn --audit --file ${fileArg}`,
+      evidence: {
+        failures: audit.summary.failures,
+        warnings: audit.summary.warnings,
+      },
+    }));
+  } else if (audit.summary.warnings > 0) {
+    actions.push(agentAction({
+      id: "agent-learning-profile-audit-review",
+      priority: "p1",
+      category: "learning-profile",
+      title: "Review learning profile audit warnings before promoting agent behavior.",
+      rationale: "Warnings are not blockers, but they should be resolved before treating local learning as release evidence.",
+      command: `design-ai learn --audit --file ${fileArg}`,
+      evidence: {
+        warnings: audit.summary.warnings,
+      },
+    }));
+  }
+
+  if (!usage.exists || usage.eventCount === 0) {
+    actions.push(agentAction({
+      id: "agent-learning-usage-record",
+      priority: "p2",
+      category: "usage-signals",
+      title: "Record prompt or pack usage with learning enabled.",
+      rationale: "Usage sidecar events show which learned entries actually affect agent prompts without storing raw brief text.",
+      command: "design-ai prompt \"audit a design artifact\" --with-learning --json",
+      evidence: {
+        usageExists: Boolean(usage.exists),
+        eventCount: usage.eventCount || 0,
+      },
+    }));
+  }
+  if (usage.staleSelectedEntryCount > 0) {
+    actions.push(agentAction({
+      id: "agent-learning-usage-stale-review",
+      priority: "p1",
+      category: "usage-signals",
+      title: "Review stale selected learning ids in the usage sidecar.",
+      rationale: "Stale ids indicate usage evidence is no longer aligned with the active profile.",
+      command: `design-ai learn --usage --file ${fileArg} --usage-file ${usageArg}`,
+      evidence: {
+        staleSelectedEntryCount: usage.staleSelectedEntryCount,
+      },
+    }));
+  }
+
+  if (evals.files.length === 0) {
+    actions.push(agentAction({
+      id: "agent-eval-checkpoint-generate",
+      priority: "p1",
+      category: "eval-harness",
+      title: "Generate and run route, prompt, pack, or learning eval checkpoints.",
+      rationale: "Agent development needs replayable checkpoints before signal registry output can act as a gate.",
+      command: `design-ai learn --eval-template --file ${fileArg} --json --out learning-eval.json`,
+      evidence: {
+        evalSignalCount: 0,
+      },
+    }));
+  }
+  if (evals.failed > 0) {
+    actions.push(agentAction({
+      id: "agent-eval-failure-review",
+      priority: "p0",
+      category: "eval-harness",
+      title: "Fix failing eval signal reports before continuing agent development.",
+      rationale: "Failed checkpoints are the strongest deterministic signal that route, prompt, pack, or learning behavior drifted.",
+      command: `design-ai learn --signals --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      evidence: {
+        failed: evals.failed,
+        warned: evals.warned,
+      },
+    }));
+  } else if (evals.templates > 0) {
+    actions.push(agentAction({
+      id: "agent-eval-template-replay",
+      priority: "p1",
+      category: "eval-harness",
+      title: "Replay template-only eval signal files as executed reports.",
+      rationale: "Templates are useful setup artifacts, but executed reports provide stronger evidence for agent behavior.",
+      command: `design-ai learn --signals --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      evidence: {
+        templates: evals.templates,
+      },
+    }));
+  }
+
+  if (checkCapture.count > 0) {
+    actions.push(agentAction({
+      id: "agent-skill-proposal-preview",
+      priority: "p2",
+      category: "skill-evolution",
+      title: "Preview skill instruction deltas from repeated check-capture signals.",
+      rationale: "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+      command: `design-ai learn --propose-skills --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      evidence: {
+        checkCaptureCount: checkCapture.count,
+        categoryCounts: checkCapture.categoryCounts,
+      },
+    }));
+  } else {
+    actions.push(agentAction({
+      id: "agent-check-capture-seed",
+      priority: "p3",
+      category: "skill-evolution",
+      title: "Seed check-capture learning from real warn/fail artifacts when appropriate.",
+      rationale: "Skill evolution proposals need explicit local check captures before they can suggest durable instruction deltas.",
+      command: "design-ai check artifact.md --learn --yes",
+      evidence: {
+        checkCaptureCount: 0,
+      },
+    }));
+  }
+
+  if (workspace.nextActionCounts.fail > 0 || workspace.nextActionCounts.warn > 0) {
+    actions.push(agentAction({
+      id: "agent-workspace-readiness-review",
+      priority: workspace.nextActionCounts.fail > 0 ? "p0" : "p1",
+      category: "workspace-readiness",
+      title: "Resolve workspace readiness actions before treating agent development evidence as complete.",
+      rationale: "Workspace readiness joins git, repository metadata, learning, usage, and eval freshness into the operator handoff gate.",
+      command: `design-ai workspace --learning-file ${fileArg} --learning-usage ${usageArg} --strict --json`,
+      evidence: {
+        fail: workspace.nextActionCounts.fail || 0,
+        warn: workspace.nextActionCounts.warn || 0,
+        nextActionCount: workspace.nextActionCount || 0,
+      },
+    }));
+  }
+
+  const priorityOrder = { p0: 0, p1: 1, p2: 2, p3: 3 };
+  const sortedActions = actions
+    .sort((a, b) => (
+      priorityOrder[a.priority] - priorityOrder[b.priority]
+      || a.category.localeCompare(b.category)
+      || a.id.localeCompare(b.id)
+    ))
+    .map((item, index) => ({
+      rank: index + 1,
+      ...item,
+    }));
+
+  return {
+    status: agentDevelopmentStatus(sortedActions),
+    actionCount: sortedActions.length,
+    p0Count: sortedActions.filter((item) => item.priority === "p0").length,
+    p1Count: sortedActions.filter((item) => item.priority === "p1").length,
+    p2Count: sortedActions.filter((item) => item.priority === "p2").length,
+    p3Count: sortedActions.filter((item) => item.priority === "p3").length,
+    actions: sortedActions,
+    privacy: {
+      mutatesProfile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      storesRawBriefText: false,
+    },
+  };
+}
+
 export function learningSignalRegistry({
   filePath = defaultLearningFile(),
   usageFile = "",
@@ -320,6 +546,16 @@ export function learningSignalRegistry({
     checkCapture,
     workspace,
   });
+  const agentDevelopment = buildAgentDevelopmentBacklog({
+    audit,
+    usage,
+    evals: evalSummary,
+    checkCapture,
+    workspace,
+    filePath: resolvedFile,
+    usageFile: resolvedUsageFile,
+    signalSource: evalSummary.source,
+  });
   const status = worstStatus([
     audit.summary.failures > 0 ? "fail" : "",
     audit.summary.warnings > 0 ? "warn" : "",
@@ -361,6 +597,7 @@ export function learningSignalRegistry({
     evals: evalSummary,
     checkCapture,
     workspace,
+    agentDevelopment,
     recommendations,
     privacy: {
       mutatesProfile: false,
