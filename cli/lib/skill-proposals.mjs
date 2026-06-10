@@ -276,3 +276,118 @@ export function buildSkillEvolutionProposals({
     },
   };
 }
+
+function listItem(label, value) {
+  return `- ${label}: ${value}`;
+}
+
+function yesNo(value) {
+  return value ? "yes" : "no";
+}
+
+export function renderSkillEvolutionProposalReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const lines = [
+    "# Skill Evolution Proposal Report",
+    "",
+    listItem("Generated", generatedAtText),
+    listItem("File", payload.file),
+    listItem("Usage sidecar", payload.usageFile),
+    listItem("Signal source", payload.signalSource),
+    listItem("Status", payload.status),
+    listItem("Signal status", payload.signalStatus),
+    listItem("Check capture entries", payload.checkCaptureCount),
+    listItem("Candidate groups", payload.candidateCount),
+    listItem("Proposal count", payload.proposalCount),
+    listItem("Skipped groups", payload.skippedCount),
+    listItem("Dry run", yesNo(Boolean(payload.dryRun))),
+    listItem("Applied", yesNo(Boolean(payload.applied))),
+    "",
+    "## Proposed Skill Deltas",
+    "",
+  ];
+
+  if (!Array.isArray(payload.proposals) || payload.proposals.length === 0) {
+    lines.push("No repeated check-capture groups crossed the proposal threshold.");
+  } else {
+    for (const proposal of payload.proposals) {
+      const routes = Array.isArray(proposal.routeIds) && proposal.routeIds.length > 0
+        ? proposal.routeIds.join(", ")
+        : "artifact";
+      lines.push(`### ${proposal.title}`);
+      lines.push("");
+      lines.push(listItem("Proposal id", proposal.id));
+      lines.push(listItem("Candidate skill", proposal.candidateSkillPath));
+      lines.push(listItem("Category", proposal.category));
+      lines.push(listItem("Routes", routes));
+      lines.push(listItem("Risk", proposal.riskLevel));
+      lines.push(listItem("Source issues", proposal.sourceIssueCount));
+      lines.push(listItem("Rationale", proposal.rationale));
+      lines.push("");
+      lines.push("Proposed instruction delta:");
+      lines.push("");
+      lines.push(`> ${proposal.proposedInstructionDelta}`);
+      lines.push("");
+      lines.push("Verification:");
+      lines.push("");
+      lines.push(`\`\`\`bash`);
+      lines.push(proposal.verificationCommand);
+      lines.push(`\`\`\``);
+      lines.push("");
+      lines.push("Evidence:");
+      const evidenceSources = Array.isArray(proposal.evidenceSources) ? proposal.evidenceSources : [];
+      for (const evidence of evidenceSources) {
+        const title = evidence.title ? ` / ${evidence.title}` : "";
+        lines.push(`- \`${evidence.entryId}\` [${evidence.category}] ${evidence.source}${title}`);
+        if (evidence.createdAt) lines.push(`  - Captured: ${evidence.createdAt}`);
+        if (evidence.textPreview) lines.push(`  - Preview: ${evidence.textPreview}`);
+      }
+      lines.push("");
+    }
+  }
+
+  lines.push("## Skipped Groups", "");
+  if (!Array.isArray(payload.skipped) || payload.skipped.length === 0) {
+    lines.push("No candidate groups were skipped.");
+  } else {
+    for (const item of payload.skipped) {
+      lines.push(`- \`${item.candidateSkillPath}\` [${item.category}]: ${item.reason}`);
+      const evidenceSources = Array.isArray(item.evidenceSources) ? item.evidenceSources : [];
+      for (const evidence of evidenceSources) {
+        lines.push(`  - Evidence: \`${evidence.entryId}\` ${evidence.source}`);
+      }
+    }
+  }
+
+  lines.push("", "## Recommendations", "");
+  if (!Array.isArray(payload.recommendations) || payload.recommendations.length === 0) {
+    lines.push("No recommendations emitted.");
+  } else {
+    for (const recommendation of payload.recommendations) {
+      lines.push(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  const privacy = payload.privacy || {};
+  lines.push("", "## Privacy And Boundaries", "");
+  lines.push(listItem("Mutates learning profile", yesNo(Boolean(privacy.mutatesProfile))));
+  lines.push(listItem("Mutates skill files", yesNo(Boolean(privacy.mutatesSkillFiles))));
+  lines.push(listItem("Calls external AI APIs", yesNo(Boolean(privacy.callsExternalAiApis))));
+  lines.push(listItem("Stores raw brief text", yesNo(Boolean(privacy.storesRawBriefText))));
+  lines.push(listItem("Includes entry text preview", yesNo(Boolean(privacy.exposesEntryTextPreview))));
+
+  lines.push("", "## Next Steps", "");
+  if ((payload.proposalCount || 0) > 0) {
+    lines.push("- Review each proposed instruction delta manually before editing any skill file.");
+    lines.push("- Run the proposal verification command after applying an accepted skill edit.");
+    lines.push("- Re-run `design-ai learn --propose-skills --strict --json` to confirm no pending proposal gate remains.");
+  } else {
+    lines.push("- Keep capturing explicit `design-ai check --learn --yes` warning/failure results until repeated evidence exists.");
+    lines.push("- Re-run this report after new check-capture entries are added.");
+  }
+  lines.push("- This report is preview-only evidence; it does not apply changes.");
+
+  return `${lines.join("\n")}\n`;
+}

@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 419 (unreleased)** — Added `design-ai learn --propose-skills --report --out skill-proposals.md` so preview-only skill proposal evidence can be saved as a Markdown review artifact before manual skill edits.
 - **Phase 418 (unreleased)** — Recorded full `npm run release:self-test` chain evidence after the strict skill proposal package smoke metadata guard.
 - **Phase 417 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --strict --json` expected-failure smoke phrase so release-facing docs keep the strict skill proposal readiness gate visible.
 - **Phase 416 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --strict --json` so installed-bin and one-shot package paths verify the preview-only skill proposal readiness gate after packaging.
@@ -45,6 +46,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 419 (unreleased)** — Added `design-ai learn --propose-skills --report --out skill-proposals.md` so preview-only skill proposal evidence can be saved as a Markdown review artifact before manual skill edits.
 - **Phase 418 (unreleased)** — Recorded full `npm run release:self-test` chain evidence after the strict skill proposal package smoke metadata guard.
 - **Phase 417 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --strict --json` expected-failure smoke phrase so release-facing docs keep the strict skill proposal readiness gate visible.
 - **Phase 416 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --strict --json` so installed-bin and one-shot package paths verify the preview-only skill proposal readiness gate after packaging.

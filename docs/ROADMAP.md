@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 419 — Skill Proposal Markdown Review Reports (unreleased)
+
+`design-ai learn --propose-skills` can now emit a Markdown review artifact with `--report --out skill-proposals.md`. This gives the local AI/agent learning loop a durable human-review handoff before any skill file is edited manually.
+
+### Changed
+- Added a Markdown renderer for skill evolution proposal payloads, including proposal summary, evidence, verification commands, skipped groups, privacy boundaries, and next steps.
+- Wired `learn --propose-skills --report` into the CLI while keeping JSON output and strict gating behavior intact.
+- Updated help smoke assertions, usage docs, distribution docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can archive/review skill proposal evidence without mutating `learning.json`, editing `skills/*/SKILL.md`, calling external AI APIs, adding embeddings/fine-tuning, adding backend storage, touching target repos, or adding dependencies.
+- The proposal gate remains preview-only: `--strict` can still fail pending review, but `--report` only writes the requested Markdown artifact.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Package smoke can be extended later to execute the Markdown `--report --out` path through packed tarballs if release evidence needs to cover that exact artifact mode.
+
 ## Phase 418 — Skill Proposal Strict Guard Release Self-Test Evidence (unreleased)
 
 The full `npm run release:self-test` chain now passes after the strict skill proposal package smoke metadata guard. This records that the release assertion fixtures, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests all still agree after the Phase 417 guard.

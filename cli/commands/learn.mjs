@@ -36,7 +36,10 @@ import {
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 import { learningSignalRegistry } from "../lib/signals.mjs";
-import { buildSkillEvolutionProposals } from "../lib/skill-proposals.mjs";
+import {
+  buildSkillEvolutionProposals,
+  renderSkillEvolutionProposalReport,
+} from "../lib/skill-proposals.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
@@ -69,7 +72,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -103,7 +106,7 @@ function printHelp() {
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
-  console.log("  --report             With --curate, emit a Markdown curation report instead of human console output");
+  console.log("  --report             With --curate or --propose-skills, emit a Markdown review report instead of human console output");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
@@ -118,7 +121,7 @@ function printHelp() {
   console.log("  --file path          Override the learning profile path");
   console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, --signals, or --propose-skills");
   console.log("  --json               Emit machine-readable output");
-  console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
+  console.log("  --out file           Write JSON output to a file, export Markdown for --export, or learning review report Markdown");
   console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
   console.log("");
   console.log("Environment:");
@@ -156,6 +159,7 @@ function printHelp() {
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
+  console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -1366,6 +1370,11 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderSkillEvolutionProposalReport(payload));
       applySkillProposalsStrictExit(parsed, payload);
       return;
     }

@@ -437,11 +437,11 @@ export function parseLearnArgs(args) {
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");
   }
-  if (out.report && out.action !== "curate") {
-    throw new Error("--report can only be used with --curate");
+  if (out.report && !["curate", "propose-skills"].includes(out.action)) {
+    throw new Error("--report can only be used with --curate or --propose-skills");
   }
   if (out.report && out.json) {
-    throw new Error("Choose either --json or --report for --curate");
+    throw new Error("Choose either --json or --report");
   }
   if (out.strict && !["eval", "signals", "propose-skills"].includes(out.action)) {
     throw new Error("--strict can only be used with --eval, --signals, or --propose-skills");
@@ -465,9 +465,10 @@ export function parseLearnArgs(args) {
     throw new Error("--restore requires --from-file or --stdin");
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
-    || (out.action === "curate" && out.report);
+    || (out.action === "curate" && out.report)
+    || (out.action === "propose-skills" && out.report);
   if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export, --eval-template, or --curate --report");
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, or --propose-skills --report");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());

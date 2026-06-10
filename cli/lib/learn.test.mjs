@@ -51,7 +51,10 @@ import {
   learningSignalRegistry,
   summarizeSignalEvalFile,
 } from "./signals.mjs";
-import { buildSkillEvolutionProposals } from "./skill-proposals.mjs";
+import {
+  buildSkillEvolutionProposals,
+  renderSkillEvolutionProposalReport,
+} from "./skill-proposals.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 import { runLearn } from "../commands/learn.mjs";
 import { runPrompt } from "../commands/prompt.mjs";
@@ -317,6 +320,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(proposeSkillsArgs.strict, true);
   assert.equal(proposeSkillsArgs.json, true);
 
+  const proposeSkillsReportArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--report", "--out", "skill-proposals.md", "--force"]);
+  assert.equal(proposeSkillsReportArgs.action, "propose-skills");
+  assert.equal(proposeSkillsReportArgs.report, true);
+  assert.equal(proposeSkillsReportArgs.outPath, "skill-proposals.md");
+  assert.equal(proposeSkillsReportArgs.force, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -444,14 +453,22 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--report"]),
-    /--report can only be used with --curate/,
+    /--report can only be used with --curate or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--report", "--json"]),
     /Choose either --json or --report/,
   );
   assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--report", "--json"]),
+    /Choose either --json or --report/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--curate", "--out", "learning-curation-report.md"]),
+    /--out requires --json/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--out", "skill-proposals.md"]),
     /--out requires --json/,
   );
   assert.throws(
@@ -3434,6 +3451,54 @@ test("buildSkillEvolutionProposals groups repeated check captures into preview-o
   assert.equal(payload.privacy.mutatesSkillFiles, false);
 }));
 
+test("renderSkillEvolutionProposalReport emits reviewer-friendly Markdown without apply semantics", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Keyboard and focus behavior: No keyboard behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Screen reader behavior: No screen-reader behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:03.000Z"),
+    signalRegistryProvider: ({ signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+    }),
+  });
+  const report = renderSkillEvolutionProposalReport(payload, {
+    generatedAt: new Date("2026-06-02T00:00:04.000Z"),
+  });
+
+  assert.match(report, /^# Skill Evolution Proposal Report/);
+  assert.match(report, /Status: warn/);
+  assert.match(report, /## Proposed Skill Deltas/);
+  assert.match(report, /skills\/component-spec-writer\/SKILL\.md/);
+  assert.match(report, /```bash\nnode cli\/bin\/design-ai\.mjs check --examples --route component-spec --limit 1 --strict --json\n```/);
+  assert.match(report, /Mutates skill files: no/);
+  assert.match(report, /This report is preview-only evidence; it does not apply changes\./);
+}));
+
 test("runLearn --propose-skills reports JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
   const filePath = path.join(dir, "learning.json");
   const usageFile = defaultLearningUsageFile(filePath);
@@ -3497,6 +3562,26 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
   assert.match(humanOutput, /Proposed skill deltas:/);
   assert.match(humanOutput, /skills\/website-improvement\/SKILL\.md/);
   assert.match(humanOutput, /No changes made/);
+
+  const reportPath = path.join(dir, "skill-proposals.md");
+  const reportOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportPath,
+  ]));
+  assert.match(reportOutput, /Wrote /);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+  const report = readFileSync(reportPath, "utf8");
+  assert.match(report, /^# Skill Evolution Proposal Report/);
+  assert.match(report, /skills\/website-improvement\/SKILL\.md/);
+  assert.match(report, /Mutates learning profile: no/);
 }));
 
 test("runLearn --propose-skills --strict exits non-zero when proposal review is pending", () => withTempDirAsync(async (dir) => {

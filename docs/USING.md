@@ -57,10 +57,11 @@ Use skill evolution proposals after repeated `check --learn --yes` captures poin
 ```bash
 design-ai learn --propose-skills --from-file . --json
 design-ai learn --propose-skills --from-file . --strict --json
+design-ai learn --propose-skills --from-file . --report --out skill-proposals.md
 design-ai learn --propose-skills --from-file route-eval-report.json --usage-file learning.usage.json
 ```
 
-Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. Add `--strict` when pending proposals or upstream signal readiness warnings should fail a local gate. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
+Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. Use `--report --out skill-proposals.md` when you need a reviewer-friendly Markdown artifact before editing a skill by hand. Add `--strict` when pending proposals or upstream signal readiness warnings should fail a local gate. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
 
 ## Claude Code
 
