@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 421 — Skill Proposal Markdown Release Metadata Guard (unreleased)
+
+Release metadata now protects the packed-tarball `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact smoke phrase across release-facing policy docs. This closes the Phase 420 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged Markdown report coverage.
+
+### Changed
+- Added a table-driven release metadata phrase guard for the skill proposal Markdown report package smoke phrase.
+- Added a release metadata self-test drift fixture that fails when a policy doc drops the Markdown `--report --out` review artifact wording while keeping the strict proposal gate wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve both skill proposal package smoke contracts: Markdown review artifact persistence and strict expected-failure readiness.
+- Existing CLI behavior, package smoke execution, learning profile storage, skill files, external AI/API boundaries, target repo boundaries, and dependency surface remain unchanged.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:self-test`
+- `npm run release:metadata`
+
+### What's still ahead
+- Continue broader release hardening or move back to product/AI learning feature development.
+
 ## Phase 420 — Skill Proposal Markdown Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now executes `design-ai learn --propose-skills --report --out skill-proposals.md` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between the Phase 419 Markdown review artifact and packaged CLI verification.
@@ -22,7 +44,7 @@ Packed-tarball smoke now executes `design-ai learn --propose-skills --report --o
 - `npm run package:smoke`
 
 ### What's still ahead
-- Release metadata can add a dedicated phrase guard for the Markdown report smoke if release-facing docs need stricter drift protection than the existing package smoke self-test.
+- Closed by Phase 421.
 
 ## Phase 419 — Skill Proposal Markdown Review Reports (unreleased)
 
