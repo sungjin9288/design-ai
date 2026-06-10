@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 418 — Skill Proposal Strict Guard Release Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the strict skill proposal package smoke metadata guard. This records that the release assertion fixtures, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests all still agree after the Phase 417 guard.
+
+### Changed
+- Ran the full release assertion self-test chain after adding the strict skill proposal package smoke metadata guard.
+- Recorded the passing evidence in changelog, roadmap, and session history.
+
+### Impact
+- Release evidence now confirms the new `design-ai learn --propose-skills --strict --json` smoke phrase guard does not weaken existing assertion fixtures.
+- This is evidence/documentation only: no CLI runtime behavior, JSON contract, package smoke execution path, learning schema, skill files, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
 ## Phase 417 — Skill Proposal Strict Package Smoke Metadata Guard (unreleased)
 
 Release metadata now guards the packed-tarball `design-ai learn --propose-skills --strict --json` expected-failure smoke phrase in release-facing docs. This keeps the Phase 416 package evidence visible in README, Distribution, and Release checklist guidance.
