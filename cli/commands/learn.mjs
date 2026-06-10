@@ -69,7 +69,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -111,7 +111,7 @@ function printHelp() {
   console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
-  console.log("  --strict             With --eval or --signals, exit non-zero when any checkpoint or signal gate warns or fails");
+  console.log("  --strict             With --eval, --signals, or --propose-skills, exit non-zero when any checkpoint, signal gate, or skill proposal gate warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -155,7 +155,7 @@ function printHelp() {
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
-  console.log("  design-ai learn --propose-skills --from-file . --json");
+  console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -593,6 +593,7 @@ function printSignals(payload) {
 function printSkillProposals(payload) {
   header("design-ai learn", "Skill evolution proposals");
   info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
   info(`Signal source: ${payload.signalSource}`);
   info(`Signal status: ${payload.signalStatus}`);
   info(`Check capture entries: ${payload.checkCaptureCount}`);
@@ -936,6 +937,12 @@ function applySignalsStrictExit(parsed, payload) {
     parsed.strict
     && (payload.status !== "pass" || payload.agentDevelopment?.status !== "pass")
   ) {
+    process.exitCode = 1;
+  }
+}
+
+function applySkillProposalsStrictExit(parsed, payload) {
+  if (parsed.strict && payload.status !== "pass") {
     process.exitCode = 1;
   }
 }
@@ -1359,9 +1366,11 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      applySkillProposalsStrictExit(parsed, payload);
       return;
     }
     printSkillProposals(payload);
+    applySkillProposalsStrictExit(parsed, payload);
     return;
   }
 

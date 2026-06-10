@@ -310,10 +310,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(strictSignalsArgs.action, "signals");
   assert.equal(strictSignalsArgs.strict, true);
 
-  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--json"]);
+  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--strict", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
   assert.equal(proposeSkillsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(proposeSkillsArgs.strict, true);
   assert.equal(proposeSkillsArgs.json, true);
 
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
@@ -455,7 +456,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--strict"]),
-    /--strict can only be used with --eval or --signals/,
+    /--strict can only be used with --eval, --signals, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--eval"]),
@@ -3419,6 +3420,7 @@ test("buildSkillEvolutionProposals groups repeated check captures into preview-o
 
   assert.equal(payload.dryRun, true);
   assert.equal(payload.applied, false);
+  assert.equal(payload.status, "warn");
   assert.equal(payload.checkCaptureCount, 3);
   assert.equal(payload.candidateCount, 2);
   assert.equal(payload.proposalCount, 1);
@@ -3475,6 +3477,7 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
   ]));
   const payload = JSON.parse(jsonOutput);
   assert.equal(payload.file, filePath);
+  assert.equal(payload.status, "warn");
   assert.equal(payload.proposalCount, 1);
   assert.equal(payload.proposals[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
   assert.equal(payload.privacy.mutatesSkillFiles, false);
@@ -3490,9 +3493,78 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
     dir,
   ]));
   assert.match(humanOutput, /Skill evolution proposals/);
+  assert.match(humanOutput, /Status: warn/);
   assert.match(humanOutput, /Proposed skill deltas:/);
   assert.match(humanOutput, /skills\/website-improvement\/SKILL\.md/);
   assert.match(humanOutput, /No changes made/);
+}));
+
+test("runLearn --propose-skills --strict exits non-zero when proposal review is pending", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No tablet behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-10T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.proposalCount, 1);
+    assert.equal(process.exitCode, 1);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
 }));
 
 test("learningEvalReport validates expected learning selection without raw brief text", () => withTempDir((dir) => {

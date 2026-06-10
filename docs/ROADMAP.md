@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 415 — Skill Proposal Strict Readiness Gate (unreleased)
+
+`design-ai learn --propose-skills --strict` now turns preview-only skill evolution proposals into a local readiness gate. Pending proposal review or upstream learning signal warnings exit non-zero, but the command still does not edit `learning.json`, does not edit skill files, and does not call external AI APIs.
+
+### Changed
+- Added `status` to skill proposal JSON payloads, derived from upstream signal readiness and pending proposal count.
+- Allowed `--strict` with `learn --propose-skills` and set exit code 1 when proposal status is not `pass`.
+- Updated learn help, README command lists, usage docs, distribution docs, and help smoke assertions for the new strict proposal surface.
+- Added unit coverage for parser support, JSON payload status, human status output, non-mutating strict exit behavior, and non-strict success behavior.
+
+### Impact
+- Internal AI/agent development can now fail a local gate when repeated check-capture signals have generated skill deltas that still require manual review.
+- This remains preview-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- A future apply path for accepted skill deltas still requires explicit approval and a separate archive/review design.
+
 ## Phase 414 — Learning Signals Strict Package Smoke Metadata Guard (unreleased)
 
 Release metadata now guards the packed-tarball `design-ai learn --signals --strict --json` smoke phrase in release-facing docs. This keeps the Phase 413 package evidence visible in README, Distribution, and Release checklist guidance instead of allowing the strict local AI/agent readiness gate to drift out silently.

@@ -191,6 +191,13 @@ function skippedFromGroup(group, minEvidenceCount) {
   };
 }
 
+function proposalStatus({ signalStatus, proposalCount }) {
+  if (signalStatus === "fail") return "fail";
+  if (signalStatus && signalStatus !== "pass") return "warn";
+  if (proposalCount > 0) return "warn";
+  return "pass";
+}
+
 export function buildSkillEvolutionProposals({
   filePath = defaultLearningFile(),
   usageFile = "",
@@ -227,6 +234,11 @@ export function buildSkillEvolutionProposals({
     root,
     now,
   });
+  const signalStatus = registry.status || "unknown";
+  const status = proposalStatus({
+    signalStatus,
+    proposalCount: proposals.length,
+  });
 
   return {
     version: 1,
@@ -242,7 +254,8 @@ export function buildSkillEvolutionProposals({
     count: proposals.length,
     proposalCount: proposals.length,
     skippedCount: skipped.length,
-    signalStatus: registry.status,
+    status,
+    signalStatus,
     proposals,
     skipped,
     recommendations: proposals.length === 0

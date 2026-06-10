@@ -56,10 +56,11 @@ Use skill evolution proposals after repeated `check --learn --yes` captures poin
 
 ```bash
 design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file . --strict --json
 design-ai learn --propose-skills --from-file route-eval-report.json --usage-file learning.usage.json
 ```
 
-Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
+Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. Add `--strict` when pending proposals or upstream signal readiness warnings should fail a local gate. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
 
 ## Claude Code
 
