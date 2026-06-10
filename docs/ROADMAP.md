@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 413 — Learning Signals Strict Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --signals --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the Phase 412 hardening follow-up by proving the local signal registry and deterministic `agentDevelopment` backlog strict gate still passes after packaging.
+
+### Changed
+- Added strict learning signal registry JSON smoke execution to package smoke's installed-bin and one-shot package paths.
+- Tightened shared package smoke assertions so `agentDevelopment.status` must remain `pass` in the good signal fixture.
+- Added package smoke self-test drift coverage for non-passing `agentDevelopment` status.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the strict AI/agent readiness gate, not only source-tree unit tests.
+- This remains read-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict path after the next publish if we decide this gate should be post-publish required evidence.
+
 ## Phase 412 — Learning Signals Strict Agent Gate (unreleased)
 
 `design-ai learn --signals --strict` now exits non-zero when the signal registry or deterministic `agentDevelopment` backlog is not `pass`. This turns the Phase 411 backlog into a local gate for AI/agent development readiness while keeping the command read-only, local, and dependency-free.
@@ -22,7 +45,7 @@
 - `git diff --check`
 
 ### What's still ahead
-- Package smoke can add a direct `learn --signals --strict` packed-tarball path in a future release-hardening phase if this gate becomes part of the public release checklist.
+- Public registry smoke can add a direct `learn --signals --strict` path after publish if this gate becomes part of the post-publish release checklist.
 
 ## Phase 411 — Learning Signals Agent Development Backlog (unreleased)
 

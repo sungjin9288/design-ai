@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 413 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --signals --strict --json` so installed-bin and one-shot package paths verify the local AI/agent readiness gate after packaging.
 - **Phase 412 (unreleased)** — Added `design-ai learn --signals --strict` so the local learning signal registry and deterministic agent development backlog can fail a readiness gate without mutating files or calling external AI APIs.
 - **Phase 411 (unreleased)** — Added deterministic `agentDevelopment` backlog actions to `design-ai learn --signals`, ranking local AI/agent development next steps across profile audit, usage, eval harness, check-capture skill evolution, and workspace readiness without mutating files or calling external AI APIs.
 - **Phase 410 (unreleased)** — Recorded the post-Phase 409 scope decision boundary so future work chooses between push/Real-CI launch, deeper AI learning architecture, or broader product-surface expansion instead of continuing redundant release hardening.
@@ -39,6 +40,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 413 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --signals --strict --json` so installed-bin and one-shot package paths verify the local AI/agent readiness gate after packaging.
 - **Phase 412 (unreleased)** — Added `design-ai learn --signals --strict` so the local learning signal registry and deterministic agent development backlog can fail a readiness gate without mutating files or calling external AI APIs.
 - **Phase 411 (unreleased)** — Added deterministic `agentDevelopment` backlog actions to `design-ai learn --signals`, ranking local AI/agent development next steps across profile audit, usage, eval harness, check-capture skill evolution, and workspace readiness without mutating files or calling external AI APIs.
 - **Phase 410 (unreleased)** — Recorded the post-Phase 409 scope decision boundary so future work chooses between push/Real-CI launch, deeper AI learning architecture, or broader product-surface expansion instead of continuing redundant release hardening.

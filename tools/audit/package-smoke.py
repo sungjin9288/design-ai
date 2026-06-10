@@ -5496,6 +5496,7 @@ def assert_learning_signal_report_json(
     usage_path: Path,
     context: str,
     cmd: list[str],
+    require_agent_status_pass: bool = False,
 ) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5572,6 +5573,13 @@ def assert_learning_signal_report_json(
         cmd=cmd,
         message="learn signals JSON should include agent development backlog actions",
     )
+    if require_agent_status_pass:
+        require_package_smoke(
+            agent_development.get("status") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn signals JSON should include passing agent development backlog actions",
+        )
     agent_privacy = agent_development.get("privacy") if isinstance(agent_development, dict) else None
     require_package_smoke(
         isinstance(agent_privacy, dict)
@@ -6321,7 +6329,19 @@ def assert_learning_relevance_smoke(
         cmd=usage_out_cmd,
     )
 
+    profile_payload = json.loads(profile_path.read_text(encoding="utf-8"))
+    profile_payload["entries"].append({
+        "id": "learn-check-capture",
+        "category": "workflow",
+        "text": "Improve future outputs by addressing Responsive QA coverage: Add desktop and mobile verification notes.",
+        "source": "check:artifact",
+        "createdAt": "2026-05-22T00:00:03.000Z",
+    })
+    profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
+
     signal_dir = profile_path.parent
+    signal_workspace_root = profile_path.with_name(f"{profile_path.stem}-signals-workspace")
+    prepare_workspace_strict_repo(signal_workspace_root)
     route_signal_path = signal_dir / "route-eval-report.json"
     route_signal_path.write_text(
         json.dumps({
@@ -6357,7 +6377,7 @@ def assert_learning_relevance_smoke(
         "--from-file",
         str(signal_dir),
     )
-    signals_human_result = run_plain(signals_human_cmd, cwd=cwd, env=relevance_env)
+    signals_human_result = run_plain(signals_human_cmd, cwd=signal_workspace_root, env=relevance_env)
     assert_learning_signal_report_human(
         signals_human_result.stdout,
         context=f"{context} learn signals human",
@@ -6375,13 +6395,35 @@ def assert_learning_relevance_smoke(
         str(signal_dir),
         "--json",
     )
-    signals_json_result = run_plain(signals_json_cmd, cwd=cwd, env=relevance_env)
+    signals_json_result = run_plain(signals_json_cmd, cwd=signal_workspace_root, env=relevance_env)
     assert_learning_signal_report_json(
         signals_json_result.stdout,
         profile_path=profile_path,
         usage_path=usage_path,
         context=f"{context} learn signals JSON",
         cmd=signals_json_cmd,
+    )
+
+    signals_strict_json_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    signals_strict_json_result = run_plain(signals_strict_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_learning_signal_report_json(
+        signals_strict_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals strict JSON",
+        cmd=signals_strict_json_cmd,
+        require_agent_status_pass=True,
     )
 
     signals_out_path = profile_path.with_name(f"{profile_path.stem}-signals-out.json")
@@ -6400,7 +6442,7 @@ def assert_learning_relevance_smoke(
         str(signals_out_path),
         "--force",
     )
-    signals_out_result = run_plain(signals_out_cmd, cwd=cwd, env=relevance_env)
+    signals_out_result = run_plain(signals_out_cmd, cwd=signal_workspace_root, env=relevance_env)
     assert_output_write_success(
         signals_out_result.stdout,
         context=f"{context} learn signals out",
@@ -8857,6 +8899,24 @@ def run_self_test() -> None:
                 cmd=learn_signals_cmd,
             ),
             expected="learn signals JSON should include route eval signal files",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "agentDevelopment": {
+                        **learning_signal_payload["agentDevelopment"],
+                        "status": "warn",
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+                require_agent_status_pass=True,
+            ),
+            expected="learn signals JSON should include passing agent development backlog actions",
             scope="package smoke",
         )
         expect_self_test_failure(
