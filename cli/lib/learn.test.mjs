@@ -306,6 +306,10 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(signalsArgs.usageFilePath, path.resolve("learning.usage.json"));
   assert.equal(signalsArgs.json, true);
 
+  const strictSignalsArgs = parseLearnArgs(["--signals", "--strict", "--json"]);
+  assert.equal(strictSignalsArgs.action, "signals");
+  assert.equal(strictSignalsArgs.strict, true);
+
   const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
@@ -451,7 +455,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--strict"]),
-    /--strict can only be used with --eval/,
+    /--strict can only be used with --eval or --signals/,
   );
   assert.throws(
     () => parseLearnArgs(["--eval"]),
@@ -3307,6 +3311,65 @@ test("runLearn --signals reports registry JSON and human output without mutating
   assert.match(humanOutput, /Agent development backlog:/);
   assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: signal registry is read-only/);
+}));
+
+test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-workflow",
+        category: "workflow",
+        text: "Prefer deterministic local agent development gates.",
+        source: "test",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--signals",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.agentDevelopment.status, "warn");
+    assert.equal(process.exitCode, 1);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--signals",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
 }));
 
 test("buildSkillEvolutionProposals groups repeated check captures into preview-only skill deltas", () => withTempDir((dir) => {

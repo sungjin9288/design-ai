@@ -75,14 +75,16 @@ Implemented `design-ai learn --signals` as a read-only registry report that join
 - usage sidecar
 - route/prompt/pack/learning eval signal files
 - check learning capture entries
+- deterministic agent development backlog actions
 - workspace readiness
 
 ```bash
 design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file . --strict --json
 design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
 ```
 
-This exposes drift without changing the learning profile, calling external AI APIs, adding dependencies, or storing raw brief text.
+This exposes drift without changing the learning profile, calling external AI APIs, adding dependencies, or storing raw brief text. Use `--strict` when the signal registry and agent development backlog should behave like a local deterministic gate.
 
 ### Phase 274: skill evolution proposals
 

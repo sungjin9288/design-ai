@@ -44,10 +44,11 @@ Prompt eval은 context bundle을 만들기 전 prompt plan을 검사합니다. P
 
 ```bash
 design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file . --strict --json
 design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
 ```
 
-`--from-file`은 단일 eval signal file이나 `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, `learning-eval*.json` report가 들어 있는 directory를 받을 수 있어요. 이 명령은 `learning.json`을 수정하지 않고, 외부 AI API도 호출하지 않으며, 로컬 metadata와 짧은 check-capture text preview만 노출합니다.
+`--from-file`은 단일 eval signal file이나 `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, `learning-eval*.json` report가 들어 있는 directory를 받을 수 있어요. 이 명령은 `learning.json`을 수정하지 않고, 외부 AI API도 호출하지 않으며, 로컬 metadata와 짧은 check-capture text preview만 노출합니다. Signal registry나 agent development backlog가 warn/fail일 때 local gate를 실패시키려면 `--strict`를 붙이세요.
 
 ## Claude Code
 

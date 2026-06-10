@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 412 — Learning Signals Strict Agent Gate (unreleased)
+
+`design-ai learn --signals --strict` now exits non-zero when the signal registry or deterministic `agentDevelopment` backlog is not `pass`. This turns the Phase 411 backlog into a local gate for AI/agent development readiness while keeping the command read-only, local, and dependency-free.
+
+### Changed
+- Allowed `--strict` with `learn --signals` in addition to `learn --eval`.
+- Applied strict exit handling after JSON or human `learn --signals` output is emitted.
+- Updated learn help, README command lists, usage docs, and agent development docs with the strict signal gate.
+- Added unit coverage for parser support and non-zero strict exit behavior.
+
+### Impact
+- Local scripts can now fail on warning/failing learning signal registry or agent backlog status without running external AI APIs or mutating `learning.json`.
+- This does not add embeddings, fine-tuning, online model calls, telemetry, backend storage, auth, multi-user sync, target website repo mutation, or new dependencies.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Package smoke can add a direct `learn --signals --strict` packed-tarball path in a future release-hardening phase if this gate becomes part of the public release checklist.
+
 ## Phase 411 — Learning Signals Agent Development Backlog (unreleased)
 
 `design-ai learn --signals` now turns the existing local learning, usage sidecar, eval checkpoint, check-capture, and workspace readiness summaries into a deterministic `agentDevelopment` backlog. The backlog ranks profile audit, usage recording, eval harness replay, check-capture skill evolution, and workspace readiness actions without adding dependencies, changing `learning.json`, editing skill files, or calling external AI APIs.

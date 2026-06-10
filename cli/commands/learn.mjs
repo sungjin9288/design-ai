@@ -68,7 +68,7 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
@@ -107,11 +107,11 @@ function printHelp() {
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
-  console.log("  --signals            Summarize local learning, usage, eval, check-capture, and workspace readiness signals without changing files");
+  console.log("  --signals            Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files");
   console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
-  console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
+  console.log("  --strict             With --eval or --signals, exit non-zero when any checkpoint or signal gate warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
@@ -931,6 +931,15 @@ function applyEvalStrictExit(parsed, payload) {
   }
 }
 
+function applySignalsStrictExit(parsed, payload) {
+  if (
+    parsed.strict
+    && (payload.status !== "pass" || payload.agentDevelopment?.status !== "pass")
+  ) {
+    process.exitCode = 1;
+  }
+}
+
 function printInit(payload) {
   header("design-ai learn", payload.dryRun ? "Learning profile init preview" : "Learning profile init applied");
   info(`File: ${payload.file}`);
@@ -1333,9 +1342,11 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      applySignalsStrictExit(parsed, payload);
       return;
     }
     printSignals(payload);
+    applySignalsStrictExit(parsed, payload);
     return;
   }
 

@@ -443,8 +443,8 @@ export function parseLearnArgs(args) {
   if (out.report && out.json) {
     throw new Error("Choose either --json or --report for --curate");
   }
-  if (out.strict && out.action !== "eval") {
-    throw new Error("--strict can only be used with --eval");
+  if (out.strict && !["eval", "signals"].includes(out.action)) {
+    throw new Error("--strict can only be used with --eval or --signals");
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");

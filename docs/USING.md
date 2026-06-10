@@ -44,10 +44,11 @@ Use the learning signal registry when you want one read-only snapshot that joins
 
 ```bash
 design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file . --strict --json
 design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
 ```
 
-`--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews.
+`--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews. Add `--strict` when you want the signal registry or agent development backlog to fail a local gate on warn/fail status.
 
 ## Skill evolution proposals
 
