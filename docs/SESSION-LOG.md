@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 422 (unreleased)** — Isolated local portfolio/evidence output artifacts from link audit and npm package contents checks so `npm run release:check` passes without deleting portfolio files.
 - **Phase 421 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact smoke phrase.
 - **Phase 420 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --report --out skill-proposals.md` so installed-bin and one-shot package paths verify Markdown review artifact persistence.
 - **Phase 419 (unreleased)** — Added `design-ai learn --propose-skills --report --out skill-proposals.md` so preview-only skill proposal evidence can be saved as a Markdown review artifact before manual skill edits.
@@ -48,6 +49,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 422 (unreleased)** — Isolated local portfolio/evidence output artifacts from link audit and npm package contents checks so `npm run release:check` passes without deleting portfolio files.
 - **Phase 421 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact smoke phrase.
 - **Phase 420 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --report --out skill-proposals.md` so installed-bin and one-shot package paths verify Markdown review artifact persistence.
 - **Phase 419 (unreleased)** — Added `design-ai learn --propose-skills --report --out skill-proposals.md` so preview-only skill proposal evidence can be saved as a Markdown review artifact before manual skill edits.

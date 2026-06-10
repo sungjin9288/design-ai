@@ -213,6 +213,9 @@ def load_plugin_json() -> dict:
 
 
 def matches_package_files_exclusion(path: str, pattern: str) -> bool:
+    normalized_pattern = pattern.rstrip("/")
+    if path == normalized_pattern or path.startswith(f"{normalized_pattern}/"):
+        return True
     if pattern == "**/__pycache__/**":
         return "/__pycache__/" in f"/{path}"
     if pattern == "**/*.pyc":

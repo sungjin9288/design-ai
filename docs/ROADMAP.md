@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 422 — Local Portfolio Artifact Release Gate Isolation (unreleased)
+
+Release gates now tolerate local portfolio/evidence output artifacts without deleting or editing those artifacts. The link audit and package contents checks distinguish repository release assets from local portfolio exports so `npm run release:check` can run in the same working tree used for portfolio evidence collection.
+
+### Changed
+- Skipped `evidence/` and `_portfolio_export/` in the internal link audit because those directories contain local output artifacts with links outside the package/docs release surface.
+- Excluded local portfolio docs under `docs/` from npm package contents so untracked portfolio pages do not introduce broken package links to non-packaged screenshots.
+- Updated the package contents self-test helper so exact and directory-style `files` negation patterns are handled consistently.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- `npm run release:check` can pass in a workspace that also contains local portfolio/evidence exports.
+- No portfolio files were deleted or modified.
+- CLI runtime behavior, package command behavior, learning profiles, skill files, external AI/API boundaries, target repo boundaries, and dependency surface remain unchanged.
+
+### Verified
+- `python3 -m py_compile tools/audit/link-check.py tools/audit/package-contents.py`
+- `python3 -B tools/audit/link-check.py`
+- `npm run audit:strict`
+- `python3 -B tools/audit/package-contents.py --self-test`
+- `npm run package:check`
+- `npm run release:check`
+
+### What's still ahead
+- Continue product/AI learning development or prepare the current branch for push when ready.
+
 ## Phase 421 — Skill Proposal Markdown Release Metadata Guard (unreleased)
 
 Release metadata now protects the packed-tarball `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact smoke phrase across release-facing policy docs. This closes the Phase 420 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged Markdown report coverage.
