@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 417 — Skill Proposal Strict Package Smoke Metadata Guard (unreleased)
+
+Release metadata now guards the packed-tarball `design-ai learn --propose-skills --strict --json` expected-failure smoke phrase in release-facing docs. This keeps the Phase 416 package evidence visible in README, Distribution, and Release checklist guidance.
+
+### Changed
+- Added a release metadata phrase guard for packed strict skill proposal smoke coverage.
+- Added release metadata self-test drift coverage that fails when README drops the strict skill proposal package smoke phrase.
+- Tightened Release checklist wording so it names the exact `design-ai learn --propose-skills --strict --json` expected-failure gate.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release docs now preserve the installed-bin and one-shot package strict skill proposal readiness gate alongside package smoke coverage.
+- This remains docs/metadata only: no runtime CLI behavior change, learning schema change, skill file mutation, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
 ## Phase 416 — Skill Proposal Strict Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now executes `design-ai learn --propose-skills --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths as an expected-failure gate when pending proposal review remains.

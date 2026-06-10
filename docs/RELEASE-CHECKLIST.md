@@ -25,6 +25,8 @@ Packed-tarball smoke guidance must also retain `design-ai learn --signals` learn
 
 Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills` preview-only skill proposal coverage for human, JSON, and `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
+Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills --strict --json` expected-failure skill proposal readiness gate coverage in installed-bin and one-shot `npm exec --package <tarball>` paths.
+
 Packed-tarball smoke guidance must also retain non-empty Website Console `implementationEvidence` count verification through evidence bundle check, compare, and handoff JSON plus `design-ai site <bundle-dir> --bundle-repair --yes --json` Website Console bundle repair preview/apply drift recovery with repair report `--out file` output-file persistence, shared repair guidance smoke helpers, and shared repair report assertion helpers in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 For pre-push Real-CI parity, run the broader local workflow gate:
