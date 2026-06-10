@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 416 — Skill Proposal Strict Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths as an expected-failure gate when pending proposal review remains.
+
+### Changed
+- Added strict skill proposal expected-failure smoke execution to package smoke's installed-bin and one-shot package paths.
+- Tightened package smoke proposal assertions so JSON status and human status output remain visible.
+- Added package smoke self-test drift coverage for proposal status and strict exit-code behavior.
+- Updated changelog, roadmap, session history, and distribution guidance.
+
+### Impact
+- Packaged internal/company builds now verify the strict skill proposal readiness gate, not only source-tree unit tests.
+- This remains preview-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
 ## Phase 415 — Skill Proposal Strict Readiness Gate (unreleased)
 
 `design-ai learn --propose-skills --strict` now turns preview-only skill evolution proposals into a local readiness gate. Pending proposal review or upstream learning signal warnings exit non-zero, but the command still does not edit `learning.json`, does not edit skill files, and does not call external AI APIs.

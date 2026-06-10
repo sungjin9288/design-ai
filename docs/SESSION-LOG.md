@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 416 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --strict --json` so installed-bin and one-shot package paths verify the preview-only skill proposal readiness gate after packaging.
 - **Phase 415 (unreleased)** — Added `design-ai learn --propose-skills --strict` so preview-only skill proposal review can fail a local AI/agent development readiness gate without mutating learning profiles or skill files.
 - **Phase 414 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --strict --json` smoke phrase so release-facing docs keep the strict local AI/agent readiness gate visible.
 - **Phase 413 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --signals --strict --json` so installed-bin and one-shot package paths verify the local AI/agent readiness gate after packaging.
@@ -42,6 +43,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 416 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --strict --json` so installed-bin and one-shot package paths verify the preview-only skill proposal readiness gate after packaging.
 - **Phase 415 (unreleased)** — Added `design-ai learn --propose-skills --strict` so preview-only skill proposal review can fail a local AI/agent development readiness gate without mutating learning profiles or skill files.
 - **Phase 414 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --strict --json` smoke phrase so release-facing docs keep the strict local AI/agent readiness gate visible.
 - **Phase 413 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --signals --strict --json` so installed-bin and one-shot package paths verify the local AI/agent readiness gate after packaging.

@@ -5631,8 +5631,17 @@ def assert_skill_proposal_report_json(
     usage_path: Path,
     context: str,
     cmd: list[str],
+    returncode: int | None = None,
+    expect_status: str = "warn",
 ) -> None:
     assert_no_ansi(raw, cmd)
+    if returncode is not None:
+        require_package_smoke(
+            returncode == 1,
+            context=context,
+            cmd=cmd,
+            message="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
+        )
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -5651,6 +5660,12 @@ def assert_skill_proposal_report_json(
         context=context,
         cmd=cmd,
         message="learn skill proposals must remain preview-only",
+    )
+    require_package_smoke(
+        payload.get("status") == expect_status,
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposals JSON should report {expect_status!r} status when proposals need review",
     )
     require_package_smoke(
         payload.get("checkCaptureCount") >= 2
@@ -5699,6 +5714,7 @@ def assert_skill_proposal_report_human(
     for expected in (
         "Skill evolution proposals",
         "Signal source:",
+        "Status: warn",
         "Proposed skill deltas:",
         "skills/component-spec-writer/SKILL.md",
         "No changes made. This command is preview-only",
@@ -6540,6 +6556,39 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals JSON",
         cmd=skill_proposals_json_cmd,
         message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    skill_proposals_strict_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    run_expected_failure(
+        skill_proposals_strict_json_cmd,
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn skill proposals strict JSON",
+        assertion=lambda raw, *, returncode, context, cmd: assert_skill_proposal_report_json(
+            raw,
+            profile_path=proposal_profile_path,
+            usage_path=proposal_usage_path,
+            context=context,
+            cmd=cmd,
+            returncode=returncode,
+        ),
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals strict JSON",
+        cmd=skill_proposals_strict_json_cmd,
+        message="learn skill proposals strict JSON output must not mutate the profile",
     )
 
     skill_proposals_out_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-out.json")
@@ -8982,6 +9031,7 @@ def run_self_test() -> None:
             "count": 1,
             "proposalCount": 1,
             "skippedCount": 0,
+            "status": "warn",
             "signalStatus": "pass",
             "proposals": [
                 {
@@ -9037,6 +9087,7 @@ def run_self_test() -> None:
                 "design-ai learn",
                 "Skill evolution proposals",
                 f"Signal source: {Path(tmp)}",
+                "Status: warn",
                 "Proposed skill deltas:",
                 "skills/component-spec-writer/SKILL.md",
                 "No changes made. This command is preview-only",
@@ -9056,6 +9107,40 @@ def run_self_test() -> None:
                 cmd=learn_skill_proposals_cmd,
             ),
             expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+            scope="package smoke",
+        )
+        assert_skill_proposal_report_json(
+            json.dumps(learning_skill_proposal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+            returncode=1,
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "status": "pass",
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals JSON should report 'warn' status when proposals need review",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps(learning_skill_proposal_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+                returncode=0,
+            ),
+            expected="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
             scope="package smoke",
         )
 
