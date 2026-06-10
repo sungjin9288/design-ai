@@ -313,10 +313,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(strictSignalsArgs.action, "signals");
   assert.equal(strictSignalsArgs.strict, true);
 
-  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--strict", "--json"]);
+  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--min-evidence", "3", "--strict", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
   assert.equal(proposeSkillsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(proposeSkillsArgs.minEvidenceCount, 3);
   assert.equal(proposeSkillsArgs.strict, true);
   assert.equal(proposeSkillsArgs.json, true);
 
@@ -442,6 +443,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
     /--usage-file can only be used with --usage, --curate, --signals, or --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--min-evidence", "0"]),
+    /--min-evidence expects an integer from 1 to 100/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--signals", "--min-evidence", "2"]),
+    /--min-evidence can only be used with --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--backup-file", "learning-before-restore.json"]),
@@ -3451,6 +3460,49 @@ test("buildSkillEvolutionProposals groups repeated check captures into preview-o
   assert.equal(payload.privacy.mutatesSkillFiles, false);
 }));
 
+test("buildSkillEvolutionProposals honors custom minimum evidence threshold", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No tablet behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    minEvidenceCount: 3,
+    signalRegistryProvider: ({ signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+    }),
+  });
+
+  assert.equal(payload.minEvidenceCount, 3);
+  assert.equal(payload.proposalCount, 0);
+  assert.equal(payload.skippedCount, 1);
+  assert.match(payload.skipped[0].reason, /Needs at least 3/);
+  assert.equal(payload.status, "pass");
+}));
+
 test("renderSkillEvolutionProposalReport emits reviewer-friendly Markdown without apply semantics", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   const usageFile = defaultLearningUsageFile(filePath);
@@ -3492,6 +3544,7 @@ test("renderSkillEvolutionProposalReport emits reviewer-friendly Markdown withou
 
   assert.match(report, /^# Skill Evolution Proposal Report/);
   assert.match(report, /Status: warn/);
+  assert.match(report, /Minimum evidence: 2/);
   assert.match(report, /## Proposed Skill Deltas/);
   assert.match(report, /skills\/component-spec-writer\/SKILL\.md/);
   assert.match(report, /```bash\nnode cli\/bin\/design-ai\.mjs check --examples --route component-spec --limit 1 --strict --json\n```/);
@@ -3538,11 +3591,14 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
     usageFile,
     "--from-file",
     dir,
+    "--min-evidence",
+    "2",
     "--json",
   ]));
   const payload = JSON.parse(jsonOutput);
   assert.equal(payload.file, filePath);
   assert.equal(payload.status, "warn");
+  assert.equal(payload.minEvidenceCount, 2);
   assert.equal(payload.proposalCount, 1);
   assert.equal(payload.proposals[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
   assert.equal(payload.privacy.mutatesSkillFiles, false);
@@ -3559,6 +3615,7 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
   ]));
   assert.match(humanOutput, /Skill evolution proposals/);
   assert.match(humanOutput, /Status: warn/);
+  assert.match(humanOutput, /Min evidence: 2/);
   assert.match(humanOutput, /Proposed skill deltas:/);
   assert.match(humanOutput, /skills\/website-improvement\/SKILL\.md/);
   assert.match(humanOutput, /No changes made/);

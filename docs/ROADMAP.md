@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 423 — Skill Proposal Minimum Evidence Threshold (unreleased)
+
+`design-ai learn --propose-skills` now accepts `--min-evidence N` so local AI/agent development reviews can tune how much repeated check-capture evidence is required before a candidate skill delta appears.
+
+### Changed
+- Added `--min-evidence N` parsing and validation for `learn --propose-skills`.
+- Passed the threshold into the preview-only skill proposal builder and exposed the effective threshold in JSON, human output, and Markdown reports.
+- Updated help output, CLI help catalog, smoke assertion expectations, AI learning docs, usage docs, distribution docs, README, Korean README, changelog, roadmap, and session history.
+- Added unit coverage for parser validation, threshold-driven skipped groups, help output, and report threshold visibility.
+
+### Impact
+- Operators can keep the default threshold of 2, raise it for stricter internal skill review, or lower it for early dogfood review without editing `learning.json` or skill files.
+- The command remains deterministic, local, preview-only, and non-mutating: no external AI API, embeddings, fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/commands/learn.mjs && node --check cli/lib/learn.mjs && node --check cli/lib/skill-proposals.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- Manual CLI smoke: `design-ai learn --propose-skills --min-evidence 3 --json` reports `minEvidenceCount: 3`, `proposalCount: 0`, and `skippedCount: 1` for a two-entry repeated check-capture profile.
+
+### What's still ahead
+- Add packed-tarball smoke coverage for `--min-evidence` if this option becomes a release-facing package contract.
+
 ## Phase 422 — Local Portfolio Artifact Release Gate Isolation (unreleased)
 
 Release gates now tolerate local portfolio/evidence output artifacts without deleting or editing those artifacts. The link audit and package contents checks distinguish repository release assets from local portfolio exports so `npm run release:check` can run in the same working tree used for portfolio evidence collection.

@@ -72,7 +72,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--min-evidence N] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -112,6 +112,7 @@ function printHelp() {
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --signals            Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files");
   console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
+  console.log("  --min-evidence N     With --propose-skills, require N related check-capture entries before emitting a proposal. Default: 2");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --strict             With --eval, --signals, or --propose-skills, exit non-zero when any checkpoint, signal gate, or skill proposal gate warns or fails");
@@ -158,6 +159,7 @@ function printHelp() {
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
+  console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
@@ -600,6 +602,7 @@ function printSkillProposals(payload) {
   info(`Status: ${payload.status}`);
   info(`Signal source: ${payload.signalSource}`);
   info(`Signal status: ${payload.signalStatus}`);
+  info(`Min evidence: ${payload.minEvidenceCount}`);
   info(`Check capture entries: ${payload.checkCaptureCount}`);
   info(`Candidates: ${payload.candidateCount}`);
   info(`Proposals: ${payload.proposalCount}`);
@@ -1367,6 +1370,7 @@ export async function runLearn(args) {
       usageFile: parsed.usageFilePath,
       signalSource: parsed.fromFile,
       root: process.cwd(),
+      minEvidenceCount: parsed.minEvidenceCount || undefined,
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);

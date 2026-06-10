@@ -60,6 +60,7 @@ const LEARN_OPTIONS = [
   "--clear",
   "--category",
   "--limit",
+  "--min-evidence",
   "--keep",
   "--file",
   "--usage-file",
@@ -221,6 +222,14 @@ export function parseLearningKeep(rawKeep) {
   return keep;
 }
 
+export function parseLearningMinEvidence(rawMinEvidence) {
+  const minEvidence = Number(rawMinEvidence);
+  if (!Number.isInteger(minEvidence) || minEvidence < 1 || minEvidence > 100) {
+    throw new Error("--min-evidence expects an integer from 1 to 100");
+  }
+  return minEvidence;
+}
+
 export function parseLearnArgs(args) {
   const out = {
     action: "",
@@ -240,6 +249,7 @@ export function parseLearnArgs(args) {
     explain: false,
     forgetTarget: "",
     limit: 0,
+    minEvidenceCount: 0,
     keep: 0,
     fix: false,
     prune: false,
@@ -343,6 +353,11 @@ export function parseLearnArgs(args) {
       if (!limit || limit.startsWith("--")) throw new Error("--limit expects an integer from 1 to 100");
       out.limit = parseLearningLimit(limit);
       i += 1;
+    } else if (arg === "--min-evidence") {
+      const minEvidence = args[i + 1];
+      if (!minEvidence || minEvidence.startsWith("--")) throw new Error("--min-evidence expects an integer from 1 to 100");
+      out.minEvidenceCount = parseLearningMinEvidence(minEvidence);
+      i += 1;
     } else if (arg === "--keep") {
       const keep = args[i + 1];
       if (!keep || keep.startsWith("--")) throw new Error("--keep expects an integer from 1 to 100");
@@ -433,6 +448,9 @@ export function parseLearnArgs(args) {
   }
   if (out.usageFilePath && !["usage", "curate", "signals", "propose-skills"].includes(out.action)) {
     throw new Error("--usage-file can only be used with --usage, --curate, --signals, or --propose-skills");
+  }
+  if (out.minEvidenceCount && out.action !== "propose-skills") {
+    throw new Error("--min-evidence can only be used with --propose-skills");
   }
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");

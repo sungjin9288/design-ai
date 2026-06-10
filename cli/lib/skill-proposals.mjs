@@ -298,6 +298,7 @@ export function renderSkillEvolutionProposalReport(payload, {
     listItem("Signal source", payload.signalSource),
     listItem("Status", payload.status),
     listItem("Signal status", payload.signalStatus),
+    listItem("Minimum evidence", payload.minEvidenceCount),
     listItem("Check capture entries", payload.checkCaptureCount),
     listItem("Candidate groups", payload.candidateCount),
     listItem("Proposal count", payload.proposalCount),
