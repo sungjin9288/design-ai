@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 420 — Skill Proposal Markdown Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --report --out skill-proposals.md` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between the Phase 419 Markdown review artifact and packaged CLI verification.
+
+### Changed
+- Added package smoke assertions for skill proposal Markdown report content, including profile/usage paths, candidate skill, verification command, privacy boundaries, and preview-only next steps.
+- Added installed-bin and one-shot package smoke execution for `learn --propose-skills --report --out`.
+- Added package smoke self-test drift coverage for the Markdown report privacy boundary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the reviewer-friendly skill proposal Markdown artifact, not only human console, JSON, JSON `--out`, and strict JSON paths.
+- The smoke remains local and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Release metadata can add a dedicated phrase guard for the Markdown report smoke if release-facing docs need stricter drift protection than the existing package smoke self-test.
+
 ## Phase 419 — Skill Proposal Markdown Review Reports (unreleased)
 
 `design-ai learn --propose-skills` can now emit a Markdown review artifact with `--report --out skill-proposals.md`. This gives the local AI/agent learning loop a durable human-review handoff before any skill file is edited manually.

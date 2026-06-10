@@ -5727,6 +5727,39 @@ def assert_skill_proposal_report_human(
         )
 
 
+def assert_skill_proposal_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Skill Evolution Proposal Report",
+        f"- File: {profile_path}",
+        f"- Usage sidecar: {usage_path}",
+        "- Status: warn",
+        "## Proposed Skill Deltas",
+        "skills/component-spec-writer/SKILL.md",
+        "Proposed instruction delta:",
+        "```bash",
+        "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is preview-only evidence; it does not apply changes.",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals Markdown report missing {expected!r}",
+        )
+
+
 def assert_learning_eval_report_json(
     raw: str,
     *,
@@ -6620,6 +6653,43 @@ def assert_learning_relevance_smoke(
         usage_path=proposal_usage_path,
         context=f"{context} learn skill proposals out file",
         cmd=skill_proposals_out_cmd,
+    )
+
+    skill_proposals_report_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-report.md")
+    skill_proposals_report_path.write_text("stale skill proposal Markdown report\n", encoding="utf-8")
+    skill_proposals_report_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(skill_proposals_report_path),
+        "--force",
+    )
+    skill_proposals_report_result = run_plain(skill_proposals_report_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_report_result.stdout,
+        context=f"{context} learn skill proposals Markdown report out",
+        cmd=skill_proposals_report_cmd,
+        expected_path=str(skill_proposals_report_path),
+    )
+    assert_skill_proposal_report_markdown(
+        skill_proposals_report_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals Markdown report out file",
+        cmd=skill_proposals_report_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals Markdown report out",
+        cmd=skill_proposals_report_cmd,
+        message="learn skill proposals Markdown report output must not mutate the profile",
     )
 
     eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
@@ -9095,6 +9165,70 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_skill_proposals_cmd,
         )
+        learning_skill_proposal_markdown = "\n".join([
+            "# Skill Evolution Proposal Report",
+            "",
+            "- Generated: 2026-06-02T00:00:03.000Z",
+            f"- File: {learning_profile_path}",
+            f"- Usage sidecar: {learning_usage_path}",
+            f"- Signal source: {Path(tmp)}",
+            "- Status: warn",
+            "- Signal status: pass",
+            "- Check capture entries: 2",
+            "- Candidate groups: 1",
+            "- Proposal count: 1",
+            "- Skipped groups: 0",
+            "- Dry run: yes",
+            "- Applied: no",
+            "",
+            "## Proposed Skill Deltas",
+            "",
+            "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+            "",
+            "- Proposal id: skill-proposal-component-spec-writer-abc123",
+            "- Candidate skill: skills/component-spec-writer/SKILL.md",
+            "- Category: accessibility",
+            "- Routes: component-spec",
+            "- Risk: low",
+            "- Source issues: 2",
+            "- Rationale: Repeated accessibility check captures were recorded for component-spec.",
+            "",
+            "Proposed instruction delta:",
+            "",
+            "> Add a pre-handoff accessibility checkpoint.",
+            "",
+            "Verification:",
+            "",
+            "```bash",
+            "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
+            "```",
+            "",
+            "Evidence:",
+            "- `learn-skill-proposal-a` [accessibility] check:component-spec",
+            "",
+            "## Skipped Groups",
+            "",
+            "No candidate groups were skipped.",
+            "",
+            "## Privacy And Boundaries",
+            "",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "- Stores raw brief text: no",
+            "- Includes entry text preview: yes",
+            "",
+            "## Next Steps",
+            "",
+            "- This report is preview-only evidence; it does not apply changes.",
+        ])
+        assert_skill_proposal_report_markdown(
+            learning_skill_proposal_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
         expect_self_test_failure(
             lambda: assert_skill_proposal_report_json(
                 json.dumps({
@@ -9107,6 +9241,17 @@ def run_self_test() -> None:
                 cmd=learn_skill_proposals_cmd,
             ),
             expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_markdown(
+                learning_skill_proposal_markdown.replace("- Mutates skill files: no", "- Mutates skill files: yes"),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals Markdown report missing '- Mutates skill files: no'",
             scope="package smoke",
         )
         assert_skill_proposal_report_json(
