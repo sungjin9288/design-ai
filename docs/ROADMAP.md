@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 434 — Full Release Check Evidence After Learning Guard Hardening (unreleased)
+
+The full `npm run release:check` gate now passes after the learning signal and skill proposal package smoke release metadata guard phases. This records that the latest local AI/agent learning artifact guards still work together through tests, audits, package checks, release metadata, release self-tests, and packed-tarball smoke.
+
+### Changed
+- Ran the full release check after Phase 429-433 learning signal and skill proposal package smoke guard hardening.
+- Recorded release evidence so the branch has a single current gate result before push or broader AI/agent feature work.
+- Updated changelog, roadmap, and session history with the passing gate.
+
+### Impact
+- Confirms the recent `learn --signals` and `learn --propose-skills` artifact guards do not weaken the release gate.
+- This is release evidence documentation only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `npm run release:check`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 433 — Learning Signals JSON Out Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball learn signals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining learning signal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
