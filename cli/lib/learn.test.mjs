@@ -3424,6 +3424,19 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     hasAfter: false,
     hasRefresh: true,
   });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateRunbook, {
+    before: [],
+    after: [],
+    refresh: [
+      {
+        phase: "refresh",
+        label: "Refresh focused agent backlog after review",
+        command: "design-ai learn --agent-backlog --strict --json",
+        required: true,
+      },
+    ],
+    other: [],
+  });
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {
       phase: "refresh",
@@ -3468,6 +3481,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
   assert.match(markdown, /Command effect review: No command target or mutation flag exposure detected/);
   assert.match(markdown, /Command effect gate phases: refresh \(1\/1 required\)/);
+  assert.match(markdown, /Command effect gate runbook: before 0, after 0, refresh 1/);
   assert.match(markdown, /Command effect gates:/);
   assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
@@ -3589,6 +3603,33 @@ test("agentBacklogReport classifies action plan command safety", () => {
     hasBefore: true,
     hasAfter: true,
     hasRefresh: true,
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateRunbook, {
+    before: [
+      {
+        phase: "before",
+        label: "Confirm clean workspace before execution",
+        command: "git status --short",
+        required: true,
+      },
+    ],
+    after: [
+      {
+        phase: "after",
+        label: "Inspect local file changes after execution",
+        command: "git diff --stat",
+        required: true,
+      },
+    ],
+    refresh: [
+      {
+        phase: "refresh",
+        label: "Refresh focused agent backlog after review",
+        command: "design-ai learn --agent-backlog --strict --json",
+        required: true,
+      },
+    ],
+    other: [],
   });
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {

@@ -5723,6 +5723,7 @@ def assert_agent_backlog_report_json(
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
+    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
@@ -5760,6 +5761,18 @@ def assert_agent_backlog_report_json(
         and gate_phase_summary.get("optionalCount", -1) >= 0
         and isinstance(gate_phase_summary.get("phases"), list)
         and gate_phase_summary.get("hasRefresh") is True
+        and isinstance(gate_runbook, dict)
+        and isinstance(gate_runbook.get("before"), list)
+        and isinstance(gate_runbook.get("after"), list)
+        and isinstance(gate_runbook.get("refresh"), list)
+        and isinstance(gate_runbook.get("other"), list)
+        and any(
+            isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is True
+            and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+            for item in gate_runbook.get("refresh", [])
+        )
         and isinstance(command_effect_review.get("gateCommands"), list)
         and any(
             isinstance(item, dict)
@@ -5856,6 +5869,7 @@ def assert_agent_backlog_report_human(
         "command effects:",
         "command effect review:",
         "command effect gate phases:",
+        "command effect gate runbook:",
         "command effect gates:",
         "refresh:",
         "safety: read-only",
@@ -10076,6 +10090,19 @@ def run_self_test() -> None:
                             "hasAfter": False,
                             "hasRefresh": True,
                         },
+                        "gateRunbook": {
+                            "before": [],
+                            "after": [],
+                            "refresh": [
+                                {
+                                    "phase": "refresh",
+                                    "label": "Refresh focused agent backlog after review",
+                                    "command": "design-ai learn --agent-backlog --strict --json",
+                                    "required": True,
+                                },
+                            ],
+                            "other": [],
+                        },
                         "gateCommands": [
                             {
                                 "phase": "refresh",
@@ -10216,6 +10243,7 @@ def run_self_test() -> None:
                 "command effects:",
                 "command effect review:",
                 "command effect gate phases:",
+                "command effect gate runbook:",
                 "command effect gates:",
                 "refresh:",
                 "safety: read-only",
@@ -10249,6 +10277,7 @@ def run_self_test() -> None:
                 "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                 "- Command effect review: No command target or mutation flag exposure detected.",
                 "- Command effect gate phases: refresh (1/1 required)",
+                "- Command effect gate runbook: before 0, after 0, refresh 1",
                 "- Command effect gates:",
                 "refresh: Refresh focused agent backlog after review",
                 "design-ai learn --agent-backlog --strict --json",
@@ -10390,6 +10419,7 @@ def run_self_test() -> None:
                     "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                     "- Command effect review: No command target or mutation flag exposure detected.",
                     "- Command effect gate phases: refresh (1/1 required)",
+                    "- Command effect gate runbook: before 0, after 0, refresh 1",
                     "- Command effect gates:",
                     "refresh: Refresh focused agent backlog after review",
                     "design-ai learn --agent-backlog --strict --json",

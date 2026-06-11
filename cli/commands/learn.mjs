@@ -663,6 +663,11 @@ function printAgentBacklog(payload) {
             : "none";
           console.log(`  ${dim(`command effect gate phases: ${phases} (${gatePhaseSummary.requiredCount || 0}/${gatePhaseSummary.count || 0} required)`)}`);
         }
+        const gateRunbook = effectReview.gateRunbook && typeof effectReview.gateRunbook === "object" ? effectReview.gateRunbook : null;
+        if (gateRunbook) {
+          const countFor = (phase) => Array.isArray(gateRunbook[phase]) ? gateRunbook[phase].length : 0;
+          console.log(`  ${dim(`command effect gate runbook: before ${countFor("before")}, after ${countFor("after")}, refresh ${countFor("refresh")}`)}`);
+        }
         const gateCommands = Array.isArray(effectReview.gateCommands) ? effectReview.gateCommands : [];
         if (gateCommands.length > 0) {
           const gateSummary = gateCommands

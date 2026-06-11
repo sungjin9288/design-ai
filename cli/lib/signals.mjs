@@ -529,12 +529,14 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
     required: true,
   });
   const gatePhaseSummary = summarizeAgentBacklogGateCommands(gateCommands);
+  const gateRunbook = groupAgentBacklogGateCommands(gateCommands);
   return {
     level,
     requiresOperatorReview: level !== "clear",
     headline,
     checklist,
     gatePhaseSummary,
+    gateRunbook,
     gateCommands,
   };
 }
@@ -554,6 +556,27 @@ function summarizeAgentBacklogGateCommands(gateCommands = []) {
     hasAfter: phases.includes("after"),
     hasRefresh: phases.includes("refresh"),
   };
+}
+
+function groupAgentBacklogGateCommands(gateCommands = []) {
+  const groups = {
+    before: [],
+    after: [],
+    refresh: [],
+    other: [],
+  };
+  const validCommands = Array.isArray(gateCommands)
+    ? gateCommands.filter((item) => item && typeof item === "object")
+    : [];
+  for (const item of validCommands) {
+    const phase = String(item.phase || "");
+    if (phase === "before" || phase === "after" || phase === "refresh") {
+      groups[phase].push(item);
+    } else {
+      groups.other.push(item);
+    }
+  }
+  return groups;
 }
 
 function buildAgentBacklogExecutionQueue(steps = []) {
@@ -1157,6 +1180,12 @@ export function renderAgentBacklogReport(payload, {
           ? gatePhaseSummary.phases.join(", ")
           : "none";
         lines.push(`- Command effect gate phases: ${phases} (${gatePhaseSummary.requiredCount ?? 0}/${gatePhaseSummary.count ?? 0} required)`);
+      }
+      const gateRunbook = commandEffectReview.gateRunbook && typeof commandEffectReview.gateRunbook === "object"
+        ? commandEffectReview.gateRunbook
+        : null;
+      if (gateRunbook) {
+        lines.push(`- Command effect gate runbook: before ${Array.isArray(gateRunbook.before) ? gateRunbook.before.length : 0}, after ${Array.isArray(gateRunbook.after) ? gateRunbook.after.length : 0}, refresh ${Array.isArray(gateRunbook.refresh) ? gateRunbook.refresh.length : 0}`);
       }
       const gateCommands = Array.isArray(commandEffectReview.gateCommands) ? commandEffectReview.gateCommands : [];
       if (gateCommands.length > 0) {
