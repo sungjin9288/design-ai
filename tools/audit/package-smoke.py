@@ -5754,6 +5754,58 @@ def assert_skill_proposal_review_json(
     )
 
 
+def assert_skill_proposal_review_template_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    expected_decision_count: int = 1,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal review-template JSON") from error
+
+    decisions = payload.get("decisions")
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("source") == "design-ai learn --propose-skills --review-template"
+        and payload.get("proposalFile") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path)
+        and isinstance(payload.get("reviewPolicy"), dict)
+        and payload["reviewPolicy"].get("clearsStrict") == ["applied", "rejected"]
+        and payload["reviewPolicy"].get("remainsPending") == ["accepted", "deferred"],
+        context=context,
+        cmd=cmd,
+        message="learn skill proposal review template JSON should describe review policy and source files",
+    )
+    require_package_smoke(
+        isinstance(decisions, list)
+        and len(decisions) == expected_decision_count,
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposal review template JSON should contain {expected_decision_count} pending decision scaffold(s)",
+    )
+    if expected_decision_count > 0:
+        require_package_smoke(
+            any(
+                isinstance(item, dict)
+                and str(item.get("proposalId", "")).startswith("skill-proposal-component-spec-writer-")
+                and item.get("status") == "deferred"
+                and item.get("reviewedAt") == ""
+                and item.get("reviewer") == ""
+                and "skills/component-spec-writer/SKILL.md" in str(item.get("note", ""))
+                for item in decisions
+            ),
+            context=context,
+            cmd=cmd,
+            message="learn skill proposal review template JSON should scaffold a deferred component-spec proposal decision",
+        )
+
+
 def assert_skill_proposal_min_evidence_json(
     raw: str,
     *,
@@ -6739,6 +6791,41 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals JSON",
         cmd=skill_proposals_json_cmd,
         message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    skill_proposals_review_template_path = proposal_profile_path.with_name(f"{proposal_profile_path.stem}.review-template.json")
+    skill_proposals_review_template_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--review-template",
+        "--out",
+        str(skill_proposals_review_template_path),
+    )
+    skill_proposals_review_template_result = run_plain(skill_proposals_review_template_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_review_template_result.stdout,
+        expected_path=str(skill_proposals_review_template_path),
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+    )
+    assert_skill_proposal_review_template_json(
+        skill_proposals_review_template_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+        message="learn skill proposals review-template output must not mutate the profile",
     )
 
     review_proposal_id = next(
@@ -9483,6 +9570,40 @@ def run_self_test() -> None:
             review_path=learning_skill_proposal_review_path,
             context=context,
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+        )
+        assert_skill_proposal_review_template_json(
+            json.dumps({
+                "version": 1,
+                "generatedAt": "2026-06-11T00:00:00.000Z",
+                "source": "design-ai learn --propose-skills --review-template",
+                "proposalFile": str(learning_profile_path),
+                "usageFile": str(learning_usage_path),
+                "signalSource": str(Path(tmp)),
+                "reviewFile": "",
+                "reviewPolicy": {
+                    "clearsStrict": ["applied", "rejected"],
+                    "remainsPending": ["accepted", "deferred"],
+                },
+                "summary": {
+                    "proposalCount": 1,
+                    "pendingReviewCount": 1,
+                    "reviewedCount": 0,
+                    "templateDecisionCount": 1,
+                },
+                "decisions": [
+                    {
+                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                        "status": "deferred",
+                        "reviewedAt": "",
+                        "reviewer": "",
+                        "note": "Review skills/component-spec-writer/SKILL.md: Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-template"],
         )
         assert_skill_proposal_min_evidence_json(
             json.dumps({

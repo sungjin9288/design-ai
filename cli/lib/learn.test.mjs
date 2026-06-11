@@ -334,6 +334,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(proposeSkillsPatchArgs.outPath, "skill-proposals.patch");
   assert.equal(proposeSkillsPatchArgs.force, true);
 
+  const proposeSkillsReviewTemplateArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--review-template", "--out", "skill-proposals.review.json", "--force"]);
+  assert.equal(proposeSkillsReviewTemplateArgs.action, "propose-skills");
+  assert.equal(proposeSkillsReviewTemplateArgs.reviewTemplate, true);
+  assert.equal(proposeSkillsReviewTemplateArgs.outPath, "skill-proposals.review.json");
+  assert.equal(proposeSkillsReviewTemplateArgs.force, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -456,6 +462,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
     /--review-file can only be used with --propose-skills/,
   );
   assert.throws(
+    () => parseLearnArgs(["--stats", "--review-template"]),
+    /--review-template can only be used with --propose-skills/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--propose-skills", "--min-evidence", "0"]),
     /--min-evidence expects an integer from 1 to 100/,
   );
@@ -493,6 +503,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--propose-skills", "--patch", "--report"]),
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--json", "--review-template"]),
     /Choose only one output mode/,
   );
   assert.throws(
@@ -3741,6 +3755,25 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(process.exitCode, 1);
     assert.equal(readFileSync(filePath, "utf8"), before);
 
+    process.exitCode = 0;
+    const reviewTemplateOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-template",
+    ]));
+    const reviewTemplatePayload = JSON.parse(reviewTemplateOutput);
+    assert.equal(reviewTemplatePayload.version, 1);
+    assert.equal(reviewTemplatePayload.source, "design-ai learn --propose-skills --review-template");
+    assert.equal(reviewTemplatePayload.summary.templateDecisionCount, 1);
+    assert.equal(reviewTemplatePayload.decisions[0].proposalId, strictPayload.proposals[0].id);
+    assert.equal(reviewTemplatePayload.decisions[0].status, "deferred");
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
     const reviewFile = path.join(dir, "skill-proposals.review.json");
     writeFileSync(reviewFile, JSON.stringify({
       version: 1,
@@ -3814,6 +3847,44 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     ]));
     assert.match(reviewedPatchOutput, /No pending skill proposal deltas remain after review-file decisions/);
     assert.doesNotMatch(reviewedPatchOutput, /diff --git/);
+
+    const reviewedTemplateFile = path.join(dir, "review-template.json");
+    const reviewedTemplateWriteOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      reviewFile,
+      "--review-template",
+      "--out",
+      reviewedTemplateFile,
+    ]));
+    assert.match(reviewedTemplateWriteOutput, /Wrote /);
+    const reviewedTemplatePayload = JSON.parse(readFileSync(reviewedTemplateFile, "utf8"));
+    assert.equal(reviewedTemplatePayload.summary.templateDecisionCount, 0);
+    assert.deepEqual(reviewedTemplatePayload.decisions, []);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+    assert.equal(readFileSync(reviewFile, "utf8"), JSON.stringify({
+      version: 1,
+      decisions: [
+        {
+          proposalId: strictPayload.proposals[0].id,
+          status: "applied",
+          reviewedAt: "2026-06-10T00:05:00.000Z",
+          reviewer: "local-operator",
+          note: "Instruction delta was manually reviewed and applied.",
+        },
+        {
+          proposalId: "skill-proposal-stale",
+          status: "rejected",
+          reviewedAt: "2026-06-09T00:00:00.000Z",
+        },
+      ],
+    }));
   } finally {
     process.exitCode = previousExitCode;
   }

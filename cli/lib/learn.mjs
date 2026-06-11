@@ -66,6 +66,7 @@ const LEARN_OPTIONS = [
   "--file",
   "--usage-file",
   "--review-file",
+  "--review-template",
   "--backup-file",
   "--yes",
 ];
@@ -260,6 +261,7 @@ export function parseLearnArgs(args) {
     strict: false,
     report: false,
     patch: false,
+    reviewTemplate: false,
     yes: false,
     json: false,
     help: false,
@@ -319,6 +321,8 @@ export function parseLearnArgs(args) {
       out.report = true;
     } else if (arg === "--patch") {
       out.patch = true;
+    } else if (arg === "--review-template") {
+      out.reviewTemplate = true;
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
@@ -463,6 +467,9 @@ export function parseLearnArgs(args) {
   if (out.reviewFilePath && out.action !== "propose-skills") {
     throw new Error("--review-file can only be used with --propose-skills");
   }
+  if (out.reviewTemplate && out.action !== "propose-skills") {
+    throw new Error("--review-template can only be used with --propose-skills");
+  }
   if (out.minEvidenceCount && out.action !== "propose-skills") {
     throw new Error("--min-evidence can only be used with --propose-skills");
   }
@@ -475,8 +482,8 @@ export function parseLearnArgs(args) {
   if (out.patch && out.action !== "propose-skills") {
     throw new Error("--patch can only be used with --propose-skills");
   }
-  if ([out.json, out.report, out.patch].filter(Boolean).length > 1) {
-    throw new Error("Choose only one output mode: --json, --report, or --patch");
+  if ([out.json, out.report, out.patch, out.reviewTemplate].filter(Boolean).length > 1) {
+    throw new Error("Choose only one output mode: --json, --report, --patch, or --review-template");
   }
   if (out.strict && !["eval", "signals", "propose-skills"].includes(out.action)) {
     throw new Error("--strict can only be used with --eval, --signals, or --propose-skills");
@@ -501,7 +508,7 @@ export function parseLearnArgs(args) {
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
     || (out.action === "curate" && out.report)
-    || (out.action === "propose-skills" && (out.report || out.patch));
+    || (out.action === "propose-skills" && (out.report || out.patch || out.reviewTemplate));
   if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
     throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, --propose-skills --report, or --propose-skills --patch");
   }

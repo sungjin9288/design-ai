@@ -1,5 +1,39 @@
 # Roadmap
 
+## Phase 428 — Skill Proposal Review Template Handoffs (unreleased)
+
+`design-ai learn --propose-skills --review-template --out skill-proposals.review.json` now emits a JSON review-file scaffold for unresolved skill proposals. This closes the operator workflow gap after Phase 427: users no longer need to copy proposal ids by hand before recording manual `applied`, `rejected`, `accepted`, or `deferred` decisions.
+
+### Changed
+- Added `--review-template` parsing for `learn --propose-skills` and rejected the option for unrelated learn actions.
+- Added a JSON review template renderer with review policy metadata, source file paths, summary counts, and one decision scaffold per unresolved proposal.
+- Defaulted generated decisions to `deferred` so the strict proposal gate stays pending until an operator deliberately changes a proposal to `applied` or `rejected`.
+- Excluded proposals already cleared by `applied` or `rejected` review-file decisions from generated templates.
+- Updated command help, shared smoke assertions, package smoke, AI learning docs, Product Readiness, README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for `--review-template --out skill-proposals.review.json` through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators get a safe review ledger starting point for local AI/agent skill evolution decisions without mutating `learning.json`, skill files, or an existing review file.
+- The feature remains deterministic, local, and non-mutating except for explicit `--out` artifact writes: no skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs && node --check cli/commands/help.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 427 — Skill Proposal Review State (unreleased)
 
 `design-ai learn --propose-skills` now accepts `--review-file skill-proposals.review.json` to join manual proposal decisions without mutating the learning profile, skill files, or the review file. This gives local AI/agent skill-evolution work a deterministic way to distinguish unresolved proposals from proposals that were manually applied or rejected.

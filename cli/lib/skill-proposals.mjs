@@ -546,6 +546,43 @@ export function renderSkillEvolutionProposalPatch(payload, {
   return `${lines.join("\n")}\n`;
 }
 
+export function renderSkillProposalReviewTemplate(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const proposals = Array.isArray(payload.proposals)
+    ? payload.proposals.filter((proposal) => !proposal.reviewClearsStrict)
+    : [];
+  const decisions = proposals.map((proposal) => ({
+    proposalId: proposal.id,
+    status: proposal.reviewStatus && proposal.reviewStatus !== "pending" ? proposal.reviewStatus : "deferred",
+    reviewedAt: "",
+    reviewer: "",
+    note: `Review ${proposal.candidateSkillPath}: ${proposal.title}`,
+  }));
+
+  return `${JSON.stringify({
+    version: 1,
+    generatedAt: generatedAtText,
+    source: "design-ai learn --propose-skills --review-template",
+    proposalFile: payload.file || "",
+    usageFile: payload.usageFile || "",
+    signalSource: payload.signalSource || "",
+    reviewFile: payload.reviewFile || "",
+    reviewPolicy: {
+      clearsStrict: ["applied", "rejected"],
+      remainsPending: ["accepted", "deferred"],
+    },
+    summary: {
+      proposalCount: payload.proposalCount || 0,
+      pendingReviewCount: payload.pendingReviewCount ?? proposals.length,
+      reviewedCount: payload.reviewedCount || 0,
+      templateDecisionCount: decisions.length,
+    },
+    decisions,
+  }, null, 2)}\n`;
+}
+
 export function renderSkillEvolutionProposalReport(payload, {
   generatedAt = new Date(),
 } = {}) {
