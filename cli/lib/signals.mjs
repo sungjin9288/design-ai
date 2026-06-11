@@ -340,6 +340,26 @@ function classifyAgentBacklogCommand(command = "") {
   };
 }
 
+function summarizeAgentBacklogCommandSafety(steps = []) {
+  const summary = {
+    total: steps.length,
+    readOnly: 0,
+    writesLocalFile: 0,
+    mutatesLocalState: 0,
+    requiresCleanWorkspace: 0,
+    requiresReviewBeforeMutation: 0,
+  };
+  for (const step of steps) {
+    const safety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
+    if (safety.level === "read-only") summary.readOnly += 1;
+    if (safety.level === "writes-local-file") summary.writesLocalFile += 1;
+    if (safety.level === "mutates-local-state") summary.mutatesLocalState += 1;
+    if (safety.requiresCleanWorkspace) summary.requiresCleanWorkspace += 1;
+    if (step.requiresReviewBeforeMutation) summary.requiresReviewBeforeMutation += 1;
+  }
+  return summary;
+}
+
 function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
   const steps = actions.map((action, index) => {
     const command = String(action.command || "");
@@ -369,6 +389,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       commandSafety,
     };
   });
+  const safetySummary = summarizeAgentBacklogCommandSafety(steps);
   const verification = [
     commands.signalsJson
       ? {
@@ -393,6 +414,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
     stepCount: steps.length,
     nextStep: steps[0] || null,
     steps,
+    safetySummary,
     verification,
     boundaries: {
       reportMutatesProfile: Boolean(privacy.mutatesProfile),
@@ -842,6 +864,16 @@ export function renderAgentBacklogReport(payload, {
   const actionPlan = payload.actionPlan || {};
   const planSteps = Array.isArray(actionPlan.steps) ? actionPlan.steps : [];
   lines.push("## Action Plan", "");
+  const safetySummary = actionPlan.safetySummary && typeof actionPlan.safetySummary === "object" ? actionPlan.safetySummary : null;
+  if (safetySummary) {
+    lines.push("Safety summary:");
+    lines.push(`- Read-only: ${safetySummary.readOnly ?? 0}`);
+    lines.push(`- Writes local file: ${safetySummary.writesLocalFile ?? 0}`);
+    lines.push(`- Mutates local state: ${safetySummary.mutatesLocalState ?? 0}`);
+    lines.push(`- Requires clean workspace: ${safetySummary.requiresCleanWorkspace ?? 0}`);
+    lines.push(`- Requires mutation review: ${safetySummary.requiresReviewBeforeMutation ?? 0}`);
+    lines.push("");
+  }
   if (planSteps.length === 0) {
     lines.push("No execution steps emitted.");
   } else {

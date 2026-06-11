@@ -5716,10 +5716,17 @@ def assert_agent_backlog_report_json(
     action_plan = payload.get("actionPlan")
     action_plan_steps = action_plan.get("steps") if isinstance(action_plan, dict) else None
     action_plan_verification = action_plan.get("verification") if isinstance(action_plan, dict) else None
+    safety_summary = action_plan.get("safetySummary") if isinstance(action_plan, dict) else None
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
         and action_plan.get("stepCount", 0) >= 1
+        and isinstance(safety_summary, dict)
+        and safety_summary.get("total", 0) >= 1
+        and safety_summary.get("readOnly", 0) >= 1
+        and safety_summary.get("writesLocalFile", -1) >= 0
+        and safety_summary.get("mutatesLocalState", -1) >= 0
+        and safety_summary.get("requiresReviewBeforeMutation", -1) >= 0
         and isinstance(action_plan_steps, list)
         and any(
             isinstance(item, dict)
@@ -5775,6 +5782,7 @@ def assert_agent_backlog_report_human(
         "Signal source:",
         "Backlog actions:",
         "Action plan:",
+        "safety summary:",
         "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
@@ -5805,6 +5813,10 @@ def assert_agent_backlog_report_markdown(
         "## Backlog Actions",
         "design-ai learn --propose-skills",
         "## Action Plan",
+        "Safety summary:",
+        "- Read-only: 1",
+        "- Writes local file: 0",
+        "- Mutates local state: 0",
         "- Command safety: read-only",
         "- Writes local files: no",
         "- Mutates local state: no",
@@ -9922,6 +9934,14 @@ def run_self_test() -> None:
                         },
                     },
                 ],
+                "safetySummary": {
+                    "total": 1,
+                    "readOnly": 1,
+                    "writesLocalFile": 0,
+                    "mutatesLocalState": 0,
+                    "requiresCleanWorkspace": 0,
+                    "requiresReviewBeforeMutation": 0,
+                },
                 "verification": [
                     {
                         "label": "Refresh signal registry JSON",
@@ -9971,6 +9991,7 @@ def run_self_test() -> None:
                 f"Signal source: {Path(tmp)}",
                 "Backlog actions:",
                 "Action plan:",
+                "safety summary:",
                 "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
@@ -9989,6 +10010,10 @@ def run_self_test() -> None:
                 "## Backlog Actions",
                 "design-ai learn --propose-skills --json",
                 "## Action Plan",
+                "Safety summary:",
+                "- Read-only: 1",
+                "- Writes local file: 0",
+                "- Mutates local state: 0",
                 "- Command safety: read-only",
                 "- Writes local files: no",
                 "- Mutates local state: no",
@@ -10041,6 +10066,19 @@ def run_self_test() -> None:
             expected="learn agent backlog JSON should include executable action plan steps and verification",
             scope="package smoke",
         )
+        missing_safety_summary_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        missing_safety_summary_payload["actionPlan"].pop("safetySummary", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(missing_safety_summary_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
         unsafe_action_plan_payload = json.loads(json.dumps(learning_agent_backlog_payload))
         unsafe_action_plan_payload["actionPlan"]["steps"][0].pop("commandSafety", None)
         expect_self_test_failure(
@@ -10081,6 +10119,10 @@ def run_self_test() -> None:
                     "## Backlog Actions",
                     "design-ai learn --propose-skills --json",
                     "## Action Plan",
+                    "Safety summary:",
+                    "- Read-only: 1",
+                    "- Writes local file: 0",
+                    "- Mutates local state: 0",
                     "- Command safety: read-only",
                     "- Writes local files: no",
                     "- Mutates local state: no",

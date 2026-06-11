@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 439 — Agent Backlog Safety Summary (unreleased)
+
+`design-ai learn --agent-backlog` action plans now include a safety summary across all follow-up steps. Operators can see the total count of read-only, local file-writing, and local state-mutating commands before inspecting each step.
+
+### Changed
+- Added `actionPlan.safetySummary` with total, read-only, local file-write, local mutation, clean-workspace, and mutation-review counts.
+- Surfaced the safety summary in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so safety summary drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to triage before running generated commands.
+- This remains deterministic and local; it only summarizes emitted commands and does not call external APIs or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 438 — Agent Backlog Command Safety Classification (unreleased)
 
 `design-ai learn --agent-backlog` action plans now classify each follow-up command before an operator runs it. Steps distinguish read-only preview/report commands from local output-file writes and apply/fix mutations, making the local AI/agent backlog safer to execute without adding external APIs or dependencies.

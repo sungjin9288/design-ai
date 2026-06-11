@@ -642,6 +642,10 @@ function printAgentBacklog(payload) {
   if (planSteps.length > 0) {
     console.log();
     console.log("Action plan:");
+    const safety = payload.actionPlan?.safetySummary;
+    if (safety) {
+      console.log(`  ${dim(`safety summary: ${safety.readOnly || 0} read-only, ${safety.writesLocalFile || 0} writes-local-file, ${safety.mutatesLocalState || 0} mutates-local-state`)}`);
+    }
     for (const step of planSteps.slice(0, 3)) {
       console.log(`- ${step.rank}. ${step.priority} ${step.category}: ${step.title}`);
       if (step.command) console.log(`  ${dim(step.command)}`);
