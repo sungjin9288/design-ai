@@ -638,6 +638,17 @@ function printAgentBacklog(payload) {
     }
   }
 
+  const planSteps = Array.isArray(payload.actionPlan?.steps) ? payload.actionPlan.steps : [];
+  if (planSteps.length > 0) {
+    console.log();
+    console.log("Action plan:");
+    for (const step of planSteps.slice(0, 3)) {
+      console.log(`- ${step.rank}. ${step.priority} ${step.category}: ${step.title}`);
+      if (step.command) console.log(`  ${dim(step.command)}`);
+      console.log(`  ${dim(`requires mutation review: ${step.requiresReviewBeforeMutation ? "yes" : "no"}`)}`);
+    }
+  }
+
   if (payload.recommendations.length > 0) {
     console.log();
     console.log("Recommendations:");

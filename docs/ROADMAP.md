@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 437 — Agent Backlog Action Plan Export (unreleased)
+
+`design-ai learn --agent-backlog` now turns the focused local AI/agent backlog into an execution-ready action plan. JSON and Markdown reports preserve ordered steps, verification commands, and mutation-review flags while keeping report generation deterministic, local, and read-only.
+
+### Changed
+- Added an `actionPlan` object to focused agent backlog JSON output with ordered steps, the next step, verification commands, and read-only report boundaries.
+- Added a Markdown “Action Plan” section to `learn --agent-backlog --report` output.
+- Added a concise human output “Action plan” preview for the first execution steps.
+- Strengthened unit tests and package-smoke self-test assertions for action plan JSON, human output, and Markdown report coverage.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development has a cleaner handoff from backlog diagnosis to controlled local execution.
+- The report remains non-mutating and does not call external AI APIs; individual suggested commands still mark whether they require review before mutation.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 436 — Agent Backlog Release Metadata Guard (unreleased)
 
 Release metadata now protects the packed-tarball focused agent backlog smoke wording across release-facing policy docs. README, Korean README, Release Checklist, and Distribution guidance cannot silently drop the Markdown report, JSON `--out`, or strict gate coverage for `design-ai learn --agent-backlog`.

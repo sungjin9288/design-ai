@@ -5713,6 +5713,31 @@ def assert_agent_backlog_report_json(
         cmd=cmd,
         message="learn agent backlog JSON should include skill-evolution next action",
     )
+    action_plan = payload.get("actionPlan")
+    action_plan_steps = action_plan.get("steps") if isinstance(action_plan, dict) else None
+    action_plan_verification = action_plan.get("verification") if isinstance(action_plan, dict) else None
+    require_package_smoke(
+        isinstance(action_plan, dict)
+        and action_plan.get("version") == 1
+        and action_plan.get("stepCount", 0) >= 1
+        and isinstance(action_plan_steps, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("actionId") == "agent-skill-proposal-preview"
+            and "learn --propose-skills" in str(item.get("command", ""))
+            and item.get("requiresReviewBeforeMutation") is False
+            for item in action_plan_steps
+        )
+        and isinstance(action_plan_verification, list)
+        and any(
+            isinstance(item, dict)
+            and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+            for item in action_plan_verification
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include executable action plan steps and verification",
+    )
     commands = payload.get("commands")
     require_package_smoke(
         isinstance(commands, dict)
@@ -5745,6 +5770,8 @@ def assert_agent_backlog_report_human(
         "Agent development backlog",
         "Signal source:",
         "Backlog actions:",
+        "Action plan:",
+        "requires mutation review: no",
         "learn --propose-skills",
         "Privacy: agent backlog is read-only",
     ):
@@ -5772,6 +5799,9 @@ def assert_agent_backlog_report_markdown(
         "## Summary",
         "## Backlog Actions",
         "design-ai learn --propose-skills",
+        "## Action Plan",
+        "- Requires mutation review: no",
+        "design-ai learn --agent-backlog --strict --json",
         "## Follow-Up Commands",
         "design-ai learn --signals",
         "## Privacy And Boundaries",
@@ -9835,6 +9865,60 @@ def run_self_test() -> None:
                     "evidence": {"checkCaptureCount": 1},
                 },
             ],
+            "actionPlan": {
+                "version": 1,
+                "stepCount": 1,
+                "nextStep": {
+                    "rank": 1,
+                    "actionId": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "verification": [
+                        "Run the command in a clean working tree or disposable workspace when it can change local files.",
+                        "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                    ],
+                    "requiresReviewBeforeMutation": False,
+                },
+                "steps": [
+                    {
+                        "rank": 1,
+                        "actionId": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                        "verification": [
+                            "Run the command in a clean working tree or disposable workspace when it can change local files.",
+                            "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                        ],
+                        "requiresReviewBeforeMutation": False,
+                    },
+                ],
+                "verification": [
+                    {
+                        "label": "Refresh signal registry JSON",
+                        "command": "design-ai learn --signals --from-file . --json",
+                    },
+                    {
+                        "label": "Save signal registry Markdown handoff",
+                        "command": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+                    },
+                    {
+                        "label": "Gate focused agent backlog",
+                        "command": "design-ai learn --agent-backlog --strict --json",
+                    },
+                ],
+                "boundaries": {
+                    "reportMutatesProfile": False,
+                    "reportMutatesSkillFiles": False,
+                    "reportCallsExternalAiApis": False,
+                    "generatedFromLocalSignals": True,
+                },
+            },
             "commands": {
                 "signalsJson": "design-ai learn --signals --from-file . --json",
                 "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
@@ -9862,6 +9946,8 @@ def run_self_test() -> None:
                 "Agent development backlog",
                 f"Signal source: {Path(tmp)}",
                 "Backlog actions:",
+                "Action plan:",
+                "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
                 "Privacy: agent backlog is read-only",
             ]),
@@ -9877,6 +9963,9 @@ def run_self_test() -> None:
                 "## Summary",
                 "## Backlog Actions",
                 "design-ai learn --propose-skills --json",
+                "## Action Plan",
+                "- Requires mutation review: no",
+                "design-ai learn --agent-backlog --strict --json",
                 "## Follow-Up Commands",
                 "design-ai learn --signals --from-file . --json",
                 "## Privacy And Boundaries",
@@ -9911,6 +10000,23 @@ def run_self_test() -> None:
             lambda: assert_agent_backlog_report_json(
                 json.dumps({
                     **learning_agent_backlog_payload,
+                    "actionPlan": {
+                        **learning_agent_backlog_payload["actionPlan"],
+                        "steps": [],
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
                     "privacy": {
                         **learning_agent_backlog_payload["privacy"],
                         "mutatesSkillFiles": True,
@@ -9933,6 +10039,9 @@ def run_self_test() -> None:
                     "## Summary",
                     "## Backlog Actions",
                     "design-ai learn --propose-skills --json",
+                    "## Action Plan",
+                    "- Requires mutation review: no",
+                    "design-ai learn --agent-backlog --strict --json",
                     "## Follow-Up Commands",
                     "design-ai learn --signals --from-file . --json",
                     "## Privacy And Boundaries",

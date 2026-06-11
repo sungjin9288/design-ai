@@ -315,6 +315,67 @@ function agentDevelopmentStatus(actions) {
   return "pass";
 }
 
+function commandRequiresMutationReview(command = "") {
+  const text = String(command || "");
+  return /\s--yes(?:\s|$)/.test(text) || /\s--fix(?:\s|$)/.test(text);
+}
+
+function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
+  const steps = actions.map((action, index) => {
+    const command = String(action.command || "");
+    return {
+      rank: action.rank ?? index + 1,
+      actionId: action.id || "",
+      priority: action.priority || "p3",
+      category: action.category || "other",
+      title: action.title || "",
+      command,
+      expectedOutcome: action.rationale || "",
+      verification: command
+        ? [
+          "Run the command in a clean working tree or disposable workspace when it can change local files.",
+          "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+        ]
+        : [
+          "Review the action manually, then refresh the agent backlog report.",
+        ],
+      requiresReviewBeforeMutation: commandRequiresMutationReview(command),
+    };
+  });
+  const verification = [
+    commands.signalsJson
+      ? {
+        label: "Refresh signal registry JSON",
+        command: commands.signalsJson,
+      }
+      : null,
+    commands.signalsReport
+      ? {
+        label: "Save signal registry Markdown handoff",
+        command: commands.signalsReport,
+      }
+      : null,
+    {
+      label: "Gate focused agent backlog",
+      command: "design-ai learn --agent-backlog --strict --json",
+    },
+  ].filter(Boolean);
+
+  return {
+    version: 1,
+    stepCount: steps.length,
+    nextStep: steps[0] || null,
+    steps,
+    verification,
+    boundaries: {
+      reportMutatesProfile: Boolean(privacy.mutatesProfile),
+      reportMutatesSkillFiles: Boolean(privacy.mutatesSkillFiles),
+      reportCallsExternalAiApis: Boolean(privacy.callsExternalAiApis),
+      generatedFromLocalSignals: true,
+    },
+  };
+}
+
 function buildAgentDevelopmentBacklog({
   audit,
   usage,
@@ -647,6 +708,17 @@ export function agentBacklogReport({
     },
   };
   const actions = Array.isArray(agentDevelopment.actions) ? agentDevelopment.actions : [];
+  const commands = {
+    signalsJson: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --json`,
+    signalsReport: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --report --out learning-signals.md`,
+  };
+  const privacy = {
+    mutatesProfile: false,
+    mutatesSkillFiles: false,
+    callsExternalAiApis: false,
+    storesRawBriefText: false,
+    readsSignalFilesOnly: true,
+  };
   return {
     version: 1,
     generatedAt: registry.generatedAt || (now instanceof Date ? now : new Date(now)).toISOString(),
@@ -668,18 +740,10 @@ export function agentBacklogReport({
       workspaceNextActions: registry.workspace?.nextActionCount ?? 0,
     },
     actions,
-    commands: {
-      signalsJson: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --json`,
-      signalsReport: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --report --out learning-signals.md`,
-    },
+    actionPlan: buildAgentBacklogActionPlan({ actions, commands, privacy }),
+    commands,
     recommendations: registry.recommendations || [],
-    privacy: {
-      mutatesProfile: false,
-      mutatesSkillFiles: false,
-      callsExternalAiApis: false,
-      storesRawBriefText: false,
-      readsSignalFilesOnly: true,
-    },
+    privacy,
   };
 }
 
@@ -742,6 +806,40 @@ export function renderAgentBacklogReport(payload, {
         for (const [key, value] of evidenceItems) {
           const rendered = typeof value === "object" ? JSON.stringify(value) : String(value);
           lines.push(`- ${key}: ${rendered}`);
+        }
+      }
+      lines.push("");
+    }
+  }
+
+  const actionPlan = payload.actionPlan || {};
+  const planSteps = Array.isArray(actionPlan.steps) ? actionPlan.steps : [];
+  lines.push("## Action Plan", "");
+  if (planSteps.length === 0) {
+    lines.push("No execution steps emitted.");
+  } else {
+    for (const step of planSteps) {
+      lines.push(`### Step ${step.rank}. ${step.title}`);
+      lines.push("");
+      lines.push(listItem("Action id", step.actionId));
+      lines.push(listItem("Priority", step.priority));
+      lines.push(listItem("Category", step.category));
+      lines.push(listItem("Requires mutation review", yesNo(Boolean(step.requiresReviewBeforeMutation))));
+      if (step.expectedOutcome) lines.push(listItem("Expected outcome", step.expectedOutcome));
+      if (step.command) {
+        lines.push("");
+        lines.push("Command:");
+        lines.push("");
+        lines.push("```bash");
+        lines.push(step.command);
+        lines.push("```");
+      }
+      const verification = Array.isArray(step.verification) ? step.verification : [];
+      if (verification.length > 0) {
+        lines.push("");
+        lines.push("Verification:");
+        for (const item of verification) {
+          lines.push(`- ${item}`);
         }
       }
       lines.push("");

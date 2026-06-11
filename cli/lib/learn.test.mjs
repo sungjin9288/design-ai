@@ -3391,6 +3391,13 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.counts.evalSignals, 1);
   assert.equal(payload.counts.checkCaptures, 2);
   assert.equal(payload.actions[0].id, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.version, 1);
+  assert.equal(payload.actionPlan.stepCount, 1);
+  assert.equal(payload.actionPlan.nextStep.actionId, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.steps[0].requiresReviewBeforeMutation, false);
+  assert.match(payload.actionPlan.steps[0].verification.join("\n"), /agent-backlog --strict --json/);
+  assert.match(payload.actionPlan.verification[0].command, /design-ai learn --signals/);
+  assert.equal(payload.actionPlan.boundaries.reportCallsExternalAiApis, false);
   assert.match(payload.commands.signalsJson, /design-ai learn --signals/);
   assert.equal(payload.privacy.mutatesProfile, false);
   assert.equal(payload.privacy.mutatesSkillFiles, false);
@@ -3400,6 +3407,9 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /# Agent Development Backlog Report/);
   assert.match(markdown, /## Backlog Actions/);
   assert.match(markdown, /design-ai learn --propose-skills --json/);
+  assert.match(markdown, /## Action Plan/);
+  assert.match(markdown, /Requires mutation review: no/);
+  assert.match(markdown, /agent-backlog --strict --json/);
   assert.match(markdown, /## Follow-Up Commands/);
   assert.match(markdown, /design-ai learn --signals/);
   assert.match(markdown, /This report is read-only evidence/);
@@ -3580,6 +3590,9 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.counts.checkCaptures, 1);
   assert.equal(payload.counts.evalSignals, 1);
   assert.equal(payload.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
+  assert.equal(payload.actionPlan.stepCount, payload.actions.length);
+  assert.equal(payload.actionPlan.steps.some((item) => item.actionId === "agent-skill-proposal-preview"), true);
+  assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog --strict --json/);
   assert.equal(payload.privacy.mutatesProfile, false);
   assert.equal(payload.privacy.mutatesSkillFiles, false);
   assert.equal(payload.privacy.callsExternalAiApis, false);
@@ -3596,6 +3609,8 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   ]));
   assert.match(humanOutput, /Agent development backlog/);
   assert.match(humanOutput, /Backlog actions:/);
+  assert.match(humanOutput, /Action plan:/);
+  assert.match(humanOutput, /requires mutation review: no/);
   assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: agent backlog is read-only/);
   assert.equal(readFileSync(filePath, "utf8"), before);
@@ -3611,6 +3626,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
     "--report",
   ]));
   assert.match(reportOutput, /# Agent Development Backlog Report/);
+  assert.match(reportOutput, /## Action Plan/);
   assert.match(reportOutput, /## Follow-Up Commands/);
   assert.match(reportOutput, /This report is read-only evidence/);
   assert.equal(readFileSync(filePath, "utf8"), before);
@@ -3630,6 +3646,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   ]));
   assert.match(reportWriteOutput, /Wrote /);
   assert.match(readFileSync(reportFile, "utf8"), /# Agent Development Backlog Report/);
+  assert.match(readFileSync(reportFile, "utf8"), /## Action Plan/);
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 
