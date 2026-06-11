@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 442 — Agent Backlog Command Manifest (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now expose a command manifest with explicit run policies for command-bearing actions. Operators and local automation can distinguish `preview-only`, `review-before-file-write`, and `review-before-mutation` commands without reclassifying shell text from the grouped queue.
+
+### Changed
+- Added `actionPlan.executionQueue.commandManifest`, `commandManifestCount`, and `nextCommandRunPolicy`.
+- Added `runPolicy` to execution queue items so ordered, preview, file-write, and mutation buckets share the same execution policy vocabulary.
+- Surfaced the recommended command policy and command manifest in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so command manifest drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer for operators and local automation because command execution policy is explicit instead of inferred from command text.
+- This remains deterministic and local; it only emits manifest metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 441 — Agent Backlog Ordered Execution Queue (unreleased)
 
 `design-ai learn --agent-backlog` execution queues now preserve an explicit ordered command list in addition to grouped safety buckets. Operators and local automation can read the recommended next action and queue order directly from JSON, human output, or Markdown reports without reconstructing the sequence from preview/file-write/mutation groups.

@@ -360,9 +360,17 @@ function summarizeAgentBacklogCommandSafety(steps = []) {
   return summary;
 }
 
+function agentBacklogRunPolicyForSafetyLevel(safetyLevel = "unknown") {
+  if (safetyLevel === "read-only") return "preview-only";
+  if (safetyLevel === "writes-local-file") return "review-before-file-write";
+  if (safetyLevel === "mutates-local-state") return "review-before-mutation";
+  return "manual-review";
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
+    const safetyLevel = commandSafety.level || "unknown";
     return {
       rank: step.rank,
       actionId: step.actionId || "",
@@ -370,7 +378,8 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       category: step.category || "other",
       title: step.title || "",
       command: step.command || "",
-      safetyLevel: commandSafety.level || "unknown",
+      safetyLevel,
+      runPolicy: agentBacklogRunPolicyForSafetyLevel(safetyLevel),
       requiresReviewBeforeMutation: Boolean(step.requiresReviewBeforeMutation),
     };
   };
@@ -378,14 +387,27 @@ function buildAgentBacklogExecutionQueue(steps = []) {
   const fileWriteReview = steps.filter((step) => step.commandSafety?.level === "writes-local-file").map(toQueueItem);
   const mutationReview = steps.filter((step) => step.commandSafety?.level === "mutates-local-state").map(toQueueItem);
   const ordered = [...preview, ...fileWriteReview, ...mutationReview];
+  const commandManifest = ordered
+    .filter((item) => item.command)
+    .map((item) => ({
+      rank: item.rank,
+      actionId: item.actionId,
+      command: item.command,
+      safetyLevel: item.safetyLevel,
+      runPolicy: item.runPolicy,
+      requiresReviewBeforeMutation: item.requiresReviewBeforeMutation,
+    }));
   return {
     orderedCount: ordered.length,
+    commandManifestCount: commandManifest.length,
     previewCount: preview.length,
     fileWriteReviewCount: fileWriteReview.length,
     mutationReviewCount: mutationReview.length,
     nextActionId: ordered[0]?.actionId || "",
     nextCommand: ordered.find((item) => item.command)?.command || "",
+    nextCommandRunPolicy: commandManifest[0]?.runPolicy || "",
     ordered,
+    commandManifest,
     preview,
     fileWriteReview,
     mutationReview,
@@ -915,7 +937,9 @@ export function renderAgentBacklogReport(payload, {
     lines.push(`- Local file-write review commands: ${executionQueue.fileWriteReviewCount ?? 0}`);
     lines.push(`- Local mutation review commands: ${executionQueue.mutationReviewCount ?? 0}`);
     lines.push(`- Ordered commands: ${executionQueue.orderedCount ?? 0}`);
+    lines.push(`- Command manifest entries: ${executionQueue.commandManifestCount ?? 0}`);
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
+    if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);
     if (executionQueue.nextCommand) {
       lines.push("");
       lines.push("Recommended next command:");
@@ -929,7 +953,15 @@ export function renderAgentBacklogReport(payload, {
       lines.push("");
       lines.push("Queue order:");
       for (const item of orderedItems) {
-        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} (${item.safetyLevel || "unknown"})`);
+        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} (${item.safetyLevel || "unknown"}, ${item.runPolicy || "manual-review"})`);
+      }
+    }
+    const commandManifest = Array.isArray(executionQueue.commandManifest) ? executionQueue.commandManifest : [];
+    if (commandManifest.length > 0) {
+      lines.push("");
+      lines.push("Command manifest:");
+      for (const item of commandManifest) {
+        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} - ${item.runPolicy || "manual-review"}`);
       }
     }
     lines.push("");

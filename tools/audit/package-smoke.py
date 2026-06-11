@@ -5719,6 +5719,7 @@ def assert_agent_backlog_report_json(
     safety_summary = action_plan.get("safetySummary") if isinstance(action_plan, dict) else None
     execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
     ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
+    command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
@@ -5734,14 +5735,24 @@ def assert_agent_backlog_report_json(
         and execution_queue.get("fileWriteReviewCount", -1) >= 0
         and execution_queue.get("mutationReviewCount", -1) >= 0
         and execution_queue.get("orderedCount", 0) >= 1
+        and execution_queue.get("commandManifestCount", 0) >= 1
         and execution_queue.get("nextActionId")
         and "learn --propose-skills" in str(execution_queue.get("nextCommand", ""))
+        and execution_queue.get("nextCommandRunPolicy") == "preview-only"
         and isinstance(ordered_queue, list)
         and any(
             isinstance(item, dict)
             and item.get("actionId") == "agent-skill-proposal-preview"
             and item.get("safetyLevel") == "read-only"
+            and item.get("runPolicy") == "preview-only"
             for item in ordered_queue
+        )
+        and isinstance(command_manifest, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("actionId") == "agent-skill-proposal-preview"
+            and item.get("runPolicy") == "preview-only"
+            for item in command_manifest
         )
         and isinstance(action_plan_steps, list)
         and any(
@@ -5802,7 +5813,9 @@ def assert_agent_backlog_report_human(
         "execution queue:",
         "next action:",
         "next command:",
+        "next command policy:",
         "queue order:",
+        "command manifest:",
         "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
@@ -5842,10 +5855,14 @@ def assert_agent_backlog_report_markdown(
         "- Local file-write review commands: 0",
         "- Local mutation review commands: 0",
         "- Ordered commands: 1",
+        "- Command manifest entries: 1",
         "- Recommended next action: agent-skill-proposal-preview",
+        "- Recommended next command policy: preview-only",
         "Recommended next command:",
         "Queue order:",
-        "1. agent-skill-proposal-preview (read-only)",
+        "1. agent-skill-proposal-preview (read-only, preview-only)",
+        "Command manifest:",
+        "1. agent-skill-proposal-preview - preview-only",
         "- Command safety: read-only",
         "- Writes local files: no",
         "- Mutates local state: no",
@@ -9973,11 +9990,13 @@ def run_self_test() -> None:
                 },
                 "executionQueue": {
                     "orderedCount": 1,
+                    "commandManifestCount": 1,
                     "previewCount": 1,
                     "fileWriteReviewCount": 0,
                     "mutationReviewCount": 0,
                     "nextActionId": "agent-skill-proposal-preview",
                     "nextCommand": "design-ai learn --propose-skills --json",
+                    "nextCommandRunPolicy": "preview-only",
                     "ordered": [
                         {
                             "rank": 1,
@@ -9987,6 +10006,17 @@ def run_self_test() -> None:
                             "title": "Preview skill instruction deltas from repeated check-capture signals.",
                             "command": "design-ai learn --propose-skills --json",
                             "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
+                            "requiresReviewBeforeMutation": False,
+                        },
+                    ],
+                    "commandManifest": [
+                        {
+                            "rank": 1,
+                            "actionId": "agent-skill-proposal-preview",
+                            "command": "design-ai learn --propose-skills --json",
+                            "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
                             "requiresReviewBeforeMutation": False,
                         },
                     ],
@@ -9999,6 +10029,7 @@ def run_self_test() -> None:
                             "title": "Preview skill instruction deltas from repeated check-capture signals.",
                             "command": "design-ai learn --propose-skills --json",
                             "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
                             "requiresReviewBeforeMutation": False,
                         },
                     ],
@@ -10058,7 +10089,9 @@ def run_self_test() -> None:
                 "execution queue:",
                 "next action:",
                 "next command:",
+                "next command policy:",
                 "queue order:",
+                "command manifest:",
                 "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
@@ -10086,10 +10119,14 @@ def run_self_test() -> None:
                 "- Local file-write review commands: 0",
                 "- Local mutation review commands: 0",
                 "- Ordered commands: 1",
+                "- Command manifest entries: 1",
                 "- Recommended next action: agent-skill-proposal-preview",
+                "- Recommended next command policy: preview-only",
                 "Recommended next command:",
                 "Queue order:",
-                "1. agent-skill-proposal-preview (read-only)",
+                "1. agent-skill-proposal-preview (read-only, preview-only)",
+                "Command manifest:",
+                "1. agent-skill-proposal-preview - preview-only",
                 "- Command safety: read-only",
                 "- Writes local files: no",
                 "- Mutates local state: no",
@@ -10217,10 +10254,14 @@ def run_self_test() -> None:
                     "- Local file-write review commands: 0",
                     "- Local mutation review commands: 0",
                     "- Ordered commands: 1",
+                    "- Command manifest entries: 1",
                     "- Recommended next action: agent-skill-proposal-preview",
+                    "- Recommended next command policy: preview-only",
                     "Recommended next command:",
                     "Queue order:",
-                    "1. agent-skill-proposal-preview (read-only)",
+                    "1. agent-skill-proposal-preview (read-only, preview-only)",
+                    "Command manifest:",
+                    "1. agent-skill-proposal-preview - preview-only",
                     "- Command safety: read-only",
                     "- Writes local files: no",
                     "- Mutates local state: no",

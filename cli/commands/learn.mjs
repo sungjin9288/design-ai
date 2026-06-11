@@ -651,9 +651,14 @@ function printAgentBacklog(payload) {
       console.log(`  ${dim(`execution queue: ${queue.previewCount || 0} preview, ${queue.fileWriteReviewCount || 0} file-write review, ${queue.mutationReviewCount || 0} mutation review`)}`);
       if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
       if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
+      if (queue.nextCommandRunPolicy) console.log(`  ${dim(`next command policy: ${queue.nextCommandRunPolicy}`)}`);
       const ordered = Array.isArray(queue.ordered) ? queue.ordered : [];
       if (ordered.length > 0) {
         console.log(`  ${dim(`queue order: ${ordered.slice(0, 3).map((item) => item.actionId).join(" -> ")}`)}`);
+      }
+      const commandManifest = Array.isArray(queue.commandManifest) ? queue.commandManifest : [];
+      if (commandManifest.length > 0) {
+        console.log(`  ${dim(`command manifest: ${commandManifest.slice(0, 3).map((item) => `${item.actionId}:${item.runPolicy}`).join(" -> ")}`)}`);
       }
     }
     for (const step of planSteps.slice(0, 3)) {
