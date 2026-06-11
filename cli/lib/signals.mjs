@@ -528,12 +528,31 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
     command: "design-ai learn --agent-backlog --strict --json",
     required: true,
   });
+  const gatePhaseSummary = summarizeAgentBacklogGateCommands(gateCommands);
   return {
     level,
     requiresOperatorReview: level !== "clear",
     headline,
     checklist,
+    gatePhaseSummary,
     gateCommands,
+  };
+}
+
+function summarizeAgentBacklogGateCommands(gateCommands = []) {
+  const validCommands = Array.isArray(gateCommands)
+    ? gateCommands.filter((item) => item && typeof item === "object")
+    : [];
+  const phases = [...new Set(validCommands.map((item) => String(item.phase || "")).filter(Boolean))];
+  const requiredCount = validCommands.filter((item) => item.required === true).length;
+  return {
+    count: validCommands.length,
+    requiredCount,
+    optionalCount: validCommands.length - requiredCount,
+    phases,
+    hasBefore: phases.includes("before"),
+    hasAfter: phases.includes("after"),
+    hasRefresh: phases.includes("refresh"),
   };
 }
 
@@ -1129,6 +1148,15 @@ export function renderAgentBacklogReport(payload, {
       const reviewChecklist = Array.isArray(commandEffectReview.checklist) ? commandEffectReview.checklist : [];
       for (const item of reviewChecklist) {
         lines.push(`  - ${item}`);
+      }
+      const gatePhaseSummary = commandEffectReview.gatePhaseSummary && typeof commandEffectReview.gatePhaseSummary === "object"
+        ? commandEffectReview.gatePhaseSummary
+        : null;
+      if (gatePhaseSummary) {
+        const phases = Array.isArray(gatePhaseSummary.phases) && gatePhaseSummary.phases.length > 0
+          ? gatePhaseSummary.phases.join(", ")
+          : "none";
+        lines.push(`- Command effect gate phases: ${phases} (${gatePhaseSummary.requiredCount ?? 0}/${gatePhaseSummary.count ?? 0} required)`);
       }
       const gateCommands = Array.isArray(commandEffectReview.gateCommands) ? commandEffectReview.gateCommands : [];
       if (gateCommands.length > 0) {

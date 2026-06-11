@@ -3415,6 +3415,15 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.commandEffectReview.level, "clear");
   assert.equal(payload.actionPlan.executionQueue.commandEffectReview.requiresOperatorReview, false);
   assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /No command target/);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gatePhaseSummary, {
+    count: 1,
+    requiredCount: 1,
+    optionalCount: 0,
+    phases: ["refresh"],
+    hasBefore: false,
+    hasAfter: false,
+    hasRefresh: true,
+  });
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {
       phase: "refresh",
@@ -3458,6 +3467,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Command manifest entries: 1/);
   assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
   assert.match(markdown, /Command effect review: No command target or mutation flag exposure detected/);
+  assert.match(markdown, /Command effect gate phases: refresh \(1\/1 required\)/);
   assert.match(markdown, /Command effect gates:/);
   assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
@@ -3571,6 +3581,15 @@ test("agentBacklogReport classifies action plan command safety", () => {
     "Inspect explicit output targets before committing generated files.",
     "Confirm learning profile and usage sidecar targets are intentional.",
   ]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gatePhaseSummary, {
+    count: 3,
+    requiredCount: 3,
+    optionalCount: 0,
+    phases: ["before", "after", "refresh"],
+    hasBefore: true,
+    hasAfter: true,
+    hasRefresh: true,
+  });
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {
       phase: "before",

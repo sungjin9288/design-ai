@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 448 (unreleased)** — Added deterministic `commandEffectReview.gatePhaseSummary` metadata to focused `design-ai learn --agent-backlog` output so local runbooks can read gate counts, required counts, and before/after/refresh coverage without parsing labels.
 - **Phase 447 (unreleased)** — Added deterministic `phase` and `required` metadata to focused `design-ai learn --agent-backlog` gate commands so local operator runbooks can distinguish before-execution, after-execution, and backlog-refresh checks.
 - **Phase 446 (unreleased)** — Added deterministic `commandEffectReview.gateCommands` to focused `design-ai learn --agent-backlog` outputs so operator review guidance includes concrete clean-workspace, diff-inspection, and backlog-refresh gates.
 - **Phase 445 (unreleased)** — Added deterministic `commandEffectReview` guidance to focused `design-ai learn --agent-backlog` outputs so aggregate command target exposure becomes an operator-facing review headline and checklist.

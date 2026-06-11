@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 448 — Agent Backlog Gate Phase Summary (unreleased)
+
+`design-ai learn --agent-backlog` command effect review output now includes deterministic gate phase summary metadata. Local runbook tooling can read gate counts, required counts, optional counts, and before/after/refresh coverage directly instead of parsing gate command labels.
+
+### Changed
+- Added `commandEffectReview.gatePhaseSummary` with `count`, `requiredCount`, `optionalCount`, `phases`, `hasBefore`, `hasAfter`, and `hasRefresh`.
+- Surfaced gate phase summary in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so gate phase summary drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to consume from scripts and operator checklists because gate coverage is explicit structured metadata.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 447 — Agent Backlog Gate Command Timing Metadata (unreleased)
 
 `design-ai learn --agent-backlog` gate commands now include deterministic timing metadata. Each command effect gate carries a `phase` and `required` flag so operators and local runbook tooling can distinguish before-execution checks, after-execution diff inspection, and backlog-refresh verification.

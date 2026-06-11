@@ -656,6 +656,13 @@ function printAgentBacklog(payload) {
       const effectReview = queue.commandEffectReview && typeof queue.commandEffectReview === "object" ? queue.commandEffectReview : null;
       if (effectReview?.headline) {
         console.log(`  ${dim(`command effect review: ${effectReview.headline}`)}`);
+        const gatePhaseSummary = effectReview.gatePhaseSummary && typeof effectReview.gatePhaseSummary === "object" ? effectReview.gatePhaseSummary : null;
+        if (gatePhaseSummary) {
+          const phases = Array.isArray(gatePhaseSummary.phases) && gatePhaseSummary.phases.length > 0
+            ? gatePhaseSummary.phases.join(", ")
+            : "none";
+          console.log(`  ${dim(`command effect gate phases: ${phases} (${gatePhaseSummary.requiredCount || 0}/${gatePhaseSummary.count || 0} required)`)}`);
+        }
         const gateCommands = Array.isArray(effectReview.gateCommands) ? effectReview.gateCommands : [];
         if (gateCommands.length > 0) {
           const gateSummary = gateCommands
