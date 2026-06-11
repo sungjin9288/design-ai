@@ -38,6 +38,7 @@ import { writeOutputFile } from "../lib/output.mjs";
 import { learningSignalRegistry } from "../lib/signals.mjs";
 import {
   buildSkillEvolutionProposals,
+  renderSkillEvolutionProposalPatch,
   renderSkillEvolutionProposalReport,
 } from "../lib/skill-proposals.mjs";
 
@@ -72,7 +73,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--min-evidence N] [--strict] [--json|--report] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--min-evidence N] [--strict] [--json|--report|--patch] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -107,6 +108,7 @@ function printHelp() {
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
   console.log("  --report             With --curate or --propose-skills, emit a Markdown review report instead of human console output");
+  console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
@@ -162,6 +164,7 @@ function printHelp() {
   console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
+  console.log("  design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -1379,6 +1382,11 @@ export async function runLearn(args) {
     }
     if (parsed.report) {
       printOrWriteContent(parsed, renderSkillEvolutionProposalReport(payload));
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.patch) {
+      printOrWriteContent(parsed, renderSkillEvolutionProposalPatch(payload));
       applySkillProposalsStrictExit(parsed, payload);
       return;
     }

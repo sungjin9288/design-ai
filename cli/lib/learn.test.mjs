@@ -327,6 +327,12 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(proposeSkillsReportArgs.outPath, "skill-proposals.md");
   assert.equal(proposeSkillsReportArgs.force, true);
 
+  const proposeSkillsPatchArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--patch", "--out", "skill-proposals.patch", "--force"]);
+  assert.equal(proposeSkillsPatchArgs.action, "propose-skills");
+  assert.equal(proposeSkillsPatchArgs.patch, true);
+  assert.equal(proposeSkillsPatchArgs.outPath, "skill-proposals.patch");
+  assert.equal(proposeSkillsPatchArgs.force, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -466,11 +472,23 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--report", "--json"]),
-    /Choose either --json or --report/,
+    /Choose only one output mode/,
   );
   assert.throws(
     () => parseLearnArgs(["--propose-skills", "--report", "--json"]),
-    /Choose either --json or --report/,
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--patch"]),
+    /--patch can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--patch", "--json"]),
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--patch", "--report"]),
+    /Choose only one output mode/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--out", "learning-curation-report.md"]),
@@ -3582,6 +3600,8 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
     events: [],
   }), "utf8");
   const before = readFileSync(filePath, "utf8");
+  const candidateSkillPath = path.resolve("skills/website-improvement/SKILL.md");
+  const candidateSkillBefore = readFileSync(candidateSkillPath, "utf8");
 
   const jsonOutput = await captureStdout(() => runLearn([
     "--propose-skills",
@@ -3639,6 +3659,29 @@ test("runLearn --propose-skills reports JSON and human output without mutating t
   assert.match(report, /^# Skill Evolution Proposal Report/);
   assert.match(report, /skills\/website-improvement\/SKILL\.md/);
   assert.match(report, /Mutates learning profile: no/);
+
+  const patchPath = path.join(dir, "skill-proposals.patch");
+  const patchOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--patch",
+    "--out",
+    patchPath,
+  ]));
+  assert.match(patchOutput, /Wrote /);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+  assert.equal(readFileSync(candidateSkillPath, "utf8"), candidateSkillBefore);
+  const patch = readFileSync(patchPath, "utf8");
+  assert.match(patch, /^# design-ai skill proposal patch preview/);
+  assert.match(patch, /diff --git a\/skills\/website-improvement\/SKILL\.md b\/skills\/website-improvement\/SKILL\.md/);
+  assert.match(patch, /\+## Local Learning Proposal: skill-proposal-website-improvement-/);
+  assert.match(patch, /\+- Proposed instruction: Add a responsive QA checkpoint/);
+  assert.match(patch, /\+- Verification: `node cli\/bin\/design-ai\.mjs check --examples --route website-improvement --limit 1 --strict --json`/);
 }));
 
 test("runLearn --propose-skills --strict exits non-zero when proposal review is pending", () => withTempDirAsync(async (dir) => {

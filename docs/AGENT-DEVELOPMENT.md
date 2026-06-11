@@ -103,6 +103,17 @@ design-ai learn --propose-skills --from-file route-eval-report.json --usage-file
 
 The command groups repeated `source: check:*` learning entries by candidate skill and category. It reports single-entry groups as skipped, rejects `--yes`, and does not change `learning.json`, edit `skills/*/SKILL.md`, call external AI APIs, or add dependencies. No skill file should be changed unless the operator runs an explicit apply command in a later phase.
 
+### Phase 425: skill proposal patch handoffs
+
+Added `design-ai learn --propose-skills --patch` as a preview-only handoff mode:
+
+```bash
+design-ai learn --propose-skills --from-file . --patch
+design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch
+```
+
+The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
+
 ### Phase 275: Website Console MCP probes
 
 Implemented `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` as optional read-only probe overlays for the existing Website Console MCP readiness matrix:

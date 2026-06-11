@@ -48,6 +48,7 @@ const LEARN_OPTIONS = [
   "--usage",
   "--signals",
   "--propose-skills",
+  "--patch",
   "--eval",
   "--eval-template",
   "--strict",
@@ -256,6 +257,7 @@ export function parseLearnArgs(args) {
     dryRun: false,
     strict: false,
     report: false,
+    patch: false,
     yes: false,
     json: false,
     help: false,
@@ -313,6 +315,8 @@ export function parseLearnArgs(args) {
       setAction(out, "curate");
     } else if (arg === "--report") {
       out.report = true;
+    } else if (arg === "--patch") {
+      out.patch = true;
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
@@ -458,8 +462,11 @@ export function parseLearnArgs(args) {
   if (out.report && !["curate", "propose-skills"].includes(out.action)) {
     throw new Error("--report can only be used with --curate or --propose-skills");
   }
-  if (out.report && out.json) {
-    throw new Error("Choose either --json or --report");
+  if (out.patch && out.action !== "propose-skills") {
+    throw new Error("--patch can only be used with --propose-skills");
+  }
+  if ([out.json, out.report, out.patch].filter(Boolean).length > 1) {
+    throw new Error("Choose only one output mode: --json, --report, or --patch");
   }
   if (out.strict && !["eval", "signals", "propose-skills"].includes(out.action)) {
     throw new Error("--strict can only be used with --eval, --signals, or --propose-skills");
@@ -484,9 +491,9 @@ export function parseLearnArgs(args) {
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
     || (out.action === "curate" && out.report)
-    || (out.action === "propose-skills" && out.report);
+    || (out.action === "propose-skills" && (out.report || out.patch));
   if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, or --propose-skills --report");
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, --propose-skills --report, or --propose-skills --patch");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());

@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 425 — Skill Proposal Patch Handoffs (unreleased)
+
+`design-ai learn --propose-skills --patch` now emits preview-only unified diff handoffs for repeated check-capture skill proposals. This gives an operator a concrete manual-review artifact before editing `skills/*/SKILL.md`, while keeping the command non-mutating.
+
+### Changed
+- Added `--patch` parsing for `learn --propose-skills` and rejected conflicting `--json` / `--report` output modes.
+- Added a patch renderer that groups proposals by candidate skill file and appends local learning proposal notes in unified diff format.
+- Wired patch output through stdout and safe `--out file` writes without changing learning profiles or skill files.
+- Updated help output, smoke help assertions, AI learning docs, agent development notes, Product Readiness, README, Korean README, Distribution docs, changelog, roadmap, and session history.
+
+### Impact
+- Operators can review or save a concrete diff-style handoff before manually applying accepted skill instruction changes.
+- The command remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs && node --check cli/commands/help.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Add packed-tarball smoke coverage for `--patch` if this handoff becomes a package-level release contract.
+
 ## Phase 423 — Skill Proposal Minimum Evidence Threshold (unreleased)
 
 `design-ai learn --propose-skills` now accepts `--min-evidence N` so local AI/agent development reviews can tune how much repeated check-capture evidence is required before a candidate skill delta appears.
