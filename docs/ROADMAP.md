@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 453 — Agent Backlog Queue Next Command Args (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now exposes `nextCommandArgs` beside the existing `nextCommand` and `nextCommandRunPolicy` fields. This gives local automation a structured args array for the safest queued next action, not only for the operator runbook next command.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandArgs`, derived from the same queue item as `nextCommand`.
+- Kept `nextCommand`, `nextActionId`, and `nextCommandRunPolicy` as the existing human-readable / policy fields.
+- Strengthened unit tests and package-smoke self-test assertions so the queue-level next-command structured args cannot drift from the command manifest.
+
+### Impact
+- Local AI/agent automation can start from either the high-level execution queue or the operator runbook without reparsing shell strings.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 452 — Agent Backlog Structured Command Args (unreleased)
 
 `design-ai learn --agent-backlog` command handoff now includes structured args arrays alongside shell-rendered command strings. This lets local automation read `commandArgs` / `nextCommandArgs` directly from reviewed backlog output instead of reparsing quoted shell text.

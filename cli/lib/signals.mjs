@@ -712,6 +712,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     commandManifest,
     commandEffectReview,
   });
+  const nextCommandItem = ordered.find((item) => item.command) || null;
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -719,8 +720,9 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     fileWriteReviewCount: fileWriteReview.length,
     mutationReviewCount: mutationReview.length,
     nextActionId: ordered[0]?.actionId || "",
-    nextCommand: ordered.find((item) => item.command)?.command || "",
-    nextCommandRunPolicy: commandManifest[0]?.runPolicy || "",
+    nextCommand: nextCommandItem?.command || "",
+    nextCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
+    nextCommandRunPolicy: nextCommandItem?.runPolicy || "",
     commandEffectSummary,
     commandEffectReview,
     operatorRunbook,

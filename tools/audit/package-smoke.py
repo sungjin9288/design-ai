@@ -5741,6 +5741,8 @@ def assert_agent_backlog_report_json(
         and execution_queue.get("mutationReviewCount", -1) >= 0
         and execution_queue.get("orderedCount", 0) >= 1
         and execution_queue.get("commandManifestCount", 0) >= 1
+        and isinstance(execution_queue.get("nextCommandArgs"), list)
+        and len(execution_queue.get("nextCommandArgs")) >= 2
         and isinstance(operator_runbook, dict)
         and operator_runbook.get("version") == 1
         and operator_runbook.get("stageCount") == 4
@@ -10106,6 +10108,7 @@ def run_self_test() -> None:
                     "mutationReviewCount": 0,
                     "nextActionId": "agent-skill-proposal-preview",
                     "nextCommand": "design-ai learn --propose-skills --json",
+                    "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                     "nextCommandRunPolicy": "preview-only",
                     "commandEffectSummary": {
                         "totalCommands": 1,

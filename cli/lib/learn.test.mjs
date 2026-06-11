@@ -3407,6 +3407,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 1);
   assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-skill-proposal-preview");
   assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --propose-skills --json/);
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 1);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 0);
@@ -3612,6 +3613,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.executionQueue.orderedCount, 3);
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 3);
   assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-learning-profile-init");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"]);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 3);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 1);
@@ -3813,6 +3815,7 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.steps[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
   assert.deepEqual(payload.actionPlan.steps[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
   assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
 });
