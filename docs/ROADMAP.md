@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 435 — Focused Agent Backlog Reports (unreleased)
+
+`design-ai learn --agent-backlog` now exposes the deterministic local AI/agent development backlog as its own read-only CLI surface. Operators can inspect the next-action queue without reading the full `learn --signals` registry, save a Markdown backlog artifact, or use `--strict --json` as a focused local gate.
+
+### Changed
+- Added `learn --agent-backlog` parsing, help output, human output, JSON output, Markdown report rendering, `--out` support, and strict exit handling.
+- Reused the existing `learningSignalRegistry().agentDevelopment` data so the new surface remains deterministic, local, dependency-free, and non-mutating.
+- Added unit tests for parser behavior, focused report shaping/rendering, runtime JSON/human/Markdown output, output-file persistence, non-mutation, and strict warning exits.
+- Added packed-tarball smoke and package-smoke self-test coverage for installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated usage docs, README, Korean README, Product Readiness, Release Checklist, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development can now archive or gate just the actionable backlog before deeper skill proposal review or release prep.
+- This does not add external AI APIs, embeddings, fine-tuning, backend storage, target repo mutation, skill-file mutation, or new dependencies.
+
+### Verified
+- `node --check cli/commands/help.mjs cli/commands/learn.mjs cli/lib/learn.mjs cli/lib/signals.mjs`
+- `node --test cli/lib/help-command.test.mjs cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue the next AI learning surface after reviewing whether release metadata phrase guards should cover focused agent backlog artifacts explicitly.
+
 ## Phase 434 — Full Release Check Evidence After Learning Guard Hardening (unreleased)
 
 The full `npm run release:check` gate now passes after the learning signal and skill proposal package smoke release metadata guard phases. This records that the latest local AI/agent learning artifact guards still work together through tests, audits, package checks, release metadata, release self-tests, and packed-tarball smoke.

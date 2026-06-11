@@ -5658,6 +5658,136 @@ def assert_learning_signal_report_markdown(
         )
 
 
+def assert_agent_backlog_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    require_status_pass: bool = False,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn agent backlog JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should report the learning profile and usage paths",
+    )
+    if require_status_pass:
+        require_package_smoke(
+            payload.get("status") == "pass" and payload.get("signalStatus") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn agent backlog strict JSON should report passing backlog and signal status",
+        )
+    counts = payload.get("counts")
+    require_package_smoke(
+        isinstance(counts, dict)
+        and counts.get("actions", 0) >= 1
+        and counts.get("evalSignals", 0) >= 1
+        and counts.get("checkCaptures", 0) >= 1
+        and counts.get("usageEvents", 0) >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include focused backlog counts",
+    )
+    actions = payload.get("actions")
+    require_package_smoke(
+        isinstance(actions, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("id") == "agent-skill-proposal-preview"
+            and item.get("category") == "skill-evolution"
+            and "learn --propose-skills" in str(item.get("command", ""))
+            for item in actions
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include skill-evolution next action",
+    )
+    commands = payload.get("commands")
+    require_package_smoke(
+        isinstance(commands, dict)
+        and "learn --signals" in str(commands.get("signalsJson", ""))
+        and "learn --signals" in str(commands.get("signalsReport", "")),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include signal registry follow-up commands",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False
+        and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should keep read-only local privacy boundaries",
+    )
+
+
+def assert_agent_backlog_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Agent development backlog",
+        "Signal source:",
+        "Backlog actions:",
+        "learn --propose-skills",
+        "Privacy: agent backlog is read-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn agent backlog human output missing {expected!r}",
+        )
+
+
+def assert_agent_backlog_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Agent Development Backlog Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Summary",
+        "## Backlog Actions",
+        "design-ai learn --propose-skills",
+        "## Follow-Up Commands",
+        "design-ai learn --signals",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn agent backlog Markdown report missing {expected!r}",
+        )
+
+
 def assert_skill_proposal_report_json(
     raw: str,
     *,
@@ -6769,6 +6899,145 @@ def assert_learning_relevance_smoke(
         usage_path=usage_path,
         context=f"{context} learn signals out file",
         cmd=signals_out_cmd,
+    )
+
+    agent_backlog_human_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    agent_backlog_human_result = run_plain(agent_backlog_human_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_human(
+        agent_backlog_human_result.stdout,
+        context=f"{context} learn agent backlog human",
+        cmd=agent_backlog_human_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog human",
+        cmd=agent_backlog_human_cmd,
+        message="learn agent backlog human output must not mutate the profile",
+    )
+
+    agent_backlog_json_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    agent_backlog_json_result = run_plain(agent_backlog_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_json(
+        agent_backlog_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog JSON",
+        cmd=agent_backlog_json_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog JSON",
+        cmd=agent_backlog_json_cmd,
+        message="learn agent backlog JSON output must not mutate the profile",
+    )
+
+    agent_backlog_strict_json_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    agent_backlog_strict_json_result = run_plain(agent_backlog_strict_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_json(
+        agent_backlog_strict_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog strict JSON",
+        cmd=agent_backlog_strict_json_cmd,
+        require_status_pass=True,
+    )
+
+    agent_backlog_report_path = profile_path.with_name(f"{profile_path.stem}-agent-backlog-report.md")
+    agent_backlog_report_path.write_text("stale agent backlog Markdown report\n", encoding="utf-8")
+    agent_backlog_report_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(agent_backlog_report_path),
+        "--force",
+    )
+    agent_backlog_report_result = run_plain(agent_backlog_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        agent_backlog_report_result.stdout,
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+        expected_path=str(agent_backlog_report_path),
+    )
+    assert_agent_backlog_report_markdown(
+        agent_backlog_report_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+        message="learn agent backlog Markdown report output must not mutate the profile",
+    )
+
+    agent_backlog_out_path = profile_path.with_name(f"{profile_path.stem}-agent-backlog-out.json")
+    agent_backlog_out_path.write_text("stale agent backlog output\n", encoding="utf-8")
+    agent_backlog_out_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(agent_backlog_out_path),
+        "--force",
+    )
+    agent_backlog_out_result = run_plain(agent_backlog_out_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        agent_backlog_out_result.stdout,
+        context=f"{context} learn agent backlog out",
+        cmd=agent_backlog_out_cmd,
+        expected_path=str(agent_backlog_out_path),
+    )
+    assert_agent_backlog_report_json(
+        agent_backlog_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog out file",
+        cmd=agent_backlog_out_cmd,
     )
 
     proposal_profile_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.json")
@@ -9519,6 +9788,165 @@ def run_self_test() -> None:
                 cmd=learn_signals_cmd,
             ),
             expected="learn signals human output missing 'Workspace readiness:'",
+            scope="package smoke",
+        )
+
+        learn_agent_backlog_cmd = [
+            "design-ai",
+            "learn",
+            "--agent-backlog",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        learning_agent_backlog_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:05.000Z",
+            "status": "pass",
+            "signalStatus": "pass",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "counts": {
+                "actions": 1,
+                "p0": 0,
+                "p1": 0,
+                "p2": 1,
+                "p3": 0,
+                "learningEntries": 3,
+                "usageEvents": 2,
+                "evalSignals": 1,
+                "checkCaptures": 1,
+                "workspaceNextActions": 0,
+            },
+            "actions": [
+                {
+                    "rank": 1,
+                    "id": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "evidence": {"checkCaptureCount": 1},
+                },
+            ],
+            "commands": {
+                "signalsJson": "design-ai learn --signals --from-file . --json",
+                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_agent_backlog_report_json(
+            json.dumps(learning_agent_backlog_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+            require_status_pass=True,
+        )
+        assert_agent_backlog_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Agent development backlog",
+                f"Signal source: {Path(tmp)}",
+                "Backlog actions:",
+                "design-ai learn --propose-skills --json",
+                "Privacy: agent backlog is read-only",
+            ]),
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        )
+        assert_agent_backlog_report_markdown(
+            "\n".join([
+                "# Agent Development Backlog Report",
+                "",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Summary",
+                "## Backlog Actions",
+                "design-ai learn --propose-skills --json",
+                "## Follow-Up Commands",
+                "design-ai learn --signals --from-file . --json",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Mutates skill files: no",
+                "- Calls external AI APIs: no",
+                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
+                    "counts": {
+                        **learning_agent_backlog_payload["counts"],
+                        "evalSignals": 0,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include focused backlog counts",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
+                    "privacy": {
+                        **learning_agent_backlog_payload["privacy"],
+                        "mutatesSkillFiles": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should keep read-only local privacy boundaries",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_markdown(
+                "\n".join([
+                    "# Agent Development Backlog Report",
+                    f"- Learning file: {learning_profile_path}",
+                    f"- Usage file: {learning_usage_path}",
+                    "## Summary",
+                    "## Backlog Actions",
+                    "design-ai learn --propose-skills --json",
+                    "## Follow-Up Commands",
+                    "design-ai learn --signals --from-file . --json",
+                    "## Privacy And Boundaries",
+                    "- Mutates learning profile: no",
+                    "- Mutates skill files: yes",
+                    "- Calls external AI APIs: no",
+                    "This report is read-only evidence",
+                ]),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+            ),
+            expected="learn agent backlog Markdown report missing '- Mutates skill files: no'",
             scope="package smoke",
         )
 

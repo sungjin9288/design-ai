@@ -36,7 +36,9 @@ import {
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
 import {
+  agentBacklogReport,
   learningSignalRegistry,
+  renderAgentBacklogReport,
   renderLearningSignalReport,
 } from "../lib/signals.mjs";
 import {
@@ -77,6 +79,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
+  console.log("        design-ai learn --agent-backlog [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
@@ -111,24 +114,25 @@ function printHelp() {
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
-  console.log("  --report             With --curate, --signals, or --propose-skills, emit a Markdown review report instead of human console output");
+  console.log("  --report             With --curate, --signals, --agent-backlog, or --propose-skills, emit a Markdown review report instead of human console output");
   console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
   console.log("  --review-template    With --propose-skills, emit a JSON proposal review-file template without changing review decisions");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
   console.log("  --signals            Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files");
+  console.log("  --agent-backlog      Emit a focused local AI/agent development backlog from the signal registry without changing files");
   console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
   console.log("  --min-evidence N     With --propose-skills, require N related check-capture entries before emitting a proposal. Default: 2");
   console.log("  --review-file path   With --propose-skills, read proposal review decisions without changing the review file");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
-  console.log("  --strict             With --eval, --signals, or --propose-skills, exit non-zero when any checkpoint, signal gate, or skill proposal gate warns or fails");
+  console.log("  --strict             With --eval, --signals, --agent-backlog, or --propose-skills, exit non-zero when any checkpoint, signal, backlog, or proposal gate warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
-  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, --signals, or --propose-skills");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, --signals, --agent-backlog, or --propose-skills");
   console.log("  --json               Emit machine-readable output");
   console.log("  --out file           Write JSON output to a file, export Markdown for --export, or learning review report Markdown");
   console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
@@ -168,6 +172,7 @@ function printHelp() {
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
   console.log("  design-ai learn --signals --from-file . --report --out learning-signals.md");
+  console.log("  design-ai learn --agent-backlog --from-file . --report --out agent-backlog.md");
   console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
@@ -608,6 +613,43 @@ function printSignals(payload) {
   console.log("Privacy: signal registry is read-only and does not mutate learning.json.");
 }
 
+function printAgentBacklog(payload) {
+  header("design-ai learn", "Agent development backlog");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Actions: ${payload.counts.actions}`);
+  info(`Priority: P0 ${payload.counts.p0}, P1 ${payload.counts.p1}, P2 ${payload.counts.p2}, P3 ${payload.counts.p3}`);
+  info(`Learning entries: ${payload.counts.learningEntries}`);
+  info(`Usage events: ${payload.counts.usageEvents}`);
+  info(`Eval signals: ${payload.counts.evalSignals}`);
+  info(`Check captures: ${payload.counts.checkCaptures}`);
+  console.log();
+
+  if (payload.actions.length === 0) {
+    console.log("No agent development backlog actions emitted.");
+  } else {
+    console.log("Backlog actions:");
+    for (const action of payload.actions) {
+      console.log(`- ${action.rank}. ${action.priority} ${action.category}: ${action.title}`);
+      console.log(`  ${dim(action.rationale)}`);
+      if (action.command) console.log(`  ${dim(action.command)}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: agent backlog is read-only, local, and does not mutate learning.json or skill files.");
+}
+
 function printSkillProposals(payload) {
   header("design-ai learn", "Skill evolution proposals");
   info(`File: ${payload.file}`);
@@ -971,6 +1013,12 @@ function applySignalsStrictExit(parsed, payload) {
     parsed.strict
     && (payload.status !== "pass" || payload.agentDevelopment?.status !== "pass")
   ) {
+    process.exitCode = 1;
+  }
+}
+
+function applyAgentBacklogStrictExit(parsed, payload) {
+  if (parsed.strict && (payload.status !== "pass" || payload.signalStatus === "fail")) {
     process.exitCode = 1;
   }
 }
@@ -1393,6 +1441,28 @@ export async function runLearn(args) {
     }
     printSignals(payload);
     applySignalsStrictExit(parsed, payload);
+    return;
+  }
+
+  if (parsed.action === "agent-backlog") {
+    const payload = agentBacklogReport({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      applyAgentBacklogStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderAgentBacklogReport(payload));
+      applyAgentBacklogStrictExit(parsed, payload);
+      return;
+    }
+    printAgentBacklog(payload);
+    applyAgentBacklogStrictExit(parsed, payload);
     return;
   }
 

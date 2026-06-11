@@ -616,6 +616,179 @@ export function learningSignalRegistry({
   };
 }
 
+export function agentBacklogReport({
+  filePath = defaultLearningFile(),
+  usageFile = "",
+  signalSource = "",
+  root = process.cwd(),
+  now = new Date(),
+  signalRegistryProvider = learningSignalRegistry,
+} = {}) {
+  const registry = signalRegistryProvider({
+    filePath,
+    usageFile,
+    signalSource,
+    root,
+    now,
+  });
+  const agentDevelopment = registry.agentDevelopment || {
+    status: "unknown",
+    actionCount: 0,
+    p0Count: 0,
+    p1Count: 0,
+    p2Count: 0,
+    p3Count: 0,
+    actions: [],
+    privacy: {
+      mutatesProfile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      storesRawBriefText: false,
+    },
+  };
+  const actions = Array.isArray(agentDevelopment.actions) ? agentDevelopment.actions : [];
+  return {
+    version: 1,
+    generatedAt: registry.generatedAt || (now instanceof Date ? now : new Date(now)).toISOString(),
+    status: agentDevelopment.status || "unknown",
+    signalStatus: registry.status || "unknown",
+    file: registry.file || path.resolve(filePath),
+    usageFile: registry.usage?.usageFile || path.resolve(usageFile || defaultLearningUsageFile(path.resolve(filePath))),
+    signalSource: registry.signalSource || (signalSource ? path.resolve(signalSource) : path.resolve(root)),
+    counts: {
+      actions: agentDevelopment.actionCount ?? actions.length,
+      p0: agentDevelopment.p0Count ?? 0,
+      p1: agentDevelopment.p1Count ?? 0,
+      p2: agentDevelopment.p2Count ?? 0,
+      p3: agentDevelopment.p3Count ?? 0,
+      learningEntries: registry.learning?.count ?? 0,
+      usageEvents: registry.usage?.eventCount ?? 0,
+      evalSignals: registry.evals?.count ?? 0,
+      checkCaptures: registry.checkCapture?.count ?? 0,
+      workspaceNextActions: registry.workspace?.nextActionCount ?? 0,
+    },
+    actions,
+    commands: {
+      signalsJson: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --json`,
+      signalsReport: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --report --out learning-signals.md`,
+    },
+    recommendations: registry.recommendations || [],
+    privacy: {
+      mutatesProfile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      storesRawBriefText: false,
+      readsSignalFilesOnly: true,
+    },
+  };
+}
+
+export function renderAgentBacklogReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const counts = payload.counts || {};
+  const actions = Array.isArray(payload.actions) ? payload.actions : [];
+  const lines = [
+    "# Agent Development Backlog Report",
+    "",
+    listItem("Generated", generatedAtText),
+    listItem("Status", payload.status || "unknown"),
+    listItem("Signal status", payload.signalStatus || "unknown"),
+    listItem("Learning file", payload.file || ""),
+    listItem("Usage file", payload.usageFile || ""),
+    listItem("Signal source", payload.signalSource || ""),
+    "",
+    "## Summary",
+    "",
+    listItem("Actions", counts.actions ?? actions.length),
+    listItem("P0", counts.p0 ?? 0),
+    listItem("P1", counts.p1 ?? 0),
+    listItem("P2", counts.p2 ?? 0),
+    listItem("P3", counts.p3 ?? 0),
+    listItem("Learning entries", counts.learningEntries ?? 0),
+    listItem("Usage events", counts.usageEvents ?? 0),
+    listItem("Eval signals", counts.evalSignals ?? 0),
+    listItem("Check captures", counts.checkCaptures ?? 0),
+    listItem("Workspace next actions", counts.workspaceNextActions ?? 0),
+    "",
+    "## Backlog Actions",
+    "",
+  ];
+
+  if (actions.length === 0) {
+    lines.push("No agent development backlog actions emitted.");
+  } else {
+    for (const action of actions) {
+      lines.push(`### ${action.rank}. ${action.title}`);
+      lines.push("");
+      lines.push(listItem("Id", action.id));
+      lines.push(listItem("Priority", action.priority));
+      lines.push(listItem("Category", action.category));
+      lines.push(listItem("Rationale", action.rationale));
+      if (action.command) {
+        lines.push("");
+        lines.push("Command:");
+        lines.push("");
+        lines.push("```bash");
+        lines.push(action.command);
+        lines.push("```");
+      }
+      const evidence = action.evidence && typeof action.evidence === "object" ? action.evidence : {};
+      const evidenceItems = Object.entries(evidence);
+      if (evidenceItems.length > 0) {
+        lines.push("");
+        lines.push("Evidence:");
+        for (const [key, value] of evidenceItems) {
+          const rendered = typeof value === "object" ? JSON.stringify(value) : String(value);
+          lines.push(`- ${key}: ${rendered}`);
+        }
+      }
+      lines.push("");
+    }
+  }
+
+  const recommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
+  lines.push("## Recommendations", "");
+  if (recommendations.length === 0) {
+    lines.push("No recommendations emitted.");
+  } else {
+    for (const recommendation of recommendations) {
+      lines.push(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  const commands = payload.commands || {};
+  lines.push("", "## Follow-Up Commands", "");
+  if (commands.signalsJson) {
+    lines.push("Signal registry JSON:");
+    lines.push("");
+    lines.push("```bash");
+    lines.push(commands.signalsJson);
+    lines.push("```");
+    lines.push("");
+  }
+  if (commands.signalsReport) {
+    lines.push("Signal registry Markdown:");
+    lines.push("");
+    lines.push("```bash");
+    lines.push(commands.signalsReport);
+    lines.push("```");
+    lines.push("");
+  }
+
+  const privacy = payload.privacy || {};
+  lines.push("## Privacy And Boundaries", "");
+  lines.push(listItem("Mutates learning profile", yesNo(Boolean(privacy.mutatesProfile))));
+  lines.push(listItem("Mutates skill files", yesNo(Boolean(privacy.mutatesSkillFiles))));
+  lines.push(listItem("Calls external AI APIs", yesNo(Boolean(privacy.callsExternalAiApis))));
+  lines.push(listItem("Stores raw brief text", yesNo(Boolean(privacy.storesRawBriefText))));
+  lines.push(listItem("Reads signal files only", yesNo(Boolean(privacy.readsSignalFilesOnly))));
+  lines.push("", "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.");
+
+  return `${lines.join("\n")}\n`;
+}
+
 export function renderLearningSignalReport(payload, {
   generatedAt = new Date(),
 } = {}) {

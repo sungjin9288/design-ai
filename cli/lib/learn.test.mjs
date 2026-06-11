@@ -48,7 +48,9 @@ import {
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
 import {
+  agentBacklogReport,
   learningSignalRegistry,
+  renderAgentBacklogReport,
   summarizeSignalEvalFile,
 } from "./signals.mjs";
 import {
@@ -320,6 +322,20 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(signalsReportArgs.outPath, "learning-signals.md");
   assert.equal(signalsReportArgs.force, true);
 
+  const agentBacklogArgs = parseLearnArgs(["--agent-backlog", "--from-file", "signals", "--usage-file", "learning.usage.json", "--strict", "--json"]);
+  assert.equal(agentBacklogArgs.action, "agent-backlog");
+  assert.equal(agentBacklogArgs.fromFile, "signals");
+  assert.equal(agentBacklogArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(agentBacklogArgs.strict, true);
+  assert.equal(agentBacklogArgs.json, true);
+
+  const agentBacklogReportArgs = parseLearnArgs(["--agent-backlog", "--from-file", "signals", "--report", "--out", "agent-backlog.md", "--force"]);
+  assert.equal(agentBacklogReportArgs.action, "agent-backlog");
+  assert.equal(agentBacklogReportArgs.fromFile, "signals");
+  assert.equal(agentBacklogReportArgs.report, true);
+  assert.equal(agentBacklogReportArgs.outPath, "agent-backlog.md");
+  assert.equal(agentBacklogReportArgs.force, true);
+
   const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--review-file", "skill-proposals.review.json", "--min-evidence", "3", "--strict", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
@@ -462,7 +478,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
-    /--usage-file can only be used with --usage, --curate, --signals, or --propose-skills/,
+    /--usage-file can only be used with --usage, --curate, --signals, --agent-backlog, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--review-file", "skill-proposals.review.json"]),
@@ -490,7 +506,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--report"]),
-    /--report can only be used with --curate, --signals, or --propose-skills/,
+    /--report can only be used with --curate, --signals, --agent-backlog, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--report", "--json"]),
@@ -526,7 +542,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--strict"]),
-    /--strict can only be used with --eval, --signals, or --propose-skills/,
+    /--strict can only be used with --eval, --signals, --agent-backlog, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--eval"]),
@@ -535,6 +551,14 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--signals", "--stdin"]),
     /--signals does not support --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--agent-backlog", "--stdin"]),
+    /--agent-backlog does not support --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--agent-backlog", "--yes"]),
+    /--agent-backlog is read-only/,
   );
   assert.throws(
     () => parseLearnArgs(["--propose-skills", "--stdin"]),
@@ -3303,6 +3327,84 @@ test("learningSignalRegistry joins audit, usage, eval, check capture, and worksp
   assert.equal(payload.privacy.mutatesProfile, false);
 }));
 
+test("agentBacklogReport extracts a focused local agent development backlog", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const profilePath = "/tmp/design-ai-learning.json";
+  const usagePath = "/tmp/design-ai-learning.usage.json";
+  const signalSource = "/tmp/design-ai-signals";
+  const payload = agentBacklogReport({
+    filePath: profilePath,
+    usageFile: usagePath,
+    signalSource,
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "pass",
+      file: profilePath,
+      signalSource,
+      learning: { count: 2 },
+      usage: { usageFile: usagePath, eventCount: 1 },
+      evals: { count: 1 },
+      checkCapture: { count: 2 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "pass",
+        actionCount: 1,
+        p0Count: 0,
+        p1Count: 0,
+        p2Count: 1,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-skill-proposal-preview",
+            priority: "p2",
+            category: "skill-evolution",
+            title: "Preview skill instruction deltas from repeated check-capture signals.",
+            rationale: "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+            command: "design-ai learn --propose-skills --json",
+            evidence: { checkCaptureCount: 2 },
+          },
+        ],
+      },
+      recommendations: [
+        {
+          level: "info",
+          text: "Keep local agent development evidence deterministic.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.version, 1);
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.signalStatus, "pass");
+  assert.equal(payload.file, profilePath);
+  assert.equal(payload.usageFile, usagePath);
+  assert.equal(payload.signalSource, signalSource);
+  assert.equal(payload.counts.actions, 1);
+  assert.equal(payload.counts.p2, 1);
+  assert.equal(payload.counts.learningEntries, 2);
+  assert.equal(payload.counts.usageEvents, 1);
+  assert.equal(payload.counts.evalSignals, 1);
+  assert.equal(payload.counts.checkCaptures, 2);
+  assert.equal(payload.actions[0].id, "agent-skill-proposal-preview");
+  assert.match(payload.commands.signalsJson, /design-ai learn --signals/);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+  assert.equal(payload.privacy.callsExternalAiApis, false);
+
+  const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
+  assert.match(markdown, /# Agent Development Backlog Report/);
+  assert.match(markdown, /## Backlog Actions/);
+  assert.match(markdown, /design-ai learn --propose-skills --json/);
+  assert.match(markdown, /## Follow-Up Commands/);
+  assert.match(markdown, /design-ai learn --signals/);
+  assert.match(markdown, /This report is read-only evidence/);
+});
+
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
   const filePath = path.join(dir, "learning.json");
   const usageFile = defaultLearningUsageFile(filePath);
@@ -3417,6 +3519,120 @@ test("runLearn --signals reports registry JSON and human output without mutating
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 
+test("runLearn --agent-backlog reports JSON, human, and Markdown without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:artifact",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "website-improvement-control-tower",
+        status: "pass",
+        expectedRouteId: "website-improvement",
+        topRouteId: "website-improvement",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.version, 1);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.usageFile, usageFile);
+  assert.equal(payload.counts.checkCaptures, 1);
+  assert.equal(payload.counts.evalSignals, 1);
+  assert.equal(payload.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+  assert.equal(payload.privacy.callsExternalAiApis, false);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+  ]));
+  assert.match(humanOutput, /Agent development backlog/);
+  assert.match(humanOutput, /Backlog actions:/);
+  assert.match(humanOutput, /learn --propose-skills/);
+  assert.match(humanOutput, /Privacy: agent backlog is read-only/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+  ]));
+  assert.match(reportOutput, /# Agent Development Backlog Report/);
+  assert.match(reportOutput, /## Follow-Up Commands/);
+  assert.match(reportOutput, /This report is read-only evidence/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportFile = path.join(dir, "agent-backlog.md");
+  const reportWriteOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportFile,
+  ]));
+  assert.match(reportWriteOutput, /Wrote /);
+  assert.match(readFileSync(reportFile, "utf8"), /# Agent Development Backlog Report/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+}));
+
 test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {
   const previousExitCode = process.exitCode;
   const filePath = path.join(dir, "learning.json");
@@ -3462,6 +3678,65 @@ test("runLearn --signals --strict exits non-zero when signal registry is not pas
     process.exitCode = 0;
     await captureStdout(() => runLearn([
       "--signals",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
+}));
+
+test("runLearn --agent-backlog --strict exits non-zero when backlog warns", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-workflow",
+        category: "workflow",
+        text: "Prefer deterministic local agent development gates.",
+        source: "test",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--agent-backlog",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.signalStatus, "warn");
+    assert.equal(process.exitCode, 1);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--agent-backlog",
       "--file",
       filePath,
       "--usage-file",

@@ -50,6 +50,18 @@ design-ai learn --signals --from-file route-eval-report.json --usage-file learni
 
 `--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews. Add `--strict` when you want the signal registry or agent development backlog to fail a local gate on warn/fail status.
 
+## Agent development backlog
+
+Use the focused backlog when you want only the local AI/agent next-action queue from the signal registry, without the full learning/usage/eval/workspace report.
+
+```bash
+design-ai learn --agent-backlog --from-file . --json
+design-ai learn --agent-backlog --from-file . --strict --json
+design-ai learn --agent-backlog --from-file . --report --out agent-backlog.md
+```
+
+The command is read-only and uses the same deterministic `agentDevelopment` data as `learn --signals`. It does not mutate `learning.json`, skill files, usage sidecars, eval files, or target repositories, and it does not call external AI APIs.
+
 ## Skill evolution proposals
 
 Use skill evolution proposals after repeated `check --learn --yes` captures point at the same route or category. The report turns those local signals into candidate skill edits, but it remains preview-only.

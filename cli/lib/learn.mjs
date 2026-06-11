@@ -47,6 +47,7 @@ const LEARN_OPTIONS = [
   "--stats",
   "--usage",
   "--signals",
+  "--agent-backlog",
   "--propose-skills",
   "--patch",
   "--eval",
@@ -309,6 +310,8 @@ export function parseLearnArgs(args) {
       setAction(out, "usage");
     } else if (arg === "--signals") {
       setAction(out, "signals");
+    } else if (arg === "--agent-backlog") {
+      setAction(out, "agent-backlog");
     } else if (arg === "--propose-skills") {
       setAction(out, "propose-skills");
     } else if (arg === "--eval") {
@@ -396,7 +399,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals", "propose-skills"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -461,8 +464,8 @@ export function parseLearnArgs(args) {
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (out.usageFilePath && !["usage", "curate", "signals", "propose-skills"].includes(out.action)) {
-    throw new Error("--usage-file can only be used with --usage, --curate, --signals, or --propose-skills");
+  if (out.usageFilePath && !["usage", "curate", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage, --curate, --signals, --agent-backlog, or --propose-skills");
   }
   if (out.reviewFilePath && out.action !== "propose-skills") {
     throw new Error("--review-file can only be used with --propose-skills");
@@ -476,8 +479,8 @@ export function parseLearnArgs(args) {
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");
   }
-  if (out.report && !["curate", "signals", "propose-skills"].includes(out.action)) {
-    throw new Error("--report can only be used with --curate, --signals, or --propose-skills");
+  if (out.report && !["curate", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--report can only be used with --curate, --signals, --agent-backlog, or --propose-skills");
   }
   if (out.patch && out.action !== "propose-skills") {
     throw new Error("--patch can only be used with --propose-skills");
@@ -485,14 +488,20 @@ export function parseLearnArgs(args) {
   if ([out.json, out.report, out.patch, out.reviewTemplate].filter(Boolean).length > 1) {
     throw new Error("Choose only one output mode: --json, --report, --patch, or --review-template");
   }
-  if (out.strict && !["eval", "signals", "propose-skills"].includes(out.action)) {
-    throw new Error("--strict can only be used with --eval, --signals, or --propose-skills");
+  if (out.strict && !["eval", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--strict can only be used with --eval, --signals, --agent-backlog, or --propose-skills");
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
   }
   if (out.action === "signals" && out.stdin) {
     throw new Error("--signals does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "agent-backlog" && out.stdin) {
+    throw new Error("--agent-backlog does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "agent-backlog" && out.yes) {
+    throw new Error("--agent-backlog is read-only and does not accept --yes");
   }
   if (out.action === "propose-skills" && out.stdin) {
     throw new Error("--propose-skills does not support --stdin; use --from-file for a signal file or directory");
@@ -509,9 +518,10 @@ export function parseLearnArgs(args) {
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
     || (out.action === "curate" && out.report)
     || (out.action === "signals" && out.report)
+    || (out.action === "agent-backlog" && out.report)
     || (out.action === "propose-skills" && (out.report || out.patch || out.reviewTemplate));
   if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, --propose-skills --report, or --propose-skills --patch");
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, --signals --report, --agent-backlog --report, --propose-skills --report, --propose-skills --patch, or --propose-skills --review-template");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());
