@@ -327,7 +327,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --curate \[--dry-run\|--yes\] \[--usage-file path\] \[--json\|--report\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
   assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive entries, plus usage review hints/);
-  assert.match(learnOutput, /--report\s+With --curate or --propose-skills, emit a Markdown review report instead of human console output/);
+  assert.match(learnOutput, /--report\s+With --curate, --signals, or --propose-skills, emit a Markdown review report instead of human console output/);
   assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files/);
   assert.match(learnOutput, /design-ai learn --init --yes --json/);
   assert.match(learnOutput, /design-ai learn --curate --yes --json/);
@@ -336,7 +336,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
   assert.match(learnOutput, /design-ai learn --usage \[--limit N\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--usage\s+Summarize prompt\/pack --with-learning usage sidecar events without changing files/);
-  assert.match(learnOutput, /design-ai learn --signals \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --signals \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--strict\] \[--json\|--report\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--signals\s+Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files/);
   assert.match(learnOutput, /design-ai learn --propose-skills \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--review-file path\] \[--min-evidence N\] \[--strict\] \[--json\|--report\|--patch\|--review-template\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--propose-skills\s+Preview skill instruction deltas from repeated check-capture learning signals without changing files/);
@@ -353,6 +353,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --eval-template --query "keyboard accessibility" --out learning-eval\.json/);
   assert.match(learnOutput, /design-ai learn --eval --from-file learning-eval\.json --strict --json/);
   assert.match(learnOutput, /design-ai learn --signals --from-file \. --json/);
+  assert.match(learnOutput, /design-ai learn --signals --from-file \. --report --out learning-signals\.md/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --min-evidence 3 --json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --strict --json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-file skill-proposals\.review\.json --strict --json/);

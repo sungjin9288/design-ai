@@ -313,6 +313,13 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(strictSignalsArgs.action, "signals");
   assert.equal(strictSignalsArgs.strict, true);
 
+  const signalsReportArgs = parseLearnArgs(["--signals", "--from-file", "signals", "--report", "--out", "learning-signals.md", "--force"]);
+  assert.equal(signalsReportArgs.action, "signals");
+  assert.equal(signalsReportArgs.fromFile, "signals");
+  assert.equal(signalsReportArgs.report, true);
+  assert.equal(signalsReportArgs.outPath, "learning-signals.md");
+  assert.equal(signalsReportArgs.force, true);
+
   const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--review-file", "skill-proposals.review.json", "--min-evidence", "3", "--strict", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
@@ -483,7 +490,7 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--report"]),
-    /--report can only be used with --curate or --propose-skills/,
+    /--report can only be used with --curate, --signals, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--report", "--json"]),
@@ -3375,6 +3382,39 @@ test("runLearn --signals reports registry JSON and human output without mutating
   assert.match(humanOutput, /Agent development backlog:/);
   assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: signal registry is read-only/);
+
+  const reportOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+  ]));
+  assert.match(reportOutput, /# Learning Signal Registry Report/);
+  assert.match(reportOutput, /## Agent Development Backlog/);
+  assert.match(reportOutput, /```bash\n.*learn --propose-skills/s);
+  assert.match(reportOutput, /This report is read-only evidence/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportFile = path.join(dir, "learning-signals.md");
+  const reportWriteOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportFile,
+  ]));
+  assert.match(reportWriteOutput, /Wrote /);
+  assert.match(readFileSync(reportFile, "utf8"), /# Learning Signal Registry Report/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 
 test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {

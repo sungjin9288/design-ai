@@ -108,6 +108,14 @@ design-ai learn --eval-template --file ./learning.json --out ./learning-eval.jso
 design-ai workspace --learning-file ./learning.json --strict
 ```
 
+For a durable local AI/agent development handoff, save the read-only signal registry as Markdown:
+
+```bash
+design-ai learn --signals --from-file . --report --out learning-signals.md
+```
+
+The report includes learning audit state, usage sidecar counts, eval signal files, check-capture summaries, workspace readiness, deterministic agent development backlog actions, recommendations, and privacy boundaries. It does not mutate `learning.json`, usage sidecars, eval files, skill files, or target repositories.
+
 If sibling restore rollback backups are present, `workspace` remains read-only and only reports the inventory. When more than five backups exist, the next action points to a dry-run-safe prune command:
 
 ```bash

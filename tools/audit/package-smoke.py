@@ -5624,6 +5624,40 @@ def assert_learning_signal_report_human(
         )
 
 
+def assert_learning_signal_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Learning Signal Registry Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Learning Profile",
+        "## Usage Signals",
+        "## Eval Signals",
+        "## Check Capture",
+        "## Workspace Readiness",
+        "## Agent Development Backlog",
+        "```bash",
+        "design-ai learn --propose-skills",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Stores raw brief text: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn signals Markdown report missing {expected!r}",
+        )
+
+
 def assert_skill_proposal_report_json(
     raw: str,
     *,
@@ -6653,6 +6687,35 @@ def assert_learning_relevance_smoke(
         usage_path=usage_path,
         context=f"{context} learn signals JSON",
         cmd=signals_json_cmd,
+    )
+
+    signals_report_path = profile_path.with_name(f"{profile_path.stem}-signals-report.md")
+    signals_report_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(signals_report_path),
+    )
+    signals_report_result = run_plain(signals_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        signals_report_result.stdout,
+        context=f"{context} learn signals Markdown report",
+        cmd=signals_report_cmd,
+        expected_path=str(signals_report_path),
+    )
+    assert_learning_signal_report_markdown(
+        signals_report_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals Markdown report",
+        cmd=signals_report_cmd,
     )
 
     signals_strict_json_cmd = command_factory(
@@ -9361,6 +9424,31 @@ def run_self_test() -> None:
             ]),
             context=context,
             cmd=learn_signals_cmd,
+        )
+        assert_learning_signal_report_markdown(
+            "\n".join([
+                "# Learning Signal Registry Report",
+                "",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Learning Profile",
+                "## Usage Signals",
+                "## Eval Signals",
+                "## Check Capture",
+                "## Workspace Readiness",
+                "## Agent Development Backlog",
+                "```bash",
+                "design-ai learn --propose-skills --json",
+                "```",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Stores raw brief text: no",
+                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_signals_cmd[:-1], "--report"],
         )
         expect_self_test_failure(
             lambda: assert_learning_signal_report_json(

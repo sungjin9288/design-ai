@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 429 — Learning Signal Markdown Handoff Reports (unreleased)
+
+`design-ai learn --signals --report --out learning-signals.md` now writes a durable Markdown handoff for the local AI/agent signal registry. This turns the existing read-only JSON/human signal surface into a shareable artifact covering learning audit state, usage sidecar counts, eval signal files, check captures, workspace readiness, deterministic agent development backlog actions, recommendations, and privacy boundaries.
+
+### Changed
+- Added `--report` support for `learn --signals` and kept it mutually exclusive with JSON and other proposal-only output modes.
+- Added a Markdown signal report renderer with sections for profile audit, usage signals, eval signals, check-capture entries, workspace readiness, agent development backlog, recommendations, and privacy boundaries.
+- Wired report output through safe `--out file` writes without mutating learning profiles, usage sidecars, eval files, skill files, or target repositories.
+- Updated command help, shared smoke assertions, package smoke, AI learning docs, Product Readiness, README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for `learn --signals --report --out learning-signals.md` through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators can archive or share the local AI/agent development backlog before running evals, applying skill proposal decisions, or preparing a push.
+- The report is deterministic, local, and read-only: no `learning.json` mutation, usage sidecar mutation, eval file mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 428 — Skill Proposal Review Template Handoffs (unreleased)
 
 `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` now emits a JSON review-file scaffold for unresolved skill proposals. This closes the operator workflow gap after Phase 427: users no longer need to copy proposal ids by hand before recording manual `applied`, `rejected`, `accepted`, or `deferred` decisions.

@@ -57,6 +57,14 @@ function shellQuote(value) {
   return `'${text.replace(/'/g, "'\\''")}'`;
 }
 
+function yesNo(value) {
+  return value ? "yes" : "no";
+}
+
+function listItem(label, value) {
+  return `- ${label}: ${value}`;
+}
+
 function inferSignalKind(payload, filePath = "") {
   const sourceName = path.basename(filePath).toLowerCase();
   const cases = Array.isArray(payload?.cases) ? payload.cases : [];
@@ -606,4 +614,137 @@ export function learningSignalRegistry({
       readsSignalFilesOnly: true,
     },
   };
+}
+
+export function renderLearningSignalReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const learning = payload.learning || {};
+  const usage = payload.usage || {};
+  const evals = payload.evals || {};
+  const workspace = payload.workspace || {};
+  const agentDevelopment = payload.agentDevelopment || {};
+  const lines = [
+    "# Learning Signal Registry Report",
+    "",
+    listItem("Generated", generatedAtText),
+    listItem("Status", payload.status || "unknown"),
+    listItem("Learning file", payload.file || ""),
+    listItem("Signal source", payload.signalSource || ""),
+    "",
+    "## Learning Profile",
+    "",
+    listItem("Exists", yesNo(Boolean(learning.exists))),
+    listItem("Version", learning.version ?? ""),
+    listItem("Updated at", learning.updatedAt || ""),
+    listItem("Entries", learning.count ?? 0),
+    listItem("Audit status", learning.auditSummary?.status || "unknown"),
+    listItem("Audit failures", learning.auditSummary?.failures ?? 0),
+    listItem("Audit warnings", learning.auditSummary?.warnings ?? 0),
+    "",
+    "## Usage Signals",
+    "",
+    listItem("Usage file", usage.usageFile || ""),
+    listItem("Exists", yesNo(Boolean(usage.exists))),
+    listItem("Events", usage.eventCount ?? 0),
+    listItem("Used entries", usage.usedEntryCount ?? 0),
+    listItem("Unused entries", usage.unusedEntryCount ?? 0),
+    listItem("Stale selected ids", usage.staleSelectedEntryCount ?? 0),
+    listItem("Stores raw brief text", yesNo(Boolean(usage.privacy?.storesRawBriefText))),
+    "",
+    "## Eval Signals",
+    "",
+    listItem("Source", evals.source || ""),
+    listItem("Files", evals.count ?? 0),
+    listItem("Reports", evals.reports ?? 0),
+    listItem("Templates", evals.templates ?? 0),
+    listItem("Passed", evals.passed ?? 0),
+    listItem("Warned", evals.warned ?? 0),
+    listItem("Failed", evals.failed ?? 0),
+  ];
+
+  const evalFiles = Array.isArray(evals.files) ? evals.files : [];
+  if (evalFiles.length > 0) {
+    lines.push("", "Eval files:");
+    for (const item of evalFiles) {
+      const counts = item.shape === "report"
+        ? ` pass ${item.passed} / warn ${item.warned} / fail ${item.failed}`
+        : `${item.caseCount} case(s)`;
+      lines.push(`- \`${item.file}\`: ${item.kind} ${item.shape} ${item.status} (${counts})`);
+      if (item.error) lines.push(`  - ${item.error}`);
+    }
+  }
+
+  const latestCaptures = Array.isArray(payload.checkCapture?.latestEntries)
+    ? payload.checkCapture.latestEntries
+    : [];
+  lines.push("", "## Check Capture", "");
+  lines.push(listItem("Entries", payload.checkCapture?.count ?? 0));
+  if (latestCaptures.length > 0) {
+    lines.push("", "Recent captures:");
+    for (const entry of latestCaptures) {
+      lines.push(`- \`${entry.id}\` [${entry.category}] ${entry.source}`);
+      if (entry.textPreview) lines.push(`  - ${entry.textPreview}`);
+    }
+  }
+
+  lines.push("", "## Workspace Readiness", "");
+  lines.push(listItem("Root", workspace.root || ""));
+  lines.push(listItem("Branch", workspace.git?.branch || "unknown"));
+  lines.push(listItem("Clean", yesNo(Boolean(workspace.git?.clean))));
+  lines.push(listItem("Repository status", workspace.repository?.status || "unknown"));
+  lines.push(listItem("Learning status", workspace.learning?.status || "unknown"));
+  lines.push(listItem("Usage status", workspace.learningUsage?.status || "unknown"));
+  lines.push(listItem("Eval status", workspace.learningEval?.status || "not checked"));
+  lines.push(listItem("Next actions", workspace.nextActionCount ?? 0));
+
+  const actions = Array.isArray(agentDevelopment.actions) ? agentDevelopment.actions : [];
+  lines.push("", "## Agent Development Backlog", "");
+  lines.push(listItem("Status", agentDevelopment.status || "unknown"));
+  lines.push(listItem("Actions", agentDevelopment.actionCount ?? actions.length));
+  lines.push(listItem("P0", agentDevelopment.p0Count ?? 0));
+  lines.push(listItem("P1", agentDevelopment.p1Count ?? 0));
+  lines.push(listItem("P2", agentDevelopment.p2Count ?? 0));
+  lines.push(listItem("P3", agentDevelopment.p3Count ?? 0));
+  if (actions.length > 0) {
+    lines.push("");
+    for (const action of actions) {
+      lines.push(`### ${action.rank}. ${action.title}`);
+      lines.push("");
+      lines.push(listItem("Id", action.id));
+      lines.push(listItem("Priority", action.priority));
+      lines.push(listItem("Category", action.category));
+      lines.push(listItem("Rationale", action.rationale));
+      if (action.command) {
+        lines.push("");
+        lines.push("Command:");
+        lines.push("");
+        lines.push("```bash");
+        lines.push(action.command);
+        lines.push("```");
+      }
+      lines.push("");
+    }
+  }
+
+  const recommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
+  lines.push("## Recommendations", "");
+  if (recommendations.length === 0) {
+    lines.push("No recommendations emitted.");
+  } else {
+    for (const recommendation of recommendations) {
+      lines.push(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  const privacy = payload.privacy || {};
+  lines.push("", "## Privacy And Boundaries", "");
+  lines.push(listItem("Mutates learning profile", yesNo(Boolean(privacy.mutatesProfile))));
+  lines.push(listItem("Stores raw brief text", yesNo(Boolean(privacy.storesRawBriefText))));
+  lines.push(listItem("Reads signal files only", yesNo(Boolean(privacy.readsSignalFilesOnly))));
+  lines.push(listItem("External AI APIs", "no"));
+  lines.push("", "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.");
+
+  return `${lines.join("\n")}\n`;
 }

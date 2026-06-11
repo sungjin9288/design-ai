@@ -35,7 +35,10 @@ import {
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
-import { learningSignalRegistry } from "../lib/signals.mjs";
+import {
+  learningSignalRegistry,
+  renderLearningSignalReport,
+} from "../lib/signals.mjs";
 import {
   buildSkillEvolutionProposals,
   renderSkillProposalReviewTemplate,
@@ -73,7 +76,7 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
@@ -108,7 +111,7 @@ function printHelp() {
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
-  console.log("  --report             With --curate or --propose-skills, emit a Markdown review report instead of human console output");
+  console.log("  --report             With --curate, --signals, or --propose-skills, emit a Markdown review report instead of human console output");
   console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
   console.log("  --review-template    With --propose-skills, emit a JSON proposal review-file template without changing review decisions");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
@@ -164,6 +167,7 @@ function printHelp() {
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
   console.log("  design-ai learn --signals --from-file . --json");
+  console.log("  design-ai learn --signals --from-file . --report --out learning-signals.md");
   console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
@@ -1379,6 +1383,11 @@ export async function runLearn(args) {
     });
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
+      applySignalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderLearningSignalReport(payload));
       applySignalsStrictExit(parsed, payload);
       return;
     }
