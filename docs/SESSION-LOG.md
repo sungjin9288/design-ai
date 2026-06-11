@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 444 (unreleased)** — Added queue-level `commandEffectSummary` metadata to focused `design-ai learn --agent-backlog` outputs so operators can review aggregate output/profile/usage targets and mutation flags before opening each command manifest entry.
 - **Phase 443 (unreleased)** — Added command manifest effect metadata to focused `design-ai learn --agent-backlog` outputs so operators can see output targets, profile targets, usage targets, mutation flags, and review reasons without parsing shell text.
 - **Phase 442 (unreleased)** — Added command manifest run-policy metadata to focused `design-ai learn --agent-backlog` execution queues, human output, Markdown reports, and package smoke assertions.
 - **Phase 441 (unreleased)** — Added explicit ordered queue metadata, recommended next action output, and queue order reporting to focused `design-ai learn --agent-backlog` action plans, human output, Markdown reports, and package smoke assertions.

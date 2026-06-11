@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 444 — Agent Backlog Command Effect Summary (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now include a queue-level `commandEffectSummary`. Operators and local automation can scan aggregate output targets, learning profile targets, usage sidecar targets, and mutation flags before opening every command manifest entry.
+
+### Changed
+- Added deterministic `commandEffectSummary` metadata to focused agent backlog execution queues.
+- Aggregated unique output/profile/usage targets and mutation flags from command manifest `commandEffects`.
+- Surfaced command effect target counts in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so queue-level command effect summary drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to review at queue level before inspecting each command-bearing action.
+- This remains deterministic and local; it only summarizes already-emitted command metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 443 — Agent Backlog Command Effects Manifest (unreleased)
 
 `design-ai learn --agent-backlog` command manifests now include explicit effect metadata for command-bearing actions. Operators and local automation can inspect output targets, learning profile targets, usage sidecar targets, mutation flags, and review reasons without parsing shell text.

@@ -5720,6 +5720,7 @@ def assert_agent_backlog_report_json(
     execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
     ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
+    command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
@@ -5736,6 +5737,16 @@ def assert_agent_backlog_report_json(
         and execution_queue.get("mutationReviewCount", -1) >= 0
         and execution_queue.get("orderedCount", 0) >= 1
         and execution_queue.get("commandManifestCount", 0) >= 1
+        and isinstance(command_effect_summary, dict)
+        and command_effect_summary.get("totalCommands", 0) >= 1
+        and command_effect_summary.get("outputTargetCount", -1) >= 0
+        and command_effect_summary.get("profileTargetCount", -1) >= 0
+        and command_effect_summary.get("usageTargetCount", -1) >= 0
+        and command_effect_summary.get("mutationFlagCount", -1) >= 0
+        and isinstance(command_effect_summary.get("outputTargets"), list)
+        and isinstance(command_effect_summary.get("profileTargets"), list)
+        and isinstance(command_effect_summary.get("usageTargets"), list)
+        and isinstance(command_effect_summary.get("mutationFlags"), list)
         and execution_queue.get("nextActionId")
         and "learn --propose-skills" in str(execution_queue.get("nextCommand", ""))
         and execution_queue.get("nextCommandRunPolicy") == "preview-only"
@@ -5821,6 +5832,7 @@ def assert_agent_backlog_report_human(
         "next command policy:",
         "queue order:",
         "command manifest:",
+        "command effects:",
         "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
@@ -5861,6 +5873,7 @@ def assert_agent_backlog_report_markdown(
         "- Local mutation review commands: 0",
         "- Ordered commands: 1",
         "- Command manifest entries: 1",
+        "- Command effect targets:",
         "- Recommended next action: agent-skill-proposal-preview",
         "- Recommended next command policy: preview-only",
         "Recommended next command:",
@@ -10006,6 +10019,20 @@ def run_self_test() -> None:
                     "nextActionId": "agent-skill-proposal-preview",
                     "nextCommand": "design-ai learn --propose-skills --json",
                     "nextCommandRunPolicy": "preview-only",
+                    "commandEffectSummary": {
+                        "totalCommands": 1,
+                        "writesLocalFileCount": 0,
+                        "mutatesLocalStateCount": 0,
+                        "requiresCleanWorkspaceCount": 0,
+                        "outputTargetCount": 0,
+                        "profileTargetCount": 0,
+                        "usageTargetCount": 0,
+                        "mutationFlagCount": 0,
+                        "outputTargets": [],
+                        "profileTargets": [],
+                        "usageTargets": [],
+                        "mutationFlags": [],
+                    },
                     "ordered": [
                         {
                             "rank": 1,
@@ -10134,6 +10161,7 @@ def run_self_test() -> None:
                 "next command policy:",
                 "queue order:",
                 "command manifest:",
+                "command effects:",
                 "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
@@ -10162,6 +10190,7 @@ def run_self_test() -> None:
                 "- Local mutation review commands: 0",
                 "- Ordered commands: 1",
                 "- Command manifest entries: 1",
+                "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
                 "Recommended next command:",
@@ -10297,6 +10326,7 @@ def run_self_test() -> None:
                     "- Local mutation review commands: 0",
                     "- Ordered commands: 1",
                     "- Command manifest entries: 1",
+                    "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
                     "Recommended next command:",

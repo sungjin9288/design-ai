@@ -3407,6 +3407,11 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-skill-proposal-preview");
   assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --propose-skills --json/);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlagCount, 0);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
@@ -3440,6 +3445,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Local file-write review commands: 0/);
   assert.match(markdown, /Ordered commands: 1/);
   assert.match(markdown, /Command manifest entries: 1/);
+  assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command:/);
@@ -3534,6 +3540,14 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 3);
   assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-learning-profile-init");
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 3);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlagCount, 1);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.outputTargets, [{ flag: "--out", value: "learning-eval.json" }]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--yes"]);
   assert.deepEqual(payload.actionPlan.executionQueue.ordered.map((item) => item.actionId), [
     "agent-learning-profile-init",
     "agent-eval-checkpoint-generate",

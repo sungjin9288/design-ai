@@ -649,6 +649,10 @@ function printAgentBacklog(payload) {
     const queue = payload.actionPlan?.executionQueue;
     if (queue) {
       console.log(`  ${dim(`execution queue: ${queue.previewCount || 0} preview, ${queue.fileWriteReviewCount || 0} file-write review, ${queue.mutationReviewCount || 0} mutation review`)}`);
+      const effectSummary = queue.commandEffectSummary && typeof queue.commandEffectSummary === "object" ? queue.commandEffectSummary : null;
+      if (effectSummary) {
+        console.log(`  ${dim(`command effects: ${effectSummary.outputTargetCount || 0} output, ${effectSummary.profileTargetCount || 0} profile, ${effectSummary.usageTargetCount || 0} usage, ${effectSummary.mutationFlagCount || 0} mutation flags`)}`);
+      }
       if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
       if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
       if (queue.nextCommandRunPolicy) console.log(`  ${dim(`next command policy: ${queue.nextCommandRunPolicy}`)}`);

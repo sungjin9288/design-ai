@@ -427,6 +427,57 @@ function summarizeAgentBacklogCommandEffects(effects = {}) {
   return "read-only";
 }
 
+function uniqueAgentBacklogTargets(targets = []) {
+  const seen = new Set();
+  const unique = [];
+  for (const target of targets) {
+    if (!target || typeof target !== "object") continue;
+    const flag = String(target.flag || "");
+    const value = String(target.value || "");
+    if (!flag || !value) continue;
+    const key = `${flag}\n${value}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push({ flag, value });
+  }
+  return unique;
+}
+
+function uniqueAgentBacklogFlags(flags = []) {
+  return [...new Set(flags.filter(Boolean).map((flag) => String(flag)))];
+}
+
+function summarizeAgentBacklogCommandEffectManifest(commandManifest = []) {
+  const effects = commandManifest
+    .map((item) => (item && typeof item.commandEffects === "object" ? item.commandEffects : {}));
+  const outputTargets = uniqueAgentBacklogTargets(effects.flatMap((item) => (
+    Array.isArray(item.outputTargets) ? item.outputTargets : []
+  )));
+  const profileTargets = uniqueAgentBacklogTargets(effects.flatMap((item) => (
+    Array.isArray(item.profileTargets) ? item.profileTargets : []
+  )));
+  const usageTargets = uniqueAgentBacklogTargets(effects.flatMap((item) => (
+    Array.isArray(item.usageTargets) ? item.usageTargets : []
+  )));
+  const mutationFlags = uniqueAgentBacklogFlags(effects.flatMap((item) => (
+    Array.isArray(item.mutationFlags) ? item.mutationFlags : []
+  )));
+  return {
+    totalCommands: commandManifest.length,
+    writesLocalFileCount: effects.filter((item) => item.writesLocalFiles).length,
+    mutatesLocalStateCount: effects.filter((item) => item.mutatesLocalState).length,
+    requiresCleanWorkspaceCount: effects.filter((item) => item.requiresCleanWorkspace).length,
+    outputTargetCount: outputTargets.length,
+    profileTargetCount: profileTargets.length,
+    usageTargetCount: usageTargets.length,
+    mutationFlagCount: mutationFlags.length,
+    outputTargets,
+    profileTargets,
+    usageTargets,
+    mutationFlags,
+  };
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
@@ -460,6 +511,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       commandEffects: item.commandEffects,
       requiresReviewBeforeMutation: item.requiresReviewBeforeMutation,
     }));
+  const commandEffectSummary = summarizeAgentBacklogCommandEffectManifest(commandManifest);
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -469,6 +521,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     nextActionId: ordered[0]?.actionId || "",
     nextCommand: ordered.find((item) => item.command)?.command || "",
     nextCommandRunPolicy: commandManifest[0]?.runPolicy || "",
+    commandEffectSummary,
     ordered,
     commandManifest,
     preview,
@@ -1001,6 +1054,12 @@ export function renderAgentBacklogReport(payload, {
     lines.push(`- Local mutation review commands: ${executionQueue.mutationReviewCount ?? 0}`);
     lines.push(`- Ordered commands: ${executionQueue.orderedCount ?? 0}`);
     lines.push(`- Command manifest entries: ${executionQueue.commandManifestCount ?? 0}`);
+    const commandEffectSummary = executionQueue.commandEffectSummary && typeof executionQueue.commandEffectSummary === "object"
+      ? executionQueue.commandEffectSummary
+      : null;
+    if (commandEffectSummary) {
+      lines.push(`- Command effect targets: output ${commandEffectSummary.outputTargetCount ?? 0}, profile ${commandEffectSummary.profileTargetCount ?? 0}, usage ${commandEffectSummary.usageTargetCount ?? 0}, mutation flags ${commandEffectSummary.mutationFlagCount ?? 0}`);
+    }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);
     if (executionQueue.nextCommand) {
