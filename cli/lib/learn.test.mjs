@@ -3451,6 +3451,11 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 2);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "clear");
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.phases, ["before", "execute", "after", "refresh"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "execute");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Run agent-skill-proposal-preview");
+  assert.match(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, /learn --propose-skills --json/);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "preview-only");
   assert.deepEqual(
     payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
     [
@@ -3504,6 +3509,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
   assert.match(markdown, /Operator runbook: 4 stage\(s\), 2 command\(s\), 2 required/);
+  assert.match(markdown, /Operator next command: execute: `design-ai learn --propose-skills --json`/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command:/);
@@ -3676,6 +3682,11 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 6);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "mutation-review");
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiresOperatorReview, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "before");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Confirm clean workspace before execution");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, "git status --short");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "");
   assert.deepEqual(
     payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
     [

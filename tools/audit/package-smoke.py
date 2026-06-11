@@ -5748,6 +5748,10 @@ def assert_agent_backlog_report_json(
         and operator_runbook.get("requiredCommandCount", 0) >= execution_queue.get("commandManifestCount", 0)
         and isinstance(operator_runbook.get("phases"), list)
         and operator_runbook.get("phases") == ["before", "execute", "after", "refresh"]
+        and operator_runbook.get("nextStage") in {"before", "execute"}
+        and isinstance(operator_runbook.get("nextCommand"), str)
+        and bool(operator_runbook.get("nextCommand"))
+        and isinstance(operator_runbook.get("nextCommandRequired"), bool)
         and isinstance(operator_runbook.get("stages"), list)
         and any(
             isinstance(stage, dict)
@@ -5905,6 +5909,7 @@ def assert_agent_backlog_report_human(
         "command effect gate runbook:",
         "command effect gates:",
         "operator runbook:",
+        "operator next command:",
         "refresh:",
         "safety: read-only",
         "requires mutation review: no",
@@ -5952,6 +5957,7 @@ def assert_agent_backlog_report_markdown(
         "- Command effect gate runbook:",
         "- Command effect gates:",
         "- Operator runbook:",
+        "- Operator next command:",
         "- Recommended next action: agent-skill-proposal-preview",
         "- Recommended next command policy: preview-only",
         "Recommended next command:",
@@ -10157,6 +10163,11 @@ def run_self_test() -> None:
                         "reviewLevel": "clear",
                         "requiresOperatorReview": False,
                         "phases": ["before", "execute", "after", "refresh"],
+                        "nextStage": "execute",
+                        "nextCommandLabel": "Run agent-skill-proposal-preview",
+                        "nextCommand": "design-ai learn --propose-skills --json",
+                        "nextCommandRequired": True,
+                        "nextCommandRunPolicy": "preview-only",
                         "stages": [
                             {
                                 "phase": "before",
@@ -10341,6 +10352,7 @@ def run_self_test() -> None:
                 "command effect gate runbook:",
                 "command effect gates:",
                 "operator runbook:",
+                "operator next command:",
                 "refresh:",
                 "safety: read-only",
                 "requires mutation review: no",
@@ -10378,6 +10390,7 @@ def run_self_test() -> None:
                 "refresh: Refresh focused agent backlog after review",
                 "design-ai learn --agent-backlog --strict --json",
                 "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+                "- Operator next command: execute: `design-ai learn --propose-skills --json`",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
                 "Recommended next command:",
@@ -10521,6 +10534,7 @@ def run_self_test() -> None:
                     "refresh: Refresh focused agent backlog after review",
                     "design-ai learn --agent-backlog --strict --json",
                     "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+                    "- Operator next command: execute: `design-ai learn --propose-skills --json`",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
                     "Recommended next command:",

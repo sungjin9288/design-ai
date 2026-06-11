@@ -635,6 +635,8 @@ function buildAgentBacklogOperatorRunbook({
     };
   });
   const allCommands = stages.flatMap((stage) => stage.commands);
+  const nextStage = stages.find((stage) => stage.commands.length > 0) || null;
+  const nextCommand = nextStage?.commands?.[0] || null;
   return {
     version: 1,
     stageCount: stages.length,
@@ -643,6 +645,11 @@ function buildAgentBacklogOperatorRunbook({
     reviewLevel: commandEffectReview?.level || "unknown",
     requiresOperatorReview: Boolean(commandEffectReview?.requiresOperatorReview),
     phases: stages.map((stage) => stage.phase),
+    nextStage: nextStage?.phase || "",
+    nextCommandLabel: nextCommand?.label || "",
+    nextCommand: nextCommand?.command || "",
+    nextCommandRequired: Boolean(nextCommand?.required),
+    nextCommandRunPolicy: nextCommand?.runPolicy || "",
     stages,
   };
 }
@@ -1274,6 +1281,9 @@ export function renderAgentBacklogReport(payload, {
       : null;
     if (operatorRunbook) {
       lines.push(`- Operator runbook: ${operatorRunbook.stageCount ?? 0} stage(s), ${operatorRunbook.commandCount ?? 0} command(s), ${operatorRunbook.requiredCommandCount ?? 0} required`);
+      if (operatorRunbook.nextCommand) {
+        lines.push(`- Operator next command: ${operatorRunbook.nextStage || "unknown"}: \`${operatorRunbook.nextCommand}\``);
+      }
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);

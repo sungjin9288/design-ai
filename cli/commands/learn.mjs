@@ -681,6 +681,9 @@ function printAgentBacklog(payload) {
       const operatorRunbook = queue.operatorRunbook && typeof queue.operatorRunbook === "object" ? queue.operatorRunbook : null;
       if (operatorRunbook) {
         console.log(`  ${dim(`operator runbook: ${operatorRunbook.stageCount || 0} stages, ${operatorRunbook.commandCount || 0} commands, ${operatorRunbook.requiredCommandCount || 0} required`)}`);
+        if (operatorRunbook.nextCommand) {
+          console.log(`  ${dim(`operator next command: ${operatorRunbook.nextStage || "unknown"}: ${operatorRunbook.nextCommand}`)}`);
+        }
       }
       if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
       if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);

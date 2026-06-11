@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 451 — Agent Backlog Operator Next Command Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator runbook now exposes the first command an operator should run across `before`, `execute`, `after`, and `refresh` stages. This keeps mutation-review flows from skipping the clean-workspace gate when the queue-level next action points at the first backlog command.
+
+### Changed
+- Added `operatorRunbook.nextStage`, `nextCommand`, `nextCommandLabel`, `nextCommandRequired`, and `nextCommandRunPolicy`.
+- Surfaced the operator next command in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so operator next-command drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer because local scripts and operators can distinguish the first reviewed runbook command from the first backlog action command.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 450 — Agent Backlog Operator Runbook (unreleased)
 
 `design-ai learn --agent-backlog` execution queue now includes a deterministic operator runbook. Local operators and scripts can read `before`, `execute`, `after`, and `refresh` stages directly instead of combining gate buckets with the command manifest by hand.
