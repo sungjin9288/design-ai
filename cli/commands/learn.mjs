@@ -645,6 +645,7 @@ function printAgentBacklog(payload) {
     for (const step of planSteps.slice(0, 3)) {
       console.log(`- ${step.rank}. ${step.priority} ${step.category}: ${step.title}`);
       if (step.command) console.log(`  ${dim(step.command)}`);
+      if (step.commandSafety?.level) console.log(`  ${dim(`safety: ${step.commandSafety.level}`)}`);
       console.log(`  ${dim(`requires mutation review: ${step.requiresReviewBeforeMutation ? "yes" : "no"}`)}`);
     }
   }

@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 438 — Agent Backlog Command Safety Classification (unreleased)
+
+`design-ai learn --agent-backlog` action plans now classify each follow-up command before an operator runs it. Steps distinguish read-only preview/report commands from local output-file writes and apply/fix mutations, making the local AI/agent backlog safer to execute without adding external APIs or dependencies.
+
+### Changed
+- Added `commandSafety` metadata to each `actionPlan.steps[]` item with `level`, local file-write state, local mutation state, detected flags, and a short safety reason.
+- Updated action-plan verification guidance so read-only commands ask for preview review, while file-writing or mutating commands ask for a clean working tree or disposable workspace.
+- Surfaced command safety in human and Markdown `learn --agent-backlog` output.
+- Strengthened unit tests and package-smoke self-test assertions so action-plan safety metadata cannot silently disappear.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development follow-up commands are easier to triage before execution.
+- The agent backlog report remains deterministic, local, and non-mutating; the new metadata only describes the safety profile of emitted follow-up commands.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 437 — Agent Backlog Action Plan Export (unreleased)
 
 `design-ai learn --agent-backlog` now turns the focused local AI/agent backlog into an execution-ready action plan. JSON and Markdown reports preserve ordered steps, verification commands, and mutation-review flags while keeping report generation deterministic, local, and read-only.

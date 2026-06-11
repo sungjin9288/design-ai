@@ -3395,6 +3395,9 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.stepCount, 1);
   assert.equal(payload.actionPlan.nextStep.actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.steps[0].requiresReviewBeforeMutation, false);
+  assert.equal(payload.actionPlan.steps[0].commandSafety.level, "read-only");
+  assert.equal(payload.actionPlan.steps[0].commandSafety.writesLocalFiles, false);
+  assert.equal(payload.actionPlan.steps[0].commandSafety.mutatesLocalState, false);
   assert.match(payload.actionPlan.steps[0].verification.join("\n"), /agent-backlog --strict --json/);
   assert.match(payload.actionPlan.verification[0].command, /design-ai learn --signals/);
   assert.equal(payload.actionPlan.boundaries.reportCallsExternalAiApis, false);
@@ -3408,11 +3411,91 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /## Backlog Actions/);
   assert.match(markdown, /design-ai learn --propose-skills --json/);
   assert.match(markdown, /## Action Plan/);
+  assert.match(markdown, /Command safety: read-only/);
+  assert.match(markdown, /Writes local files: no/);
+  assert.match(markdown, /Mutates local state: no/);
   assert.match(markdown, /Requires mutation review: no/);
   assert.match(markdown, /agent-backlog --strict --json/);
   assert.match(markdown, /## Follow-Up Commands/);
   assert.match(markdown, /design-ai learn --signals/);
   assert.match(markdown, /This report is read-only evidence/);
+});
+
+test("agentBacklogReport classifies action plan command safety", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const payload = agentBacklogReport({
+    filePath: "/tmp/design-ai-learning.json",
+    usageFile: "/tmp/design-ai-learning.usage.json",
+    signalSource: "/tmp/design-ai-signals",
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "warn",
+      file: "/tmp/design-ai-learning.json",
+      signalSource: "/tmp/design-ai-signals",
+      learning: { count: 1 },
+      usage: { usageFile: "/tmp/design-ai-learning.usage.json", eventCount: 0 },
+      evals: { count: 0 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "warn",
+        actionCount: 3,
+        p0Count: 0,
+        p1Count: 2,
+        p2Count: 1,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-eval-checkpoint-generate",
+            priority: "p1",
+            category: "eval-harness",
+            title: "Generate eval checkpoint.",
+            rationale: "Write a replayable checkpoint file.",
+            command: "design-ai learn --eval-template --json --out learning-eval.json",
+            evidence: {},
+          },
+          {
+            rank: 2,
+            id: "agent-learning-profile-init",
+            priority: "p1",
+            category: "learning-profile",
+            title: "Initialize profile.",
+            rationale: "Preview local profile seed entries.",
+            command: "design-ai learn --init --file /tmp/design-ai-learning.json",
+            evidence: {},
+          },
+          {
+            rank: 3,
+            id: "agent-check-capture-seed",
+            priority: "p2",
+            category: "skill-evolution",
+            title: "Capture check feedback.",
+            rationale: "Apply local check captures.",
+            command: "design-ai check artifact.md --learn --yes",
+            evidence: {},
+          },
+        ],
+      },
+      recommendations: [],
+    }),
+  });
+
+  const stepsById = new Map(payload.actionPlan.steps.map((step) => [step.actionId, step]));
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.level, "writes-local-file");
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.writesLocalFiles, true);
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.mutatesLocalState, false);
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").requiresReviewBeforeMutation, true);
+  assert.match(stepsById.get("agent-eval-checkpoint-generate").verification[0], /clean working tree/);
+  assert.equal(stepsById.get("agent-learning-profile-init").commandSafety.level, "read-only");
+  assert.equal(stepsById.get("agent-learning-profile-init").requiresReviewBeforeMutation, false);
+  assert.match(stepsById.get("agent-learning-profile-init").verification[0], /preview\/report output/);
+  assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.level, "mutates-local-state");
+  assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.mutatesLocalState, true);
+  assert.equal(stepsById.get("agent-check-capture-seed").requiresReviewBeforeMutation, true);
 });
 
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
@@ -3610,6 +3693,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(humanOutput, /Agent development backlog/);
   assert.match(humanOutput, /Backlog actions:/);
   assert.match(humanOutput, /Action plan:/);
+  assert.match(humanOutput, /safety: read-only/);
   assert.match(humanOutput, /requires mutation review: no/);
   assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: agent backlog is read-only/);
@@ -3627,6 +3711,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   ]));
   assert.match(reportOutput, /# Agent Development Backlog Report/);
   assert.match(reportOutput, /## Action Plan/);
+  assert.match(reportOutput, /Command safety: read-only/);
   assert.match(reportOutput, /## Follow-Up Commands/);
   assert.match(reportOutput, /This report is read-only evidence/);
   assert.equal(readFileSync(filePath, "utf8"), before);
@@ -3647,6 +3732,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(reportWriteOutput, /Wrote /);
   assert.match(readFileSync(reportFile, "utf8"), /# Agent Development Backlog Report/);
   assert.match(readFileSync(reportFile, "utf8"), /## Action Plan/);
+  assert.match(readFileSync(reportFile, "utf8"), /Command safety: read-only/);
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 

@@ -315,14 +315,35 @@ function agentDevelopmentStatus(actions) {
   return "pass";
 }
 
-function commandRequiresMutationReview(command = "") {
+function classifyAgentBacklogCommand(command = "") {
   const text = String(command || "");
-  return /\s--yes(?:\s|$)/.test(text) || /\s--fix(?:\s|$)/.test(text);
+  const detectedFlags = [];
+  if (/\s--out(?:\s|=|$)/.test(text)) detectedFlags.push("--out");
+  if (/\s--yes(?:\s|$)/.test(text)) detectedFlags.push("--yes");
+  if (/\s--fix(?:\s|$)/.test(text)) detectedFlags.push("--fix");
+  if (/\s--force(?:\s|$)/.test(text)) detectedFlags.push("--force");
+  const writesLocalFiles = detectedFlags.includes("--out");
+  const mutatesLocalState = detectedFlags.some((flag) => flag === "--yes" || flag === "--fix");
+  const level = mutatesLocalState ? "mutates-local-state" : writesLocalFiles ? "writes-local-file" : "read-only";
+  const reason = mutatesLocalState
+    ? "Command includes an apply/fix flag that can mutate local state."
+    : writesLocalFiles
+      ? "Command writes an explicit local output file."
+      : "Command is preview/report oriented and has no detected mutation flags.";
+  return {
+    level,
+    writesLocalFiles,
+    mutatesLocalState,
+    requiresCleanWorkspace: writesLocalFiles || mutatesLocalState,
+    detectedFlags,
+    reason,
+  };
 }
 
 function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
   const steps = actions.map((action, index) => {
     const command = String(action.command || "");
+    const commandSafety = classifyAgentBacklogCommand(command);
     return {
       rank: action.rank ?? index + 1,
       actionId: action.id || "",
@@ -332,14 +353,20 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       command,
       expectedOutcome: action.rationale || "",
       verification: command
-        ? [
-          "Run the command in a clean working tree or disposable workspace when it can change local files.",
-          "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
-        ]
+        ? commandSafety.requiresCleanWorkspace
+          ? [
+            "Run the command in a clean working tree or disposable workspace, then inspect generated or changed files before committing.",
+            "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+          ]
+          : [
+            "Run the command and inspect the preview/report output before applying any follow-up changes.",
+            "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+          ]
         : [
           "Review the action manually, then refresh the agent backlog report.",
         ],
-      requiresReviewBeforeMutation: commandRequiresMutationReview(command),
+      requiresReviewBeforeMutation: commandSafety.requiresCleanWorkspace,
+      commandSafety,
     };
   });
   const verification = [
@@ -824,7 +851,12 @@ export function renderAgentBacklogReport(payload, {
       lines.push(listItem("Action id", step.actionId));
       lines.push(listItem("Priority", step.priority));
       lines.push(listItem("Category", step.category));
+      const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
+      lines.push(listItem("Command safety", commandSafety.level || "unknown"));
+      lines.push(listItem("Writes local files", yesNo(Boolean(commandSafety.writesLocalFiles))));
+      lines.push(listItem("Mutates local state", yesNo(Boolean(commandSafety.mutatesLocalState))));
       lines.push(listItem("Requires mutation review", yesNo(Boolean(step.requiresReviewBeforeMutation))));
+      if (commandSafety.reason) lines.push(listItem("Safety reason", commandSafety.reason));
       if (step.expectedOutcome) lines.push(listItem("Expected outcome", step.expectedOutcome));
       if (step.command) {
         lines.push("");

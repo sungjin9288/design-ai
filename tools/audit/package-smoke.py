@@ -5726,6 +5726,10 @@ def assert_agent_backlog_report_json(
             and item.get("actionId") == "agent-skill-proposal-preview"
             and "learn --propose-skills" in str(item.get("command", ""))
             and item.get("requiresReviewBeforeMutation") is False
+            and isinstance(item.get("commandSafety"), dict)
+            and item["commandSafety"].get("level") == "read-only"
+            and item["commandSafety"].get("writesLocalFiles") is False
+            and item["commandSafety"].get("mutatesLocalState") is False
             for item in action_plan_steps
         )
         and isinstance(action_plan_verification, list)
@@ -5771,6 +5775,7 @@ def assert_agent_backlog_report_human(
         "Signal source:",
         "Backlog actions:",
         "Action plan:",
+        "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
         "Privacy: agent backlog is read-only",
@@ -5800,6 +5805,9 @@ def assert_agent_backlog_report_markdown(
         "## Backlog Actions",
         "design-ai learn --propose-skills",
         "## Action Plan",
+        "- Command safety: read-only",
+        "- Writes local files: no",
+        "- Mutates local state: no",
         "- Requires mutation review: no",
         "design-ai learn --agent-backlog --strict --json",
         "## Follow-Up Commands",
@@ -9877,10 +9885,18 @@ def run_self_test() -> None:
                     "command": "design-ai learn --propose-skills --json",
                     "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
                     "verification": [
-                        "Run the command in a clean working tree or disposable workspace when it can change local files.",
+                        "Run the command and inspect the preview/report output before applying any follow-up changes.",
                         "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
                     ],
                     "requiresReviewBeforeMutation": False,
+                    "commandSafety": {
+                        "level": "read-only",
+                        "writesLocalFiles": False,
+                        "mutatesLocalState": False,
+                        "requiresCleanWorkspace": False,
+                        "detectedFlags": [],
+                        "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                    },
                 },
                 "steps": [
                     {
@@ -9892,10 +9908,18 @@ def run_self_test() -> None:
                         "command": "design-ai learn --propose-skills --json",
                         "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
                         "verification": [
-                            "Run the command in a clean working tree or disposable workspace when it can change local files.",
+                            "Run the command and inspect the preview/report output before applying any follow-up changes.",
                             "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
                         ],
                         "requiresReviewBeforeMutation": False,
+                        "commandSafety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "mutatesLocalState": False,
+                            "requiresCleanWorkspace": False,
+                            "detectedFlags": [],
+                            "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                        },
                     },
                 ],
                 "verification": [
@@ -9947,6 +9971,7 @@ def run_self_test() -> None:
                 f"Signal source: {Path(tmp)}",
                 "Backlog actions:",
                 "Action plan:",
+                "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
                 "Privacy: agent backlog is read-only",
@@ -9964,6 +9989,9 @@ def run_self_test() -> None:
                 "## Backlog Actions",
                 "design-ai learn --propose-skills --json",
                 "## Action Plan",
+                "- Command safety: read-only",
+                "- Writes local files: no",
+                "- Mutates local state: no",
                 "- Requires mutation review: no",
                 "design-ai learn --agent-backlog --strict --json",
                 "## Follow-Up Commands",
@@ -10013,6 +10041,19 @@ def run_self_test() -> None:
             expected="learn agent backlog JSON should include executable action plan steps and verification",
             scope="package smoke",
         )
+        unsafe_action_plan_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        unsafe_action_plan_payload["actionPlan"]["steps"][0].pop("commandSafety", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(unsafe_action_plan_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
         expect_self_test_failure(
             lambda: assert_agent_backlog_report_json(
                 json.dumps({
@@ -10040,6 +10081,9 @@ def run_self_test() -> None:
                     "## Backlog Actions",
                     "design-ai learn --propose-skills --json",
                     "## Action Plan",
+                    "- Command safety: read-only",
+                    "- Writes local files: no",
+                    "- Mutates local state: no",
                     "- Requires mutation review: no",
                     "design-ai learn --agent-backlog --strict --json",
                     "## Follow-Up Commands",
