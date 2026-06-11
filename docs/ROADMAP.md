@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 446 — Agent Backlog Command Effect Gate Commands (unreleased)
+
+`design-ai learn --agent-backlog` command effect review guidance now includes deterministic `gateCommands`. Operators can see the clean-workspace, diff-inspection, and backlog-refresh commands that should frame command-bearing action execution.
+
+### Changed
+- Added `commandEffectReview.gateCommands` metadata to focused agent backlog execution queues.
+- Derived gate commands from command effect review level and target/mutation exposure.
+- Surfaced command effect gate summaries in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so gate-command drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute safely because review guidance now includes concrete verification commands instead of checklist prose only.
+- This remains deterministic and local; it only emits suggested gate commands and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 445 — Agent Backlog Command Effect Review (unreleased)
 
 `design-ai learn --agent-backlog` execution queues now include deterministic `commandEffectReview` guidance. Operators can read a queue-level review headline and checklist derived from command target exposure before running command-bearing actions.

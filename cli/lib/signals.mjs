@@ -505,11 +505,29 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
     : level === "target-review"
       ? "Command targets are explicit and should be reviewed before file changes."
       : "No command target or mutation flag exposure detected.";
+  const gateCommands = [];
+  if (level !== "clear") {
+    gateCommands.push({
+      label: "Confirm clean workspace before execution",
+      command: "git status --short",
+    });
+  }
+  if (hasMutation || hasFileWrite) {
+    gateCommands.push({
+      label: "Inspect local file changes after execution",
+      command: "git diff --stat",
+    });
+  }
+  gateCommands.push({
+    label: "Refresh focused agent backlog after review",
+    command: "design-ai learn --agent-backlog --strict --json",
+  });
   return {
     level,
     requiresOperatorReview: level !== "clear",
     headline,
     checklist,
+    gateCommands,
   };
 }
 
@@ -1105,6 +1123,13 @@ export function renderAgentBacklogReport(payload, {
       const reviewChecklist = Array.isArray(commandEffectReview.checklist) ? commandEffectReview.checklist : [];
       for (const item of reviewChecklist) {
         lines.push(`  - ${item}`);
+      }
+      const gateCommands = Array.isArray(commandEffectReview.gateCommands) ? commandEffectReview.gateCommands : [];
+      if (gateCommands.length > 0) {
+        lines.push("- Command effect gates:");
+        for (const item of gateCommands) {
+          lines.push(`  - ${item.label || "Review gate"}: \`${item.command || ""}\``);
+        }
       }
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
