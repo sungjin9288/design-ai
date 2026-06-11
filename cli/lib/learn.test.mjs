@@ -313,10 +313,11 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(strictSignalsArgs.action, "signals");
   assert.equal(strictSignalsArgs.strict, true);
 
-  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--min-evidence", "3", "--strict", "--json"]);
+  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--review-file", "skill-proposals.review.json", "--min-evidence", "3", "--strict", "--json"]);
   assert.equal(proposeSkillsArgs.action, "propose-skills");
   assert.equal(proposeSkillsArgs.fromFile, "signals");
   assert.equal(proposeSkillsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(proposeSkillsArgs.reviewFilePath, path.resolve("skill-proposals.review.json"));
   assert.equal(proposeSkillsArgs.minEvidenceCount, 3);
   assert.equal(proposeSkillsArgs.strict, true);
   assert.equal(proposeSkillsArgs.json, true);
@@ -449,6 +450,10 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
     /--usage-file can only be used with --usage, --curate, --signals, or --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--review-file", "skill-proposals.review.json"]),
+    /--review-file can only be used with --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--propose-skills", "--min-evidence", "0"]),
@@ -3732,11 +3737,31 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     const strictPayload = JSON.parse(strictOutput);
     assert.equal(strictPayload.status, "warn");
     assert.equal(strictPayload.proposalCount, 1);
+    assert.equal(strictPayload.pendingReviewCount, 1);
     assert.equal(process.exitCode, 1);
     assert.equal(readFileSync(filePath, "utf8"), before);
 
+    const reviewFile = path.join(dir, "skill-proposals.review.json");
+    writeFileSync(reviewFile, JSON.stringify({
+      version: 1,
+      decisions: [
+        {
+          proposalId: strictPayload.proposals[0].id,
+          status: "applied",
+          reviewedAt: "2026-06-10T00:05:00.000Z",
+          reviewer: "local-operator",
+          note: "Instruction delta was manually reviewed and applied.",
+        },
+        {
+          proposalId: "skill-proposal-stale",
+          status: "rejected",
+          reviewedAt: "2026-06-09T00:00:00.000Z",
+        },
+      ],
+    }), "utf8");
+
     process.exitCode = 0;
-    await captureStdout(() => runLearn([
+    const reviewedStrictOutput = await captureStdout(() => runLearn([
       "--propose-skills",
       "--file",
       filePath,
@@ -3744,9 +3769,51 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       usageFile,
       "--from-file",
       dir,
+      "--review-file",
+      reviewFile,
+      "--strict",
       "--json",
     ]));
-    assert.equal(process.exitCode, 0);
+    const reviewedStrictPayload = JSON.parse(reviewedStrictOutput);
+    assert.equal(reviewedStrictPayload.status, "warn");
+    assert.equal(reviewedStrictPayload.signalStatus, "warn");
+    assert.equal(reviewedStrictPayload.pendingReviewCount, 0);
+    assert.equal(reviewedStrictPayload.review.appliedCount, 1);
+    assert.equal(reviewedStrictPayload.review.staleCount, 1);
+    assert.equal(reviewedStrictPayload.proposals[0].reviewStatus, "applied");
+    assert.equal(process.exitCode, 1);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
+    const proposalGatePayload = buildSkillEvolutionProposals({
+      filePath,
+      usageFile,
+      signalSource: dir,
+      root: dir,
+      reviewFile,
+      signalRegistryProvider: ({ signalSource }) => ({
+        status: "pass",
+        signalSource: path.resolve(signalSource),
+      }),
+    });
+    assert.equal(proposalGatePayload.status, "pass");
+    assert.equal(proposalGatePayload.pendingReviewCount, 0);
+    assert.equal(proposalGatePayload.review.appliedCount, 1);
+
+    process.exitCode = 0;
+    const reviewedPatchOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      reviewFile,
+      "--patch",
+    ]));
+    assert.match(reviewedPatchOutput, /No pending skill proposal deltas remain after review-file decisions/);
+    assert.doesNotMatch(reviewedPatchOutput, /diff --git/);
   } finally {
     process.exitCode = previousExitCode;
   }

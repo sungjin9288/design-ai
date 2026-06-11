@@ -73,7 +73,7 @@ function printHelp() {
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--min-evidence N] [--strict] [--json|--report|--patch] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--min-evidence N] [--strict] [--json|--report|--patch] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -115,6 +115,7 @@ function printHelp() {
   console.log("  --signals            Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files");
   console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
   console.log("  --min-evidence N     With --propose-skills, require N related check-capture entries before emitting a proposal. Default: 2");
+  console.log("  --review-file path   With --propose-skills, read proposal review decisions without changing the review file");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
   console.log("  --strict             With --eval, --signals, or --propose-skills, exit non-zero when any checkpoint, signal gate, or skill proposal gate warns or fails");
@@ -163,6 +164,7 @@ function printHelp() {
   console.log("  design-ai learn --signals --from-file . --json");
   console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
+  console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
   console.log("  design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
@@ -609,7 +611,13 @@ function printSkillProposals(payload) {
   info(`Check capture entries: ${payload.checkCaptureCount}`);
   info(`Candidates: ${payload.candidateCount}`);
   info(`Proposals: ${payload.proposalCount}`);
+  info(`Pending review: ${payload.pendingReviewCount ?? payload.proposalCount}`);
+  info(`Reviewed: ${payload.reviewedCount ?? 0}`);
   info(`Skipped: ${payload.skippedCount}`);
+  if (payload.review?.file) {
+    info(`Review file: ${payload.review.file}`);
+    info(`Review status: ${payload.review.status} (${payload.review.matchedCount} matched, ${payload.review.staleCount} stale)`);
+  }
   console.log();
 
   if (payload.proposals.length === 0) {
@@ -619,7 +627,8 @@ function printSkillProposals(payload) {
     for (const proposal of payload.proposals) {
       const routes = proposal.routeIds.length > 0 ? proposal.routeIds.join(", ") : "artifact";
       console.log(`- ${proposal.id}: ${proposal.candidateSkillPath}`);
-      console.log(`  ${dim(`${proposal.sourceIssueCount} issue(s) · ${proposal.category} · routes ${routes} · risk ${proposal.riskLevel}`)}`);
+      console.log(`  ${dim(`${proposal.sourceIssueCount} issue(s) · ${proposal.category} · routes ${routes} · risk ${proposal.riskLevel} · review ${proposal.reviewStatus || "pending"}`)}`);
+      if (proposal.reviewDecision?.note) console.log(`  Review note: ${proposal.reviewDecision.note}`);
       console.log(`  Delta: ${proposal.proposedInstructionDelta}`);
       console.log(`  Verify: ${proposal.verificationCommand}`);
       for (const evidence of proposal.evidenceSources.slice(0, 3)) {
@@ -634,6 +643,14 @@ function printSkillProposals(payload) {
     console.log("Skipped groups:");
     for (const item of payload.skipped) {
       console.log(`- ${item.candidateSkillPath} [${item.category}]: ${item.reason}`);
+    }
+  }
+
+  if (payload.review?.warnings?.length > 0) {
+    console.log();
+    console.log("Review file warnings:");
+    for (const warning of payload.review.warnings) {
+      console.log(`- ${warning}`);
     }
   }
 
@@ -1371,6 +1388,7 @@ export async function runLearn(args) {
     const payload = buildSkillEvolutionProposals({
       filePath: parsed.filePath,
       usageFile: parsed.usageFilePath,
+      reviewFile: parsed.reviewFilePath,
       signalSource: parsed.fromFile,
       root: process.cwd(),
       minEvidenceCount: parsed.minEvidenceCount || undefined,

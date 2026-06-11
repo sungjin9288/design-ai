@@ -1,5 +1,39 @@
 # Roadmap
 
+## Phase 427 — Skill Proposal Review State (unreleased)
+
+`design-ai learn --propose-skills` now accepts `--review-file skill-proposals.review.json` to join manual proposal decisions without mutating the learning profile, skill files, or the review file. This gives local AI/agent skill-evolution work a deterministic way to distinguish unresolved proposals from proposals that were manually applied or rejected.
+
+### Changed
+- Added `--review-file path` parsing for `learn --propose-skills` and rejected the option for unrelated learn actions.
+- Added read-only review file loading for `decisions` or `reviews` arrays with `accepted`, `rejected`, `applied`, and `deferred` statuses.
+- Marked proposal payloads with `reviewStatus`, `reviewDecision`, `reviewClearsStrict`, review summary counts, stale decision counts, and pending review counts.
+- Kept `applied` and `rejected` as strict-clearing statuses; `accepted` and `deferred` remain pending because follow-up work is still unresolved.
+- Updated JSON, human, Markdown report, patch preview, command help, shared smoke assertions, AI learning docs, Product Readiness, README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for the read-only review decision join through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators can keep a portable review ledger for skill proposals and clear the proposal-review gate only after manual apply or rejection decisions.
+- Patch previews exclude proposals already marked `applied` or `rejected`, while unresolved proposals still appear in the diff handoff.
+- The feature remains deterministic, local, read-only, and non-mutating: no `learning.json` mutation, skill file mutation, review file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 426 — Skill Proposal Patch Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now executes `design-ai learn --propose-skills --patch --out skill-proposals.patch` through installed-bin and one-shot `npm exec --package <tarball>` paths. This turns the Phase 425 unified diff handoff into a package-level local AI/agent learning contract.

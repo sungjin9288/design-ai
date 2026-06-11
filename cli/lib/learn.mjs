@@ -65,6 +65,7 @@ const LEARN_OPTIONS = [
   "--keep",
   "--file",
   "--usage-file",
+  "--review-file",
   "--backup-file",
   "--yes",
 ];
@@ -243,6 +244,7 @@ export function parseLearnArgs(args) {
     outcomeSpecified: false,
     filePath: "",
     usageFilePath: "",
+    reviewFilePath: "",
     backupFilePath: "",
     outPath: "",
     force: false,
@@ -377,6 +379,11 @@ export function parseLearnArgs(args) {
       if (!usageFilePath || usageFilePath.startsWith("--")) throw new Error("--usage-file expects a path");
       out.usageFilePath = usageFilePath;
       i += 1;
+    } else if (arg === "--review-file") {
+      const reviewFilePath = args[i + 1];
+      if (!reviewFilePath || reviewFilePath.startsWith("--")) throw new Error("--review-file expects a path");
+      out.reviewFilePath = reviewFilePath;
+      i += 1;
     } else if (arg === "--backup-file") {
       const backupFilePath = args[i + 1];
       if (!backupFilePath || backupFilePath.startsWith("--")) throw new Error("--backup-file expects a path");
@@ -453,6 +460,9 @@ export function parseLearnArgs(args) {
   if (out.usageFilePath && !["usage", "curate", "signals", "propose-skills"].includes(out.action)) {
     throw new Error("--usage-file can only be used with --usage, --curate, --signals, or --propose-skills");
   }
+  if (out.reviewFilePath && out.action !== "propose-skills") {
+    throw new Error("--review-file can only be used with --propose-skills");
+  }
   if (out.minEvidenceCount && out.action !== "propose-skills") {
     throw new Error("--min-evidence can only be used with --propose-skills");
   }
@@ -503,6 +513,7 @@ export function parseLearnArgs(args) {
     briefParts: out.noteParts,
     filePath: resolvedFilePath,
     usageFilePath: path.resolve(out.usageFilePath || defaultLearningUsageFile(resolvedFilePath)),
+    reviewFilePath: out.reviewFilePath ? path.resolve(out.reviewFilePath) : "",
     backupFilePath: out.backupFilePath ? path.resolve(out.backupFilePath) : "",
     category: normalizeCategory(out.category),
     feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),

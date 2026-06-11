@@ -290,11 +290,29 @@ Preview skill evolution proposals:
 design-ai learn --propose-skills
 design-ai learn --propose-skills --from-file . --json
 design-ai learn --propose-skills --from-file . --min-evidence 3 --json
+design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json
 design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch
 design-ai learn --propose-skills --from-file route-eval-report.json --usage-file ./learning.usage.json --json --out skill-proposals.json
 ```
 
-Skill proposal mode is read-only. It scans active learning entries whose `source` starts with `check:`, groups repeated check-capture signals by candidate skill and category, and emits proposal records with `candidateSkillPath`, `evidenceSources`, `proposedInstructionDelta`, `verificationCommand`, and `riskLevel`. Single-entry groups are reported as skipped until enough repeated evidence exists. Use `--min-evidence N` when a project needs stricter review before skill edits, or a lower local threshold for early dogfood review. Use `--patch --out skill-proposals.patch` when an operator wants a unified diff handoff for manual review before editing any skill file. The command is deliberately preview-only: `--yes` is rejected, `learning.json` is not changed, `skills/*/SKILL.md` is not edited, and no external AI API is called.
+Skill proposal mode is read-only. It scans active learning entries whose `source` starts with `check:`, groups repeated check-capture signals by candidate skill and category, and emits proposal records with `candidateSkillPath`, `evidenceSources`, `proposedInstructionDelta`, `verificationCommand`, and `riskLevel`. Single-entry groups are reported as skipped until enough repeated evidence exists. Use `--min-evidence N` when a project needs stricter review before skill edits, or a lower local threshold for early dogfood review. Use `--review-file skill-proposals.review.json` to join manual decisions without changing that file; proposal decisions with `status: "applied"` or `status: "rejected"` clear the proposal review gate, while `accepted` and `deferred` remain pending. Use `--patch --out skill-proposals.patch` when an operator wants a unified diff handoff for unresolved proposals before editing any skill file. The command is deliberately preview-only: `--yes` is rejected, `learning.json` is not changed, `skills/*/SKILL.md` is not edited, the review file is not changed, and no external AI API is called.
+
+Minimal review file:
+
+```json
+{
+  "version": 1,
+  "decisions": [
+    {
+      "proposalId": "skill-proposal-website-improvement-abc123",
+      "status": "applied",
+      "reviewedAt": "2026-06-11T00:00:00.000Z",
+      "reviewer": "local-operator",
+      "note": "Instruction delta manually applied and verified."
+    }
+  ]
+}
+```
 
 Evaluate learning-selection checkpoints:
 

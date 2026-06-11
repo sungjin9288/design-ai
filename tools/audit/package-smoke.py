@@ -5632,7 +5632,7 @@ def assert_skill_proposal_report_json(
     context: str,
     cmd: list[str],
     returncode: int | None = None,
-    expect_status: str = "warn",
+    expect_status: str | None = "warn",
 ) -> None:
     assert_no_ansi(raw, cmd)
     if returncode is not None:
@@ -5661,12 +5661,13 @@ def assert_skill_proposal_report_json(
         cmd=cmd,
         message="learn skill proposals must remain preview-only",
     )
-    require_package_smoke(
-        payload.get("status") == expect_status,
-        context=context,
-        cmd=cmd,
-        message=f"learn skill proposals JSON should report {expect_status!r} status when proposals need review",
-    )
+    if expect_status is not None:
+        require_package_smoke(
+            payload.get("status") == expect_status,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals JSON should report {expect_status!r} status when proposals need review",
+        )
     require_package_smoke(
         payload.get("checkCaptureCount") >= 2
         and payload.get("candidateCount") >= 1
@@ -5702,6 +5703,54 @@ def assert_skill_proposal_report_json(
         context=context,
         cmd=cmd,
         message="learn skill proposals JSON should be read-only and local",
+    )
+    return payload
+
+
+def assert_skill_proposal_review_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    payload = assert_skill_proposal_report_json(
+        raw,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=context,
+        cmd=cmd,
+        expect_status=None,
+    )
+    review = payload.get("review")
+    require_package_smoke(
+        payload.get("reviewFile") == str(review_path)
+        and payload.get("pendingReviewCount") == 0
+        and payload.get("reviewedCount") >= 1
+        and isinstance(review, dict)
+        and review.get("file") == str(review_path)
+        and review.get("exists") is True
+        and review.get("matchedCount") >= 1
+        and review.get("appliedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals review JSON should join applied review decisions",
+    )
+    proposals = payload.get("proposals")
+    require_package_smoke(
+        isinstance(proposals, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("reviewStatus") == "applied"
+            and item.get("reviewClearsStrict") is True
+            for item in proposals
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals review JSON should mark applied proposals as strict-clearing",
     )
 
 
@@ -6678,7 +6727,7 @@ def assert_learning_relevance_smoke(
         "--json",
     )
     skill_proposals_json_result = run_plain(skill_proposals_json_cmd, cwd=cwd, env=relevance_env)
-    assert_skill_proposal_report_json(
+    skill_proposals_payload = assert_skill_proposal_report_json(
         skill_proposals_json_result.stdout,
         profile_path=proposal_profile_path,
         usage_path=proposal_usage_path,
@@ -6690,6 +6739,65 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals JSON",
         cmd=skill_proposals_json_cmd,
         message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    review_proposal_id = next(
+        (
+            item.get("id")
+            for item in skill_proposals_payload.get("proposals", [])
+            if isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+        ),
+        "",
+    )
+    require_package_smoke(
+        bool(review_proposal_id),
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_json_cmd,
+        message="learn skill proposals review fixture needs a component-spec proposal id",
+    )
+    skill_proposals_review_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.review.json")
+    skill_proposals_review_path.write_text(json.dumps({
+        "version": 1,
+        "decisions": [
+            {
+                "proposalId": review_proposal_id,
+                "status": "applied",
+                "reviewedAt": "2026-06-11T00:00:00.000Z",
+                "reviewer": "package-smoke",
+                "note": "Package smoke confirms review-file decision joins remain read-only.",
+            },
+        ],
+    }, indent=2) + "\n", encoding="utf-8")
+    skill_proposals_review_before = skill_proposals_review_path.read_text(encoding="utf-8")
+    skill_proposals_review_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_review_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_review_json_result = run_plain(skill_proposals_review_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_review_json(
+        skill_proposals_review_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_review_path,
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_review_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_review_path.read_text(encoding="utf-8") == skill_proposals_review_before,
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_review_json_cmd,
+        message="learn skill proposals review JSON output must not mutate the profile or review file",
     )
 
     skill_proposals_min_evidence_json_cmd = command_factory(
@@ -9265,6 +9373,24 @@ def run_self_test() -> None:
             "count": 1,
             "proposalCount": 1,
             "skippedCount": 0,
+            "pendingReviewCount": 1,
+            "reviewedCount": 0,
+            "reviewFile": "",
+            "review": {
+                "file": "",
+                "exists": False,
+                "status": "not-configured",
+                "decisionCount": 0,
+                "matchedCount": 0,
+                "staleCount": 0,
+                "pendingCount": 1,
+                "acceptedCount": 0,
+                "rejectedCount": 0,
+                "appliedCount": 0,
+                "deferredCount": 0,
+                "clearedCount": 0,
+                "warnings": [],
+            },
             "status": "warn",
             "signalStatus": "pass",
             "proposals": [
@@ -9274,6 +9400,8 @@ def run_self_test() -> None:
                     "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
                     "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
                     "riskLevel": "low",
+                    "reviewStatus": "pending",
+                    "reviewClearsStrict": False,
                     "category": "accessibility",
                     "routeIds": [EXPECTED_ROUTE_ID],
                     "sourceIssueCount": 2,
@@ -9315,6 +9443,46 @@ def run_self_test() -> None:
             usage_path=learning_usage_path,
             context=context,
             cmd=learn_skill_proposals_cmd,
+        )
+        learning_skill_proposal_review_path = learning_profile_path.with_name("skill-proposals.review.json")
+        assert_skill_proposal_review_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "status": "pass",
+                "pendingReviewCount": 0,
+                "reviewedCount": 1,
+                "reviewFile": str(learning_skill_proposal_review_path),
+                "review": {
+                    **learning_skill_proposal_payload["review"],
+                    "file": str(learning_skill_proposal_review_path),
+                    "exists": True,
+                    "status": "pass",
+                    "decisionCount": 1,
+                    "matchedCount": 1,
+                    "pendingCount": 0,
+                    "appliedCount": 1,
+                    "clearedCount": 1,
+                },
+                "proposals": [
+                    {
+                        **learning_skill_proposal_payload["proposals"][0],
+                        "reviewStatus": "applied",
+                        "reviewClearsStrict": True,
+                        "reviewDecision": {
+                            "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                            "status": "applied",
+                            "reviewedAt": "2026-06-11T00:00:00.000Z",
+                            "reviewer": "package-smoke",
+                            "note": "Instruction delta manually applied.",
+                        },
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
         )
         assert_skill_proposal_min_evidence_json(
             json.dumps({
@@ -9454,6 +9622,30 @@ def run_self_test() -> None:
                 cmd=learn_skill_proposals_cmd,
             ),
             expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_review_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "reviewFile": str(learning_skill_proposal_review_path),
+                    "pendingReviewCount": 1,
+                    "reviewedCount": 1,
+                    "review": {
+                        **learning_skill_proposal_payload["review"],
+                        "file": str(learning_skill_proposal_review_path),
+                        "exists": True,
+                        "matchedCount": 1,
+                        "pendingCount": 1,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+            ),
+            expected="learn skill proposals review JSON should join applied review decisions",
             scope="package smoke",
         )
         expect_self_test_failure(

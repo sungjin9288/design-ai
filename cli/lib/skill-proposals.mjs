@@ -14,6 +14,8 @@ import { routeById } from "./route.mjs";
 import { learningSignalRegistry } from "./signals.mjs";
 
 const DEFAULT_MIN_EVIDENCE_COUNT = 2;
+const REVIEW_STATUSES = ["accepted", "rejected", "applied", "deferred"];
+const REVIEW_CLEAR_STATUSES = new Set(["rejected", "applied"]);
 const CATEGORY_FALLBACK_SKILLS = {
   accessibility: "skills/ux-audit/SKILL.md",
   korean: "skills/design-system-builder/SKILL.md",
@@ -199,6 +201,136 @@ function proposalStatus({ signalStatus, proposalCount }) {
   return "pass";
 }
 
+function normalizeReviewStatus(rawStatus) {
+  const status = String(rawStatus || "").trim().toLowerCase();
+  return REVIEW_STATUSES.includes(status) ? status : "";
+}
+
+function emptyProposalReviewState(reviewFile = "") {
+  return {
+    file: reviewFile ? path.resolve(reviewFile) : "",
+    exists: false,
+    status: reviewFile ? "missing" : "not-configured",
+    decisionCount: 0,
+    matchedCount: 0,
+    staleCount: 0,
+    pendingCount: 0,
+    acceptedCount: 0,
+    rejectedCount: 0,
+    appliedCount: 0,
+    deferredCount: 0,
+    clearedCount: 0,
+    warnings: [],
+    decisionsByProposalId: new Map(),
+  };
+}
+
+export function loadSkillProposalReviewState(reviewFile = "") {
+  if (!reviewFile) return emptyProposalReviewState();
+  const resolvedFile = path.resolve(reviewFile);
+  if (!existsSync(resolvedFile)) return emptyProposalReviewState(resolvedFile);
+
+  const state = emptyProposalReviewState(resolvedFile);
+  state.exists = true;
+  state.status = "pass";
+
+  let rawPayload = null;
+  try {
+    rawPayload = JSON.parse(readFileSync(resolvedFile, "utf8"));
+  } catch {
+    return {
+      ...state,
+      status: "fail",
+      warnings: [`Review file is not valid JSON: ${resolvedFile}`],
+    };
+  }
+
+  const rawDecisions = Array.isArray(rawPayload?.decisions)
+    ? rawPayload.decisions
+    : Array.isArray(rawPayload?.reviews)
+      ? rawPayload.reviews
+      : [];
+
+  if (!Array.isArray(rawPayload?.decisions) && !Array.isArray(rawPayload?.reviews)) {
+    state.status = "warn";
+    state.warnings.push("Review file should contain a decisions array.");
+  }
+
+  rawDecisions.forEach((decision, index) => {
+    const proposalId = String(decision?.proposalId || decision?.id || "").trim();
+    const status = normalizeReviewStatus(decision?.status);
+    if (!proposalId) {
+      state.status = state.status === "fail" ? "fail" : "warn";
+      state.warnings.push(`Decision ${index + 1} is missing proposalId.`);
+      return;
+    }
+    if (!status) {
+      state.status = state.status === "fail" ? "fail" : "warn";
+      state.warnings.push(`Decision ${proposalId} has unsupported status; use ${REVIEW_STATUSES.join(", ")}.`);
+      return;
+    }
+    state.decisionsByProposalId.set(proposalId, {
+      proposalId,
+      status,
+      reviewedAt: String(decision?.reviewedAt || decision?.createdAt || "").trim(),
+      reviewer: String(decision?.reviewer || "").trim(),
+      note: String(decision?.note || decision?.reason || "").trim(),
+    });
+  });
+
+  state.decisionCount = state.decisionsByProposalId.size;
+  return state;
+}
+
+function applySkillProposalReviewState(proposals, reviewState) {
+  const decisions = reviewState?.decisionsByProposalId instanceof Map
+    ? reviewState.decisionsByProposalId
+    : new Map();
+  const currentProposalIds = new Set(proposals.map((proposal) => proposal.id));
+  const reviewedProposals = proposals.map((proposal) => {
+    const decision = decisions.get(proposal.id);
+    const reviewStatus = decision?.status || "pending";
+    const reviewClearsStrict = REVIEW_CLEAR_STATUSES.has(reviewStatus);
+    return {
+      ...proposal,
+      reviewStatus,
+      reviewClearsStrict,
+      ...(decision ? { reviewDecision: decision } : {}),
+    };
+  });
+
+  const counts = {
+    matchedCount: reviewedProposals.filter((proposal) => proposal.reviewDecision).length,
+    staleCount: [...decisions.keys()].filter((proposalId) => !currentProposalIds.has(proposalId)).length,
+    pendingCount: reviewedProposals.filter((proposal) => !proposal.reviewClearsStrict).length,
+    acceptedCount: reviewedProposals.filter((proposal) => proposal.reviewStatus === "accepted").length,
+    rejectedCount: reviewedProposals.filter((proposal) => proposal.reviewStatus === "rejected").length,
+    appliedCount: reviewedProposals.filter((proposal) => proposal.reviewStatus === "applied").length,
+    deferredCount: reviewedProposals.filter((proposal) => proposal.reviewStatus === "deferred").length,
+    clearedCount: reviewedProposals.filter((proposal) => proposal.reviewClearsStrict).length,
+  };
+
+  return {
+    proposals: reviewedProposals,
+    review: {
+      file: reviewState?.file || "",
+      exists: Boolean(reviewState?.exists),
+      status: reviewState?.status || "not-configured",
+      decisionCount: reviewState?.decisionCount || 0,
+      warnings: reviewState?.warnings || [],
+      ...counts,
+    },
+  };
+}
+
+function skillProposalStatus({ signalStatus, reviewStatus, pendingReviewCount, reviewWarnings }) {
+  if (signalStatus === "fail" || reviewStatus === "fail") return "fail";
+  if (signalStatus && signalStatus !== "pass") return "warn";
+  if (reviewWarnings > 0) return "warn";
+  if (pendingReviewCount > 0) return "warn";
+  return "pass";
+}
+
 export function buildSkillEvolutionProposals({
   filePath = defaultLearningFile(),
   usageFile = "",
@@ -207,6 +339,7 @@ export function buildSkillEvolutionProposals({
   sourceRoot = PACKAGE_ROOT,
   now = new Date(),
   minEvidenceCount = DEFAULT_MIN_EVIDENCE_COUNT,
+  reviewFile = "",
   signalRegistryProvider = learningSignalRegistry,
 } = {}) {
   const resolvedFile = path.resolve(filePath);
@@ -216,7 +349,7 @@ export function buildSkillEvolutionProposals({
   const checkEntries = (profile.entries || [])
     .filter((entry) => String(entry.source || "").startsWith("check:"));
   const groups = groupCheckCaptureEntries(checkEntries, sourceRoot);
-  const proposals = groups
+  const rawProposals = groups
     .filter((group) => group.entries.length >= minEvidenceCount)
     .map(proposalFromGroup)
     .sort((a, b) => (
@@ -236,10 +369,20 @@ export function buildSkillEvolutionProposals({
     now,
   });
   const signalStatus = registry.status || "unknown";
-  const status = proposalStatus({
-    signalStatus,
-    proposalCount: proposals.length,
-  });
+  const reviewState = loadSkillProposalReviewState(reviewFile);
+  const reviewed = applySkillProposalReviewState(rawProposals, reviewState);
+  const proposals = reviewed.proposals;
+  const status = reviewFile
+    ? skillProposalStatus({
+      signalStatus,
+      reviewStatus: reviewed.review.status,
+      pendingReviewCount: reviewed.review.pendingCount,
+      reviewWarnings: reviewed.review.warnings.length,
+    })
+    : proposalStatus({
+      signalStatus,
+      proposalCount: proposals.length,
+    });
 
   return {
     version: 1,
@@ -255,6 +398,10 @@ export function buildSkillEvolutionProposals({
     count: proposals.length,
     proposalCount: proposals.length,
     skippedCount: skipped.length,
+    pendingReviewCount: reviewed.review.pendingCount,
+    reviewedCount: reviewed.review.matchedCount,
+    reviewFile: reviewed.review.file,
+    review: reviewed.review,
     status,
     signalStatus,
     proposals,
@@ -264,9 +411,14 @@ export function buildSkillEvolutionProposals({
         level: "info",
         text: "No repeated check-capture groups crossed the proposal threshold yet. Keep capturing explicit check --learn --yes warnings/failures before editing skills.",
       }]
+      : reviewed.review.pendingCount === 0 && reviewFile
+        ? [{
+          level: "info",
+          text: "All current skill proposals are marked applied or rejected in the review file. Re-run strict checks after any manual skill edits.",
+        }]
       : [{
         level: "info",
-        text: "Review proposed instruction deltas manually. This command is preview-only and does not edit skill files.",
+        text: "Review proposed instruction deltas manually. Mark applied or rejected decisions in the review file to clear the strict proposal gate.",
       }],
     privacy: {
       mutatesProfile: false,
@@ -320,6 +472,7 @@ function patchSectionForProposal(proposal) {
     `- Category: ${proposal.category}`,
     `- Routes: ${routes}`,
     `- Risk: ${proposal.riskLevel}`,
+    `- Review status: ${proposal.reviewStatus || "pending"}`,
     `- Evidence count: ${proposal.sourceIssueCount}`,
     `- Proposed instruction: ${proposal.proposedInstructionDelta}`,
     `- Verification: \`${proposal.verificationCommand}\``,
@@ -362,7 +515,9 @@ function patchForSkillFile(skillPath, proposals, { sourceRoot }) {
 export function renderSkillEvolutionProposalPatch(payload, {
   sourceRoot = PACKAGE_ROOT,
 } = {}) {
-  const proposals = Array.isArray(payload.proposals) ? payload.proposals : [];
+  const proposals = Array.isArray(payload.proposals)
+    ? payload.proposals.filter((proposal) => !proposal.reviewClearsStrict)
+    : [];
   const lines = [
     "# design-ai skill proposal patch preview",
     "# Preview-only output from `design-ai learn --propose-skills --patch`.",
@@ -370,7 +525,9 @@ export function renderSkillEvolutionProposalPatch(payload, {
   ];
 
   if (proposals.length === 0) {
-    lines.push("# No repeated check-capture groups crossed the proposal threshold.");
+    lines.push((payload.proposalCount || 0) > 0
+      ? "# No pending skill proposal deltas remain after review-file decisions."
+      : "# No repeated check-capture groups crossed the proposal threshold.");
     return `${lines.join("\n")}\n`;
   }
 
@@ -407,6 +564,8 @@ export function renderSkillEvolutionProposalReport(payload, {
     listItem("Candidate groups", payload.candidateCount),
     listItem("Proposal count", payload.proposalCount),
     listItem("Skipped groups", payload.skippedCount),
+    listItem("Pending review", payload.pendingReviewCount ?? payload.proposalCount ?? 0),
+    listItem("Reviewed", payload.reviewedCount ?? 0),
     listItem("Dry run", yesNo(Boolean(payload.dryRun))),
     listItem("Applied", yesNo(Boolean(payload.applied))),
     "",
@@ -428,6 +587,10 @@ export function renderSkillEvolutionProposalReport(payload, {
       lines.push(listItem("Category", proposal.category));
       lines.push(listItem("Routes", routes));
       lines.push(listItem("Risk", proposal.riskLevel));
+      lines.push(listItem("Review status", proposal.reviewStatus || "pending"));
+      if (proposal.reviewDecision?.reviewedAt) lines.push(listItem("Reviewed at", proposal.reviewDecision.reviewedAt));
+      if (proposal.reviewDecision?.reviewer) lines.push(listItem("Reviewer", proposal.reviewDecision.reviewer));
+      if (proposal.reviewDecision?.note) lines.push(listItem("Review note", proposal.reviewDecision.note));
       lines.push(listItem("Source issues", proposal.sourceIssueCount));
       lines.push(listItem("Rationale", proposal.rationale));
       lines.push("");
@@ -452,6 +615,30 @@ export function renderSkillEvolutionProposalReport(payload, {
       lines.push("");
     }
   }
+
+  const review = payload.review || {};
+  lines.push("## Review File", "");
+  if (review.file) {
+    lines.push(listItem("File", review.file));
+    lines.push(listItem("Exists", yesNo(Boolean(review.exists))));
+    lines.push(listItem("Status", review.status || "unknown"));
+    lines.push(listItem("Decisions", review.decisionCount || 0));
+    lines.push(listItem("Matched", review.matchedCount || 0));
+    lines.push(listItem("Stale", review.staleCount || 0));
+    lines.push(listItem("Pending", review.pendingCount ?? 0));
+    lines.push(listItem("Applied", review.appliedCount || 0));
+    lines.push(listItem("Rejected", review.rejectedCount || 0));
+    lines.push(listItem("Accepted", review.acceptedCount || 0));
+    lines.push(listItem("Deferred", review.deferredCount || 0));
+    if (Array.isArray(review.warnings) && review.warnings.length > 0) {
+      lines.push("");
+      lines.push("Warnings:");
+      for (const warning of review.warnings) lines.push(`- ${warning}`);
+    }
+  } else {
+    lines.push("No review file was provided.");
+  }
+  lines.push("");
 
   lines.push("## Skipped Groups", "");
   if (!Array.isArray(payload.skipped) || payload.skipped.length === 0) {
@@ -486,6 +673,7 @@ export function renderSkillEvolutionProposalReport(payload, {
   lines.push("", "## Next Steps", "");
   if ((payload.proposalCount || 0) > 0) {
     lines.push("- Review each proposed instruction delta manually before editing any skill file.");
+    lines.push("- Mark resolved proposals as `applied` or `rejected` in the review file to clear the strict proposal gate.");
     lines.push("- Run the proposal verification command after applying an accepted skill edit.");
     lines.push("- Re-run `design-ai learn --propose-skills --strict --json` to confirm no pending proposal gate remains.");
   } else {

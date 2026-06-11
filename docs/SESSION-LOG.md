@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 427 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json` proposal review state joins plus packed-tarball smoke coverage for applied/rejected decision handling.
 - **Phase 426 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs in installed-bin and one-shot package paths.
 - **Phase 425 (unreleased)** — Added preview-only `design-ai learn --propose-skills --patch` unified diff handoffs so repeated check-capture skill proposals can be reviewed before any manual skill edit.
 - **Phase 424 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping in installed-bin and one-shot package paths.
@@ -53,6 +54,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 427 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json` proposal review state joins plus packed-tarball smoke coverage for applied/rejected decision handling.
 - **Phase 426 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs in installed-bin and one-shot package paths.
 - **Phase 425 (unreleased)** — Added preview-only `design-ai learn --propose-skills --patch` unified diff handoffs so repeated check-capture skill proposals can be reviewed before any manual skill edit.
 - **Phase 424 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping in installed-bin and one-shot package paths.
