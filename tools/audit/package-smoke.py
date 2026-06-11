@@ -5705,6 +5705,77 @@ def assert_skill_proposal_report_json(
     )
 
 
+def assert_skill_proposal_min_evidence_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    expected_min_evidence: int = 3,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal min-evidence JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should report the learning profile and usage paths",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is True and payload.get("applied") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON must remain preview-only",
+    )
+    require_package_smoke(
+        payload.get("minEvidenceCount") == expected_min_evidence,
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposals min-evidence JSON should report minEvidenceCount {expected_min_evidence}",
+    )
+    require_package_smoke(
+        payload.get("checkCaptureCount") >= 2
+        and payload.get("candidateCount") >= 1
+        and payload.get("proposalCount") == 0
+        and payload.get("count") == 0
+        and payload.get("skippedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should skip two-entry groups when threshold is higher",
+    )
+    skipped = payload.get("skipped")
+    require_package_smoke(
+        isinstance(skipped, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("sourceIssueCount") == 2
+            and f"Needs at least {expected_min_evidence}" in str(item.get("reason", ""))
+            for item in skipped
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should explain skipped component-spec evidence",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should keep read-only privacy boundaries",
+    )
+
+
 def assert_skill_proposal_report_human(
     raw: str,
     *,
@@ -6589,6 +6660,34 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals JSON",
         cmd=skill_proposals_json_cmd,
         message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    skill_proposals_min_evidence_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--min-evidence",
+        "3",
+        "--json",
+    )
+    skill_proposals_min_evidence_json_result = run_plain(skill_proposals_min_evidence_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_min_evidence_json(
+        skill_proposals_min_evidence_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals min-evidence JSON",
+        cmd=skill_proposals_min_evidence_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals min-evidence JSON",
+        cmd=skill_proposals_min_evidence_json_cmd,
+        message="learn skill proposals min-evidence JSON output must not mutate the profile",
     )
 
     skill_proposals_strict_json_cmd = command_factory(
@@ -9152,6 +9251,28 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_skill_proposals_cmd,
         )
+        assert_skill_proposal_min_evidence_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "minEvidenceCount": 3,
+                "count": 0,
+                "proposalCount": 0,
+                "skippedCount": 1,
+                "proposals": [],
+                "skipped": [
+                    {
+                        "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                        "category": "accessibility",
+                        "sourceIssueCount": 2,
+                        "reason": "Needs at least 3 related check-capture entries before proposing a skill edit.",
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+        )
         assert_skill_proposal_report_human(
             "\n".join([
                 "design-ai learn",
@@ -9241,6 +9362,24 @@ def run_self_test() -> None:
                 cmd=learn_skill_proposals_cmd,
             ),
             expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_min_evidence_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "minEvidenceCount": 2,
+                    "count": 1,
+                    "proposalCount": 1,
+                    "skippedCount": 0,
+                    "skipped": [],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+            ),
+            expected="learn skill proposals min-evidence JSON should report minEvidenceCount 3",
             scope="package smoke",
         )
         expect_self_test_failure(

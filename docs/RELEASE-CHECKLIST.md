@@ -23,7 +23,7 @@ Post-publish registry smoke guidance must also retain public registry `design-ai
 
 Packed-tarball smoke guidance must also retain `design-ai learn --signals` learning signal registry coverage for human, JSON, `design-ai learn --signals --strict --json` strict gate, and `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
-Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills` preview-only skill proposal coverage for human, JSON, Markdown review artifact via `design-ai learn --propose-skills --report --out skill-proposals.md`, and JSON `--out` output in installed-bin and one-shot `npm exec --package <tarball>` paths.
+Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills` preview-only skill proposal coverage for human, JSON, Markdown review artifact via `design-ai learn --propose-skills --report --out skill-proposals.md`, JSON `--out` output, and `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping in installed-bin and one-shot `npm exec --package <tarball>` paths.
 
 Packed-tarball smoke guidance must also retain `design-ai learn --propose-skills --strict --json` expected-failure skill proposal readiness gate coverage in installed-bin and one-shot `npm exec --package <tarball>` paths.
 

@@ -21,7 +21,31 @@
 - Manual CLI smoke: `design-ai learn --propose-skills --min-evidence 3 --json` reports `minEvidenceCount: 3`, `proposalCount: 0`, and `skippedCount: 1` for a two-entry repeated check-capture profile.
 
 ### What's still ahead
-- Add packed-tarball smoke coverage for `--min-evidence` if this option becomes a release-facing package contract.
+- Closed by Phase 424.
+
+## Phase 424 — Skill Proposal Minimum Evidence Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --min-evidence 3 --json` through installed-bin and one-shot `npm exec --package <tarball>` paths. This turns the Phase 423 threshold option into a package-level contract.
+
+### Changed
+- Added package smoke execution for `learn --propose-skills --min-evidence 3 --json`.
+- Added package smoke assertions for effective `minEvidenceCount`, threshold-driven skipped groups, preview-only boundaries, and read-only privacy metadata.
+- Updated release-facing docs so packed-tarball smoke guidance names the min-evidence threshold path.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify that a two-entry repeated check-capture group is skipped when the proposal threshold is raised to 3.
+- The smoke remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
 
 ## Phase 422 — Local Portfolio Artifact Release Gate Isolation (unreleased)
 
