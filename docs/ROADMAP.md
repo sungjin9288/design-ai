@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 436 — Agent Backlog Release Metadata Guard (unreleased)
+
+Release metadata now protects the packed-tarball focused agent backlog smoke wording across release-facing policy docs. README, Korean README, Release Checklist, and Distribution guidance cannot silently drop the Markdown report, JSON `--out`, or strict gate coverage for `design-ai learn --agent-backlog`.
+
+### Changed
+- Added release metadata phrase guards for `design-ai learn --agent-backlog --report --out agent-backlog.md`, agent backlog JSON `--out` file-write confirmations, and `design-ai learn --agent-backlog --strict --json`.
+- Added release metadata self-test drift fixtures for agent backlog Markdown, JSON `--out`, and strict gate package smoke wording.
+- Updated README, Korean README, and Distribution docs so packed-tarball smoke guidance explicitly preserves focused agent backlog artifacts and strict gates.
+- Updated changelog, roadmap, and session history with the guard hardening.
+
+### Impact
+- The Phase 435 focused agent backlog CLI surface now has release-facing documentation guards matching its package smoke coverage.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 435 — Focused Agent Backlog Reports (unreleased)
 
 `design-ai learn --agent-backlog` now exposes the deterministic local AI/agent development backlog as its own read-only CLI surface. Operators can inspect the next-action queue without reading the full `learn --signals` registry, save a Markdown backlog artifact, or use `--strict --json` as a focused local gate.

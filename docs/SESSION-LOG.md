@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 436 (unreleased)** — Added release metadata guard coverage for focused `design-ai learn --agent-backlog` package smoke phrases covering Markdown reports, JSON `--out`, and strict gates.
 - **Phase 435 (unreleased)** — Added focused read-only `design-ai learn --agent-backlog` reports with JSON, Markdown, strict gate, output-file persistence, unit coverage, and packed-tarball smoke coverage for installed-bin and one-shot package paths.
 - **Phase 434 (unreleased)** — Recorded full `npm run release:check` evidence after the learning signal and skill proposal package smoke release metadata guard phases.
 - **Phase 433 (unreleased)** — Added release metadata guard coverage for the packed-tarball learn signals JSON `--out` file-write confirmation smoke phrase.
