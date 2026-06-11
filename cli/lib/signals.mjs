@@ -508,19 +508,25 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
   const gateCommands = [];
   if (level !== "clear") {
     gateCommands.push({
+      phase: "before",
       label: "Confirm clean workspace before execution",
       command: "git status --short",
+      required: true,
     });
   }
   if (hasMutation || hasFileWrite) {
     gateCommands.push({
+      phase: "after",
       label: "Inspect local file changes after execution",
       command: "git diff --stat",
+      required: true,
     });
   }
   gateCommands.push({
+    phase: "refresh",
     label: "Refresh focused agent backlog after review",
     command: "design-ai learn --agent-backlog --strict --json",
+    required: true,
   });
   return {
     level,
@@ -1128,7 +1134,8 @@ export function renderAgentBacklogReport(payload, {
       if (gateCommands.length > 0) {
         lines.push("- Command effect gates:");
         for (const item of gateCommands) {
-          lines.push(`  - ${item.label || "Review gate"}: \`${item.command || ""}\``);
+          const phase = item.phase ? `${item.phase}: ` : "";
+          lines.push(`  - ${phase}${item.label || "Review gate"}: \`${item.command || ""}\``);
         }
       }
     }

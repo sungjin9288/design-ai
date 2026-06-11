@@ -3417,8 +3417,10 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /No command target/);
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {
+      phase: "refresh",
       label: "Refresh focused agent backlog after review",
       command: "design-ai learn --agent-backlog --strict --json",
+      required: true,
     },
   ]);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
@@ -3457,6 +3459,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
   assert.match(markdown, /Command effect review: No command target or mutation flag exposure detected/);
   assert.match(markdown, /Command effect gates:/);
+  assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
@@ -3570,16 +3573,22 @@ test("agentBacklogReport classifies action plan command safety", () => {
   ]);
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
     {
+      phase: "before",
       label: "Confirm clean workspace before execution",
       command: "git status --short",
+      required: true,
     },
     {
+      phase: "after",
       label: "Inspect local file changes after execution",
       command: "git diff --stat",
+      required: true,
     },
     {
+      phase: "refresh",
       label: "Refresh focused agent backlog after review",
       command: "design-ai learn --agent-backlog --strict --json",
+      required: true,
     },
   ]);
   assert.deepEqual(payload.actionPlan.executionQueue.ordered.map((item) => item.actionId), [

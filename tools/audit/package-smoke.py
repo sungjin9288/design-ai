@@ -5756,6 +5756,8 @@ def assert_agent_backlog_report_json(
         and isinstance(command_effect_review.get("gateCommands"), list)
         and any(
             isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is True
             and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
             for item in command_effect_review.get("gateCommands", [])
         )
@@ -5847,6 +5849,7 @@ def assert_agent_backlog_report_human(
         "command effects:",
         "command effect review:",
         "command effect gates:",
+        "refresh:",
         "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
@@ -10058,8 +10061,10 @@ def run_self_test() -> None:
                         ],
                         "gateCommands": [
                             {
+                                "phase": "refresh",
                                 "label": "Refresh focused agent backlog after review",
                                 "command": "design-ai learn --agent-backlog --strict --json",
+                                "required": True,
                             },
                         ],
                     },
@@ -10194,6 +10199,7 @@ def run_self_test() -> None:
                 "command effects:",
                 "command effect review:",
                 "command effect gates:",
+                "refresh:",
                 "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
@@ -10225,6 +10231,7 @@ def run_self_test() -> None:
                 "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                 "- Command effect review: No command target or mutation flag exposure detected.",
                 "- Command effect gates:",
+                "refresh: Refresh focused agent backlog after review",
                 "design-ai learn --agent-backlog --strict --json",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
@@ -10364,6 +10371,7 @@ def run_self_test() -> None:
                     "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
                     "- Command effect review: No command target or mutation flag exposure detected.",
                     "- Command effect gates:",
+                    "refresh: Refresh focused agent backlog after review",
                     "design-ai learn --agent-backlog --strict --json",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
