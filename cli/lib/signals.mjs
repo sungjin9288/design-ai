@@ -57,6 +57,18 @@ function shellQuote(value) {
   return `'${text.replace(/'/g, "'\\''")}'`;
 }
 
+function commandFromArgs(args = []) {
+  return args.map(shellQuote).join(" ");
+}
+
+function commandSpec(args = []) {
+  const commandArgs = args.map((item) => String(item));
+  return {
+    commandArgs,
+    command: commandFromArgs(commandArgs),
+  };
+}
+
 function yesNo(value) {
   return value ? "yes" : "no";
 }
@@ -296,15 +308,18 @@ function agentAction({
   title,
   rationale,
   command = "",
+  commandArgs = [],
   evidence = {},
 }) {
+  const normalizedCommandArgs = Array.isArray(commandArgs) ? commandArgs.map((item) => String(item)) : [];
   return {
     id,
     priority,
     category,
     title,
     rationale,
-    command,
+    command: command || (normalizedCommandArgs.length > 0 ? commandFromArgs(normalizedCommandArgs) : ""),
+    commandArgs: normalizedCommandArgs,
     evidence,
   };
 }
@@ -510,7 +525,7 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
     gateCommands.push({
       phase: "before",
       label: "Confirm clean workspace before execution",
-      command: "git status --short",
+      ...commandSpec(["git", "status", "--short"]),
       required: true,
     });
   }
@@ -518,14 +533,14 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
     gateCommands.push({
       phase: "after",
       label: "Inspect local file changes after execution",
-      command: "git diff --stat",
+      ...commandSpec(["git", "diff", "--stat"]),
       required: true,
     });
   }
   gateCommands.push({
     phase: "refresh",
     label: "Refresh focused agent backlog after review",
-    command: "design-ai learn --agent-backlog --strict --json",
+    ...commandSpec(["design-ai", "learn", "--agent-backlog", "--strict", "--json"]),
     required: true,
   });
   const gatePhaseSummary = summarizeAgentBacklogGateCommands(gateCommands);
@@ -598,6 +613,7 @@ function buildAgentBacklogOperatorRunbook({
         actionId: item.actionId || "",
         label: item.actionId ? `Run ${item.actionId}` : "Run backlog command",
         command: item.command,
+        commandArgs: Array.isArray(item.commandArgs) ? item.commandArgs : [],
         required: true,
         safetyLevel: item.safetyLevel || "unknown",
         runPolicy: item.runPolicy || "manual-review",
@@ -648,6 +664,7 @@ function buildAgentBacklogOperatorRunbook({
     nextStage: nextStage?.phase || "",
     nextCommandLabel: nextCommand?.label || "",
     nextCommand: nextCommand?.command || "",
+    nextCommandArgs: Array.isArray(nextCommand?.commandArgs) ? nextCommand.commandArgs : [],
     nextCommandRequired: Boolean(nextCommand?.required),
     nextCommandRunPolicy: nextCommand?.runPolicy || "",
     stages,
@@ -666,6 +683,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       category: step.category || "other",
       title: step.title || "",
       command: step.command || "",
+      commandArgs: Array.isArray(step.commandArgs) ? step.commandArgs : [],
       safetyLevel,
       runPolicy: agentBacklogRunPolicyForSafetyLevel(safetyLevel),
       commandEffects,
@@ -682,6 +700,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       rank: item.rank,
       actionId: item.actionId,
       command: item.command,
+      commandArgs: item.commandArgs,
       safetyLevel: item.safetyLevel,
       runPolicy: item.runPolicy,
       commandEffects: item.commandEffects,
@@ -715,7 +734,8 @@ function buildAgentBacklogExecutionQueue(steps = []) {
 
 function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
   const steps = actions.map((action, index) => {
-    const command = String(action.command || "");
+    const commandArgs = Array.isArray(action.commandArgs) ? action.commandArgs.map((item) => String(item)) : [];
+    const command = String(action.command || (commandArgs.length > 0 ? commandFromArgs(commandArgs) : ""));
     const commandSafety = classifyAgentBacklogCommand(command);
     return {
       rank: action.rank ?? index + 1,
@@ -724,6 +744,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       category: action.category || "other",
       title: action.title || "",
       command,
+      commandArgs,
       expectedOutcome: action.rationale || "",
       verification: command
         ? commandSafety.requiresCleanWorkspace
@@ -749,17 +770,19 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       ? {
         label: "Refresh signal registry JSON",
         command: commands.signalsJson,
+        commandArgs: Array.isArray(commands.signalsJsonArgs) ? commands.signalsJsonArgs : [],
       }
       : null,
     commands.signalsReport
       ? {
         label: "Save signal registry Markdown handoff",
         command: commands.signalsReport,
+        commandArgs: Array.isArray(commands.signalsReportArgs) ? commands.signalsReportArgs : [],
       }
       : null,
     {
       label: "Gate focused agent backlog",
-      command: "design-ai learn --agent-backlog --strict --json",
+      ...commandSpec(["design-ai", "learn", "--agent-backlog", "--strict", "--json"]),
     },
   ].filter(Boolean);
 
@@ -791,9 +814,6 @@ function buildAgentDevelopmentBacklog({
   signalSource,
 }) {
   const actions = [];
-  const fileArg = shellQuote(filePath);
-  const usageArg = shellQuote(usageFile);
-  const signalArg = shellQuote(signalSource || ".");
 
   if (!audit.exists) {
     actions.push(agentAction({
@@ -802,7 +822,7 @@ function buildAgentDevelopmentBacklog({
       category: "learning-profile",
       title: "Initialize the local learning profile before agent development review.",
       rationale: "Signal registry output is incomplete until a profile exists.",
-      command: `design-ai learn --init --file ${fileArg}`,
+      ...commandSpec(["design-ai", "learn", "--init", "--file", filePath]),
       evidence: {
         profileExists: false,
       },
@@ -814,7 +834,7 @@ function buildAgentDevelopmentBacklog({
       category: "learning-profile",
       title: "Fix learning profile audit failures before using signals as a development gate.",
       rationale: "Audit failures can make learned context selection and downstream signal summaries unreliable.",
-      command: `design-ai learn --audit --file ${fileArg}`,
+      ...commandSpec(["design-ai", "learn", "--audit", "--file", filePath]),
       evidence: {
         failures: audit.summary.failures,
         warnings: audit.summary.warnings,
@@ -827,7 +847,7 @@ function buildAgentDevelopmentBacklog({
       category: "learning-profile",
       title: "Review learning profile audit warnings before promoting agent behavior.",
       rationale: "Warnings are not blockers, but they should be resolved before treating local learning as release evidence.",
-      command: `design-ai learn --audit --file ${fileArg}`,
+      ...commandSpec(["design-ai", "learn", "--audit", "--file", filePath]),
       evidence: {
         warnings: audit.summary.warnings,
       },
@@ -841,7 +861,7 @@ function buildAgentDevelopmentBacklog({
       category: "usage-signals",
       title: "Record prompt or pack usage with learning enabled.",
       rationale: "Usage sidecar events show which learned entries actually affect agent prompts without storing raw brief text.",
-      command: "design-ai prompt \"audit a design artifact\" --with-learning --json",
+      ...commandSpec(["design-ai", "prompt", "audit a design artifact", "--with-learning", "--json"]),
       evidence: {
         usageExists: Boolean(usage.exists),
         eventCount: usage.eventCount || 0,
@@ -855,7 +875,7 @@ function buildAgentDevelopmentBacklog({
       category: "usage-signals",
       title: "Review stale selected learning ids in the usage sidecar.",
       rationale: "Stale ids indicate usage evidence is no longer aligned with the active profile.",
-      command: `design-ai learn --usage --file ${fileArg} --usage-file ${usageArg}`,
+      ...commandSpec(["design-ai", "learn", "--usage", "--file", filePath, "--usage-file", usageFile]),
       evidence: {
         staleSelectedEntryCount: usage.staleSelectedEntryCount,
       },
@@ -869,7 +889,7 @@ function buildAgentDevelopmentBacklog({
       category: "eval-harness",
       title: "Generate and run route, prompt, pack, or learning eval checkpoints.",
       rationale: "Agent development needs replayable checkpoints before signal registry output can act as a gate.",
-      command: `design-ai learn --eval-template --file ${fileArg} --json --out learning-eval.json`,
+      ...commandSpec(["design-ai", "learn", "--eval-template", "--file", filePath, "--json", "--out", "learning-eval.json"]),
       evidence: {
         evalSignalCount: 0,
       },
@@ -882,7 +902,7 @@ function buildAgentDevelopmentBacklog({
       category: "eval-harness",
       title: "Fix failing eval signal reports before continuing agent development.",
       rationale: "Failed checkpoints are the strongest deterministic signal that route, prompt, pack, or learning behavior drifted.",
-      command: `design-ai learn --signals --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      ...commandSpec(["design-ai", "learn", "--signals", "--from-file", signalSource || ".", "--file", filePath, "--usage-file", usageFile, "--json"]),
       evidence: {
         failed: evals.failed,
         warned: evals.warned,
@@ -895,7 +915,7 @@ function buildAgentDevelopmentBacklog({
       category: "eval-harness",
       title: "Replay template-only eval signal files as executed reports.",
       rationale: "Templates are useful setup artifacts, but executed reports provide stronger evidence for agent behavior.",
-      command: `design-ai learn --signals --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      ...commandSpec(["design-ai", "learn", "--signals", "--from-file", signalSource || ".", "--file", filePath, "--usage-file", usageFile, "--json"]),
       evidence: {
         templates: evals.templates,
       },
@@ -909,7 +929,7 @@ function buildAgentDevelopmentBacklog({
       category: "skill-evolution",
       title: "Preview skill instruction deltas from repeated check-capture signals.",
       rationale: "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
-      command: `design-ai learn --propose-skills --from-file ${signalArg} --file ${fileArg} --usage-file ${usageArg} --json`,
+      ...commandSpec(["design-ai", "learn", "--propose-skills", "--from-file", signalSource || ".", "--file", filePath, "--usage-file", usageFile, "--json"]),
       evidence: {
         checkCaptureCount: checkCapture.count,
         categoryCounts: checkCapture.categoryCounts,
@@ -922,7 +942,7 @@ function buildAgentDevelopmentBacklog({
       category: "skill-evolution",
       title: "Seed check-capture learning from real warn/fail artifacts when appropriate.",
       rationale: "Skill evolution proposals need explicit local check captures before they can suggest durable instruction deltas.",
-      command: "design-ai check artifact.md --learn --yes",
+      ...commandSpec(["design-ai", "check", "artifact.md", "--learn", "--yes"]),
       evidence: {
         checkCaptureCount: 0,
       },
@@ -936,7 +956,7 @@ function buildAgentDevelopmentBacklog({
       category: "workspace-readiness",
       title: "Resolve workspace readiness actions before treating agent development evidence as complete.",
       rationale: "Workspace readiness joins git, repository metadata, learning, usage, and eval freshness into the operator handoff gate.",
-      command: `design-ai workspace --learning-file ${fileArg} --learning-usage ${usageArg} --strict --json`,
+      ...commandSpec(["design-ai", "workspace", "--learning-file", filePath, "--learning-usage", usageFile, "--strict", "--json"]),
       evidence: {
         fail: workspace.nextActionCounts.fail || 0,
         warn: workspace.nextActionCounts.warn || 0,
@@ -1112,9 +1132,37 @@ export function agentBacklogReport({
     },
   };
   const actions = Array.isArray(agentDevelopment.actions) ? agentDevelopment.actions : [];
+  const signalsJsonArgs = [
+    "design-ai",
+    "learn",
+    "--signals",
+    "--from-file",
+    registry.signalSource || ".",
+    "--file",
+    registry.file || filePath,
+    "--usage-file",
+    registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)),
+    "--json",
+  ];
+  const signalsReportArgs = [
+    "design-ai",
+    "learn",
+    "--signals",
+    "--from-file",
+    registry.signalSource || ".",
+    "--file",
+    registry.file || filePath,
+    "--usage-file",
+    registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)),
+    "--report",
+    "--out",
+    "learning-signals.md",
+  ];
   const commands = {
-    signalsJson: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --json`,
-    signalsReport: `design-ai learn --signals --from-file ${shellQuote(registry.signalSource || ".")} --file ${shellQuote(registry.file || filePath)} --usage-file ${shellQuote(registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)))} --report --out learning-signals.md`,
+    signalsJson: commandFromArgs(signalsJsonArgs),
+    signalsJsonArgs,
+    signalsReport: commandFromArgs(signalsReportArgs),
+    signalsReportArgs,
   };
   const privacy = {
     mutatesProfile: false,

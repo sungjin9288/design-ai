@@ -5751,6 +5751,8 @@ def assert_agent_backlog_report_json(
         and operator_runbook.get("nextStage") in {"before", "execute"}
         and isinstance(operator_runbook.get("nextCommand"), str)
         and bool(operator_runbook.get("nextCommand"))
+        and isinstance(operator_runbook.get("nextCommandArgs"), list)
+        and len(operator_runbook.get("nextCommandArgs")) >= 2
         and isinstance(operator_runbook.get("nextCommandRequired"), bool)
         and isinstance(operator_runbook.get("stages"), list)
         and any(
@@ -5762,6 +5764,7 @@ def assert_agent_backlog_report_json(
                 and item.get("actionId") == "agent-skill-proposal-preview"
                 and item.get("runPolicy") == "preview-only"
                 and "learn --propose-skills" in str(item.get("command", ""))
+                and item.get("commandArgs", [])[:3] == ["design-ai", "learn", "--propose-skills"]
                 for item in stage.get("commands", [])
             )
             for stage in operator_runbook.get("stages", [])
@@ -5773,6 +5776,7 @@ def assert_agent_backlog_report_json(
                 isinstance(item, dict)
                 and item.get("required") is True
                 and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+                and item.get("commandArgs", []) == ["design-ai", "learn", "--agent-backlog", "--strict", "--json"]
                 for item in stage.get("commands", [])
             )
             for stage in operator_runbook.get("stages", [])
@@ -10141,6 +10145,7 @@ def run_self_test() -> None:
                                     "phase": "refresh",
                                     "label": "Refresh focused agent backlog after review",
                                     "command": "design-ai learn --agent-backlog --strict --json",
+                                    "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
                                     "required": True,
                                 },
                             ],
@@ -10151,6 +10156,7 @@ def run_self_test() -> None:
                                 "phase": "refresh",
                                 "label": "Refresh focused agent backlog after review",
                                 "command": "design-ai learn --agent-backlog --strict --json",
+                                "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
                                 "required": True,
                             },
                         ],
@@ -10166,6 +10172,7 @@ def run_self_test() -> None:
                         "nextStage": "execute",
                         "nextCommandLabel": "Run agent-skill-proposal-preview",
                         "nextCommand": "design-ai learn --propose-skills --json",
+                        "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                         "nextCommandRequired": True,
                         "nextCommandRunPolicy": "preview-only",
                         "stages": [
@@ -10188,6 +10195,7 @@ def run_self_test() -> None:
                                         "actionId": "agent-skill-proposal-preview",
                                         "label": "Run agent-skill-proposal-preview",
                                         "command": "design-ai learn --propose-skills --json",
+                                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                                         "required": True,
                                         "safetyLevel": "read-only",
                                         "runPolicy": "preview-only",
@@ -10212,6 +10220,7 @@ def run_self_test() -> None:
                                         "phase": "refresh",
                                         "label": "Refresh focused agent backlog after review",
                                         "command": "design-ai learn --agent-backlog --strict --json",
+                                        "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
                                         "required": True,
                                     },
                                 ],
@@ -10226,6 +10235,7 @@ def run_self_test() -> None:
                             "category": "skill-evolution",
                             "title": "Preview skill instruction deltas from repeated check-capture signals.",
                             "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
                             "commandEffects": {
@@ -10247,6 +10257,7 @@ def run_self_test() -> None:
                             "rank": 1,
                             "actionId": "agent-skill-proposal-preview",
                             "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
                             "commandEffects": {
@@ -10271,6 +10282,7 @@ def run_self_test() -> None:
                             "category": "skill-evolution",
                             "title": "Preview skill instruction deltas from repeated check-capture signals.",
                             "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
                             "commandEffects": {

@@ -3365,6 +3365,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
             title: "Preview skill instruction deltas from repeated check-capture signals.",
             rationale: "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
             command: "design-ai learn --propose-skills --json",
+            commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
             evidence: { checkCaptureCount: 2 },
           },
         ],
@@ -3432,6 +3433,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
         phase: "refresh",
         label: "Refresh focused agent backlog after review",
         command: "design-ai learn --agent-backlog --strict --json",
+        commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
         required: true,
       },
     ],
@@ -3442,6 +3444,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
       phase: "refresh",
       label: "Refresh focused agent backlog after review",
       command: "design-ai learn --agent-backlog --strict --json",
+      commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
       required: true,
     },
   ]);
@@ -3454,6 +3457,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "execute");
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Run agent-skill-proposal-preview");
   assert.match(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, /learn --propose-skills --json/);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "preview-only");
   assert.deepEqual(
@@ -3466,11 +3470,13 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     ],
   );
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].actionId, "agent-skill-proposal-preview");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].runPolicy, "preview-only");
   assert.match(payload.actionPlan.executionQueue.operatorRunbook.stages[3].commands[0].command, /learn --agent-backlog --strict --json/);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].runPolicy, "preview-only");
   assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.outputTargets, []);
   assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.mutationFlags, []);
@@ -3562,6 +3568,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
             title: "Generate eval checkpoint.",
             rationale: "Write a replayable checkpoint file.",
             command: "design-ai learn --eval-template --json --out learning-eval.json",
+            commandArgs: ["design-ai", "learn", "--eval-template", "--json", "--out", "learning-eval.json"],
             evidence: {},
           },
           {
@@ -3572,6 +3579,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
             title: "Initialize profile.",
             rationale: "Preview local profile seed entries.",
             command: "design-ai learn --init --file /tmp/design-ai-learning.json",
+            commandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
             evidence: {},
           },
           {
@@ -3582,6 +3590,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
             title: "Capture check feedback.",
             rationale: "Apply local check captures.",
             command: "design-ai check artifact.md --learn --yes",
+            commandArgs: ["design-ai", "check", "artifact.md", "--learn", "--yes"],
             evidence: {},
           },
         ],
@@ -3635,6 +3644,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
         phase: "before",
         label: "Confirm clean workspace before execution",
         command: "git status --short",
+        commandArgs: ["git", "status", "--short"],
         required: true,
       },
     ],
@@ -3643,6 +3653,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
         phase: "after",
         label: "Inspect local file changes after execution",
         command: "git diff --stat",
+        commandArgs: ["git", "diff", "--stat"],
         required: true,
       },
     ],
@@ -3651,6 +3662,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
         phase: "refresh",
         label: "Refresh focused agent backlog after review",
         command: "design-ai learn --agent-backlog --strict --json",
+        commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
         required: true,
       },
     ],
@@ -3661,18 +3673,21 @@ test("agentBacklogReport classifies action plan command safety", () => {
       phase: "before",
       label: "Confirm clean workspace before execution",
       command: "git status --short",
+      commandArgs: ["git", "status", "--short"],
       required: true,
     },
     {
       phase: "after",
       label: "Inspect local file changes after execution",
       command: "git diff --stat",
+      commandArgs: ["git", "diff", "--stat"],
       required: true,
     },
     {
       phase: "refresh",
       label: "Refresh focused agent backlog after review",
       command: "design-ai learn --agent-backlog --strict --json",
+      commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
       required: true,
     },
   ]);
@@ -3685,6 +3700,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "before");
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Confirm clean workspace before execution");
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, "git status --short");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["git", "status", "--short"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "");
   assert.deepEqual(
@@ -3749,6 +3765,56 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.mutatesLocalState, true);
   assert.deepEqual(stepsById.get("agent-check-capture-seed").commandSafety.mutationFlags, ["--yes"]);
   assert.equal(stepsById.get("agent-check-capture-seed").requiresReviewBeforeMutation, true);
+});
+
+test("agentBacklogReport derives command strings from structured command args", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const payload = agentBacklogReport({
+    filePath: "/tmp/design-ai-learning.json",
+    usageFile: "/tmp/design-ai-learning.usage.json",
+    signalSource: "/tmp/design-ai-signals",
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "warn",
+      file: "/tmp/design-ai-learning.json",
+      signalSource: "/tmp/design-ai-signals",
+      learning: { count: 1 },
+      usage: { usageFile: "/tmp/design-ai-learning.usage.json", eventCount: 0 },
+      evals: { count: 0 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "warn",
+        actionCount: 1,
+        p0Count: 0,
+        p1Count: 1,
+        p2Count: 0,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-command-args-only",
+            priority: "p1",
+            category: "eval-harness",
+            title: "Run a command from structured args only.",
+            rationale: "External providers may emit args without a shell-rendered command.",
+            commandArgs: ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"],
+            evidence: {},
+          },
+        ],
+      },
+      recommendations: [],
+    }),
+  });
+
+  assert.equal(payload.actionPlan.steps[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
+  assert.deepEqual(payload.actionPlan.steps[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
 });
 
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
