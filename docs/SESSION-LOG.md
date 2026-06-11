@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 430 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase.
 - **Phase 429 (unreleased)** — Added `design-ai learn --signals --report --out learning-signals.md` Markdown signal registry handoffs plus packed-tarball smoke coverage for local AI/agent backlog report artifacts.
 - **Phase 428 (unreleased)** — Added `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review-file scaffolds plus packed-tarball smoke coverage for unresolved skill proposal decision templates.
 - **Phase 427 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json` proposal review state joins plus packed-tarball smoke coverage for applied/rejected decision handling.
@@ -56,6 +57,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 430 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase.
 - **Phase 429 (unreleased)** — Added `design-ai learn --signals --report --out learning-signals.md` Markdown signal registry handoffs plus packed-tarball smoke coverage for local AI/agent backlog report artifacts.
 - **Phase 428 (unreleased)** — Added `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review-file scaffolds plus packed-tarball smoke coverage for unresolved skill proposal decision templates.
 - **Phase 427 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json` proposal review state joins plus packed-tarball smoke coverage for applied/rejected decision handling.

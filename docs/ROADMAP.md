@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 430 — Learning Signal Markdown Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase across release-facing policy docs. This closes the Phase 429 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged Markdown signal report coverage.
+
+### Changed
+- Added a release metadata phrase guard for the `learn --signals --report --out learning-signals.md` Markdown signal report package smoke phrase.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the Markdown signal report wording while retaining the strict signal gate wording.
+- Updated README, Korean README, Korean Distribution docs, Release Checklist, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve both learning signal package smoke contracts: Markdown signal report persistence and strict signal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 429 — Learning Signal Markdown Handoff Reports (unreleased)
 
 `design-ai learn --signals --report --out learning-signals.md` now writes a durable Markdown handoff for the local AI/agent signal registry. This turns the existing read-only JSON/human signal surface into a shareable artifact covering learning audit state, usage sidecar counts, eval signal files, check captures, workspace readiness, deterministic agent development backlog actions, recommendations, and privacy boundaries.
