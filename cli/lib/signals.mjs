@@ -579,6 +579,74 @@ function groupAgentBacklogGateCommands(gateCommands = []) {
   return groups;
 }
 
+function buildAgentBacklogOperatorRunbook({
+  commandManifest = [],
+  commandEffectReview = {},
+} = {}) {
+  const gateRunbook = commandEffectReview?.gateRunbook && typeof commandEffectReview.gateRunbook === "object"
+    ? commandEffectReview.gateRunbook
+    : {};
+  const gateCommandsFor = (phase) => (
+    Array.isArray(gateRunbook[phase]) ? gateRunbook[phase] : []
+  );
+  const executeCommands = Array.isArray(commandManifest)
+    ? commandManifest
+      .filter((item) => item && typeof item === "object" && item.command)
+      .map((item) => ({
+        phase: "execute",
+        rank: item.rank,
+        actionId: item.actionId || "",
+        label: item.actionId ? `Run ${item.actionId}` : "Run backlog command",
+        command: item.command,
+        required: true,
+        safetyLevel: item.safetyLevel || "unknown",
+        runPolicy: item.runPolicy || "manual-review",
+        requiresReviewBeforeMutation: Boolean(item.requiresReviewBeforeMutation),
+      }))
+    : [];
+  const stages = [
+    {
+      phase: "before",
+      label: "Run before executing backlog commands",
+      commands: gateCommandsFor("before"),
+    },
+    {
+      phase: "execute",
+      label: "Execute reviewed backlog commands",
+      commands: executeCommands,
+    },
+    {
+      phase: "after",
+      label: "Run after executing backlog commands",
+      commands: gateCommandsFor("after"),
+    },
+    {
+      phase: "refresh",
+      label: "Refresh backlog status after execution",
+      commands: gateCommandsFor("refresh"),
+    },
+  ].map((stage) => {
+    const commands = Array.isArray(stage.commands) ? stage.commands : [];
+    return {
+      ...stage,
+      commandCount: commands.length,
+      requiredCount: commands.filter((item) => item && item.required === true).length,
+      commands,
+    };
+  });
+  const allCommands = stages.flatMap((stage) => stage.commands);
+  return {
+    version: 1,
+    stageCount: stages.length,
+    commandCount: allCommands.length,
+    requiredCommandCount: allCommands.filter((item) => item && item.required === true).length,
+    reviewLevel: commandEffectReview?.level || "unknown",
+    requiresOperatorReview: Boolean(commandEffectReview?.requiresOperatorReview),
+    phases: stages.map((stage) => stage.phase),
+    stages,
+  };
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
@@ -614,6 +682,10 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     }));
   const commandEffectSummary = summarizeAgentBacklogCommandEffectManifest(commandManifest);
   const commandEffectReview = buildAgentBacklogCommandEffectReview(commandEffectSummary);
+  const operatorRunbook = buildAgentBacklogOperatorRunbook({
+    commandManifest,
+    commandEffectReview,
+  });
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -625,6 +697,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     nextCommandRunPolicy: commandManifest[0]?.runPolicy || "",
     commandEffectSummary,
     commandEffectReview,
+    operatorRunbook,
     ordered,
     commandManifest,
     preview,
@@ -1195,6 +1268,12 @@ export function renderAgentBacklogReport(payload, {
           lines.push(`  - ${phase}${item.label || "Review gate"}: \`${item.command || ""}\``);
         }
       }
+    }
+    const operatorRunbook = executionQueue.operatorRunbook && typeof executionQueue.operatorRunbook === "object"
+      ? executionQueue.operatorRunbook
+      : null;
+    if (operatorRunbook) {
+      lines.push(`- Operator runbook: ${operatorRunbook.stageCount ?? 0} stage(s), ${operatorRunbook.commandCount ?? 0} command(s), ${operatorRunbook.requiredCommandCount ?? 0} required`);
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);

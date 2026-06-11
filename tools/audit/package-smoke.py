@@ -5720,6 +5720,7 @@ def assert_agent_backlog_report_json(
     execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
     ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
+    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
@@ -5740,6 +5741,38 @@ def assert_agent_backlog_report_json(
         and execution_queue.get("mutationReviewCount", -1) >= 0
         and execution_queue.get("orderedCount", 0) >= 1
         and execution_queue.get("commandManifestCount", 0) >= 1
+        and isinstance(operator_runbook, dict)
+        and operator_runbook.get("version") == 1
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("commandCount", 0) >= execution_queue.get("commandManifestCount", 0)
+        and operator_runbook.get("requiredCommandCount", 0) >= execution_queue.get("commandManifestCount", 0)
+        and isinstance(operator_runbook.get("phases"), list)
+        and operator_runbook.get("phases") == ["before", "execute", "after", "refresh"]
+        and isinstance(operator_runbook.get("stages"), list)
+        and any(
+            isinstance(stage, dict)
+            and stage.get("phase") == "execute"
+            and stage.get("commandCount", 0) >= 1
+            and any(
+                isinstance(item, dict)
+                and item.get("actionId") == "agent-skill-proposal-preview"
+                and item.get("runPolicy") == "preview-only"
+                and "learn --propose-skills" in str(item.get("command", ""))
+                for item in stage.get("commands", [])
+            )
+            for stage in operator_runbook.get("stages", [])
+        )
+        and any(
+            isinstance(stage, dict)
+            and stage.get("phase") == "refresh"
+            and any(
+                isinstance(item, dict)
+                and item.get("required") is True
+                and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+                for item in stage.get("commands", [])
+            )
+            for stage in operator_runbook.get("stages", [])
+        )
         and isinstance(command_effect_summary, dict)
         and command_effect_summary.get("totalCommands", 0) >= 1
         and command_effect_summary.get("outputTargetCount", -1) >= 0
@@ -5871,6 +5904,7 @@ def assert_agent_backlog_report_human(
         "command effect gate phases:",
         "command effect gate runbook:",
         "command effect gates:",
+        "operator runbook:",
         "refresh:",
         "safety: read-only",
         "requires mutation review: no",
@@ -5914,7 +5948,10 @@ def assert_agent_backlog_report_markdown(
         "- Command manifest entries: 1",
         "- Command effect targets:",
         "- Command effect review:",
+        "- Command effect gate phases:",
+        "- Command effect gate runbook:",
         "- Command effect gates:",
+        "- Operator runbook:",
         "- Recommended next action: agent-skill-proposal-preview",
         "- Recommended next command policy: preview-only",
         "Recommended next command:",
@@ -10112,6 +10149,64 @@ def run_self_test() -> None:
                             },
                         ],
                     },
+                    "operatorRunbook": {
+                        "version": 1,
+                        "stageCount": 4,
+                        "commandCount": 2,
+                        "requiredCommandCount": 2,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "phases": ["before", "execute", "after", "refresh"],
+                        "stages": [
+                            {
+                                "phase": "before",
+                                "label": "Run before executing backlog commands",
+                                "commandCount": 0,
+                                "requiredCount": 0,
+                                "commands": [],
+                            },
+                            {
+                                "phase": "execute",
+                                "label": "Execute reviewed backlog commands",
+                                "commandCount": 1,
+                                "requiredCount": 1,
+                                "commands": [
+                                    {
+                                        "phase": "execute",
+                                        "rank": 1,
+                                        "actionId": "agent-skill-proposal-preview",
+                                        "label": "Run agent-skill-proposal-preview",
+                                        "command": "design-ai learn --propose-skills --json",
+                                        "required": True,
+                                        "safetyLevel": "read-only",
+                                        "runPolicy": "preview-only",
+                                        "requiresReviewBeforeMutation": False,
+                                    },
+                                ],
+                            },
+                            {
+                                "phase": "after",
+                                "label": "Run after executing backlog commands",
+                                "commandCount": 0,
+                                "requiredCount": 0,
+                                "commands": [],
+                            },
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh backlog status after execution",
+                                "commandCount": 1,
+                                "requiredCount": 1,
+                                "commands": [
+                                    {
+                                        "phase": "refresh",
+                                        "label": "Refresh focused agent backlog after review",
+                                        "command": "design-ai learn --agent-backlog --strict --json",
+                                        "required": True,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                     "ordered": [
                         {
                             "rank": 1,
@@ -10245,6 +10340,7 @@ def run_self_test() -> None:
                 "command effect gate phases:",
                 "command effect gate runbook:",
                 "command effect gates:",
+                "operator runbook:",
                 "refresh:",
                 "safety: read-only",
                 "requires mutation review: no",
@@ -10281,6 +10377,7 @@ def run_self_test() -> None:
                 "- Command effect gates:",
                 "refresh: Refresh focused agent backlog after review",
                 "design-ai learn --agent-backlog --strict --json",
+                "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
                 "Recommended next command:",
@@ -10423,6 +10520,7 @@ def run_self_test() -> None:
                     "- Command effect gates:",
                     "refresh: Refresh focused agent backlog after review",
                     "design-ai learn --agent-backlog --strict --json",
+                    "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
                     "Recommended next command:",

@@ -3445,6 +3445,24 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
       required: true,
     },
   ]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.version, 1);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stageCount, 4);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.commandCount, 2);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 2);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "clear");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.phases, ["before", "execute", "after", "refresh"]);
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
+    [
+      ["before", 0, 0],
+      ["execute", 1, 1],
+      ["after", 0, 0],
+      ["refresh", 1, 1],
+    ],
+  );
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].actionId, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].runPolicy, "preview-only");
+  assert.match(payload.actionPlan.executionQueue.operatorRunbook.stages[3].commands[0].command, /learn --agent-backlog --strict --json/);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
@@ -3485,6 +3503,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Command effect gates:/);
   assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
+  assert.match(markdown, /Operator runbook: 4 stage\(s\), 2 command\(s\), 2 required/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command:/);
@@ -3651,6 +3670,37 @@ test("agentBacklogReport classifies action plan command safety", () => {
       required: true,
     },
   ]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.version, 1);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stageCount, 4);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.commandCount, 6);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 6);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "mutation-review");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiresOperatorReview, true);
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
+    [
+      ["before", 1, 1],
+      ["execute", 3, 3],
+      ["after", 1, 1],
+      ["refresh", 1, 1],
+    ],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands.map((item) => item.actionId),
+    [
+      "agent-learning-profile-init",
+      "agent-eval-checkpoint-generate",
+      "agent-check-capture-seed",
+    ],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands.map((item) => item.runPolicy),
+    [
+      "preview-only",
+      "review-before-file-write",
+      "review-before-mutation",
+    ],
+  );
   assert.deepEqual(payload.actionPlan.executionQueue.ordered.map((item) => item.actionId), [
     "agent-learning-profile-init",
     "agent-eval-checkpoint-generate",

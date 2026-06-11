@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 450 (unreleased)** — Added deterministic `executionQueue.operatorRunbook` stages to focused `design-ai learn --agent-backlog` output so local operators can follow before/execute/after/refresh backlog handoff steps without rebuilding them from separate gate and command-manifest fields.
 - **Phase 449 (unreleased)** — Added deterministic `commandEffectReview.gateRunbook` buckets to focused `design-ai learn --agent-backlog` output so local runbooks can execute before/after/refresh gates without filtering flat command lists.
 - **Phase 448 (unreleased)** — Added deterministic `commandEffectReview.gatePhaseSummary` metadata to focused `design-ai learn --agent-backlog` output so local runbooks can read gate counts, required counts, and before/after/refresh coverage without parsing labels.
 - **Phase 447 (unreleased)** — Added deterministic `phase` and `required` metadata to focused `design-ai learn --agent-backlog` gate commands so local operator runbooks can distinguish before-execution, after-execution, and backlog-refresh checks.

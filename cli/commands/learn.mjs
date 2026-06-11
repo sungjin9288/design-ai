@@ -678,6 +678,10 @@ function printAgentBacklog(payload) {
           console.log(`  ${dim(`command effect gates: ${gateSummary}`)}`);
         }
       }
+      const operatorRunbook = queue.operatorRunbook && typeof queue.operatorRunbook === "object" ? queue.operatorRunbook : null;
+      if (operatorRunbook) {
+        console.log(`  ${dim(`operator runbook: ${operatorRunbook.stageCount || 0} stages, ${operatorRunbook.commandCount || 0} commands, ${operatorRunbook.requiredCommandCount || 0} required`)}`);
+      }
       if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
       if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
       if (queue.nextCommandRunPolicy) console.log(`  ${dim(`next command policy: ${queue.nextCommandRunPolicy}`)}`);
