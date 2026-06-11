@@ -5752,6 +5752,11 @@ def assert_agent_backlog_report_json(
             isinstance(item, dict)
             and item.get("actionId") == "agent-skill-proposal-preview"
             and item.get("runPolicy") == "preview-only"
+            and isinstance(item.get("commandEffects"), dict)
+            and item["commandEffects"].get("writesLocalFiles") is False
+            and item["commandEffects"].get("mutatesLocalState") is False
+            and item["commandEffects"].get("outputTargets") == []
+            and item["commandEffects"].get("mutationFlags") == []
             for item in command_manifest
         )
         and isinstance(action_plan_steps, list)
@@ -9976,6 +9981,10 @@ def run_self_test() -> None:
                             "mutatesLocalState": False,
                             "requiresCleanWorkspace": False,
                             "detectedFlags": [],
+                            "outputTargets": [],
+                            "profileTargets": [],
+                            "usageTargets": [],
+                            "mutationFlags": [],
                             "reason": "Command is preview/report oriented and has no detected mutation flags.",
                         },
                     },
@@ -10007,6 +10016,17 @@ def run_self_test() -> None:
                             "command": "design-ai learn --propose-skills --json",
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
                             "requiresReviewBeforeMutation": False,
                         },
                     ],
@@ -10017,6 +10037,17 @@ def run_self_test() -> None:
                             "command": "design-ai learn --propose-skills --json",
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
                             "requiresReviewBeforeMutation": False,
                         },
                     ],
@@ -10030,6 +10061,17 @@ def run_self_test() -> None:
                             "command": "design-ai learn --propose-skills --json",
                             "safetyLevel": "read-only",
                             "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
                             "requiresReviewBeforeMutation": False,
                         },
                     ],
@@ -10126,7 +10168,7 @@ def run_self_test() -> None:
                 "Queue order:",
                 "1. agent-skill-proposal-preview (read-only, preview-only)",
                 "Command manifest:",
-                "1. agent-skill-proposal-preview - preview-only",
+                "1. agent-skill-proposal-preview - preview-only (read-only)",
                 "- Command safety: read-only",
                 "- Writes local files: no",
                 "- Mutates local state: no",
@@ -10261,7 +10303,7 @@ def run_self_test() -> None:
                     "Queue order:",
                     "1. agent-skill-proposal-preview (read-only, preview-only)",
                     "Command manifest:",
-                    "1. agent-skill-proposal-preview - preview-only",
+                    "1. agent-skill-proposal-preview - preview-only (read-only)",
                     "- Command safety: read-only",
                     "- Writes local files: no",
                     "- Mutates local state: no",

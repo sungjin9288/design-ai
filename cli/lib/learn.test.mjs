@@ -3411,6 +3411,8 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].runPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.outputTargets, []);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.mutationFlags, []);
   assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.steps[0].requiresReviewBeforeMutation, false);
   assert.equal(payload.actionPlan.steps[0].commandSafety.level, "read-only");
@@ -3444,7 +3446,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Queue order:/);
   assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
   assert.match(markdown, /Command manifest:/);
-  assert.match(markdown, /1\. agent-skill-proposal-preview - preview-only/);
+  assert.match(markdown, /1\. agent-skill-proposal-preview - preview-only \(read-only\)/);
   assert.match(markdown, /Command safety: read-only/);
   assert.match(markdown, /Writes local files: no/);
   assert.match(markdown, /Mutates local state: no/);
@@ -3542,6 +3544,15 @@ test("agentBacklogReport classifies action plan command safety", () => {
     "review-before-file-write",
     "review-before-mutation",
   ]);
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.commandManifest[1].commandEffects.outputTargets,
+    [{ flag: "--out", value: "learning-eval.json" }],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.commandManifest[0].commandEffects.profileTargets,
+    [{ flag: "--file", value: "/tmp/design-ai-learning.json" }],
+  );
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[2].commandEffects.mutationFlags, ["--yes"]);
   assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-learning-profile-init");
   assert.equal(payload.actionPlan.executionQueue.fileWriteReview[0].actionId, "agent-eval-checkpoint-generate");
   assert.equal(payload.actionPlan.executionQueue.mutationReview[0].actionId, "agent-check-capture-seed");
@@ -3549,13 +3560,16 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.level, "writes-local-file");
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.writesLocalFiles, true);
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.mutatesLocalState, false);
+  assert.deepEqual(stepsById.get("agent-eval-checkpoint-generate").commandSafety.outputTargets, [{ flag: "--out", value: "learning-eval.json" }]);
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").requiresReviewBeforeMutation, true);
   assert.match(stepsById.get("agent-eval-checkpoint-generate").verification[0], /clean working tree/);
   assert.equal(stepsById.get("agent-learning-profile-init").commandSafety.level, "read-only");
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").commandSafety.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
   assert.equal(stepsById.get("agent-learning-profile-init").requiresReviewBeforeMutation, false);
   assert.match(stepsById.get("agent-learning-profile-init").verification[0], /preview\/report output/);
   assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.level, "mutates-local-state");
   assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.mutatesLocalState, true);
+  assert.deepEqual(stepsById.get("agent-check-capture-seed").commandSafety.mutationFlags, ["--yes"]);
   assert.equal(stepsById.get("agent-check-capture-seed").requiresReviewBeforeMutation, true);
 });
 

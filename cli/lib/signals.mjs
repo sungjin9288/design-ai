@@ -322,6 +322,13 @@ function classifyAgentBacklogCommand(command = "") {
   if (/\s--yes(?:\s|$)/.test(text)) detectedFlags.push("--yes");
   if (/\s--fix(?:\s|$)/.test(text)) detectedFlags.push("--fix");
   if (/\s--force(?:\s|$)/.test(text)) detectedFlags.push("--force");
+  const outputTargets = extractAgentBacklogFlagTargets(text, "--out");
+  const profileTargets = [
+    ...extractAgentBacklogFlagTargets(text, "--file"),
+    ...extractAgentBacklogFlagTargets(text, "--learning-file"),
+  ];
+  const usageTargets = extractAgentBacklogFlagTargets(text, "--usage-file");
+  const mutationFlags = detectedFlags.filter((flag) => flag === "--yes" || flag === "--fix" || flag === "--force");
   const writesLocalFiles = detectedFlags.includes("--out");
   const mutatesLocalState = detectedFlags.some((flag) => flag === "--yes" || flag === "--fix");
   const level = mutatesLocalState ? "mutates-local-state" : writesLocalFiles ? "writes-local-file" : "read-only";
@@ -336,8 +343,26 @@ function classifyAgentBacklogCommand(command = "") {
     mutatesLocalState,
     requiresCleanWorkspace: writesLocalFiles || mutatesLocalState,
     detectedFlags,
+    outputTargets,
+    profileTargets,
+    usageTargets,
+    mutationFlags,
     reason,
   };
+}
+
+function extractAgentBacklogFlagTargets(command = "", flag = "") {
+  if (!flag) return [];
+  const escaped = flag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(?:^|\\s)${escaped}(?:=|\\s+)(?:"([^"]+)"|'([^']+)'|(\\S+))`, "g");
+  const targets = [];
+  let match = pattern.exec(command);
+  while (match) {
+    const value = match[1] || match[2] || match[3] || "";
+    if (value) targets.push({ flag, value });
+    match = pattern.exec(command);
+  }
+  return targets;
 }
 
 function summarizeAgentBacklogCommandSafety(steps = []) {
@@ -367,10 +392,46 @@ function agentBacklogRunPolicyForSafetyLevel(safetyLevel = "unknown") {
   return "manual-review";
 }
 
+function buildAgentBacklogCommandEffects(commandSafety = {}) {
+  const outputTargets = Array.isArray(commandSafety.outputTargets) ? commandSafety.outputTargets : [];
+  const profileTargets = Array.isArray(commandSafety.profileTargets) ? commandSafety.profileTargets : [];
+  const usageTargets = Array.isArray(commandSafety.usageTargets) ? commandSafety.usageTargets : [];
+  const mutationFlags = Array.isArray(commandSafety.mutationFlags) ? commandSafety.mutationFlags : [];
+  const detectedFlags = Array.isArray(commandSafety.detectedFlags) ? commandSafety.detectedFlags : [];
+  return {
+    writesLocalFiles: Boolean(commandSafety.writesLocalFiles),
+    mutatesLocalState: Boolean(commandSafety.mutatesLocalState),
+    requiresCleanWorkspace: Boolean(commandSafety.requiresCleanWorkspace),
+    detectedFlags,
+    mutationFlags,
+    outputTargets,
+    profileTargets,
+    usageTargets,
+    reviewReason: commandSafety.reason || "",
+  };
+}
+
+function summarizeAgentBacklogCommandEffects(effects = {}) {
+  const parts = [];
+  const outputTargets = Array.isArray(effects.outputTargets) ? effects.outputTargets : [];
+  const profileTargets = Array.isArray(effects.profileTargets) ? effects.profileTargets : [];
+  const usageTargets = Array.isArray(effects.usageTargets) ? effects.usageTargets : [];
+  const mutationFlags = Array.isArray(effects.mutationFlags) ? effects.mutationFlags : [];
+  if (outputTargets.length > 0) parts.push(`out ${outputTargets.map((item) => item.value).join(", ")}`);
+  if (profileTargets.length > 0) parts.push(`profile ${profileTargets.map((item) => item.value).join(", ")}`);
+  if (usageTargets.length > 0) parts.push(`usage ${usageTargets.map((item) => item.value).join(", ")}`);
+  if (mutationFlags.length > 0) parts.push(`flags ${mutationFlags.join(", ")}`);
+  if (parts.length > 0) return parts.join("; ");
+  if (effects.mutatesLocalState) return "implicit local mutation target";
+  if (effects.writesLocalFiles) return "local file write target";
+  return "read-only";
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
     const safetyLevel = commandSafety.level || "unknown";
+    const commandEffects = buildAgentBacklogCommandEffects(commandSafety);
     return {
       rank: step.rank,
       actionId: step.actionId || "",
@@ -380,6 +441,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       command: step.command || "",
       safetyLevel,
       runPolicy: agentBacklogRunPolicyForSafetyLevel(safetyLevel),
+      commandEffects,
       requiresReviewBeforeMutation: Boolean(step.requiresReviewBeforeMutation),
     };
   };
@@ -395,6 +457,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       command: item.command,
       safetyLevel: item.safetyLevel,
       runPolicy: item.runPolicy,
+      commandEffects: item.commandEffects,
       requiresReviewBeforeMutation: item.requiresReviewBeforeMutation,
     }));
   return {
@@ -961,7 +1024,7 @@ export function renderAgentBacklogReport(payload, {
       lines.push("");
       lines.push("Command manifest:");
       for (const item of commandManifest) {
-        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} - ${item.runPolicy || "manual-review"}`);
+        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} - ${item.runPolicy || "manual-review"} (${summarizeAgentBacklogCommandEffects(item.commandEffects)})`);
       }
     }
     lines.push("");

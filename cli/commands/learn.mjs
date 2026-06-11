@@ -658,7 +658,13 @@ function printAgentBacklog(payload) {
       }
       const commandManifest = Array.isArray(queue.commandManifest) ? queue.commandManifest : [];
       if (commandManifest.length > 0) {
-        console.log(`  ${dim(`command manifest: ${commandManifest.slice(0, 3).map((item) => `${item.actionId}:${item.runPolicy}`).join(" -> ")}`)}`);
+        console.log(`  ${dim(`command manifest: ${commandManifest.slice(0, 3).map((item) => {
+          const effects = item.commandEffects && typeof item.commandEffects === "object" ? item.commandEffects : {};
+          const targets = Array.isArray(effects.outputTargets) && effects.outputTargets.length > 0
+            ? `:${effects.outputTargets.map((target) => target.value).join(",")}`
+            : "";
+          return `${item.actionId}:${item.runPolicy}${targets}`;
+        }).join(" -> ")}`)}`);
       }
     }
     for (const step of planSteps.slice(0, 3)) {

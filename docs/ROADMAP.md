@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 443 — Agent Backlog Command Effects Manifest (unreleased)
+
+`design-ai learn --agent-backlog` command manifests now include explicit effect metadata for command-bearing actions. Operators and local automation can inspect output targets, learning profile targets, usage sidecar targets, mutation flags, and review reasons without parsing shell text.
+
+### Changed
+- Added `commandSafety.outputTargets`, `profileTargets`, `usageTargets`, and `mutationFlags` to focused agent backlog action-plan steps.
+- Added `commandEffects` to execution queue items and command manifest entries so target hints travel with `runPolicy`.
+- Surfaced compact effect summaries in human `learn --agent-backlog` output and Markdown command manifest reports.
+- Strengthened unit tests and package-smoke self-test assertions so command effect metadata drift is caught in JSON and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer for operators and local automation because command effects are explicit alongside run policy.
+- This remains deterministic and local; it only emits effect metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 442 — Agent Backlog Command Manifest (unreleased)
 
 `design-ai learn --agent-backlog` execution queues now expose a command manifest with explicit run policies for command-bearing actions. Operators and local automation can distinguish `preview-only`, `review-before-file-write`, and `review-before-mutation` commands without reclassifying shell text from the grouped queue.
