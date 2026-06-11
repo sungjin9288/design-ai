@@ -360,6 +360,35 @@ function summarizeAgentBacklogCommandSafety(steps = []) {
   return summary;
 }
 
+function buildAgentBacklogExecutionQueue(steps = []) {
+  const toQueueItem = (step) => {
+    const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
+    return {
+      rank: step.rank,
+      actionId: step.actionId || "",
+      priority: step.priority || "p3",
+      category: step.category || "other",
+      title: step.title || "",
+      command: step.command || "",
+      safetyLevel: commandSafety.level || "unknown",
+      requiresReviewBeforeMutation: Boolean(step.requiresReviewBeforeMutation),
+    };
+  };
+  const preview = steps.filter((step) => step.commandSafety?.level === "read-only").map(toQueueItem);
+  const fileWriteReview = steps.filter((step) => step.commandSafety?.level === "writes-local-file").map(toQueueItem);
+  const mutationReview = steps.filter((step) => step.commandSafety?.level === "mutates-local-state").map(toQueueItem);
+  const ordered = [...preview, ...fileWriteReview, ...mutationReview];
+  return {
+    previewCount: preview.length,
+    fileWriteReviewCount: fileWriteReview.length,
+    mutationReviewCount: mutationReview.length,
+    nextCommand: ordered.find((item) => item.command)?.command || "",
+    preview,
+    fileWriteReview,
+    mutationReview,
+  };
+}
+
 function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
   const steps = actions.map((action, index) => {
     const command = String(action.command || "");
@@ -390,6 +419,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
     };
   });
   const safetySummary = summarizeAgentBacklogCommandSafety(steps);
+  const executionQueue = buildAgentBacklogExecutionQueue(steps);
   const verification = [
     commands.signalsJson
       ? {
@@ -415,6 +445,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
     nextStep: steps[0] || null,
     steps,
     safetySummary,
+    executionQueue,
     verification,
     boundaries: {
       reportMutatesProfile: Boolean(privacy.mutatesProfile),
@@ -872,6 +903,22 @@ export function renderAgentBacklogReport(payload, {
     lines.push(`- Mutates local state: ${safetySummary.mutatesLocalState ?? 0}`);
     lines.push(`- Requires clean workspace: ${safetySummary.requiresCleanWorkspace ?? 0}`);
     lines.push(`- Requires mutation review: ${safetySummary.requiresReviewBeforeMutation ?? 0}`);
+    lines.push("");
+  }
+  const executionQueue = actionPlan.executionQueue && typeof actionPlan.executionQueue === "object" ? actionPlan.executionQueue : null;
+  if (executionQueue) {
+    lines.push("Execution queue:");
+    lines.push(`- Preview/read-only commands: ${executionQueue.previewCount ?? 0}`);
+    lines.push(`- Local file-write review commands: ${executionQueue.fileWriteReviewCount ?? 0}`);
+    lines.push(`- Local mutation review commands: ${executionQueue.mutationReviewCount ?? 0}`);
+    if (executionQueue.nextCommand) {
+      lines.push("");
+      lines.push("Recommended next command:");
+      lines.push("");
+      lines.push("```bash");
+      lines.push(executionQueue.nextCommand);
+      lines.push("```");
+    }
     lines.push("");
   }
   if (planSteps.length === 0) {

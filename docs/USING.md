@@ -60,7 +60,7 @@ design-ai learn --agent-backlog --from-file . --strict --json
 design-ai learn --agent-backlog --from-file . --report --out agent-backlog.md
 ```
 
-The command is read-only and uses the same deterministic `agentDevelopment` data as `learn --signals`. JSON and Markdown output include an `actionPlan` with ordered steps, aggregate `safetySummary` counts, verification commands, `requiresReviewBeforeMutation` flags, and `commandSafety` metadata that classifies follow-up commands as `read-only`, `writes-local-file`, or `mutates-local-state`. This lets an operator move from backlog review to controlled execution without guessing which commands may change local files. It does not mutate `learning.json`, skill files, usage sidecars, eval files, or target repositories, and it does not call external AI APIs.
+The command is read-only and uses the same deterministic `agentDevelopment` data as `learn --signals`. JSON and Markdown output include an `actionPlan` with ordered steps, an `executionQueue` that groups preview/read-only commands before file-write and mutation-review commands, aggregate `safetySummary` counts, verification commands, `requiresReviewBeforeMutation` flags, and `commandSafety` metadata that classifies follow-up commands as `read-only`, `writes-local-file`, or `mutates-local-state`. This lets an operator move from backlog review to controlled execution without guessing which commands may change local files. It does not mutate `learning.json`, skill files, usage sidecars, eval files, or target repositories, and it does not call external AI APIs.
 
 ## Skill evolution proposals
 

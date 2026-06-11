@@ -646,6 +646,11 @@ function printAgentBacklog(payload) {
     if (safety) {
       console.log(`  ${dim(`safety summary: ${safety.readOnly || 0} read-only, ${safety.writesLocalFile || 0} writes-local-file, ${safety.mutatesLocalState || 0} mutates-local-state`)}`);
     }
+    const queue = payload.actionPlan?.executionQueue;
+    if (queue) {
+      console.log(`  ${dim(`execution queue: ${queue.previewCount || 0} preview, ${queue.fileWriteReviewCount || 0} file-write review, ${queue.mutationReviewCount || 0} mutation review`)}`);
+      if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
+    }
     for (const step of planSteps.slice(0, 3)) {
       console.log(`- ${step.rank}. ${step.priority} ${step.category}: ${step.title}`);
       if (step.command) console.log(`  ${dim(step.command)}`);

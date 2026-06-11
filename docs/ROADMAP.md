@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 440 — Agent Backlog Execution Queue (unreleased)
+
+`design-ai learn --agent-backlog` action plans now expose an execution queue that groups safe preview commands before local file-write and local mutation review commands. Operators can see the recommended next command without re-sorting every backlog step manually.
+
+### Changed
+- Added `actionPlan.executionQueue` with preview/read-only, file-write review, and mutation-review command groups.
+- Added a `nextCommand` field derived from the safest available queue item.
+- Surfaced the execution queue in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so execution queue drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute in a controlled order after reviewing safety summary counts.
+- This remains deterministic and local; it only reorganizes emitted action-plan commands and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 439 — Agent Backlog Safety Summary (unreleased)
 
 `design-ai learn --agent-backlog` action plans now include a safety summary across all follow-up steps. Operators can see the total count of read-only, local file-writing, and local state-mutating commands before inspecting each step.

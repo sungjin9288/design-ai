@@ -3399,6 +3399,11 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 0);
   assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 0);
   assert.equal(payload.actionPlan.safetySummary.requiresReviewBeforeMutation, 0);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 0);
+  assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --propose-skills --json/);
+  assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.steps[0].requiresReviewBeforeMutation, false);
   assert.equal(payload.actionPlan.steps[0].commandSafety.level, "read-only");
   assert.equal(payload.actionPlan.steps[0].commandSafety.writesLocalFiles, false);
@@ -3420,6 +3425,10 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Read-only: 1/);
   assert.match(markdown, /Writes local file: 0/);
   assert.match(markdown, /Mutates local state: 0/);
+  assert.match(markdown, /Execution queue:/);
+  assert.match(markdown, /Preview\/read-only commands: 1/);
+  assert.match(markdown, /Local file-write review commands: 0/);
+  assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Command safety: read-only/);
   assert.match(markdown, /Writes local files: no/);
   assert.match(markdown, /Mutates local state: no/);
@@ -3500,6 +3509,13 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 1);
   assert.equal(payload.actionPlan.safetySummary.requiresCleanWorkspace, 2);
   assert.equal(payload.actionPlan.safetySummary.requiresReviewBeforeMutation, 2);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-learning-profile-init");
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReview[0].actionId, "agent-eval-checkpoint-generate");
+  assert.equal(payload.actionPlan.executionQueue.mutationReview[0].actionId, "agent-check-capture-seed");
+  assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --init/);
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.level, "writes-local-file");
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.writesLocalFiles, true);
   assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.mutatesLocalState, false);
@@ -3693,6 +3709,9 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.actionPlan.safetySummary.readOnly, payload.actions.length);
   assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 0);
   assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 0);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, payload.actions.length);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 0);
   assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog --strict --json/);
   assert.equal(payload.privacy.mutatesProfile, false);
   assert.equal(payload.privacy.mutatesSkillFiles, false);
@@ -3712,6 +3731,8 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(humanOutput, /Backlog actions:/);
   assert.match(humanOutput, /Action plan:/);
   assert.match(humanOutput, /safety summary: 3 read-only, 0 writes-local-file, 0 mutates-local-state/);
+  assert.match(humanOutput, /execution queue: 3 preview, 0 file-write review, 0 mutation review/);
+  assert.match(humanOutput, /next command: /);
   assert.match(humanOutput, /safety: read-only/);
   assert.match(humanOutput, /requires mutation review: no/);
   assert.match(humanOutput, /learn --propose-skills/);
@@ -3732,6 +3753,9 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(reportOutput, /## Action Plan/);
   assert.match(reportOutput, /Safety summary:/);
   assert.match(reportOutput, /Read-only: 3/);
+  assert.match(reportOutput, /Execution queue:/);
+  assert.match(reportOutput, /Preview\/read-only commands: 3/);
+  assert.match(reportOutput, /Recommended next command:/);
   assert.match(reportOutput, /Command safety: read-only/);
   assert.match(reportOutput, /## Follow-Up Commands/);
   assert.match(reportOutput, /This report is read-only evidence/);
@@ -3754,6 +3778,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(readFileSync(reportFile, "utf8"), /# Agent Development Backlog Report/);
   assert.match(readFileSync(reportFile, "utf8"), /## Action Plan/);
   assert.match(readFileSync(reportFile, "utf8"), /Safety summary:/);
+  assert.match(readFileSync(reportFile, "utf8"), /Execution queue:/);
   assert.match(readFileSync(reportFile, "utf8"), /Command safety: read-only/);
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));

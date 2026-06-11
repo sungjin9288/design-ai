@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 440 (unreleased)** — Added execution queue grouping and recommended next command output to focused `design-ai learn --agent-backlog` action plans, human output, Markdown reports, and package smoke assertions.
 - **Phase 439 (unreleased)** — Added aggregate safety summary counts to focused `design-ai learn --agent-backlog` action plans, human output, Markdown reports, and package smoke assertions.
 - **Phase 438 (unreleased)** — Added command safety classification to focused `design-ai learn --agent-backlog` action plans, human output, Markdown reports, and package smoke assertions.
 - **Phase 437 (unreleased)** — Added action plan export to focused `design-ai learn --agent-backlog` JSON, Markdown, human output, and package smoke assertions.
