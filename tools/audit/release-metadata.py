@@ -524,6 +524,27 @@ RELEASE_LEARN_PROPOSE_SKILLS_REVIEW_FILE_PACKAGE_SMOKE_TERM_GROUPS = (
         "one-shot `npm exec --package <tarball>`",
     ),
 )
+RELEASE_LEARN_PROPOSE_SKILLS_JSON_OUT_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "learn skill proposals JSON `--out` file-write confirmation",
+        "learn skill proposals JSON `--out` file-write confirmations",
+        "learn skill proposals JSON --out file-write confirmation",
+        "learn skill proposals JSON `--out` output",
+        "JSON `--out` output",
+    ),
+    (
+        "file-write confirmation",
+        "file-write confirmations",
+        "output-file persistence",
+        "JSON `--out`",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "installed-bin과 one-shot",
+        "one-shot `npm exec --package <tarball>`",
+    ),
+)
 RELEASE_LEARN_PROPOSE_SKILLS_PATCH_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai learn --propose-skills --patch --out skill-proposals.patch`",
@@ -2686,6 +2707,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn propose-skills strict package smoke phrase",
     "learn propose-skills Markdown package smoke phrase",
     "learn propose-skills review-file package smoke phrase",
+    "learn propose-skills JSON out package smoke phrase",
     "learn propose-skills patch package smoke phrase",
     "learn propose-skills review-template package smoke phrase",
     "learn propose-skills min-evidence package smoke phrase",
@@ -2904,6 +2926,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "learn propose-skills review-file package smoke phrase",
         RELEASE_LEARN_PROPOSE_SKILLS_REVIEW_FILE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "learn propose-skills JSON out package smoke phrase",
+        RELEASE_LEARN_PROPOSE_SKILLS_JSON_OUT_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "learn propose-skills patch package smoke phrase",
@@ -3729,7 +3755,7 @@ query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
 human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation in installed-bin and one-shot paths,
-Packed-tarball smoke also verifies `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, and `design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths.
+Packed-tarball smoke also verifies `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, learn skill proposals JSON `--out` file-write confirmations, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, and `design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths.
 human / JSON `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation,
 human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
 human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audit `--out` file-write confirmation,
@@ -3832,7 +3858,7 @@ query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
 human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal report `design-ai learn --signals --report --out learning-signals.md` plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation도 installed-bin과 one-shot 경로에서 확인하며,
-Packed-tarball smoke는 installed-bin과 one-shot `npm exec --package <tarball>` 경로에서 `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review template, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoff, `design-ai learn --propose-skills --strict --json` expected-failure skill proposal readiness gate도 확인하며,
+Packed-tarball smoke는 installed-bin과 one-shot `npm exec --package <tarball>` 경로에서 `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, learn skill proposals JSON `--out` file-write confirmation, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review template, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoff, `design-ai learn --propose-skills --strict --json` expected-failure skill proposal readiness gate도 확인하며,
 human / JSON `design-ai learn --eval-template` checkpoint generation과 generated checkpoint strict validation도 확인하며,
 human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
 human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit `--out` file-write confirmation도 확인하며,
@@ -4364,7 +4390,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "the packed-tarball smoke gate",
                 "the package runtime gate",
             ).replace(
-                "Packed-tarball smoke also verifies `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, and `design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths.",
+                "Packed-tarball smoke also verifies `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, learn skill proposals JSON `--out` file-write confirmations, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, and `design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths.",
                 "Package runtime smoke also verifies skill proposal readiness coverage.",
             ).replace(
                 " The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.",
@@ -4506,6 +4532,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in learn_propose_skills_review_file_package_smoke_drift_errors
         ),
         "release policy docs should mention learn propose-skills review-file package smoke",
+    )
+
+    learn_propose_skills_json_out_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "learn skill proposals JSON `--out` file-write confirmations, ",
+                "",
+            ),
+        },
+        audit_count=8,
+    )
+    learn_propose_skills_json_out_package_smoke_drift_errors = "\n".join(
+        learn_propose_skills_json_out_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing learn propose-skills JSON out package smoke phrase"
+            in learn_propose_skills_json_out_package_smoke_drift_errors
+        ),
+        "release policy docs should mention learn propose-skills JSON out package smoke",
     )
 
     learn_propose_skills_patch_package_smoke_drift = release_metadata_summary(

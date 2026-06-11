@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 432 — Skill Proposal JSON Out Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball learn skill proposals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining skill proposal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
+
+### Changed
+- Added a release metadata phrase guard for learn skill proposals JSON `--out` file-write confirmation package smoke wording.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the skill proposal JSON output-file wording while retaining other skill proposal smoke wording.
+- Updated README, Korean README, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve every packaged skill proposal artifact path: JSON `--out`, Markdown report, read-only review-file decisions, JSON review template, unified diff patch, threshold skipping, and strict proposal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 431 — Skill Proposal Review-File Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join smoke phrase across release-facing policy docs. This closes the Phase 427/428 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged review-file decision coverage.

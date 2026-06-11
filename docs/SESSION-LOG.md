@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 432 (unreleased)** — Added release metadata guard coverage for the packed-tarball learn skill proposals JSON `--out` file-write confirmation smoke phrase.
 - **Phase 431 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join smoke phrase.
 - **Phase 430 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase.
 - **Phase 429 (unreleased)** — Added `design-ai learn --signals --report --out learning-signals.md` Markdown signal registry handoffs plus packed-tarball smoke coverage for local AI/agent backlog report artifacts.
@@ -58,6 +59,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 432 (unreleased)** — Added release metadata guard coverage for the packed-tarball learn skill proposals JSON `--out` file-write confirmation smoke phrase.
 - **Phase 431 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join smoke phrase.
 - **Phase 430 (unreleased)** — Added release metadata guard coverage for the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase.
 - **Phase 429 (unreleased)** — Added `design-ai learn --signals --report --out learning-signals.md` Markdown signal registry handoffs plus packed-tarball smoke coverage for local AI/agent backlog report artifacts.
