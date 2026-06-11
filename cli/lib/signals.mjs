@@ -478,6 +478,41 @@ function summarizeAgentBacklogCommandEffectManifest(commandManifest = []) {
   };
 }
 
+function buildAgentBacklogCommandEffectReview(summary = {}) {
+  const hasMutation = Number(summary.mutatesLocalStateCount || 0) > 0 || Number(summary.mutationFlagCount || 0) > 0;
+  const hasFileWrite = Number(summary.writesLocalFileCount || 0) > 0 || Number(summary.outputTargetCount || 0) > 0;
+  const hasProfileOrUsage = Number(summary.profileTargetCount || 0) > 0 || Number(summary.usageTargetCount || 0) > 0;
+  const checklist = [];
+  if (hasMutation) {
+    checklist.push("Review mutation flags and run in a clean workspace before applying.");
+  }
+  if (hasFileWrite) {
+    checklist.push("Inspect explicit output targets before committing generated files.");
+  }
+  if (hasProfileOrUsage) {
+    checklist.push("Confirm learning profile and usage sidecar targets are intentional.");
+  }
+  if (checklist.length === 0) {
+    checklist.push("No command target or mutation flag exposure detected.");
+  }
+  const level = hasMutation
+    ? "mutation-review"
+    : hasFileWrite || hasProfileOrUsage
+      ? "target-review"
+      : "clear";
+  const headline = level === "mutation-review"
+    ? "Mutation-capable commands require operator review before execution."
+    : level === "target-review"
+      ? "Command targets are explicit and should be reviewed before file changes."
+      : "No command target or mutation flag exposure detected.";
+  return {
+    level,
+    requiresOperatorReview: level !== "clear",
+    headline,
+    checklist,
+  };
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
@@ -512,6 +547,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       requiresReviewBeforeMutation: item.requiresReviewBeforeMutation,
     }));
   const commandEffectSummary = summarizeAgentBacklogCommandEffectManifest(commandManifest);
+  const commandEffectReview = buildAgentBacklogCommandEffectReview(commandEffectSummary);
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -522,6 +558,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     nextCommand: ordered.find((item) => item.command)?.command || "",
     nextCommandRunPolicy: commandManifest[0]?.runPolicy || "",
     commandEffectSummary,
+    commandEffectReview,
     ordered,
     commandManifest,
     preview,
@@ -1059,6 +1096,16 @@ export function renderAgentBacklogReport(payload, {
       : null;
     if (commandEffectSummary) {
       lines.push(`- Command effect targets: output ${commandEffectSummary.outputTargetCount ?? 0}, profile ${commandEffectSummary.profileTargetCount ?? 0}, usage ${commandEffectSummary.usageTargetCount ?? 0}, mutation flags ${commandEffectSummary.mutationFlagCount ?? 0}`);
+    }
+    const commandEffectReview = executionQueue.commandEffectReview && typeof executionQueue.commandEffectReview === "object"
+      ? executionQueue.commandEffectReview
+      : null;
+    if (commandEffectReview?.headline) {
+      lines.push(`- Command effect review: ${commandEffectReview.headline}`);
+      const reviewChecklist = Array.isArray(commandEffectReview.checklist) ? commandEffectReview.checklist : [];
+      for (const item of reviewChecklist) {
+        lines.push(`  - ${item}`);
+      }
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);

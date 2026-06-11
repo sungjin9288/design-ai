@@ -653,6 +653,10 @@ function printAgentBacklog(payload) {
       if (effectSummary) {
         console.log(`  ${dim(`command effects: ${effectSummary.outputTargetCount || 0} output, ${effectSummary.profileTargetCount || 0} profile, ${effectSummary.usageTargetCount || 0} usage, ${effectSummary.mutationFlagCount || 0} mutation flags`)}`);
       }
+      const effectReview = queue.commandEffectReview && typeof queue.commandEffectReview === "object" ? queue.commandEffectReview : null;
+      if (effectReview?.headline) {
+        console.log(`  ${dim(`command effect review: ${effectReview.headline}`)}`);
+      }
       if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
       if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
       if (queue.nextCommandRunPolicy) console.log(`  ${dim(`next command policy: ${queue.nextCommandRunPolicy}`)}`);

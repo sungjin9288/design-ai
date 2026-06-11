@@ -5721,6 +5721,7 @@ def assert_agent_backlog_report_json(
     ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
+    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
@@ -5747,6 +5748,11 @@ def assert_agent_backlog_report_json(
         and isinstance(command_effect_summary.get("profileTargets"), list)
         and isinstance(command_effect_summary.get("usageTargets"), list)
         and isinstance(command_effect_summary.get("mutationFlags"), list)
+        and isinstance(command_effect_review, dict)
+        and command_effect_review.get("level") in {"clear", "target-review", "mutation-review"}
+        and isinstance(command_effect_review.get("requiresOperatorReview"), bool)
+        and isinstance(command_effect_review.get("headline"), str)
+        and isinstance(command_effect_review.get("checklist"), list)
         and execution_queue.get("nextActionId")
         and "learn --propose-skills" in str(execution_queue.get("nextCommand", ""))
         and execution_queue.get("nextCommandRunPolicy") == "preview-only"
@@ -5833,6 +5839,7 @@ def assert_agent_backlog_report_human(
         "queue order:",
         "command manifest:",
         "command effects:",
+        "command effect review:",
         "safety: read-only",
         "requires mutation review: no",
         "learn --propose-skills",
@@ -5874,6 +5881,7 @@ def assert_agent_backlog_report_markdown(
         "- Ordered commands: 1",
         "- Command manifest entries: 1",
         "- Command effect targets:",
+        "- Command effect review:",
         "- Recommended next action: agent-skill-proposal-preview",
         "- Recommended next command policy: preview-only",
         "Recommended next command:",
@@ -10033,6 +10041,14 @@ def run_self_test() -> None:
                         "usageTargets": [],
                         "mutationFlags": [],
                     },
+                    "commandEffectReview": {
+                        "level": "clear",
+                        "requiresOperatorReview": False,
+                        "headline": "No command target or mutation flag exposure detected.",
+                        "checklist": [
+                            "No command target or mutation flag exposure detected.",
+                        ],
+                    },
                     "ordered": [
                         {
                             "rank": 1,
@@ -10162,6 +10178,7 @@ def run_self_test() -> None:
                 "queue order:",
                 "command manifest:",
                 "command effects:",
+                "command effect review:",
                 "safety: read-only",
                 "requires mutation review: no",
                 "design-ai learn --propose-skills --json",
@@ -10191,6 +10208,7 @@ def run_self_test() -> None:
                 "- Ordered commands: 1",
                 "- Command manifest entries: 1",
                 "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+                "- Command effect review: No command target or mutation flag exposure detected.",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
                 "Recommended next command:",
@@ -10327,6 +10345,7 @@ def run_self_test() -> None:
                     "- Ordered commands: 1",
                     "- Command manifest entries: 1",
                     "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+                    "- Command effect review: No command target or mutation flag exposure detected.",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
                     "Recommended next command:",

@@ -3412,6 +3412,9 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 0);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 0);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlagCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.level, "clear");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.requiresOperatorReview, false);
+  assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /No command target/);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
@@ -3446,6 +3449,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Ordered commands: 1/);
   assert.match(markdown, /Command manifest entries: 1/);
   assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
+  assert.match(markdown, /Command effect review: No command target or mutation flag exposure detected/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command:/);
@@ -3548,6 +3552,14 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.outputTargets, [{ flag: "--out", value: "learning-eval.json" }]);
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--yes"]);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.level, "mutation-review");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.requiresOperatorReview, true);
+  assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /Mutation-capable commands/);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.checklist, [
+    "Review mutation flags and run in a clean workspace before applying.",
+    "Inspect explicit output targets before committing generated files.",
+    "Confirm learning profile and usage sidecar targets are intentional.",
+  ]);
   assert.deepEqual(payload.actionPlan.executionQueue.ordered.map((item) => item.actionId), [
     "agent-learning-profile-init",
     "agent-eval-checkpoint-generate",

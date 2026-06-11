@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 445 — Agent Backlog Command Effect Review (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now include deterministic `commandEffectReview` guidance. Operators can read a queue-level review headline and checklist derived from command target exposure before running command-bearing actions.
+
+### Changed
+- Added `commandEffectReview` metadata to focused agent backlog execution queues.
+- Derived review level, operator-review requirement, headline, and checklist from `commandEffectSummary`.
+- Surfaced command effect review guidance in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so review guidance drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to operationalize because target/mutation exposure now becomes a concrete review instruction.
+- This remains deterministic and local; it only interprets already-emitted command metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 444 — Agent Backlog Command Effect Summary (unreleased)
 
 `design-ai learn --agent-backlog` execution queues now include a queue-level `commandEffectSummary`. Operators and local automation can scan aggregate output targets, learning profile targets, usage sidecar targets, and mutation flags before opening every command manifest entry.
