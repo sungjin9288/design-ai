@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 426 — Skill Proposal Patch Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --patch --out skill-proposals.patch` through installed-bin and one-shot `npm exec --package <tarball>` paths. This turns the Phase 425 unified diff handoff into a package-level local AI/agent learning contract.
+
+### Changed
+- Added package smoke execution for `learn --propose-skills --patch --out skill-proposals.patch`.
+- Added package smoke assertions for patch headers, candidate skill diff paths, proposal metadata, verification commands, and preview-only non-mutation behavior.
+- Added release metadata guard coverage so release-facing docs cannot drop the patch package smoke phrase.
+- Updated README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the diff-style manual-review handoff, not only console, JSON, Markdown, threshold, and strict proposal paths.
+- The smoke remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 425 — Skill Proposal Patch Handoffs (unreleased)
 
 `design-ai learn --propose-skills --patch` now emits preview-only unified diff handoffs for repeated check-capture skill proposals. This gives an operator a concrete manual-review artifact before editing `skills/*/SKILL.md`, while keeping the command non-mutating.
@@ -27,7 +55,7 @@
 - `git diff --check`
 
 ### What's still ahead
-- Add packed-tarball smoke coverage for `--patch` if this handoff becomes a package-level release contract.
+- Closed by Phase 426.
 
 ## Phase 423 — Skill Proposal Minimum Evidence Threshold (unreleased)
 

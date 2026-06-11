@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 426 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs in installed-bin and one-shot package paths.
 - **Phase 425 (unreleased)** — Added preview-only `design-ai learn --propose-skills --patch` unified diff handoffs so repeated check-capture skill proposals can be reviewed before any manual skill edit.
 - **Phase 424 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping in installed-bin and one-shot package paths.
 - **Phase 423 (unreleased)** — Added `design-ai learn --propose-skills --min-evidence N` so preview-only skill proposal thresholds can be tuned for stricter or earlier local AI/agent learning review.
@@ -52,6 +53,7 @@ v3.x extended the corpus across **six adjacent design domains** (motion, illustr
 
 ### Active after v4.55 — Agent eval, learning signals, skill proposals, MCP probes, workflow graphs, and handoff evidence
 
+- **Phase 426 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs in installed-bin and one-shot package paths.
 - **Phase 425 (unreleased)** — Added preview-only `design-ai learn --propose-skills --patch` unified diff handoffs so repeated check-capture skill proposals can be reviewed before any manual skill edit.
 - **Phase 424 (unreleased)** — Added packed-tarball smoke coverage for `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping in installed-bin and one-shot package paths.
 - **Phase 423 (unreleased)** — Added `design-ai learn --propose-skills --min-evidence N` so preview-only skill proposal thresholds can be tuned for stricter or earlier local AI/agent learning review.
