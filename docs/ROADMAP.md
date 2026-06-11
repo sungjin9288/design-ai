@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 433 — Learning Signals JSON Out Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball learn signals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining learning signal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
+
+### Changed
+- Added a release metadata phrase guard for learn signals JSON `--out` file-write confirmation package smoke wording.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the learning signal JSON output-file wording while retaining Markdown report and strict gate wording.
+- Updated README, Korean README, Distribution docs, Release Checklist, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve every packaged learning signal artifact path: JSON `--out`, Markdown signal report, and strict signal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
 ## Phase 432 — Skill Proposal JSON Out Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball learn skill proposals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining skill proposal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
