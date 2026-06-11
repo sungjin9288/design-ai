@@ -379,10 +379,13 @@ function buildAgentBacklogExecutionQueue(steps = []) {
   const mutationReview = steps.filter((step) => step.commandSafety?.level === "mutates-local-state").map(toQueueItem);
   const ordered = [...preview, ...fileWriteReview, ...mutationReview];
   return {
+    orderedCount: ordered.length,
     previewCount: preview.length,
     fileWriteReviewCount: fileWriteReview.length,
     mutationReviewCount: mutationReview.length,
+    nextActionId: ordered[0]?.actionId || "",
     nextCommand: ordered.find((item) => item.command)?.command || "",
+    ordered,
     preview,
     fileWriteReview,
     mutationReview,
@@ -911,6 +914,8 @@ export function renderAgentBacklogReport(payload, {
     lines.push(`- Preview/read-only commands: ${executionQueue.previewCount ?? 0}`);
     lines.push(`- Local file-write review commands: ${executionQueue.fileWriteReviewCount ?? 0}`);
     lines.push(`- Local mutation review commands: ${executionQueue.mutationReviewCount ?? 0}`);
+    lines.push(`- Ordered commands: ${executionQueue.orderedCount ?? 0}`);
+    if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommand) {
       lines.push("");
       lines.push("Recommended next command:");
@@ -918,6 +923,14 @@ export function renderAgentBacklogReport(payload, {
       lines.push("```bash");
       lines.push(executionQueue.nextCommand);
       lines.push("```");
+    }
+    const orderedItems = Array.isArray(executionQueue.ordered) ? executionQueue.ordered : [];
+    if (orderedItems.length > 0) {
+      lines.push("");
+      lines.push("Queue order:");
+      for (const item of orderedItems) {
+        lines.push(`${item.rank}. ${item.actionId || "unknown-action"} (${item.safetyLevel || "unknown"})`);
+      }
     }
     lines.push("");
   }
