@@ -309,9 +309,12 @@ function agentAction({
   rationale,
   command = "",
   commandArgs = [],
+  applyCommand = "",
+  applyCommandArgs = [],
   evidence = {},
 }) {
   const normalizedCommandArgs = Array.isArray(commandArgs) ? commandArgs.map((item) => String(item)) : [];
+  const normalizedApplyCommandArgs = Array.isArray(applyCommandArgs) ? applyCommandArgs.map((item) => String(item)) : [];
   return {
     id,
     priority,
@@ -320,6 +323,8 @@ function agentAction({
     rationale,
     command: command || (normalizedCommandArgs.length > 0 ? commandFromArgs(normalizedCommandArgs) : ""),
     commandArgs: normalizedCommandArgs,
+    applyCommand: applyCommand || (normalizedApplyCommandArgs.length > 0 ? commandFromArgs(normalizedApplyCommandArgs) : ""),
+    applyCommandArgs: normalizedApplyCommandArgs,
     evidence,
   };
 }
@@ -844,6 +849,12 @@ function buildAgentBacklogExecutionQueue(steps = [], {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
     const safetyLevel = commandSafety.level || "unknown";
     const commandEffects = buildAgentBacklogCommandEffects(commandSafety);
+    const applyCommandSafety = step.applyCommandSafety && typeof step.applyCommandSafety === "object"
+      ? {
+        level: step.applyCommandSafety.level || "unknown",
+        ...buildAgentBacklogCommandEffects(step.applyCommandSafety),
+      }
+      : null;
     return {
       rank: step.rank,
       actionId: step.actionId || "",
@@ -852,6 +863,10 @@ function buildAgentBacklogExecutionQueue(steps = [], {
       title: step.title || "",
       command: step.command || "",
       commandArgs: Array.isArray(step.commandArgs) ? step.commandArgs : [],
+      applyCommand: step.applyCommand || "",
+      applyCommandArgs: Array.isArray(step.applyCommandArgs) ? step.applyCommandArgs : [],
+      applyCommandSafety,
+      applyRequiresReviewBeforeMutation: Boolean(step.applyRequiresReviewBeforeMutation),
       safetyLevel,
       runPolicy: agentBacklogRunPolicyForSafetyLevel(safetyLevel),
       commandEffects,
@@ -869,6 +884,10 @@ function buildAgentBacklogExecutionQueue(steps = [], {
       actionId: item.actionId,
       command: item.command,
       commandArgs: item.commandArgs,
+      applyCommand: item.applyCommand,
+      applyCommandArgs: item.applyCommandArgs,
+      applyCommandSafety: item.applyCommandSafety,
+      applyRequiresReviewBeforeMutation: item.applyRequiresReviewBeforeMutation,
       safetyLevel: item.safetyLevel,
       runPolicy: item.runPolicy,
       commandEffects: item.commandEffects,
@@ -946,7 +965,10 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
   const steps = actions.map((action, index) => {
     const commandArgs = Array.isArray(action.commandArgs) ? action.commandArgs.map((item) => String(item)) : [];
     const command = String(action.command || (commandArgs.length > 0 ? commandFromArgs(commandArgs) : ""));
+    const applyCommandArgs = Array.isArray(action.applyCommandArgs) ? action.applyCommandArgs.map((item) => String(item)) : [];
+    const applyCommand = String(action.applyCommand || (applyCommandArgs.length > 0 ? commandFromArgs(applyCommandArgs) : ""));
     const commandSafety = classifyAgentBacklogCommand(command);
+    const applyCommandSafety = applyCommand ? classifyAgentBacklogCommand(applyCommand) : null;
     return {
       rank: action.rank ?? index + 1,
       actionId: action.id || "",
@@ -955,9 +977,19 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       title: action.title || "",
       command,
       commandArgs,
+      applyCommand,
+      applyCommandArgs,
+      applyCommandSafety,
+      applyRequiresReviewBeforeMutation: Boolean(applyCommandSafety?.requiresCleanWorkspace),
       expectedOutcome: action.rationale || "",
       verification: command
-        ? commandSafety.requiresCleanWorkspace
+        ? applyCommand
+          ? [
+            "Run the preview command first and inspect the proposed local learning profile changes.",
+            "Run the apply command only after operator review confirms the target profile path and mutation scope.",
+            "Re-run `design-ai learn --agent-backlog --strict --json` after the apply step to confirm the backlog status improved.",
+          ]
+          : commandSafety.requiresCleanWorkspace
           ? [
             "Run the command in a clean working tree or disposable workspace, then inspect generated or changed files before committing.",
             "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
@@ -1028,13 +1060,17 @@ function buildAgentDevelopmentBacklog({
   const actions = [];
 
   if (!audit.exists) {
+    const previewCommand = commandSpec(["design-ai", "learn", "--init", "--dry-run", "--file", filePath]);
+    const applyCommand = commandSpec(["design-ai", "learn", "--init", "--yes", "--file", filePath]);
     actions.push(agentAction({
       id: "agent-learning-profile-init",
       priority: "p1",
       category: "learning-profile",
       title: "Initialize the local learning profile before agent development review.",
       rationale: "Signal registry output is incomplete until a profile exists.",
-      ...commandSpec(["design-ai", "learn", "--init", "--file", filePath]),
+      ...previewCommand,
+      applyCommand: applyCommand.command,
+      applyCommandArgs: applyCommand.commandArgs,
       evidence: {
         profileExists: false,
       },
@@ -1661,6 +1697,17 @@ export function renderAgentBacklogReport(payload, {
         lines.push("```bash");
         lines.push(step.command);
         lines.push("```");
+      }
+      if (step.applyCommand) {
+        const applySafety = step.applyCommandSafety && typeof step.applyCommandSafety === "object" ? step.applyCommandSafety : {};
+        lines.push("");
+        lines.push("Apply command after review:");
+        lines.push("");
+        lines.push("```bash");
+        lines.push(step.applyCommand);
+        lines.push("```");
+        lines.push(listItem("Apply command safety", applySafety.level || "unknown"));
+        lines.push(listItem("Apply requires mutation review", yesNo(Boolean(step.applyRequiresReviewBeforeMutation))));
       }
       const verification = Array.isArray(step.verification) ? step.verification : [];
       if (verification.length > 0) {

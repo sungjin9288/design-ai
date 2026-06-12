@@ -3691,8 +3691,10 @@ test("agentBacklogReport classifies action plan command safety", () => {
             category: "learning-profile",
             title: "Initialize profile.",
             rationale: "Preview local profile seed entries.",
-            command: "design-ai learn --init --file /tmp/design-ai-learning.json",
-            commandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+            command: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+            commandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
+            applyCommand: "design-ai learn --init --yes --file /tmp/design-ai-learning.json",
+            applyCommandArgs: ["design-ai", "learn", "--init", "--yes", "--file", "/tmp/design-ai-learning.json"],
             evidence: {},
           },
           {
@@ -3725,7 +3727,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(payload.actionPlan.executionQueue.orderedCount, 3);
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 3);
   assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-learning-profile-init");
-  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"]);
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"]);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
   assert.deepEqual(payload.actionPlan.executionQueue.nextCommandSelection, {
     strategy: "first-command-in-safety-ordered-queue",
@@ -3746,8 +3748,8 @@ test("agentBacklogReport classifies action plan command safety", () => {
     operatorCommand: "git status --short",
     operatorCommandArgs: ["git", "status", "--short"],
     queueActionId: "agent-learning-profile-init",
-    queueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
-    queueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+    queueCommand: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    queueCommandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
     rankedNextActionId: "agent-eval-checkpoint-generate",
     matchesQueueNextCommand: false,
     matchesQueueNextAction: false,
@@ -3770,16 +3772,16 @@ test("agentBacklogReport classifies action plan command safety", () => {
     source: "execution-queue",
     phase: "execute",
     label: "agent-learning-profile-init",
-    command: "design-ai learn --init --file /tmp/design-ai-learning.json",
-    commandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+    command: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    commandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
     actionId: "agent-learning-profile-init",
     rank: 2,
     runPolicy: "preview-only",
     required: true,
     isGate: false,
     nextQueueActionId: "agent-learning-profile-init",
-    nextQueueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
-    nextQueueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+    nextQueueCommand: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    nextQueueCommandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
     nextQueueCommandRequiresGate: false,
     operatorGateAppliesToNextQueueAction: false,
     nextQueueActionBlockedByGate: false,
@@ -3951,7 +3953,17 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.equal(stepsById.get("agent-learning-profile-init").commandSafety.level, "read-only");
   assert.deepEqual(stepsById.get("agent-learning-profile-init").commandSafety.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
   assert.equal(stepsById.get("agent-learning-profile-init").requiresReviewBeforeMutation, false);
-  assert.match(stepsById.get("agent-learning-profile-init").verification[0], /preview\/report output/);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommand, "design-ai learn --init --yes --file /tmp/design-ai-learning.json");
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").applyCommandArgs, ["design-ai", "learn", "--init", "--yes", "--file", "/tmp/design-ai-learning.json"]);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommandSafety.level, "mutates-local-state");
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommandSafety.mutatesLocalState, true);
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").applyCommandSafety.mutationFlags, ["--yes"]);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyRequiresReviewBeforeMutation, true);
+  assert.match(stepsById.get("agent-learning-profile-init").verification[0], /preview command first/);
+  assert.match(stepsById.get("agent-learning-profile-init").verification[1], /apply command only after operator review/);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyCommand, "design-ai learn --init --yes --file /tmp/design-ai-learning.json");
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyCommandSafety.mutatesLocalState, true);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyRequiresReviewBeforeMutation, true);
   assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.level, "mutates-local-state");
   assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.mutatesLocalState, true);
   assert.deepEqual(stepsById.get("agent-check-capture-seed").commandSafety.mutationFlags, ["--yes"]);

@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 464 — Agent Backlog Profile Init Apply Command Metadata (unreleased)
+
+`design-ai learn --agent-backlog` now separates first-run learning profile initialization into an explicit preview command and reviewed apply metadata. The handoff can safely present `learn --init --dry-run`, while automation can still find the confirmed `learn --init --yes` command and its mutation-review safety details without guessing.
+
+### Changed
+- Changed the missing-profile backlog action command to `design-ai learn --init --dry-run --file <profile>` so preview semantics are explicit.
+- Added optional `applyCommand`, `applyCommandArgs`, `applyCommandSafety`, and `applyRequiresReviewBeforeMutation` metadata to action-plan steps and execution queue manifest entries.
+- Rendered apply commands in Markdown reports under "Apply command after review" with the apply safety level and mutation-review requirement.
+- Extended package-smoke assertions so packed consumers validate optional apply-command metadata when it appears.
+
+### Impact
+- Local AI/agent automation can distinguish a safe preview handoff from the confirmed profile-write command needed to clear the missing-profile backlog item.
+- The report remains read-only: it does not initialize `learning.json`, edit skills, write eval checkpoints, mutate target repositories, or call external AI APIs.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue tightening first-run local learning bootstrap flows so preview, apply, and refresh steps stay explicit for automation and human operators.
+
 ## Phase 463 — Agent Backlog Current-Command Gate Scoping (unreleased)
 
 `design-ai learn --agent-backlog` now scopes operator handoff gates to the current next queue command. A read-only preview command can be reported as `ready` even when later queued commands still require file-write or mutation review.

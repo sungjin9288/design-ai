@@ -5743,6 +5743,25 @@ def assert_agent_backlog_report_json(
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
     gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
+    def valid_optional_apply_command(item: object) -> bool:
+        if not isinstance(item, dict):
+            return False
+        apply_command = item.get("applyCommand", "")
+        apply_args = item.get("applyCommandArgs", [])
+        apply_safety = item.get("applyCommandSafety")
+        if not apply_command:
+            return True
+        return (
+            isinstance(apply_command, str)
+            and isinstance(apply_args, list)
+            and len(apply_args) >= 2
+            and isinstance(apply_safety, dict)
+            and apply_safety.get("level") in {"read-only", "writes-local-file", "mutates-local-state"}
+            and isinstance(apply_safety.get("writesLocalFiles"), bool)
+            and isinstance(apply_safety.get("mutatesLocalState"), bool)
+            and isinstance(apply_safety.get("requiresCleanWorkspace"), bool)
+            and isinstance(item.get("applyRequiresReviewBeforeMutation"), bool)
+        )
     def is_agent_backlog_refresh_command(item: object) -> bool:
         if not isinstance(item, dict):
             return False
@@ -5937,6 +5956,7 @@ def assert_agent_backlog_report_json(
             and item.get("actionId") == "agent-skill-proposal-preview"
             and item.get("runPolicy") == "preview-only"
             and isinstance(item.get("commandEffects"), dict)
+            and valid_optional_apply_command(item)
             and item["commandEffects"].get("writesLocalFiles") is False
             and item["commandEffects"].get("mutatesLocalState") is False
             and item["commandEffects"].get("outputTargets") == []
@@ -5950,6 +5970,7 @@ def assert_agent_backlog_report_json(
             and "learn --propose-skills" in str(item.get("command", ""))
             and item.get("requiresReviewBeforeMutation") is False
             and isinstance(item.get("commandSafety"), dict)
+            and valid_optional_apply_command(item)
             and item["commandSafety"].get("level") == "read-only"
             and item["commandSafety"].get("writesLocalFiles") is False
             and item["commandSafety"].get("mutatesLocalState") is False

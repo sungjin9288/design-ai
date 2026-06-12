@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 464 (unreleased)** — Split first-run agent backlog profile initialization into an explicit `--dry-run` preview command and reviewed `applyCommand` metadata for the confirmed `--yes` profile write.
 - **Phase 463 (unreleased)** — Scoped focused agent backlog operator gates to the current next queue command so read-only handoffs can be `ready` while later file-write or mutation commands still retain review metadata.
 - **Phase 462 (unreleased)** — Adjusted local agent development backlog ranking so missing learning profile initialization becomes the ranked next action before eval checkpoint bootstrap, matching the safe execution queue.
 - **Phase 461 (unreleased)** — Added compact `operatorHandoff.state` metadata to focused agent backlog output so automation can branch on ready, gate-required, review-required, or no-command handoff states without parsing prose.
