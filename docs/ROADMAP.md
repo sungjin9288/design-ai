@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 471 — Agent Backlog Test Expectation Stabilization (unreleased)
+
+`design-ai learn --agent-backlog` test coverage now derives expected action counts from the actual generated payload when workspace readiness is environment-dependent.
+
+### Changed
+- Updated the agent backlog JSON/human/Markdown regression test to validate workspace readiness targets only when that action is present.
+- Derived safety summary, execution queue, command effect, report, and human-output counts from the JSON payload instead of hard-coding environment-sensitive totals.
+- Updated the missing-profile ranking test to assert that profile initialization remains first and eval checkpoint generation follows it, while allowing workspace readiness to appear between them when the temp workspace emits readiness warnings.
+
+### Impact
+- `npm test` no longer fails when local temp workspace readiness differs between focused and full test runs.
+- The tests still verify the core contract: profile initialization ranks first, eval checkpoint generation remains present, workspace readiness target metadata is correct when emitted, and `--with-learning` remains mutation-reviewed.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `npm test`
+- `npm run release:check`
+
+### What's still ahead
+- Continue the next AI/agent development phase after this release gate stabilization is committed.
+
 ## Phase 470 — Advisory Check-Capture Seed Backlog Cleanup (unreleased)
 
 `design-ai learn --agent-backlog` no longer emits a placeholder `design-ai check artifact.md --learn --yes` command when no check-capture learning entries exist.
