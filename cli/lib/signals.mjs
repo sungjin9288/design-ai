@@ -653,6 +653,22 @@ function buildAgentBacklogOperatorRunbook({
   const allCommands = stages.flatMap((stage) => stage.commands);
   const nextStage = stages.find((stage) => stage.commands.length > 0) || null;
   const nextCommand = nextStage?.commands?.[0] || null;
+  const stageOrder = ["before", "execute", "after", "refresh"];
+  const nextCommandSelection = {
+    strategy: "first-command-in-operator-runbook-stage-order",
+    stageOrder,
+    stage: nextStage?.phase || "",
+    label: nextCommand?.label || "",
+    command: nextCommand?.command || "",
+    commandArgs: Array.isArray(nextCommand?.commandArgs) ? nextCommand.commandArgs : [],
+    actionId: nextCommand?.actionId || "",
+    rank: nextCommand?.rank ?? null,
+    required: Boolean(nextCommand?.required),
+    runPolicy: nextCommand?.runPolicy || "",
+    reason: nextCommand
+      ? `Selected the first command in the ${nextStage?.phase || "unknown"} stage using operator runbook stage order.`
+      : "No operator runbook command is available.",
+  };
   return {
     version: 1,
     stageCount: stages.length,
@@ -667,6 +683,7 @@ function buildAgentBacklogOperatorRunbook({
     nextCommandArgs: Array.isArray(nextCommand?.commandArgs) ? nextCommand.commandArgs : [],
     nextCommandRequired: Boolean(nextCommand?.required),
     nextCommandRunPolicy: nextCommand?.runPolicy || "",
+    nextCommandSelection,
     stages,
   };
 }
@@ -1356,6 +1373,12 @@ export function renderAgentBacklogReport(payload, {
       lines.push(`- Operator runbook: ${operatorRunbook.stageCount ?? 0} stage(s), ${operatorRunbook.commandCount ?? 0} command(s), ${operatorRunbook.requiredCommandCount ?? 0} required`);
       if (operatorRunbook.nextCommand) {
         lines.push(`- Operator next command: ${operatorRunbook.nextStage || "unknown"}: \`${operatorRunbook.nextCommand}\``);
+      }
+      const operatorSelection = operatorRunbook.nextCommandSelection && typeof operatorRunbook.nextCommandSelection === "object"
+        ? operatorRunbook.nextCommandSelection
+        : null;
+      if (operatorSelection) {
+        lines.push(`- Operator next command selection: ${operatorSelection.strategy || "unknown"} (${operatorSelection.reason || "no reason provided"})`);
       }
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);

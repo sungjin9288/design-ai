@@ -5722,6 +5722,7 @@ def assert_agent_backlog_report_json(
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
     operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
     next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
+    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
@@ -5765,6 +5766,15 @@ def assert_agent_backlog_report_json(
         and isinstance(operator_runbook.get("nextCommandArgs"), list)
         and len(operator_runbook.get("nextCommandArgs")) >= 2
         and isinstance(operator_runbook.get("nextCommandRequired"), bool)
+        and isinstance(operator_next_command_selection, dict)
+        and operator_next_command_selection.get("strategy") == "first-command-in-operator-runbook-stage-order"
+        and operator_next_command_selection.get("stage") == operator_runbook.get("nextStage")
+        and operator_next_command_selection.get("command") == operator_runbook.get("nextCommand")
+        and isinstance(operator_next_command_selection.get("stageOrder"), list)
+        and operator_next_command_selection.get("stageOrder") == ["before", "execute", "after", "refresh"]
+        and isinstance(operator_next_command_selection.get("required"), bool)
+        and isinstance(operator_next_command_selection.get("reason"), str)
+        and bool(operator_next_command_selection.get("reason"))
         and isinstance(operator_runbook.get("stages"), list)
         and any(
             isinstance(stage, dict)
@@ -10199,6 +10209,19 @@ def run_self_test() -> None:
                         "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                         "nextCommandRequired": True,
                         "nextCommandRunPolicy": "preview-only",
+                        "nextCommandSelection": {
+                            "strategy": "first-command-in-operator-runbook-stage-order",
+                            "stageOrder": ["before", "execute", "after", "refresh"],
+                            "stage": "execute",
+                            "label": "Run agent-skill-proposal-preview",
+                            "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                            "actionId": "agent-skill-proposal-preview",
+                            "rank": 1,
+                            "required": True,
+                            "runPolicy": "preview-only",
+                            "reason": "Selected the first command in the execute stage using operator runbook stage order.",
+                        },
                         "stages": [
                             {
                                 "phase": "before",

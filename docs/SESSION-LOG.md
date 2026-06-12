@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 455 (unreleased)** — Added `actionPlan.executionQueue.operatorRunbook.nextCommandSelection` metadata to focused `design-ai learn --agent-backlog` output so automation can distinguish operator stage-order next commands from queue-level safety-ordered recommended commands.
 - **Phase 454 (unreleased)** — Added `actionPlan.executionQueue.nextCommandSelection` metadata to focused `design-ai learn --agent-backlog` output so automation can distinguish ranked next actions from safety-ordered recommended commands.
 - **Phase 453 (unreleased)** — Added queue-level `actionPlan.executionQueue.nextCommandArgs` to focused `design-ai learn --agent-backlog` output so local automation can consume the safest queued next command without parsing `nextCommand`.
 - **Phase 452 (unreleased)** — Added structured `commandArgs` and `nextCommandArgs` metadata to focused `design-ai learn --agent-backlog` command handoff surfaces so local automation can consume reviewed commands without reparsing shell strings.

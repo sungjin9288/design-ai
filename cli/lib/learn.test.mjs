@@ -3473,6 +3473,19 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection, {
+    strategy: "first-command-in-operator-runbook-stage-order",
+    stageOrder: ["before", "execute", "after", "refresh"],
+    stage: "execute",
+    label: "Run agent-skill-proposal-preview",
+    command: "design-ai learn --propose-skills --json",
+    commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    actionId: "agent-skill-proposal-preview",
+    rank: 1,
+    required: true,
+    runPolicy: "preview-only",
+    reason: "Selected the first command in the execute stage using operator runbook stage order.",
+  });
   assert.deepEqual(
     payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
     [
@@ -3529,6 +3542,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
   assert.match(markdown, /Operator runbook: 4 stage\(s\), 2 command\(s\), 2 required/);
   assert.match(markdown, /Operator next command: execute: `design-ai learn --propose-skills --json`/);
+  assert.match(markdown, /Operator next command selection: first-command-in-operator-runbook-stage-order/);
   assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command selection: first-command-in-safety-ordered-queue/);
@@ -3731,6 +3745,19 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["git", "status", "--short"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection, {
+    strategy: "first-command-in-operator-runbook-stage-order",
+    stageOrder: ["before", "execute", "after", "refresh"],
+    stage: "before",
+    label: "Confirm clean workspace before execution",
+    command: "git status --short",
+    commandArgs: ["git", "status", "--short"],
+    actionId: "",
+    rank: null,
+    required: true,
+    runPolicy: "",
+    reason: "Selected the first command in the before stage using operator runbook stage order.",
+  });
   assert.deepEqual(
     payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
     [
@@ -3846,6 +3873,8 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.executionQueue.nextCommandSelection.actionId, "agent-command-args-only");
   assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.stage, "before");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.commandArgs, ["git", "status", "--short"]);
 });
 
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
