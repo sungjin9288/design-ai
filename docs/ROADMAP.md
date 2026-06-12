@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 472 — Agent Backlog No-Command Handoff Completion (unreleased)
+
+`design-ai learn --agent-backlog` now treats a pass-state backlog with no runnable actions as an explicit completed handoff state instead of a refresh-required non-ready state.
+
+### Changed
+- Added `hasCommand` and `complete` to `actionPlan.executionQueue.operatorHandoff.state`.
+- Marked `no-command` handoff states as `ready: true`, `hasCommand: false`, `complete: true`, and `requiresRefresh: false`.
+- Kept the refresh command available as optional follow-up metadata while avoiding a required refresh flag when there is no handoff command to run.
+- Added Markdown output for the operator handoff summary so human reports explain that the focused backlog is clear.
+- Extended package smoke JSON contract checks to require the new handoff state fields.
+
+### Impact
+- Local AI/agent automation can distinguish "no work remains" from "not ready yet" without parsing prose.
+- Existing command-bearing handoff states still require refresh after execution and retain their review/gate behavior.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Rerun focused backlog on a clean tracked tree after this contract change lands.
+
 ## Phase 471 — Agent Backlog Test Expectation Stabilization (unreleased)
 
 `design-ai learn --agent-backlog` test coverage now derives expected action counts from the actual generated payload when workspace readiness is environment-dependent.

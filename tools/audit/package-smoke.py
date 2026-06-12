@@ -5822,6 +5822,8 @@ def assert_agent_backlog_report_json(
         and operator_handoff_state.get("version") == 1
         and operator_handoff_state.get("status") in {"ready", "gate-required", "review-required", "no-command"}
         and isinstance(operator_handoff_state.get("ready"), bool)
+        and isinstance(operator_handoff_state.get("hasCommand"), bool)
+        and isinstance(operator_handoff_state.get("complete"), bool)
         and isinstance(operator_handoff_state.get("canRunWithoutReview"), bool)
         and isinstance(operator_handoff_state.get("requiresGate"), bool)
         and isinstance(operator_handoff_state.get("requiresRefresh"), bool)
@@ -10277,6 +10279,8 @@ def run_self_test() -> None:
                             "version": 1,
                             "status": "ready",
                             "ready": True,
+                            "hasCommand": True,
+                            "complete": False,
                             "canRunWithoutReview": True,
                             "requiresGate": False,
                             "requiresRefresh": True,

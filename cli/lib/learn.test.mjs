@@ -3664,6 +3664,8 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
       version: 1,
       status: "ready",
       ready: true,
+      hasCommand: true,
+      complete: false,
       canRunWithoutReview: true,
       requiresGate: false,
       requiresRefresh: true,
@@ -3838,6 +3840,75 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /This report is read-only evidence/);
 });
 
+test("agentBacklogReport marks no-command pass state as complete without required refresh", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const profilePath = "/tmp/design-ai-learning.json";
+  const usagePath = "/tmp/design-ai-learning.usage.json";
+  const signalSource = "/tmp/design-ai-signals";
+  const payload = agentBacklogReport({
+    filePath: profilePath,
+    usageFile: usagePath,
+    signalSource,
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "pass",
+      file: profilePath,
+      signalSource,
+      learning: { count: 2 },
+      usage: { usageFile: usagePath, eventCount: 1 },
+      evals: { count: 1 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "pass",
+        actionCount: 0,
+        p0Count: 0,
+        p1Count: 0,
+        p2Count: 0,
+        p3Count: 0,
+        actions: [],
+      },
+      recommendations: [
+        {
+          level: "info",
+          text: "No check learning capture entries are present yet; run check --learn --yes on real warnings/failures when appropriate.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.counts.actions, 0);
+  assert.equal(payload.actionPlan.stepCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.orderedCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.nextCommand, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, []);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.state, {
+    version: 1,
+    status: "no-command",
+    ready: true,
+    hasCommand: false,
+    complete: true,
+    canRunWithoutReview: false,
+    requiresGate: false,
+    requiresRefresh: false,
+    summary: "Focused agent backlog is clear; no handoff command is required.",
+  });
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "none");
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.command, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.commandArgs, []);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandRequired, false);
+  assert.match(payload.actionPlan.executionQueue.operatorHandoff.refreshCommand, /design-ai learn --agent-backlog/);
+
+  const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
+  assert.match(markdown, /No agent development backlog actions emitted./);
+  assert.match(markdown, /Operator handoff state: no-command; ready yes; can run without review no; refresh optional/);
+  assert.match(markdown, /Focused agent backlog is clear; no handoff command is required/);
+});
+
 test("agentBacklogReport classifies action plan command safety", () => {
   const now = new Date("2026-06-02T00:00:00.000Z");
   const refreshCommandArgs = [
@@ -3970,6 +4041,8 @@ test("agentBacklogReport classifies action plan command safety", () => {
       version: 1,
       status: "ready",
       ready: true,
+      hasCommand: true,
+      complete: false,
       canRunWithoutReview: true,
       requiresGate: false,
       requiresRefresh: true,

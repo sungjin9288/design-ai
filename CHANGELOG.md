@@ -92,6 +92,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site --next-actions [--json]` now also folds read-only MCP probe readiness into the operator checklist, exposes `mcpProbeStatus`, `counts.probeGaps`, and probe follow-up commands, and ranks invalid GitHub/Figma/Browser/deploy references before target-repo handoff.
 
 ### Fixed
+- Agent backlog operator handoff JSON now marks `no-command` pass states as `ready: true`, `hasCommand: false`, `complete: true`, and `requiresRefresh: false`, so local automation can distinguish a cleared backlog from a blocked handoff.
 - Agent backlog unit tests now derive human/report count assertions from the generated JSON payload and tolerate environment-dependent workspace readiness actions while preserving ranking, target metadata, and mutation-review coverage.
 - `design-ai site --next-actions [--json]` now surfaces MCP probe counts in both JSON and human output, so operators can see how many read-only repo/Figma/Browser/deploy reference probes passed, warned, or failed before bundle handoff.
 - Shared smoke assertion self-tests now include a `design-ai site --stdin --next-actions --json` MCP probe count drift fixture, so next-actions count assertions cannot silently weaken.

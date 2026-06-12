@@ -867,14 +867,19 @@ function buildAgentBacklogOperatorHandoff({
       stateStatus = "ready";
       stateSummary = "The handoff command can be presented or run, then refreshed with the focused backlog check.";
     }
+  } else {
+    stateSummary = "Focused agent backlog is clear; no handoff command is required.";
   }
+  const hasHandoffCommand = Boolean(command);
   const state = {
     version: 1,
     status: stateStatus,
-    ready: Boolean(command),
-    canRunWithoutReview: Boolean(command && !nextQueueActionBlockedByGate && !requiresOperatorReviewForHandoff),
+    ready: hasHandoffCommand || stateStatus === "no-command",
+    hasCommand: hasHandoffCommand,
+    complete: !hasHandoffCommand,
+    canRunWithoutReview: Boolean(hasHandoffCommand && !nextQueueActionBlockedByGate && !requiresOperatorReviewForHandoff),
     requiresGate: nextQueueActionBlockedByGate,
-    requiresRefresh: Boolean(refreshCommandItem?.required),
+    requiresRefresh: Boolean(hasHandoffCommand && refreshCommandItem?.required),
     summary: stateSummary,
   };
   return {
@@ -900,7 +905,7 @@ function buildAgentBacklogOperatorHandoff({
     refreshCommand: refreshCommandItem?.command || "",
     refreshCommandArgs: Array.isArray(refreshCommandItem?.commandArgs) ? refreshCommandItem.commandArgs : [],
     refreshCommandLabel: refreshCommandItem?.label || "",
-    refreshCommandRequired: Boolean(refreshCommandItem?.required),
+    refreshCommandRequired: Boolean(hasHandoffCommand && refreshCommandItem?.required),
     reviewLevel: reviewLevelForHandoff,
     requiresOperatorReview: requiresOperatorReviewForHandoff,
     reason,
@@ -1731,6 +1736,9 @@ export function renderAgentBacklogReport(payload, {
       const handoffState = operatorHandoff.state && typeof operatorHandoff.state === "object" ? operatorHandoff.state : null;
       if (handoffState) {
         lines.push(`- Operator handoff state: ${handoffState.status || "unknown"}; ready ${handoffState.ready ? "yes" : "no"}; can run without review ${handoffState.canRunWithoutReview ? "yes" : "no"}; refresh ${handoffState.requiresRefresh ? "required" : "optional"}`);
+        if (handoffState.summary) {
+          lines.push(`- Operator handoff summary: ${handoffState.summary}`);
+        }
       }
       if (operatorHandoff.refreshCommand) {
         lines.push(`- Operator handoff refresh: ${operatorHandoff.refreshCommand}`);
