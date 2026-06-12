@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 485 — Agent Backlog Readiness Release Check Evidence (unreleased)
+
+The agent backlog readiness metadata guard now has full release-gate evidence after the focused package smoke and release metadata guard phases.
+
+### Changed
+- Recorded the full `npm run release:check` result after Phase 484 added release metadata phrase coverage for the focused agent backlog readiness contract.
+- Confirmed the release gate covered CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+- Confirmed packed-tarball smoke still exercises installed-bin and one-shot package execution paths, including `check --learn`, learning feedback, restore/diff/curate, agent backlog, and skill proposal flows.
+
+### Impact
+- The current branch has fresh pre-push release evidence after the latest local AI/agent readiness guard work.
+- Internal AI/agent development can continue from a verified package baseline rather than only targeted unit or metadata checks.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Choose the next product surface intentionally: deeper AI learning architecture, Website Console expansion, VS Code integration, Figma integration, or agent SDK work.
+
 ## Phase 484 — Agent Backlog Readiness Release Metadata Guard (unreleased)
 
 Release metadata now protects the release-facing docs wording for focused agent backlog readiness smoke coverage.
