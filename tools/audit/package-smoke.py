@@ -5724,6 +5724,7 @@ def assert_agent_backlog_report_json(
     next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
     next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
     operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
+    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
     operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
@@ -5785,6 +5786,15 @@ def assert_agent_backlog_report_json(
         and isinstance(operator_handoff, dict)
         and operator_handoff.get("version") == 1
         and operator_handoff.get("decision") in {"run-operator-gate", "run-shared-command", "run-operator-command", "run-queue-command", "none"}
+        and isinstance(operator_handoff_state, dict)
+        and operator_handoff_state.get("version") == 1
+        and operator_handoff_state.get("status") in {"ready", "gate-required", "review-required", "no-command"}
+        and isinstance(operator_handoff_state.get("ready"), bool)
+        and isinstance(operator_handoff_state.get("canRunWithoutReview"), bool)
+        and isinstance(operator_handoff_state.get("requiresGate"), bool)
+        and isinstance(operator_handoff_state.get("requiresRefresh"), bool)
+        and isinstance(operator_handoff_state.get("summary"), str)
+        and bool(operator_handoff_state.get("summary"))
         and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
         and operator_handoff.get("phase") == operator_runbook.get("nextStage")
         and operator_handoff.get("command") == operator_runbook.get("nextCommand")
@@ -6036,6 +6046,7 @@ def assert_agent_backlog_report_markdown(
         "- Command effect gates:",
         "- Operator runbook:",
         "- Operator next command:",
+        "- Operator handoff state:",
         "- Recommended next action: agent-skill-proposal-preview",
         "- Recommended next command policy: preview-only",
         "Recommended next command:",
@@ -10227,6 +10238,15 @@ def run_self_test() -> None:
                     "operatorHandoff": {
                         "version": 1,
                         "decision": "run-shared-command",
+                        "state": {
+                            "version": 1,
+                            "status": "ready",
+                            "ready": True,
+                            "canRunWithoutReview": True,
+                            "requiresGate": False,
+                            "requiresRefresh": True,
+                            "summary": "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+                        },
                         "source": "operator-runbook",
                         "phase": "execute",
                         "label": "Run agent-skill-proposal-preview",
@@ -10559,6 +10579,7 @@ def run_self_test() -> None:
                 agent_backlog_refresh_command,
                 "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                 "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+                "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
                 "- Recommended next action: agent-skill-proposal-preview",
                 "- Recommended next command policy: preview-only",
                 "Recommended next command:",
@@ -10703,6 +10724,7 @@ def run_self_test() -> None:
                     agent_backlog_refresh_command,
                     "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                     "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+                    "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
                     "- Recommended next action: agent-skill-proposal-preview",
                     "- Recommended next command policy: preview-only",
                     "Recommended next command:",

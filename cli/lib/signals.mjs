@@ -773,9 +773,33 @@ function buildAgentBacklogOperatorHandoff({
     decision = "run-queue-command";
     reason = "Run the safety-ordered queue command next.";
   }
+  let stateStatus = "no-command";
+  let stateSummary = "No operator or queue command is available for handoff.";
+  if (command) {
+    if (nextQueueActionBlockedByGate) {
+      stateStatus = "gate-required";
+      stateSummary = "Run the required operator gate before the safety-ordered queue command.";
+    } else if (operatorRunbook?.requiresOperatorReview) {
+      stateStatus = "review-required";
+      stateSummary = "Review command targets and mutation exposure before running the handoff command.";
+    } else {
+      stateStatus = "ready";
+      stateSummary = "The handoff command can be presented or run, then refreshed with the focused backlog check.";
+    }
+  }
+  const state = {
+    version: 1,
+    status: stateStatus,
+    ready: Boolean(command),
+    canRunWithoutReview: Boolean(command && !nextQueueActionBlockedByGate && !operatorRunbook?.requiresOperatorReview),
+    requiresGate: nextQueueActionBlockedByGate,
+    requiresRefresh: Boolean(refreshCommandItem?.required),
+    summary: stateSummary,
+  };
   return {
     version: 1,
     decision,
+    state,
     source,
     phase,
     label: hasOperatorCommand ? operatorRunbook.nextCommandLabel || "" : nextCommandItem?.actionId || "",
@@ -1553,6 +1577,10 @@ export function renderAgentBacklogReport(payload, {
       const phase = operatorHandoff.phase ? `${operatorHandoff.phase} ` : "";
       const decision = operatorHandoff.decision ? `${operatorHandoff.decision}; ` : "";
       lines.push(`- Operator handoff: ${phase}${operatorHandoff.source || "unknown"} (${decision}${operatorHandoff.reason || "no reason provided"})`);
+      const handoffState = operatorHandoff.state && typeof operatorHandoff.state === "object" ? operatorHandoff.state : null;
+      if (handoffState) {
+        lines.push(`- Operator handoff state: ${handoffState.status || "unknown"}; ready ${handoffState.ready ? "yes" : "no"}; can run without review ${handoffState.canRunWithoutReview ? "yes" : "no"}; refresh ${handoffState.requiresRefresh ? "required" : "optional"}`);
+      }
       if (operatorHandoff.refreshCommand) {
         lines.push(`- Operator handoff refresh: ${operatorHandoff.refreshCommand}`);
       }

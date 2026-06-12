@@ -3454,6 +3454,15 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
     version: 1,
     decision: "run-shared-command",
+    state: {
+      version: 1,
+      status: "ready",
+      ready: true,
+      canRunWithoutReview: true,
+      requiresGate: false,
+      requiresRefresh: true,
+      summary: "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+    },
     source: "operator-runbook",
     phase: "execute",
     label: "Run agent-skill-proposal-preview",
@@ -3604,6 +3613,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
   assert.match(markdown, /Operator\/queue next command alignment: same/);
   assert.match(markdown, /Operator handoff: execute operator-runbook/);
+  assert.match(markdown, /Operator handoff state: ready; ready yes; can run without review yes; refresh required/);
   assert.match(markdown, /Operator handoff refresh: design-ai learn --agent-backlog --from-file \/tmp\/design-ai-signals --file \/tmp\/design-ai-learning\.json --usage-file \/tmp\/design-ai-learning\.usage\.json --strict --json/);
   assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Queue order:/);
@@ -3746,6 +3756,15 @@ test("agentBacklogReport classifies action plan command safety", () => {
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
     version: 1,
     decision: "run-operator-gate",
+    state: {
+      version: 1,
+      status: "gate-required",
+      ready: true,
+      canRunWithoutReview: false,
+      requiresGate: true,
+      requiresRefresh: true,
+      summary: "Run the required operator gate before the safety-ordered queue command.",
+    },
     source: "operator-runbook",
     phase: "before",
     label: "Confirm clean workspace before execution",
@@ -3992,6 +4011,8 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "run-operator-gate");
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.state.status, "gate-required");
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.state.canRunWithoutReview, false);
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandArgs, [
     "design-ai",
     "learn",

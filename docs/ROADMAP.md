@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 461 — Agent Backlog Operator Handoff State Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now includes compact state metadata for automation. This lets local runners decide whether a handoff command is ready, blocked by a required gate, requires operator review, or has no command without parsing Markdown or reason prose.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff.state` with `status`, `ready`, `canRunWithoutReview`, `requiresGate`, `requiresRefresh`, and `summary`.
+- Rendered the handoff state in Markdown reports next to the existing operator handoff and refresh command lines.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the new state contract.
+
+### Impact
+- Local AI/agent automation can branch on a compact `status` enum before running or presenting the next handoff command.
+- The change remains deterministic and local; it only changes emitted metadata and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --file /tmp/design-ai-phase461-learning.json --usage-file /tmp/design-ai-phase461-learning.usage.json --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 460 — Agent Backlog Context-Aware Refresh Command (unreleased)
 
 `design-ai learn --agent-backlog` refresh metadata now preserves the same signal source, learning profile, and usage sidecar paths that produced the current backlog report. This keeps post-handoff refreshes deterministic even when operators run from another working directory or use non-default learning files.
