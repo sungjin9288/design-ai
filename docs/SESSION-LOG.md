@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 468 (unreleased)** — Split `design-ai workspace` git status into active changes and ignored untracked local portfolio/evidence artifacts so separate-thread output files do not block dogfood readiness.
 - **Phase 467 (unreleased)** — Classified focused agent backlog workspace `--learning-usage` arguments as usage sidecar targets so readiness handoffs expose both profile and usage paths.
 - **Phase 466 (unreleased)** — Reclassified focused agent backlog `--with-learning` usage-record commands as local-state mutations, exposing learning profile and usage sidecar env targets before review-before-mutation execution.
 - **Phase 465 (unreleased)** — Aligned agent backlog learning eval bootstrap with workspace readiness by targeting the active profile's sibling `learning-eval.json` and auto-detecting that sibling checkpoint in signal registry eval summaries.

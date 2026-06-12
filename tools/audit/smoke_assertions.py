@@ -721,6 +721,10 @@ EXPECTED_WORKSPACE_GIT_KEYS = [
     "remote",
     "lastCommit",
     "statusShort",
+    "allStatusShort",
+    "ignoredStatusShort",
+    "ignoredLocalArtifactCount",
+    "hasIgnoredLocalArtifacts",
     "reason",
 ]
 EXPECTED_WORKSPACE_REPOSITORY_KEYS = [
@@ -4165,6 +4169,10 @@ def passing_workspace_json() -> str:
                 "remote": "",
                 "lastCommit": None,
                 "statusShort": [],
+                "allStatusShort": [],
+                "ignoredStatusShort": [],
+                "ignoredLocalArtifactCount": 0,
+                "hasIgnoredLocalArtifacts": False,
                 "reason": "not a git repository",
             },
             "repository": {
@@ -5273,6 +5281,10 @@ def passing_workspace_strict_clean_json() -> str:
             "subject": "feat: workspace strict smoke fixture",
         },
         "statusShort": [],
+        "allStatusShort": [],
+        "ignoredStatusShort": [],
+        "ignoredLocalArtifactCount": 0,
+        "hasIgnoredLocalArtifacts": False,
         "reason": "",
     }
     payload["repository"]["remoteUrl"] = f"{EXPECTED_REPOSITORY_URL}.git"
@@ -5784,6 +5796,14 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
             raise SystemExit(f"workspace JSON after {context} git {key} is invalid")
     if not isinstance(git.get("statusShort"), list):
         raise SystemExit(f"workspace JSON after {context} git statusShort is not a list")
+    if not isinstance(git.get("allStatusShort"), list):
+        raise SystemExit(f"workspace JSON after {context} git allStatusShort is not a list")
+    if not isinstance(git.get("ignoredStatusShort"), list):
+        raise SystemExit(f"workspace JSON after {context} git ignoredStatusShort is not a list")
+    if not is_lifecycle_json_non_negative_int(git.get("ignoredLocalArtifactCount")):
+        raise SystemExit(f"workspace JSON after {context} git ignoredLocalArtifactCount is invalid")
+    if type(git.get("hasIgnoredLocalArtifacts")) is not bool:
+        raise SystemExit(f"workspace JSON after {context} git hasIgnoredLocalArtifacts is not boolean")
 
     repository = assert_smoke_json_keys(
         payload.get("repository"),

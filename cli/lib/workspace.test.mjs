@@ -147,6 +147,59 @@ test("collectGitReport reports a non-git workspace without throwing", () => {
   assert.match(report.reason, /not a git repository/);
 });
 
+test("collectGitReport separates untracked local portfolio artifacts from active git status", () => withTempDir((dir) => {
+  const report = collectGitReport({
+    root: dir,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${dir}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok([
+        "?? DEV_LOG.md",
+        "?? _portfolio_export/",
+        "?? docs/case-study.md",
+        "?? docs/project-card.md",
+        "?? evidence/",
+        "?? links.md",
+        "?? portfolio_manifest.md",
+      ].join("\n")),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace ignored artifacts\n"),
+    }),
+  });
+
+  assert.equal(report.clean, true);
+  assert.deepEqual(report.statusShort, []);
+  assert.equal(report.allStatusShort.length, 7);
+  assert.deepEqual(report.ignoredStatusShort, report.allStatusShort);
+  assert.equal(report.ignoredLocalArtifactCount, 7);
+  assert.equal(report.hasIgnoredLocalArtifacts, true);
+}));
+
+test("collectGitReport keeps tracked changes and unknown untracked files active", () => withTempDir((dir) => {
+  const report = collectGitReport({
+    root: dir,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${dir}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok(" M README.md\n?? evidence/\n?? notes.md\n"),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace active changes\n"),
+    }),
+  });
+
+  assert.equal(report.clean, false);
+  assert.deepEqual(report.statusShort, [" M README.md", "?? notes.md"]);
+  assert.deepEqual(report.ignoredStatusShort, ["?? evidence/"]);
+  assert.equal(report.ignoredLocalArtifactCount, 1);
+  assert.equal(report.hasIgnoredLocalArtifacts, true);
+}));
+
 test("collectWorkspaceReport combines git, learning, and release readiness", () => withTempDir((dir) => {
   const repoRoot = path.join(dir, "repo");
   const sourceRoot = path.join(dir, "source");
@@ -206,6 +259,45 @@ test("collectWorkspaceReport combines git, learning, and release readiness", () 
   assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /design-ai learn --curate --file/);
   assert.match(report.nextActions.map((item) => item.text).join("\n"), /Markdown learning curation report/);
   assert.match(report.nextActions.map((item) => item.command || "").join("\n"), /--report --out/);
+}));
+
+test("collectWorkspaceReport does not strict-block on ignored local portfolio artifacts only", () => withTempDir((dir) => {
+  const repoRoot = path.join(dir, "repo");
+  const sourceRoot = path.join(dir, "source");
+  const learningFile = path.join(dir, "learning.json");
+  mkdirSync(sourceRoot, { recursive: true });
+  writeSourceMetadata(sourceRoot, fullReleaseScripts());
+
+  const report = collectWorkspaceReport({
+    root: repoRoot,
+    sourceRoot,
+    learningFilePath: learningFile,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${repoRoot}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok("?? DEV_LOG.md\n?? _portfolio_export/\n?? docs/project-card.md\n?? evidence/\n"),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": ok("origin/main\n"),
+      "rev-list --left-right --count @{u}...HEAD": ok("0\t0\n"),
+      "config --get remote.origin.url": ok("https://github.com/sungjin9288/design-ai.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: workspace ignored artifacts\n"),
+    }),
+    learningStatsProvider: ({ filePath }) => ({
+      file: filePath,
+      exists: false,
+      count: 0,
+      categoryCounts: {},
+      sourceCounts: {},
+      latestEntry: null,
+      auditSummary: { status: "pass", failures: 0, warnings: 0 },
+    }),
+  });
+
+  assert.equal(report.git.clean, true);
+  assert.equal(report.git.ignoredLocalArtifactCount, 4);
+  assert.equal(report.nextActions.some((item) => item.level === "warn" && /Review local changes/.test(item.text)), false);
+  assert.equal(report.nextActions.some((item) => item.level === "info" && /Ignored local portfolio\/evidence artifacts/.test(item.text)), true);
+  assert.equal(hasWorkspaceStrictIssues(report), false);
 }));
 
 test("hasWorkspaceStrictIssues treats warn and fail next actions as strict failures", () => {

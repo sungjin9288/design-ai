@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 468 — Workspace Local Artifact Readiness Split (unreleased)
+
+`design-ai workspace` now separates active git changes from known local portfolio/evidence artifacts so internal dogfood readiness is not blocked by intentionally local output files from a separate thread.
+
+### Changed
+- Added git status splitting for untracked portfolio/evidence artifacts while preserving the full raw status in `allStatusShort`.
+- Added `ignoredStatusShort`, `ignoredLocalArtifactCount`, and `hasIgnoredLocalArtifacts` to workspace JSON so automation can show ignored local artifacts without treating them as active changes.
+- Kept tracked modifications and unknown untracked files in active `statusShort` so strict readiness still blocks on real development changes.
+- Updated human workspace output and next actions to report ignored local artifacts as an info item instead of a dirty-workspace warning.
+- Extended workspace unit coverage and smoke JSON assertions for the expanded git contract.
+
+### Impact
+- Local portfolio/evidence files can remain in the working tree while design-ai development continues.
+- `workspace --strict` remains conservative for tracked edits, unknown files, upstream drift, learning warnings, and release-script failures.
+
+### Verified
+- `node --check cli/lib/workspace.mjs`
+- `node --check cli/commands/workspace.mjs`
+- `node --test cli/lib/workspace.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### What's still ahead
+- Continue clearing the focused agent backlog by generating the local learning eval checkpoint and recording privacy-preserving usage sidecar events after the current code changes are committed.
+
 ## Phase 467 — Agent Backlog Workspace Usage Target Classification (unreleased)
 
 `design-ai learn --agent-backlog` now classifies workspace readiness `--learning-usage` arguments as usage sidecar targets, matching the command's actual learning usage input contract.
