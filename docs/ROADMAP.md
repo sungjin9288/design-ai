@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 478 — Agent Backlog Refresh-Only Package Smoke Assertion (unreleased)
+
+Packed-tarball smoke now verifies the optional refresh-only `design-ai learn --agent-backlog --strict --json` no-command contract in installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Changed
+- Added a no-command agent backlog JSON smoke assertion for empty focused backlogs.
+- Verified `operatorRunbook.nextCommandSelection.reason` preserves the status-metadata wording for optional refresh-only runbook commands.
+- Added package smoke self-test drift coverage for the old misleading refresh-stage selection reason.
+
+### Impact
+- Release docs and package smoke are now aligned: the packed tarball actually verifies the no-command refresh-only runbook semantics.
+- Local AI/agent automation gets stronger packaged-path protection for the completed backlog state.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Re-check focused agent backlog state after committing this package smoke assertion.
+
 ## Phase 477 — Agent Backlog Refresh-Only Runbook Release Guard (unreleased)
 
 Release metadata now protects the optional refresh-only `design-ai learn --agent-backlog` runbook selection semantics in release-facing policy docs.

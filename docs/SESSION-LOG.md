@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 478 (unreleased)** — Added packed-tarball smoke assertions for optional refresh-only agent backlog no-command JSON so installed-bin and one-shot paths verify the status-metadata runbook selection reason.
 - **Phase 477 (unreleased)** — Added release metadata guards for optional refresh-only agent backlog runbook selection semantics so release-facing docs keep no-command refresh output framed as status metadata, not executable handoff work.
 - **Phase 476 (unreleased)** — Clarified focused agent backlog operator runbook selection reasons so optional refresh-only no-command states read as status metadata, not executable handoff work.
 - **Phase 475 (unreleased)** — Clarified focused agent backlog operator handoff reasons so completed no-command states distinguish optional refresh metadata from executable handoff work.

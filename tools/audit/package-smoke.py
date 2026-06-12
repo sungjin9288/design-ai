@@ -6010,6 +6010,162 @@ def assert_agent_backlog_report_json(
     )
 
 
+EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON = (
+    "Optional refresh command is available as status metadata; "
+    "no executable backlog handoff command is selected."
+)
+EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON = (
+    "No handoff command is required; optional refresh command remains available as status metadata."
+)
+EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON = (
+    "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty."
+)
+
+
+def assert_agent_backlog_no_command_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse no-command learn agent backlog JSON") from error
+
+    counts = payload.get("counts")
+    action_plan = payload.get("actionPlan")
+    execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
+    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
+    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
+    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
+    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
+    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
+    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
+    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
+    gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
+    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("status") == "pass"
+        and payload.get("signalStatus") == "pass"
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should report passing status and paths",
+    )
+    require_package_smoke(
+        isinstance(counts, dict)
+        and counts.get("actions") == 0
+        and counts.get("checkCaptures") == 0
+        and counts.get("usageEvents", 0) >= 1
+        and counts.get("evalSignals", 0) >= 1,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should report an empty focused backlog",
+    )
+    require_package_smoke(
+        payload.get("actions") == []
+        and isinstance(action_plan, dict)
+        and action_plan.get("stepCount") == 0
+        and action_plan.get("nextStep") is None
+        and action_plan.get("steps") == []
+        and isinstance(execution_queue, dict)
+        and execution_queue.get("orderedCount") == 0
+        and execution_queue.get("commandManifestCount") == 0
+        and execution_queue.get("previewCount") == 0
+        and execution_queue.get("fileWriteReviewCount") == 0
+        and execution_queue.get("mutationReviewCount") == 0
+        and execution_queue.get("nextCommand") == ""
+        and execution_queue.get("nextCommandArgs") == []
+        and execution_queue.get("nextCommandRunPolicy") == "",
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep the execution queue empty",
+    )
+    require_package_smoke(
+        isinstance(next_command_selection, dict)
+        and next_command_selection.get("reason") == "No command-bearing backlog action is available."
+        and isinstance(next_command_alignment, dict)
+        and next_command_alignment.get("operatorStage") == "refresh"
+        and next_command_alignment.get("queueCommand") == ""
+        and next_command_alignment.get("reason") == EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should explain empty queue alignment",
+    )
+    require_package_smoke(
+        isinstance(operator_handoff, dict)
+        and operator_handoff.get("decision") == "none"
+        and operator_handoff.get("command") == ""
+        and operator_handoff.get("commandArgs") == []
+        and operator_handoff.get("hasCommand", operator_handoff_state.get("hasCommand") if isinstance(operator_handoff_state, dict) else None) is False
+        and operator_handoff.get("refreshCommandRequired") is False
+        and operator_handoff.get("reason") == EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON
+        and isinstance(operator_handoff_state, dict)
+        and operator_handoff_state.get("status") == "no-command"
+        and operator_handoff_state.get("ready") is True
+        and operator_handoff_state.get("complete") is True
+        and operator_handoff_state.get("hasCommand") is False
+        and operator_handoff_state.get("requiresRefresh") is False,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should expose completed operator handoff state",
+    )
+    require_package_smoke(
+        isinstance(operator_runbook, dict)
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("commandCount") == 1
+        and operator_runbook.get("requiredCommandCount") == 0
+        and operator_runbook.get("nextStage") == "refresh"
+        and operator_runbook.get("nextCommandRequired") is False
+        and "learn --agent-backlog" in str(operator_runbook.get("nextCommand", ""))
+        and isinstance(operator_next_command_selection, dict)
+        and operator_next_command_selection.get("stage") == "refresh"
+        and operator_next_command_selection.get("required") is False
+        and operator_next_command_selection.get("reason") == EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
+    )
+    require_package_smoke(
+        isinstance(command_effect_review, dict)
+        and command_effect_review.get("level") == "clear"
+        and command_effect_review.get("requiresOperatorReview") is False
+        and isinstance(gate_phase_summary, dict)
+        and gate_phase_summary.get("count") == 1
+        and gate_phase_summary.get("requiredCount") == 0
+        and gate_phase_summary.get("optionalCount") == 1
+        and gate_phase_summary.get("hasRefresh") is True
+        and isinstance(gate_runbook, dict)
+        and any(
+            isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is False
+            and "learn --agent-backlog" in str(item.get("command", ""))
+            for item in gate_runbook.get("refresh", [])
+        ),
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep refresh gate optional",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep local read-only privacy boundaries",
+    )
+
+
 def assert_agent_backlog_report_human(
     raw: str,
     *,
@@ -7069,15 +7225,6 @@ def assert_learning_relevance_smoke(
     )
 
     profile_payload = json.loads(profile_path.read_text(encoding="utf-8"))
-    profile_payload["entries"].append({
-        "id": "learn-check-capture",
-        "category": "workflow",
-        "text": "Improve future outputs by addressing Responsive QA coverage: Add desktop and mobile verification notes.",
-        "source": "check:artifact",
-        "createdAt": "2026-05-22T00:00:03.000Z",
-    })
-    profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
-
     signal_dir = profile_path.parent
     signal_workspace_root = profile_path.with_name(f"{profile_path.stem}-signals-workspace")
     prepare_workspace_strict_repo(signal_workspace_root)
@@ -7105,6 +7252,45 @@ def assert_learning_relevance_smoke(
         }),
         encoding="utf-8",
     )
+
+    no_command_profile_path = profile_path.with_name(f"{profile_path.stem}-no-command.json")
+    no_command_usage_path = profile_path.with_name(f"{profile_path.stem}-no-command.usage.json")
+    no_command_profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
+    no_command_usage_payload = json.loads(usage_path.read_text(encoding="utf-8"))
+    no_command_usage_payload["profileFile"] = str(no_command_profile_path)
+    for event in no_command_usage_payload.get("events", []):
+        if isinstance(event, dict):
+            event["profileFile"] = str(no_command_profile_path)
+    no_command_usage_path.write_text(json.dumps(no_command_usage_payload, indent=2) + "\n", encoding="utf-8")
+    no_command_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(no_command_profile_path),
+        "--usage-file",
+        str(no_command_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    no_command_result = run_plain(no_command_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_no_command_json(
+        no_command_result.stdout,
+        profile_path=no_command_profile_path,
+        usage_path=no_command_usage_path,
+        context=f"{context} learn agent backlog no-command strict JSON",
+        cmd=no_command_cmd,
+    )
+
+    profile_payload["entries"].append({
+        "id": "learn-check-capture",
+        "category": "workflow",
+        "text": "Improve future outputs by addressing Responsive QA coverage: Add desktop and mobile verification notes.",
+        "source": "check:artifact",
+        "createdAt": "2026-05-22T00:00:03.000Z",
+    })
+    profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
 
     signals_human_cmd = command_factory(
         "learn",
@@ -10560,6 +10746,239 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_agent_backlog_cmd,
             require_status_pass=True,
+        )
+        no_command_agent_backlog_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:06.000Z",
+            "status": "pass",
+            "signalStatus": "pass",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "counts": {
+                "actions": 0,
+                "p0": 0,
+                "p1": 0,
+                "p2": 0,
+                "p3": 0,
+                "learningEntries": 3,
+                "usageEvents": 2,
+                "evalSignals": 1,
+                "checkCaptures": 0,
+                "workspaceNextActions": 0,
+            },
+            "actions": [],
+            "actionPlan": {
+                "version": 1,
+                "stepCount": 0,
+                "nextStep": None,
+                "steps": [],
+                "safetySummary": {
+                    "total": 0,
+                    "readOnly": 0,
+                    "writesLocalFile": 0,
+                    "mutatesLocalState": 0,
+                    "requiresCleanWorkspace": 0,
+                    "requiresReviewBeforeMutation": 0,
+                },
+                "executionQueue": {
+                    "orderedCount": 0,
+                    "commandManifestCount": 0,
+                    "previewCount": 0,
+                    "fileWriteReviewCount": 0,
+                    "mutationReviewCount": 0,
+                    "nextActionId": "",
+                    "nextCommand": "",
+                    "nextCommandArgs": [],
+                    "nextCommandRunPolicy": "",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-safety-ordered-queue",
+                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                        "actionId": "",
+                        "rank": None,
+                        "safetyLevel": "",
+                        "runPolicy": "",
+                        "planNextActionId": "",
+                        "planNextActionRank": None,
+                        "matchesPlanNextAction": False,
+                        "reason": "No command-bearing backlog action is available.",
+                    },
+                    "nextCommandAlignment": {
+                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                        "operatorStage": "refresh",
+                        "operatorActionId": "",
+                        "operatorCommand": agent_backlog_refresh_command,
+                        "operatorCommandArgs": agent_backlog_refresh_args,
+                        "queueActionId": "",
+                        "queueCommand": "",
+                        "queueCommandArgs": [],
+                        "rankedNextActionId": "",
+                        "matchesQueueNextCommand": False,
+                        "matchesQueueNextAction": False,
+                        "operatorRunsBeforeQueueCommand": False,
+                        "queueMatchesRankedNextAction": False,
+                        "reason": EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
+                    },
+                    "operatorHandoff": {
+                        "version": 1,
+                        "decision": "none",
+                        "state": {
+                            "version": 1,
+                            "status": "no-command",
+                            "ready": True,
+                            "hasCommand": False,
+                            "complete": True,
+                            "canRunWithoutReview": False,
+                            "requiresGate": False,
+                            "requiresRefresh": False,
+                            "summary": "Focused agent backlog is clear; no handoff command is required.",
+                        },
+                        "source": "",
+                        "phase": "",
+                        "label": "",
+                        "command": "",
+                        "commandArgs": [],
+                        "actionId": "",
+                        "rank": None,
+                        "runPolicy": "",
+                        "required": False,
+                        "isGate": False,
+                        "nextQueueActionId": "",
+                        "nextQueueCommand": "",
+                        "nextQueueCommandArgs": [],
+                        "nextQueueCommandRequiresGate": False,
+                        "operatorGateAppliesToNextQueueAction": False,
+                        "nextQueueActionBlockedByGate": False,
+                        "refreshCommand": agent_backlog_refresh_command,
+                        "refreshCommandArgs": agent_backlog_refresh_args,
+                        "refreshCommandLabel": "Refresh focused agent backlog after review",
+                        "refreshCommandRequired": False,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "reason": EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON,
+                    },
+                    "commandEffectReview": {
+                        "level": "clear",
+                        "requiresOperatorReview": False,
+                        "headline": "No command target or mutation flag exposure detected.",
+                        "checklist": ["No command target or mutation flag exposure detected."],
+                        "gatePhaseSummary": {
+                            "count": 1,
+                            "requiredCount": 0,
+                            "optionalCount": 1,
+                            "phases": ["refresh"],
+                            "hasBefore": False,
+                            "hasAfter": False,
+                            "hasRefresh": True,
+                        },
+                        "gateRunbook": {
+                            "before": [],
+                            "after": [],
+                            "refresh": [
+                                {
+                                    "phase": "refresh",
+                                    "label": "Refresh focused agent backlog after review",
+                                    "command": agent_backlog_refresh_command,
+                                    "commandArgs": agent_backlog_refresh_args,
+                                    "required": False,
+                                },
+                            ],
+                            "other": [],
+                        },
+                        "gateCommands": [
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh focused agent backlog after review",
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
+                                "required": False,
+                            },
+                        ],
+                    },
+                    "operatorRunbook": {
+                        "version": 1,
+                        "stageCount": 4,
+                        "commandCount": 1,
+                        "requiredCommandCount": 0,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "phases": ["before", "execute", "after", "refresh"],
+                        "nextStage": "refresh",
+                        "nextCommandLabel": "Refresh focused agent backlog after review",
+                        "nextCommand": agent_backlog_refresh_command,
+                        "nextCommandArgs": agent_backlog_refresh_args,
+                        "nextCommandRequired": False,
+                        "nextCommandRunPolicy": "",
+                        "nextCommandSelection": {
+                            "strategy": "first-command-in-operator-runbook-stage-order",
+                            "stageOrder": ["before", "execute", "after", "refresh"],
+                            "stage": "refresh",
+                            "label": "Refresh focused agent backlog after review",
+                            "command": agent_backlog_refresh_command,
+                            "commandArgs": agent_backlog_refresh_args,
+                            "actionId": "",
+                            "rank": None,
+                            "required": False,
+                            "runPolicy": "",
+                            "reason": EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
+                        },
+                    },
+                    "ordered": [],
+                    "commandManifest": [],
+                    "preview": [],
+                    "fileWriteReview": [],
+                    "mutationReview": [],
+                },
+                "verification": [
+                    {
+                        "label": "Gate focused agent backlog",
+                        "command": agent_backlog_refresh_command,
+                        "commandArgs": agent_backlog_refresh_args,
+                    },
+                ],
+                "boundaries": {
+                    "reportMutatesProfile": False,
+                    "reportMutatesSkillFiles": False,
+                    "reportCallsExternalAiApis": False,
+                    "generatedFromLocalSignals": True,
+                },
+            },
+            "commands": {
+                "signalsJson": "design-ai learn --signals --from-file . --json",
+                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+                "agentBacklogJson": agent_backlog_refresh_command,
+                "agentBacklogJsonArgs": agent_backlog_refresh_args,
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_agent_backlog_no_command_json(
+            json.dumps(no_command_agent_backlog_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        )
+        refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        refresh_reason_drift_payload["actionPlan"]["executionQueue"]["operatorRunbook"]["nextCommandSelection"]["reason"] = (
+            "Selected the first command in the refresh stage using operator runbook stage order."
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(refresh_reason_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
+            scope="package smoke",
         )
         assert_agent_backlog_report_human(
             "\n".join([
