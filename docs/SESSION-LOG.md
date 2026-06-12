@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 462 (unreleased)** — Adjusted local agent development backlog ranking so missing learning profile initialization becomes the ranked next action before eval checkpoint bootstrap, matching the safe execution queue.
 - **Phase 461 (unreleased)** — Added compact `operatorHandoff.state` metadata to focused agent backlog output so automation can branch on ready, gate-required, review-required, or no-command handoff states without parsing prose.
 - **Phase 460 (unreleased)** — Made agent backlog refresh commands context-aware so `operatorHandoff.refreshCommand` preserves `--from-file`, learning profile, and usage sidecar arguments for the same local signal scope.
 - **Phase 459 (unreleased)** — Added `operatorHandoff.refreshCommand` metadata so local AI/agent automation can refresh focused backlog state after the selected handoff command without traversing the operator runbook stages.

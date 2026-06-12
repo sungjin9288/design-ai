@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 462 — Agent Backlog Profile Bootstrap Ranking (unreleased)
+
+`design-ai learn --signals` now ranks missing learning profile initialization ahead of eval checkpoint bootstrap when both actions are `p1`. This keeps the ranked next action, safety-ordered execution queue, and operator handoff story aligned during first-run local AI/agent setup.
+
+### Changed
+- Added deterministic action-id tie-breaking to the agent development backlog sorter so profile audit/init work wins before workspace, eval, usage, and skill-evolution follow-ups at the same priority.
+- Added a no-profile `runLearn --signals` regression test that verifies `agent-learning-profile-init` is rank 1 before `agent-eval-checkpoint-generate`.
+
+### Impact
+- First-run operators see the same bootstrap sequence in ranked actions and safe queue guidance: initialize/review the local learning profile before generating eval checkpoint files.
+- The change remains deterministic and local; it only changes action ordering and does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --file <tmp>/missing-learning.json --usage-file <tmp>/missing-learning.usage.json --from-file <tmp> --json`
+
+### What's still ahead
+- Continue closing the local AI/agent learning readiness loop with non-mutating bootstrap guidance before any profile or eval-file apply step.
+
 ## Phase 461 — Agent Backlog Operator Handoff State Metadata (unreleased)
 
 `design-ai learn --agent-backlog` operator handoff now includes compact state metadata for automation. This lets local runners decide whether a handoff command is ready, blocked by a required gate, requires operator review, or has no command without parsing Markdown or reason prose.

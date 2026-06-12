@@ -1165,9 +1165,23 @@ function buildAgentDevelopmentBacklog({
   }
 
   const priorityOrder = { p0: 0, p1: 1, p2: 2, p3: 3 };
+  const actionOrder = {
+    "agent-learning-profile-audit-fix": 0,
+    "agent-learning-profile-init": 1,
+    "agent-learning-profile-audit-review": 2,
+    "agent-learning-usage-stale-review": 3,
+    "agent-workspace-readiness-review": 4,
+    "agent-eval-failure-review": 5,
+    "agent-eval-checkpoint-generate": 6,
+    "agent-eval-template-replay": 7,
+    "agent-learning-usage-record": 8,
+    "agent-skill-proposal-preview": 9,
+    "agent-check-capture-seed": 10,
+  };
   const sortedActions = actions
     .sort((a, b) => (
       priorityOrder[a.priority] - priorityOrder[b.priority]
+      || (actionOrder[a.id] ?? 100) - (actionOrder[b.id] ?? 100)
       || a.category.localeCompare(b.category)
       || a.id.localeCompare(b.id)
     ))

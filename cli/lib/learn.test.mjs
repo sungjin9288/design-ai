@@ -4297,6 +4297,31 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 
+test("runLearn --signals ranks profile initialization before eval checkpoint bootstrap", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "missing-learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.learning.exists, false);
+  assert.equal(payload.agentDevelopment.actions[0].id, "agent-learning-profile-init");
+  assert.equal(payload.agentDevelopment.actions[0].rank, 1);
+  assert.equal(payload.agentDevelopment.actions[1].id, "agent-workspace-readiness-review");
+  assert.equal(payload.agentDevelopment.actions[2].id, "agent-eval-checkpoint-generate");
+  assert.equal(payload.agentDevelopment.actions[0].priority, "p1");
+  assert.equal(payload.agentDevelopment.actions[2].priority, "p1");
+}));
+
 test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {
   const previousExitCode = process.exitCode;
   const filePath = path.join(dir, "learning.json");
