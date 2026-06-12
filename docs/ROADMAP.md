@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 463 — Agent Backlog Current-Command Gate Scoping (unreleased)
+
+`design-ai learn --agent-backlog` now scopes operator handoff gates to the current next queue command. A read-only preview command can be reported as `ready` even when later queued commands still require file-write or mutation review.
+
+### Changed
+- Updated `operatorHandoff` selection so before-stage operator gates only block the handoff when the current `nextQueueCommand` itself requires review.
+- Added `nextQueueCommandRequiresGate` and `operatorGateAppliesToNextQueueAction` booleans to the handoff payload for automation that needs to explain why a gate did or did not apply.
+- Extended package-smoke assertions so packed consumers accept both operator-runbook and execution-queue handoff sources and verify the new gate-scope booleans.
+
+### Impact
+- Local automation can present safe read-only next commands without forcing a clean-workspace gate that only protects later file-write or mutation commands.
+- Later risky commands still retain `commandEffectReview`, run-policy, and clean-workspace review metadata in the same execution queue.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue tightening the local AI/agent readiness loop so gates are precise per handoff step while aggregate risk remains visible.
+
 ## Phase 462 — Agent Backlog Profile Bootstrap Ranking (unreleased)
 
 `design-ai learn --signals` now ranks missing learning profile initialization ahead of eval checkpoint bootstrap when both actions are `p1`. This keeps the ranked next action, safety-ordered execution queue, and operator handoff story aligned during first-run local AI/agent setup.

@@ -744,20 +744,31 @@ function buildAgentBacklogOperatorHandoff({
     : {};
   const hasOperatorCommand = Boolean(operatorRunbook?.nextCommand);
   const hasQueueCommand = Boolean(nextCommandItem?.command);
-  const source = hasOperatorCommand ? "operator-runbook" : hasQueueCommand ? "execution-queue" : "";
-  const phase = hasOperatorCommand ? operatorRunbook.nextStage || "" : hasQueueCommand ? "execute" : "";
-  const command = hasOperatorCommand ? operatorRunbook.nextCommand || "" : nextCommandItem?.command || "";
-  const commandArgs = hasOperatorCommand
-    ? Array.isArray(operatorRunbook?.nextCommandArgs) ? operatorRunbook.nextCommandArgs : []
-    : Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [];
   const refreshStage = Array.isArray(operatorRunbook?.stages)
     ? operatorRunbook.stages.find((stage) => stage && stage.phase === "refresh")
     : null;
   const refreshCommandItem = Array.isArray(refreshStage?.commands)
     ? refreshStage.commands.find((item) => item && item.command) || null
     : null;
-  const isGate = Boolean(hasOperatorCommand && phase && phase !== "execute");
+  const operatorPhase = hasOperatorCommand ? operatorRunbook.nextStage || "" : "";
+  const operatorCommandIsGate = Boolean(hasOperatorCommand && operatorPhase && operatorPhase !== "execute");
+  const nextQueueCommandRequiresGate = Boolean(nextCommandItem?.requiresReviewBeforeMutation);
+  const operatorGateAppliesToNextQueueAction = Boolean(operatorCommandIsGate && hasQueueCommand && nextQueueCommandRequiresGate);
+  const shouldUseOperatorCommand = Boolean(hasOperatorCommand && (!operatorCommandIsGate || operatorGateAppliesToNextQueueAction));
+  const source = shouldUseOperatorCommand ? "operator-runbook" : hasQueueCommand ? "execution-queue" : "";
+  const phase = shouldUseOperatorCommand ? operatorRunbook.nextStage || "" : hasQueueCommand ? "execute" : "";
+  const command = shouldUseOperatorCommand ? operatorRunbook.nextCommand || "" : nextCommandItem?.command || "";
+  const commandArgs = shouldUseOperatorCommand
+    ? Array.isArray(operatorRunbook?.nextCommandArgs) ? operatorRunbook.nextCommandArgs : []
+    : Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [];
+  const isGate = Boolean(shouldUseOperatorCommand && phase && phase !== "execute");
   const nextQueueActionBlockedByGate = Boolean(isGate && hasQueueCommand);
+  const requiresOperatorReviewForHandoff = shouldUseOperatorCommand
+    ? Boolean(operatorRunbook?.requiresOperatorReview)
+    : Boolean(nextCommandItem?.requiresReviewBeforeMutation);
+  const reviewLevelForHandoff = shouldUseOperatorCommand
+    ? operatorRunbook?.reviewLevel || "unknown"
+    : requiresOperatorReviewForHandoff ? operatorRunbook?.reviewLevel || "unknown" : "clear";
   let decision = "none";
   let reason = "No operator or queue command is available for handoff.";
   if (nextQueueActionBlockedByGate) {
@@ -766,7 +777,7 @@ function buildAgentBacklogOperatorHandoff({
   } else if (nextCommandAlignment?.matchesQueueNextCommand) {
     decision = "run-shared-command";
     reason = "Run the shared operator and queue command next.";
-  } else if (hasOperatorCommand) {
+  } else if (shouldUseOperatorCommand) {
     decision = isGate ? "run-operator-gate" : "run-operator-command";
     reason = "Run the operator runbook command next.";
   } else if (hasQueueCommand) {
@@ -779,7 +790,7 @@ function buildAgentBacklogOperatorHandoff({
     if (nextQueueActionBlockedByGate) {
       stateStatus = "gate-required";
       stateSummary = "Run the required operator gate before the safety-ordered queue command.";
-    } else if (operatorRunbook?.requiresOperatorReview) {
+    } else if (requiresOperatorReviewForHandoff) {
       stateStatus = "review-required";
       stateSummary = "Review command targets and mutation exposure before running the handoff command.";
     } else {
@@ -791,7 +802,7 @@ function buildAgentBacklogOperatorHandoff({
     version: 1,
     status: stateStatus,
     ready: Boolean(command),
-    canRunWithoutReview: Boolean(command && !nextQueueActionBlockedByGate && !operatorRunbook?.requiresOperatorReview),
+    canRunWithoutReview: Boolean(command && !nextQueueActionBlockedByGate && !requiresOperatorReviewForHandoff),
     requiresGate: nextQueueActionBlockedByGate,
     requiresRefresh: Boolean(refreshCommandItem?.required),
     summary: stateSummary,
@@ -802,24 +813,26 @@ function buildAgentBacklogOperatorHandoff({
     state,
     source,
     phase,
-    label: hasOperatorCommand ? operatorRunbook.nextCommandLabel || "" : nextCommandItem?.actionId || "",
+    label: shouldUseOperatorCommand ? operatorRunbook.nextCommandLabel || "" : nextCommandItem?.actionId || "",
     command,
     commandArgs,
-    actionId: hasOperatorCommand ? operatorSelection.actionId || "" : nextCommandItem?.actionId || "",
-    rank: hasOperatorCommand ? operatorSelection.rank ?? null : nextCommandItem?.rank ?? null,
-    runPolicy: hasOperatorCommand ? operatorRunbook.nextCommandRunPolicy || "" : nextCommandItem?.runPolicy || "",
-    required: hasOperatorCommand ? Boolean(operatorRunbook.nextCommandRequired) : Boolean(hasQueueCommand),
+    actionId: shouldUseOperatorCommand ? operatorSelection.actionId || "" : nextCommandItem?.actionId || "",
+    rank: shouldUseOperatorCommand ? operatorSelection.rank ?? null : nextCommandItem?.rank ?? null,
+    runPolicy: shouldUseOperatorCommand ? operatorRunbook.nextCommandRunPolicy || "" : nextCommandItem?.runPolicy || "",
+    required: shouldUseOperatorCommand ? Boolean(operatorRunbook.nextCommandRequired) : Boolean(hasQueueCommand),
     isGate,
     nextQueueActionId: nextCommandItem?.actionId || "",
     nextQueueCommand: nextCommandItem?.command || "",
     nextQueueCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
+    nextQueueCommandRequiresGate,
+    operatorGateAppliesToNextQueueAction,
     nextQueueActionBlockedByGate,
     refreshCommand: refreshCommandItem?.command || "",
     refreshCommandArgs: Array.isArray(refreshCommandItem?.commandArgs) ? refreshCommandItem.commandArgs : [],
     refreshCommandLabel: refreshCommandItem?.label || "",
     refreshCommandRequired: Boolean(refreshCommandItem?.required),
-    reviewLevel: operatorRunbook?.reviewLevel || "unknown",
-    requiresOperatorReview: Boolean(operatorRunbook?.requiresOperatorReview),
+    reviewLevel: reviewLevelForHandoff,
+    requiresOperatorReview: requiresOperatorReviewForHandoff,
     reason,
   };
 }

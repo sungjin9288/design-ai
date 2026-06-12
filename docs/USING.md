@@ -64,6 +64,8 @@ The command is read-only and uses the same deterministic `agentDevelopment` data
 
 On first-run workspaces where the selected learning profile does not exist yet, the ranked backlog starts with `agent-learning-profile-init` before eval checkpoint bootstrap so the ranked action and safe queue tell the same setup story.
 
+Operator handoff gates are scoped to the current next queue command. If the next command is a read-only preview, `operatorHandoff.state.status` can be `ready` even when later queued commands still require file-write or mutation review; use `nextQueueCommandRequiresGate` and `operatorGateAppliesToNextQueueAction` to explain that distinction.
+
 ## Skill evolution proposals
 
 Use skill evolution proposals after repeated `check --learn --yes` captures point at the same route or category. The report turns those local signals into candidate skill edits, but it remains preview-only.

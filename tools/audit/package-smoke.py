@@ -5725,6 +5725,19 @@ def assert_agent_backlog_report_json(
     next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
     operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
     operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
+    operator_handoff_source = operator_handoff.get("source") if isinstance(operator_handoff, dict) else ""
+    operator_handoff_matches_source = (
+        (
+            operator_handoff_source == "operator-runbook"
+            and operator_handoff.get("phase") == operator_runbook.get("nextStage")
+            and operator_handoff.get("command") == operator_runbook.get("nextCommand")
+        )
+        or (
+            operator_handoff_source == "execution-queue"
+            and operator_handoff.get("phase") == "execute"
+            and operator_handoff.get("command") == execution_queue.get("nextCommand")
+        )
+    ) if isinstance(operator_handoff, dict) else False
     operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
@@ -5796,13 +5809,14 @@ def assert_agent_backlog_report_json(
         and isinstance(operator_handoff_state.get("summary"), str)
         and bool(operator_handoff_state.get("summary"))
         and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
-        and operator_handoff.get("phase") == operator_runbook.get("nextStage")
-        and operator_handoff.get("command") == operator_runbook.get("nextCommand")
+        and operator_handoff_matches_source
         and isinstance(operator_handoff.get("commandArgs"), list)
         and len(operator_handoff.get("commandArgs")) >= 2
         and isinstance(operator_handoff.get("required"), bool)
         and isinstance(operator_handoff.get("isGate"), bool)
         and operator_handoff.get("nextQueueActionId") == execution_queue.get("nextActionId")
+        and isinstance(operator_handoff.get("nextQueueCommandRequiresGate"), bool)
+        and isinstance(operator_handoff.get("operatorGateAppliesToNextQueueAction"), bool)
         and operator_handoff.get("nextQueueCommand") == execution_queue.get("nextCommand")
         and isinstance(operator_handoff.get("nextQueueActionBlockedByGate"), bool)
         and isinstance(operator_handoff.get("refreshCommand"), str)
@@ -10260,6 +10274,8 @@ def run_self_test() -> None:
                         "nextQueueActionId": "agent-skill-proposal-preview",
                         "nextQueueCommand": "design-ai learn --propose-skills --json",
                         "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "nextQueueCommandRequiresGate": False,
+                        "operatorGateAppliesToNextQueueAction": False,
                         "nextQueueActionBlockedByGate": False,
                         "refreshCommand": agent_backlog_refresh_command,
                         "refreshCommandArgs": agent_backlog_refresh_args,
