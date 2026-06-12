@@ -197,6 +197,44 @@ function resolveSignalFiles({ signalSource = "", root = process.cwd(), extraFile
   return uniqueFiles([]);
 }
 
+function evalReportPathForTemplate(filePath = "") {
+  const resolvedFile = path.resolve(filePath);
+  const dir = path.dirname(resolvedFile);
+  const ext = path.extname(resolvedFile);
+  const base = path.basename(resolvedFile, ext);
+  if (base.endsWith("-report")) return resolvedFile;
+  if (base.endsWith("-eval")) return path.join(dir, `${base}-report${ext || ".json"}`);
+  return path.join(dir, `${base}-report${ext || ".json"}`);
+}
+
+function defaultLearningEvalReportPath(filePath = defaultLearningFile()) {
+  return evalReportPathForTemplate(defaultLearningEvalPath(filePath));
+}
+
+function evalSignalEvidenceKey(file = {}) {
+  return `${file.kind || "unknown-eval"}\n${path.dirname(file.file || "")}`;
+}
+
+function summarizeEvalSignals(evalFiles = []) {
+  const reportKeys = new Set(
+    evalFiles
+      .filter((item) => item.shape === "report")
+      .map((item) => evalSignalEvidenceKey(item)),
+  );
+  const unresolvedTemplates = evalFiles.filter((item) => (
+    item.shape === "template" && !reportKeys.has(evalSignalEvidenceKey(item))
+  ));
+  return {
+    reports: evalFiles.filter((item) => item.shape === "report").length,
+    templates: unresolvedTemplates.length,
+    rawTemplates: evalFiles.filter((item) => item.shape === "template").length,
+    templateFiles: unresolvedTemplates,
+    failed: evalFiles.filter((item) => item.status === "fail").length,
+    warned: evalFiles.filter((item) => item.status === "warn").length,
+    passed: evalFiles.filter((item) => item.status === "pass").length,
+  };
+}
+
 function summarizeCheckCapture(profile) {
   const entries = (profile.entries || []).filter((entry) => String(entry.source || "").startsWith("check:"));
   const sorted = [...entries].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
@@ -1195,15 +1233,33 @@ function buildAgentDevelopmentBacklog({
       },
     }));
   } else if (evals.templates > 0) {
+    const templateFile = Array.isArray(evals.templateFiles) && evals.templateFiles.length > 0
+      ? evals.templateFiles[0].file
+      : "";
+    const evalReportFile = templateFile ? evalReportPathForTemplate(templateFile) : defaultLearningEvalReportPath(filePath);
     actions.push(agentAction({
       id: "agent-eval-template-replay",
       priority: "p1",
       category: "eval-harness",
       title: "Replay template-only eval signal files as executed reports.",
       rationale: "Templates are useful setup artifacts, but executed reports provide stronger evidence for agent behavior.",
-      ...commandSpec(["design-ai", "learn", "--signals", "--from-file", signalSource || ".", "--file", filePath, "--usage-file", usageFile, "--json"]),
+      ...commandSpec([
+        "design-ai",
+        "learn",
+        "--eval",
+        "--from-file",
+        templateFile || defaultLearningEvalPath(filePath),
+        "--file",
+        filePath,
+        "--strict",
+        "--json",
+        "--out",
+        evalReportFile,
+      ]),
       evidence: {
         templates: evals.templates,
+        templateFile: templateFile || defaultLearningEvalPath(filePath),
+        evalReportFile,
       },
     }));
   }
@@ -1316,17 +1372,20 @@ export function learningSignalRegistry({
   const signalFiles = resolveSignalFiles({
     signalSource,
     root,
-    extraFiles: [defaultLearningEvalPath(resolvedFile)],
+    extraFiles: [defaultLearningEvalPath(resolvedFile), defaultLearningEvalReportPath(resolvedFile)],
   });
   const evalFiles = signalFiles.map((file) => summarizeSignalEvalFile(file));
+  const evalSignalSummary = summarizeEvalSignals(evalFiles);
   const evalSummary = {
     source: signalSource ? path.resolve(signalSource) : path.resolve(root),
     count: evalFiles.length,
-    reports: evalFiles.filter((item) => item.shape === "report").length,
-    templates: evalFiles.filter((item) => item.shape === "template").length,
-    failed: evalFiles.filter((item) => item.status === "fail").length,
-    warned: evalFiles.filter((item) => item.status === "warn").length,
-    passed: evalFiles.filter((item) => item.status === "pass").length,
+    reports: evalSignalSummary.reports,
+    templates: evalSignalSummary.templates,
+    rawTemplates: evalSignalSummary.rawTemplates,
+    templateFiles: evalSignalSummary.templateFiles,
+    failed: evalSignalSummary.failed,
+    warned: evalSignalSummary.warned,
+    passed: evalSignalSummary.passed,
     files: evalFiles,
   };
   const workspaceReport = workspaceReportProvider({

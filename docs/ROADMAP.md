@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 469 — Agent Eval Replay Report Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now turns template-only learning eval checkpoints into concrete report-generation handoffs and treats sibling executed reports as the evidence that clears the template replay warning.
+
+### Changed
+- Added sibling `learning-eval-report.json` discovery beside the selected learning profile's `learning-eval.json` checkpoint.
+- Changed `agent-eval-template-replay` from a generic `learn --signals` refresh command to a concrete `learn --eval --from-file <checkpoint> --file <profile> --strict --json --out <report>` handoff.
+- Added report/template pairing so a template file no longer emits a replay warning when a same-directory same-kind executed eval report exists.
+- Kept `rawTemplates` in signal JSON for observability while using unresolved `templates` for readiness and backlog decisions.
+- Added regression coverage for template-only replay command metadata and report-backed template suppression.
+
+### Impact
+- Local AI/agent automation can clear eval-template setup debt by running one explicit file-write command.
+- Focused backlog output no longer loops on `agent-eval-template-replay` after an executed `learning-eval-report.json` exists.
+- The registry remains read-only; only the emitted follow-up command writes the report file.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue using real `check --learn --yes` captures only when actual warn/fail artifacts are available, then promote repeated signals through skill proposal review.
+
 ## Phase 468 — Workspace Local Artifact Readiness Split (unreleased)
 
 `design-ai workspace` now separates active git changes from known local portfolio/evidence artifacts so internal dogfood readiness is not blocked by intentionally local output files from a separate thread.

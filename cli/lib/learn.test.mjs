@@ -3374,6 +3374,86 @@ test("learningSignalRegistry includes sibling learning eval checkpoints outside 
   assert.equal(payload.evals.count, 1);
   assert.equal(payload.evals.files[0].file, evalFile);
   assert.equal(payload.evals.files[0].kind, "learning-eval");
+  assert.equal(payload.evals.templates, 1);
+  const replayAction = payload.agentDevelopment.actions.find((item) => item.id === "agent-eval-template-replay");
+  assert.ok(replayAction);
+  assert.deepEqual(replayAction.commandArgs, [
+    "design-ai",
+    "learn",
+    "--eval",
+    "--from-file",
+    evalFile,
+    "--file",
+    filePath,
+    "--strict",
+    "--json",
+    "--out",
+    path.join(profileDir, "learning-eval-report.json"),
+  ]);
+  assert.equal(replayAction.evidence.templateFile, evalFile);
+  assert.equal(replayAction.evidence.evalReportFile, path.join(profileDir, "learning-eval-report.json"));
+}));
+
+test("learningSignalRegistry treats sibling learning eval reports as executed evidence for templates", () => withTempDir((dir) => {
+  const signalDir = path.join(dir, "signals");
+  const profileDir = path.join(dir, "profile");
+  mkdirSync(signalDir, { recursive: true });
+  mkdirSync(profileDir, { recursive: true });
+  const filePath = path.join(profileDir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalFile = path.join(profileDir, "learning-eval.json");
+  const evalReportFile = path.join(profileDir, "learning-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-11T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "test",
+        createdAt: "2026-06-11T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  const evalTemplate = buildLearningEvalTemplate({
+    filePath,
+    query: "focus behavior",
+    now: new Date("2026-06-11T00:00:02.000Z"),
+  });
+  writeFileSync(evalFile, JSON.stringify(evalTemplate), "utf8");
+  writeFileSync(evalReportFile, JSON.stringify(learningEvalReport({
+    filePath,
+    evalText: JSON.stringify(evalTemplate),
+    source: evalFile,
+    now: new Date("2026-06-11T00:00:03.000Z"),
+  })), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: signalDir,
+    root: signalDir,
+    now: new Date("2026-06-11T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: signalDir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: null,
+      learningEval: { freshness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.evals.count, 2);
+  assert.equal(payload.evals.rawTemplates, 1);
+  assert.equal(payload.evals.templates, 0);
+  assert.equal(payload.evals.reports, 1);
+  assert.equal(payload.evals.passed, 1);
+  assert.equal(payload.evals.files.some((item) => item.file === evalReportFile && item.shape === "report"), true);
+  assert.equal(payload.recommendations.some((item) => /templates rather than executed reports/.test(item.text)), false);
+  assert.equal(payload.agentDevelopment.actions.some((item) => item.id === "agent-eval-template-replay"), false);
 }));
 
 test("agentBacklogReport extracts a focused local agent development backlog", () => {
