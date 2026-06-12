@@ -5721,6 +5721,7 @@ def assert_agent_backlog_report_json(
     ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
     operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
+    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
@@ -5743,6 +5744,14 @@ def assert_agent_backlog_report_json(
         and execution_queue.get("commandManifestCount", 0) >= 1
         and isinstance(execution_queue.get("nextCommandArgs"), list)
         and len(execution_queue.get("nextCommandArgs")) >= 2
+        and isinstance(next_command_selection, dict)
+        and next_command_selection.get("strategy") == "first-command-in-safety-ordered-queue"
+        and next_command_selection.get("actionId") == execution_queue.get("nextActionId")
+        and isinstance(next_command_selection.get("safetyOrder"), list)
+        and next_command_selection.get("safetyOrder") == ["read-only", "writes-local-file", "mutates-local-state"]
+        and isinstance(next_command_selection.get("matchesPlanNextAction"), bool)
+        and isinstance(next_command_selection.get("reason"), str)
+        and bool(next_command_selection.get("reason"))
         and isinstance(operator_runbook, dict)
         and operator_runbook.get("version") == 1
         and operator_runbook.get("stageCount") == 4
@@ -10110,6 +10119,18 @@ def run_self_test() -> None:
                     "nextCommand": "design-ai learn --propose-skills --json",
                     "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                     "nextCommandRunPolicy": "preview-only",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-safety-ordered-queue",
+                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                        "actionId": "agent-skill-proposal-preview",
+                        "rank": 1,
+                        "safetyLevel": "read-only",
+                        "runPolicy": "preview-only",
+                        "planNextActionId": "agent-skill-proposal-preview",
+                        "planNextActionRank": 1,
+                        "matchesPlanNextAction": True,
+                        "reason": "Selected the ranked next action because it is first in the safety-ordered queue.",
+                    },
                     "commandEffectSummary": {
                         "totalCommands": 1,
                         "writesLocalFileCount": 0,

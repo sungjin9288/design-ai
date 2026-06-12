@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 454 — Agent Backlog Next Command Selection Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now explains how the recommended queue command was selected. This makes the difference between the ranked action-plan next step and the safety-ordered execution queue explicit for local automation.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandSelection` with the selection strategy, safety order, selected action metadata, ranked plan-next metadata, and a human-readable reason.
+- Clarified Markdown reports with a recommended next-command selection line and whether the selected command matches the ranked next action.
+- Strengthened unit tests and package-smoke assertions so queue consumers can rely on the selection metadata.
+
+### Impact
+- Local AI/agent automation can distinguish priority ranking from safe execution ordering before running or prompting an operator for the next command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 453 — Agent Backlog Queue Next Command Args (unreleased)
 
 `design-ai learn --agent-backlog` execution queue now exposes `nextCommandArgs` beside the existing `nextCommand` and `nextCommandRunPolicy` fields. This gives local automation a structured args array for the safest queued next action, not only for the operator runbook next command.

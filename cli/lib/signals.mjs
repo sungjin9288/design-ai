@@ -713,6 +713,28 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     commandEffectReview,
   });
   const nextCommandItem = ordered.find((item) => item.command) || null;
+  const rankedNextStep = steps[0] || null;
+  const nextCommandMatchesRankedStep = Boolean(
+    nextCommandItem?.actionId
+    && rankedNextStep?.actionId
+    && nextCommandItem.actionId === rankedNextStep.actionId,
+  );
+  const nextCommandSelection = {
+    strategy: "first-command-in-safety-ordered-queue",
+    safetyOrder: ["read-only", "writes-local-file", "mutates-local-state"],
+    actionId: nextCommandItem?.actionId || "",
+    rank: nextCommandItem?.rank ?? null,
+    safetyLevel: nextCommandItem?.safetyLevel || "",
+    runPolicy: nextCommandItem?.runPolicy || "",
+    planNextActionId: rankedNextStep?.actionId || "",
+    planNextActionRank: rankedNextStep?.rank ?? null,
+    matchesPlanNextAction: nextCommandMatchesRankedStep,
+    reason: nextCommandItem
+      ? nextCommandMatchesRankedStep
+        ? "Selected the ranked next action because it is first in the safety-ordered queue."
+        : "Selected the first command in the safety-ordered queue before higher-risk ranked actions."
+      : "No command-bearing backlog action is available.",
+  };
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -723,6 +745,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     nextCommand: nextCommandItem?.command || "",
     nextCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
     nextCommandRunPolicy: nextCommandItem?.runPolicy || "",
+    nextCommandSelection,
     commandEffectSummary,
     commandEffectReview,
     operatorRunbook,
@@ -1337,6 +1360,15 @@ export function renderAgentBacklogReport(payload, {
     }
     if (executionQueue.nextActionId) lines.push(`- Recommended next action: ${executionQueue.nextActionId}`);
     if (executionQueue.nextCommandRunPolicy) lines.push(`- Recommended next command policy: ${executionQueue.nextCommandRunPolicy}`);
+    const nextCommandSelection = executionQueue.nextCommandSelection && typeof executionQueue.nextCommandSelection === "object"
+      ? executionQueue.nextCommandSelection
+      : null;
+    if (nextCommandSelection) {
+      lines.push(`- Recommended next command selection: ${nextCommandSelection.strategy || "unknown"} (${nextCommandSelection.reason || "no reason provided"})`);
+      if (nextCommandSelection.planNextActionId) {
+        lines.push(`- Ranked next action: ${nextCommandSelection.planNextActionId}; matches recommended command: ${nextCommandSelection.matchesPlanNextAction ? "yes" : "no"}`);
+      }
+    }
     if (executionQueue.nextCommand) {
       lines.push("");
       lines.push("Recommended next command:");
