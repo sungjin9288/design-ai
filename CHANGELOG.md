@@ -92,6 +92,7 @@ Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only l
 - `design-ai site --next-actions [--json]` now also folds read-only MCP probe readiness into the operator checklist, exposes `mcpProbeStatus`, `counts.probeGaps`, and probe follow-up commands, and ranks invalid GitHub/Figma/Browser/deploy references before target-repo handoff.
 
 ### Fixed
+- Agent backlog next-command alignment now reports optional refresh-only no-command states with an explicit empty-queue reason instead of saying no operator runbook command exists.
 - Agent backlog operator runbooks now mark refresh-only no-command states as optional instead of required, keeping `operatorRunbook`, `commandEffectReview`, and `operatorHandoff` semantics aligned when the focused backlog is complete.
 - Agent backlog operator handoff JSON now marks `no-command` pass states as `ready: true`, `hasCommand: false`, `complete: true`, and `requiresRefresh: false`, so local automation can distinguish a cleared backlog from a blocked handoff.
 - Agent backlog unit tests now derive human/report count assertions from the generated JSON payload and tolerate environment-dependent workspace readiness actions while preserving ranking, target metadata, and mutation-review coverage.

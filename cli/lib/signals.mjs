@@ -786,6 +786,12 @@ function buildAgentBacklogNextCommandAlignment({
     reason = "Operator runbook starts with a before-stage gate before the safety-ordered queue command.";
   } else if (operatorCommand && queueCommand) {
     reason = "Operator runbook and safety-ordered queue selected different first commands.";
+  } else if (operatorCommand) {
+    reason = operatorStage === "refresh"
+      ? "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty."
+      : "Operator runbook exposes a command while the safety-ordered execution queue is empty.";
+  } else if (queueCommand) {
+    reason = "Safety-ordered execution queue exposes a command while the operator runbook has no command.";
   }
   return {
     strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",

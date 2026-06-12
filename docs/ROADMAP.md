@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 474 — Agent Backlog Optional Refresh Alignment Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains optional refresh-only no-command states consistently in `nextCommandAlignment.reason`.
+
+### Changed
+- Added an explicit alignment reason for cases where the operator runbook exposes only an optional refresh command while the safety-ordered execution queue is empty.
+- Preserved the existing queue and runbook command fields so automation can keep reading the optional refresh command without treating it as runnable backlog work.
+- Extended the no-command regression test to verify both JSON and Markdown alignment wording.
+
+### Impact
+- Local AI/agent automation no longer receives a contradictory "no operator runbook command" reason when `operatorRunbook.nextCommand` contains the optional refresh command.
+- Completed no-command backlog states remain non-mutating and do not require refresh before being treated as complete.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this alignment reason contract is committed.
+
 ## Phase 473 — Agent Backlog Optional Refresh Runbook Alignment (unreleased)
 
 `design-ai learn --agent-backlog` now keeps no-command completion semantics aligned across the operator handoff, command-effect review, and operator runbook sections.

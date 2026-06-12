@@ -3916,11 +3916,16 @@ test("agentBacklogReport marks no-command pass state as complete without require
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 0);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "refresh");
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, false);
+  assert.equal(
+    payload.actionPlan.executionQueue.nextCommandAlignment.reason,
+    "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty.",
+  );
 
   const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
   assert.match(markdown, /No agent development backlog actions emitted./);
   assert.match(markdown, /Command effect gate phases: refresh \(0\/1 required\)/);
   assert.match(markdown, /Operator runbook: 4 stage\(s\), 1 command\(s\), 0 required/);
+  assert.match(markdown, /Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty/);
   assert.match(markdown, /Operator handoff state: no-command; ready yes; can run without review no; refresh optional/);
   assert.match(markdown, /Focused agent backlog is clear; no handoff command is required/);
 });
