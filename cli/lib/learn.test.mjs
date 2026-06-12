@@ -3898,6 +3898,10 @@ test("agentBacklogReport marks no-command pass state as complete without require
     summary: "Focused agent backlog is clear; no handoff command is required.",
   });
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "none");
+  assert.equal(
+    payload.actionPlan.executionQueue.operatorHandoff.reason,
+    "No handoff command is required; optional refresh command remains available as status metadata.",
+  );
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.command, "");
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.commandArgs, []);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandRequired, false);
@@ -3926,6 +3930,7 @@ test("agentBacklogReport marks no-command pass state as complete without require
   assert.match(markdown, /Command effect gate phases: refresh \(0\/1 required\)/);
   assert.match(markdown, /Operator runbook: 4 stage\(s\), 1 command\(s\), 0 required/);
   assert.match(markdown, /Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty/);
+  assert.match(markdown, /No handoff command is required; optional refresh command remains available as status metadata/);
   assert.match(markdown, /Operator handoff state: no-command; ready yes; can run without review no; refresh optional/);
   assert.match(markdown, /Focused agent backlog is clear; no handoff command is required/);
 });

@@ -847,7 +847,9 @@ function buildAgentBacklogOperatorHandoff({
     ? operatorRunbook?.reviewLevel || "unknown"
     : requiresOperatorReviewForHandoff ? operatorRunbook?.reviewLevel || "unknown" : "clear";
   let decision = "none";
-  let reason = "No operator or queue command is available for handoff.";
+  let reason = refreshCommandItem?.command
+    ? "No handoff command is required; optional refresh command remains available as status metadata."
+    : "No operator or queue command is available for handoff.";
   if (nextQueueActionBlockedByGate) {
     decision = "run-operator-gate";
     reason = "Run the operator gate before executing the safety-ordered queue command.";

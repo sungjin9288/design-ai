@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 475 — Agent Backlog Optional Refresh Handoff Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains no-command operator handoff states without implying that optional refresh metadata is an executable handoff command.
+
+### Changed
+- Updated `operatorHandoff.reason` for no-command states with an available optional refresh command.
+- Kept `operatorHandoff.command` empty and `operatorHandoff.refreshCommandRequired: false`, preserving the completed backlog contract.
+- Extended no-command regression coverage for JSON and Markdown handoff reason output.
+
+### Impact
+- Local AI/agent automation can distinguish "no handoff command is required" from "refresh metadata is available."
+- Optional refresh remains useful for re-checking status without becoming required work.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this handoff reason contract is committed.
+
 ## Phase 474 — Agent Backlog Optional Refresh Alignment Reason (unreleased)
 
 `design-ai learn --agent-backlog` now explains optional refresh-only no-command states consistently in `nextCommandAlignment.reason`.
