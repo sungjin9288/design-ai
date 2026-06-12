@@ -750,18 +750,24 @@ function buildAgentBacklogOperatorHandoff({
     : Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [];
   const isGate = Boolean(hasOperatorCommand && phase && phase !== "execute");
   const nextQueueActionBlockedByGate = Boolean(isGate && hasQueueCommand);
+  let decision = "none";
   let reason = "No operator or queue command is available for handoff.";
   if (nextQueueActionBlockedByGate) {
+    decision = "run-operator-gate";
     reason = "Run the operator gate before executing the safety-ordered queue command.";
   } else if (nextCommandAlignment?.matchesQueueNextCommand) {
+    decision = "run-shared-command";
     reason = "Run the shared operator and queue command next.";
   } else if (hasOperatorCommand) {
+    decision = isGate ? "run-operator-gate" : "run-operator-command";
     reason = "Run the operator runbook command next.";
   } else if (hasQueueCommand) {
+    decision = "run-queue-command";
     reason = "Run the safety-ordered queue command next.";
   }
   return {
     version: 1,
+    decision,
     source,
     phase,
     label: hasOperatorCommand ? operatorRunbook.nextCommandLabel || "" : nextCommandItem?.actionId || "",
@@ -1509,7 +1515,8 @@ export function renderAgentBacklogReport(payload, {
       : null;
     if (operatorHandoff) {
       const phase = operatorHandoff.phase ? `${operatorHandoff.phase} ` : "";
-      lines.push(`- Operator handoff: ${phase}${operatorHandoff.source || "unknown"} (${operatorHandoff.reason || "no reason provided"})`);
+      const decision = operatorHandoff.decision ? `${operatorHandoff.decision}; ` : "";
+      lines.push(`- Operator handoff: ${phase}${operatorHandoff.source || "unknown"} (${decision}${operatorHandoff.reason || "no reason provided"})`);
     }
     if (executionQueue.nextCommand) {
       lines.push("");

@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 458 — Agent Backlog Operator Handoff Decision Enum (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now exposes an explicit `decision` enum. This lets local automation branch on the next safe action without parsing `reason` prose or recomputing handoff state from gate and queue fields.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff.decision` with deterministic values: `run-operator-gate`, `run-shared-command`, `run-operator-command`, `run-queue-command`, and `none`.
+- Clarified Markdown reports by including the handoff decision next to the operator handoff reason.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the decision enum.
+
+### Impact
+- Local AI/agent automation can branch directly on one enum before deciding whether to present a gate command, shared command, operator-only command, or queue fallback command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 457 — Agent Backlog Operator Handoff Decision Metadata (unreleased)
 
 `design-ai learn --agent-backlog` execution queue now includes a single operator handoff decision. This lets local automation consume the next command to present or run without rebuilding that decision from the safety queue, operator runbook, and alignment metadata.

@@ -5769,6 +5769,7 @@ def assert_agent_backlog_report_json(
         and bool(next_command_alignment.get("reason"))
         and isinstance(operator_handoff, dict)
         and operator_handoff.get("version") == 1
+        and operator_handoff.get("decision") in {"run-operator-gate", "run-shared-command", "run-operator-command", "run-queue-command", "none"}
         and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
         and operator_handoff.get("phase") == operator_runbook.get("nextStage")
         and operator_handoff.get("command") == operator_runbook.get("nextCommand")
@@ -10188,6 +10189,7 @@ def run_self_test() -> None:
                     },
                     "operatorHandoff": {
                         "version": 1,
+                        "decision": "run-shared-command",
                         "source": "operator-runbook",
                         "phase": "execute",
                         "label": "Run agent-skill-proposal-preview",

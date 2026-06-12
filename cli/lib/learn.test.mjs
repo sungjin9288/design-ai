@@ -3439,6 +3439,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   });
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
     version: 1,
+    decision: "run-shared-command",
     source: "operator-runbook",
     phase: "execute",
     label: "Run agent-skill-proposal-preview",
@@ -3711,6 +3712,7 @@ test("agentBacklogReport classifies action plan command safety", () => {
   });
   assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
     version: 1,
+    decision: "run-operator-gate",
     source: "operator-runbook",
     phase: "before",
     label: "Confirm clean workspace before execution",
@@ -3952,6 +3954,7 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.operatorRunsBeforeQueueCommand, true);
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "run-operator-gate");
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.nextQueueActionBlockedByGate, true);
 });
 
