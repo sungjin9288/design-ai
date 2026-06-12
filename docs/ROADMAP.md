@@ -1,5 +1,22 @@
 # Roadmap
 
+## Phase 484 — Agent Backlog Readiness Release Metadata Guard (unreleased)
+
+Release metadata now protects the release-facing docs wording for focused agent backlog readiness smoke coverage.
+
+### Changed
+- Added release metadata phrase coverage for packed-tarball `design-ai learn --agent-backlog` readiness summaries.
+- Required release policy docs to retain check-capture optional-gap semantics next to the focused backlog smoke guidance.
+- Added a release metadata self-test drift fixture that fails when README drops the agent-backlog readiness smoke phrase.
+
+### Impact
+- Release-facing docs cannot silently keep generic agent backlog smoke wording while dropping the readiness summary contract added in Phase 482 and package-smoke-verified in Phase 483.
+- Internal AI/agent development handoffs keep one documented packaged output contract for required gates and optional evidence gaps.
+
+### Verification
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+
 ## Phase 483 — Agent Backlog Readiness Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now protects the focused agent backlog readiness pass-through added in Phase 482.
