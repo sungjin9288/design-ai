@@ -748,6 +748,12 @@ function buildAgentBacklogOperatorHandoff({
   const commandArgs = hasOperatorCommand
     ? Array.isArray(operatorRunbook?.nextCommandArgs) ? operatorRunbook.nextCommandArgs : []
     : Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [];
+  const refreshStage = Array.isArray(operatorRunbook?.stages)
+    ? operatorRunbook.stages.find((stage) => stage && stage.phase === "refresh")
+    : null;
+  const refreshCommandItem = Array.isArray(refreshStage?.commands)
+    ? refreshStage.commands.find((item) => item && item.command) || null
+    : null;
   const isGate = Boolean(hasOperatorCommand && phase && phase !== "execute");
   const nextQueueActionBlockedByGate = Boolean(isGate && hasQueueCommand);
   let decision = "none";
@@ -782,6 +788,10 @@ function buildAgentBacklogOperatorHandoff({
     nextQueueCommand: nextCommandItem?.command || "",
     nextQueueCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
     nextQueueActionBlockedByGate,
+    refreshCommand: refreshCommandItem?.command || "",
+    refreshCommandArgs: Array.isArray(refreshCommandItem?.commandArgs) ? refreshCommandItem.commandArgs : [],
+    refreshCommandLabel: refreshCommandItem?.label || "",
+    refreshCommandRequired: Boolean(refreshCommandItem?.required),
     reviewLevel: operatorRunbook?.reviewLevel || "unknown",
     requiresOperatorReview: Boolean(operatorRunbook?.requiresOperatorReview),
     reason,
@@ -1517,6 +1527,9 @@ export function renderAgentBacklogReport(payload, {
       const phase = operatorHandoff.phase ? `${operatorHandoff.phase} ` : "";
       const decision = operatorHandoff.decision ? `${operatorHandoff.decision}; ` : "";
       lines.push(`- Operator handoff: ${phase}${operatorHandoff.source || "unknown"} (${decision}${operatorHandoff.reason || "no reason provided"})`);
+      if (operatorHandoff.refreshCommand) {
+        lines.push(`- Operator handoff refresh: ${operatorHandoff.refreshCommand}`);
+      }
     }
     if (executionQueue.nextCommand) {
       lines.push("");

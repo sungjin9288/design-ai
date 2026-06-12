@@ -5780,6 +5780,11 @@ def assert_agent_backlog_report_json(
         and operator_handoff.get("nextQueueActionId") == execution_queue.get("nextActionId")
         and operator_handoff.get("nextQueueCommand") == execution_queue.get("nextCommand")
         and isinstance(operator_handoff.get("nextQueueActionBlockedByGate"), bool)
+        and isinstance(operator_handoff.get("refreshCommand"), str)
+        and bool(operator_handoff.get("refreshCommand"))
+        and isinstance(operator_handoff.get("refreshCommandArgs"), list)
+        and len(operator_handoff.get("refreshCommandArgs")) >= 2
+        and isinstance(operator_handoff.get("refreshCommandRequired"), bool)
         and isinstance(operator_handoff.get("requiresOperatorReview"), bool)
         and isinstance(operator_handoff.get("reason"), str)
         and bool(operator_handoff.get("reason"))
@@ -10204,6 +10209,10 @@ def run_self_test() -> None:
                         "nextQueueCommand": "design-ai learn --propose-skills --json",
                         "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                         "nextQueueActionBlockedByGate": False,
+                        "refreshCommand": "design-ai learn --agent-backlog --strict --json",
+                        "refreshCommandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+                        "refreshCommandLabel": "Refresh focused agent backlog after review",
+                        "refreshCommandRequired": True,
                         "reviewLevel": "clear",
                         "requiresOperatorReview": False,
                         "reason": "Run the shared operator and queue command next.",

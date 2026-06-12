@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 459 — Agent Backlog Operator Handoff Refresh Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now exposes the refresh command that should be run after the selected handoff command. This lets local automation re-check focused backlog state without traversing the full operator runbook stage list.
+
+### Changed
+- Added `refreshCommand`, `refreshCommandArgs`, `refreshCommandLabel`, and `refreshCommandRequired` to `actionPlan.executionQueue.operatorHandoff`.
+- Clarified Markdown reports with an operator handoff refresh line so humans can see the follow-up status check.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the refresh metadata contract.
+
+### Impact
+- Local AI/agent automation can execute or present the selected handoff command, then immediately know which deterministic read-only command refreshes the focused backlog state.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 458 — Agent Backlog Operator Handoff Decision Enum (unreleased)
 
 `design-ai learn --agent-backlog` operator handoff now exposes an explicit `decision` enum. This lets local automation branch on the next safe action without parsing `reason` prose or recomputing handoff state from gate and queue fields.

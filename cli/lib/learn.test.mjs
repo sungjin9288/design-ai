@@ -3454,6 +3454,10 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     nextQueueCommand: "design-ai learn --propose-skills --json",
     nextQueueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
     nextQueueActionBlockedByGate: false,
+    refreshCommand: "design-ai learn --agent-backlog --strict --json",
+    refreshCommandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+    refreshCommandLabel: "Refresh focused agent backlog after review",
+    refreshCommandRequired: true,
     reviewLevel: "clear",
     requiresOperatorReview: false,
     reason: "Run the shared operator and queue command next.",
@@ -3586,6 +3590,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
   assert.match(markdown, /Operator\/queue next command alignment: same/);
   assert.match(markdown, /Operator handoff: execute operator-runbook/);
+  assert.match(markdown, /Operator handoff refresh: design-ai learn --agent-backlog --strict --json/);
   assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Queue order:/);
   assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
@@ -3727,6 +3732,10 @@ test("agentBacklogReport classifies action plan command safety", () => {
     nextQueueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
     nextQueueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
     nextQueueActionBlockedByGate: true,
+    refreshCommand: "design-ai learn --agent-backlog --strict --json",
+    refreshCommandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+    refreshCommandLabel: "Refresh focused agent backlog after review",
+    refreshCommandRequired: true,
     reviewLevel: "mutation-review",
     requiresOperatorReview: true,
     reason: "Run the operator gate before executing the safety-ordered queue command.",
@@ -3955,6 +3964,7 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "run-operator-gate");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandArgs, ["design-ai", "learn", "--agent-backlog", "--strict", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.nextQueueActionBlockedByGate, true);
 });
 
