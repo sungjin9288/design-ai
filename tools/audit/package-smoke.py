@@ -6008,6 +6008,12 @@ def assert_agent_backlog_report_json(
         cmd=cmd,
         message="learn agent backlog JSON should keep read-only local privacy boundaries",
     )
+    assert_agent_backlog_readiness_json(
+        payload,
+        expect_check_capture_gap=False,
+        context=context,
+        cmd=cmd,
+    )
 
 
 EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON = (
@@ -6164,6 +6170,71 @@ def assert_agent_backlog_no_command_json(
         cmd=cmd,
         message="no-command learn agent backlog JSON should keep local read-only privacy boundaries",
     )
+    assert_agent_backlog_readiness_json(
+        payload,
+        expect_check_capture_gap=True,
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_agent_backlog_readiness_json(
+    payload: dict,
+    *,
+    expect_check_capture_gap: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    readiness = payload.get("readiness")
+    checks = readiness.get("checks") if isinstance(readiness, dict) else None
+    check_by_id = {
+        item.get("id"): item
+        for item in checks
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    } if isinstance(checks, list) else {}
+    check_capture = check_by_id.get("check-capture")
+    agent_development = check_by_id.get("agent-development")
+    optional_gaps = readiness.get("optionalGaps") if isinstance(readiness, dict) else None
+    blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
+    require_package_smoke(
+        isinstance(readiness, dict)
+        and readiness.get("version") == 1
+        and readiness.get("status") == payload.get("signalStatus")
+        and isinstance(readiness.get("summary"), str)
+        and bool(readiness.get("summary"))
+        and isinstance(readiness.get("requiredReady"), bool)
+        and isinstance(readiness.get("requiredPassCount"), int)
+        and isinstance(readiness.get("requiredCount"), int)
+        and readiness.get("requiredCount", 0) >= 1
+        and isinstance(readiness.get("blockingCount"), int)
+        and isinstance(readiness.get("optionalGapCount"), int)
+        and isinstance(blocking_checks, list)
+        and isinstance(optional_gaps, list)
+        and isinstance(checks, list)
+        and len(checks) >= 2
+        and isinstance(agent_development, dict)
+        and agent_development.get("required") is True
+        and isinstance(agent_development.get("summary"), str)
+        and isinstance(check_capture, dict)
+        and check_capture.get("required") is False
+        and isinstance(check_capture.get("summary"), str)
+        and (
+            (
+                expect_check_capture_gap
+                and check_capture.get("status") == "info"
+                and "check-capture" in optional_gaps
+                and readiness.get("optionalGapCount", 0) >= 1
+            )
+            or (
+                not expect_check_capture_gap
+                and check_capture.get("status") == "pass"
+                and "check-capture" not in optional_gaps
+            )
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include signal readiness summary",
+    )
 
 
 def assert_agent_backlog_report_human(
@@ -6219,6 +6290,14 @@ def assert_agent_backlog_report_markdown(
         f"- Learning file: {profile_path}",
         f"- Usage file: {usage_path}",
         "## Summary",
+        "## Signal Readiness",
+        "- Required ready:",
+        "- Required checks:",
+        "- Blocking checks:",
+        "- Optional gaps:",
+        "Readiness checks:",
+        "check-capture [optional]",
+        "agent-development [required]",
         "## Backlog Actions",
         "design-ai learn --propose-skills",
         "## Action Plan",
@@ -10726,6 +10805,68 @@ def run_self_test() -> None:
                     "generatedFromLocalSignals": True,
                 },
             },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required and optional local learning signal surfaces are complete.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 0,
+                "blockingChecks": [],
+                "optionalGaps": [],
+                "checks": [
+                    {
+                        "id": "learning-profile",
+                        "label": "Learning profile",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                        "evidence": {"entries": 3},
+                    },
+                    {
+                        "id": "usage-sidecar",
+                        "label": "Usage sidecar",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                        "evidence": {"events": 2},
+                    },
+                    {
+                        "id": "eval-signals",
+                        "label": "Eval signals",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                        "evidence": {"files": 1},
+                    },
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Profile includes 1 check-capture learning entry.",
+                        "evidence": {"entries": 1},
+                    },
+                    {
+                        "id": "workspace-readiness",
+                        "label": "Workspace readiness",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                        "evidence": {"nextActionCount": 0},
+                    },
+                    {
+                        "id": "agent-development",
+                        "label": "Agent development backlog",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                        "evidence": {"actions": 1},
+                    },
+                ],
+            },
             "commands": {
                 "signalsJson": "design-ai learn --signals --from-file . --json",
                 "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
@@ -10746,6 +10887,19 @@ def run_self_test() -> None:
             context=context,
             cmd=learn_agent_backlog_cmd,
             require_status_pass=True,
+        )
+        missing_readiness_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        missing_readiness_payload.pop("readiness", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(missing_readiness_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary",
+            scope="package smoke",
         )
         no_command_agent_backlog_payload = {
             "version": 1,
@@ -10943,6 +11097,68 @@ def run_self_test() -> None:
                     "generatedFromLocalSignals": True,
                 },
             },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required local learning signal surfaces are ready; optional evidence gaps remain.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 1,
+                "blockingChecks": [],
+                "optionalGaps": ["check-capture"],
+                "checks": [
+                    {
+                        "id": "learning-profile",
+                        "label": "Learning profile",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                        "evidence": {"entries": 3},
+                    },
+                    {
+                        "id": "usage-sidecar",
+                        "label": "Usage sidecar",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                        "evidence": {"events": 2},
+                    },
+                    {
+                        "id": "eval-signals",
+                        "label": "Eval signals",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                        "evidence": {"files": 1},
+                    },
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "info",
+                        "required": False,
+                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                        "evidence": {"entries": 0},
+                    },
+                    {
+                        "id": "workspace-readiness",
+                        "label": "Workspace readiness",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                        "evidence": {"nextActionCount": 0},
+                    },
+                    {
+                        "id": "agent-development",
+                        "label": "Agent development backlog",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+                        "evidence": {"actions": 0},
+                    },
+                ],
+            },
             "commands": {
                 "signalsJson": "design-ai learn --signals --from-file . --json",
                 "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
@@ -11017,6 +11233,14 @@ def run_self_test() -> None:
                 f"- Learning file: {learning_profile_path}",
                 f"- Usage file: {learning_usage_path}",
                 "## Summary",
+                "## Signal Readiness",
+                "- Required ready: yes",
+                "- Required checks: 4/4",
+                "- Blocking checks: 0",
+                "- Optional gaps: 0",
+                "Readiness checks:",
+                "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+                "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
                 "## Backlog Actions",
                 "design-ai learn --propose-skills --json",
                 "## Action Plan",
@@ -11162,6 +11386,14 @@ def run_self_test() -> None:
                     f"- Learning file: {learning_profile_path}",
                     f"- Usage file: {learning_usage_path}",
                     "## Summary",
+                    "## Signal Readiness",
+                    "- Required ready: yes",
+                    "- Required checks: 4/4",
+                    "- Blocking checks: 0",
+                    "- Optional gaps: 0",
+                    "Readiness checks:",
+                    "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+                    "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
                     "## Backlog Actions",
                     "design-ai learn --propose-skills --json",
                     "## Action Plan",

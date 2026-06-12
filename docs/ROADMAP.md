@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 483 — Agent Backlog Readiness Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now protects the focused agent backlog readiness pass-through added in Phase 482.
+
+### Changed
+- Added package smoke JSON assertions for `design-ai learn --agent-backlog` readiness summaries.
+- Verified normal backlog payloads keep `check-capture` as a passing optional check when real check captures exist.
+- Verified no-command backlog payloads keep missing check captures as optional evidence gaps, not blocking actions.
+- Added Markdown smoke assertions for the `Signal Readiness` section in agent backlog reports.
+- Added package smoke self-test drift coverage for missing backlog readiness payloads.
+
+### Impact
+- Installed-bin and one-shot package paths are now guarded against dropping the focused backlog readiness summary.
+- Local AI/agent automation can rely on packaged `learn --agent-backlog` output to carry readiness metadata without a second `learn --signals` parse.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Keep the broader release checks in the next full release evidence pass after adjacent learning/agent changes settle.
+
 ## Phase 482 — Agent Backlog Readiness Pass-Through (unreleased)
 
 Focused `design-ai learn --agent-backlog` reports now include the same signal readiness summary exposed by `learn --signals`.

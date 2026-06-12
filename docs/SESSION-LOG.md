@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 483 (unreleased)** — Added packed-tarball package smoke assertions and self-test drift coverage for focused `design-ai learn --agent-backlog` readiness summaries in JSON and Markdown reports.
 - **Phase 482 (unreleased)** — Passed learning signal readiness summaries through focused `design-ai learn --agent-backlog` JSON and Markdown reports so local AI/agent handoffs expose required gates and optional evidence gaps in one payload.
 - **Phase 481 (unreleased)** — Added structured `design-ai learn --signals` readiness summaries in JSON and Markdown reports, separating required AI/agent gates from optional evidence gaps such as missing check-capture entries.
 - **Phase 480 (unreleased)** — Recorded full `npm run release:check` evidence after the optional refresh-only agent backlog closeout, confirming unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still pass together.
