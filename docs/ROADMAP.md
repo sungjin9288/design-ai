@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 481 — Learning Signal Readiness Summary (unreleased)
+
+`design-ai learn --signals` now exposes a structured readiness summary that separates required local AI/agent gates from optional evidence gaps.
+
+### Changed
+- Added a `readiness` object to learning signal registry JSON with required check counts, blocking check ids, optional gap ids, and per-check summaries.
+- Classified learning profile, eval signals, workspace readiness, and agent development backlog as required readiness checks.
+- Kept usage sidecar and check-capture evidence as optional checks so missing real `check:*` captures remain advisory instead of blocking pass-state development.
+- Added the same readiness summary to `design-ai learn --signals --report` Markdown output.
+
+### Impact
+- Local automation can determine whether agent learning evidence is gate-ready without re-deriving status from recommendations or nested payloads.
+- Operators can see that missing check-capture entries are optional evidence gaps while real workspace or eval warnings remain required review items.
+- The change stays local and read-only; it does not mutate `learning.json`, usage sidecars, skill files, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+
+### What's still ahead
+- Run broader repo gates after the tracked changes are finalized, then decide whether the next product surface should be Website Console expansion, VS Code integration, Figma integration, or deeper agent SDK work.
+
 ## Phase 480 — Agent Backlog Full Release Gate Evidence Closeout (unreleased)
 
 The optional refresh-only agent backlog closeout now has full `npm run release:check` evidence recorded after the post-commit release evidence and focused backlog clear-state checks.

@@ -51,6 +51,7 @@ import {
   agentBacklogReport,
   learningSignalRegistry,
   renderAgentBacklogReport,
+  renderLearningSignalReport,
   summarizeSignalEvalFile,
 } from "./signals.mjs";
 import {
@@ -3525,12 +3526,109 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
 
   assert.equal(payload.status, "pass");
   assert.equal(payload.checkCapture.count, 0);
+  assert.deepEqual(payload.readiness, {
+    version: 1,
+    status: "pass",
+    summary: "Required local learning signal surfaces are ready; optional evidence gaps remain.",
+    requiredPassCount: 4,
+    requiredCount: 4,
+    requiredReady: true,
+    blockingCount: 0,
+    optionalGapCount: 1,
+    blockingChecks: [],
+    optionalGaps: ["check-capture"],
+    checks: [
+      {
+        id: "learning-profile",
+        label: "Learning profile",
+        status: "pass",
+        required: true,
+        summary: "Profile has 1 entries with 0 audit failure(s) and 0 warning(s).",
+        evidence: {
+          exists: true,
+          entries: 1,
+          failures: 0,
+          warnings: 0,
+        },
+      },
+      {
+        id: "usage-sidecar",
+        label: "Usage sidecar",
+        status: "pass",
+        required: false,
+        summary: "Usage sidecar has 1 event(s) and 0 stale selected id(s).",
+        evidence: {
+          exists: true,
+          events: 1,
+          staleSelectedEntryCount: 0,
+        },
+      },
+      {
+        id: "eval-signals",
+        label: "Eval signals",
+        status: "pass",
+        required: true,
+        summary: "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+        evidence: {
+          files: 1,
+          reports: 1,
+          templates: 0,
+          failed: 0,
+          warned: 0,
+        },
+      },
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "info",
+        required: false,
+        summary: "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+        evidence: {
+          entries: 0,
+          categoryCounts: {},
+        },
+      },
+      {
+        id: "workspace-readiness",
+        label: "Workspace readiness",
+        status: "pass",
+        required: true,
+        summary: "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+        evidence: {
+          fail: 0,
+          warn: 0,
+          nextActionCount: 0,
+        },
+      },
+      {
+        id: "agent-development",
+        label: "Agent development backlog",
+        status: "pass",
+        required: true,
+        summary: "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+        evidence: {
+          actions: 0,
+          p0: 0,
+          p1: 0,
+          p2: 0,
+          p3: 0,
+        },
+      },
+    ],
+  });
   assert.equal(payload.agentDevelopment.status, "pass");
   assert.equal(payload.agentDevelopment.actionCount, 0);
   assert.equal(payload.agentDevelopment.p3Count, 0);
   assert.deepEqual(payload.agentDevelopment.actions, []);
   assert.equal(payload.recommendations.some((item) => /No check learning capture entries/.test(item.text)), true);
   assert.equal(payload.recommendations.some((item) => item.level === "warn" || item.level === "fail"), false);
+
+  const markdown = renderLearningSignalReport(payload, { generatedAt: new Date("2026-06-12T00:00:04.000Z") });
+  assert.match(markdown, /## Readiness Summary/);
+  assert.match(markdown, /Required local learning signal surfaces are ready; optional evidence gaps remain/);
+  assert.match(markdown, /Required checks: 4\/4/);
+  assert.match(markdown, /Optional gaps: 1/);
+  assert.match(markdown, /check-capture \[optional\] info: No check-capture entries are present/);
 }));
 
 test("agentBacklogReport extracts a focused local agent development backlog", () => {

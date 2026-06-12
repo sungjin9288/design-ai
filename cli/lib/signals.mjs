@@ -344,6 +344,169 @@ function buildRecommendations({ audit, usage, evals, checkCapture, workspace }) 
   return recommendations;
 }
 
+function signalCheck({
+  id,
+  label,
+  status,
+  required,
+  summary,
+  evidence = {},
+}) {
+  return {
+    id,
+    label,
+    status,
+    required: Boolean(required),
+    summary,
+    evidence,
+  };
+}
+
+function buildLearningSignalReadiness({
+  audit,
+  usage,
+  evals,
+  checkCapture,
+  workspace,
+  agentDevelopment,
+  status,
+}) {
+  const profileStatus = !audit.exists
+    ? "missing"
+    : audit.summary.failures > 0
+      ? "fail"
+      : audit.summary.warnings > 0
+        ? "warn"
+        : "pass";
+  const usageStatus = usage.staleSelectedEntryCount > 0
+    ? "warn"
+    : usage.exists && usage.eventCount > 0
+      ? "pass"
+      : "info";
+  const evalStatus = evals.failed > 0
+    ? "fail"
+    : evals.warned > 0 || evals.templates > 0 || evals.count === 0
+      ? "warn"
+      : "pass";
+  const checkCaptureStatus = checkCapture.count > 0 ? "pass" : "info";
+  const workspaceStatus = workspace.nextActionCounts.fail > 0
+    ? "fail"
+    : workspace.nextActionCounts.warn > 0
+      ? "warn"
+      : "pass";
+  const agentStatus = agentDevelopment.status || "unknown";
+  const checks = [
+    signalCheck({
+      id: "learning-profile",
+      label: "Learning profile",
+      status: profileStatus,
+      required: true,
+      summary: audit.exists
+        ? `Profile has ${audit.count} entries with ${audit.summary.failures} audit failure(s) and ${audit.summary.warnings} warning(s).`
+        : "Learning profile is missing.",
+      evidence: {
+        exists: Boolean(audit.exists),
+        entries: audit.count,
+        failures: audit.summary.failures,
+        warnings: audit.summary.warnings,
+      },
+    }),
+    signalCheck({
+      id: "usage-sidecar",
+      label: "Usage sidecar",
+      status: usageStatus,
+      required: false,
+      summary: usage.exists && usage.eventCount > 0
+        ? `Usage sidecar has ${usage.eventCount} event(s) and ${usage.staleSelectedEntryCount} stale selected id(s).`
+        : "Usage sidecar has no prompt/pack usage events yet.",
+      evidence: {
+        exists: Boolean(usage.exists),
+        events: usage.eventCount,
+        staleSelectedEntryCount: usage.staleSelectedEntryCount,
+      },
+    }),
+    signalCheck({
+      id: "eval-signals",
+      label: "Eval signals",
+      status: evalStatus,
+      required: true,
+      summary: evals.count > 0
+        ? `Eval signals include ${evals.reports} report(s), ${evals.templates} unresolved template(s), ${evals.failed} failed report(s), and ${evals.warned} warned report(s).`
+        : "No route, prompt, pack, or learning eval signal files were found.",
+      evidence: {
+        files: evals.count,
+        reports: evals.reports,
+        templates: evals.templates,
+        failed: evals.failed,
+        warned: evals.warned,
+      },
+    }),
+    signalCheck({
+      id: "check-capture",
+      label: "Check learning capture",
+      status: checkCaptureStatus,
+      required: false,
+      summary: checkCapture.count > 0
+        ? `Profile includes ${checkCapture.count} check-capture learning entr${checkCapture.count === 1 ? "y" : "ies"}.`
+        : "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+      evidence: {
+        entries: checkCapture.count,
+        categoryCounts: checkCapture.categoryCounts,
+      },
+    }),
+    signalCheck({
+      id: "workspace-readiness",
+      label: "Workspace readiness",
+      status: workspaceStatus,
+      required: true,
+      summary: `Workspace has ${workspace.nextActionCounts.fail || 0} fail action(s), ${workspace.nextActionCounts.warn || 0} warn action(s), and ${workspace.nextActionCount || 0} total next action(s).`,
+      evidence: {
+        fail: workspace.nextActionCounts.fail || 0,
+        warn: workspace.nextActionCounts.warn || 0,
+        nextActionCount: workspace.nextActionCount || 0,
+      },
+    }),
+    signalCheck({
+      id: "agent-development",
+      label: "Agent development backlog",
+      status: agentStatus,
+      required: true,
+      summary: `Agent backlog has ${agentDevelopment.actionCount || 0} action(s): ${agentDevelopment.p0Count || 0} P0, ${agentDevelopment.p1Count || 0} P1, ${agentDevelopment.p2Count || 0} P2, ${agentDevelopment.p3Count || 0} P3.`,
+      evidence: {
+        actions: agentDevelopment.actionCount || 0,
+        p0: agentDevelopment.p0Count || 0,
+        p1: agentDevelopment.p1Count || 0,
+        p2: agentDevelopment.p2Count || 0,
+        p3: agentDevelopment.p3Count || 0,
+      },
+    }),
+  ];
+  const requiredChecks = checks.filter((item) => item.required);
+  const optionalChecks = checks.filter((item) => !item.required);
+  const blockingChecks = requiredChecks.filter((item) => statusRank(item.status) >= statusRank("warn"));
+  const optionalGaps = optionalChecks.filter((item) => item.status !== "pass");
+  const requiredPassCount = requiredChecks.filter((item) => item.status === "pass").length;
+  const summary = blockingChecks.length === 0
+    ? optionalGaps.length === 0
+      ? "Required and optional local learning signal surfaces are complete."
+      : "Required local learning signal surfaces are ready; optional evidence gaps remain."
+    : "Required local learning signal surfaces need review before this can be used as a gate.";
+
+  return {
+    version: 1,
+    status,
+    summary,
+    requiredPassCount,
+    requiredCount: requiredChecks.length,
+    requiredReady: blockingChecks.length === 0,
+    blockingCount: blockingChecks.length,
+    optionalGapCount: optionalGaps.length,
+    blockingChecks: blockingChecks.map((item) => item.id),
+    optionalGaps: optionalGaps.map((item) => item.id),
+    checks,
+  };
+}
+
 function agentAction({
   id,
   priority,
@@ -1434,6 +1597,15 @@ export function learningSignalRegistry({
     workspace.nextActionCounts.warn > 0 ? "warn" : "",
     "pass",
   ]);
+  const readiness = buildLearningSignalReadiness({
+    audit,
+    usage,
+    evals: evalSummary,
+    checkCapture,
+    workspace,
+    agentDevelopment,
+    status,
+  });
 
   return {
     version: 1,
@@ -1466,6 +1638,7 @@ export function learningSignalRegistry({
     checkCapture,
     workspace,
     agentDevelopment,
+    readiness,
     recommendations,
     privacy: {
       mutatesProfile: false,
@@ -1887,6 +2060,7 @@ export function renderLearningSignalReport(payload, {
   const evals = payload.evals || {};
   const workspace = payload.workspace || {};
   const agentDevelopment = payload.agentDevelopment || {};
+  const readiness = payload.readiness || {};
   const lines = [
     "# Learning Signal Registry Report",
     "",
@@ -1894,6 +2068,27 @@ export function renderLearningSignalReport(payload, {
     listItem("Status", payload.status || "unknown"),
     listItem("Learning file", payload.file || ""),
     listItem("Signal source", payload.signalSource || ""),
+    "",
+    "## Readiness Summary",
+    "",
+    listItem("Status", readiness.status || payload.status || "unknown"),
+    listItem("Summary", readiness.summary || ""),
+    listItem("Required ready", yesNo(Boolean(readiness.requiredReady))),
+    listItem("Required checks", `${readiness.requiredPassCount ?? 0}/${readiness.requiredCount ?? 0}`),
+    listItem("Blocking checks", readiness.blockingCount ?? 0),
+    listItem("Optional gaps", readiness.optionalGapCount ?? 0),
+  ];
+
+  const readinessChecks = Array.isArray(readiness.checks) ? readiness.checks : [];
+  if (readinessChecks.length > 0) {
+    lines.push("", "Readiness checks:");
+    for (const check of readinessChecks) {
+      const required = check.required ? "required" : "optional";
+      lines.push(`- ${check.id || "unknown"} [${required}] ${check.status || "unknown"}: ${check.summary || ""}`);
+    }
+  }
+
+  lines.push(
     "",
     "## Learning Profile",
     "",
@@ -1924,7 +2119,7 @@ export function renderLearningSignalReport(payload, {
     listItem("Passed", evals.passed ?? 0),
     listItem("Warned", evals.warned ?? 0),
     listItem("Failed", evals.failed ?? 0),
-  ];
+  );
 
   const evalFiles = Array.isArray(evals.files) ? evals.files : [];
   if (evalFiles.length > 0) {
