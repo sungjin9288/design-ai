@@ -347,18 +347,25 @@ function classifyAgentBacklogCommand(command = "") {
   if (/\s--yes(?:\s|$)/.test(text)) detectedFlags.push("--yes");
   if (/\s--fix(?:\s|$)/.test(text)) detectedFlags.push("--fix");
   if (/\s--force(?:\s|$)/.test(text)) detectedFlags.push("--force");
+  if (/\s--with-learning(?:\s|$)/.test(text)) detectedFlags.push("--with-learning");
   const outputTargets = extractAgentBacklogFlagTargets(text, "--out");
   const profileTargets = [
     ...extractAgentBacklogFlagTargets(text, "--file"),
     ...extractAgentBacklogFlagTargets(text, "--learning-file"),
+    ...extractAgentBacklogEnvTargets(text, "DESIGN_AI_LEARNING_FILE"),
   ];
-  const usageTargets = extractAgentBacklogFlagTargets(text, "--usage-file");
-  const mutationFlags = detectedFlags.filter((flag) => flag === "--yes" || flag === "--fix" || flag === "--force");
+  const usageTargets = [
+    ...extractAgentBacklogFlagTargets(text, "--usage-file"),
+    ...extractAgentBacklogEnvTargets(text, "DESIGN_AI_LEARNING_USAGE_FILE"),
+  ];
+  const mutationFlags = detectedFlags.filter((flag) => flag === "--yes" || flag === "--fix" || flag === "--force" || flag === "--with-learning");
   const writesLocalFiles = detectedFlags.includes("--out");
-  const mutatesLocalState = detectedFlags.some((flag) => flag === "--yes" || flag === "--fix");
+  const mutatesLocalState = detectedFlags.some((flag) => flag === "--yes" || flag === "--fix" || flag === "--with-learning");
   const level = mutatesLocalState ? "mutates-local-state" : writesLocalFiles ? "writes-local-file" : "read-only";
   const reason = mutatesLocalState
-    ? "Command includes an apply/fix flag that can mutate local state."
+    ? detectedFlags.includes("--with-learning")
+      ? "Command records local learning usage sidecar metadata."
+      : "Command includes an apply/fix flag that can mutate local state."
     : writesLocalFiles
       ? "Command writes an explicit local output file."
       : "Command is preview/report oriented and has no detected mutation flags.";
@@ -385,6 +392,20 @@ function extractAgentBacklogFlagTargets(command = "", flag = "") {
   while (match) {
     const value = match[1] || match[2] || match[3] || "";
     if (value) targets.push({ flag, value });
+    match = pattern.exec(command);
+  }
+  return targets;
+}
+
+function extractAgentBacklogEnvTargets(command = "", name = "") {
+  if (!name) return [];
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(?:^|\\s)${escaped}=(?:"([^"]+)"|'([^']+)'|(\\S+))`, "g");
+  const targets = [];
+  let match = pattern.exec(command);
+  while (match) {
+    const value = match[1] || match[2] || match[3] || "";
+    if (value) targets.push({ flag: name, value });
     match = pattern.exec(command);
   }
   return targets;
@@ -1114,7 +1135,16 @@ function buildAgentDevelopmentBacklog({
       category: "usage-signals",
       title: "Record prompt or pack usage with learning enabled.",
       rationale: "Usage sidecar events show which learned entries actually affect agent prompts without storing raw brief text.",
-      ...commandSpec(["design-ai", "prompt", "audit a design artifact", "--with-learning", "--json"]),
+      ...commandSpec([
+        "env",
+        `DESIGN_AI_LEARNING_FILE=${filePath}`,
+        `DESIGN_AI_LEARNING_USAGE_FILE=${usageFile}`,
+        "design-ai",
+        "prompt",
+        "audit a design artifact",
+        "--with-learning",
+        "--json",
+      ]),
       evidence: {
         usageExists: Boolean(usage.exists),
         eventCount: usage.eventCount || 0,

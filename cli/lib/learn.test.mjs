@@ -4271,14 +4271,40 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
   assert.equal(payload.actionPlan.stepCount, payload.actions.length);
   assert.equal(payload.actionPlan.steps.some((item) => item.actionId === "agent-skill-proposal-preview"), true);
-  assert.equal(payload.actionPlan.safetySummary.readOnly, payload.actions.length);
+  const usageRecordStep = payload.actionPlan.steps.find((item) => item.actionId === "agent-learning-usage-record");
+  assert.ok(usageRecordStep);
+  assert.equal(usageRecordStep.command, `env DESIGN_AI_LEARNING_FILE=${filePath} DESIGN_AI_LEARNING_USAGE_FILE=${usageFile} design-ai prompt 'audit a design artifact' --with-learning --json`);
+  assert.deepEqual(usageRecordStep.commandArgs, [
+    "env",
+    `DESIGN_AI_LEARNING_FILE=${filePath}`,
+    `DESIGN_AI_LEARNING_USAGE_FILE=${usageFile}`,
+    "design-ai",
+    "prompt",
+    "audit a design artifact",
+    "--with-learning",
+    "--json",
+  ]);
+  assert.equal(usageRecordStep.commandSafety.level, "mutates-local-state");
+  assert.equal(usageRecordStep.commandSafety.mutatesLocalState, true);
+  assert.deepEqual(usageRecordStep.commandSafety.detectedFlags, ["--with-learning"]);
+  assert.deepEqual(usageRecordStep.commandSafety.mutationFlags, ["--with-learning"]);
+  assert.deepEqual(usageRecordStep.commandSafety.profileTargets, [{ flag: "DESIGN_AI_LEARNING_FILE", value: filePath }]);
+  assert.deepEqual(usageRecordStep.commandSafety.usageTargets, [{ flag: "DESIGN_AI_LEARNING_USAGE_FILE", value: usageFile }]);
+  assert.equal(usageRecordStep.requiresReviewBeforeMutation, true);
+  assert.equal(payload.actionPlan.safetySummary.readOnly, payload.actions.length - 1);
   assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 0);
-  assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 0);
-  assert.equal(payload.actionPlan.executionQueue.previewCount, payload.actions.length);
+  assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 1);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, payload.actions.length - 1);
   assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 0);
-  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 1);
   assert.equal(payload.actionPlan.executionQueue.orderedCount, payload.actions.length);
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, payload.actions.length);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutatesLocalStateCount, 1);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--with-learning"]);
+  assert.equal(
+    payload.actionPlan.executionQueue.mutationReview.find((item) => item.actionId === "agent-learning-usage-record")?.runPolicy,
+    "review-before-mutation",
+  );
   assert.equal(payload.actionPlan.executionQueue.nextActionId, payload.actionPlan.executionQueue.ordered[0].actionId);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
   assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog .*--strict --json/);
@@ -4299,15 +4325,18 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(humanOutput, /Agent development backlog/);
   assert.match(humanOutput, /Backlog actions:/);
   assert.match(humanOutput, /Action plan:/);
-  assert.match(humanOutput, /safety summary: 3 read-only, 0 writes-local-file, 0 mutates-local-state/);
-  assert.match(humanOutput, /execution queue: 3 preview, 0 file-write review, 0 mutation review/);
+  assert.match(humanOutput, /safety summary: 2 read-only, 0 writes-local-file, 1 mutates-local-state/);
+  assert.match(humanOutput, /execution queue: 2 preview, 0 file-write review, 1 mutation review/);
   assert.match(humanOutput, /next action: /);
   assert.match(humanOutput, /next command: /);
   assert.match(humanOutput, /next command policy: preview-only/);
   assert.match(humanOutput, /queue order: /);
   assert.match(humanOutput, /command manifest: /);
   assert.match(humanOutput, /safety: read-only/);
+  assert.match(humanOutput, /safety: mutates-local-state/);
   assert.match(humanOutput, /requires mutation review: no/);
+  assert.match(humanOutput, /requires mutation review: yes/);
+  assert.match(humanOutput, /DESIGN_AI_LEARNING_USAGE_FILE=/);
   assert.match(humanOutput, /learn --propose-skills/);
   assert.match(humanOutput, /Privacy: agent backlog is read-only/);
   assert.equal(readFileSync(filePath, "utf8"), before);
@@ -4325,17 +4354,22 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(reportOutput, /# Agent Development Backlog Report/);
   assert.match(reportOutput, /## Action Plan/);
   assert.match(reportOutput, /Safety summary:/);
-  assert.match(reportOutput, /Read-only: 3/);
+  assert.match(reportOutput, /Read-only: 2/);
+  assert.match(reportOutput, /Mutates local state: 1/);
   assert.match(reportOutput, /Execution queue:/);
-  assert.match(reportOutput, /Preview\/read-only commands: 3/);
+  assert.match(reportOutput, /Preview\/read-only commands: 2/);
+  assert.match(reportOutput, /Local mutation review commands: 1/);
   assert.match(reportOutput, /Ordered commands: 3/);
   assert.match(reportOutput, /Command manifest entries: 3/);
+  assert.match(reportOutput, /agent-learning-usage-record - review-before-mutation/);
+  assert.match(reportOutput, /flags --with-learning/);
   assert.match(reportOutput, /Recommended next action:/);
   assert.match(reportOutput, /Recommended next command policy: preview-only/);
   assert.match(reportOutput, /Recommended next command:/);
   assert.match(reportOutput, /Queue order:/);
   assert.match(reportOutput, /Command manifest:/);
   assert.match(reportOutput, /Command safety: read-only/);
+  assert.match(reportOutput, /Command safety: mutates-local-state/);
   assert.match(reportOutput, /## Follow-Up Commands/);
   assert.match(reportOutput, /This report is read-only evidence/);
   assert.equal(readFileSync(filePath, "utf8"), before);
@@ -4359,6 +4393,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(readFileSync(reportFile, "utf8"), /Safety summary:/);
   assert.match(readFileSync(reportFile, "utf8"), /Execution queue:/);
   assert.match(readFileSync(reportFile, "utf8"), /Command safety: read-only/);
+  assert.match(readFileSync(reportFile, "utf8"), /Command safety: mutates-local-state/);
   assert.equal(readFileSync(filePath, "utf8"), before);
 }));
 

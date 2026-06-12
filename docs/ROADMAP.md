@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 466 — Agent Backlog With-Learning Usage Mutation Classification (unreleased)
+
+`design-ai learn --agent-backlog` now treats follow-up commands that run `prompt` or `pack` with `--with-learning` as local-state mutations because they record privacy-preserving usage sidecar events.
+
+### Changed
+- Classified `--with-learning` backlog commands as `mutates-local-state` with `review-before-mutation` run policy.
+- Added env target extraction for `DESIGN_AI_LEARNING_FILE` and `DESIGN_AI_LEARNING_USAGE_FILE` so profile and usage sidecar targets appear in `commandSafety`, `commandEffects`, and aggregate effect summaries.
+- Changed the generated `agent-learning-usage-record` command to set both learning env vars before running `design-ai prompt 'audit a design artifact' --with-learning --json`.
+- Added regression coverage for the usage-record command string, structured `commandArgs`, env target metadata, mutation flags, and human/Markdown output.
+
+### Impact
+- Local automation no longer mistakes usage sidecar recording for a preview-only command.
+- Operators can review the exact learning profile and usage sidecar path before running the usage-record handoff.
+- The focused backlog report itself remains read-only; only the emitted follow-up command is classified as mutation-capable.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue dogfooding the usage/eval/check-capture loop until the focused backlog can clear without manual target-path interpretation.
+
 ## Phase 465 — Agent Backlog Learning Eval Sibling Checkpoint Alignment (unreleased)
 
 `design-ai learn --agent-backlog` now aligns its learning eval checkpoint bootstrap with `design-ai workspace`: generated learning eval checkpoints target the active learning profile's sibling `learning-eval.json` path instead of a repo-relative output file.
