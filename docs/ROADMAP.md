@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 480 — Agent Backlog Full Release Gate Evidence Closeout (unreleased)
+
+The optional refresh-only agent backlog closeout now has full `npm run release:check` evidence recorded after the post-commit release evidence and focused backlog clear-state checks.
+
+### Changed
+- Recorded the full release gate result after the Phase 479 release evidence closeout.
+- Confirmed the release gate covered CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+- Confirmed packed-tarball smoke still exercises installed-bin and one-shot package execution paths after the optional refresh-only agent backlog no-command assertion landed.
+
+### Impact
+- The current branch has a fresh pre-push release baseline before the next product or AI/agent feature phase starts.
+- Local AI/agent development remains clear of required backlog actions, so the next step can be a deliberate scope choice instead of another backlog hardening pass.
+
+### Verified
+- `npm run release:check`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+
+### What's still ahead
+- Choose the next product surface intentionally: push/Real-CI, deeper AI learning architecture, Website Console expansion, VS Code surface, Figma integration, or agent SDK.
+
 ## Phase 479 — Agent Backlog Refresh-Only Release Evidence Closeout (unreleased)
 
 The optional refresh-only agent backlog package smoke work now has post-commit release evidence recorded alongside the focused backlog clear-state check.

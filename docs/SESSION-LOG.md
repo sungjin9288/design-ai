@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 480 (unreleased)** — Recorded full `npm run release:check` evidence after the optional refresh-only agent backlog closeout, confirming unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still pass together.
 - **Phase 479 (unreleased)** — Recorded post-commit release evidence for the optional refresh-only agent backlog package smoke assertion, including `release:self-test`, `package:check`, and focused backlog clear-state verification.
 - **Phase 478 (unreleased)** — Added packed-tarball smoke assertions for optional refresh-only agent backlog no-command JSON so installed-bin and one-shot paths verify the status-metadata runbook selection reason.
 - **Phase 477 (unreleased)** — Added release metadata guards for optional refresh-only agent backlog runbook selection semantics so release-facing docs keep no-command refresh output framed as status metadata, not executable handoff work.
