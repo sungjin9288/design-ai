@@ -356,6 +356,7 @@ function classifyAgentBacklogCommand(command = "") {
   ];
   const usageTargets = [
     ...extractAgentBacklogFlagTargets(text, "--usage-file"),
+    ...extractAgentBacklogFlagTargets(text, "--learning-usage"),
     ...extractAgentBacklogEnvTargets(text, "DESIGN_AI_LEARNING_USAGE_FILE"),
   ];
   const mutationFlags = detectedFlags.filter((flag) => flag === "--yes" || flag === "--fix" || flag === "--force" || flag === "--with-learning");

@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 467 — Agent Backlog Workspace Usage Target Classification (unreleased)
+
+`design-ai learn --agent-backlog` now classifies workspace readiness `--learning-usage` arguments as usage sidecar targets, matching the command's actual learning usage input contract.
+
+### Changed
+- Added `--learning-usage` to agent backlog usage target extraction.
+- Added regression coverage that verifies `agent-workspace-readiness-review` exposes `--learning-file` as a profile target and `--learning-usage` as a usage sidecar target.
+- Updated aggregate command effect assertions so workspace, skill proposal, and `--with-learning` usage-record sidecar targets are all visible in the execution queue summary.
+
+### Impact
+- Local operators and automation can see the usage sidecar path for workspace readiness commands without parsing shell strings.
+- The command remains read-only; this only fixes target metadata classification.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue aligning every agent backlog follow-up command with explicit target metadata before automating local learning/eval handoffs.
+
 ## Phase 466 — Agent Backlog With-Learning Usage Mutation Classification (unreleased)
 
 `design-ai learn --agent-backlog` now treats follow-up commands that run `prompt` or `pack` with `--with-learning` as local-state mutations because they record privacy-preserving usage sidecar events.

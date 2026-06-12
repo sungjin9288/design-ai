@@ -4271,6 +4271,10 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
   assert.equal(payload.actionPlan.stepCount, payload.actions.length);
   assert.equal(payload.actionPlan.steps.some((item) => item.actionId === "agent-skill-proposal-preview"), true);
+  const workspaceReadinessStep = payload.actionPlan.steps.find((item) => item.actionId === "agent-workspace-readiness-review");
+  assert.ok(workspaceReadinessStep);
+  assert.deepEqual(workspaceReadinessStep.commandSafety.profileTargets, [{ flag: "--learning-file", value: filePath }]);
+  assert.deepEqual(workspaceReadinessStep.commandSafety.usageTargets, [{ flag: "--learning-usage", value: usageFile }]);
   const usageRecordStep = payload.actionPlan.steps.find((item) => item.actionId === "agent-learning-usage-record");
   assert.ok(usageRecordStep);
   assert.equal(usageRecordStep.command, `env DESIGN_AI_LEARNING_FILE=${filePath} DESIGN_AI_LEARNING_USAGE_FILE=${usageFile} design-ai prompt 'audit a design artifact' --with-learning --json`);
@@ -4300,6 +4304,12 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.actionPlan.executionQueue.orderedCount, payload.actions.length);
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, payload.actions.length);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutatesLocalStateCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 3);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.usageTargets, [
+    { flag: "--learning-usage", value: usageFile },
+    { flag: "--usage-file", value: usageFile },
+    { flag: "DESIGN_AI_LEARNING_USAGE_FILE", value: usageFile },
+  ]);
   assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--with-learning"]);
   assert.equal(
     payload.actionPlan.executionQueue.mutationReview.find((item) => item.actionId === "agent-learning-usage-record")?.runPolicy,
@@ -4327,6 +4337,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.match(humanOutput, /Action plan:/);
   assert.match(humanOutput, /safety summary: 2 read-only, 0 writes-local-file, 1 mutates-local-state/);
   assert.match(humanOutput, /execution queue: 2 preview, 0 file-write review, 1 mutation review/);
+  assert.match(humanOutput, /command effects: 0 output, 3 profile, 3 usage, 1 mutation flags/);
   assert.match(humanOutput, /next action: /);
   assert.match(humanOutput, /next command: /);
   assert.match(humanOutput, /next command policy: preview-only/);
