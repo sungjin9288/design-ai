@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 479 — Agent Backlog Refresh-Only Release Evidence Closeout (unreleased)
+
+The optional refresh-only agent backlog package smoke work now has post-commit release evidence recorded alongside the focused backlog clear-state check.
+
+### Changed
+- Recorded release self-test and package contents verification after the packed-tarball no-command smoke assertion landed.
+- Confirmed the focused agent backlog still reports `actions: 0`, empty execution queue, no handoff command, and optional refresh-only status metadata after the Phase 478 commit.
+- Closed the Phase 478 follow-up item that asked for a post-commit focused backlog re-check.
+
+### Impact
+- Release evidence now covers both the new package smoke assertion and the broader release self-test/package contents gates.
+- Local AI/agent backlog automation remains clear after the guard changes, with no additional runtime work required.
+
+### Verified
+- `npm run release:self-test`
+- `npm run package:check`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+
+### What's still ahead
+- Continue with the next local AI/agent development surface once a new non-empty backlog action or product requirement appears.
+
 ## Phase 478 — Agent Backlog Refresh-Only Package Smoke Assertion (unreleased)
 
 Packed-tarball smoke now verifies the optional refresh-only `design-ai learn --agent-backlog --strict --json` no-command contract in installed-bin and one-shot `npm exec --package <tarball>` paths.
@@ -19,7 +41,7 @@ Packed-tarball smoke now verifies the optional refresh-only `design-ai learn --a
 - `npm run package:smoke`
 
 ### What's still ahead
-- Re-check focused agent backlog state after committing this package smoke assertion.
+- Closed by Phase 479 post-commit release evidence and focused backlog re-check.
 
 ## Phase 477 — Agent Backlog Refresh-Only Runbook Release Guard (unreleased)
 
