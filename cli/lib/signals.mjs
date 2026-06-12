@@ -688,6 +688,50 @@ function buildAgentBacklogOperatorRunbook({
   };
 }
 
+function buildAgentBacklogNextCommandAlignment({
+  operatorRunbook = {},
+  nextCommandItem = null,
+  rankedNextStep = null,
+} = {}) {
+  const operatorSelection = operatorRunbook?.nextCommandSelection && typeof operatorRunbook.nextCommandSelection === "object"
+    ? operatorRunbook.nextCommandSelection
+    : {};
+  const operatorCommand = operatorRunbook?.nextCommand || operatorSelection.command || "";
+  const operatorActionId = operatorSelection.actionId || "";
+  const operatorStage = operatorRunbook?.nextStage || operatorSelection.stage || "";
+  const queueCommand = nextCommandItem?.command || "";
+  const queueActionId = nextCommandItem?.actionId || "";
+  const rankedActionId = rankedNextStep?.actionId || "";
+  const matchesQueueNextCommand = Boolean(operatorCommand && queueCommand && operatorCommand === queueCommand);
+  const matchesQueueNextAction = Boolean(operatorActionId && queueActionId && operatorActionId === queueActionId);
+  const operatorRunsBeforeQueueCommand = Boolean(operatorCommand && queueCommand && !matchesQueueNextCommand && operatorStage === "before");
+  const queueMatchesRankedNextAction = Boolean(queueActionId && rankedActionId && queueActionId === rankedActionId);
+  let reason = "No operator runbook command or queue command is available.";
+  if (matchesQueueNextCommand) {
+    reason = "Operator runbook starts with the same command as the safety-ordered execution queue.";
+  } else if (operatorRunsBeforeQueueCommand) {
+    reason = "Operator runbook starts with a before-stage gate before the safety-ordered queue command.";
+  } else if (operatorCommand && queueCommand) {
+    reason = "Operator runbook and safety-ordered queue selected different first commands.";
+  }
+  return {
+    strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",
+    operatorStage,
+    operatorActionId,
+    operatorCommand,
+    operatorCommandArgs: Array.isArray(operatorRunbook?.nextCommandArgs) ? operatorRunbook.nextCommandArgs : [],
+    queueActionId,
+    queueCommand,
+    queueCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
+    rankedNextActionId: rankedActionId,
+    matchesQueueNextCommand,
+    matchesQueueNextAction,
+    operatorRunsBeforeQueueCommand,
+    queueMatchesRankedNextAction,
+    reason,
+  };
+}
+
 function buildAgentBacklogExecutionQueue(steps = []) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
@@ -723,14 +767,14 @@ function buildAgentBacklogExecutionQueue(steps = []) {
       commandEffects: item.commandEffects,
       requiresReviewBeforeMutation: item.requiresReviewBeforeMutation,
     }));
+  const nextCommandItem = ordered.find((item) => item.command) || null;
+  const rankedNextStep = steps[0] || null;
   const commandEffectSummary = summarizeAgentBacklogCommandEffectManifest(commandManifest);
   const commandEffectReview = buildAgentBacklogCommandEffectReview(commandEffectSummary);
   const operatorRunbook = buildAgentBacklogOperatorRunbook({
     commandManifest,
     commandEffectReview,
   });
-  const nextCommandItem = ordered.find((item) => item.command) || null;
-  const rankedNextStep = steps[0] || null;
   const nextCommandMatchesRankedStep = Boolean(
     nextCommandItem?.actionId
     && rankedNextStep?.actionId
@@ -752,6 +796,11 @@ function buildAgentBacklogExecutionQueue(steps = []) {
         : "Selected the first command in the safety-ordered queue before higher-risk ranked actions."
       : "No command-bearing backlog action is available.",
   };
+  const nextCommandAlignment = buildAgentBacklogNextCommandAlignment({
+    operatorRunbook,
+    nextCommandItem,
+    rankedNextStep,
+  });
   return {
     orderedCount: ordered.length,
     commandManifestCount: commandManifest.length,
@@ -763,6 +812,7 @@ function buildAgentBacklogExecutionQueue(steps = []) {
     nextCommandArgs: Array.isArray(nextCommandItem?.commandArgs) ? nextCommandItem.commandArgs : [],
     nextCommandRunPolicy: nextCommandItem?.runPolicy || "",
     nextCommandSelection,
+    nextCommandAlignment,
     commandEffectSummary,
     commandEffectReview,
     operatorRunbook,
@@ -1391,6 +1441,12 @@ export function renderAgentBacklogReport(payload, {
       if (nextCommandSelection.planNextActionId) {
         lines.push(`- Ranked next action: ${nextCommandSelection.planNextActionId}; matches recommended command: ${nextCommandSelection.matchesPlanNextAction ? "yes" : "no"}`);
       }
+    }
+    const nextCommandAlignment = executionQueue.nextCommandAlignment && typeof executionQueue.nextCommandAlignment === "object"
+      ? executionQueue.nextCommandAlignment
+      : null;
+    if (nextCommandAlignment) {
+      lines.push(`- Operator/queue next command alignment: ${nextCommandAlignment.matchesQueueNextCommand ? "same" : "different"} (${nextCommandAlignment.reason || "no reason provided"})`);
     }
     if (executionQueue.nextCommand) {
       lines.push("");

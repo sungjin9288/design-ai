@@ -5722,6 +5722,7 @@ def assert_agent_backlog_report_json(
     command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
     operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
     next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
+    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
     operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
@@ -5753,6 +5754,18 @@ def assert_agent_backlog_report_json(
         and isinstance(next_command_selection.get("matchesPlanNextAction"), bool)
         and isinstance(next_command_selection.get("reason"), str)
         and bool(next_command_selection.get("reason"))
+        and isinstance(next_command_alignment, dict)
+        and next_command_alignment.get("strategy") == "compare-operator-runbook-next-command-to-execution-queue-next-command"
+        and next_command_alignment.get("operatorStage") == operator_runbook.get("nextStage")
+        and next_command_alignment.get("operatorCommand") == operator_runbook.get("nextCommand")
+        and next_command_alignment.get("queueActionId") == execution_queue.get("nextActionId")
+        and next_command_alignment.get("queueCommand") == execution_queue.get("nextCommand")
+        and isinstance(next_command_alignment.get("matchesQueueNextCommand"), bool)
+        and isinstance(next_command_alignment.get("matchesQueueNextAction"), bool)
+        and isinstance(next_command_alignment.get("operatorRunsBeforeQueueCommand"), bool)
+        and isinstance(next_command_alignment.get("queueMatchesRankedNextAction"), bool)
+        and isinstance(next_command_alignment.get("reason"), str)
+        and bool(next_command_alignment.get("reason"))
         and isinstance(operator_runbook, dict)
         and operator_runbook.get("version") == 1
         and operator_runbook.get("stageCount") == 4
@@ -10140,6 +10153,22 @@ def run_self_test() -> None:
                         "planNextActionRank": 1,
                         "matchesPlanNextAction": True,
                         "reason": "Selected the ranked next action because it is first in the safety-ordered queue.",
+                    },
+                    "nextCommandAlignment": {
+                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                        "operatorStage": "execute",
+                        "operatorActionId": "agent-skill-proposal-preview",
+                        "operatorCommand": "design-ai learn --propose-skills --json",
+                        "operatorCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "queueActionId": "agent-skill-proposal-preview",
+                        "queueCommand": "design-ai learn --propose-skills --json",
+                        "queueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "rankedNextActionId": "agent-skill-proposal-preview",
+                        "matchesQueueNextCommand": True,
+                        "matchesQueueNextAction": True,
+                        "operatorRunsBeforeQueueCommand": False,
+                        "queueMatchesRankedNextAction": True,
+                        "reason": "Operator runbook starts with the same command as the safety-ordered execution queue.",
                     },
                     "commandEffectSummary": {
                         "totalCommands": 1,

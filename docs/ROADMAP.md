@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 456 — Agent Backlog Next Command Alignment Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now compares the operator runbook's first command with the safety-ordered queue command. This makes it explicit when both surfaces point to the same command and when the operator must run a before-stage gate first.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandAlignment` with operator command metadata, queue command metadata, ranked next-action metadata, match booleans, and a human-readable reason.
+- Clarified Markdown reports with an operator/queue next-command alignment line so humans can see whether the two handoff surfaces agree or intentionally differ.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the alignment contract.
+
+### Impact
+- Local AI/agent automation can avoid comparing command strings manually before deciding whether to run the queue command or a required operator gate.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 455 — Agent Backlog Operator Runbook Selection Metadata (unreleased)
 
 `design-ai learn --agent-backlog` operator runbook now explains how its next operator command was selected. This makes the runbook-level `nextCommand` stage order explicit, separate from the execution queue's safety-ordered recommended command.

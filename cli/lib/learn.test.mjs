@@ -3421,6 +3421,22 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     matchesPlanNextAction: true,
     reason: "Selected the ranked next action because it is first in the safety-ordered queue.",
   });
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandAlignment, {
+    strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",
+    operatorStage: "execute",
+    operatorActionId: "agent-skill-proposal-preview",
+    operatorCommand: "design-ai learn --propose-skills --json",
+    operatorCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    queueActionId: "agent-skill-proposal-preview",
+    queueCommand: "design-ai learn --propose-skills --json",
+    queueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    rankedNextActionId: "agent-skill-proposal-preview",
+    matchesQueueNextCommand: true,
+    matchesQueueNextAction: true,
+    operatorRunsBeforeQueueCommand: false,
+    queueMatchesRankedNextAction: true,
+    reason: "Operator runbook starts with the same command as the safety-ordered execution queue.",
+  });
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 1);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 0);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 0);
@@ -3547,6 +3563,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Recommended next command policy: preview-only/);
   assert.match(markdown, /Recommended next command selection: first-command-in-safety-ordered-queue/);
   assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
+  assert.match(markdown, /Operator\/queue next command alignment: same/);
   assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Queue order:/);
   assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
@@ -3654,6 +3671,22 @@ test("agentBacklogReport classifies action plan command safety", () => {
     planNextActionRank: 1,
     matchesPlanNextAction: false,
     reason: "Selected the first command in the safety-ordered queue before higher-risk ranked actions.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandAlignment, {
+    strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",
+    operatorStage: "before",
+    operatorActionId: "",
+    operatorCommand: "git status --short",
+    operatorCommandArgs: ["git", "status", "--short"],
+    queueActionId: "agent-learning-profile-init",
+    queueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
+    queueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+    rankedNextActionId: "agent-eval-checkpoint-generate",
+    matchesQueueNextCommand: false,
+    matchesQueueNextAction: false,
+    operatorRunsBeforeQueueCommand: true,
+    queueMatchesRankedNextAction: false,
+    reason: "Operator runbook starts with a before-stage gate before the safety-ordered queue command.",
   });
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 3);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 1);
@@ -3875,6 +3908,8 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.stage, "before");
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.commandArgs, ["git", "status", "--short"]);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.operatorRunsBeforeQueueCommand, true);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
 });
 
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
