@@ -569,6 +569,7 @@ function buildAgentBacklogCommandEffectReview(summary = {}, {
   const hasMutation = Number(summary.mutatesLocalStateCount || 0) > 0 || Number(summary.mutationFlagCount || 0) > 0;
   const hasFileWrite = Number(summary.writesLocalFileCount || 0) > 0 || Number(summary.outputTargetCount || 0) > 0;
   const hasProfileOrUsage = Number(summary.profileTargetCount || 0) > 0 || Number(summary.usageTargetCount || 0) > 0;
+  const hasCommand = Number(summary.totalCommands || 0) > 0;
   const checklist = [];
   if (hasMutation) {
     checklist.push("Review mutation flags and run in a clean workspace before applying.");
@@ -613,7 +614,7 @@ function buildAgentBacklogCommandEffectReview(summary = {}, {
     phase: "refresh",
     label: "Refresh focused agent backlog after review",
     ...commandSpec(refreshCommandArgs),
-    required: true,
+    required: hasCommand,
   });
   const gatePhaseSummary = summarizeAgentBacklogGateCommands(gateCommands);
   const gateRunbook = groupAgentBacklogGateCommands(gateCommands);

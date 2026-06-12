@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 473 (unreleased)** — Aligned focused agent backlog no-command completion across `operatorRunbook` and `commandEffectReview` by making refresh-only runbook commands optional when no command-bearing action exists.
 - **Phase 472 (unreleased)** — Marked focused agent backlog no-command handoff states as ready and complete, with explicit `hasCommand`/`complete` JSON fields and optional refresh semantics for local automation.
 - **Phase 471 (unreleased)** — Stabilized focused agent backlog regression tests so environment-dependent workspace readiness actions no longer break full `npm test` while still checking target metadata and ranking contracts.
 - **Phase 470 (unreleased)** — Removed the placeholder check-capture seed command from focused agent backlog actions so absent `check:*` captures remain advisory instead of becoming a mutation-capable next command.

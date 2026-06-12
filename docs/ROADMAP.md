@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 473 — Agent Backlog Optional Refresh Runbook Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now keeps no-command completion semantics aligned across the operator handoff, command-effect review, and operator runbook sections.
+
+### Changed
+- Marked refresh-only gate commands as optional when the focused backlog has no command-bearing actions.
+- Kept the refresh command visible as follow-up metadata while avoiding required runbook counts in completed no-command states.
+- Extended the no-command regression test to verify `commandEffectReview.gatePhaseSummary`, refresh runbook `required`, `operatorRunbook.requiredCommandCount`, and Markdown summary output.
+
+### Impact
+- Local automation can treat no-command backlog states as complete without receiving a contradictory required refresh from the operator runbook.
+- Command-bearing backlog states still require refresh after execution, preserving the existing review and verification flow.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this runbook alignment lands.
+
 ## Phase 472 — Agent Backlog No-Command Handoff Completion (unreleased)
 
 `design-ai learn --agent-backlog` now treats a pass-state backlog with no runnable actions as an explicit completed handoff state instead of a refresh-required non-ready state.
