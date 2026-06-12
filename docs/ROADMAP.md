@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 470 — Advisory Check-Capture Seed Backlog Cleanup (unreleased)
+
+`design-ai learn --agent-backlog` no longer emits a placeholder `design-ai check artifact.md --learn --yes` command when no check-capture learning entries exist.
+
+### Changed
+- Kept the no-check-capture guidance as an info-level signal registry recommendation.
+- Removed the synthetic `agent-check-capture-seed` action from focused backlog output when `checkCapture.count` is zero.
+- Preserved `agent-skill-proposal-preview` when real `check:*` learning entries exist, so repeated warn/fail captures still become preview-only skill proposal handoffs.
+- Added regression coverage proving that a clean registry with passing usage/eval/workspace gates has zero backlog actions even when no check captures exist.
+
+### Impact
+- A pass-state focused backlog no longer exposes a mutation-capable placeholder command as the next action.
+- Operators still see that `check --learn --yes` is useful only when there are real warning/failure artifacts to capture.
+- Local learning profile mutation remains explicit and tied to actual check results.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue strengthening real check-capture proposal review once repeated production warn/fail captures exist.
+
 ## Phase 469 — Agent Eval Replay Report Alignment (unreleased)
 
 `design-ai learn --agent-backlog` now turns template-only learning eval checkpoints into concrete report-generation handoffs and treats sibling executed reports as the evidence that clears the template replay warning.

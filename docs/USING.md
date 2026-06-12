@@ -66,6 +66,8 @@ On first-run workspaces where the selected learning profile does not exist yet, 
 
 Operator handoff gates are scoped to the current next queue command. If the next command is a read-only preview, `operatorHandoff.state.status` can be `ready` even when later queued commands still require file-write or mutation review; use `nextQueueCommandRequiresGate` and `operatorGateAppliesToNextQueueAction` to explain that distinction.
 
+Missing check-capture entries stay advisory. The focused backlog does not emit a placeholder `check artifact.md --learn --yes` action until real `check:*` learning entries exist; capture actual warn/fail artifacts first, then use the generated skill proposal handoff.
+
 ## Skill evolution proposals
 
 Use skill evolution proposals after repeated `check --learn --yes` captures point at the same route or category. The report turns those local signals into candidate skill edits, but it remains preview-only.

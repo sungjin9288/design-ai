@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 470 (unreleased)** — Removed the placeholder check-capture seed command from focused agent backlog actions so absent `check:*` captures remain advisory instead of becoming a mutation-capable next command.
 - **Phase 469 (unreleased)** — Aligned focused agent backlog eval replay with executed `learning-eval-report.json` evidence so template-only checkpoints emit a concrete `learn --eval --out` handoff and stop warning once the sibling report exists.
 - **Phase 468 (unreleased)** — Split `design-ai workspace` git status into active changes and ignored untracked local portfolio/evidence artifacts so separate-thread output files do not block dogfood readiness.
 - **Phase 467 (unreleased)** — Classified focused agent backlog workspace `--learning-usage` arguments as usage sidecar targets so readiness handoffs expose both profile and usage paths.

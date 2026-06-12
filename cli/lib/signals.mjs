@@ -1277,18 +1277,6 @@ function buildAgentDevelopmentBacklog({
         categoryCounts: checkCapture.categoryCounts,
       },
     }));
-  } else {
-    actions.push(agentAction({
-      id: "agent-check-capture-seed",
-      priority: "p3",
-      category: "skill-evolution",
-      title: "Seed check-capture learning from real warn/fail artifacts when appropriate.",
-      rationale: "Skill evolution proposals need explicit local check captures before they can suggest durable instruction deltas.",
-      ...commandSpec(["design-ai", "check", "artifact.md", "--learn", "--yes"]),
-      evidence: {
-        checkCaptureCount: 0,
-      },
-    }));
   }
 
   if (workspace.nextActionCounts.fail > 0 || workspace.nextActionCounts.warn > 0) {
@@ -1319,7 +1307,6 @@ function buildAgentDevelopmentBacklog({
     "agent-eval-template-replay": 7,
     "agent-learning-usage-record": 8,
     "agent-skill-proposal-preview": 9,
-    "agent-check-capture-seed": 10,
   };
   const sortedActions = actions
     .sort((a, b) => (

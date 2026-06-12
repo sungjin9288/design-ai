@@ -3456,6 +3456,83 @@ test("learningSignalRegistry treats sibling learning eval reports as executed ev
   assert.equal(payload.agentDevelopment.actions.some((item) => item.id === "agent-eval-template-replay"), false);
 }));
 
+test("learningSignalRegistry keeps missing check captures as advisory when all gates pass", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalReportFile = path.join(dir, "learning-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-12T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "feedback:keep",
+        createdAt: "2026-06-12T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  const learningContext = buildLearningContext({
+    filePath,
+    query: "visible focus behavior",
+    limit: 1,
+  });
+  recordLearningUsage({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    usageFile,
+    now: new Date("2026-06-12T00:00:02.000Z"),
+  });
+  writeFileSync(evalReportFile, JSON.stringify({
+    evalVersion: 1,
+    generatedAt: "2026-06-12T00:00:03.000Z",
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "learning-selection",
+        status: "pass",
+        expectedSelectedIds: ["learn-a11y"],
+        selectedEntryIds: ["learn-a11y"],
+        issues: [],
+      },
+    ],
+  }), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-12T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: dir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: { readiness: { status: "pass" } },
+      learningEval: { freshness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.checkCapture.count, 0);
+  assert.equal(payload.agentDevelopment.status, "pass");
+  assert.equal(payload.agentDevelopment.actionCount, 0);
+  assert.equal(payload.agentDevelopment.p3Count, 0);
+  assert.deepEqual(payload.agentDevelopment.actions, []);
+  assert.equal(payload.recommendations.some((item) => /No check learning capture entries/.test(item.text)), true);
+  assert.equal(payload.recommendations.some((item) => item.level === "warn" || item.level === "fail"), false);
+}));
+
 test("agentBacklogReport extracts a focused local agent development backlog", () => {
   const now = new Date("2026-06-02T00:00:00.000Z");
   const profilePath = "/tmp/design-ai-learning.json";
