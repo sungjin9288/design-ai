@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 477 — Agent Backlog Refresh-Only Runbook Release Guard (unreleased)
+
+Release metadata now protects the optional refresh-only `design-ai learn --agent-backlog` runbook selection semantics in release-facing policy docs.
+
+### Changed
+- Added a release metadata phrase guard for optional refresh-only runbook selection reasons.
+- Updated README, Korean README, Distribution docs, and Release checklist guidance to state that no-command refresh output is status metadata, not an executable handoff command.
+- Added self-test drift coverage for the new release-facing docs phrase.
+
+### Impact
+- Future release doc edits cannot silently drop the no-command refresh-only runbook semantics.
+- Packed-tarball smoke guidance remains aligned with the JSON contract stabilized in Phase 476.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Re-check focused agent backlog status after this release metadata guard is committed.
+
 ## Phase 476 — Agent Backlog Optional Refresh Runbook Selection Reason (unreleased)
 
 `design-ai learn --agent-backlog` now explains optional refresh-only operator runbook selection without implying that a backlog handoff command was selected.
