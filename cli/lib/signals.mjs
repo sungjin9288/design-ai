@@ -1756,6 +1756,7 @@ export function agentBacklogReport({
     },
     actions,
     actionPlan: buildAgentBacklogActionPlan({ actions, commands, privacy }),
+    readiness: registry.readiness || null,
     commands,
     recommendations: registry.recommendations || [],
     privacy,
@@ -1790,10 +1791,32 @@ export function renderAgentBacklogReport(payload, {
     listItem("Eval signals", counts.evalSignals ?? 0),
     listItem("Check captures", counts.checkCaptures ?? 0),
     listItem("Workspace next actions", counts.workspaceNextActions ?? 0),
-    "",
-    "## Backlog Actions",
-    "",
   ];
+
+  const readiness = payload.readiness && typeof payload.readiness === "object" ? payload.readiness : null;
+  if (readiness) {
+    lines.push(
+      "",
+      "## Signal Readiness",
+      "",
+      listItem("Status", readiness.status || payload.signalStatus || "unknown"),
+      listItem("Summary", readiness.summary || ""),
+      listItem("Required ready", yesNo(Boolean(readiness.requiredReady))),
+      listItem("Required checks", `${readiness.requiredPassCount ?? 0}/${readiness.requiredCount ?? 0}`),
+      listItem("Blocking checks", readiness.blockingCount ?? 0),
+      listItem("Optional gaps", readiness.optionalGapCount ?? 0),
+    );
+    const checks = Array.isArray(readiness.checks) ? readiness.checks : [];
+    if (checks.length > 0) {
+      lines.push("", "Readiness checks:");
+      for (const check of checks) {
+        const required = check.required ? "required" : "optional";
+        lines.push(`- ${check.id || "unknown"} [${required}] ${check.status || "unknown"}: ${check.summary || ""}`);
+      }
+    }
+  }
+
+  lines.push("", "## Backlog Actions", "");
 
   if (actions.length === 0) {
     lines.push("No agent development backlog actions emitted.");

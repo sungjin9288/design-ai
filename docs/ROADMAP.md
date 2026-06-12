@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 482 — Agent Backlog Readiness Pass-Through (unreleased)
+
+Focused `design-ai learn --agent-backlog` reports now include the same signal readiness summary exposed by `learn --signals`.
+
+### Changed
+- Passed the signal registry `readiness` object through to agent backlog JSON output.
+- Added a `Signal Readiness` section to agent backlog Markdown reports.
+- Preserved the existing agent backlog action plan, safety queue, handoff, and strict status behavior.
+
+### Impact
+- Local AI/agent automation can consume one focused backlog payload and still see required readiness gates, blocking check ids, optional evidence gaps, and per-check summaries.
+- Operators reviewing `learn --agent-backlog --report` can distinguish required blockers from advisory check-capture gaps before running any follow-up command.
+- The change remains read-only and does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --report`
+
+### What's still ahead
+- Run broader repo gates after finalizing the tracked changes, then re-check clean-tree focused backlog state.
+
 ## Phase 481 — Learning Signal Readiness Summary (unreleased)
 
 `design-ai learn --signals` now exposes a structured readiness summary that separates required local AI/agent gates from optional evidence gaps.

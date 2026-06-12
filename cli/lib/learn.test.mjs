@@ -3667,6 +3667,36 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
       evals: { count: 1 },
       checkCapture: { count: 2 },
       workspace: { nextActionCount: 0 },
+      readiness: {
+        version: 1,
+        status: "pass",
+        summary: "Required and optional local learning signal surfaces are complete.",
+        requiredPassCount: 4,
+        requiredCount: 4,
+        requiredReady: true,
+        blockingCount: 0,
+        optionalGapCount: 0,
+        blockingChecks: [],
+        optionalGaps: [],
+        checks: [
+          {
+            id: "learning-profile",
+            label: "Learning profile",
+            status: "pass",
+            required: true,
+            summary: "Profile has 2 entries with 0 audit failure(s) and 0 warning(s).",
+            evidence: { entries: 2 },
+          },
+          {
+            id: "check-capture",
+            label: "Check learning capture",
+            status: "pass",
+            required: false,
+            summary: "Profile includes 2 check-capture learning entries.",
+            evidence: { entries: 2 },
+          },
+        ],
+      },
       agentDevelopment: {
         status: "pass",
         actionCount: 1,
@@ -3709,6 +3739,36 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.counts.usageEvents, 1);
   assert.equal(payload.counts.evalSignals, 1);
   assert.equal(payload.counts.checkCaptures, 2);
+  assert.deepEqual(payload.readiness, {
+    version: 1,
+    status: "pass",
+    summary: "Required and optional local learning signal surfaces are complete.",
+    requiredPassCount: 4,
+    requiredCount: 4,
+    requiredReady: true,
+    blockingCount: 0,
+    optionalGapCount: 0,
+    blockingChecks: [],
+    optionalGaps: [],
+    checks: [
+      {
+        id: "learning-profile",
+        label: "Learning profile",
+        status: "pass",
+        required: true,
+        summary: "Profile has 2 entries with 0 audit failure(s) and 0 warning(s).",
+        evidence: { entries: 2 },
+      },
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "pass",
+        required: false,
+        summary: "Profile includes 2 check-capture learning entries.",
+        evidence: { entries: 2 },
+      },
+    ],
+  });
   assert.equal(payload.actions[0].id, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.version, 1);
   assert.equal(payload.actionPlan.stepCount, 1);
@@ -3893,6 +3953,10 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
 
   const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
   assert.match(markdown, /# Agent Development Backlog Report/);
+  assert.match(markdown, /## Signal Readiness/);
+  assert.match(markdown, /Required and optional local learning signal surfaces are complete/);
+  assert.match(markdown, /Required checks: 4\/4/);
+  assert.match(markdown, /check-capture \[optional\] pass: Profile includes 2 check-capture learning entries/);
   assert.match(markdown, /## Backlog Actions/);
   assert.match(markdown, /design-ai learn --propose-skills --json/);
   assert.match(markdown, /## Action Plan/);
