@@ -3332,6 +3332,20 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   const profilePath = "/tmp/design-ai-learning.json";
   const usagePath = "/tmp/design-ai-learning.usage.json";
   const signalSource = "/tmp/design-ai-signals";
+  const refreshCommandArgs = [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    signalSource,
+    "--file",
+    profilePath,
+    "--usage-file",
+    usagePath,
+    "--strict",
+    "--json",
+  ];
+  const refreshCommand = "design-ai learn --agent-backlog --from-file /tmp/design-ai-signals --file /tmp/design-ai-learning.json --usage-file /tmp/design-ai-learning.usage.json --strict --json";
   const payload = agentBacklogReport({
     filePath: profilePath,
     usageFile: usagePath,
@@ -3454,8 +3468,8 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     nextQueueCommand: "design-ai learn --propose-skills --json",
     nextQueueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
     nextQueueActionBlockedByGate: false,
-    refreshCommand: "design-ai learn --agent-backlog --strict --json",
-    refreshCommandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+    refreshCommand,
+    refreshCommandArgs,
     refreshCommandLabel: "Refresh focused agent backlog after review",
     refreshCommandRequired: true,
     reviewLevel: "clear",
@@ -3486,8 +3500,8 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
       {
         phase: "refresh",
         label: "Refresh focused agent backlog after review",
-        command: "design-ai learn --agent-backlog --strict --json",
-        commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+        command: refreshCommand,
+        commandArgs: refreshCommandArgs,
         required: true,
       },
     ],
@@ -3497,8 +3511,8 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     {
       phase: "refresh",
       label: "Refresh focused agent backlog after review",
-      command: "design-ai learn --agent-backlog --strict --json",
-      commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+      command: refreshCommand,
+      commandArgs: refreshCommandArgs,
       required: true,
     },
   ]);
@@ -3539,7 +3553,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].actionId, "agent-skill-proposal-preview");
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
   assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].runPolicy, "preview-only");
-  assert.match(payload.actionPlan.executionQueue.operatorRunbook.stages[3].commands[0].command, /learn --agent-backlog --strict --json/);
+  assert.match(payload.actionPlan.executionQueue.operatorRunbook.stages[3].commands[0].command, /learn --agent-backlog .*--strict --json/);
   assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
   assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
   assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
@@ -3580,7 +3594,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Command effect gate runbook: before 0, after 0, refresh 1/);
   assert.match(markdown, /Command effect gates:/);
   assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
-  assert.match(markdown, /design-ai learn --agent-backlog --strict --json/);
+  assert.match(markdown, /design-ai learn --agent-backlog --from-file \/tmp\/design-ai-signals --file \/tmp\/design-ai-learning\.json --usage-file \/tmp\/design-ai-learning\.usage\.json --strict --json/);
   assert.match(markdown, /Operator runbook: 4 stage\(s\), 2 command\(s\), 2 required/);
   assert.match(markdown, /Operator next command: execute: `design-ai learn --propose-skills --json`/);
   assert.match(markdown, /Operator next command selection: first-command-in-operator-runbook-stage-order/);
@@ -3590,7 +3604,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
   assert.match(markdown, /Operator\/queue next command alignment: same/);
   assert.match(markdown, /Operator handoff: execute operator-runbook/);
-  assert.match(markdown, /Operator handoff refresh: design-ai learn --agent-backlog --strict --json/);
+  assert.match(markdown, /Operator handoff refresh: design-ai learn --agent-backlog --from-file \/tmp\/design-ai-signals --file \/tmp\/design-ai-learning\.json --usage-file \/tmp\/design-ai-learning\.usage\.json --strict --json/);
   assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Queue order:/);
   assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
@@ -3600,7 +3614,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Writes local files: no/);
   assert.match(markdown, /Mutates local state: no/);
   assert.match(markdown, /Requires mutation review: no/);
-  assert.match(markdown, /agent-backlog --strict --json/);
+  assert.match(markdown, /agent-backlog .*--strict --json/);
   assert.match(markdown, /## Follow-Up Commands/);
   assert.match(markdown, /design-ai learn --signals/);
   assert.match(markdown, /This report is read-only evidence/);
@@ -3608,6 +3622,20 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
 
 test("agentBacklogReport classifies action plan command safety", () => {
   const now = new Date("2026-06-02T00:00:00.000Z");
+  const refreshCommandArgs = [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    "/tmp/design-ai-signals",
+    "--file",
+    "/tmp/design-ai-learning.json",
+    "--usage-file",
+    "/tmp/design-ai-learning.usage.json",
+    "--strict",
+    "--json",
+  ];
+  const refreshCommand = "design-ai learn --agent-backlog --from-file /tmp/design-ai-signals --file /tmp/design-ai-learning.json --usage-file /tmp/design-ai-learning.usage.json --strict --json";
   const payload = agentBacklogReport({
     filePath: "/tmp/design-ai-learning.json",
     usageFile: "/tmp/design-ai-learning.usage.json",
@@ -3732,8 +3760,8 @@ test("agentBacklogReport classifies action plan command safety", () => {
     nextQueueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
     nextQueueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
     nextQueueActionBlockedByGate: true,
-    refreshCommand: "design-ai learn --agent-backlog --strict --json",
-    refreshCommandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+    refreshCommand,
+    refreshCommandArgs,
     refreshCommandLabel: "Refresh focused agent backlog after review",
     refreshCommandRequired: true,
     reviewLevel: "mutation-review",
@@ -3788,8 +3816,8 @@ test("agentBacklogReport classifies action plan command safety", () => {
       {
         phase: "refresh",
         label: "Refresh focused agent backlog after review",
-        command: "design-ai learn --agent-backlog --strict --json",
-        commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+        command: refreshCommand,
+        commandArgs: refreshCommandArgs,
         required: true,
       },
     ],
@@ -3813,8 +3841,8 @@ test("agentBacklogReport classifies action plan command safety", () => {
     {
       phase: "refresh",
       label: "Refresh focused agent backlog after review",
-      command: "design-ai learn --agent-backlog --strict --json",
-      commandArgs: ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+      command: refreshCommand,
+      commandArgs: refreshCommandArgs,
       required: true,
     },
   ]);
@@ -3964,7 +3992,19 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "run-operator-gate");
-  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandArgs, ["design-ai", "learn", "--agent-backlog", "--strict", "--json"]);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandArgs, [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    "/tmp/design-ai-signals",
+    "--file",
+    "/tmp/design-ai-learning.json",
+    "--usage-file",
+    "/tmp/design-ai-learning.usage.json",
+    "--strict",
+    "--json",
+  ]);
   assert.equal(payload.actionPlan.executionQueue.operatorHandoff.nextQueueActionBlockedByGate, true);
 });
 
@@ -4155,7 +4195,7 @@ test("runLearn --agent-backlog reports JSON, human, and Markdown without mutatin
   assert.equal(payload.actionPlan.executionQueue.commandManifestCount, payload.actions.length);
   assert.equal(payload.actionPlan.executionQueue.nextActionId, payload.actionPlan.executionQueue.ordered[0].actionId);
   assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
-  assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog --strict --json/);
+  assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog .*--strict --json/);
   assert.equal(payload.privacy.mutatesProfile, false);
   assert.equal(payload.privacy.mutatesSkillFiles, false);
   assert.equal(payload.privacy.callsExternalAiApis, false);

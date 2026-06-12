@@ -493,7 +493,9 @@ function summarizeAgentBacklogCommandEffectManifest(commandManifest = []) {
   };
 }
 
-function buildAgentBacklogCommandEffectReview(summary = {}) {
+function buildAgentBacklogCommandEffectReview(summary = {}, {
+  refreshCommandArgs = ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+} = {}) {
   const hasMutation = Number(summary.mutatesLocalStateCount || 0) > 0 || Number(summary.mutationFlagCount || 0) > 0;
   const hasFileWrite = Number(summary.writesLocalFileCount || 0) > 0 || Number(summary.outputTargetCount || 0) > 0;
   const hasProfileOrUsage = Number(summary.profileTargetCount || 0) > 0 || Number(summary.usageTargetCount || 0) > 0;
@@ -540,7 +542,7 @@ function buildAgentBacklogCommandEffectReview(summary = {}) {
   gateCommands.push({
     phase: "refresh",
     label: "Refresh focused agent backlog after review",
-    ...commandSpec(["design-ai", "learn", "--agent-backlog", "--strict", "--json"]),
+    ...commandSpec(refreshCommandArgs),
     required: true,
   });
   const gatePhaseSummary = summarizeAgentBacklogGateCommands(gateCommands);
@@ -798,7 +800,9 @@ function buildAgentBacklogOperatorHandoff({
   };
 }
 
-function buildAgentBacklogExecutionQueue(steps = []) {
+function buildAgentBacklogExecutionQueue(steps = [], {
+  refreshCommandArgs = ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+} = {}) {
   const toQueueItem = (step) => {
     const commandSafety = step.commandSafety && typeof step.commandSafety === "object" ? step.commandSafety : {};
     const safetyLevel = commandSafety.level || "unknown";
@@ -836,7 +840,9 @@ function buildAgentBacklogExecutionQueue(steps = []) {
   const nextCommandItem = ordered.find((item) => item.command) || null;
   const rankedNextStep = steps[0] || null;
   const commandEffectSummary = summarizeAgentBacklogCommandEffectManifest(commandManifest);
-  const commandEffectReview = buildAgentBacklogCommandEffectReview(commandEffectSummary);
+  const commandEffectReview = buildAgentBacklogCommandEffectReview(commandEffectSummary, {
+    refreshCommandArgs,
+  });
   const operatorRunbook = buildAgentBacklogOperatorRunbook({
     commandManifest,
     commandEffectReview,
@@ -897,6 +903,9 @@ function buildAgentBacklogExecutionQueue(steps = []) {
 }
 
 function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {} } = {}) {
+  const agentBacklogJsonArgs = Array.isArray(commands.agentBacklogJsonArgs) && commands.agentBacklogJsonArgs.length > 0
+    ? commands.agentBacklogJsonArgs
+    : ["design-ai", "learn", "--agent-backlog", "--strict", "--json"];
   const steps = actions.map((action, index) => {
     const commandArgs = Array.isArray(action.commandArgs) ? action.commandArgs.map((item) => String(item)) : [];
     const command = String(action.command || (commandArgs.length > 0 ? commandFromArgs(commandArgs) : ""));
@@ -928,7 +937,9 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
     };
   });
   const safetySummary = summarizeAgentBacklogCommandSafety(steps);
-  const executionQueue = buildAgentBacklogExecutionQueue(steps);
+  const executionQueue = buildAgentBacklogExecutionQueue(steps, {
+    refreshCommandArgs: agentBacklogJsonArgs,
+  });
   const verification = [
     commands.signalsJson
       ? {
@@ -946,7 +957,7 @@ function buildAgentBacklogActionPlan({ actions = [], commands = {}, privacy = {}
       : null,
     {
       label: "Gate focused agent backlog",
-      ...commandSpec(["design-ai", "learn", "--agent-backlog", "--strict", "--json"]),
+      ...commandSpec(agentBacklogJsonArgs),
     },
   ].filter(Boolean);
 
@@ -1322,11 +1333,26 @@ export function agentBacklogReport({
     "--out",
     "learning-signals.md",
   ];
+  const agentBacklogJsonArgs = [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    registry.signalSource || ".",
+    "--file",
+    registry.file || filePath,
+    "--usage-file",
+    registry.usage?.usageFile || usageFile || defaultLearningUsageFile(path.resolve(filePath)),
+    "--strict",
+    "--json",
+  ];
   const commands = {
     signalsJson: commandFromArgs(signalsJsonArgs),
     signalsJsonArgs,
     signalsReport: commandFromArgs(signalsReportArgs),
     signalsReportArgs,
+    agentBacklogJson: commandFromArgs(agentBacklogJsonArgs),
+    agentBacklogJsonArgs,
   };
   const privacy = {
     mutatesProfile: false,

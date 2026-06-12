@@ -5729,6 +5729,21 @@ def assert_agent_backlog_report_json(
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
     gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
     gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
+    def is_agent_backlog_refresh_command(item: object) -> bool:
+        if not isinstance(item, dict):
+            return False
+        command = str(item.get("command", ""))
+        args = item.get("commandArgs", [])
+        return (
+            "learn --agent-backlog" in command
+            and isinstance(args, list)
+            and args[:3] == ["design-ai", "learn", "--agent-backlog"]
+            and "--from-file" in args
+            and "--file" in args
+            and "--usage-file" in args
+            and "--strict" in args
+            and "--json" in args
+        )
     require_package_smoke(
         isinstance(action_plan, dict)
         and action_plan.get("version") == 1
@@ -5784,6 +5799,10 @@ def assert_agent_backlog_report_json(
         and bool(operator_handoff.get("refreshCommand"))
         and isinstance(operator_handoff.get("refreshCommandArgs"), list)
         and len(operator_handoff.get("refreshCommandArgs")) >= 2
+        and is_agent_backlog_refresh_command({
+            "command": operator_handoff.get("refreshCommand"),
+            "commandArgs": operator_handoff.get("refreshCommandArgs"),
+        })
         and isinstance(operator_handoff.get("refreshCommandRequired"), bool)
         and isinstance(operator_handoff.get("requiresOperatorReview"), bool)
         and isinstance(operator_handoff.get("reason"), str)
@@ -5831,8 +5850,7 @@ def assert_agent_backlog_report_json(
             and any(
                 isinstance(item, dict)
                 and item.get("required") is True
-                and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
-                and item.get("commandArgs", []) == ["design-ai", "learn", "--agent-backlog", "--strict", "--json"]
+                and is_agent_backlog_refresh_command(item)
                 for item in stage.get("commands", [])
             )
             for stage in operator_runbook.get("stages", [])
@@ -5867,7 +5885,7 @@ def assert_agent_backlog_report_json(
             isinstance(item, dict)
             and item.get("phase") == "refresh"
             and item.get("required") is True
-            and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+            and is_agent_backlog_refresh_command(item)
             for item in gate_runbook.get("refresh", [])
         )
         and isinstance(command_effect_review.get("gateCommands"), list)
@@ -5875,7 +5893,7 @@ def assert_agent_backlog_report_json(
             isinstance(item, dict)
             and item.get("phase") == "refresh"
             and item.get("required") is True
-            and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+            and is_agent_backlog_refresh_command(item)
             for item in command_effect_review.get("gateCommands", [])
         )
         and execution_queue.get("nextActionId")
@@ -5916,7 +5934,7 @@ def assert_agent_backlog_report_json(
         and isinstance(action_plan_verification, list)
         and any(
             isinstance(item, dict)
-            and "learn --agent-backlog --strict --json" in str(item.get("command", ""))
+            and is_agent_backlog_refresh_command(item)
             for item in action_plan_verification
         ),
         context=context,
@@ -6029,7 +6047,7 @@ def assert_agent_backlog_report_markdown(
         "- Writes local files: no",
         "- Mutates local state: no",
         "- Requires mutation review: no",
-        "design-ai learn --agent-backlog --strict --json",
+        "design-ai learn --agent-backlog",
         "## Follow-Up Commands",
         "design-ai learn --signals",
         "## Privacy And Boundaries",
@@ -10061,6 +10079,20 @@ def run_self_test() -> None:
             str(Path(tmp)),
             "--json",
         ]
+        agent_backlog_refresh_args = [
+            "design-ai",
+            "learn",
+            "--agent-backlog",
+            "--from-file",
+            str(Path(tmp)),
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--strict",
+            "--json",
+        ]
+        agent_backlog_refresh_command = " ".join(agent_backlog_refresh_args)
         learning_agent_backlog_payload = {
             "version": 1,
             "generatedAt": "2026-06-02T00:00:05.000Z",
@@ -10209,8 +10241,8 @@ def run_self_test() -> None:
                         "nextQueueCommand": "design-ai learn --propose-skills --json",
                         "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
                         "nextQueueActionBlockedByGate": False,
-                        "refreshCommand": "design-ai learn --agent-backlog --strict --json",
-                        "refreshCommandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+                        "refreshCommand": agent_backlog_refresh_command,
+                        "refreshCommandArgs": agent_backlog_refresh_args,
                         "refreshCommandLabel": "Refresh focused agent backlog after review",
                         "refreshCommandRequired": True,
                         "reviewLevel": "clear",
@@ -10254,8 +10286,8 @@ def run_self_test() -> None:
                                 {
                                     "phase": "refresh",
                                     "label": "Refresh focused agent backlog after review",
-                                    "command": "design-ai learn --agent-backlog --strict --json",
-                                    "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+                                    "command": agent_backlog_refresh_command,
+                                    "commandArgs": agent_backlog_refresh_args,
                                     "required": True,
                                 },
                             ],
@@ -10265,8 +10297,8 @@ def run_self_test() -> None:
                             {
                                 "phase": "refresh",
                                 "label": "Refresh focused agent backlog after review",
-                                "command": "design-ai learn --agent-backlog --strict --json",
-                                "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
                                 "required": True,
                             },
                         ],
@@ -10342,8 +10374,8 @@ def run_self_test() -> None:
                                     {
                                         "phase": "refresh",
                                         "label": "Refresh focused agent backlog after review",
-                                        "command": "design-ai learn --agent-backlog --strict --json",
-                                        "commandArgs": ["design-ai", "learn", "--agent-backlog", "--strict", "--json"],
+                                        "command": agent_backlog_refresh_command,
+                                        "commandArgs": agent_backlog_refresh_args,
                                         "required": True,
                                     },
                                 ],
@@ -10436,7 +10468,8 @@ def run_self_test() -> None:
                     },
                     {
                         "label": "Gate focused agent backlog",
-                        "command": "design-ai learn --agent-backlog --strict --json",
+                        "command": agent_backlog_refresh_command,
+                        "commandArgs": agent_backlog_refresh_args,
                     },
                 ],
                 "boundaries": {
@@ -10523,7 +10556,7 @@ def run_self_test() -> None:
                 "- Command effect gate runbook: before 0, after 0, refresh 1",
                 "- Command effect gates:",
                 "refresh: Refresh focused agent backlog after review",
-                "design-ai learn --agent-backlog --strict --json",
+                agent_backlog_refresh_command,
                 "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                 "- Operator next command: execute: `design-ai learn --propose-skills --json`",
                 "- Recommended next action: agent-skill-proposal-preview",
@@ -10537,7 +10570,7 @@ def run_self_test() -> None:
                 "- Writes local files: no",
                 "- Mutates local state: no",
                 "- Requires mutation review: no",
-                "design-ai learn --agent-backlog --strict --json",
+                agent_backlog_refresh_command,
                 "## Follow-Up Commands",
                 "design-ai learn --signals --from-file . --json",
                 "## Privacy And Boundaries",
@@ -10667,7 +10700,7 @@ def run_self_test() -> None:
                     "- Command effect gate runbook: before 0, after 0, refresh 1",
                     "- Command effect gates:",
                     "refresh: Refresh focused agent backlog after review",
-                    "design-ai learn --agent-backlog --strict --json",
+                    agent_backlog_refresh_command,
                     "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
                     "- Operator next command: execute: `design-ai learn --propose-skills --json`",
                     "- Recommended next action: agent-skill-proposal-preview",
@@ -10681,7 +10714,7 @@ def run_self_test() -> None:
                     "- Writes local files: no",
                     "- Mutates local state: no",
                     "- Requires mutation review: no",
-                    "design-ai learn --agent-backlog --strict --json",
+                    agent_backlog_refresh_command,
                     "## Follow-Up Commands",
                     "design-ai learn --signals --from-file . --json",
                     "## Privacy And Boundaries",

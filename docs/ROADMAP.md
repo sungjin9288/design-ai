@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 460 — Agent Backlog Context-Aware Refresh Command (unreleased)
+
+`design-ai learn --agent-backlog` refresh metadata now preserves the same signal source, learning profile, and usage sidecar paths that produced the current backlog report. This keeps post-handoff refreshes deterministic even when operators run from another working directory or use non-default learning files.
+
+### Changed
+- Built the refresh command from the active backlog context: `--from-file`, `--file`, `--usage-file`, `--strict`, and `--json`.
+- Reused that context-aware refresh command in `operatorHandoff`, `operatorRunbook`, `commandEffectReview`, and action-plan verification metadata.
+- Strengthened unit tests and package-smoke assertions to validate refresh command semantics through `commandArgs` instead of relying on a context-free shell string.
+
+### Impact
+- Local AI/agent automation can run the selected handoff command and then refresh the exact same backlog scope without reconstructing source/profile/usage paths.
+- The change remains deterministic and local; it only changes emitted metadata and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --file /tmp/design-ai-phase460-learning.json --usage-file /tmp/design-ai-phase460-learning.usage.json --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 459 — Agent Backlog Operator Handoff Refresh Metadata (unreleased)
 
 `design-ai learn --agent-backlog` operator handoff now exposes the refresh command that should be run after the selected handoff command. This lets local automation re-check focused backlog state without traversing the full operator runbook stage list.
