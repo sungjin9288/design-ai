@@ -3437,6 +3437,26 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     queueMatchesRankedNextAction: true,
     reason: "Operator runbook starts with the same command as the safety-ordered execution queue.",
   });
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
+    version: 1,
+    source: "operator-runbook",
+    phase: "execute",
+    label: "Run agent-skill-proposal-preview",
+    command: "design-ai learn --propose-skills --json",
+    commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    actionId: "agent-skill-proposal-preview",
+    rank: 1,
+    runPolicy: "preview-only",
+    required: true,
+    isGate: false,
+    nextQueueActionId: "agent-skill-proposal-preview",
+    nextQueueCommand: "design-ai learn --propose-skills --json",
+    nextQueueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    nextQueueActionBlockedByGate: false,
+    reviewLevel: "clear",
+    requiresOperatorReview: false,
+    reason: "Run the shared operator and queue command next.",
+  });
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 1);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 0);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 0);
@@ -3564,6 +3584,7 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Recommended next command selection: first-command-in-safety-ordered-queue/);
   assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
   assert.match(markdown, /Operator\/queue next command alignment: same/);
+  assert.match(markdown, /Operator handoff: execute operator-runbook/);
   assert.match(markdown, /Recommended next command:/);
   assert.match(markdown, /Queue order:/);
   assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
@@ -3687,6 +3708,26 @@ test("agentBacklogReport classifies action plan command safety", () => {
     operatorRunsBeforeQueueCommand: true,
     queueMatchesRankedNextAction: false,
     reason: "Operator runbook starts with a before-stage gate before the safety-ordered queue command.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
+    version: 1,
+    source: "operator-runbook",
+    phase: "before",
+    label: "Confirm clean workspace before execution",
+    command: "git status --short",
+    commandArgs: ["git", "status", "--short"],
+    actionId: "",
+    rank: null,
+    runPolicy: "",
+    required: true,
+    isGate: true,
+    nextQueueActionId: "agent-learning-profile-init",
+    nextQueueCommand: "design-ai learn --init --file /tmp/design-ai-learning.json",
+    nextQueueCommandArgs: ["design-ai", "learn", "--init", "--file", "/tmp/design-ai-learning.json"],
+    nextQueueActionBlockedByGate: true,
+    reviewLevel: "mutation-review",
+    requiresOperatorReview: true,
+    reason: "Run the operator gate before executing the safety-ordered queue command.",
   });
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 3);
   assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 1);
@@ -3910,6 +3951,8 @@ test("agentBacklogReport derives command strings from structured command args", 
   assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.commandArgs, ["git", "status", "--short"]);
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.operatorRunsBeforeQueueCommand, true);
   assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.nextQueueActionBlockedByGate, true);
 });
 
 test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {

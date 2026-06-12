@@ -5723,6 +5723,7 @@ def assert_agent_backlog_report_json(
     operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
     next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
     next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
+    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
     operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
     command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
     command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
@@ -5766,6 +5767,21 @@ def assert_agent_backlog_report_json(
         and isinstance(next_command_alignment.get("queueMatchesRankedNextAction"), bool)
         and isinstance(next_command_alignment.get("reason"), str)
         and bool(next_command_alignment.get("reason"))
+        and isinstance(operator_handoff, dict)
+        and operator_handoff.get("version") == 1
+        and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
+        and operator_handoff.get("phase") == operator_runbook.get("nextStage")
+        and operator_handoff.get("command") == operator_runbook.get("nextCommand")
+        and isinstance(operator_handoff.get("commandArgs"), list)
+        and len(operator_handoff.get("commandArgs")) >= 2
+        and isinstance(operator_handoff.get("required"), bool)
+        and isinstance(operator_handoff.get("isGate"), bool)
+        and operator_handoff.get("nextQueueActionId") == execution_queue.get("nextActionId")
+        and operator_handoff.get("nextQueueCommand") == execution_queue.get("nextCommand")
+        and isinstance(operator_handoff.get("nextQueueActionBlockedByGate"), bool)
+        and isinstance(operator_handoff.get("requiresOperatorReview"), bool)
+        and isinstance(operator_handoff.get("reason"), str)
+        and bool(operator_handoff.get("reason"))
         and isinstance(operator_runbook, dict)
         and operator_runbook.get("version") == 1
         and operator_runbook.get("stageCount") == 4
@@ -10169,6 +10185,26 @@ def run_self_test() -> None:
                         "operatorRunsBeforeQueueCommand": False,
                         "queueMatchesRankedNextAction": True,
                         "reason": "Operator runbook starts with the same command as the safety-ordered execution queue.",
+                    },
+                    "operatorHandoff": {
+                        "version": 1,
+                        "source": "operator-runbook",
+                        "phase": "execute",
+                        "label": "Run agent-skill-proposal-preview",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "actionId": "agent-skill-proposal-preview",
+                        "rank": 1,
+                        "runPolicy": "preview-only",
+                        "required": True,
+                        "isGate": False,
+                        "nextQueueActionId": "agent-skill-proposal-preview",
+                        "nextQueueCommand": "design-ai learn --propose-skills --json",
+                        "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "nextQueueActionBlockedByGate": False,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "reason": "Run the shared operator and queue command next.",
                     },
                     "commandEffectSummary": {
                         "totalCommands": 1,

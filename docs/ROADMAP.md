@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 457 — Agent Backlog Operator Handoff Decision Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now includes a single operator handoff decision. This lets local automation consume the next command to present or run without rebuilding that decision from the safety queue, operator runbook, and alignment metadata.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff` with source, phase, label, command metadata, action metadata, gate state, queue fallback metadata, review state, and a human-readable reason.
+- Clarified Markdown reports with an operator handoff line so humans can see the active next-command decision directly.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the handoff contract.
+
+### Impact
+- Local AI/agent automation can read one deterministic handoff object before deciding whether to run a before-stage gate or the queue command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
 ## Phase 456 — Agent Backlog Next Command Alignment Metadata (unreleased)
 
 `design-ai learn --agent-backlog` execution queue now compares the operator runbook's first command with the safety-ordered queue command. This makes it explicit when both surfaces point to the same command and when the operator must run a before-stage gate first.
