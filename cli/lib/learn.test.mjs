@@ -1,6 +1,6 @@
 // Tests for local learning profile helpers.
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -3327,6 +3327,55 @@ test("learningSignalRegistry joins audit, usage, eval, check capture, and worksp
   assert.equal(payload.privacy.mutatesProfile, false);
 }));
 
+test("learningSignalRegistry includes sibling learning eval checkpoints outside the signal source", () => withTempDir((dir) => {
+  const signalDir = path.join(dir, "signals");
+  const profileDir = path.join(dir, "profile");
+  mkdirSync(signalDir, { recursive: true });
+  mkdirSync(profileDir, { recursive: true });
+  const filePath = path.join(profileDir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalFile = path.join(profileDir, "learning-eval.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-11T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "test",
+        createdAt: "2026-06-11T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(evalFile, JSON.stringify(buildLearningEvalTemplate({
+    filePath,
+    query: "focus behavior",
+    now: new Date("2026-06-11T00:00:02.000Z"),
+  })), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: signalDir,
+    root: signalDir,
+    now: new Date("2026-06-11T00:00:03.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: signalDir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: null,
+      learningEval: { readiness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.evals.files[0].file, evalFile);
+  assert.equal(payload.evals.files[0].kind, "learning-eval");
+}));
+
 test("agentBacklogReport extracts a focused local agent development backlog", () => {
   const now = new Date("2026-06-02T00:00:00.000Z");
   const profilePath = "/tmp/design-ai-learning.json";
@@ -4336,6 +4385,8 @@ test("runLearn --signals ranks profile initialization before eval checkpoint boo
   assert.equal(payload.agentDevelopment.actions[2].id, "agent-eval-checkpoint-generate");
   assert.equal(payload.agentDevelopment.actions[0].priority, "p1");
   assert.equal(payload.agentDevelopment.actions[2].priority, "p1");
+  assert.equal(payload.agentDevelopment.actions[2].command.includes(`--out ${path.join(dir, "learning-eval.json")}`), true);
+  assert.equal(payload.agentDevelopment.actions[2].evidence.evalOutputFile, path.join(dir, "learning-eval.json"));
 }));
 
 test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {

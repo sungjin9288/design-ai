@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 465 — Agent Backlog Learning Eval Sibling Checkpoint Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now aligns its learning eval checkpoint bootstrap with `design-ai workspace`: generated learning eval checkpoints target the active learning profile's sibling `learning-eval.json` path instead of a repo-relative output file.
+
+### Changed
+- Changed `agent-eval-checkpoint-generate` follow-up commands to use `defaultLearningEvalPath(<learning-profile>)` for `--out`.
+- Added `evalOutputFile` evidence so JSON consumers can show the exact checkpoint target without parsing the shell command.
+- Updated signal registry eval discovery to include the active learning profile's sibling `learning-eval.json` even when the `--from-file` signal source points at a separate repository or report directory.
+- Added regression coverage for sibling learning eval auto-detection and for missing-profile backlog actions emitting the sibling checkpoint output path.
+
+### Impact
+- Local AI/agent automation no longer needs to choose between the workspace-recommended checkpoint path and the backlog-recommended checkpoint path.
+- The agent backlog report remains read-only; only the emitted follow-up command target changed.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue tightening usage-sidecar and eval-checkpoint handoffs so the local learning loop can be dogfooded without writing incidental files into target repositories.
+
 ## Phase 464 — Agent Backlog Profile Init Apply Command Metadata (unreleased)
 
 `design-ai learn --agent-backlog` now separates first-run learning profile initialization into an explicit preview command and reviewed apply metadata. The handoff can safely present `learn --init --dry-run`, while automation can still find the confirmed `learn --init --yes` command and its mutation-review safety details without guessing.

@@ -11,7 +11,7 @@ import {
   learningUsageStats,
   loadLearningProfile,
 } from "./learn.mjs";
-import { collectWorkspaceReport } from "./workspace.mjs";
+import { collectWorkspaceReport, defaultLearningEvalPath } from "./workspace.mjs";
 
 export const DEFAULT_SIGNAL_EVAL_FILES = [
   "route-eval.json",
@@ -181,15 +181,20 @@ export function summarizeSignalEvalFile(filePath) {
   };
 }
 
-function resolveSignalFiles({ signalSource = "", root = process.cwd() } = {}) {
+function resolveSignalFiles({ signalSource = "", root = process.cwd(), extraFiles = [] } = {}) {
   const resolvedSource = signalSource ? path.resolve(signalSource) : path.resolve(root);
+  const resolvedExtraFiles = (Array.isArray(extraFiles) ? extraFiles : [])
+    .filter(Boolean)
+    .map((filePath) => path.resolve(filePath))
+    .filter((filePath) => existsSync(filePath));
+  const uniqueFiles = (files = []) => [...new Set([...files, ...resolvedExtraFiles])];
   if (existsSync(resolvedSource) && statSync(resolvedSource).isDirectory()) {
-    return DEFAULT_SIGNAL_EVAL_FILES
+    return uniqueFiles(DEFAULT_SIGNAL_EVAL_FILES
       .map((fileName) => path.join(resolvedSource, fileName))
-      .filter((filePath) => existsSync(filePath));
+      .filter((filePath) => existsSync(filePath)));
   }
-  if (signalSource) return [resolvedSource];
-  return [];
+  if (signalSource) return uniqueFiles([resolvedSource]);
+  return uniqueFiles([]);
 }
 
 function summarizeCheckCapture(profile) {
@@ -1131,15 +1136,17 @@ function buildAgentDevelopmentBacklog({
   }
 
   if (evals.files.length === 0) {
+    const evalOutputFile = defaultLearningEvalPath(filePath);
     actions.push(agentAction({
       id: "agent-eval-checkpoint-generate",
       priority: "p1",
       category: "eval-harness",
       title: "Generate and run route, prompt, pack, or learning eval checkpoints.",
       rationale: "Agent development needs replayable checkpoints before signal registry output can act as a gate.",
-      ...commandSpec(["design-ai", "learn", "--eval-template", "--file", filePath, "--json", "--out", "learning-eval.json"]),
+      ...commandSpec(["design-ai", "learn", "--eval-template", "--file", filePath, "--json", "--out", evalOutputFile]),
       evidence: {
         evalSignalCount: 0,
+        evalOutputFile,
       },
     }));
   }
@@ -1275,7 +1282,11 @@ export function learningSignalRegistry({
     filePath: resolvedFile,
     usageFile: resolvedUsageFile,
   });
-  const signalFiles = resolveSignalFiles({ signalSource, root });
+  const signalFiles = resolveSignalFiles({
+    signalSource,
+    root,
+    extraFiles: [defaultLearningEvalPath(resolvedFile)],
+  });
   const evalFiles = signalFiles.map((file) => summarizeSignalEvalFile(file));
   const evalSummary = {
     source: signalSource ? path.resolve(signalSource) : path.resolve(root),
