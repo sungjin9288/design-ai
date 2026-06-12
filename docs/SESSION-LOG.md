@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 476 (unreleased)** — Clarified focused agent backlog operator runbook selection reasons so optional refresh-only no-command states read as status metadata, not executable handoff work.
 - **Phase 475 (unreleased)** — Clarified focused agent backlog operator handoff reasons so completed no-command states distinguish optional refresh metadata from executable handoff work.
 - **Phase 474 (unreleased)** — Clarified focused agent backlog next-command alignment reasons so optional refresh-only no-command states no longer claim that the operator runbook has no command.
 - **Phase 473 (unreleased)** — Aligned focused agent backlog no-command completion across `operatorRunbook` and `commandEffectReview` by making refresh-only runbook commands optional when no command-bearing action exists.

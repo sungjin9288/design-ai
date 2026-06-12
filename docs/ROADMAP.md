@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 476 — Agent Backlog Optional Refresh Runbook Selection Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains optional refresh-only operator runbook selection without implying that a backlog handoff command was selected.
+
+### Changed
+- Updated `operatorRunbook.nextCommandSelection.reason` when the only runbook command is an optional refresh check.
+- Preserved `operatorRunbook.nextCommand`, `nextStage: "refresh"`, and `nextCommandRequired: false` for automation that wants a status refresh command.
+- Extended no-command regression coverage for JSON and Markdown runbook selection output.
+
+### Impact
+- Local AI/agent automation can keep reading the optional refresh command while treating the focused backlog as complete.
+- The runbook selection, next-command alignment, and handoff reason now use the same no-command semantics.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this runbook selection reason contract is committed.
+
 ## Phase 475 — Agent Backlog Optional Refresh Handoff Reason (unreleased)
 
 `design-ai learn --agent-backlog` now explains no-command operator handoff states without implying that optional refresh metadata is an executable handoff command.

@@ -727,6 +727,15 @@ function buildAgentBacklogOperatorRunbook({
   const nextStage = stages.find((stage) => stage.commands.length > 0) || null;
   const nextCommand = nextStage?.commands?.[0] || null;
   const stageOrder = ["before", "execute", "after", "refresh"];
+  const nonRefreshCommandCount = stages
+    .filter((stage) => stage.phase !== "refresh")
+    .reduce((count, stage) => count + stage.commands.length, 0);
+  const optionalRefreshOnlyNextCommand = Boolean(
+    nextCommand
+      && nextStage?.phase === "refresh"
+      && nextCommand.required !== true
+      && nonRefreshCommandCount === 0,
+  );
   const nextCommandSelection = {
     strategy: "first-command-in-operator-runbook-stage-order",
     stageOrder,
@@ -738,8 +747,10 @@ function buildAgentBacklogOperatorRunbook({
     rank: nextCommand?.rank ?? null,
     required: Boolean(nextCommand?.required),
     runPolicy: nextCommand?.runPolicy || "",
-    reason: nextCommand
-      ? `Selected the first command in the ${nextStage?.phase || "unknown"} stage using operator runbook stage order.`
+    reason: optionalRefreshOnlyNextCommand
+      ? "Optional refresh command is available as status metadata; no executable backlog handoff command is selected."
+      : nextCommand
+        ? `Selected the first command in the ${nextStage?.phase || "unknown"} stage using operator runbook stage order.`
       : "No operator runbook command is available.",
   };
   return {
