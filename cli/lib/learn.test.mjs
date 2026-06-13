@@ -3548,6 +3548,24 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
         automationPolicy: "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence.",
       },
     ],
+    requiredCheckIds: ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+    optionalCheckIds: ["usage-sidecar", "check-capture"],
+    checkStatusById: {
+      "learning-profile": "pass",
+      "usage-sidecar": "pass",
+      "eval-signals": "pass",
+      "check-capture": "info",
+      "workspace-readiness": "pass",
+      "agent-development": "pass",
+    },
+    checkRequiredById: {
+      "learning-profile": true,
+      "usage-sidecar": false,
+      "eval-signals": true,
+      "check-capture": false,
+      "workspace-readiness": true,
+      "agent-development": true,
+    },
     checks: [
       {
         id: "learning-profile",
@@ -3692,6 +3710,17 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
         optionalGapCount: 0,
         blockingChecks: [],
         optionalGaps: [],
+        optionalGapDetails: [],
+        requiredCheckIds: ["learning-profile"],
+        optionalCheckIds: ["check-capture"],
+        checkStatusById: {
+          "learning-profile": "pass",
+          "check-capture": "pass",
+        },
+        checkRequiredById: {
+          "learning-profile": true,
+          "check-capture": false,
+        },
         checks: [
           {
             id: "learning-profile",
@@ -3764,6 +3793,17 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     optionalGapCount: 0,
     blockingChecks: [],
     optionalGaps: [],
+    optionalGapDetails: [],
+    requiredCheckIds: ["learning-profile"],
+    optionalCheckIds: ["check-capture"],
+    checkStatusById: {
+      "learning-profile": "pass",
+      "check-capture": "pass",
+    },
+    checkRequiredById: {
+      "learning-profile": true,
+      "check-capture": false,
+    },
     checks: [
       {
         id: "learning-profile",

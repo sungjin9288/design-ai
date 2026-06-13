@@ -86,6 +86,17 @@ design-ai learn --signals --from-file route-eval-report.json --usage-file learni
 
 This exposes drift without changing the learning profile, calling external AI APIs, adding dependencies, or storing raw brief text. Use `--strict` when the signal registry and agent development backlog should behave like a local deterministic gate.
 
+### Phase 488: readiness check index
+
+Added automation-friendly readiness indexes to `design-ai learn --signals` and `design-ai learn --agent-backlog` JSON:
+
+- `requiredCheckIds`
+- `optionalCheckIds`
+- `checkStatusById`
+- `checkRequiredById`
+
+These fields keep the existing `checks` array intact while letting local runners branch on checks such as `check-capture` or `agent-development` without array scanning or prose parsing. The change remains deterministic, local, read-only, and dependency-free.
+
 ### Phase 274: skill evolution proposals
 
 Implemented `design-ai learn --propose-skills` as a preview-only command that converts repeated learning/check issues into proposed skill edits:

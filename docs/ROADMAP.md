@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 488 — Learning Readiness Check Index (unreleased)
+
+Learning readiness JSON now exposes a deterministic check index for local automation.
+
+### Changed
+- Added `requiredCheckIds` and `optionalCheckIds` to `design-ai learn --signals` and `design-ai learn --agent-backlog` readiness JSON.
+- Added `checkStatusById` and `checkRequiredById` so automation can inspect a specific readiness check without scanning `checks`.
+- Extended package smoke self-test coverage so focused agent backlog readiness output must preserve the check index.
+
+### Impact
+- Local AI/agent runners can branch on `check-capture`, `agent-development`, or workspace readiness directly from machine-readable fields.
+- Existing consumers of the `checks` array remain compatible because the array shape is unchanged.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Keep the check index stable as additional readiness checks are added.
+
 ## Phase 487 — Optional Gap Details Package Smoke Guard (unreleased)
 
 Packed-tarball smoke now protects the focused agent backlog `optionalGapDetails` readiness contract added in Phase 486.

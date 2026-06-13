@@ -6206,6 +6206,10 @@ def assert_agent_backlog_readiness_json(
     agent_development = check_by_id.get("agent-development")
     optional_gaps = readiness.get("optionalGaps") if isinstance(readiness, dict) else None
     optional_gap_details = readiness.get("optionalGapDetails") if isinstance(readiness, dict) else None
+    required_check_ids = readiness.get("requiredCheckIds") if isinstance(readiness, dict) else None
+    optional_check_ids = readiness.get("optionalCheckIds") if isinstance(readiness, dict) else None
+    check_status_by_id = readiness.get("checkStatusById") if isinstance(readiness, dict) else None
+    check_required_by_id = readiness.get("checkRequiredById") if isinstance(readiness, dict) else None
     blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
     detail_by_id = {
         item.get("id"): item
@@ -6236,13 +6240,23 @@ def assert_agent_backlog_readiness_json(
         and isinstance(blocking_checks, list)
         and isinstance(optional_gaps, list)
         and isinstance(optional_gap_details, list)
+        and isinstance(required_check_ids, list)
+        and isinstance(optional_check_ids, list)
+        and isinstance(check_status_by_id, dict)
+        and isinstance(check_required_by_id, dict)
+        and "agent-development" in required_check_ids
+        and "check-capture" in optional_check_ids
         and isinstance(checks, list)
         and len(checks) >= 2
         and isinstance(agent_development, dict)
         and agent_development.get("required") is True
+        and check_status_by_id.get("agent-development") == agent_development.get("status")
+        and check_required_by_id.get("agent-development") is True
         and isinstance(agent_development.get("summary"), str)
         and isinstance(check_capture, dict)
         and check_capture.get("required") is False
+        and check_status_by_id.get("check-capture") == check_capture.get("status")
+        and check_required_by_id.get("check-capture") is False
         and isinstance(check_capture.get("summary"), str)
         and (
             (
@@ -6261,7 +6275,7 @@ def assert_agent_backlog_readiness_json(
         ),
         context=context,
         cmd=cmd,
-        message="learn agent backlog JSON should include signal readiness summary with optional gap details",
+        message="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
     )
 
 
@@ -10950,6 +10964,24 @@ def run_self_test() -> None:
                 "blockingChecks": [],
                 "optionalGaps": [],
                 "optionalGapDetails": [],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "pass",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -11032,7 +11064,7 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
             scope="package smoke",
         )
         no_command_agent_backlog_payload = {
@@ -11253,6 +11285,24 @@ def run_self_test() -> None:
                         "automationPolicy": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY,
                     },
                 ],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "info",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -11405,7 +11455,20 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
+            scope="package smoke",
+        )
+        check_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        check_index_drift_payload["readiness"].pop("checkStatusById", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(check_index_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
             scope="package smoke",
         )
         refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))

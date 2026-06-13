@@ -521,6 +521,8 @@ function buildLearningSignalReadiness({
   const blockingChecks = requiredChecks.filter((item) => statusRank(item.status) >= statusRank("warn"));
   const optionalGaps = optionalChecks.filter((item) => item.status !== "pass");
   const requiredPassCount = requiredChecks.filter((item) => item.status === "pass").length;
+  const checkStatusById = Object.fromEntries(checks.map((item) => [item.id, item.status]));
+  const checkRequiredById = Object.fromEntries(checks.map((item) => [item.id, Boolean(item.required)]));
   const summary = blockingChecks.length === 0
     ? optionalGaps.length === 0
       ? "Required and optional local learning signal surfaces are complete."
@@ -539,6 +541,10 @@ function buildLearningSignalReadiness({
     blockingChecks: blockingChecks.map((item) => item.id),
     optionalGaps: optionalGaps.map((item) => item.id),
     optionalGapDetails: optionalGaps.map(optionalGapDetail),
+    requiredCheckIds: requiredChecks.map((item) => item.id),
+    optionalCheckIds: optionalChecks.map((item) => item.id),
+    checkStatusById,
+    checkRequiredById,
     checks,
   };
 }
