@@ -6026,6 +6026,16 @@ EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON = (
 EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON = (
     "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty."
 )
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON = (
+    "No real warn/fail check result has been intentionally captured into the local learning profile yet."
+)
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION = (
+    "Run `design-ai check <artifact.md> --learn --yes` only after reviewing an actual warning or failure "
+    "that should improve future outputs."
+)
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY = (
+    "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence."
+)
 
 
 def assert_agent_backlog_no_command_json(
@@ -6195,7 +6205,22 @@ def assert_agent_backlog_readiness_json(
     check_capture = check_by_id.get("check-capture")
     agent_development = check_by_id.get("agent-development")
     optional_gaps = readiness.get("optionalGaps") if isinstance(readiness, dict) else None
+    optional_gap_details = readiness.get("optionalGapDetails") if isinstance(readiness, dict) else None
     blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
+    detail_by_id = {
+        item.get("id"): item
+        for item in optional_gap_details
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    } if isinstance(optional_gap_details, list) else {}
+    check_capture_detail = detail_by_id.get("check-capture")
+    check_capture_detail_valid = (
+        isinstance(check_capture_detail, dict)
+        and check_capture_detail.get("label") == "Check learning capture"
+        and check_capture_detail.get("status") == "info"
+        and check_capture_detail.get("reason") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON
+        and check_capture_detail.get("nextCondition") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION
+        and check_capture_detail.get("automationPolicy") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY
+    )
     require_package_smoke(
         isinstance(readiness, dict)
         and readiness.get("version") == 1
@@ -6210,6 +6235,7 @@ def assert_agent_backlog_readiness_json(
         and isinstance(readiness.get("optionalGapCount"), int)
         and isinstance(blocking_checks, list)
         and isinstance(optional_gaps, list)
+        and isinstance(optional_gap_details, list)
         and isinstance(checks, list)
         and len(checks) >= 2
         and isinstance(agent_development, dict)
@@ -6223,17 +6249,19 @@ def assert_agent_backlog_readiness_json(
                 expect_check_capture_gap
                 and check_capture.get("status") == "info"
                 and "check-capture" in optional_gaps
+                and check_capture_detail_valid
                 and readiness.get("optionalGapCount", 0) >= 1
             )
             or (
                 not expect_check_capture_gap
                 and check_capture.get("status") == "pass"
                 and "check-capture" not in optional_gaps
+                and optional_gap_details == []
             )
         ),
         context=context,
         cmd=cmd,
-        message="learn agent backlog JSON should include signal readiness summary",
+        message="learn agent backlog JSON should include signal readiness summary with optional gap details",
     )
 
 
@@ -6344,6 +6372,73 @@ def assert_agent_backlog_report_markdown(
             context=context,
             cmd=cmd,
             message=f"learn agent backlog Markdown report missing {expected!r}",
+        )
+
+
+def assert_agent_backlog_no_command_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Agent Development Backlog Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Summary",
+        "- Actions: 0",
+        "- Check captures: 0",
+        "## Signal Readiness",
+        "- Required ready: yes",
+        "- Required checks:",
+        "- Blocking checks: 0",
+        "- Optional gaps: 1",
+        "Readiness checks:",
+        "check-capture [optional] info",
+        "agent-development [required] pass",
+        "Optional gap details:",
+        "No real warn/fail check result has been intentionally captured",
+        "Next condition: Run `design-ai check <artifact.md> --learn --yes`",
+        "Automation policy: Do not emit placeholder mutation commands",
+        "## Backlog Actions",
+        "No agent development backlog actions emitted.",
+        "## Action Plan",
+        "Safety summary:",
+        "- Read-only: 0",
+        "- Writes local file: 0",
+        "- Mutates local state: 0",
+        "Execution queue:",
+        "- Preview/read-only commands: 0",
+        "- Local file-write review commands: 0",
+        "- Local mutation review commands: 0",
+        "- Ordered commands: 0",
+        "- Command manifest entries: 0",
+        "- Command effect review: No command target or mutation flag exposure detected.",
+        "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
+        "- Operator next command: refresh: `design-ai learn --agent-backlog",
+        "- Operator next command selection: first-command-in-operator-runbook-stage-order",
+        "- Recommended next command selection: first-command-in-safety-ordered-queue",
+        "- Operator/queue next command alignment: different",
+        "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
+        "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
+        "- Operator handoff refresh: design-ai learn --agent-backlog",
+        "No execution steps emitted.",
+        "## Follow-Up Commands",
+        "design-ai learn --signals",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"no-command learn agent backlog Markdown report missing {expected!r}",
         )
 
 
@@ -7360,6 +7455,44 @@ def assert_learning_relevance_smoke(
         usage_path=no_command_usage_path,
         context=f"{context} learn agent backlog no-command strict JSON",
         cmd=no_command_cmd,
+    )
+    no_command_report_path = no_command_profile_path.with_name(
+        f"{no_command_profile_path.stem}-agent-backlog-report.md"
+    )
+    no_command_report_path.write_text("stale no-command agent backlog Markdown report\n", encoding="utf-8")
+    no_command_report_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(no_command_profile_path),
+        "--usage-file",
+        str(no_command_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(no_command_report_path),
+        "--force",
+    )
+    no_command_report_result = run_plain(no_command_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        no_command_report_result.stdout,
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+        expected_path=str(no_command_report_path),
+    )
+    assert_agent_backlog_no_command_report_markdown(
+        no_command_report_path.read_text(encoding="utf-8"),
+        profile_path=no_command_profile_path,
+        usage_path=no_command_usage_path,
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+    )
+    require_package_smoke(
+        no_command_profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+        message="learn agent backlog no-command Markdown report output must not mutate the profile",
     )
 
     profile_payload["entries"].append({
@@ -10816,6 +10949,7 @@ def run_self_test() -> None:
                 "optionalGapCount": 0,
                 "blockingChecks": [],
                 "optionalGaps": [],
+                "optionalGapDetails": [],
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -10898,7 +11032,7 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details",
             scope="package smoke",
         )
         no_command_agent_backlog_payload = {
@@ -11108,6 +11242,17 @@ def run_self_test() -> None:
                 "optionalGapCount": 1,
                 "blockingChecks": [],
                 "optionalGaps": ["check-capture"],
+                "optionalGapDetails": [
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "info",
+                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                        "reason": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON,
+                        "nextCondition": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION,
+                        "automationPolicy": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY,
+                    },
+                ],
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -11180,6 +11325,88 @@ def run_self_test() -> None:
             usage_path=learning_usage_path,
             context=context,
             cmd=learn_agent_backlog_cmd,
+        )
+        no_command_agent_backlog_markdown = "\n".join([
+            "# Agent Development Backlog Report",
+            "",
+            f"- Learning file: {learning_profile_path}",
+            f"- Usage file: {learning_usage_path}",
+            "## Summary",
+            "- Actions: 0",
+            "- Check captures: 0",
+            "## Signal Readiness",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 1",
+            "Readiness checks:",
+            "- check-capture [optional] info: No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+            "- agent-development [required] pass: Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+            "Optional gap details:",
+            f"- check-capture: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON}",
+            f"  Next condition: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION}",
+            f"  Automation policy: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY}",
+            "## Backlog Actions",
+            "No agent development backlog actions emitted.",
+            "## Action Plan",
+            "Safety summary:",
+            "- Read-only: 0",
+            "- Writes local file: 0",
+            "- Mutates local state: 0",
+            "Execution queue:",
+            "- Preview/read-only commands: 0",
+            "- Local file-write review commands: 0",
+            "- Local mutation review commands: 0",
+            "- Ordered commands: 0",
+            "- Command manifest entries: 0",
+            "- Command effect review: No command target or mutation flag exposure detected.",
+            "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
+            f"- Operator next command: refresh: `{agent_backlog_refresh_command}`",
+            "- Operator next command selection: first-command-in-operator-runbook-stage-order",
+            "- Recommended next command selection: first-command-in-safety-ordered-queue",
+            "- Operator/queue next command alignment: different",
+            "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
+            "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
+            f"- Operator handoff refresh: {agent_backlog_refresh_command}",
+            "No execution steps emitted.",
+            "## Follow-Up Commands",
+            "design-ai learn --signals --from-file . --json",
+            "## Privacy And Boundaries",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "This report is read-only evidence",
+        ])
+        assert_agent_backlog_no_command_report_markdown(
+            no_command_agent_backlog_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_report_markdown(
+                no_command_agent_backlog_markdown.replace("Optional gap details:", "Optional evidence details:"),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+            ),
+            expected="no-command learn agent backlog Markdown report missing 'Optional gap details:'",
+            scope="package smoke",
+        )
+        optional_gap_detail_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        optional_gap_detail_drift_payload["readiness"].pop("optionalGapDetails", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(optional_gap_detail_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details",
+            scope="package smoke",
         )
         refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
         refresh_reason_drift_payload["actionPlan"]["executionQueue"]["operatorRunbook"]["nextCommandSelection"]["reason"] = (

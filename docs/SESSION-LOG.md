@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 487 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for focused agent backlog `optionalGapDetails` so no-command check-capture optional gaps preserve structured reason, next-condition, and no-placeholder-mutation policy.
 - **Phase 486 (unreleased)** — Added structured `readiness.optionalGapDetails` and Markdown optional-gap guidance so missing check-capture evidence remains advisory with explicit next-condition and no-placeholder-mutation policy.
 - **Phase 485 (unreleased)** — Recorded full `npm run release:check` evidence after the agent backlog readiness release metadata guard, confirming unit tests, strict audits, package contents, release metadata, release self-tests, and packed-tarball installed-bin/one-shot smoke still pass together.
 - **Phase 484 (unreleased)** — Added release metadata guard coverage for packed-tarball `design-ai learn --agent-backlog` readiness summary and check-capture optional-gap smoke wording across release-facing docs.

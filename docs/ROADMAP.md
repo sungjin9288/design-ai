@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 487 — Optional Gap Details Package Smoke Guard (unreleased)
+
+Packed-tarball smoke now protects the focused agent backlog `optionalGapDetails` readiness contract added in Phase 486.
+
+### Changed
+- Added package smoke assertions for no-command `design-ai learn --agent-backlog` readiness `optionalGapDetails`.
+- Verified missing check-capture optional gaps keep structured reason, next condition, and automation policy fields.
+- Added release metadata phrase coverage so release-facing docs retain the `optionalGapDetails` package smoke contract.
+
+### Impact
+- Installed-bin and one-shot package paths are guarded against dropping the machine-readable optional gap detail payload.
+- Local AI/agent automation can rely on packaged no-command backlog output to distinguish advisory missing check captures from required blockers.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Keep this smoke guard aligned as additional machine-readable readiness detail fields are added.
+
 ## Phase 486 — Learning Readiness Optional Gap Details (unreleased)
 
 Learning signal readiness now explains advisory optional gaps with structured machine-readable detail and Markdown operator guidance.
@@ -20,7 +45,7 @@ Learning signal readiness now explains advisory optional gaps with structured ma
 - `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --report`
 
 ### What's still ahead
-- Add packed-tarball smoke coverage for `optionalGapDetails` if this field becomes a hard package contract.
+- Keep package smoke and release metadata guards aligned as additional optional readiness gaps are added.
 
 ## Phase 485 — Agent Backlog Readiness Release Check Evidence (unreleased)
 
