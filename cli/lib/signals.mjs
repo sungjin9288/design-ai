@@ -112,6 +112,32 @@ function renderOptionalGapDetails(lines, readiness = {}) {
   }
 }
 
+function renderReadinessCheckIndex(lines, readiness = {}) {
+  const requiredIds = Array.isArray(readiness.requiredCheckIds) ? readiness.requiredCheckIds : [];
+  const optionalIds = Array.isArray(readiness.optionalCheckIds) ? readiness.optionalCheckIds : [];
+  const statusById = readiness.checkStatusById && typeof readiness.checkStatusById === "object"
+    ? readiness.checkStatusById
+    : {};
+  const requiredById = readiness.checkRequiredById && typeof readiness.checkRequiredById === "object"
+    ? readiness.checkRequiredById
+    : {};
+  const checks = Array.isArray(readiness.checks) ? readiness.checks : [];
+  const indexIds = [...new Set([
+    ...checks.map((item) => item?.id).filter(Boolean),
+    ...requiredIds,
+    ...optionalIds,
+    ...Object.keys(statusById),
+    ...Object.keys(requiredById),
+  ])];
+  if (indexIds.length === 0) return;
+
+  lines.push("", "Readiness check index:");
+  lines.push(`- Required ids: ${requiredIds.length > 0 ? requiredIds.join(", ") : "none"}`);
+  lines.push(`- Optional ids: ${optionalIds.length > 0 ? optionalIds.join(", ") : "none"}`);
+  lines.push(`- Status index: ${indexIds.map((id) => `${id}=${statusById[id] || "unknown"}`).join(", ")}`);
+  lines.push(`- Required index: ${indexIds.map((id) => `${id}=${yesNo(Boolean(requiredById[id]))}`).join(", ")}`);
+}
+
 function inferSignalKind(payload, filePath = "") {
   const sourceName = path.basename(filePath).toLowerCase();
   const cases = Array.isArray(payload?.cases) ? payload.cases : [];
@@ -1849,6 +1875,7 @@ export function renderAgentBacklogReport(payload, {
       listItem("Optional gaps", readiness.optionalGapCount ?? 0),
     );
     const checks = Array.isArray(readiness.checks) ? readiness.checks : [];
+    renderReadinessCheckIndex(lines, readiness);
     if (checks.length > 0) {
       lines.push("", "Readiness checks:");
       for (const check of checks) {
@@ -2146,6 +2173,7 @@ export function renderLearningSignalReport(payload, {
   ];
 
   const readinessChecks = Array.isArray(readiness.checks) ? readiness.checks : [];
+  renderReadinessCheckIndex(lines, readiness);
   if (readinessChecks.length > 0) {
     lines.push("", "Readiness checks:");
     for (const check of readinessChecks) {

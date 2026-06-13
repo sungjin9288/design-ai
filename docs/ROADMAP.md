@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 490 — Learning Readiness Check Index Markdown Reports (unreleased)
+
+Learning readiness Markdown reports now expose the same id-based check index that JSON automation consumes.
+
+### Changed
+- Added a shared readiness check index renderer for learning signal and focused agent backlog Markdown reports.
+- Reports now list required ids, optional ids, status lookup, and required lookup next to the existing per-check summaries.
+- Added unit coverage for `learn --signals --report` and `learn --agent-backlog --report` check index sections.
+
+### Impact
+- Operators can compare human reports with machine-readable `requiredCheckIds`, `optionalCheckIds`, `checkStatusById`, and `checkRequiredById` without opening JSON.
+- Local AI/agent handoffs keep the same readiness contract visible in both automation and review artifacts.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Add package smoke coverage if future release work decides the Markdown check index section should become a packaged artifact contract.
+
 ## Phase 489 — Learning Readiness Check Index Release Guard (unreleased)
 
 Release metadata now protects the release-facing package smoke wording for the learning readiness check index added in Phase 488.

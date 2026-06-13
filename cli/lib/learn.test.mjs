@@ -3657,6 +3657,11 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
   assert.match(markdown, /Required local learning signal surfaces are ready; optional evidence gaps remain/);
   assert.match(markdown, /Required checks: 4\/4/);
   assert.match(markdown, /Optional gaps: 1/);
+  assert.match(markdown, /Readiness check index:/);
+  assert.match(markdown, /Required ids: learning-profile, eval-signals, workspace-readiness, agent-development/);
+  assert.match(markdown, /Optional ids: usage-sidecar, check-capture/);
+  assert.match(markdown, /Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass/);
+  assert.match(markdown, /Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes/);
   assert.match(markdown, /check-capture \[optional\] info: No check-capture entries are present/);
   assert.match(markdown, /Optional gap details:/);
   assert.match(markdown, /No real warn\/fail check result has been intentionally captured/);
@@ -4010,6 +4015,11 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /## Signal Readiness/);
   assert.match(markdown, /Required and optional local learning signal surfaces are complete/);
   assert.match(markdown, /Required checks: 4\/4/);
+  assert.match(markdown, /Readiness check index:/);
+  assert.match(markdown, /Required ids: learning-profile/);
+  assert.match(markdown, /Optional ids: check-capture/);
+  assert.match(markdown, /Status index: learning-profile=pass, check-capture=pass/);
+  assert.match(markdown, /Required index: learning-profile=yes, check-capture=no/);
   assert.match(markdown, /check-capture \[optional\] pass: Profile includes 2 check-capture learning entries/);
   assert.match(markdown, /## Backlog Actions/);
   assert.match(markdown, /design-ai learn --propose-skills --json/);
