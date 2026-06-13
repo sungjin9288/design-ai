@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 489 — Learning Readiness Check Index Release Guard (unreleased)
+
+Release metadata now protects the release-facing package smoke wording for the learning readiness check index added in Phase 488.
+
+### Changed
+- Added release metadata phrase coverage for packed-tarball check index JSON field coverage.
+- Updated README, Korean README, distribution docs, and release checklist wording so packaged `learn --agent-backlog` smoke guidance names the check index contract.
+- Updated release metadata self-test drift fixtures so dropping the check index phrase fails the release guard.
+
+### Impact
+- Release-facing docs cannot silently mention generic readiness summaries while omitting the machine-readable check index contract.
+- Local AI/agent automation keeps one documented packaged output contract for id-based readiness status lookup.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Keep release metadata phrase groups aligned when new readiness indexes or machine-readable gate fields are added.
+
 ## Phase 488 — Learning Readiness Check Index (unreleased)
 
 Learning readiness JSON now exposes a deterministic check index for local automation.
