@@ -3537,6 +3537,17 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
     optionalGapCount: 1,
     blockingChecks: [],
     optionalGaps: ["check-capture"],
+    optionalGapDetails: [
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "info",
+        summary: "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+        reason: "No real warn/fail check result has been intentionally captured into the local learning profile yet.",
+        nextCondition: "Run `design-ai check <artifact.md> --learn --yes` only after reviewing an actual warning or failure that should improve future outputs.",
+        automationPolicy: "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence.",
+      },
+    ],
     checks: [
       {
         id: "learning-profile",
@@ -3629,6 +3640,9 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
   assert.match(markdown, /Required checks: 4\/4/);
   assert.match(markdown, /Optional gaps: 1/);
   assert.match(markdown, /check-capture \[optional\] info: No check-capture entries are present/);
+  assert.match(markdown, /Optional gap details:/);
+  assert.match(markdown, /No real warn\/fail check result has been intentionally captured/);
+  assert.match(markdown, /Do not emit placeholder mutation commands for this advisory gap/);
 }));
 
 test("agentBacklogReport extracts a focused local agent development backlog", () => {

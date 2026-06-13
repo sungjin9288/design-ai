@@ -77,6 +77,41 @@ function listItem(label, value) {
   return `- ${label}: ${value}`;
 }
 
+function optionalGapDetail(check = {}) {
+  if (check.id === "check-capture") {
+    return {
+      id: check.id,
+      label: check.label || "Check learning capture",
+      status: check.status || "info",
+      summary: check.summary || "",
+      reason: "No real warn/fail check result has been intentionally captured into the local learning profile yet.",
+      nextCondition: "Run `design-ai check <artifact.md> --learn --yes` only after reviewing an actual warning or failure that should improve future outputs.",
+      automationPolicy: "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence.",
+    };
+  }
+
+  return {
+    id: check.id || "unknown",
+    label: check.label || "Optional readiness check",
+    status: check.status || "info",
+    summary: check.summary || "",
+    reason: "Optional evidence is incomplete.",
+    nextCondition: "Collect real local evidence before treating this optional signal as complete.",
+    automationPolicy: "Keep this advisory unless a future required gate explicitly depends on it.",
+  };
+}
+
+function renderOptionalGapDetails(lines, readiness = {}) {
+  const details = Array.isArray(readiness.optionalGapDetails) ? readiness.optionalGapDetails : [];
+  if (details.length === 0) return;
+  lines.push("", "Optional gap details:");
+  for (const detail of details) {
+    lines.push(`- ${detail.id || "unknown"}: ${detail.reason || detail.summary || ""}`);
+    if (detail.nextCondition) lines.push(`  Next condition: ${detail.nextCondition}`);
+    if (detail.automationPolicy) lines.push(`  Automation policy: ${detail.automationPolicy}`);
+  }
+}
+
 function inferSignalKind(payload, filePath = "") {
   const sourceName = path.basename(filePath).toLowerCase();
   const cases = Array.isArray(payload?.cases) ? payload.cases : [];
@@ -503,6 +538,7 @@ function buildLearningSignalReadiness({
     optionalGapCount: optionalGaps.length,
     blockingChecks: blockingChecks.map((item) => item.id),
     optionalGaps: optionalGaps.map((item) => item.id),
+    optionalGapDetails: optionalGaps.map(optionalGapDetail),
     checks,
   };
 }
@@ -1814,6 +1850,7 @@ export function renderAgentBacklogReport(payload, {
         lines.push(`- ${check.id || "unknown"} [${required}] ${check.status || "unknown"}: ${check.summary || ""}`);
       }
     }
+    renderOptionalGapDetails(lines, readiness);
   }
 
   lines.push("", "## Backlog Actions", "");
@@ -2110,6 +2147,7 @@ export function renderLearningSignalReport(payload, {
       lines.push(`- ${check.id || "unknown"} [${required}] ${check.status || "unknown"}: ${check.summary || ""}`);
     }
   }
+  renderOptionalGapDetails(lines, readiness);
 
   lines.push(
     "",

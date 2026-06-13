@@ -50,6 +50,8 @@ design-ai learn --signals --from-file route-eval-report.json --usage-file learni
 
 `--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews. Add `--strict` when you want the signal registry or agent development backlog to fail a local gate on warn/fail status.
 
+Readiness JSON keeps `optionalGaps` as a compact id list and adds `optionalGapDetails` for operator and automation handoff. For missing check-capture evidence, the detail explains that the gap stays advisory until a real warn/fail check artifact is reviewed and captured with `check --learn --yes`; no placeholder mutation command is emitted.
+
 ## Agent development backlog
 
 Use the focused backlog when you want only the local AI/agent next-action queue from the signal registry, without the full learning/usage/eval/workspace report.

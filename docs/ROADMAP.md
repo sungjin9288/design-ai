@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 486 — Learning Readiness Optional Gap Details (unreleased)
+
+Learning signal readiness now explains advisory optional gaps with structured machine-readable detail and Markdown operator guidance.
+
+### Changed
+- Added `readiness.optionalGapDetails` to `design-ai learn --signals --json` for optional gaps such as missing check-capture evidence.
+- Kept the existing `readiness.optionalGaps` id list for compatibility while adding reason, next condition, and automation policy fields for each optional gap.
+- Rendered the same optional gap detail section in learning signal and focused agent backlog Markdown reports.
+
+### Impact
+- Local AI/agent automation can distinguish advisory missing evidence from required blockers without parsing prose.
+- Operators can see that missing check captures require real reviewed warn/fail artifacts and should not trigger placeholder `check --learn --yes` mutation commands.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --report`
+
+### What's still ahead
+- Add packed-tarball smoke coverage for `optionalGapDetails` if this field becomes a hard package contract.
+
 ## Phase 485 — Agent Backlog Readiness Release Check Evidence (unreleased)
 
 The agent backlog readiness metadata guard now has full release-gate evidence after the focused package smoke and release metadata guard phases.
