@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 491 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for readiness check index sections in learning signal and focused agent backlog Markdown reports.
 - **Phase 490 (unreleased)** — Added readiness check index sections to learning signal and focused agent backlog Markdown reports so human review artifacts expose required/optional ids and per-id status/required lookup.
 - **Phase 489 (unreleased)** — Added release metadata guard coverage and release-facing docs wording for packed-tarball check index JSON field coverage in focused agent backlog readiness output.
 - **Phase 488 (unreleased)** — Added automation-friendly learning readiness check indexes (`requiredCheckIds`, `optionalCheckIds`, `checkStatusById`, `checkRequiredById`) for `learn --signals` and focused `learn --agent-backlog` JSON.

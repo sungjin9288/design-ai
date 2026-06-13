@@ -576,6 +576,12 @@ RELEASE_LEARN_AGENT_BACKLOG_READINESS_PACKAGE_SMOKE_TERM_GROUPS = (
         "`requiredCheckIds`",
     ),
     (
+        "Markdown check index section",
+        "Markdown check index section coverage",
+        "readiness check index section",
+        "readiness check index Markdown",
+    ),
+    (
         "installed-bin and one-shot",
         "installed-bin plus one-shot",
         "installed-bin과 one-shot",
@@ -3916,7 +3922,7 @@ human / JSON `design-ai learn --stats` profile summary output plus learn stats `
 query-filtered learn list explanation/export JSON output,
 brief-relevant prompt/pack learning selection and prompt/pack learning usage sidecar recording,
 human / JSON `design-ai learn --usage` usage sidecar report plus learn usage `--out` file-write confirmation,
-human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths. That smoke coverage also preserves the optional refresh-only runbook selection reason so no-command agent backlog output treats refresh as status metadata, not an executable handoff command.
+human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths. That smoke coverage also preserves the optional refresh-only runbook selection reason so no-command agent backlog output treats refresh as status metadata, not an executable handoff command.
 Packed-tarball smoke also verifies `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, learn skill proposals JSON `--out` file-write confirmations, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, and `design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths.
 human / JSON `design-ai learn --eval-template` checkpoint generation plus generated checkpoint strict validation,
 human / JSON `design-ai learn --eval` checkpoint report plus learn eval `--out` file-write confirmation plus learn eval `--strict` failure gate,
@@ -4019,7 +4025,7 @@ human / JSON `design-ai learn --stats` profile summary output과 learn stats `--
 query-filtered learn list explanation/export JSON output도 확인하며,
 brief-relevant prompt/pack learning selection과 prompt/pack learning usage sidecar recording도 확인하며,
 human / JSON `design-ai learn --usage` usage sidecar report와 learn usage `--out` file-write confirmation도 확인하며,
-human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal report `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmation plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation 및 `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown report, agent backlog JSON `--out` file-write confirmation, `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, check-capture optional-gap semantics도 installed-bin과 one-shot 경로에서 확인해요. 이 smoke coverage는 optional refresh-only runbook selection reason도 보존해서 no-command agent backlog output이 refresh를 executable handoff command가 아닌 status metadata로 다루는지 확인하며,
+human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal report `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmation plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation 및 `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown report, agent backlog JSON `--out` file-write confirmation, `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, check-capture optional-gap semantics도 installed-bin과 one-shot 경로에서 확인해요. 이 smoke coverage는 optional refresh-only runbook selection reason도 보존해서 no-command agent backlog output이 refresh를 executable handoff command가 아닌 status metadata로 다루는지 확인하며,
 Packed-tarball smoke는 installed-bin과 one-shot `npm exec --package <tarball>` 경로에서 `design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, learn skill proposals JSON `--out` file-write confirmation, `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact, `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join, `design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review template, `design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoff, `design-ai learn --propose-skills --strict --json` expected-failure skill proposal readiness gate도 확인하며,
 human / JSON `design-ai learn --eval-template` checkpoint generation과 generated checkpoint strict validation도 확인하며,
 human / JSON `design-ai learn --eval` checkpoint report와 learn eval `--out` file-write confirmation 및 learn eval `--strict` failure gate도 확인하며,
@@ -4361,7 +4367,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "agent backlog strict gate in installed-bin and one-shot paths",
                 "agent backlog strict gate in packaged paths",
             ).replace(
-                "agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths",
+                "agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths",
                 "agent backlog strict gate and readiness summaries in packaged paths",
             ).replace(
                 "expected-failure skill proposal readiness gate for installed-bin and one-shot `npm exec --package <tarball>` paths",
@@ -4610,7 +4616,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths",
+                "human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths",
                 "human / JSON learning signal registry coverage",
             ),
         },
@@ -4760,7 +4766,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, and check-capture optional-gap semantics",
+                " focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics",
                 "",
             ),
         },

@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 491 — Learning Readiness Markdown Check Index Package Smoke (unreleased)
+
+Packed-tarball smoke now protects the readiness check index sections in learning readiness Markdown reports.
+
+### Changed
+- Added package smoke assertions for the `Readiness check index` section in `learn --signals --report` Markdown output.
+- Added package smoke assertions for the same section in focused `learn --agent-backlog --report` Markdown output, including no-command optional-gap reports.
+- Added package smoke self-test drift fixtures for missing Markdown check index sections.
+- Updated release-facing docs and release metadata phrase guards for Markdown check index section coverage.
+
+### Impact
+- Installed-bin and one-shot package paths now verify that human review artifacts expose the same check index contract as JSON.
+- Release-facing smoke guidance cannot silently drop the Markdown check index section coverage phrase.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Keep future Markdown readiness sections aligned with package and release metadata guards.
+
 ## Phase 490 — Learning Readiness Check Index Markdown Reports (unreleased)
 
 Learning readiness Markdown reports now expose the same id-based check index that JSON automation consumes.
@@ -21,7 +47,7 @@ Learning readiness Markdown reports now expose the same id-based check index tha
 - `git diff --check`
 
 ### What's still ahead
-- Add package smoke coverage if future release work decides the Markdown check index section should become a packaged artifact contract.
+- Package smoke coverage was added in Phase 491; keep future Markdown readiness sections aligned with package and release metadata guards.
 
 ## Phase 489 — Learning Readiness Check Index Release Guard (unreleased)
 
