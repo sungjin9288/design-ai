@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 492 — Public Registry Learning Readiness Markdown Check Index Smoke (unreleased)
+
+Public registry smoke now protects the readiness check index sections in learning readiness Markdown reports after publish.
+
+### Changed
+- Added public registry smoke coverage for `learn --signals --report --out` Markdown reports.
+- Added public registry smoke coverage for focused `learn --agent-backlog --report --out` Markdown reports.
+- Added registry smoke self-test drift fixtures for missing readiness Markdown check index lines.
+- Updated release-facing docs and release metadata phrase guards for public registry learning readiness Markdown report coverage.
+
+### Impact
+- Published-package `npm exec --package @design-ai/cli@<version>` paths now verify the same human review readiness contract as packed tarball smoke.
+- Release-facing registry smoke guidance cannot silently drop the learning readiness Markdown check index coverage phrase.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run registry:smoke:self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real publish, because that command requires the public package to exist in npm.
+
 ## Phase 491 — Learning Readiness Markdown Check Index Package Smoke (unreleased)
 
 Packed-tarball smoke now protects the readiness check index sections in learning readiness Markdown reports.

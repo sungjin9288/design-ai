@@ -2782,6 +2782,14 @@ RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS = (
         "public registry generated learn eval-template checkpoint",
     ),
 )
+RELEASE_REGISTRY_LEARN_READINESS_MARKDOWN_TERM_GROUPS = (
+    (
+        "public registry learning readiness Markdown report coverage",
+        "public registry learning readiness Markdown check index coverage",
+        "public registry learn signals/agent backlog Markdown check index coverage",
+        "registry learning readiness Markdown check index coverage",
+    ),
+)
 RELEASE_DOCTOR_STRICT_TERM_GROUPS = (
     ("doctor --strict", "design-ai doctor --strict"),
 )
@@ -3013,6 +3021,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "learn eval checkpoint smoke phrase",
     "registry learn relevance smoke phrase",
     "registry learn eval-template smoke phrase",
+    "registry learning readiness Markdown report smoke phrase",
     "learn audit cleanup smoke phrase",
     "learn audit out smoke phrase",
     "registry learn audit cleanup smoke phrase",
@@ -3418,6 +3427,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "registry learn eval-template smoke phrase",
         RELEASE_REGISTRY_LEARN_EVAL_TEMPLATE_TERM_GROUPS,
+    ),
+    (
+        "registry learning readiness Markdown report smoke phrase",
+        RELEASE_REGISTRY_LEARN_READINESS_MARKDOWN_TERM_GROUPS,
     ),
     ("learn audit cleanup smoke phrase", RELEASE_LEARN_AUDIT_CLEANUP_TERM_GROUPS),
     ("learn audit out smoke phrase", RELEASE_LEARN_AUDIT_OUT_TERM_GROUPS),
@@ -3897,6 +3910,7 @@ public registry human / JSON `design-ai learn --stats` profile summary output pl
 public registry query-filtered learn list explanation/export JSON output,
 public registry brief-relevant prompt/pack learning selection with public registry prompt/pack --with-learning and prompt/pack learning usage sidecar recording,
 public registry `design-ai learn --eval-template` checkpoint generation plus public registry generated checkpoint strict validation,
+public registry learning readiness Markdown report coverage,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output plus public registry learn audit `--out` file-write confirmation,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview and confirmed apply output,
 and `npm run package:check` package contents check,
@@ -4000,6 +4014,7 @@ public registry human / JSON `design-ai learn --stats` profile summary output과
 public registry query-filtered learn list explanation/export JSON output도 확인하고,
 public registry brief-relevant prompt/pack learning selection과 public registry prompt/pack --with-learning, prompt/pack learning usage sidecar recording도 확인하고,
 public registry `design-ai learn --eval-template` checkpoint generation과 public registry generated checkpoint strict validation도 확인하고,
+public registry learning readiness Markdown report coverage도 확인하고,
 public registry human / JSON `design-ai learn --audit` cleanup suggestion output과 public registry learn audit `--out` file-write confirmation도 확인하고,
 public registry `design-ai learn --audit --fix --dry-run` cleanup preview와 confirmed apply output도 확인하고,
 `npm run package:check` package contents check도 확인하고,

@@ -4476,6 +4476,91 @@ def assert_learning_eval_template_report_json(
     )
 
 
+def assert_learning_readiness_markdown_index(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Readiness check index:",
+        "- Required ids:",
+        "- Optional ids:",
+        "- Status index:",
+        "- Required index:",
+    ):
+        require_registry_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learning readiness Markdown report missing {expected!r}",
+        )
+
+
+def assert_learning_signals_report_smoke(
+    command_factory,
+    profile_path: Path,
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--signals", "--report"])
+    cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--from-file",
+        str(cwd or profile_path.parent),
+        "--report",
+        "--out",
+        str(output_path),
+        "--force",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    markdown = read_forced_markdown_output_file(output_path, context=context, cmd=cmd)
+    assert_learning_readiness_markdown_index(markdown, context=context, cmd=cmd)
+    require_registry_smoke(
+        "# Learning Signal Registry Report" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn signals Markdown report heading changed",
+    )
+
+
+def assert_learning_agent_backlog_report_smoke(
+    command_factory,
+    profile_path: Path,
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--agent-backlog", "--report"])
+    cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--from-file",
+        str(cwd or profile_path.parent),
+        "--report",
+        "--out",
+        str(output_path),
+        "--force",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    markdown = read_forced_markdown_output_file(output_path, context=context, cmd=cmd)
+    assert_learning_readiness_markdown_index(markdown, context=context, cmd=cmd)
+    require_registry_smoke(
+        "# Agent Development Backlog Report" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog Markdown report heading changed",
+    )
+
+
 def assert_learning_relevance_smoke(
     command_factory,
     profile_path: Path,
@@ -4623,6 +4708,23 @@ def assert_learning_relevance_smoke(
         eval_path=eval_template_path,
         context=f"{context} generated learn eval-template checkpoint",
         cmd=eval_template_check_cmd,
+    )
+
+    assert_learning_signals_report_smoke(
+        command_factory,
+        profile_path,
+        profile_path.with_name(f"{profile_path.stem}-signals.md"),
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn signals Markdown report",
+    )
+    assert_learning_agent_backlog_report_smoke(
+        command_factory,
+        profile_path,
+        profile_path.with_name(f"{profile_path.stem}-agent-backlog.md"),
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn agent backlog Markdown report",
     )
 
 
@@ -7720,6 +7822,51 @@ def run_self_test() -> None:
                 "--strict",
                 "--json",
             ],
+        )
+        learning_readiness_markdown = "\n".join([
+            "# Learning Signal Registry Report",
+            "",
+            "## Readiness Summary",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 1",
+            "Readiness check index:",
+            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+            "- Optional ids: usage-sidecar, check-capture",
+            "- Status index: learning-profile=pass, usage-sidecar=info, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
+            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+        ])
+        learn_signals_report_cmd = [
+            "design-ai",
+            "learn",
+            "--signals",
+            "--file",
+            str(learning_relevance_path),
+            "--report",
+        ]
+        assert_learning_readiness_markdown_index(
+            learning_readiness_markdown,
+            context="registry smoke self-test learn signals Markdown report",
+            cmd=learn_signals_report_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_readiness_markdown_index(
+                learning_readiness_markdown.replace("Readiness check index:", "Readiness check summary:"),
+                context="registry smoke self-test learn signals Markdown report",
+                cmd=learn_signals_report_cmd,
+            ),
+            expected="learning readiness Markdown report missing 'Readiness check index:'",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_readiness_markdown_index(
+                learning_readiness_markdown.replace("- Required index:", "- Required lookup:"),
+                context="registry smoke self-test learn signals Markdown report",
+                cmd=learn_signals_report_cmd,
+            ),
+            expected="learning readiness Markdown report missing '- Required index:'",
+            scope="registry smoke",
         )
 
         learning_relevance_payload = {
