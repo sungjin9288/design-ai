@@ -1,5 +1,23 @@
 # Roadmap
 
+## Phase 493 — Public Registry Learning Readiness Release Evidence (unreleased)
+
+The full release gate now passes after the public registry learning readiness Markdown report smoke guard.
+
+### Changed
+- Recorded full `npm run release:check` evidence after Phase 492 added public registry smoke coverage for learning readiness Markdown report check indexes.
+- Confirmed the release gate covers CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke after the registry smoke guard change.
+
+### Impact
+- The branch has fresh pre-push release evidence after extending public registry learning readiness Markdown smoke coverage.
+- Local AI/agent development can continue from a verified release baseline rather than only focused registry and metadata self-tests.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
+
 ## Phase 492 — Public Registry Learning Readiness Markdown Check Index Smoke (unreleased)
 
 Public registry smoke now protects the readiness check index sections in learning readiness Markdown reports after publish.
