@@ -34,6 +34,27 @@ function countBy(items, keyFn) {
   return counts;
 }
 
+function readinessCountByStatus(items = []) {
+  const counts = {
+    pass: 0,
+    info: 0,
+    warn: 0,
+    fail: 0,
+    missing: 0,
+    template: 0,
+    unknown: 0,
+  };
+  for (const item of items || []) {
+    const status = String(item?.status || "unknown").trim() || "unknown";
+    if (Object.hasOwn(counts, status)) {
+      counts[status] += 1;
+    } else {
+      counts.unknown += 1;
+    }
+  }
+  return counts;
+}
+
 function previewText(text, maxLength = 120) {
   const normalized = String(text || "").replace(/\s+/g, " ").trim();
   if (normalized.length <= maxLength) return normalized;
@@ -136,6 +157,14 @@ function renderReadinessCheckIndex(lines, readiness = {}) {
   lines.push(`- Optional ids: ${optionalIds.length > 0 ? optionalIds.join(", ") : "none"}`);
   lines.push(`- Status index: ${indexIds.map((id) => `${id}=${statusById[id] || "unknown"}`).join(", ")}`);
   lines.push(`- Required index: ${indexIds.map((id) => `${id}=${yesNo(Boolean(requiredById[id]))}`).join(", ")}`);
+  if (readiness.checkCountByStatus && typeof readiness.checkCountByStatus === "object") {
+    const formatCounts = (counts = {}) => ["pass", "info", "warn", "fail", "missing", "template", "unknown"]
+      .map((key) => `${key}=${counts[key] ?? 0}`)
+      .join(", ");
+    lines.push(`- Status counts: ${formatCounts(readiness.checkCountByStatus)}`);
+    lines.push(`- Required status counts: ${formatCounts(readiness.requiredCheckCountByStatus)}`);
+    lines.push(`- Optional status counts: ${formatCounts(readiness.optionalCheckCountByStatus)}`);
+  }
 }
 
 function inferSignalKind(payload, filePath = "") {
@@ -549,6 +578,9 @@ function buildLearningSignalReadiness({
   const requiredPassCount = requiredChecks.filter((item) => item.status === "pass").length;
   const checkStatusById = Object.fromEntries(checks.map((item) => [item.id, item.status]));
   const checkRequiredById = Object.fromEntries(checks.map((item) => [item.id, Boolean(item.required)]));
+  const checkCountByStatus = readinessCountByStatus(checks);
+  const requiredCheckCountByStatus = readinessCountByStatus(requiredChecks);
+  const optionalCheckCountByStatus = readinessCountByStatus(optionalChecks);
   const summary = blockingChecks.length === 0
     ? optionalGaps.length === 0
       ? "Required and optional local learning signal surfaces are complete."
@@ -571,6 +603,9 @@ function buildLearningSignalReadiness({
     optionalCheckIds: optionalChecks.map((item) => item.id),
     checkStatusById,
     checkRequiredById,
+    checkCountByStatus,
+    requiredCheckCountByStatus,
+    optionalCheckCountByStatus,
     checks,
   };
 }

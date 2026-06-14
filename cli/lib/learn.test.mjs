@@ -3566,6 +3566,33 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
       "workspace-readiness": true,
       "agent-development": true,
     },
+    checkCountByStatus: {
+      pass: 5,
+      info: 1,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    requiredCheckCountByStatus: {
+      pass: 4,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    optionalCheckCountByStatus: {
+      pass: 1,
+      info: 1,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
     checks: [
       {
         id: "learning-profile",
@@ -3662,6 +3689,9 @@ test("learningSignalRegistry keeps missing check captures as advisory when all g
   assert.match(markdown, /Optional ids: usage-sidecar, check-capture/);
   assert.match(markdown, /Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass/);
   assert.match(markdown, /Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes/);
+  assert.match(markdown, /Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0/);
   assert.match(markdown, /check-capture \[optional\] info: No check-capture entries are present/);
   assert.match(markdown, /Optional gap details:/);
   assert.match(markdown, /No real warn\/fail check result has been intentionally captured/);
@@ -3725,6 +3755,33 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
         checkRequiredById: {
           "learning-profile": true,
           "check-capture": false,
+        },
+        checkCountByStatus: {
+          pass: 2,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
+        },
+        requiredCheckCountByStatus: {
+          pass: 1,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
+        },
+        optionalCheckCountByStatus: {
+          pass: 1,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
         },
         checks: [
           {
@@ -3808,6 +3865,33 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
     checkRequiredById: {
       "learning-profile": true,
       "check-capture": false,
+    },
+    checkCountByStatus: {
+      pass: 2,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    requiredCheckCountByStatus: {
+      pass: 1,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    optionalCheckCountByStatus: {
+      pass: 1,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
     },
     checks: [
       {
@@ -4020,6 +4104,9 @@ test("agentBacklogReport extracts a focused local agent development backlog", ()
   assert.match(markdown, /Optional ids: check-capture/);
   assert.match(markdown, /Status index: learning-profile=pass, check-capture=pass/);
   assert.match(markdown, /Required index: learning-profile=yes, check-capture=no/);
+  assert.match(markdown, /Status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Required status counts: pass=1, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Optional status counts: pass=1, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
   assert.match(markdown, /check-capture \[optional\] pass: Profile includes 2 check-capture learning entries/);
   assert.match(markdown, /## Backlog Actions/);
   assert.match(markdown, /design-ai learn --propose-skills --json/);

@@ -5561,6 +5561,27 @@ def assert_learning_signal_report_json(
         cmd=cmd,
         message="learn signals JSON should include workspace readiness summary",
     )
+    readiness = payload.get("readiness")
+    checks = readiness.get("checks") if isinstance(readiness, dict) else None
+    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
+    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
+    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
+    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
+    require_package_smoke(
+        isinstance(readiness, dict)
+        and readiness.get("status") == payload.get("status")
+        and isinstance(checks, list)
+        and isinstance(check_count_by_status, dict)
+        and isinstance(required_check_count_by_status, dict)
+        and isinstance(optional_check_count_by_status, dict)
+        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
+        and sum(check_count_by_status.get(key, 0) for key in count_status_keys) == len(checks),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include readiness status count index",
+    )
     agent_development = payload.get("agentDevelopment")
     agent_actions = agent_development.get("actions") if isinstance(agent_development, dict) else None
     require_package_smoke(
@@ -5643,6 +5664,9 @@ def assert_learning_signal_report_markdown(
         "- Optional ids:",
         "- Status index:",
         "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
         "## Learning Profile",
         "## Usage Signals",
         "## Eval Signals",
@@ -6216,7 +6240,23 @@ def assert_agent_backlog_readiness_json(
     optional_check_ids = readiness.get("optionalCheckIds") if isinstance(readiness, dict) else None
     check_status_by_id = readiness.get("checkStatusById") if isinstance(readiness, dict) else None
     check_required_by_id = readiness.get("checkRequiredById") if isinstance(readiness, dict) else None
+    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
+    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
+    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
     blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
+    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
+    check_count_total = sum(
+        check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(check_count_by_status, dict) else -1
+    required_check_count_total = sum(
+        required_check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(required_check_count_by_status, dict) else -1
+    optional_check_count_total = sum(
+        optional_check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(optional_check_count_by_status, dict) else -1
     detail_by_id = {
         item.get("id"): item
         for item in optional_gap_details
@@ -6250,10 +6290,19 @@ def assert_agent_backlog_readiness_json(
         and isinstance(optional_check_ids, list)
         and isinstance(check_status_by_id, dict)
         and isinstance(check_required_by_id, dict)
-        and "agent-development" in required_check_ids
-        and "check-capture" in optional_check_ids
         and isinstance(checks, list)
         and len(checks) >= 2
+        and isinstance(check_count_by_status, dict)
+        and isinstance(required_check_count_by_status, dict)
+        and isinstance(optional_check_count_by_status, dict)
+        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
+        and check_count_total == len(checks)
+        and required_check_count_total == len(required_check_ids)
+        and optional_check_count_total == len(optional_check_ids)
+        and "agent-development" in required_check_ids
+        and "check-capture" in optional_check_ids
         and isinstance(agent_development, dict)
         and agent_development.get("required") is True
         and check_status_by_id.get("agent-development") == agent_development.get("status")
@@ -6281,7 +6330,7 @@ def assert_agent_backlog_readiness_json(
         ),
         context=context,
         cmd=cmd,
-        message="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
+        message="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
     )
 
 
@@ -6348,6 +6397,9 @@ def assert_agent_backlog_report_markdown(
         "- Optional ids:",
         "- Status index:",
         "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
         "Readiness checks:",
         "check-capture [optional]",
         "agent-development [required]",
@@ -6426,6 +6478,9 @@ def assert_agent_backlog_no_command_report_markdown(
         "- Optional ids:",
         "- Status index:",
         "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
         "Readiness checks:",
         "check-capture [optional] info",
         "agent-development [required] pass",
@@ -10391,6 +10446,72 @@ def run_self_test() -> None:
                 "nextActionCounts": {},
                 "nextActionCount": 0,
             },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required and optional local learning signal surfaces are complete.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 0,
+                "blockingChecks": [],
+                "optionalGaps": [],
+                "optionalGapDetails": [],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "pass",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
+                "checkCountByStatus": {
+                    "pass": 6,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 2,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "checks": [
+                    {"id": "learning-profile", "label": "Learning profile", "status": "pass", "required": True, "summary": "Profile is ready."},
+                    {"id": "usage-sidecar", "label": "Usage sidecar", "status": "pass", "required": False, "summary": "Usage is ready."},
+                    {"id": "eval-signals", "label": "Eval signals", "status": "pass", "required": True, "summary": "Eval is ready."},
+                    {"id": "check-capture", "label": "Check learning capture", "status": "pass", "required": False, "summary": "Check capture is ready."},
+                    {"id": "workspace-readiness", "label": "Workspace readiness", "status": "pass", "required": True, "summary": "Workspace is ready."},
+                    {"id": "agent-development", "label": "Agent development backlog", "status": "pass", "required": True, "summary": "Agent backlog is ready."},
+                ],
+            },
             "agentDevelopment": {
                 "status": "pass",
                 "actionCount": 1,
@@ -10462,6 +10583,9 @@ def run_self_test() -> None:
                 "- Optional ids: usage-sidecar, check-capture",
                 "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
                 "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
                 "## Learning Profile",
                 "## Usage Signals",
                 "## Eval Signals",
@@ -11043,6 +11167,33 @@ def run_self_test() -> None:
                     "workspace-readiness": True,
                     "agent-development": True,
                 },
+                "checkCountByStatus": {
+                    "pass": 6,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 2,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -11125,7 +11276,7 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
             scope="package smoke",
         )
         no_command_agent_backlog_payload = {
@@ -11364,6 +11515,33 @@ def run_self_test() -> None:
                     "workspace-readiness": True,
                     "agent-development": True,
                 },
+                "checkCountByStatus": {
+                    "pass": 5,
+                    "info": 1,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 1,
+                    "info": 1,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
                 "checks": [
                     {
                         "id": "learning-profile",
@@ -11455,6 +11633,9 @@ def run_self_test() -> None:
             "- Optional ids: usage-sidecar, check-capture",
             "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
             "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+            "- Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
             "Readiness checks:",
             "- check-capture [optional] info: No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
             "- agent-development [required] pass: Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
@@ -11532,7 +11713,7 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
             scope="package smoke",
         )
         check_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
@@ -11545,7 +11726,20 @@ def run_self_test() -> None:
                 context=context,
                 cmd=learn_agent_backlog_cmd,
             ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details and check index",
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+            scope="package smoke",
+        )
+        check_count_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        check_count_index_drift_payload["readiness"].pop("checkCountByStatus", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(check_count_index_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
             scope="package smoke",
         )
         refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
@@ -11610,6 +11804,9 @@ def run_self_test() -> None:
                 "- Optional ids: usage-sidecar, check-capture",
                 "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
                 "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
                 "Readiness checks:",
                 "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
                 "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
@@ -11768,6 +11965,9 @@ def run_self_test() -> None:
                     "- Optional ids: usage-sidecar, check-capture",
                     "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
                     "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                    "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                    "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                    "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
                     "Readiness checks:",
                     "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
                     "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",

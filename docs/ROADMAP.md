@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 494 — Learning Readiness Status Count Index (unreleased)
+
+Learning readiness JSON and Markdown now expose status-count indexes for required and optional checks.
+
+### Changed
+- Added `checkCountByStatus`, `requiredCheckCountByStatus`, and `optionalCheckCountByStatus` to `design-ai learn --signals` and focused `design-ai learn --agent-backlog` readiness JSON.
+- Rendered the same status-count index lines in learning signal and focused agent backlog Markdown reports.
+- Extended packed-tarball smoke assertions so packaged learn signals and agent backlog outputs must preserve the status count index shape.
+
+### Impact
+- Local AI/agent automation can branch on readiness pass/info/warn/fail distribution without scanning the full `checks` array.
+- Human Markdown handoffs now show whether optional evidence gaps are only informational or whether required checks are warning/failing.
+- Existing readiness schemas remain backward compatible because the new fields are additive.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Run full `npm run release:check` before push or release handoff.
+
 ## Phase 493 — Public Registry Learning Readiness Release Evidence (unreleased)
 
 The full release gate now passes after the public registry learning readiness Markdown report smoke guard.
