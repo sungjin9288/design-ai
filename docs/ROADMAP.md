@@ -1,5 +1,23 @@
 # Roadmap
 
+## Phase 495 — Learning Readiness Status Count Release Evidence (unreleased)
+
+The full release gate now passes after the learning readiness status-count index landed.
+
+### Changed
+- Recorded full `npm run release:check` evidence after Phase 494 added readiness status-count indexes to learning signal and focused agent backlog reports.
+- Confirmed the release gate covers CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke after the status-count contract change.
+
+### Impact
+- The branch has fresh pre-push release evidence after extending local AI/agent readiness metadata.
+- Local AI/agent development can continue from a verified baseline where the packaged CLI preserves the new status-count JSON and Markdown report contract.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
+
 ## Phase 494 — Learning Readiness Status Count Index (unreleased)
 
 Learning readiness JSON and Markdown now expose status-count indexes for required and optional checks.
@@ -26,7 +44,7 @@ Learning readiness JSON and Markdown now expose status-count indexes for require
 - `git diff --check`
 
 ### What's still ahead
-- Run full `npm run release:check` before push or release handoff.
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
 
 ## Phase 493 — Public Registry Learning Readiness Release Evidence (unreleased)
 

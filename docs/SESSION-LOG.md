@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 495 (unreleased)** — Recorded full `npm run release:check` evidence after the learning readiness status-count index change, confirming unit tests, strict audits, package contents, release metadata, release self-tests, and packed-tarball installed-bin/one-shot smoke still pass together.
 - **Phase 494 (unreleased)** — Added learning readiness status count indexes to `learn --signals` and focused `learn --agent-backlog` JSON/Markdown reports, with package smoke assertions for packaged status-count contract coverage.
 - **Phase 493 (unreleased)** — Recorded full `npm run release:check` evidence after the public registry learning readiness Markdown report guard, confirming unit tests, strict audits, package contents, release metadata, release self-tests, and packed-tarball installed-bin/one-shot smoke still pass together.
 - **Phase 492 (unreleased)** — Added public registry smoke and release metadata guard coverage for learning readiness Markdown report `Readiness check index` sections in `learn --signals --report` and focused `learn --agent-backlog --report`.
