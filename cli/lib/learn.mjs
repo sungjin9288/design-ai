@@ -49,6 +49,7 @@ const LEARN_OPTIONS = [
   "--signals",
   "--agent-backlog",
   "--propose-skills",
+  "--apply-plan",
   "--patch",
   "--review-check",
   "--eval",
@@ -262,6 +263,7 @@ export function parseLearnArgs(args) {
     dryRun: false,
     strict: false,
     report: false,
+    applyPlan: false,
     patch: false,
     reviewCheck: false,
     reviewTemplate: false,
@@ -324,6 +326,8 @@ export function parseLearnArgs(args) {
       setAction(out, "curate");
     } else if (arg === "--report") {
       out.report = true;
+    } else if (arg === "--apply-plan") {
+      out.applyPlan = true;
     } else if (arg === "--patch") {
       out.patch = true;
     } else if (arg === "--review-check") {
@@ -480,6 +484,9 @@ export function parseLearnArgs(args) {
   if (out.reviewCheck && out.action !== "propose-skills") {
     throw new Error("--review-check can only be used with --propose-skills");
   }
+  if (out.applyPlan && out.action !== "propose-skills") {
+    throw new Error("--apply-plan can only be used with --propose-skills");
+  }
   if (out.minEvidenceCount && out.action !== "propose-skills") {
     throw new Error("--min-evidence can only be used with --propose-skills");
   }
@@ -497,6 +504,12 @@ export function parseLearnArgs(args) {
   }
   if (out.reviewCheck && !out.reviewFilePath) {
     throw new Error("--review-check requires --review-file");
+  }
+  if (out.applyPlan && (out.patch || out.reviewTemplate || out.reviewCheck)) {
+    throw new Error("--apply-plan cannot be combined with --patch, --review-template, or --review-check");
+  }
+  if (out.applyPlan && !out.reviewFilePath) {
+    throw new Error("--apply-plan requires --review-file");
   }
   if ([out.json, out.report, out.patch, out.reviewTemplate].filter(Boolean).length > 1) {
     throw new Error("Choose only one output mode: --json, --report, --patch, or --review-template");

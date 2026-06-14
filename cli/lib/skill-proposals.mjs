@@ -548,6 +548,121 @@ export function buildSkillProposalReviewCheck(payload, {
   };
 }
 
+function commandForReviewFile(reviewFile, extraArgs = []) {
+  const args = [
+    "design-ai",
+    "learn",
+    "--propose-skills",
+    "--review-file",
+    reviewFile || "skill-proposals.review.json",
+    ...extraArgs,
+  ];
+  return args.join(" ");
+}
+
+function acceptedProposalTask(proposal, index) {
+  const routes = Array.isArray(proposal.routeIds) && proposal.routeIds.length > 0
+    ? proposal.routeIds
+    : ["artifact"];
+  const evidenceSources = Array.isArray(proposal.evidenceSources) ? proposal.evidenceSources : [];
+  return {
+    id: `apply-${index + 1}-${proposal.id}`,
+    proposalId: proposal.id,
+    title: proposal.title,
+    candidateSkill: proposal.candidateSkill || path.basename(path.dirname(proposal.candidateSkillPath || "")) || "unknown",
+    candidateSkillPath: proposal.candidateSkillPath || "skills/unknown/SKILL.md",
+    category: proposal.category || "workflow",
+    riskLevel: proposal.riskLevel || "medium",
+    routeIds: routes,
+    sourceIssueCount: proposal.sourceIssueCount || evidenceSources.length,
+    proposedInstructionDelta: proposal.proposedInstructionDelta || "",
+    rationale: proposal.rationale || "",
+    verificationCommand: proposal.verificationCommand || "node cli/bin/design-ai.mjs check --examples --strict --json",
+    evidenceSources,
+    reviewDecision: proposal.reviewDecision || {
+      proposalId: proposal.id,
+      status: proposal.reviewStatus || "accepted",
+      reviewedAt: "",
+      reviewer: "",
+      note: "",
+    },
+    manualSteps: [
+      `Open ${proposal.candidateSkillPath || "the candidate skill file"} and inspect the relevant checklist or playbook section.`,
+      "Merge the proposed instruction delta manually instead of pasting duplicate generated text.",
+      "Run the verification command and inspect any route-specific failures before marking the work complete.",
+      "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+    ],
+    safetyChecklist: [
+      "Do not edit learning.json as part of this apply plan.",
+      "Do not call external AI APIs, embeddings, or fine-tuning jobs.",
+      "Keep the skill delta scoped to the repeated check-capture evidence.",
+      "Run the proposal review-check after updating the review file.",
+    ],
+  };
+}
+
+export function buildSkillProposalApplyPlan(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const review = payload.review || {};
+  const reviewFile = payload.reviewFile || review.file || "";
+  const acceptedProposals = Array.isArray(payload.proposals)
+    ? payload.proposals.filter((proposal) => proposal.reviewStatus === "accepted")
+    : [];
+  const tasks = acceptedProposals.map(acceptedProposalTask);
+  const reviewStatus = review.status || "unknown";
+  const status = reviewStatus === "fail" || !reviewFile || review.exists === false
+    ? "fail"
+    : tasks.length > 0
+      ? "warn"
+      : "pass";
+
+  return {
+    version: 1,
+    kind: "skill-proposal-apply-plan",
+    generatedAt: generatedAtText,
+    file: payload.file,
+    usageFile: payload.usageFile,
+    signalSource: payload.signalSource,
+    reviewFile,
+    status,
+    proposalStatus: payload.status,
+    signalStatus: payload.signalStatus,
+    candidateCount: payload.candidateCount || 0,
+    proposalCount: payload.proposalCount || 0,
+    acceptedCount: tasks.length,
+    count: tasks.length,
+    pendingReviewCount: payload.pendingReviewCount || 0,
+    reviewedCount: payload.reviewedCount || 0,
+    review,
+    tasks,
+    commands: {
+      reviewCheckJson: commandForReviewFile(reviewFile, ["--review-check", "--json"]),
+      reviewCheckReport: commandForReviewFile(reviewFile, ["--review-check", "--report", "--out", "skill-proposal-review-check.md"]),
+      proposalPatchPreview: commandForReviewFile(reviewFile, ["--patch", "--out", "skill-proposals.patch"]),
+      strictGate: commandForReviewFile(reviewFile, ["--strict", "--json"]),
+    },
+    recommendations: tasks.length > 0
+      ? [{
+        level: "warning",
+        text: "Apply accepted proposal deltas manually, then mark each reviewed decision as applied only after verification passes.",
+      }]
+      : [{
+        level: "info",
+        text: "No accepted skill proposals are ready to apply. Mark reviewed proposals as accepted before generating an apply plan.",
+      }],
+    privacy: {
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      storesRawBriefText: false,
+      exposesEntryTextPreview: true,
+    },
+  };
+}
+
 function listItem(label, value) {
   return `- ${label}: ${value}`;
 }
@@ -836,6 +951,95 @@ export function renderSkillEvolutionProposalReport(payload, {
     lines.push("- Re-run this report after new check-capture entries are added.");
   }
   lines.push("- This report is preview-only evidence; it does not apply changes.");
+
+  return `${lines.join("\n")}\n`;
+}
+
+export function renderSkillProposalApplyPlanReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const lines = [
+    "# Skill Proposal Apply Plan",
+    "",
+    listItem("Generated", generatedAtText),
+    listItem("Status", payload.status),
+    listItem("Proposal status", payload.proposalStatus),
+    listItem("Signal status", payload.signalStatus),
+    listItem("File", payload.file),
+    listItem("Usage sidecar", payload.usageFile),
+    listItem("Signal source", payload.signalSource),
+    listItem("Review file", payload.reviewFile || "not configured"),
+    listItem("Accepted proposals", payload.acceptedCount || 0),
+    listItem("Pending review", payload.pendingReviewCount || 0),
+    listItem("Reviewed", payload.reviewedCount || 0),
+    "",
+    "## Manual Apply Tasks",
+    "",
+  ];
+
+  if (!Array.isArray(payload.tasks) || payload.tasks.length === 0) {
+    lines.push("No accepted skill proposals are ready for manual apply.");
+  } else {
+    for (const task of payload.tasks) {
+      lines.push(`### ${task.title}`);
+      lines.push("");
+      lines.push(listItem("Proposal id", task.proposalId));
+      lines.push(listItem("Candidate skill", task.candidateSkillPath));
+      lines.push(listItem("Category", task.category));
+      lines.push(listItem("Routes", (task.routeIds || []).join(", ") || "artifact"));
+      lines.push(listItem("Risk", task.riskLevel));
+      lines.push(listItem("Source issues", task.sourceIssueCount));
+      if (task.reviewDecision?.reviewer) lines.push(listItem("Reviewer", task.reviewDecision.reviewer));
+      if (task.reviewDecision?.reviewedAt) lines.push(listItem("Reviewed at", task.reviewDecision.reviewedAt));
+      if (task.reviewDecision?.note) lines.push(listItem("Review note", task.reviewDecision.note));
+      if (task.rationale) lines.push(listItem("Rationale", task.rationale));
+      lines.push("");
+      lines.push("Proposed instruction delta:");
+      lines.push("");
+      lines.push(`> ${task.proposedInstructionDelta}`);
+      lines.push("");
+      lines.push("Manual steps:");
+      for (const step of task.manualSteps || []) lines.push(`- ${step}`);
+      lines.push("");
+      lines.push("Verification:");
+      lines.push("");
+      lines.push("```bash");
+      lines.push(task.verificationCommand);
+      lines.push("```");
+      lines.push("");
+      lines.push("Safety checklist:");
+      for (const item of task.safetyChecklist || []) lines.push(`- ${item}`);
+      lines.push("");
+      lines.push("Evidence:");
+      for (const evidence of task.evidenceSources || []) {
+        const title = evidence.title ? ` / ${evidence.title}` : "";
+        lines.push(`- \`${evidence.entryId}\` [${evidence.category}] ${evidence.source}${title}`);
+        if (evidence.textPreview) lines.push(`  - Preview: ${evidence.textPreview}`);
+      }
+      lines.push("");
+    }
+  }
+
+  lines.push("## Follow-up Commands", "");
+  const commands = payload.commands || {};
+  for (const [label, command] of Object.entries(commands)) {
+    lines.push(listItem(label, `\`${command}\``));
+  }
+
+  lines.push("", "## Recommendations", "");
+  for (const recommendation of payload.recommendations || []) {
+    lines.push(`- ${recommendation.level}: ${recommendation.text}`);
+  }
+
+  const privacy = payload.privacy || {};
+  lines.push("", "## Privacy And Boundaries", "");
+  lines.push(listItem("Mutates learning profile", yesNo(Boolean(privacy.mutatesProfile))));
+  lines.push(listItem("Mutates review file", yesNo(Boolean(privacy.mutatesReviewFile))));
+  lines.push(listItem("Mutates skill files", yesNo(Boolean(privacy.mutatesSkillFiles))));
+  lines.push(listItem("Calls external AI APIs", yesNo(Boolean(privacy.callsExternalAiApis))));
+  lines.push(listItem("Stores raw brief text", yesNo(Boolean(privacy.storesRawBriefText))));
+  lines.push(listItem("Includes entry text preview", yesNo(Boolean(privacy.exposesEntryTextPreview))));
 
   return `${lines.join("\n")}\n`;
 }

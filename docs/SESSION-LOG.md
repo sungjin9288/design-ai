@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 498 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` accepted proposal manual apply plans plus packed-tarball smoke and release metadata guard coverage.
 - **Phase 497 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` Markdown readiness reports.
 - **Phase 496 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check` review-file readiness checks plus packed-tarball smoke and release metadata guard coverage.
 - **Phase 495 (unreleased)** — Recorded full `npm run release:check` evidence after the learning readiness status-count index change, confirming unit tests, strict audits, package contents, release metadata, release self-tests, and packed-tarball installed-bin/one-shot smoke still pass together.

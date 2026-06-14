@@ -43,7 +43,9 @@ import {
 } from "../lib/signals.mjs";
 import {
   buildSkillEvolutionProposals,
+  buildSkillProposalApplyPlan,
   buildSkillProposalReviewCheck,
+  renderSkillProposalApplyPlanReport,
   renderSkillProposalReviewTemplate,
   renderSkillProposalReviewCheckReport,
   renderSkillEvolutionProposalPatch,
@@ -82,7 +84,7 @@ function printHelp() {
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --agent-backlog [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--review-check] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--review-check|--apply-plan] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -119,6 +121,7 @@ function printHelp() {
   console.log("  --report             With --curate, --signals, --agent-backlog, or --propose-skills, emit a Markdown review report instead of human console output");
   console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
   console.log("  --review-check       With --propose-skills, verify the review file against current proposals without changing files");
+  console.log("  --apply-plan         With --propose-skills, turn accepted review decisions into a read-only manual apply plan");
   console.log("  --review-template    With --propose-skills, emit a JSON proposal review-file template without changing review decisions");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
@@ -180,6 +183,7 @@ function printHelp() {
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --review-check --json");
+  console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --apply-plan --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-template --out skill-proposals.review.json");
   console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
   console.log("  design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch");
@@ -827,6 +831,55 @@ function printSkillProposalReviewCheck(payload) {
 
   console.log();
   console.log("Privacy: review check is read-only and does not mutate learning.json or skill files.");
+}
+
+function printSkillProposalApplyPlan(payload) {
+  header("design-ai learn", "Skill proposal apply plan");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Proposal status: ${payload.proposalStatus}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Review file: ${payload.reviewFile || "not configured"}`);
+  info(`Accepted proposals: ${payload.acceptedCount}`);
+  info(`Pending review: ${payload.pendingReviewCount}`);
+  info(`Reviewed: ${payload.reviewedCount}`);
+  console.log();
+
+  if (!payload.tasks || payload.tasks.length === 0) {
+    console.log("No accepted skill proposals are ready for manual apply.");
+  } else {
+    console.log("Manual apply tasks:");
+    for (const task of payload.tasks) {
+      const routes = Array.isArray(task.routeIds) && task.routeIds.length > 0 ? task.routeIds.join(", ") : "artifact";
+      console.log(`- ${task.proposalId}: ${task.candidateSkillPath}`);
+      console.log(`  ${dim(`${task.sourceIssueCount} issue(s) · ${task.category} · routes ${routes} · risk ${task.riskLevel}`)}`);
+      if (task.reviewDecision?.note) console.log(`  Review note: ${task.reviewDecision.note}`);
+      console.log(`  Delta: ${task.proposedInstructionDelta}`);
+      console.log(`  Verify: ${task.verificationCommand}`);
+      for (const step of task.manualSteps || []) {
+        console.log(`  Step: ${step}`);
+      }
+    }
+  }
+
+  if (payload.commands) {
+    console.log();
+    console.log("Follow-up commands:");
+    for (const [label, command] of Object.entries(payload.commands)) {
+      console.log(`- ${label}: ${command}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.");
 }
 
 function printDiff(payload) {
@@ -1603,6 +1656,22 @@ export async function runLearn(args) {
       }
       printSkillProposalReviewCheck(reviewCheck);
       applySkillProposalsStrictExit(parsed, reviewCheck);
+      return;
+    }
+    if (parsed.applyPlan) {
+      const applyPlan = buildSkillProposalApplyPlan(payload);
+      if (parsed.json) {
+        printOrWriteJson(parsed, applyPlan);
+        applySkillProposalsStrictExit(parsed, applyPlan);
+        return;
+      }
+      if (parsed.report) {
+        printOrWriteContent(parsed, renderSkillProposalApplyPlanReport(applyPlan));
+        applySkillProposalsStrictExit(parsed, applyPlan);
+        return;
+      }
+      printSkillProposalApplyPlan(applyPlan);
+      applySkillProposalsStrictExit(parsed, applyPlan);
       return;
     }
     if (parsed.json) {

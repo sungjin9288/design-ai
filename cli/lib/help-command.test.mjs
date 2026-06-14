@@ -51,7 +51,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
+  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check \[--probes\]\|--mcp-plan \[--probes\] \[--json\]\|--next-actions \[--json\]\|--graph\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site <bundle-dir> --bundle-repair \[--yes\] \[--json\] \[--out file\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
@@ -64,7 +64,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   );
   assert.match(
     output,
-    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]\s+Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization/,
+    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]\s+Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
@@ -104,7 +104,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
+    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "check").usage,
@@ -340,10 +340,11 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--signals\s+Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files/);
   assert.match(learnOutput, /design-ai learn --agent-backlog \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--strict\] \[--json\|--report\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--agent-backlog\s+Emit a focused local AI\/agent development backlog from the signal registry without changing files/);
-  assert.match(learnOutput, /design-ai learn --propose-skills \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--review-file path\] \[--review-check\] \[--min-evidence N\] \[--strict\] \[--json\|--report\|--patch\|--review-template\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /design-ai learn --propose-skills \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--min-evidence N\] \[--strict\] \[--json\|--report\|--patch\|--review-template\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--propose-skills\s+Preview skill instruction deltas from repeated check-capture learning signals without changing files/);
   assert.match(learnOutput, /--patch\s+With --propose-skills, emit a preview-only unified diff handoff without editing skill files/);
   assert.match(learnOutput, /--review-check\s+With --propose-skills, verify the review file against current proposals without changing files/);
+  assert.match(learnOutput, /--apply-plan\s+With --propose-skills, turn accepted review decisions into a read-only manual apply plan/);
   assert.match(learnOutput, /--review-template\s+With --propose-skills, emit a JSON proposal review-file template without changing review decisions/);
   assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage, --curate, --signals, --agent-backlog, or --propose-skills/);
   assert.match(learnOutput, /--review-file path\s+With --propose-skills, read proposal review decisions without changing the review file/);
@@ -362,6 +363,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --strict --json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-file skill-proposals\.review\.json --strict --json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-file skill-proposals\.review\.json --review-check --json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-file skill-proposals\.review\.json --apply-plan --json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-template --out skill-proposals\.review\.json/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --report --out skill-proposals\.md/);
   assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --patch --out skill-proposals\.patch/);

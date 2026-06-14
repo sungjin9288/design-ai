@@ -6768,6 +6768,98 @@ def assert_skill_proposal_review_check_markdown(
         )
 
 
+def assert_skill_proposal_apply_plan_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal apply-plan JSON") from error
+
+    review = payload.get("review")
+    tasks = payload.get("tasks")
+    commands = payload.get("commands")
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        payload.get("kind") == "skill-proposal-apply-plan"
+        and payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path)
+        and payload.get("reviewFile") == str(review_path)
+        and payload.get("status") == "warn"
+        and payload.get("acceptedCount") == 1
+        and payload.get("count") == 1
+        and payload.get("pendingReviewCount") == 1
+        and isinstance(review, dict)
+        and review.get("file") == str(review_path)
+        and review.get("exists") is True
+        and review.get("acceptedCount") == 1
+        and isinstance(tasks, list)
+        and len(tasks) == 1
+        and isinstance(tasks[0], dict)
+        and tasks[0].get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+        and tasks[0].get("proposalId", "").startswith("skill-proposal-component-spec-writer-")
+        and "accepted" in " ".join(tasks[0].get("manualSteps", []))
+        and "applied" in " ".join(tasks[0].get("manualSteps", []))
+        and isinstance(commands, dict)
+        and "learn --propose-skills" in str(commands.get("reviewCheckJson", ""))
+        and "--review-check --json" in str(commands.get("reviewCheckJson", ""))
+        and isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesReviewFile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposal apply-plan JSON should include accepted manual apply tasks and read-only privacy boundaries",
+    )
+
+
+def assert_skill_proposal_apply_plan_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Skill Proposal Apply Plan",
+        "- Status: warn",
+        "- Proposal status:",
+        "- Signal status:",
+        f"- File: {profile_path}",
+        f"- Usage sidecar: {usage_path}",
+        f"- Review file: {review_path}",
+        "- Accepted proposals: 1",
+        "## Manual Apply Tasks",
+        "skills/component-spec-writer/SKILL.md",
+        "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+        "## Follow-up Commands",
+        "--review-check --json",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates review file: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposal apply-plan Markdown report missing {expected!r}",
+        )
+
+
 def assert_skill_proposal_review_template_json(
     raw: str,
     *,
@@ -8212,6 +8304,97 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals review-check Markdown report out",
         cmd=skill_proposals_review_check_report_cmd,
         message="learn skill proposals review-check Markdown report output must not mutate the profile or review file",
+    )
+
+    skill_proposals_apply_plan_review_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.accepted.review.json")
+    skill_proposals_apply_plan_review_path.write_text(json.dumps({
+        "version": 1,
+        "decisions": [
+            {
+                "proposalId": review_proposal_id,
+                "status": "accepted",
+                "reviewedAt": "2026-06-11T00:10:00.000Z",
+                "reviewer": "package-smoke",
+                "note": "Package smoke confirms accepted proposals become manual apply-plan tasks.",
+            },
+        ],
+    }, indent=2) + "\n", encoding="utf-8")
+    skill_proposals_apply_plan_review_before = skill_proposals_apply_plan_review_path.read_text(encoding="utf-8")
+    skill_proposals_apply_plan_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_apply_plan_review_path),
+        "--apply-plan",
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_apply_plan_json_result = run_plain(skill_proposals_apply_plan_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_apply_plan_json(
+        skill_proposals_apply_plan_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_apply_plan_review_path,
+        context=f"{context} learn skill proposals apply-plan JSON",
+        cmd=skill_proposals_apply_plan_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_apply_plan_review_path.read_text(encoding="utf-8") == skill_proposals_apply_plan_review_before,
+        context=f"{context} learn skill proposals apply-plan JSON",
+        cmd=skill_proposals_apply_plan_json_cmd,
+        message="learn skill proposals apply-plan JSON output must not mutate the profile or review file",
+    )
+
+    skill_proposals_apply_plan_report_path = profile_path.with_name(f"{profile_path.stem}-skill-proposal-apply-plan.md")
+    skill_proposals_apply_plan_report_path.write_text("stale skill proposal apply-plan Markdown report\n", encoding="utf-8")
+    skill_proposals_apply_plan_report_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_apply_plan_review_path),
+        "--apply-plan",
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(skill_proposals_apply_plan_report_path),
+        "--force",
+    )
+    skill_proposals_apply_plan_report_result = run_plain(
+        skill_proposals_apply_plan_report_cmd,
+        cwd=cwd,
+        env=relevance_env,
+    )
+    assert_output_write_success(
+        skill_proposals_apply_plan_report_result.stdout,
+        context=f"{context} learn skill proposals apply-plan Markdown report out",
+        cmd=skill_proposals_apply_plan_report_cmd,
+        expected_path=str(skill_proposals_apply_plan_report_path),
+    )
+    assert_skill_proposal_apply_plan_markdown(
+        skill_proposals_apply_plan_report_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_apply_plan_review_path,
+        context=f"{context} learn skill proposals apply-plan Markdown report out file",
+        cmd=skill_proposals_apply_plan_report_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_apply_plan_review_path.read_text(encoding="utf-8") == skill_proposals_apply_plan_review_before,
+        context=f"{context} learn skill proposals apply-plan Markdown report out",
+        cmd=skill_proposals_apply_plan_report_cmd,
+        message="learn skill proposals apply-plan Markdown report output must not mutate the profile or review file",
     )
 
     skill_proposals_min_evidence_json_cmd = command_factory(
@@ -12458,6 +12641,132 @@ def run_self_test() -> None:
             context=context,
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
         )
+        learning_skill_proposal_apply_plan_review_path = learning_profile_path.with_name("skill-proposals.accepted.review.json")
+        learning_skill_proposal_apply_plan_payload = {
+            "version": 1,
+            "kind": "skill-proposal-apply-plan",
+            "generatedAt": "2026-06-11T00:10:00.000Z",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
+            "status": "warn",
+            "proposalStatus": "warn",
+            "signalStatus": "pass",
+            "candidateCount": 1,
+            "proposalCount": 1,
+            "acceptedCount": 1,
+            "count": 1,
+            "pendingReviewCount": 1,
+            "reviewedCount": 1,
+            "review": {
+                **learning_skill_proposal_payload["review"],
+                "file": str(learning_skill_proposal_apply_plan_review_path),
+                "exists": True,
+                "status": "pass",
+                "decisionCount": 1,
+                "matchedCount": 1,
+                "pendingCount": 1,
+                "acceptedCount": 1,
+            },
+            "tasks": [
+                {
+                    "id": "apply-1-skill-proposal-component-spec-writer-abcdef1234",
+                    "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                    "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                    "candidateSkill": "component-spec-writer",
+                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                    "category": "accessibility",
+                    "riskLevel": "low",
+                    "routeIds": [EXPECTED_ROUTE_ID],
+                    "sourceIssueCount": 2,
+                    "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
+                    "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
+                    "manualSteps": [
+                        "Open skills/component-spec-writer/SKILL.md and inspect the relevant checklist or playbook section.",
+                        "Merge the proposed instruction delta manually instead of pasting duplicate generated text.",
+                        "Run the verification command and inspect any route-specific failures before marking the work complete.",
+                        "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+                    ],
+                    "safetyChecklist": [
+                        "Do not edit learning.json as part of this apply plan.",
+                        "Do not call external AI APIs, embeddings, or fine-tuning jobs.",
+                    ],
+                    "evidenceSources": learning_skill_proposal_payload["proposals"][0]["evidenceSources"],
+                    "reviewDecision": {
+                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                        "status": "accepted",
+                        "reviewedAt": "2026-06-11T00:10:00.000Z",
+                        "reviewer": "package-smoke",
+                        "note": "Instruction delta accepted for manual apply.",
+                    },
+                },
+            ],
+            "commands": {
+                "reviewCheckJson": f"design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                "reviewCheckReport": f"design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+            },
+            "recommendations": [{"level": "warning", "text": "Apply accepted proposal deltas manually."}],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesReviewFile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+            },
+        }
+        assert_skill_proposal_apply_plan_json(
+            json.dumps(learning_skill_proposal_apply_plan_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        )
+        learning_skill_proposal_apply_plan_markdown = "\n".join([
+            "# Skill Proposal Apply Plan",
+            "",
+            "- Generated: 2026-06-11T00:10:00.000Z",
+            "- Status: warn",
+            "- Proposal status: warn",
+            "- Signal status: pass",
+            f"- File: {learning_profile_path}",
+            f"- Usage sidecar: {learning_usage_path}",
+            f"- Signal source: {Path(tmp)}",
+            f"- Review file: {learning_skill_proposal_apply_plan_review_path}",
+            "- Accepted proposals: 1",
+            "- Pending review: 1",
+            "- Reviewed: 1",
+            "",
+            "## Manual Apply Tasks",
+            "",
+            "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+            "",
+            "- Candidate skill: skills/component-spec-writer/SKILL.md",
+            "",
+            "Manual steps:",
+            "- After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+            "",
+            "## Follow-up Commands",
+            "",
+            f"- reviewCheckJson: `design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            "",
+            "## Privacy And Boundaries",
+            "",
+            "- Mutates learning profile: no",
+            "- Mutates review file: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+        ])
+        assert_skill_proposal_apply_plan_markdown(
+            learning_skill_proposal_apply_plan_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+        )
         assert_skill_proposal_review_template_json(
             json.dumps({
                 "version": 1,
@@ -12699,6 +13008,38 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
             ),
             expected="learn skill proposal review-check Markdown report missing '- Mutates skill files: no'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "acceptedCount": 0,
+                    "count": 0,
+                    "tasks": [],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_markdown(
+                learning_skill_proposal_apply_plan_markdown.replace(
+                    "- Mutates skill files: no",
+                    "- Mutates skill files: yes",
+                ),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+            ),
+            expected="learn skill proposal apply-plan Markdown report missing '- Mutates skill files: no'",
             scope="package smoke",
         )
         expect_self_test_failure(

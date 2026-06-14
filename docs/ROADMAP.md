@@ -1660,6 +1660,32 @@ Release metadata now protects the packed-tarball learn skill proposals JSON `--o
 ### What's still ahead
 - Continue broader AI/agent learning development or prepare the current branch for push when ready.
 
+## Phase 498 — Skill Proposal Apply-Plan Workflow (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` now converts accepted proposal decisions into a read-only manual apply plan. This bridges the gap between review acceptance and actual skill-file editing without introducing auto-mutation, external AI calls, embeddings, or dependency changes.
+
+### Changed
+- Added `--apply-plan` parsing for `learn --propose-skills`, requiring `--review-file` and rejecting `--patch`, `--review-template`, and `--review-check` combinations.
+- Added human, JSON, and Markdown apply-plan output with accepted proposal tasks, proposed instruction deltas, manual steps, verification commands, evidence, follow-up review-check commands, and explicit read-only privacy boundaries.
+- Added unit, help, package-smoke, and release metadata guard coverage for `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --json` and `--apply-plan --report --out skill-proposal-apply-plan.md`.
+
+### Impact
+- Accepted proposals are easier to apply manually and consistently, but `design-ai` still does not edit `learning.json`, review files, skill files, target repos, or external systems.
+- The strict proposal gate still clears only after the operator marks reviewed decisions as `applied` or `rejected`.
+
+### Verification Plan
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development after the apply-plan workflow has package and release guard coverage.
+
 ## Phase 497 — Skill Proposal Review-Check Markdown Package Smoke Coverage (unreleased)
 
 Packed-tarball smoke now executes `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the human-review artifact side of Phase 496 so the review-check readiness gate is protected in both JSON and Markdown report forms.
@@ -1682,9 +1708,6 @@ Packed-tarball smoke now executes `design-ai learn --propose-skills --review-fil
 - `npm run release:self-test`
 - `npm run package:smoke`
 - `git diff --check`
-
-### What's still ahead
-- Continue from read-only review verification toward a reviewed manual apply workflow for accepted skill deltas.
 
 ## Phase 496 — Skill Proposal Review-Check Gate (unreleased)
 
