@@ -56,7 +56,9 @@ import {
 } from "./signals.mjs";
 import {
   buildSkillEvolutionProposals,
+  buildSkillProposalReviewCheck,
   renderSkillEvolutionProposalReport,
+  renderSkillProposalReviewCheckReport,
 } from "./skill-proposals.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 import { runLearn } from "../commands/learn.mjs";
@@ -364,6 +366,13 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(proposeSkillsReviewTemplateArgs.outPath, "skill-proposals.review.json");
   assert.equal(proposeSkillsReviewTemplateArgs.force, true);
 
+  const proposeSkillsReviewCheckArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--review-file", "skill-proposals.review.json", "--review-check", "--json"]);
+  assert.equal(proposeSkillsReviewCheckArgs.action, "propose-skills");
+  assert.equal(proposeSkillsReviewCheckArgs.fromFile, "signals");
+  assert.equal(proposeSkillsReviewCheckArgs.reviewFilePath, path.resolve("skill-proposals.review.json"));
+  assert.equal(proposeSkillsReviewCheckArgs.reviewCheck, true);
+  assert.equal(proposeSkillsReviewCheckArgs.json, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -488,6 +497,22 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   assert.throws(
     () => parseLearnArgs(["--stats", "--review-template"]),
     /--review-template can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--signals", "--review-check"]),
+    /--review-check can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--review-check"]),
+    /--review-check requires --review-file/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--review-file", "skill-proposals.review.json", "--review-check", "--patch"]),
+    /--review-check cannot be combined with --patch or --review-template/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--review-file", "skill-proposals.review.json", "--review-check", "--review-template"]),
+    /--review-check cannot be combined with --patch or --review-template/,
   );
   assert.throws(
     () => parseLearnArgs(["--propose-skills", "--min-evidence", "0"]),
@@ -5531,6 +5556,103 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(proposalGatePayload.status, "pass");
     assert.equal(proposalGatePayload.pendingReviewCount, 0);
     assert.equal(proposalGatePayload.review.appliedCount, 1);
+
+    const proposalReviewCheck = buildSkillProposalReviewCheck(proposalGatePayload, {
+      generatedAt: new Date("2026-06-10T00:10:00.000Z"),
+    });
+    assert.equal(proposalReviewCheck.kind, "skill-proposal-review-check");
+    assert.equal(proposalReviewCheck.status, "warn");
+    assert.equal(proposalReviewCheck.proposalStatus, "pass");
+    assert.equal(proposalReviewCheck.review.staleCount, 1);
+    assert.equal(proposalReviewCheck.privacy.mutatesSkillFiles, false);
+    const proposalReviewCheckReport = renderSkillProposalReviewCheckReport(proposalReviewCheck, {
+      generatedAt: new Date("2026-06-10T00:11:00.000Z"),
+    });
+    assert.match(proposalReviewCheckReport, /^# Skill Proposal Review Check/);
+    assert.match(proposalReviewCheckReport, /- Status: warn/);
+    assert.match(proposalReviewCheckReport, /- Mutates skill files: no/);
+
+    const cleanReviewFile = path.join(dir, "skill-proposals.clean.review.json");
+    writeFileSync(cleanReviewFile, JSON.stringify({
+      version: 1,
+      decisions: [
+        {
+          proposalId: strictPayload.proposals[0].id,
+          status: "applied",
+          reviewedAt: "2026-06-10T00:06:00.000Z",
+          reviewer: "local-operator",
+          note: "Instruction delta was manually reviewed and applied.",
+        },
+      ],
+    }), "utf8");
+    const cleanReviewBefore = readFileSync(cleanReviewFile, "utf8");
+
+    process.exitCode = 0;
+    const reviewCheckJsonOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      cleanReviewFile,
+      "--review-check",
+      "--strict",
+      "--json",
+    ]));
+    const reviewCheckJsonPayload = JSON.parse(reviewCheckJsonOutput);
+    assert.equal(reviewCheckJsonPayload.kind, "skill-proposal-review-check");
+    assert.equal(reviewCheckJsonPayload.status, "pass");
+    assert.equal(reviewCheckJsonPayload.proposalStatus, "warn");
+    assert.equal(reviewCheckJsonPayload.pendingReviewCount, 0);
+    assert.equal(reviewCheckJsonPayload.review.appliedCount, 1);
+    assert.equal(reviewCheckJsonPayload.review.staleCount, 0);
+    assert.equal(reviewCheckJsonPayload.summary.failures, 0);
+    assert.equal(reviewCheckJsonPayload.summary.warnings, 0);
+    assert.equal(process.exitCode, 0);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+    assert.equal(readFileSync(cleanReviewFile, "utf8"), cleanReviewBefore);
+
+    const reviewCheckHumanOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      cleanReviewFile,
+      "--review-check",
+    ]));
+    assert.match(reviewCheckHumanOutput, /Skill proposal review check/);
+    assert.match(reviewCheckHumanOutput, /Status: pass/);
+    assert.match(reviewCheckHumanOutput, /Privacy: review check is read-only/);
+
+    const reviewCheckReportPath = path.join(dir, "skill-proposals-review-check.md");
+    const reviewCheckReportOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      cleanReviewFile,
+      "--review-check",
+      "--report",
+      "--out",
+      reviewCheckReportPath,
+    ]));
+    assert.match(reviewCheckReportOutput, /Wrote /);
+    const reviewCheckReport = readFileSync(reviewCheckReportPath, "utf8");
+    assert.match(reviewCheckReport, /^# Skill Proposal Review Check/);
+    assert.match(reviewCheckReport, /- Status: pass/);
+    assert.match(reviewCheckReport, /- Mutates skill files: no/);
+    assert.equal(readFileSync(filePath, "utf8"), before);
 
     process.exitCode = 0;
     const reviewedPatchOutput = await captureStdout(() => runLearn([

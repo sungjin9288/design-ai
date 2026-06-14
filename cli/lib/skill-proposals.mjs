@@ -430,6 +430,124 @@ export function buildSkillEvolutionProposals({
   };
 }
 
+function reviewCheck({ id, level = "pass", passed = true, message, evidence = {} }) {
+  return {
+    id,
+    level,
+    passed,
+    message,
+    evidence,
+  };
+}
+
+function summarizeReviewChecks(checks) {
+  const failures = checks.filter((check) => check.level === "fail").length;
+  const warnings = checks.filter((check) => check.level === "warn").length;
+  return {
+    status: failures > 0 ? "fail" : warnings > 0 ? "warn" : "pass",
+    failures,
+    warnings,
+    passes: checks.filter((check) => check.level === "pass").length,
+    total: checks.length,
+  };
+}
+
+export function buildSkillProposalReviewCheck(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const review = payload.review || {};
+  const reviewFile = payload.reviewFile || review.file || "";
+  const warnings = Array.isArray(review.warnings) ? review.warnings : [];
+  const checks = [];
+
+  checks.push(reviewCheck({
+    id: "review-file-configured",
+    level: reviewFile ? "pass" : "fail",
+    passed: Boolean(reviewFile),
+    message: reviewFile ? "A skill proposal review file is configured." : "No review file was provided.",
+    evidence: { reviewFile },
+  }));
+  checks.push(reviewCheck({
+    id: "review-file-exists",
+    level: review.exists ? "pass" : "fail",
+    passed: Boolean(review.exists),
+    message: review.exists ? "The review file exists." : "The review file does not exist.",
+    evidence: { reviewFile, exists: Boolean(review.exists) },
+  }));
+  checks.push(reviewCheck({
+    id: "review-file-valid",
+    level: review.status === "fail" ? "fail" : warnings.length > 0 || review.status === "warn" ? "warn" : "pass",
+    passed: review.status === "pass",
+    message: review.status === "pass"
+      ? "The review file is valid and has a decisions array."
+      : `Review file status is ${review.status || "unknown"}.`,
+    evidence: { reviewStatus: review.status || "unknown", warnings },
+  }));
+  checks.push(reviewCheck({
+    id: "current-proposals-cleared",
+    level: (payload.pendingReviewCount || 0) > 0 ? "warn" : "pass",
+    passed: (payload.pendingReviewCount || 0) === 0,
+    message: (payload.pendingReviewCount || 0) === 0
+      ? "All current proposals are applied or rejected."
+      : "Some current proposals are still pending, accepted, or deferred.",
+    evidence: {
+      proposalCount: payload.proposalCount || 0,
+      pendingReviewCount: payload.pendingReviewCount || 0,
+      clearedCount: review.clearedCount || 0,
+    },
+  }));
+  checks.push(reviewCheck({
+    id: "no-stale-review-decisions",
+    level: (review.staleCount || 0) > 0 ? "warn" : "pass",
+    passed: (review.staleCount || 0) === 0,
+    message: (review.staleCount || 0) === 0
+      ? "No stale review decisions were found."
+      : "Review file contains decisions for proposals that are no longer current.",
+    evidence: {
+      staleCount: review.staleCount || 0,
+      decisionCount: review.decisionCount || 0,
+      matchedCount: review.matchedCount || 0,
+    },
+  }));
+
+  const summary = summarizeReviewChecks(checks);
+  return {
+    version: 1,
+    kind: "skill-proposal-review-check",
+    generatedAt: generatedAtText,
+    file: payload.file,
+    usageFile: payload.usageFile,
+    signalSource: payload.signalSource,
+    reviewFile,
+    status: summary.status,
+    proposalStatus: payload.status,
+    signalStatus: payload.signalStatus,
+    proposalCount: payload.proposalCount || 0,
+    pendingReviewCount: payload.pendingReviewCount || 0,
+    reviewedCount: payload.reviewedCount || 0,
+    review,
+    summary,
+    checks,
+    recommendations: summary.status === "pass"
+      ? [{
+        level: "info",
+        text: "Review decisions clear the current skill proposal gate. Re-run proposal verification after any manual skill edit.",
+      }]
+      : [{
+        level: "warning",
+        text: "Refresh the review file from `--review-template`, then mark current proposals as applied or rejected after manual review.",
+      }],
+    privacy: {
+      mutatesProfile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      storesRawBriefText: false,
+      exposesEntryTextPreview: false,
+    },
+  };
+}
+
 function listItem(label, value) {
   return `- ${label}: ${value}`;
 }
@@ -718,6 +836,63 @@ export function renderSkillEvolutionProposalReport(payload, {
     lines.push("- Re-run this report after new check-capture entries are added.");
   }
   lines.push("- This report is preview-only evidence; it does not apply changes.");
+
+  return `${lines.join("\n")}\n`;
+}
+
+export function renderSkillProposalReviewCheckReport(payload, {
+  generatedAt = new Date(),
+} = {}) {
+  const generatedAtText = generatedAt instanceof Date ? generatedAt.toISOString() : String(generatedAt || "");
+  const lines = [
+    "# Skill Proposal Review Check",
+    "",
+    listItem("Generated", generatedAtText),
+    listItem("Status", payload.status),
+    listItem("Proposal status", payload.proposalStatus),
+    listItem("Signal status", payload.signalStatus),
+    listItem("File", payload.file),
+    listItem("Usage sidecar", payload.usageFile),
+    listItem("Signal source", payload.signalSource),
+    listItem("Review file", payload.reviewFile || "not configured"),
+    listItem("Proposals", payload.proposalCount),
+    listItem("Pending review", payload.pendingReviewCount),
+    listItem("Reviewed", payload.reviewedCount),
+    "",
+    "## Checks",
+    "",
+  ];
+
+  for (const check of payload.checks || []) {
+    lines.push(`- ${check.level}: ${check.id} - ${check.message}`);
+  }
+
+  const review = payload.review || {};
+  lines.push("", "## Review Summary", "");
+  lines.push(listItem("Exists", yesNo(Boolean(review.exists))));
+  lines.push(listItem("Status", review.status || "unknown"));
+  lines.push(listItem("Decisions", review.decisionCount || 0));
+  lines.push(listItem("Matched", review.matchedCount || 0));
+  lines.push(listItem("Stale", review.staleCount || 0));
+  lines.push(listItem("Applied", review.appliedCount || 0));
+  lines.push(listItem("Rejected", review.rejectedCount || 0));
+  lines.push(listItem("Accepted", review.acceptedCount || 0));
+  lines.push(listItem("Deferred", review.deferredCount || 0));
+  if (Array.isArray(review.warnings) && review.warnings.length > 0) {
+    lines.push("", "Warnings:");
+    for (const warning of review.warnings) lines.push(`- ${warning}`);
+  }
+
+  lines.push("", "## Recommendations", "");
+  for (const recommendation of payload.recommendations || []) {
+    lines.push(`- ${recommendation.level}: ${recommendation.text}`);
+  }
+
+  lines.push("", "## Privacy And Boundaries", "");
+  lines.push(listItem("Mutates learning profile", yesNo(Boolean(payload.privacy?.mutatesProfile))));
+  lines.push(listItem("Mutates skill files", yesNo(Boolean(payload.privacy?.mutatesSkillFiles))));
+  lines.push(listItem("Calls external AI APIs", yesNo(Boolean(payload.privacy?.callsExternalAiApis))));
+  lines.push(listItem("Stores raw brief text", yesNo(Boolean(payload.privacy?.storesRawBriefText))));
 
   return `${lines.join("\n")}\n`;
 }

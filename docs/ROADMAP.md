@@ -1660,6 +1660,56 @@ Release metadata now protects the packed-tarball learn skill proposals JSON `--o
 ### What's still ahead
 - Continue broader AI/agent learning development or prepare the current branch for push when ready.
 
+## Phase 497 — Skill Proposal Review-Check Markdown Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the human-review artifact side of Phase 496 so the review-check readiness gate is protected in both JSON and Markdown report forms.
+
+### Changed
+- Added package smoke execution for read-only skill proposal review-check Markdown reports with `--out` file-write confirmation.
+- Added package smoke self-test drift coverage for the review-check Markdown report privacy and readiness sections.
+- Added release metadata phrase guards and self-test drift fixtures for the release-facing review-check Markdown report smoke wording.
+- Updated README, Korean README, Distribution docs, Release checklist, changelog, and session history with the new packaged report contract.
+
+### Impact
+- The review-check Markdown report remains read-only: it does not mutate `learning.json`, review files, skill files, target repos, or external systems.
+- Release-facing docs now protect both `--review-check --json` and `--review-check --report --out` paths for local AI/agent skill proposal reviews.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue from read-only review verification toward a reviewed manual apply workflow for accepted skill deltas.
+
+## Phase 496 — Skill Proposal Review-Check Gate (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check` now verifies that the current skill proposal set is covered by read-only review-file decisions. This gives local AI/agent skill evolution a deterministic post-review gate before any manual skill edit is considered complete.
+
+### Changed
+- Added `--review-check` parsing for `learn --propose-skills`, requiring `--review-file` and rejecting `--patch` / `--review-template` combinations.
+- Added human, JSON, and Markdown review-check outputs with pass/warn/fail checks for review-file configuration, existence, validity, current proposal clearance, and stale decisions.
+- Added unit, help, package-smoke, and release metadata guard coverage for `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --json`.
+
+### Impact
+- Review-check is read-only: it does not mutate `learning.json`, review files, skill files, target repos, or external systems.
+- `--strict` can now gate the review-check status itself, so stale or pending review files fail local readiness without conflating that check with broader signal readiness warnings.
+
+### Verification Plan
+- `node --check cli/lib/learn.mjs cli/lib/skill-proposals.mjs cli/commands/learn.mjs cli/commands/help.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue from read-only readiness checks toward a reviewed manual apply workflow for accepted skill deltas.
+
 ## Phase 431 — Skill Proposal Review-File Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join smoke phrase across release-facing policy docs. This closes the Phase 427/428 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged review-file decision coverage.

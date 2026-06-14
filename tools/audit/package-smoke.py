@@ -6657,6 +6657,117 @@ def assert_skill_proposal_review_json(
     )
 
 
+def assert_skill_proposal_review_check_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+    expect_status: str = "pass",
+    returncode: int | None = None,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal review-check JSON") from error
+
+    if returncode is not None:
+        expected_returncode = 0 if expect_status == "pass" else 1
+        require_package_smoke(
+            returncode == expected_returncode,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposal review-check strict JSON should exit with code {expected_returncode} when status is {expect_status}",
+        )
+
+    review = payload.get("review")
+    summary = payload.get("summary")
+    checks = payload.get("checks")
+    require_package_smoke(
+        payload.get("kind") == "skill-proposal-review-check"
+        and payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path)
+        and payload.get("reviewFile") == str(review_path)
+        and payload.get("status") == expect_status
+        and payload.get("pendingReviewCount") == 0
+        and payload.get("reviewedCount") >= 1
+        and isinstance(review, dict)
+        and review.get("file") == str(review_path)
+        and review.get("exists") is True
+        and review.get("status") == "pass",
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposal review-check JSON should report {expect_status} review-file readiness",
+    )
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("status") == expect_status
+        and summary.get("failures") == 0
+        and summary.get("warnings") == 0
+        and isinstance(checks, list)
+        and len(checks) >= 5
+        and all(isinstance(item, dict) and item.get("level") == "pass" and item.get("passed") is True for item in checks),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposal review-check JSON should include passing check summary",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False
+        and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposal review-check JSON should be read-only and local",
+    )
+
+
+def assert_skill_proposal_review_check_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Skill Proposal Review Check",
+        "- Status: pass",
+        "- Proposal status:",
+        "- Signal status:",
+        f"- File: {profile_path}",
+        f"- Usage sidecar: {usage_path}",
+        f"- Review file: {review_path}",
+        "- Pending review: 0",
+        "## Checks",
+        "pass: review-file-configured - A skill proposal review file is configured.",
+        "pass: current-proposals-cleared - All current proposals are applied or rejected.",
+        "pass: no-stale-review-decisions - No stale review decisions were found.",
+        "## Review Summary",
+        "- Status: pass",
+        "- Applied: 1",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "- Stores raw brief text: no",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposal review-check Markdown report missing {expected!r}",
+        )
+
+
 def assert_skill_proposal_review_template_json(
     raw: str,
     *,
@@ -8024,6 +8135,83 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals review JSON",
         cmd=skill_proposals_review_json_cmd,
         message="learn skill proposals review JSON output must not mutate the profile or review file",
+    )
+
+    skill_proposals_review_check_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_review_path),
+        "--review-check",
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_review_check_json_result = run_plain(skill_proposals_review_check_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_review_check_json(
+        skill_proposals_review_check_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_review_path,
+        context=f"{context} learn skill proposals review-check JSON",
+        cmd=skill_proposals_review_check_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_review_path.read_text(encoding="utf-8") == skill_proposals_review_before,
+        context=f"{context} learn skill proposals review-check JSON",
+        cmd=skill_proposals_review_check_json_cmd,
+        message="learn skill proposals review-check JSON output must not mutate the profile or review file",
+    )
+
+    skill_proposals_review_check_report_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-review-check.md")
+    skill_proposals_review_check_report_path.write_text("stale skill proposal review-check Markdown report\n", encoding="utf-8")
+    skill_proposals_review_check_report_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_review_path),
+        "--review-check",
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(skill_proposals_review_check_report_path),
+        "--force",
+    )
+    skill_proposals_review_check_report_result = run_plain(
+        skill_proposals_review_check_report_cmd,
+        cwd=cwd,
+        env=relevance_env,
+    )
+    assert_output_write_success(
+        skill_proposals_review_check_report_result.stdout,
+        context=f"{context} learn skill proposals review-check Markdown report out",
+        cmd=skill_proposals_review_check_report_cmd,
+        expected_path=str(skill_proposals_review_check_report_path),
+    )
+    assert_skill_proposal_review_check_markdown(
+        skill_proposals_review_check_report_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_review_path,
+        context=f"{context} learn skill proposals review-check Markdown report out file",
+        cmd=skill_proposals_review_check_report_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_review_path.read_text(encoding="utf-8") == skill_proposals_review_before,
+        context=f"{context} learn skill proposals review-check Markdown report out",
+        cmd=skill_proposals_review_check_report_cmd,
+        message="learn skill proposals review-check Markdown report output must not mutate the profile or review file",
     )
 
     skill_proposals_min_evidence_json_cmd = command_factory(
@@ -12160,6 +12348,116 @@ def run_self_test() -> None:
             context=context,
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
         )
+        learning_skill_proposal_review_check_payload = {
+            "version": 1,
+            "kind": "skill-proposal-review-check",
+            "generatedAt": "2026-06-11T00:05:00.000Z",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "reviewFile": str(learning_skill_proposal_review_path),
+            "status": "pass",
+            "proposalStatus": "pass",
+            "signalStatus": "pass",
+            "proposalCount": 1,
+            "pendingReviewCount": 0,
+            "reviewedCount": 1,
+            "review": {
+                **learning_skill_proposal_payload["review"],
+                "file": str(learning_skill_proposal_review_path),
+                "exists": True,
+                "status": "pass",
+                "decisionCount": 1,
+                "matchedCount": 1,
+                "pendingCount": 0,
+                "appliedCount": 1,
+                "clearedCount": 1,
+            },
+            "summary": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+                "passes": 5,
+                "total": 5,
+            },
+            "checks": [
+                {"id": "review-file-configured", "level": "pass", "passed": True, "message": "A skill proposal review file is configured.", "evidence": {}},
+                {"id": "review-file-exists", "level": "pass", "passed": True, "message": "The review file exists.", "evidence": {}},
+                {"id": "review-file-valid", "level": "pass", "passed": True, "message": "The review file is valid and has a decisions array.", "evidence": {}},
+                {"id": "current-proposals-cleared", "level": "pass", "passed": True, "message": "All current proposals are applied or rejected.", "evidence": {}},
+                {"id": "no-stale-review-decisions", "level": "pass", "passed": True, "message": "No stale review decisions were found.", "evidence": {}},
+            ],
+            "recommendations": [{"level": "info", "text": "Review decisions clear the current skill proposal gate."}],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": False,
+            },
+        }
+        assert_skill_proposal_review_check_json(
+            json.dumps(learning_skill_proposal_review_check_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
+        )
+        learning_skill_proposal_review_check_markdown = "\n".join([
+            "# Skill Proposal Review Check",
+            "",
+            "- Generated: 2026-06-11T00:05:00.000Z",
+            "- Status: pass",
+            "- Proposal status: pass",
+            "- Signal status: pass",
+            f"- File: {learning_profile_path}",
+            f"- Usage sidecar: {learning_usage_path}",
+            f"- Signal source: {Path(tmp)}",
+            f"- Review file: {learning_skill_proposal_review_path}",
+            "- Proposals: 1",
+            "- Pending review: 0",
+            "- Reviewed: 1",
+            "",
+            "## Checks",
+            "",
+            "- pass: review-file-configured - A skill proposal review file is configured.",
+            "- pass: review-file-exists - The review file exists.",
+            "- pass: review-file-valid - The review file is valid and has a decisions array.",
+            "- pass: current-proposals-cleared - All current proposals are applied or rejected.",
+            "- pass: no-stale-review-decisions - No stale review decisions were found.",
+            "",
+            "## Review Summary",
+            "",
+            "- Exists: yes",
+            "- Status: pass",
+            "- Decisions: 1",
+            "- Matched: 1",
+            "- Stale: 0",
+            "- Applied: 1",
+            "- Rejected: 0",
+            "- Accepted: 0",
+            "- Deferred: 0",
+            "",
+            "## Recommendations",
+            "",
+            "- info: Review decisions clear the current skill proposal gate.",
+            "",
+            "## Privacy And Boundaries",
+            "",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "- Stores raw brief text: no",
+        ])
+        assert_skill_proposal_review_check_markdown(
+            learning_skill_proposal_review_check_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
+        )
         assert_skill_proposal_review_template_json(
             json.dumps({
                 "version": 1,
@@ -12356,6 +12654,51 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
             ),
             expected="learn skill proposals review JSON should join applied review decisions",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_review_check_json(
+                json.dumps({
+                    **learning_skill_proposal_review_check_payload,
+                    "status": "warn",
+                    "summary": {
+                        **learning_skill_proposal_review_check_payload["summary"],
+                        "status": "warn",
+                        "warnings": 1,
+                    },
+                    "checks": [
+                        *learning_skill_proposal_review_check_payload["checks"][:-1],
+                        {
+                            "id": "no-stale-review-decisions",
+                            "level": "warn",
+                            "passed": False,
+                            "message": "Review file contains decisions for proposals that are no longer current.",
+                            "evidence": {"staleCount": 1},
+                        },
+                    ],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
+            ),
+            expected="learn skill proposal review-check JSON should report pass review-file readiness",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_review_check_markdown(
+                learning_skill_proposal_review_check_markdown.replace(
+                    "- Mutates skill files: no",
+                    "- Mutates skill files: yes",
+                ),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
+            ),
+            expected="learn skill proposal review-check Markdown report missing '- Mutates skill files: no'",
             scope="package smoke",
         )
         expect_self_test_failure(

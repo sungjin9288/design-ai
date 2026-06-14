@@ -43,7 +43,9 @@ import {
 } from "../lib/signals.mjs";
 import {
   buildSkillEvolutionProposals,
+  buildSkillProposalReviewCheck,
   renderSkillProposalReviewTemplate,
+  renderSkillProposalReviewCheckReport,
   renderSkillEvolutionProposalPatch,
   renderSkillEvolutionProposalReport,
 } from "../lib/skill-proposals.mjs";
@@ -80,7 +82,7 @@ function printHelp() {
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
   console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --agent-backlog [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
-  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--review-check] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -116,6 +118,7 @@ function printHelp() {
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
   console.log("  --report             With --curate, --signals, --agent-backlog, or --propose-skills, emit a Markdown review report instead of human console output");
   console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
+  console.log("  --review-check       With --propose-skills, verify the review file against current proposals without changing files");
   console.log("  --review-template    With --propose-skills, emit a JSON proposal review-file template without changing review decisions");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
@@ -176,6 +179,7 @@ function printHelp() {
   console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
   console.log("  design-ai learn --propose-skills --from-file . --strict --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
+  console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --review-check --json");
   console.log("  design-ai learn --propose-skills --from-file . --review-template --out skill-proposals.review.json");
   console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
   console.log("  design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch");
@@ -786,6 +790,43 @@ function printSkillProposals(payload) {
 
   console.log();
   console.log("No changes made. This command is preview-only and does not edit skill files or learning.json.");
+}
+
+function printSkillProposalReviewCheck(payload) {
+  header("design-ai learn", "Skill proposal review check");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Proposal status: ${payload.proposalStatus}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Review file: ${payload.reviewFile || "not configured"}`);
+  info(`Proposals: ${payload.proposalCount}`);
+  info(`Pending review: ${payload.pendingReviewCount}`);
+  info(`Reviewed: ${payload.reviewedCount}`);
+  console.log();
+
+  console.log("Checks:");
+  for (const check of payload.checks || []) {
+    console.log(`- ${check.level}: ${check.id} - ${check.message}`);
+  }
+
+  if (payload.review?.warnings?.length > 0) {
+    console.log();
+    console.log("Review file warnings:");
+    for (const warning of payload.review.warnings) {
+      console.log(`- ${warning}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: review check is read-only and does not mutate learning.json or skill files.");
 }
 
 function printDiff(payload) {
@@ -1548,6 +1589,22 @@ export async function runLearn(args) {
       root: process.cwd(),
       minEvidenceCount: parsed.minEvidenceCount || undefined,
     });
+    if (parsed.reviewCheck) {
+      const reviewCheck = buildSkillProposalReviewCheck(payload);
+      if (parsed.json) {
+        printOrWriteJson(parsed, reviewCheck);
+        applySkillProposalsStrictExit(parsed, reviewCheck);
+        return;
+      }
+      if (parsed.report) {
+        printOrWriteContent(parsed, renderSkillProposalReviewCheckReport(reviewCheck));
+        applySkillProposalsStrictExit(parsed, reviewCheck);
+        return;
+      }
+      printSkillProposalReviewCheck(reviewCheck);
+      applySkillProposalsStrictExit(parsed, reviewCheck);
+      return;
+    }
     if (parsed.json) {
       printOrWriteJson(parsed, payload);
       applySkillProposalsStrictExit(parsed, payload);
