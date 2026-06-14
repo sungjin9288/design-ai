@@ -12,9 +12,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  buildPromptEvalTemplate,
   buildPromptPlan,
   formatPromptJson,
   parsePromptArgs,
+  promptEvalReport,
 } from "./prompt.mjs";
 
 function makeFixture() {
@@ -23,8 +25,13 @@ function makeFixture() {
     ".claude-plugin/plugin.json",
     "commands/design-review.md",
     "commands/component-spec.md",
+    "commands/website-improvement.md",
     "skills/ux-audit/SKILL.md",
     "skills/design-critique/SKILL.md",
+    "skills/website-improvement/SKILL.md",
+    "skills/website-improvement/PLAYBOOK.md",
+    "skills/handoff-spec/SKILL.md",
+    "skills/handoff-spec/PLAYBOOK.md",
     "skills/component-spec-writer/SKILL.md",
     "skills/component-spec-writer/PLAYBOOK.md",
     "skills/ux-audit/PLAYBOOK.md",
@@ -34,6 +41,10 @@ function makeFixture() {
     "agents/design-critic.md",
     "knowledge/PRINCIPLES.md",
     "knowledge/patterns/ux-guidelines.md",
+    "knowledge/layout/spacing-and-grid.md",
+    "knowledge/patterns/report-design.md",
+    "docs/MCP-INTEGRATION.md",
+    "docs/WEBSITE-IMPROVEMENT.md",
     "knowledge/a11y/contrast.md",
     "knowledge/components/INDEX.md",
     "knowledge/components/shadcn-registry.md",
@@ -64,6 +75,9 @@ test("parsePromptArgs supports brief and json", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -82,6 +96,9 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -98,6 +115,9 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -122,6 +142,46 @@ test("parsePromptArgs supports explicit learning context", () => {
   assert.equal(parsed.json, true);
 });
 
+test("parsePromptArgs supports prompt eval template and eval checkpoints", () => {
+  assert.deepEqual(parsePromptArgs(["--eval-template", "--json", "--out", "prompt-eval.json", "--force"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "",
+    stdin: false,
+    routeId: "",
+    json: true,
+    outPath: "prompt-eval.json",
+    force: true,
+    withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
+    evalTemplate: true,
+    eval: false,
+    strict: false,
+    help: false,
+    index: undefined,
+  });
+
+  assert.deepEqual(parsePromptArgs(["--eval", "--from-file", "prompt-eval.json", "--strict", "--json"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "prompt-eval.json",
+    stdin: false,
+    routeId: "",
+    json: true,
+    outPath: "",
+    force: false,
+    withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
+    evalTemplate: false,
+    eval: true,
+    strict: true,
+    help: false,
+    index: undefined,
+  });
+});
+
 test("parsePromptArgs rejects unknown options", () => {
   assert.throws(() => parsePromptArgs(["spec", "--bad"]), /Unknown prompt option/);
   assert.throws(() => parsePromptArgs(["spec", "--rout", "component-spec"]), /Did you mean `--route`\?/);
@@ -129,6 +189,11 @@ test("parsePromptArgs rejects unknown options", () => {
   assert.throws(() => parsePromptArgs(["spec", "--learning-category", "korean"]), /require --with-learning/);
   assert.throws(() => parsePromptArgs(["spec", "--with-learning", "--learning-category", "private"]), /category expects one of:/);
   assert.throws(() => parsePromptArgs(["spec", "--with-learning", "--learning-limit", "0"]), /--learning-limit expects an integer from 1 to 100/);
+  assert.throws(() => parsePromptArgs(["--eval", "--eval-template"]), /Choose either --eval-template or --eval/);
+  assert.throws(() => parsePromptArgs(["--strict"]), /--strict can only be used with --eval/);
+  assert.throws(() => parsePromptArgs(["--eval"]), /--eval requires --from-file or --stdin/);
+  assert.throws(() => parsePromptArgs(["--eval-template", "spec"]), /--eval-template cannot be combined/);
+  assert.throws(() => parsePromptArgs(["--eval", "--from-file", "prompt-eval.json", "spec"]), /--eval cannot be combined/);
 });
 
 test("buildPromptPlan creates a slash command prompt for component specs", () => {
@@ -321,6 +386,74 @@ test("formatPromptJson preserves forced route prompt plan order", () => {
     assert.equal(parsed.qualityCommand, "design-ai check output.md --route design-review --strict");
     assert.ok(parsed.prompt.includes("Selected route: Design review"));
     assert.match(formatted, /"route": \{\n    "id": "design-review"/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildPromptEvalTemplate creates runnable prompt-plan checkpoints", () => {
+  const root = makeFixture();
+  try {
+    const template = buildPromptEvalTemplate({ sourceRoot: root, generatedAt: new Date("2026-06-02T00:00:00.000Z") });
+
+    assert.equal(template.version, 1);
+    assert.equal(template.sourcePromptVersion, "test");
+    assert.equal(template.generatedAt, "2026-06-02T00:00:00.000Z");
+    assert.equal(template.cases.length >= 2, true);
+
+    const report = promptEvalReport({
+      evalText: JSON.stringify(template),
+      source: "prompt-eval.json",
+      sourceRoot: root,
+      generatedAt: new Date("2026-06-02T00:00:00.000Z"),
+    });
+
+    assert.equal(report.status, "pass");
+    assert.equal(report.summary.fail, 0);
+    assert.equal(report.cases.every((testCase) => testCase.routeId === testCase.expectedRouteId), true);
+    assert.equal(report.cases.some((testCase) => testCase.id === "website-improvement-prompt-plan"), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("promptEvalReport reports route, file, checklist, and payload failures", () => {
+  const root = makeFixture();
+  try {
+    const report = promptEvalReport({
+      evalText: JSON.stringify({
+        version: 1,
+        cases: [
+          {
+            id: "bad-prompt",
+            brief: "Spec a Button component API",
+            expectedRouteId: "website-improvement",
+            requiredFiles: ["missing.md"],
+            requiredChecklist: ["not in checklist"],
+            requiredPromptFragments: ["not in prompt"],
+          },
+        ],
+      }),
+      source: "bad-prompt-eval.json",
+      sourceRoot: root,
+    });
+
+    assert.equal(report.status, "fail");
+    assert.equal(report.summary.fail, 1);
+    assert.equal(report.cases[0].routeId, "component-spec");
+    assert.match(report.cases[0].message, /Expected route website-improvement/);
+    assert.deepEqual(report.cases[0].missingRequiredFiles, ["missing.md"]);
+    assert.deepEqual(report.cases[0].missingChecklist, ["not in checklist"]);
+    assert.deepEqual(report.cases[0].missingPromptFragments, ["not in prompt"]);
+
+    assert.throws(
+      () => promptEvalReport({ evalText: JSON.stringify({ version: 999, cases: [] }), sourceRoot: root }),
+      /version must be 1/,
+    );
+    assert.throws(
+      () => promptEvalReport({ evalText: JSON.stringify({ version: 1, cases: [{ id: "empty" }] }), sourceRoot: root }),
+      /missing brief/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

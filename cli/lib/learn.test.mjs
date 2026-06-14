@@ -1,6 +1,6 @@
 // Tests for local learning profile helpers.
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -47,6 +47,17 @@ import {
 } from "./learn.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { buildPromptPack } from "./pack.mjs";
+import {
+  agentBacklogReport,
+  learningSignalRegistry,
+  renderAgentBacklogReport,
+  renderLearningSignalReport,
+  summarizeSignalEvalFile,
+} from "./signals.mjs";
+import {
+  buildSkillEvolutionProposals,
+  renderSkillEvolutionProposalReport,
+} from "./skill-proposals.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 import { runLearn } from "../commands/learn.mjs";
 import { runPrompt } from "../commands/prompt.mjs";
@@ -295,6 +306,64 @@ test("parseLearnArgs defaults to list and supports remember notes", () => {
   assert.equal(usageArgs.limit, 5);
   assert.equal(usageArgs.json, true);
 
+  const signalsArgs = parseLearnArgs(["--signals", "--from-file", "signals", "--usage-file", "learning.usage.json", "--json"]);
+  assert.equal(signalsArgs.action, "signals");
+  assert.equal(signalsArgs.fromFile, "signals");
+  assert.equal(signalsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(signalsArgs.json, true);
+
+  const strictSignalsArgs = parseLearnArgs(["--signals", "--strict", "--json"]);
+  assert.equal(strictSignalsArgs.action, "signals");
+  assert.equal(strictSignalsArgs.strict, true);
+
+  const signalsReportArgs = parseLearnArgs(["--signals", "--from-file", "signals", "--report", "--out", "learning-signals.md", "--force"]);
+  assert.equal(signalsReportArgs.action, "signals");
+  assert.equal(signalsReportArgs.fromFile, "signals");
+  assert.equal(signalsReportArgs.report, true);
+  assert.equal(signalsReportArgs.outPath, "learning-signals.md");
+  assert.equal(signalsReportArgs.force, true);
+
+  const agentBacklogArgs = parseLearnArgs(["--agent-backlog", "--from-file", "signals", "--usage-file", "learning.usage.json", "--strict", "--json"]);
+  assert.equal(agentBacklogArgs.action, "agent-backlog");
+  assert.equal(agentBacklogArgs.fromFile, "signals");
+  assert.equal(agentBacklogArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(agentBacklogArgs.strict, true);
+  assert.equal(agentBacklogArgs.json, true);
+
+  const agentBacklogReportArgs = parseLearnArgs(["--agent-backlog", "--from-file", "signals", "--report", "--out", "agent-backlog.md", "--force"]);
+  assert.equal(agentBacklogReportArgs.action, "agent-backlog");
+  assert.equal(agentBacklogReportArgs.fromFile, "signals");
+  assert.equal(agentBacklogReportArgs.report, true);
+  assert.equal(agentBacklogReportArgs.outPath, "agent-backlog.md");
+  assert.equal(agentBacklogReportArgs.force, true);
+
+  const proposeSkillsArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--usage-file", "learning.usage.json", "--review-file", "skill-proposals.review.json", "--min-evidence", "3", "--strict", "--json"]);
+  assert.equal(proposeSkillsArgs.action, "propose-skills");
+  assert.equal(proposeSkillsArgs.fromFile, "signals");
+  assert.equal(proposeSkillsArgs.usageFilePath, path.resolve("learning.usage.json"));
+  assert.equal(proposeSkillsArgs.reviewFilePath, path.resolve("skill-proposals.review.json"));
+  assert.equal(proposeSkillsArgs.minEvidenceCount, 3);
+  assert.equal(proposeSkillsArgs.strict, true);
+  assert.equal(proposeSkillsArgs.json, true);
+
+  const proposeSkillsReportArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--report", "--out", "skill-proposals.md", "--force"]);
+  assert.equal(proposeSkillsReportArgs.action, "propose-skills");
+  assert.equal(proposeSkillsReportArgs.report, true);
+  assert.equal(proposeSkillsReportArgs.outPath, "skill-proposals.md");
+  assert.equal(proposeSkillsReportArgs.force, true);
+
+  const proposeSkillsPatchArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--patch", "--out", "skill-proposals.patch", "--force"]);
+  assert.equal(proposeSkillsPatchArgs.action, "propose-skills");
+  assert.equal(proposeSkillsPatchArgs.patch, true);
+  assert.equal(proposeSkillsPatchArgs.outPath, "skill-proposals.patch");
+  assert.equal(proposeSkillsPatchArgs.force, true);
+
+  const proposeSkillsReviewTemplateArgs = parseLearnArgs(["--propose-skills", "--from-file", "signals", "--review-template", "--out", "skill-proposals.review.json", "--force"]);
+  assert.equal(proposeSkillsReviewTemplateArgs.action, "propose-skills");
+  assert.equal(proposeSkillsReviewTemplateArgs.reviewTemplate, true);
+  assert.equal(proposeSkillsReviewTemplateArgs.outPath, "skill-proposals.review.json");
+  assert.equal(proposeSkillsReviewTemplateArgs.force, true);
+
   const evalArgs = parseLearnArgs(["--eval", "--from-file", "learning-eval.json", "--category", "accessibility", "--limit", "2", "--strict", "--json"]);
   assert.equal(evalArgs.action, "eval");
   assert.equal(evalArgs.fromFile, "learning-eval.json");
@@ -410,7 +479,23 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--usage-file", "learning.usage.json"]),
-    /--usage-file can only be used with --usage or --curate/,
+    /--usage-file can only be used with --usage, --curate, --signals, --agent-backlog, or --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--review-file", "skill-proposals.review.json"]),
+    /--review-file can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--review-template"]),
+    /--review-template can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--min-evidence", "0"]),
+    /--min-evidence expects an integer from 1 to 100/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--signals", "--min-evidence", "2"]),
+    /--min-evidence can only be used with --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--backup-file", "learning-before-restore.json"]),
@@ -422,23 +507,67 @@ test("parseLearnArgs rejects unsupported categories and unknown options", () => 
   );
   assert.throws(
     () => parseLearnArgs(["--stats", "--report"]),
-    /--report can only be used with --curate/,
+    /--report can only be used with --curate, --signals, --agent-backlog, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--report", "--json"]),
-    /Choose either --json or --report/,
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--report", "--json"]),
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--stats", "--patch"]),
+    /--patch can only be used with --propose-skills/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--patch", "--json"]),
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--patch", "--report"]),
+    /Choose only one output mode/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--json", "--review-template"]),
+    /Choose only one output mode/,
   );
   assert.throws(
     () => parseLearnArgs(["--curate", "--out", "learning-curation-report.md"]),
     /--out requires --json/,
   );
   assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--out", "skill-proposals.md"]),
+    /--out requires --json/,
+  );
+  assert.throws(
     () => parseLearnArgs(["--stats", "--strict"]),
-    /--strict can only be used with --eval/,
+    /--strict can only be used with --eval, --signals, --agent-backlog, or --propose-skills/,
   );
   assert.throws(
     () => parseLearnArgs(["--eval"]),
     /--eval requires --from-file or --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--signals", "--stdin"]),
+    /--signals does not support --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--agent-backlog", "--stdin"]),
+    /--agent-backlog does not support --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--agent-backlog", "--yes"]),
+    /--agent-backlog is read-only/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--stdin"]),
+    /--propose-skills does not support --stdin/,
+  );
+  assert.throws(
+    () => parseLearnArgs(["--propose-skills", "--yes"]),
+    /--propose-skills is preview-only/,
   );
   assert.throws(
     () => parseLearnArgs(["--diff"]),
@@ -3074,6 +3203,2391 @@ test("runLearn --usage reports sidecar summaries in JSON and human output", () =
   assert.match(humanOutput, /Events: 1/);
   assert.match(humanOutput, /Top selected entries:/);
   assert.match(humanOutput, /Privacy: usage events store selected entry ids and a short brief hash/);
+}));
+
+test("learningSignalRegistry joins audit, usage, eval, check capture, and workspace signals", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-brand",
+        category: "brand",
+        text: "Use quiet enterprise language",
+        source: "feedback:keep",
+        createdAt: "2026-06-02T00:00:00.000Z",
+      },
+    ],
+  }), "utf8");
+  const learningContext = buildLearningContext({
+    filePath,
+    limit: 1,
+    query: "Spec a Button component API with keyboard accessibility",
+  });
+  recordLearningUsage({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    usageFile,
+    now: new Date("2026-06-02T00:00:02.000Z"),
+  });
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    generatedAt: "2026-06-02T00:00:03.000Z",
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "component-spec-contract",
+        status: "pass",
+        expectedRouteId: "component-spec",
+        topRouteId: "component-spec",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+
+  const signal = summarizeSignalEvalFile(routeEvalFile);
+  assert.equal(signal.kind, "route-eval");
+  assert.equal(signal.shape, "report");
+  assert.equal(signal.status, "pass");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: {
+        root: dir,
+        version: "4.55.0",
+      },
+      git: {
+        isRepo: true,
+        branch: "main",
+        clean: true,
+        ahead: 0,
+        behind: 0,
+      },
+      repository: {
+        status: "pass",
+        canonical: true,
+      },
+      learning: {
+        readiness: {
+          status: "pass",
+          reason: "",
+        },
+        auditSummary: {
+          status: "pass",
+        },
+      },
+      learningUsage: {
+        readiness: {
+          status: "pass",
+        },
+      },
+      learningEval: {
+        freshness: {
+          status: "pass",
+        },
+      },
+      nextActions: [
+        {
+          level: "pass",
+          text: "Learning usage sidecar is aligned with the active profile.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.learning.count, 2);
+  assert.equal(payload.usage.eventCount, 1);
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.evals.files[0].kind, "route-eval");
+  assert.equal(payload.checkCapture.count, 1);
+  assert.equal(payload.checkCapture.latestEntries[0].id, "learn-check");
+  assert.equal(payload.workspace.git.branch, "main");
+  assert.equal(payload.privacy.mutatesProfile, false);
+}));
+
+test("learningSignalRegistry includes sibling learning eval checkpoints outside the signal source", () => withTempDir((dir) => {
+  const signalDir = path.join(dir, "signals");
+  const profileDir = path.join(dir, "profile");
+  mkdirSync(signalDir, { recursive: true });
+  mkdirSync(profileDir, { recursive: true });
+  const filePath = path.join(profileDir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalFile = path.join(profileDir, "learning-eval.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-11T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "test",
+        createdAt: "2026-06-11T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(evalFile, JSON.stringify(buildLearningEvalTemplate({
+    filePath,
+    query: "focus behavior",
+    now: new Date("2026-06-11T00:00:02.000Z"),
+  })), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: signalDir,
+    root: signalDir,
+    now: new Date("2026-06-11T00:00:03.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: signalDir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: null,
+      learningEval: { readiness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.evals.files[0].file, evalFile);
+  assert.equal(payload.evals.files[0].kind, "learning-eval");
+  assert.equal(payload.evals.templates, 1);
+  const replayAction = payload.agentDevelopment.actions.find((item) => item.id === "agent-eval-template-replay");
+  assert.ok(replayAction);
+  assert.deepEqual(replayAction.commandArgs, [
+    "design-ai",
+    "learn",
+    "--eval",
+    "--from-file",
+    evalFile,
+    "--file",
+    filePath,
+    "--strict",
+    "--json",
+    "--out",
+    path.join(profileDir, "learning-eval-report.json"),
+  ]);
+  assert.equal(replayAction.evidence.templateFile, evalFile);
+  assert.equal(replayAction.evidence.evalReportFile, path.join(profileDir, "learning-eval-report.json"));
+}));
+
+test("learningSignalRegistry treats sibling learning eval reports as executed evidence for templates", () => withTempDir((dir) => {
+  const signalDir = path.join(dir, "signals");
+  const profileDir = path.join(dir, "profile");
+  mkdirSync(signalDir, { recursive: true });
+  mkdirSync(profileDir, { recursive: true });
+  const filePath = path.join(profileDir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalFile = path.join(profileDir, "learning-eval.json");
+  const evalReportFile = path.join(profileDir, "learning-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-11T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "test",
+        createdAt: "2026-06-11T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  const evalTemplate = buildLearningEvalTemplate({
+    filePath,
+    query: "focus behavior",
+    now: new Date("2026-06-11T00:00:02.000Z"),
+  });
+  writeFileSync(evalFile, JSON.stringify(evalTemplate), "utf8");
+  writeFileSync(evalReportFile, JSON.stringify(learningEvalReport({
+    filePath,
+    evalText: JSON.stringify(evalTemplate),
+    source: evalFile,
+    now: new Date("2026-06-11T00:00:03.000Z"),
+  })), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: signalDir,
+    root: signalDir,
+    now: new Date("2026-06-11T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: signalDir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: null,
+      learningEval: { freshness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.evals.count, 2);
+  assert.equal(payload.evals.rawTemplates, 1);
+  assert.equal(payload.evals.templates, 0);
+  assert.equal(payload.evals.reports, 1);
+  assert.equal(payload.evals.passed, 1);
+  assert.equal(payload.evals.files.some((item) => item.file === evalReportFile && item.shape === "report"), true);
+  assert.equal(payload.recommendations.some((item) => /templates rather than executed reports/.test(item.text)), false);
+  assert.equal(payload.agentDevelopment.actions.some((item) => item.id === "agent-eval-template-replay"), false);
+}));
+
+test("learningSignalRegistry keeps missing check captures as advisory when all gates pass", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const evalReportFile = path.join(dir, "learning-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-12T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-a11y",
+        category: "accessibility",
+        text: "Always include visible focus behavior.",
+        source: "feedback:keep",
+        createdAt: "2026-06-12T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  const learningContext = buildLearningContext({
+    filePath,
+    query: "visible focus behavior",
+    limit: 1,
+  });
+  recordLearningUsage({
+    command: "prompt",
+    routeId: "component-spec",
+    learningContext,
+    usageFile,
+    now: new Date("2026-06-12T00:00:02.000Z"),
+  });
+  writeFileSync(evalReportFile, JSON.stringify({
+    evalVersion: 1,
+    generatedAt: "2026-06-12T00:00:03.000Z",
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "learning-selection",
+        status: "pass",
+        expectedSelectedIds: ["learn-a11y"],
+        selectedEntryIds: ["learn-a11y"],
+        issues: [],
+      },
+    ],
+  }), "utf8");
+
+  const payload = learningSignalRegistry({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-12T00:00:04.000Z"),
+    workspaceReportProvider: () => ({
+      context: { root: dir, version: "4.55.0" },
+      git: { isRepo: true, branch: "main", clean: true, ahead: 0, behind: 0 },
+      repository: { status: "pass", canonical: true },
+      learning: { readiness: { status: "pass", reason: "" }, auditSummary: { status: "pass" } },
+      learningUsage: { readiness: { status: "pass" } },
+      learningEval: { freshness: { status: "pass" } },
+      nextActions: [],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.checkCapture.count, 0);
+  assert.deepEqual(payload.readiness, {
+    version: 1,
+    status: "pass",
+    summary: "Required local learning signal surfaces are ready; optional evidence gaps remain.",
+    requiredPassCount: 4,
+    requiredCount: 4,
+    requiredReady: true,
+    blockingCount: 0,
+    optionalGapCount: 1,
+    blockingChecks: [],
+    optionalGaps: ["check-capture"],
+    optionalGapDetails: [
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "info",
+        summary: "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+        reason: "No real warn/fail check result has been intentionally captured into the local learning profile yet.",
+        nextCondition: "Run `design-ai check <artifact.md> --learn --yes` only after reviewing an actual warning or failure that should improve future outputs.",
+        automationPolicy: "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence.",
+      },
+    ],
+    requiredCheckIds: ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+    optionalCheckIds: ["usage-sidecar", "check-capture"],
+    checkStatusById: {
+      "learning-profile": "pass",
+      "usage-sidecar": "pass",
+      "eval-signals": "pass",
+      "check-capture": "info",
+      "workspace-readiness": "pass",
+      "agent-development": "pass",
+    },
+    checkRequiredById: {
+      "learning-profile": true,
+      "usage-sidecar": false,
+      "eval-signals": true,
+      "check-capture": false,
+      "workspace-readiness": true,
+      "agent-development": true,
+    },
+    checkCountByStatus: {
+      pass: 5,
+      info: 1,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    requiredCheckCountByStatus: {
+      pass: 4,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    optionalCheckCountByStatus: {
+      pass: 1,
+      info: 1,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    checks: [
+      {
+        id: "learning-profile",
+        label: "Learning profile",
+        status: "pass",
+        required: true,
+        summary: "Profile has 1 entries with 0 audit failure(s) and 0 warning(s).",
+        evidence: {
+          exists: true,
+          entries: 1,
+          failures: 0,
+          warnings: 0,
+        },
+      },
+      {
+        id: "usage-sidecar",
+        label: "Usage sidecar",
+        status: "pass",
+        required: false,
+        summary: "Usage sidecar has 1 event(s) and 0 stale selected id(s).",
+        evidence: {
+          exists: true,
+          events: 1,
+          staleSelectedEntryCount: 0,
+        },
+      },
+      {
+        id: "eval-signals",
+        label: "Eval signals",
+        status: "pass",
+        required: true,
+        summary: "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+        evidence: {
+          files: 1,
+          reports: 1,
+          templates: 0,
+          failed: 0,
+          warned: 0,
+        },
+      },
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "info",
+        required: false,
+        summary: "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+        evidence: {
+          entries: 0,
+          categoryCounts: {},
+        },
+      },
+      {
+        id: "workspace-readiness",
+        label: "Workspace readiness",
+        status: "pass",
+        required: true,
+        summary: "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+        evidence: {
+          fail: 0,
+          warn: 0,
+          nextActionCount: 0,
+        },
+      },
+      {
+        id: "agent-development",
+        label: "Agent development backlog",
+        status: "pass",
+        required: true,
+        summary: "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+        evidence: {
+          actions: 0,
+          p0: 0,
+          p1: 0,
+          p2: 0,
+          p3: 0,
+        },
+      },
+    ],
+  });
+  assert.equal(payload.agentDevelopment.status, "pass");
+  assert.equal(payload.agentDevelopment.actionCount, 0);
+  assert.equal(payload.agentDevelopment.p3Count, 0);
+  assert.deepEqual(payload.agentDevelopment.actions, []);
+  assert.equal(payload.recommendations.some((item) => /No check learning capture entries/.test(item.text)), true);
+  assert.equal(payload.recommendations.some((item) => item.level === "warn" || item.level === "fail"), false);
+
+  const markdown = renderLearningSignalReport(payload, { generatedAt: new Date("2026-06-12T00:00:04.000Z") });
+  assert.match(markdown, /## Readiness Summary/);
+  assert.match(markdown, /Required local learning signal surfaces are ready; optional evidence gaps remain/);
+  assert.match(markdown, /Required checks: 4\/4/);
+  assert.match(markdown, /Optional gaps: 1/);
+  assert.match(markdown, /Readiness check index:/);
+  assert.match(markdown, /Required ids: learning-profile, eval-signals, workspace-readiness, agent-development/);
+  assert.match(markdown, /Optional ids: usage-sidecar, check-capture/);
+  assert.match(markdown, /Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass/);
+  assert.match(markdown, /Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes/);
+  assert.match(markdown, /Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /check-capture \[optional\] info: No check-capture entries are present/);
+  assert.match(markdown, /Optional gap details:/);
+  assert.match(markdown, /No real warn\/fail check result has been intentionally captured/);
+  assert.match(markdown, /Do not emit placeholder mutation commands for this advisory gap/);
+}));
+
+test("agentBacklogReport extracts a focused local agent development backlog", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const profilePath = "/tmp/design-ai-learning.json";
+  const usagePath = "/tmp/design-ai-learning.usage.json";
+  const signalSource = "/tmp/design-ai-signals";
+  const refreshCommandArgs = [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    signalSource,
+    "--file",
+    profilePath,
+    "--usage-file",
+    usagePath,
+    "--strict",
+    "--json",
+  ];
+  const refreshCommand = "design-ai learn --agent-backlog --from-file /tmp/design-ai-signals --file /tmp/design-ai-learning.json --usage-file /tmp/design-ai-learning.usage.json --strict --json";
+  const payload = agentBacklogReport({
+    filePath: profilePath,
+    usageFile: usagePath,
+    signalSource,
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "pass",
+      file: profilePath,
+      signalSource,
+      learning: { count: 2 },
+      usage: { usageFile: usagePath, eventCount: 1 },
+      evals: { count: 1 },
+      checkCapture: { count: 2 },
+      workspace: { nextActionCount: 0 },
+      readiness: {
+        version: 1,
+        status: "pass",
+        summary: "Required and optional local learning signal surfaces are complete.",
+        requiredPassCount: 4,
+        requiredCount: 4,
+        requiredReady: true,
+        blockingCount: 0,
+        optionalGapCount: 0,
+        blockingChecks: [],
+        optionalGaps: [],
+        optionalGapDetails: [],
+        requiredCheckIds: ["learning-profile"],
+        optionalCheckIds: ["check-capture"],
+        checkStatusById: {
+          "learning-profile": "pass",
+          "check-capture": "pass",
+        },
+        checkRequiredById: {
+          "learning-profile": true,
+          "check-capture": false,
+        },
+        checkCountByStatus: {
+          pass: 2,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
+        },
+        requiredCheckCountByStatus: {
+          pass: 1,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
+        },
+        optionalCheckCountByStatus: {
+          pass: 1,
+          info: 0,
+          warn: 0,
+          fail: 0,
+          missing: 0,
+          template: 0,
+          unknown: 0,
+        },
+        checks: [
+          {
+            id: "learning-profile",
+            label: "Learning profile",
+            status: "pass",
+            required: true,
+            summary: "Profile has 2 entries with 0 audit failure(s) and 0 warning(s).",
+            evidence: { entries: 2 },
+          },
+          {
+            id: "check-capture",
+            label: "Check learning capture",
+            status: "pass",
+            required: false,
+            summary: "Profile includes 2 check-capture learning entries.",
+            evidence: { entries: 2 },
+          },
+        ],
+      },
+      agentDevelopment: {
+        status: "pass",
+        actionCount: 1,
+        p0Count: 0,
+        p1Count: 0,
+        p2Count: 1,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-skill-proposal-preview",
+            priority: "p2",
+            category: "skill-evolution",
+            title: "Preview skill instruction deltas from repeated check-capture signals.",
+            rationale: "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+            command: "design-ai learn --propose-skills --json",
+            commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+            evidence: { checkCaptureCount: 2 },
+          },
+        ],
+      },
+      recommendations: [
+        {
+          level: "info",
+          text: "Keep local agent development evidence deterministic.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.version, 1);
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.signalStatus, "pass");
+  assert.equal(payload.file, profilePath);
+  assert.equal(payload.usageFile, usagePath);
+  assert.equal(payload.signalSource, signalSource);
+  assert.equal(payload.counts.actions, 1);
+  assert.equal(payload.counts.p2, 1);
+  assert.equal(payload.counts.learningEntries, 2);
+  assert.equal(payload.counts.usageEvents, 1);
+  assert.equal(payload.counts.evalSignals, 1);
+  assert.equal(payload.counts.checkCaptures, 2);
+  assert.deepEqual(payload.readiness, {
+    version: 1,
+    status: "pass",
+    summary: "Required and optional local learning signal surfaces are complete.",
+    requiredPassCount: 4,
+    requiredCount: 4,
+    requiredReady: true,
+    blockingCount: 0,
+    optionalGapCount: 0,
+    blockingChecks: [],
+    optionalGaps: [],
+    optionalGapDetails: [],
+    requiredCheckIds: ["learning-profile"],
+    optionalCheckIds: ["check-capture"],
+    checkStatusById: {
+      "learning-profile": "pass",
+      "check-capture": "pass",
+    },
+    checkRequiredById: {
+      "learning-profile": true,
+      "check-capture": false,
+    },
+    checkCountByStatus: {
+      pass: 2,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    requiredCheckCountByStatus: {
+      pass: 1,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    optionalCheckCountByStatus: {
+      pass: 1,
+      info: 0,
+      warn: 0,
+      fail: 0,
+      missing: 0,
+      template: 0,
+      unknown: 0,
+    },
+    checks: [
+      {
+        id: "learning-profile",
+        label: "Learning profile",
+        status: "pass",
+        required: true,
+        summary: "Profile has 2 entries with 0 audit failure(s) and 0 warning(s).",
+        evidence: { entries: 2 },
+      },
+      {
+        id: "check-capture",
+        label: "Check learning capture",
+        status: "pass",
+        required: false,
+        summary: "Profile includes 2 check-capture learning entries.",
+        evidence: { entries: 2 },
+      },
+    ],
+  });
+  assert.equal(payload.actions[0].id, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.version, 1);
+  assert.equal(payload.actionPlan.stepCount, 1);
+  assert.equal(payload.actionPlan.nextStep.actionId, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.safetySummary.total, 1);
+  assert.equal(payload.actionPlan.safetySummary.readOnly, 1);
+  assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 0);
+  assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 0);
+  assert.equal(payload.actionPlan.safetySummary.requiresReviewBeforeMutation, 0);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.orderedCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-skill-proposal-preview");
+  assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --propose-skills --json/);
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandSelection, {
+    strategy: "first-command-in-safety-ordered-queue",
+    safetyOrder: ["read-only", "writes-local-file", "mutates-local-state"],
+    actionId: "agent-skill-proposal-preview",
+    rank: 1,
+    safetyLevel: "read-only",
+    runPolicy: "preview-only",
+    planNextActionId: "agent-skill-proposal-preview",
+    planNextActionRank: 1,
+    matchesPlanNextAction: true,
+    reason: "Selected the ranked next action because it is first in the safety-ordered queue.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandAlignment, {
+    strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",
+    operatorStage: "execute",
+    operatorActionId: "agent-skill-proposal-preview",
+    operatorCommand: "design-ai learn --propose-skills --json",
+    operatorCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    queueActionId: "agent-skill-proposal-preview",
+    queueCommand: "design-ai learn --propose-skills --json",
+    queueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    rankedNextActionId: "agent-skill-proposal-preview",
+    matchesQueueNextCommand: true,
+    matchesQueueNextAction: true,
+    operatorRunsBeforeQueueCommand: false,
+    queueMatchesRankedNextAction: true,
+    reason: "Operator runbook starts with the same command as the safety-ordered execution queue.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
+    version: 1,
+    decision: "run-shared-command",
+    state: {
+      version: 1,
+      status: "ready",
+      ready: true,
+      hasCommand: true,
+      complete: false,
+      canRunWithoutReview: true,
+      requiresGate: false,
+      requiresRefresh: true,
+      summary: "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+    },
+    source: "operator-runbook",
+    phase: "execute",
+    label: "Run agent-skill-proposal-preview",
+    command: "design-ai learn --propose-skills --json",
+    commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    actionId: "agent-skill-proposal-preview",
+    rank: 1,
+    runPolicy: "preview-only",
+    required: true,
+    isGate: false,
+    nextQueueActionId: "agent-skill-proposal-preview",
+    nextQueueCommand: "design-ai learn --propose-skills --json",
+    nextQueueCommandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    nextQueueCommandRequiresGate: false,
+    operatorGateAppliesToNextQueueAction: false,
+    nextQueueActionBlockedByGate: false,
+    refreshCommand,
+    refreshCommandArgs,
+    refreshCommandLabel: "Refresh focused agent backlog after review",
+    refreshCommandRequired: true,
+    reviewLevel: "clear",
+    requiresOperatorReview: false,
+    reason: "Run the shared operator and queue command next.",
+  });
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlagCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.level, "clear");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.requiresOperatorReview, false);
+  assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /No command target/);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gatePhaseSummary, {
+    count: 1,
+    requiredCount: 1,
+    optionalCount: 0,
+    phases: ["refresh"],
+    hasBefore: false,
+    hasAfter: false,
+    hasRefresh: true,
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateRunbook, {
+    before: [],
+    after: [],
+    refresh: [
+      {
+        phase: "refresh",
+        label: "Refresh focused agent backlog after review",
+        command: refreshCommand,
+        commandArgs: refreshCommandArgs,
+        required: true,
+      },
+    ],
+    other: [],
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
+    {
+      phase: "refresh",
+      label: "Refresh focused agent backlog after review",
+      command: refreshCommand,
+      commandArgs: refreshCommandArgs,
+      required: true,
+    },
+  ]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.version, 1);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stageCount, 4);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.commandCount, 2);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 2);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "clear");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.phases, ["before", "execute", "after", "refresh"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "execute");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Run agent-skill-proposal-preview");
+  assert.match(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, /learn --propose-skills --json/);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection, {
+    strategy: "first-command-in-operator-runbook-stage-order",
+    stageOrder: ["before", "execute", "after", "refresh"],
+    stage: "execute",
+    label: "Run agent-skill-proposal-preview",
+    command: "design-ai learn --propose-skills --json",
+    commandArgs: ["design-ai", "learn", "--propose-skills", "--json"],
+    actionId: "agent-skill-proposal-preview",
+    rank: 1,
+    required: true,
+    runPolicy: "preview-only",
+    reason: "Selected the first command in the execute stage using operator runbook stage order.",
+  });
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
+    [
+      ["before", 0, 0],
+      ["execute", 1, 1],
+      ["after", 0, 0],
+      ["refresh", 1, 1],
+    ],
+  );
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].actionId, "agent-skill-proposal-preview");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].runPolicy, "preview-only");
+  assert.match(payload.actionPlan.executionQueue.operatorRunbook.stages[3].commands[0].command, /learn --agent-backlog .*--strict --json/);
+  assert.equal(payload.actionPlan.executionQueue.ordered[0].actionId, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.executionQueue.ordered[0].runPolicy, "preview-only");
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].actionId, "agent-skill-proposal-preview");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--propose-skills", "--json"]);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].runPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.outputTargets, []);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandEffects.mutationFlags, []);
+  assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-skill-proposal-preview");
+  assert.equal(payload.actionPlan.steps[0].requiresReviewBeforeMutation, false);
+  assert.equal(payload.actionPlan.steps[0].commandSafety.level, "read-only");
+  assert.equal(payload.actionPlan.steps[0].commandSafety.writesLocalFiles, false);
+  assert.equal(payload.actionPlan.steps[0].commandSafety.mutatesLocalState, false);
+  assert.match(payload.actionPlan.steps[0].verification.join("\n"), /agent-backlog --strict --json/);
+  assert.match(payload.actionPlan.verification[0].command, /design-ai learn --signals/);
+  assert.equal(payload.actionPlan.boundaries.reportCallsExternalAiApis, false);
+  assert.match(payload.commands.signalsJson, /design-ai learn --signals/);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+  assert.equal(payload.privacy.callsExternalAiApis, false);
+
+  const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
+  assert.match(markdown, /# Agent Development Backlog Report/);
+  assert.match(markdown, /## Signal Readiness/);
+  assert.match(markdown, /Required and optional local learning signal surfaces are complete/);
+  assert.match(markdown, /Required checks: 4\/4/);
+  assert.match(markdown, /Readiness check index:/);
+  assert.match(markdown, /Required ids: learning-profile/);
+  assert.match(markdown, /Optional ids: check-capture/);
+  assert.match(markdown, /Status index: learning-profile=pass, check-capture=pass/);
+  assert.match(markdown, /Required index: learning-profile=yes, check-capture=no/);
+  assert.match(markdown, /Status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Required status counts: pass=1, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /Optional status counts: pass=1, info=0, warn=0, fail=0, missing=0, template=0, unknown=0/);
+  assert.match(markdown, /check-capture \[optional\] pass: Profile includes 2 check-capture learning entries/);
+  assert.match(markdown, /## Backlog Actions/);
+  assert.match(markdown, /design-ai learn --propose-skills --json/);
+  assert.match(markdown, /## Action Plan/);
+  assert.match(markdown, /Safety summary:/);
+  assert.match(markdown, /Read-only: 1/);
+  assert.match(markdown, /Writes local file: 0/);
+  assert.match(markdown, /Mutates local state: 0/);
+  assert.match(markdown, /Execution queue:/);
+  assert.match(markdown, /Preview\/read-only commands: 1/);
+  assert.match(markdown, /Local file-write review commands: 0/);
+  assert.match(markdown, /Ordered commands: 1/);
+  assert.match(markdown, /Command manifest entries: 1/);
+  assert.match(markdown, /Command effect targets: output 0, profile 0, usage 0, mutation flags 0/);
+  assert.match(markdown, /Command effect review: No command target or mutation flag exposure detected/);
+  assert.match(markdown, /Command effect gate phases: refresh \(1\/1 required\)/);
+  assert.match(markdown, /Command effect gate runbook: before 0, after 0, refresh 1/);
+  assert.match(markdown, /Command effect gates:/);
+  assert.match(markdown, /refresh: Refresh focused agent backlog after review/);
+  assert.match(markdown, /design-ai learn --agent-backlog --from-file \/tmp\/design-ai-signals --file \/tmp\/design-ai-learning\.json --usage-file \/tmp\/design-ai-learning\.usage\.json --strict --json/);
+  assert.match(markdown, /Operator runbook: 4 stage\(s\), 2 command\(s\), 2 required/);
+  assert.match(markdown, /Operator next command: execute: `design-ai learn --propose-skills --json`/);
+  assert.match(markdown, /Operator next command selection: first-command-in-operator-runbook-stage-order/);
+  assert.match(markdown, /Recommended next action: agent-skill-proposal-preview/);
+  assert.match(markdown, /Recommended next command policy: preview-only/);
+  assert.match(markdown, /Recommended next command selection: first-command-in-safety-ordered-queue/);
+  assert.match(markdown, /Ranked next action: agent-skill-proposal-preview; matches recommended command: yes/);
+  assert.match(markdown, /Operator\/queue next command alignment: same/);
+  assert.match(markdown, /Operator handoff: execute operator-runbook/);
+  assert.match(markdown, /Operator handoff state: ready; ready yes; can run without review yes; refresh required/);
+  assert.match(markdown, /Operator handoff refresh: design-ai learn --agent-backlog --from-file \/tmp\/design-ai-signals --file \/tmp\/design-ai-learning\.json --usage-file \/tmp\/design-ai-learning\.usage\.json --strict --json/);
+  assert.match(markdown, /Recommended next command:/);
+  assert.match(markdown, /Queue order:/);
+  assert.match(markdown, /1\. agent-skill-proposal-preview \(read-only, preview-only\)/);
+  assert.match(markdown, /Command manifest:/);
+  assert.match(markdown, /1\. agent-skill-proposal-preview - preview-only \(read-only\)/);
+  assert.match(markdown, /Command safety: read-only/);
+  assert.match(markdown, /Writes local files: no/);
+  assert.match(markdown, /Mutates local state: no/);
+  assert.match(markdown, /Requires mutation review: no/);
+  assert.match(markdown, /agent-backlog .*--strict --json/);
+  assert.match(markdown, /## Follow-Up Commands/);
+  assert.match(markdown, /design-ai learn --signals/);
+  assert.match(markdown, /This report is read-only evidence/);
+});
+
+test("agentBacklogReport marks no-command pass state as complete without required refresh", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const profilePath = "/tmp/design-ai-learning.json";
+  const usagePath = "/tmp/design-ai-learning.usage.json";
+  const signalSource = "/tmp/design-ai-signals";
+  const payload = agentBacklogReport({
+    filePath: profilePath,
+    usageFile: usagePath,
+    signalSource,
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "pass",
+      file: profilePath,
+      signalSource,
+      learning: { count: 2 },
+      usage: { usageFile: usagePath, eventCount: 1 },
+      evals: { count: 1 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "pass",
+        actionCount: 0,
+        p0Count: 0,
+        p1Count: 0,
+        p2Count: 0,
+        p3Count: 0,
+        actions: [],
+      },
+      recommendations: [
+        {
+          level: "info",
+          text: "No check learning capture entries are present yet; run check --learn --yes on real warnings/failures when appropriate.",
+        },
+      ],
+    }),
+  });
+
+  assert.equal(payload.status, "pass");
+  assert.equal(payload.counts.actions, 0);
+  assert.equal(payload.actionPlan.stepCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.orderedCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.nextCommand, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, []);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.state, {
+    version: 1,
+    status: "no-command",
+    ready: true,
+    hasCommand: false,
+    complete: true,
+    canRunWithoutReview: false,
+    requiresGate: false,
+    requiresRefresh: false,
+    summary: "Focused agent backlog is clear; no handoff command is required.",
+  });
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "none");
+  assert.equal(
+    payload.actionPlan.executionQueue.operatorHandoff.reason,
+    "No handoff command is required; optional refresh command remains available as status metadata.",
+  );
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.command, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.commandArgs, []);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandRequired, false);
+  assert.match(payload.actionPlan.executionQueue.operatorHandoff.refreshCommand, /design-ai learn --agent-backlog/);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gatePhaseSummary, {
+    count: 1,
+    requiredCount: 0,
+    optionalCount: 1,
+    phases: ["refresh"],
+    hasBefore: false,
+    hasAfter: false,
+    hasRefresh: true,
+  });
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.gateRunbook.refresh[0].required, false);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.commandCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "refresh");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, false);
+  assert.equal(
+    payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.reason,
+    "Optional refresh command is available as status metadata; no executable backlog handoff command is selected.",
+  );
+  assert.equal(
+    payload.actionPlan.executionQueue.nextCommandAlignment.reason,
+    "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty.",
+  );
+
+  const markdown = renderAgentBacklogReport(payload, { generatedAt: now });
+  assert.match(markdown, /No agent development backlog actions emitted./);
+  assert.match(markdown, /Command effect gate phases: refresh \(0\/1 required\)/);
+  assert.match(markdown, /Operator runbook: 4 stage\(s\), 1 command\(s\), 0 required/);
+  assert.match(markdown, /Optional refresh command is available as status metadata; no executable backlog handoff command is selected/);
+  assert.match(markdown, /Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty/);
+  assert.match(markdown, /No handoff command is required; optional refresh command remains available as status metadata/);
+  assert.match(markdown, /Operator handoff state: no-command; ready yes; can run without review no; refresh optional/);
+  assert.match(markdown, /Focused agent backlog is clear; no handoff command is required/);
+});
+
+test("agentBacklogReport classifies action plan command safety", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const refreshCommandArgs = [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    "/tmp/design-ai-signals",
+    "--file",
+    "/tmp/design-ai-learning.json",
+    "--usage-file",
+    "/tmp/design-ai-learning.usage.json",
+    "--strict",
+    "--json",
+  ];
+  const refreshCommand = "design-ai learn --agent-backlog --from-file /tmp/design-ai-signals --file /tmp/design-ai-learning.json --usage-file /tmp/design-ai-learning.usage.json --strict --json";
+  const payload = agentBacklogReport({
+    filePath: "/tmp/design-ai-learning.json",
+    usageFile: "/tmp/design-ai-learning.usage.json",
+    signalSource: "/tmp/design-ai-signals",
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "warn",
+      file: "/tmp/design-ai-learning.json",
+      signalSource: "/tmp/design-ai-signals",
+      learning: { count: 1 },
+      usage: { usageFile: "/tmp/design-ai-learning.usage.json", eventCount: 0 },
+      evals: { count: 0 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "warn",
+        actionCount: 3,
+        p0Count: 0,
+        p1Count: 2,
+        p2Count: 1,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-eval-checkpoint-generate",
+            priority: "p1",
+            category: "eval-harness",
+            title: "Generate eval checkpoint.",
+            rationale: "Write a replayable checkpoint file.",
+            command: "design-ai learn --eval-template --json --out learning-eval.json",
+            commandArgs: ["design-ai", "learn", "--eval-template", "--json", "--out", "learning-eval.json"],
+            evidence: {},
+          },
+          {
+            rank: 2,
+            id: "agent-learning-profile-init",
+            priority: "p1",
+            category: "learning-profile",
+            title: "Initialize profile.",
+            rationale: "Preview local profile seed entries.",
+            command: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+            commandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
+            applyCommand: "design-ai learn --init --yes --file /tmp/design-ai-learning.json",
+            applyCommandArgs: ["design-ai", "learn", "--init", "--yes", "--file", "/tmp/design-ai-learning.json"],
+            evidence: {},
+          },
+          {
+            rank: 3,
+            id: "agent-check-capture-seed",
+            priority: "p2",
+            category: "skill-evolution",
+            title: "Capture check feedback.",
+            rationale: "Apply local check captures.",
+            command: "design-ai check artifact.md --learn --yes",
+            commandArgs: ["design-ai", "check", "artifact.md", "--learn", "--yes"],
+            evidence: {},
+          },
+        ],
+      },
+      recommendations: [],
+    }),
+  });
+
+  const stepsById = new Map(payload.actionPlan.steps.map((step) => [step.actionId, step]));
+  assert.equal(payload.actionPlan.safetySummary.total, 3);
+  assert.equal(payload.actionPlan.safetySummary.readOnly, 1);
+  assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 1);
+  assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 1);
+  assert.equal(payload.actionPlan.safetySummary.requiresCleanWorkspace, 2);
+  assert.equal(payload.actionPlan.safetySummary.requiresReviewBeforeMutation, 2);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.orderedCount, 3);
+  assert.equal(payload.actionPlan.executionQueue.commandManifestCount, 3);
+  assert.equal(payload.actionPlan.executionQueue.nextActionId, "agent-learning-profile-init");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"]);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandSelection, {
+    strategy: "first-command-in-safety-ordered-queue",
+    safetyOrder: ["read-only", "writes-local-file", "mutates-local-state"],
+    actionId: "agent-learning-profile-init",
+    rank: 2,
+    safetyLevel: "read-only",
+    runPolicy: "preview-only",
+    planNextActionId: "agent-eval-checkpoint-generate",
+    planNextActionRank: 1,
+    matchesPlanNextAction: false,
+    reason: "Selected the first command in the safety-ordered queue before higher-risk ranked actions.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandAlignment, {
+    strategy: "compare-operator-runbook-next-command-to-execution-queue-next-command",
+    operatorStage: "before",
+    operatorActionId: "",
+    operatorCommand: "git status --short",
+    operatorCommandArgs: ["git", "status", "--short"],
+    queueActionId: "agent-learning-profile-init",
+    queueCommand: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    queueCommandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
+    rankedNextActionId: "agent-eval-checkpoint-generate",
+    matchesQueueNextCommand: false,
+    matchesQueueNextAction: false,
+    operatorRunsBeforeQueueCommand: true,
+    queueMatchesRankedNextAction: false,
+    reason: "Operator runbook starts with a before-stage gate before the safety-ordered queue command.",
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff, {
+    version: 1,
+    decision: "run-queue-command",
+    state: {
+      version: 1,
+      status: "ready",
+      ready: true,
+      hasCommand: true,
+      complete: false,
+      canRunWithoutReview: true,
+      requiresGate: false,
+      requiresRefresh: true,
+      summary: "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+    },
+    source: "execution-queue",
+    phase: "execute",
+    label: "agent-learning-profile-init",
+    command: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    commandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
+    actionId: "agent-learning-profile-init",
+    rank: 2,
+    runPolicy: "preview-only",
+    required: true,
+    isGate: false,
+    nextQueueActionId: "agent-learning-profile-init",
+    nextQueueCommand: "design-ai learn --init --dry-run --file /tmp/design-ai-learning.json",
+    nextQueueCommandArgs: ["design-ai", "learn", "--init", "--dry-run", "--file", "/tmp/design-ai-learning.json"],
+    nextQueueCommandRequiresGate: false,
+    operatorGateAppliesToNextQueueAction: false,
+    nextQueueActionBlockedByGate: false,
+    refreshCommand,
+    refreshCommandArgs,
+    refreshCommandLabel: "Refresh focused agent backlog after review",
+    refreshCommandRequired: true,
+    reviewLevel: "clear",
+    requiresOperatorReview: false,
+    reason: "Run the safety-ordered queue command next.",
+  });
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.totalCommands, 3);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.outputTargetCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlagCount, 1);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.outputTargets, [{ flag: "--out", value: "learning-eval.json" }]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--yes"]);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.level, "mutation-review");
+  assert.equal(payload.actionPlan.executionQueue.commandEffectReview.requiresOperatorReview, true);
+  assert.match(payload.actionPlan.executionQueue.commandEffectReview.headline, /Mutation-capable commands/);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.checklist, [
+    "Review mutation flags and run in a clean workspace before applying.",
+    "Inspect explicit output targets before committing generated files.",
+    "Confirm learning profile and usage sidecar targets are intentional.",
+  ]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gatePhaseSummary, {
+    count: 3,
+    requiredCount: 3,
+    optionalCount: 0,
+    phases: ["before", "after", "refresh"],
+    hasBefore: true,
+    hasAfter: true,
+    hasRefresh: true,
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateRunbook, {
+    before: [
+      {
+        phase: "before",
+        label: "Confirm clean workspace before execution",
+        command: "git status --short",
+        commandArgs: ["git", "status", "--short"],
+        required: true,
+      },
+    ],
+    after: [
+      {
+        phase: "after",
+        label: "Inspect local file changes after execution",
+        command: "git diff --stat",
+        commandArgs: ["git", "diff", "--stat"],
+        required: true,
+      },
+    ],
+    refresh: [
+      {
+        phase: "refresh",
+        label: "Refresh focused agent backlog after review",
+        command: refreshCommand,
+        commandArgs: refreshCommandArgs,
+        required: true,
+      },
+    ],
+    other: [],
+  });
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectReview.gateCommands, [
+    {
+      phase: "before",
+      label: "Confirm clean workspace before execution",
+      command: "git status --short",
+      commandArgs: ["git", "status", "--short"],
+      required: true,
+    },
+    {
+      phase: "after",
+      label: "Inspect local file changes after execution",
+      command: "git diff --stat",
+      commandArgs: ["git", "diff", "--stat"],
+      required: true,
+    },
+    {
+      phase: "refresh",
+      label: "Refresh focused agent backlog after review",
+      command: refreshCommand,
+      commandArgs: refreshCommandArgs,
+      required: true,
+    },
+  ]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.version, 1);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.stageCount, 4);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.commandCount, 6);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiredCommandCount, 6);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.reviewLevel, "mutation-review");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.requiresOperatorReview, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextStage, "before");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandLabel, "Confirm clean workspace before execution");
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommand, "git status --short");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandArgs, ["git", "status", "--short"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRequired, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandRunPolicy, "");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection, {
+    strategy: "first-command-in-operator-runbook-stage-order",
+    stageOrder: ["before", "execute", "after", "refresh"],
+    stage: "before",
+    label: "Confirm clean workspace before execution",
+    command: "git status --short",
+    commandArgs: ["git", "status", "--short"],
+    actionId: "",
+    rank: null,
+    required: true,
+    runPolicy: "",
+    reason: "Selected the first command in the before stage using operator runbook stage order.",
+  });
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages.map((stage) => [stage.phase, stage.commandCount, stage.requiredCount]),
+    [
+      ["before", 1, 1],
+      ["execute", 3, 3],
+      ["after", 1, 1],
+      ["refresh", 1, 1],
+    ],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands.map((item) => item.actionId),
+    [
+      "agent-learning-profile-init",
+      "agent-eval-checkpoint-generate",
+      "agent-check-capture-seed",
+    ],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands.map((item) => item.runPolicy),
+    [
+      "preview-only",
+      "review-before-file-write",
+      "review-before-mutation",
+    ],
+  );
+  assert.deepEqual(payload.actionPlan.executionQueue.ordered.map((item) => item.actionId), [
+    "agent-learning-profile-init",
+    "agent-eval-checkpoint-generate",
+    "agent-check-capture-seed",
+  ]);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest.map((item) => item.runPolicy), [
+    "preview-only",
+    "review-before-file-write",
+    "review-before-mutation",
+  ]);
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.commandManifest[1].commandEffects.outputTargets,
+    [{ flag: "--out", value: "learning-eval.json" }],
+  );
+  assert.deepEqual(
+    payload.actionPlan.executionQueue.commandManifest[0].commandEffects.profileTargets,
+    [{ flag: "--file", value: "/tmp/design-ai-learning.json" }],
+  );
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[2].commandEffects.mutationFlags, ["--yes"]);
+  assert.equal(payload.actionPlan.executionQueue.preview[0].actionId, "agent-learning-profile-init");
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReview[0].actionId, "agent-eval-checkpoint-generate");
+  assert.equal(payload.actionPlan.executionQueue.mutationReview[0].actionId, "agent-check-capture-seed");
+  assert.match(payload.actionPlan.executionQueue.nextCommand, /design-ai learn --init/);
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.level, "writes-local-file");
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.writesLocalFiles, true);
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").commandSafety.mutatesLocalState, false);
+  assert.deepEqual(stepsById.get("agent-eval-checkpoint-generate").commandSafety.outputTargets, [{ flag: "--out", value: "learning-eval.json" }]);
+  assert.equal(stepsById.get("agent-eval-checkpoint-generate").requiresReviewBeforeMutation, true);
+  assert.match(stepsById.get("agent-eval-checkpoint-generate").verification[0], /clean working tree/);
+  assert.equal(stepsById.get("agent-learning-profile-init").commandSafety.level, "read-only");
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").commandSafety.profileTargets, [{ flag: "--file", value: "/tmp/design-ai-learning.json" }]);
+  assert.equal(stepsById.get("agent-learning-profile-init").requiresReviewBeforeMutation, false);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommand, "design-ai learn --init --yes --file /tmp/design-ai-learning.json");
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").applyCommandArgs, ["design-ai", "learn", "--init", "--yes", "--file", "/tmp/design-ai-learning.json"]);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommandSafety.level, "mutates-local-state");
+  assert.equal(stepsById.get("agent-learning-profile-init").applyCommandSafety.mutatesLocalState, true);
+  assert.deepEqual(stepsById.get("agent-learning-profile-init").applyCommandSafety.mutationFlags, ["--yes"]);
+  assert.equal(stepsById.get("agent-learning-profile-init").applyRequiresReviewBeforeMutation, true);
+  assert.match(stepsById.get("agent-learning-profile-init").verification[0], /preview command first/);
+  assert.match(stepsById.get("agent-learning-profile-init").verification[1], /apply command only after operator review/);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyCommand, "design-ai learn --init --yes --file /tmp/design-ai-learning.json");
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyCommandSafety.mutatesLocalState, true);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].applyRequiresReviewBeforeMutation, true);
+  assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.level, "mutates-local-state");
+  assert.equal(stepsById.get("agent-check-capture-seed").commandSafety.mutatesLocalState, true);
+  assert.deepEqual(stepsById.get("agent-check-capture-seed").commandSafety.mutationFlags, ["--yes"]);
+  assert.equal(stepsById.get("agent-check-capture-seed").requiresReviewBeforeMutation, true);
+});
+
+test("agentBacklogReport derives command strings from structured command args", () => {
+  const now = new Date("2026-06-02T00:00:00.000Z");
+  const payload = agentBacklogReport({
+    filePath: "/tmp/design-ai-learning.json",
+    usageFile: "/tmp/design-ai-learning.usage.json",
+    signalSource: "/tmp/design-ai-signals",
+    root: "/tmp",
+    now,
+    signalRegistryProvider: () => ({
+      version: 1,
+      generatedAt: now.toISOString(),
+      status: "warn",
+      file: "/tmp/design-ai-learning.json",
+      signalSource: "/tmp/design-ai-signals",
+      learning: { count: 1 },
+      usage: { usageFile: "/tmp/design-ai-learning.usage.json", eventCount: 0 },
+      evals: { count: 0 },
+      checkCapture: { count: 0 },
+      workspace: { nextActionCount: 0 },
+      agentDevelopment: {
+        status: "warn",
+        actionCount: 1,
+        p0Count: 0,
+        p1Count: 1,
+        p2Count: 0,
+        p3Count: 0,
+        actions: [
+          {
+            rank: 1,
+            id: "agent-command-args-only",
+            priority: "p1",
+            category: "eval-harness",
+            title: "Run a command from structured args only.",
+            rationale: "External providers may emit args without a shell-rendered command.",
+            commandArgs: ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"],
+            evidence: {},
+          },
+        ],
+      },
+      recommendations: [],
+    }),
+  });
+
+  assert.equal(payload.actionPlan.steps[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
+  assert.deepEqual(payload.actionPlan.steps[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.equal(payload.actionPlan.executionQueue.commandManifest[0].command, "design-ai learn --eval-template --json --out 'learning eval.json'");
+  assert.deepEqual(payload.actionPlan.executionQueue.nextCommandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandSelection.matchesPlanNextAction, true);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandSelection.actionId, "agent-command-args-only");
+  assert.deepEqual(payload.actionPlan.executionQueue.commandManifest[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.stages[1].commands[0].commandArgs, ["design-ai", "learn", "--eval-template", "--json", "--out", "learning eval.json"]);
+  assert.equal(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.stage, "before");
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorRunbook.nextCommandSelection.commandArgs, ["git", "status", "--short"]);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.operatorRunsBeforeQueueCommand, true);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandAlignment.matchesQueueNextCommand, false);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.isGate, true);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.decision, "run-operator-gate");
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.state.status, "gate-required");
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.state.canRunWithoutReview, false);
+  assert.deepEqual(payload.actionPlan.executionQueue.operatorHandoff.refreshCommandArgs, [
+    "design-ai",
+    "learn",
+    "--agent-backlog",
+    "--from-file",
+    "/tmp/design-ai-signals",
+    "--file",
+    "/tmp/design-ai-learning.json",
+    "--usage-file",
+    "/tmp/design-ai-learning.usage.json",
+    "--strict",
+    "--json",
+  ]);
+  assert.equal(payload.actionPlan.executionQueue.operatorHandoff.nextQueueActionBlockedByGate, true);
+});
+
+test("runLearn --signals reports registry JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:artifact",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "website-improvement-control-tower",
+        status: "pass",
+        expectedRouteId: "website-improvement",
+        topRouteId: "website-improvement",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.evals.count, 1);
+  assert.equal(payload.checkCapture.count, 1);
+  assert.equal(payload.agentDevelopment.privacy.callsExternalAiApis, false);
+  assert.equal(payload.agentDevelopment.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
+  assert.match(payload.agentDevelopment.actions.find((item) => item.id === "agent-skill-proposal-preview")?.command || "", /learn --propose-skills/);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+  ]));
+  assert.match(humanOutput, /Learning signal registry/);
+  assert.match(humanOutput, /Eval signals:/);
+  assert.match(humanOutput, /Recent check captures:/);
+  assert.match(humanOutput, /Agent development backlog:/);
+  assert.match(humanOutput, /learn --propose-skills/);
+  assert.match(humanOutput, /Privacy: signal registry is read-only/);
+
+  const reportOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+  ]));
+  assert.match(reportOutput, /# Learning Signal Registry Report/);
+  assert.match(reportOutput, /## Agent Development Backlog/);
+  assert.match(reportOutput, /```bash\n.*learn --propose-skills/s);
+  assert.match(reportOutput, /This report is read-only evidence/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportFile = path.join(dir, "learning-signals.md");
+  const reportWriteOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportFile,
+  ]));
+  assert.match(reportWriteOutput, /Wrote /);
+  assert.match(readFileSync(reportFile, "utf8"), /# Learning Signal Registry Report/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+}));
+
+test("runLearn --agent-backlog reports JSON, human, and Markdown without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  const routeEvalFile = path.join(dir, "route-eval-report.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-check",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:artifact",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  writeFileSync(routeEvalFile, JSON.stringify({
+    evalVersion: 1,
+    status: "pass",
+    summary: {
+      total: 1,
+      pass: 1,
+      warn: 0,
+      fail: 0,
+    },
+    cases: [
+      {
+        id: "website-improvement-control-tower",
+        status: "pass",
+        expectedRouteId: "website-improvement",
+        topRouteId: "website-improvement",
+        issues: [],
+      },
+    ],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.version, 1);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.usageFile, usageFile);
+  assert.equal(payload.counts.checkCaptures, 1);
+  assert.equal(payload.counts.evalSignals, 1);
+  assert.equal(payload.actions.some((item) => item.id === "agent-skill-proposal-preview"), true);
+  assert.equal(payload.actionPlan.stepCount, payload.actions.length);
+  assert.equal(payload.actionPlan.steps.some((item) => item.actionId === "agent-skill-proposal-preview"), true);
+  const workspaceReadinessStep = payload.actionPlan.steps.find((item) => item.actionId === "agent-workspace-readiness-review");
+  if (workspaceReadinessStep) {
+    assert.deepEqual(workspaceReadinessStep.commandSafety.profileTargets, [{ flag: "--learning-file", value: filePath }]);
+    assert.deepEqual(workspaceReadinessStep.commandSafety.usageTargets, [{ flag: "--learning-usage", value: usageFile }]);
+  }
+  const usageRecordStep = payload.actionPlan.steps.find((item) => item.actionId === "agent-learning-usage-record");
+  assert.ok(usageRecordStep);
+  assert.equal(usageRecordStep.command, `env DESIGN_AI_LEARNING_FILE=${filePath} DESIGN_AI_LEARNING_USAGE_FILE=${usageFile} design-ai prompt 'audit a design artifact' --with-learning --json`);
+  assert.deepEqual(usageRecordStep.commandArgs, [
+    "env",
+    `DESIGN_AI_LEARNING_FILE=${filePath}`,
+    `DESIGN_AI_LEARNING_USAGE_FILE=${usageFile}`,
+    "design-ai",
+    "prompt",
+    "audit a design artifact",
+    "--with-learning",
+    "--json",
+  ]);
+  assert.equal(usageRecordStep.commandSafety.level, "mutates-local-state");
+  assert.equal(usageRecordStep.commandSafety.mutatesLocalState, true);
+  assert.deepEqual(usageRecordStep.commandSafety.detectedFlags, ["--with-learning"]);
+  assert.deepEqual(usageRecordStep.commandSafety.mutationFlags, ["--with-learning"]);
+  assert.deepEqual(usageRecordStep.commandSafety.profileTargets, [{ flag: "DESIGN_AI_LEARNING_FILE", value: filePath }]);
+  assert.deepEqual(usageRecordStep.commandSafety.usageTargets, [{ flag: "DESIGN_AI_LEARNING_USAGE_FILE", value: usageFile }]);
+  assert.equal(usageRecordStep.requiresReviewBeforeMutation, true);
+  assert.equal(payload.actionPlan.safetySummary.readOnly, payload.actions.length - 1);
+  assert.equal(payload.actionPlan.safetySummary.writesLocalFile, 0);
+  assert.equal(payload.actionPlan.safetySummary.mutatesLocalState, 1);
+  assert.equal(payload.actionPlan.executionQueue.previewCount, payload.actions.length - 1);
+  assert.equal(payload.actionPlan.executionQueue.fileWriteReviewCount, 0);
+  assert.equal(payload.actionPlan.executionQueue.mutationReviewCount, 1);
+  assert.equal(payload.actionPlan.executionQueue.orderedCount, payload.actions.length);
+  assert.equal(payload.actionPlan.executionQueue.commandManifestCount, payload.actions.length);
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.mutatesLocalStateCount, 1);
+  const expectedUsageTargets = [
+    ...(workspaceReadinessStep ? [{ flag: "--learning-usage", value: usageFile }] : []),
+    { flag: "--usage-file", value: usageFile },
+    { flag: "DESIGN_AI_LEARNING_USAGE_FILE", value: usageFile },
+  ];
+  assert.equal(payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount, expectedUsageTargets.length);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.usageTargets, expectedUsageTargets);
+  assert.deepEqual(payload.actionPlan.executionQueue.commandEffectSummary.mutationFlags, ["--with-learning"]);
+  assert.equal(
+    payload.actionPlan.executionQueue.mutationReview.find((item) => item.actionId === "agent-learning-usage-record")?.runPolicy,
+    "review-before-mutation",
+  );
+  assert.equal(payload.actionPlan.executionQueue.nextActionId, payload.actionPlan.executionQueue.ordered[0].actionId);
+  assert.equal(payload.actionPlan.executionQueue.nextCommandRunPolicy, "preview-only");
+  assert.match(payload.actionPlan.verification.map((item) => item.command).join("\n"), /agent-backlog .*--strict --json/);
+  assert.equal(payload.privacy.mutatesProfile, false);
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+  assert.equal(payload.privacy.callsExternalAiApis, false);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+  ]));
+  assert.match(humanOutput, /Agent development backlog/);
+  assert.match(humanOutput, /Backlog actions:/);
+  assert.match(humanOutput, /Action plan:/);
+  assert.match(humanOutput, new RegExp(`safety summary: ${payload.actionPlan.safetySummary.readOnly} read-only, 0 writes-local-file, 1 mutates-local-state`));
+  assert.match(humanOutput, new RegExp(`execution queue: ${payload.actionPlan.executionQueue.previewCount} preview, 0 file-write review, 1 mutation review`));
+  assert.match(humanOutput, new RegExp(`command effects: 0 output, ${payload.actionPlan.executionQueue.commandEffectSummary.profileTargetCount} profile, ${payload.actionPlan.executionQueue.commandEffectSummary.usageTargetCount} usage, 1 mutation flags`));
+  assert.match(humanOutput, /next action: /);
+  assert.match(humanOutput, /next command: /);
+  assert.match(humanOutput, /next command policy: preview-only/);
+  assert.match(humanOutput, /queue order: /);
+  assert.match(humanOutput, /command manifest: /);
+  assert.match(humanOutput, /safety: read-only/);
+  assert.match(humanOutput, /safety: mutates-local-state/);
+  assert.match(humanOutput, /requires mutation review: no/);
+  assert.match(humanOutput, /requires mutation review: yes/);
+  assert.match(humanOutput, /DESIGN_AI_LEARNING_USAGE_FILE=/);
+  assert.match(humanOutput, /learn --propose-skills/);
+  assert.match(humanOutput, /Privacy: agent backlog is read-only/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+  ]));
+  assert.match(reportOutput, /# Agent Development Backlog Report/);
+  assert.match(reportOutput, /## Action Plan/);
+  assert.match(reportOutput, /Safety summary:/);
+  assert.match(reportOutput, new RegExp(`Read-only: ${payload.actionPlan.safetySummary.readOnly}`));
+  assert.match(reportOutput, /Mutates local state: 1/);
+  assert.match(reportOutput, /Execution queue:/);
+  assert.match(reportOutput, new RegExp(`Preview/read-only commands: ${payload.actionPlan.executionQueue.previewCount}`));
+  assert.match(reportOutput, /Local mutation review commands: 1/);
+  assert.match(reportOutput, new RegExp(`Ordered commands: ${payload.actionPlan.executionQueue.orderedCount}`));
+  assert.match(reportOutput, new RegExp(`Command manifest entries: ${payload.actionPlan.executionQueue.commandManifestCount}`));
+  assert.match(reportOutput, /agent-learning-usage-record - review-before-mutation/);
+  assert.match(reportOutput, /flags --with-learning/);
+  assert.match(reportOutput, /Recommended next action:/);
+  assert.match(reportOutput, /Recommended next command policy: preview-only/);
+  assert.match(reportOutput, /Recommended next command:/);
+  assert.match(reportOutput, /Queue order:/);
+  assert.match(reportOutput, /Command manifest:/);
+  assert.match(reportOutput, /Command safety: read-only/);
+  assert.match(reportOutput, /Command safety: mutates-local-state/);
+  assert.match(reportOutput, /## Follow-Up Commands/);
+  assert.match(reportOutput, /This report is read-only evidence/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const reportFile = path.join(dir, "agent-backlog.md");
+  const reportWriteOutput = await captureStdout(() => runLearn([
+    "--agent-backlog",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportFile,
+  ]));
+  assert.match(reportWriteOutput, /Wrote /);
+  assert.match(readFileSync(reportFile, "utf8"), /# Agent Development Backlog Report/);
+  assert.match(readFileSync(reportFile, "utf8"), /## Action Plan/);
+  assert.match(readFileSync(reportFile, "utf8"), /Safety summary:/);
+  assert.match(readFileSync(reportFile, "utf8"), /Execution queue:/);
+  assert.match(readFileSync(reportFile, "utf8"), /Command safety: read-only/);
+  assert.match(readFileSync(reportFile, "utf8"), /Command safety: mutates-local-state/);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+}));
+
+test("runLearn --signals ranks profile initialization before eval checkpoint bootstrap", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "missing-learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--signals",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+
+  assert.equal(payload.learning.exists, false);
+  const initAction = payload.agentDevelopment.actions.find((item) => item.id === "agent-learning-profile-init");
+  const evalAction = payload.agentDevelopment.actions.find((item) => item.id === "agent-eval-checkpoint-generate");
+  const workspaceAction = payload.agentDevelopment.actions.find((item) => item.id === "agent-workspace-readiness-review");
+  assert.ok(initAction);
+  assert.ok(evalAction);
+  assert.equal(initAction.rank, 1);
+  assert.equal(initAction.priority, "p1");
+  assert.equal(evalAction.priority, "p1");
+  assert.equal(evalAction.rank > initAction.rank, true);
+  if (workspaceAction) {
+    assert.equal(workspaceAction.rank > initAction.rank, true);
+    assert.equal(workspaceAction.rank < evalAction.rank, true);
+  }
+  assert.equal(evalAction.command.includes(`--out ${path.join(dir, "learning-eval.json")}`), true);
+  assert.equal(evalAction.evidence.evalOutputFile, path.join(dir, "learning-eval.json"));
+}));
+
+test("runLearn --signals --strict exits non-zero when signal registry is not pass", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-workflow",
+        category: "workflow",
+        text: "Prefer deterministic local agent development gates.",
+        source: "test",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--signals",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.agentDevelopment.status, "warn");
+    assert.equal(process.exitCode, 1);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--signals",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
+}));
+
+test("runLearn --agent-backlog --strict exits non-zero when backlog warns", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:01.000Z",
+    entries: [
+      {
+        id: "learn-workflow",
+        category: "workflow",
+        text: "Prefer deterministic local agent development gates.",
+        source: "test",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--agent-backlog",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.signalStatus, "warn");
+    assert.equal(process.exitCode, 1);
+
+    process.exitCode = 0;
+    await captureStdout(() => runLearn([
+      "--agent-backlog",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--json",
+    ]));
+    assert.equal(process.exitCode, 0);
+  } finally {
+    process.exitCode = previousExitCode;
+  }
+}));
+
+test("buildSkillEvolutionProposals groups repeated check captures into preview-only skill deltas", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:03.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Screen reader behavior: No screen-reader behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+      {
+        id: "learn-check-single",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:artifact",
+        createdAt: "2026-06-02T00:00:03.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:04.000Z"),
+    signalRegistryProvider: ({ filePath: registryFile, usageFile: registryUsage, signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+      file: registryFile,
+      usageFile: registryUsage,
+    }),
+  });
+
+  assert.equal(payload.dryRun, true);
+  assert.equal(payload.applied, false);
+  assert.equal(payload.status, "warn");
+  assert.equal(payload.checkCaptureCount, 3);
+  assert.equal(payload.candidateCount, 2);
+  assert.equal(payload.proposalCount, 1);
+  assert.equal(payload.skippedCount, 1);
+  assert.equal(payload.proposals[0].candidateSkillPath, "skills/component-spec-writer/SKILL.md");
+  assert.equal(payload.proposals[0].riskLevel, "low");
+  assert.deepEqual(payload.proposals[0].routeIds, ["component-spec"]);
+  assert.match(payload.proposals[0].proposedInstructionDelta, /accessibility checkpoint/);
+  assert.match(payload.proposals[0].verificationCommand, /--route component-spec/);
+  assert.equal(payload.proposals[0].evidenceSources.length, 2);
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+}));
+
+test("buildSkillEvolutionProposals honors custom minimum evidence threshold", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No tablet behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    minEvidenceCount: 3,
+    signalRegistryProvider: ({ signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+    }),
+  });
+
+  assert.equal(payload.minEvidenceCount, 3);
+  assert.equal(payload.proposalCount, 0);
+  assert.equal(payload.skippedCount, 1);
+  assert.match(payload.skipped[0].reason, /Needs at least 3/);
+  assert.equal(payload.status, "pass");
+}));
+
+test("renderSkillEvolutionProposalReport emits reviewer-friendly Markdown without apply semantics", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Keyboard and focus behavior: No keyboard behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "accessibility",
+        text: "Improve future outputs by addressing Screen reader behavior: No screen-reader behavior note detected.",
+        source: "check:component-spec",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:03.000Z"),
+    signalRegistryProvider: ({ signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+    }),
+  });
+  const report = renderSkillEvolutionProposalReport(payload, {
+    generatedAt: new Date("2026-06-02T00:00:04.000Z"),
+  });
+
+  assert.match(report, /^# Skill Evolution Proposal Report/);
+  assert.match(report, /Status: warn/);
+  assert.match(report, /Minimum evidence: 2/);
+  assert.match(report, /## Proposed Skill Deltas/);
+  assert.match(report, /skills\/component-spec-writer\/SKILL\.md/);
+  assert.match(report, /```bash\nnode cli\/bin\/design-ai\.mjs check --examples --route component-spec --limit 1 --strict --json\n```/);
+  assert.match(report, /Mutates skill files: no/);
+  assert.match(report, /This report is preview-only evidence; it does not apply changes\./);
+}));
+
+test("runLearn --propose-skills reports JSON and human output without mutating the profile", () => withTempDirAsync(async (dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No tablet behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+  const candidateSkillPath = path.resolve("skills/website-improvement/SKILL.md");
+  const candidateSkillBefore = readFileSync(candidateSkillPath, "utf8");
+
+  const jsonOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--min-evidence",
+    "2",
+    "--json",
+  ]));
+  const payload = JSON.parse(jsonOutput);
+  assert.equal(payload.file, filePath);
+  assert.equal(payload.status, "warn");
+  assert.equal(payload.minEvidenceCount, 2);
+  assert.equal(payload.proposalCount, 1);
+  assert.equal(payload.proposals[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
+  assert.equal(payload.privacy.mutatesSkillFiles, false);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+
+  const humanOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+  ]));
+  assert.match(humanOutput, /Skill evolution proposals/);
+  assert.match(humanOutput, /Status: warn/);
+  assert.match(humanOutput, /Min evidence: 2/);
+  assert.match(humanOutput, /Proposed skill deltas:/);
+  assert.match(humanOutput, /skills\/website-improvement\/SKILL\.md/);
+  assert.match(humanOutput, /No changes made/);
+
+  const reportPath = path.join(dir, "skill-proposals.md");
+  const reportOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--report",
+    "--out",
+    reportPath,
+  ]));
+  assert.match(reportOutput, /Wrote /);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+  const report = readFileSync(reportPath, "utf8");
+  assert.match(report, /^# Skill Evolution Proposal Report/);
+  assert.match(report, /skills\/website-improvement\/SKILL\.md/);
+  assert.match(report, /Mutates learning profile: no/);
+
+  const patchPath = path.join(dir, "skill-proposals.patch");
+  const patchOutput = await captureStdout(() => runLearn([
+    "--propose-skills",
+    "--file",
+    filePath,
+    "--usage-file",
+    usageFile,
+    "--from-file",
+    dir,
+    "--patch",
+    "--out",
+    patchPath,
+  ]));
+  assert.match(patchOutput, /Wrote /);
+  assert.equal(readFileSync(filePath, "utf8"), before);
+  assert.equal(readFileSync(candidateSkillPath, "utf8"), candidateSkillBefore);
+  const patch = readFileSync(patchPath, "utf8");
+  assert.match(patch, /^# design-ai skill proposal patch preview/);
+  assert.match(patch, /diff --git a\/skills\/website-improvement\/SKILL\.md b\/skills\/website-improvement\/SKILL\.md/);
+  assert.match(patch, /\+## Local Learning Proposal: skill-proposal-website-improvement-/);
+  assert.match(patch, /\+- Proposed instruction: Add a responsive QA checkpoint/);
+  assert.match(patch, /\+- Verification: `node cli\/bin\/design-ai\.mjs check --examples --route website-improvement --limit 1 --strict --json`/);
+}));
+
+test("runLearn --propose-skills --strict exits non-zero when proposal review is pending", () => withTempDirAsync(async (dir) => {
+  const previousExitCode = process.exitCode;
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-check-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No mobile behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-10T00:00:01.000Z",
+      },
+      {
+        id: "learn-check-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Responsive behavior: No tablet behavior note detected.",
+        source: "check:website-improvement",
+        createdAt: "2026-06-10T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+  writeFileSync(usageFile, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-10T00:00:02.000Z",
+    profileFile: filePath,
+    events: [],
+  }), "utf8");
+  const before = readFileSync(filePath, "utf8");
+
+  try {
+    process.exitCode = undefined;
+    const strictOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--strict",
+      "--json",
+    ]));
+    const strictPayload = JSON.parse(strictOutput);
+    assert.equal(strictPayload.status, "warn");
+    assert.equal(strictPayload.proposalCount, 1);
+    assert.equal(strictPayload.pendingReviewCount, 1);
+    assert.equal(process.exitCode, 1);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
+    process.exitCode = 0;
+    const reviewTemplateOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-template",
+    ]));
+    const reviewTemplatePayload = JSON.parse(reviewTemplateOutput);
+    assert.equal(reviewTemplatePayload.version, 1);
+    assert.equal(reviewTemplatePayload.source, "design-ai learn --propose-skills --review-template");
+    assert.equal(reviewTemplatePayload.summary.templateDecisionCount, 1);
+    assert.equal(reviewTemplatePayload.decisions[0].proposalId, strictPayload.proposals[0].id);
+    assert.equal(reviewTemplatePayload.decisions[0].status, "deferred");
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
+    const reviewFile = path.join(dir, "skill-proposals.review.json");
+    writeFileSync(reviewFile, JSON.stringify({
+      version: 1,
+      decisions: [
+        {
+          proposalId: strictPayload.proposals[0].id,
+          status: "applied",
+          reviewedAt: "2026-06-10T00:05:00.000Z",
+          reviewer: "local-operator",
+          note: "Instruction delta was manually reviewed and applied.",
+        },
+        {
+          proposalId: "skill-proposal-stale",
+          status: "rejected",
+          reviewedAt: "2026-06-09T00:00:00.000Z",
+        },
+      ],
+    }), "utf8");
+
+    process.exitCode = 0;
+    const reviewedStrictOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      reviewFile,
+      "--strict",
+      "--json",
+    ]));
+    const reviewedStrictPayload = JSON.parse(reviewedStrictOutput);
+    assert.equal(reviewedStrictPayload.status, "warn");
+    assert.equal(reviewedStrictPayload.signalStatus, "warn");
+    assert.equal(reviewedStrictPayload.pendingReviewCount, 0);
+    assert.equal(reviewedStrictPayload.review.appliedCount, 1);
+    assert.equal(reviewedStrictPayload.review.staleCount, 1);
+    assert.equal(reviewedStrictPayload.proposals[0].reviewStatus, "applied");
+    assert.equal(process.exitCode, 1);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+
+    const proposalGatePayload = buildSkillEvolutionProposals({
+      filePath,
+      usageFile,
+      signalSource: dir,
+      root: dir,
+      reviewFile,
+      signalRegistryProvider: ({ signalSource }) => ({
+        status: "pass",
+        signalSource: path.resolve(signalSource),
+      }),
+    });
+    assert.equal(proposalGatePayload.status, "pass");
+    assert.equal(proposalGatePayload.pendingReviewCount, 0);
+    assert.equal(proposalGatePayload.review.appliedCount, 1);
+
+    process.exitCode = 0;
+    const reviewedPatchOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      reviewFile,
+      "--patch",
+    ]));
+    assert.match(reviewedPatchOutput, /No pending skill proposal deltas remain after review-file decisions/);
+    assert.doesNotMatch(reviewedPatchOutput, /diff --git/);
+
+    const reviewedTemplateFile = path.join(dir, "review-template.json");
+    const reviewedTemplateWriteOutput = await captureStdout(() => runLearn([
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      reviewFile,
+      "--review-template",
+      "--out",
+      reviewedTemplateFile,
+    ]));
+    assert.match(reviewedTemplateWriteOutput, /Wrote /);
+    const reviewedTemplatePayload = JSON.parse(readFileSync(reviewedTemplateFile, "utf8"));
+    assert.equal(reviewedTemplatePayload.summary.templateDecisionCount, 0);
+    assert.deepEqual(reviewedTemplatePayload.decisions, []);
+    assert.equal(readFileSync(filePath, "utf8"), before);
+    assert.equal(readFileSync(reviewFile, "utf8"), JSON.stringify({
+      version: 1,
+      decisions: [
+        {
+          proposalId: strictPayload.proposals[0].id,
+          status: "applied",
+          reviewedAt: "2026-06-10T00:05:00.000Z",
+          reviewer: "local-operator",
+          note: "Instruction delta was manually reviewed and applied.",
+        },
+        {
+          proposalId: "skill-proposal-stale",
+          status: "rejected",
+          reviewedAt: "2026-06-09T00:00:00.000Z",
+        },
+      ],
+    }));
+  } finally {
+    process.exitCode = previousExitCode;
+  }
 }));
 
 test("learningEvalReport validates expected learning selection without raw brief text", () => withTempDir((dir) => {

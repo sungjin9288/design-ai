@@ -30,6 +30,7 @@ What ships in v4.54:
 - `design-ai learn --curate --yes` moves duplicate/sensitive candidates into a sibling `*.archive.json` file instead of deleting them.
 - `design-ai learn --stats` summarizes profile counts, category/source distribution, recency, and audit status without changing the profile.
 - `design-ai learn --usage` summarizes prompt/pack `--with-learning` usage sidecar events, selected entry counts, unused active entries, and recent usage without changing any files.
+- `design-ai learn --propose-skills` converts repeated check-capture learning signals into preview-only candidate skill instruction deltas without changing `learning.json` or skill files.
 - `design-ai learn --eval-template` generates a runnable learning eval checkpoint JSON from the active profile, optional query, category, and limit.
 - `design-ai learn --eval` validates deterministic learning-selection checkpoints from a JSON file or stdin without changing the profile; add `--strict` to exit non-zero when any checkpoint warns or fails. JSON reports expose checkpoint `generatedAt` plus a sanitized `sourceProfile` summary without raw checkpoint brief or query text.
 - `design-ai workspace` includes the selected learning profile path, entry count, category counts, latest entry, audit status, usage sidecar readiness, eval checkpoint readiness, and canonical repository alignment in a broader read-only dogfood readiness snapshot; add `--learning-usage path` or `--learning-eval path` to include specific artifacts, omit them to auto-detect sibling `learning.usage.json` and `learning-eval.json` files when present, and add `--strict` when warning/failure readiness should fail the command.
@@ -98,7 +99,7 @@ When usage metadata is available, `workspace` compares it against the selected p
 
 When checkpoint metadata is available, `workspace` also compares it against the selected profile. A passing checkpoint still becomes a readiness warning when the profile `updatedAt` is newer than checkpoint `generatedAt`, when `sourceProfile.file` does not match the active profile path, or when the recorded source entry count differs from the active profile count.
 
-If the selected profile, usage sidecar, report output, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --curate --report --out`, `learn --usage`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
+If the selected profile, usage sidecar, report output, or checkpoint path includes spaces or shell-sensitive characters, the suggested `learn --curate --usage-file`, `learn --curate --report --out`, `learn --usage`, `learn --propose-skills`, `learn --eval-template`, and `learn --eval --from-file` commands quote the path in the next action output.
 
 If the selected learning profile already contains entries and passes audit, `workspace` suggests an eval-template bootstrap command until a sibling or explicit checkpoint is available:
 
@@ -106,6 +107,14 @@ If the selected learning profile already contains entries and passes audit, `wor
 design-ai learn --eval-template --file ./learning.json --out ./learning-eval.json
 design-ai workspace --learning-file ./learning.json --strict
 ```
+
+For a durable local AI/agent development handoff, save the read-only signal registry as Markdown:
+
+```bash
+design-ai learn --signals --from-file . --report --out learning-signals.md
+```
+
+The report includes learning audit state, usage sidecar counts, eval signal files, check-capture summaries, workspace readiness, deterministic agent development backlog actions, recommendations, and privacy boundaries. JSON readiness output also includes `requiredCheckIds`, `optionalCheckIds`, `checkStatusById`, and `checkRequiredById` so local automation can branch on a specific readiness check without scanning the full `checks` array. It does not mutate `learning.json`, usage sidecars, eval files, skill files, or target repositories.
 
 If sibling restore rollback backups are present, `workspace` remains read-only and only reports the inventory. When more than five backups exist, the next action points to a dry-run-safe prune command:
 
@@ -282,6 +291,37 @@ design-ai learn --usage --limit 5 --usage-file ./learning.usage.json
 ```
 
 Usage mode is read-only. It reports event count, command/route/category distribution, entry ids selected by `prompt` and `pack`, active profile entries that have not been used yet, stale selected ids no longer present in the active profile, and recent events. It preserves the privacy boundary from the sidecar: selected entry ids and short brief hashes are shown, but raw prompt or query text is not stored or reported.
+
+Preview skill evolution proposals:
+
+```bash
+design-ai learn --propose-skills
+design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file . --min-evidence 3 --json
+design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json
+design-ai learn --propose-skills --from-file . --review-template --out skill-proposals.review.json
+design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch
+design-ai learn --propose-skills --from-file route-eval-report.json --usage-file ./learning.usage.json --json --out skill-proposals.json
+```
+
+Skill proposal mode is read-only. It scans active learning entries whose `source` starts with `check:`, groups repeated check-capture signals by candidate skill and category, and emits proposal records with `candidateSkillPath`, `evidenceSources`, `proposedInstructionDelta`, `verificationCommand`, and `riskLevel`. Single-entry groups are reported as skipped until enough repeated evidence exists. Use `--min-evidence N` when a project needs stricter review before skill edits, or a lower local threshold for early dogfood review. Use `--review-template --out skill-proposals.review.json` to scaffold a JSON decision file for current unresolved proposals; generated decisions default to `deferred` so the gate stays pending until an operator deliberately changes a decision to `applied` or `rejected`. Use `--review-file skill-proposals.review.json` to join manual decisions without changing that file; proposal decisions with `status: "applied"` or `status: "rejected"` clear the proposal review gate, while `accepted` and `deferred` remain pending. Use `--patch --out skill-proposals.patch` when an operator wants a unified diff handoff for unresolved proposals before editing any skill file. The command is deliberately preview-only: `--yes` is rejected, `learning.json` is not changed, `skills/*/SKILL.md` is not edited, the review file is not changed unless the operator explicitly writes a separate `--review-template --out` artifact, and no external AI API is called.
+
+Minimal review file:
+
+```json
+{
+  "version": 1,
+  "decisions": [
+    {
+      "proposalId": "skill-proposal-website-improvement-abc123",
+      "status": "applied",
+      "reviewedAt": "2026-06-11T00:00:00.000Z",
+      "reviewer": "local-operator",
+      "note": "Instruction delta manually applied and verified."
+    }
+  ]
+}
+```
 
 Evaluate learning-selection checkpoints:
 

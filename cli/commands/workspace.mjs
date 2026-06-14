@@ -58,7 +58,10 @@ function printWorkspaceReport(report) {
     const sync = report.git.upstream
       ? `${report.git.upstream} (ahead ${report.git.ahead}, behind ${report.git.behind})`
       : "no upstream";
-    const clean = report.git.clean ? "clean" : `${report.git.statusShort.length} changed path(s)`;
+    const ignored = report.git.ignoredLocalArtifactCount > 0
+      ? `, ${report.git.ignoredLocalArtifactCount} ignored local artifact(s)`
+      : "";
+    const clean = report.git.clean ? `clean${ignored}` : `${report.git.statusShort.length} changed path(s)${ignored}`;
     info(`Branch: ${report.git.branch || "detached"} | ${clean} | ${sync}`);
     if (report.git.remote) info(`Remote: ${report.git.remote}`);
     if (report.git.lastCommit) {

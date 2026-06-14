@@ -42,6 +42,24 @@ const CANONICAL_REPOSITORY_URL = `https://github.com/${CANONICAL_REPOSITORY_SLUG
 const DEFAULT_LEARNING_EVAL_FILE = "learning-eval.json";
 const DEFAULT_LEARNING_CURATION_REPORT_FILE = "learning-curation-report.md";
 const DEFAULT_RESTORE_BACKUP_KEEP = 5;
+const IGNORED_LOCAL_ARTIFACT_EXACT_PATHS = new Set([
+  "DEV_LOG.md",
+  "docs/case-study.md",
+  "docs/evidence-checklist.md",
+  "docs/evidence-gallery.md",
+  "docs/implementation-evidence.md",
+  "docs/interview-story.md",
+  "docs/project-card.md",
+  "docs/project-roadmap.md",
+  "docs/readme-improvement.md",
+  "docs/resume-bullets.md",
+  "links.md",
+  "portfolio_manifest.md",
+]);
+const IGNORED_LOCAL_ARTIFACT_PREFIXES = [
+  "_portfolio_export/",
+  "evidence/",
+];
 
 export function parseWorkspaceArgs(args) {
   const flags = {
@@ -158,6 +176,32 @@ function parseLastCommit(text) {
   };
 }
 
+function parseUntrackedStatusPath(line) {
+  const text = String(line || "");
+  if (!text.startsWith("?? ")) return "";
+  return text.slice(3).trim();
+}
+
+function isIgnoredLocalArtifactStatus(line) {
+  const filePath = parseUntrackedStatusPath(line);
+  if (!filePath) return false;
+  if (IGNORED_LOCAL_ARTIFACT_EXACT_PATHS.has(filePath)) return true;
+  return IGNORED_LOCAL_ARTIFACT_PREFIXES.some((prefix) => filePath === prefix.slice(0, -1) || filePath.startsWith(prefix));
+}
+
+function splitGitStatusShort(statusShort) {
+  const activeStatusShort = [];
+  const ignoredStatusShort = [];
+  for (const line of statusShort) {
+    if (isIgnoredLocalArtifactStatus(line)) {
+      ignoredStatusShort.push(line);
+    } else {
+      activeStatusShort.push(line);
+    }
+  }
+  return { activeStatusShort, ignoredStatusShort };
+}
+
 export function collectGitReport({ root = process.cwd(), gitRunner = runGitCommand } = {}) {
   const resolvedRoot = path.resolve(root);
   const base = {
@@ -171,6 +215,10 @@ export function collectGitReport({ root = process.cwd(), gitRunner = runGitComma
     remote: "",
     lastCommit: null,
     statusShort: [],
+    allStatusShort: [],
+    ignoredStatusShort: [],
+    ignoredLocalArtifactCount: 0,
+    hasIgnoredLocalArtifacts: false,
     reason: "",
   };
 
@@ -206,19 +254,24 @@ export function collectGitReport({ root = process.cwd(), gitRunner = runGitComma
   }
 
   const statusShort = statusResult.ok ? splitLines(statusResult.stdout) : [];
+  const { activeStatusShort, ignoredStatusShort } = splitGitStatusShort(statusShort);
 
   return {
     ...base,
     isRepo: true,
     root: repoRoot,
     branch: trimOutput(branchResult),
-    clean: statusShort.length === 0,
+    clean: activeStatusShort.length === 0,
     upstream: upstreamResult.ok ? trimOutput(upstreamResult) : "",
     ahead,
     behind,
     remote: remoteResult.ok ? trimOutput(remoteResult) : "",
     lastCommit: lastCommitResult.ok ? parseLastCommit(lastCommitResult.stdout) : null,
-    statusShort,
+    statusShort: activeStatusShort,
+    allStatusShort: statusShort,
+    ignoredStatusShort,
+    ignoredLocalArtifactCount: ignoredStatusShort.length,
+    hasIgnoredLocalArtifacts: ignoredStatusShort.length > 0,
     reason: "",
   };
 }
@@ -789,6 +842,8 @@ export function buildWorkspaceNextActions({
   } else {
     if (!git.clean) {
       actions.push(action("warn", "Review local changes before committing or pushing.", "git status --short"));
+    } else if (git.hasIgnoredLocalArtifacts) {
+      actions.push(action("info", "Ignored local portfolio/evidence artifacts are present and excluded from workspace readiness.", "git status --short"));
     } else if (!git.upstream && git.branch) {
       actions.push(action("warn", "Set an upstream branch before sharing dogfood work.", `git push -u origin ${git.branch}`));
     } else if (git.behind > 0) {

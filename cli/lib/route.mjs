@@ -26,10 +26,20 @@ const ROUTE_OPTIONS = [
   "--json",
   "--list",
   "--explain",
+  "--eval-template",
+  "--eval",
+  "--strict",
   "--from-file",
   "--stdin",
   "--limit",
 ];
+const ROUTE_EVAL_VERSION = 1;
+const ROUTE_EVAL_DEFAULT_LIMIT = 3;
+const CONFIDENCE_ORDER = {
+  low: 1,
+  medium: 2,
+  high: 3,
+};
 
 export const ROUTES = [
   {
@@ -293,6 +303,9 @@ export function parseRouteArgs(args) {
     stdin: false,
     list: false,
     explain: false,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     limit: 3,
     json: false,
     help: false,
@@ -309,6 +322,12 @@ export function parseRouteArgs(args) {
       out.list = true;
     } else if (arg === "--explain") {
       out.explain = true;
+    } else if (arg === "--eval-template") {
+      out.evalTemplate = true;
+    } else if (arg === "--eval") {
+      out.eval = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (parseBriefSourceFlag(args, out)) {
       i = out.index;
     } else if (arg === "--limit") {
@@ -323,6 +342,22 @@ export function parseRouteArgs(args) {
     } else {
       out.briefParts.push(arg);
     }
+  }
+
+  if (out.eval && out.evalTemplate) {
+    throw new Error("Choose either --eval-template or --eval, not both");
+  }
+  if (out.strict && !out.eval) {
+    throw new Error("--strict can only be used with --eval");
+  }
+  if (out.evalTemplate && (out.fromFile || out.stdin || out.list || out.briefParts.length > 0)) {
+    throw new Error("--eval-template cannot be combined with a brief, --from-file, --stdin, or --list");
+  }
+  if (out.eval && (!out.fromFile && !out.stdin)) {
+    throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.eval && (out.briefParts.length > 0 || out.list)) {
+    throw new Error("--eval cannot be combined with an inline brief or --list");
   }
 
   return {
@@ -490,6 +525,205 @@ export function routeBrief({ brief, sourceRoot, limit = 3 }) {
 
   if (scored.length > 0) return scored;
   return [fallbackResult(sourceRoot)];
+}
+
+function isoTimestamp(now = new Date()) {
+  return (now instanceof Date ? now : new Date(now)).toISOString();
+}
+
+export function buildRouteEvalTemplate({ sourceRoot, generatedAt = new Date() } = {}) {
+  return {
+    version: ROUTE_EVAL_VERSION,
+    generatedAt: isoTimestamp(generatedAt),
+    sourceRouteVersion: sourceRoot ? readRouteManifestVersion(sourceRoot) : "unknown",
+    description: "Deterministic route-selection checkpoints for design-ai agent routing.",
+    cases: [
+      {
+        id: "design-review-a11y",
+        brief: "Audit and review a Figma signup flow for accessibility, keyboard focus, screen reader behavior, critique, and UX risk",
+        expectedRouteId: "design-review",
+        minConfidence: "high",
+      },
+      {
+        id: "website-improvement-control-tower",
+        brief: "Improve a website homepage with SEO, performance, MCP readiness, and a refactor plan",
+        expectedRouteId: "website-improvement",
+        minConfidence: "high",
+      },
+      {
+        id: "component-spec-contract",
+        brief: "Spec a Button component API with variants, props, states, and keyboard accessibility",
+        expectedRouteId: "component-spec",
+        minConfidence: "medium",
+      },
+      {
+        id: "learning-design-system-qa",
+        brief: "Audit our design system QA with visual regression, token contract tests, and accessibility coverage",
+        expectedRouteId: "design-system-qa",
+        minConfidence: "medium",
+      },
+      {
+        id: "korean-palette",
+        brief: "Generate a Korean SaaS color palette with semantic tokens, dark mode, and contrast ratios",
+        expectedRouteId: "palette-from-brand",
+        minConfidence: "medium",
+      },
+      {
+        id: "motion-spec",
+        brief: "Spec motion, animation, and transition behavior with duration, easing, choreography, Framer guidance, and reduced motion support",
+        expectedRouteId: "motion-design",
+        minConfidence: "high",
+      },
+    ],
+  };
+}
+
+function routeEvalStatus(counts) {
+  if (counts.fail > 0) return "fail";
+  if (counts.warn > 0) return "warn";
+  return "pass";
+}
+
+function normalizeRouteEvalPayload(evalText, source = "route-eval.json") {
+  let payload;
+  try {
+    payload = JSON.parse(evalText);
+  } catch (err) {
+    throw new Error(`Could not parse route eval JSON from ${source}: ${err.message}`);
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Route eval payload must be a JSON object");
+  }
+  if (payload.version !== ROUTE_EVAL_VERSION) {
+    throw new Error(`Route eval payload version must be ${ROUTE_EVAL_VERSION}`);
+  }
+  if (!Array.isArray(payload.cases)) {
+    throw new Error("Route eval payload must include a cases array");
+  }
+
+  return payload;
+}
+
+function normalizeRouteEvalCase(rawCase, index) {
+  if (!rawCase || typeof rawCase !== "object" || Array.isArray(rawCase)) {
+    throw new Error(`Route eval case ${index + 1} must be a JSON object`);
+  }
+
+  const id = String(rawCase.id || `case-${index + 1}`).trim();
+  const brief = String(rawCase.brief || "").trim();
+  const expectedRouteId = String(rawCase.expectedRouteId || rawCase.expected || "").trim();
+  const minConfidence = String(rawCase.minConfidence || "").trim().toLowerCase();
+  const limit = rawCase.limit === undefined || rawCase.limit === null
+    ? ROUTE_EVAL_DEFAULT_LIMIT
+    : Number(rawCase.limit);
+
+  if (!id) throw new Error(`Route eval case ${index + 1} is missing id`);
+  if (!brief) throw new Error(`Route eval case ${id} is missing brief`);
+  if (!expectedRouteId) throw new Error(`Route eval case ${id} is missing expectedRouteId`);
+  if (minConfidence && !Object.hasOwn(CONFIDENCE_ORDER, minConfidence)) {
+    throw new Error(`Route eval case ${id} has invalid minConfidence: ${minConfidence}`);
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 10) {
+    throw new Error(`Route eval case ${id} limit must be an integer from 1 to 10`);
+  }
+
+  return {
+    id,
+    brief,
+    expectedRouteId,
+    minConfidence,
+    limit,
+  };
+}
+
+function evaluateRouteEvalCase(testCase, sourceRoot, defaultLimit) {
+  let expectedKnown = true;
+  try {
+    assertKnownRouteId(testCase.expectedRouteId, { allowEmpty: false });
+  } catch {
+    expectedKnown = false;
+  }
+
+  const limit = testCase.limit || defaultLimit || ROUTE_EVAL_DEFAULT_LIMIT;
+  const routes = routeBrief({
+    brief: testCase.brief,
+    sourceRoot,
+    limit,
+  });
+  const topRoute = routes[0] || null;
+  const expectedRank = routes.findIndex((route) => route.id === testCase.expectedRouteId);
+
+  let status = "pass";
+  let message = "Expected route selected.";
+
+  if (!expectedKnown) {
+    status = "fail";
+    message = `Expected route id is unknown: ${testCase.expectedRouteId}`;
+  } else if (!topRoute) {
+    status = "fail";
+    message = "No route recommendation was produced.";
+  } else if (topRoute.id !== testCase.expectedRouteId) {
+    status = "fail";
+    message = expectedRank >= 0
+      ? `Expected route appeared at rank ${expectedRank + 1}, but top route was ${topRoute.id}.`
+      : `Expected ${testCase.expectedRouteId}, but top route was ${topRoute.id}.`;
+  } else if (
+    testCase.minConfidence
+    && CONFIDENCE_ORDER[topRoute.confidence] < CONFIDENCE_ORDER[testCase.minConfidence]
+  ) {
+    status = "warn";
+    message = `Top route matched, but confidence ${topRoute.confidence} is below ${testCase.minConfidence}.`;
+  }
+
+  return {
+    id: testCase.id,
+    status,
+    message,
+    expectedRouteId: testCase.expectedRouteId,
+    topRouteId: topRoute?.id || "",
+    topConfidence: topRoute?.confidence || "",
+    topScore: topRoute?.score || 0,
+    expectedRank,
+    matchedKeywords: topRoute?.matchedKeywords || [],
+    brief: testCase.brief,
+    routes,
+  };
+}
+
+export function routeEvalReport({
+  evalText,
+  source = "route-eval.json",
+  sourceRoot,
+  limit = ROUTE_EVAL_DEFAULT_LIMIT,
+  generatedAt = new Date(),
+}) {
+  const payload = normalizeRouteEvalPayload(evalText, source);
+  const normalizedCases = payload.cases.map((testCase, index) => normalizeRouteEvalCase(testCase, index));
+  const results = normalizedCases.map((testCase) => evaluateRouteEvalCase(testCase, sourceRoot, limit));
+  const counts = results.reduce(
+    (acc, result) => ({
+      ...acc,
+      [result.status]: acc[result.status] + 1,
+    }),
+    { pass: 0, warn: 0, fail: 0 },
+  );
+  const summary = {
+    total: results.length,
+    pass: counts.pass,
+    warn: counts.warn,
+    fail: counts.fail,
+  };
+
+  return {
+    version: readRouteManifestVersion(sourceRoot),
+    evalVersion: payload.version,
+    source,
+    generatedAt: isoTimestamp(generatedAt),
+    status: routeEvalStatus(counts),
+    summary,
+    cases: results,
+  };
 }
 
 export function readRouteManifestVersion(sourceRoot) {

@@ -66,6 +66,9 @@ from smoke_assertions import (
     assert_numeric_value_failure,
     assert_output_overwrite_failure,
     assert_output_write_success,
+    assert_site_repair_apply_report_payload,
+    assert_site_repair_guidance_report_contract,
+    assert_site_repair_preview_report_payload,
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
@@ -83,9 +86,23 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_status_json,
     assert_status_output,
+    assert_smoke_json_keys,
     assert_site_json,
     assert_site_mcp_check_json,
+    assert_site_mcp_check_probes_human,
+    assert_site_mcp_check_probes_human_file_output,
+    assert_site_mcp_check_probes_json,
+    assert_site_mcp_check_probes_json_file_output,
+    assert_site_mcp_plan_json,
     assert_site_mcp_plan_markdown,
+    assert_site_mcp_plan_probes_json,
+    assert_site_mcp_plan_probes_json_file_output,
+    assert_site_mcp_plan_probes_markdown,
+    assert_site_bundle_compare_warning_strict_json,
+    assert_site_next_actions_human_file_output,
+    assert_site_next_actions_json,
+    assert_site_next_actions_json_file_output,
+    assert_site_workflow_graph_json,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
     assert_site_sample_json,
@@ -114,10 +131,107 @@ from smoke_assertions import (
     help_topic_script,
     passing_doctor_report_json,
     passing_check_artifact_content,
+    passing_site_mcp_check_probes_human,
+    passing_site_mcp_check_probes_json,
+    passing_site_mcp_plan_json,
+    passing_site_next_actions_human,
+    passing_site_next_actions_json,
     parse_help_topics,
     seed_force_overwrite_target,
+    site_guidance_command,
+    site_mcp_probe_embedded_command,
     unknown_option_args,
 )
+
+SITE_EVIDENCE_VALUES = {
+    "executedWork": "Implemented pricing CTA cleanup in the target repo",
+    "verificationResults": "npm run lint passed in the target repo",
+    "remainingRisks": "Preview deploy still needs analytics review",
+    "nextActions": "Attach before/after screenshots",
+}
+SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
+EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
+EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS = [
+    "enabled",
+    "mode",
+    "externalCalls",
+    "status",
+    "count",
+    "pass",
+    "warn",
+    "fail",
+    "items",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS = [
+    "id",
+    "key",
+    "label",
+    "requestedStatus",
+    "level",
+    "passed",
+    "message",
+    "evidence",
+    "actions",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS = [
+    "github-repo-reference",
+    "figma-url-reference",
+    "browser-smoke-target",
+    "deploy-provider-reference",
+]
+
+
+def assert_site_mcp_probe_counts(
+    actual: object,
+    *,
+    context: str,
+    label: str,
+) -> None:
+    if actual != EXPECTED_SITE_MCP_PROBE_COUNTS:
+        raise SystemExit(f"{label} after {context} MCP probe counts changed: {actual!r}")
+
+
+def assert_site_bundle_mcp_probes_payload(payload: object, *, context: str) -> None:
+    checked = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS,
+        label="mcp-probes.json",
+        context=context,
+        command_label="site bundle",
+    )
+    if checked.get("enabled") is not True or checked.get("mode") != "read-only-local":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json mode changed")
+    if checked.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json must remain read-only")
+    if checked.get("status") != "pass":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json status changed")
+    assert_site_mcp_probe_counts(
+        {key: checked.get(key) for key in ("count", "pass", "warn", "fail")},
+        context=context,
+        label="site bundle mcp-probes.json",
+    )
+
+    items = checked.get("items")
+    if not isinstance(items, list) or len(items) != len(EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS):
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item count changed")
+    checked_ids = []
+    for item in items:
+        checked_item = assert_smoke_json_keys(
+            item,
+            EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS,
+            label="mcp-probes.json item",
+            context=context,
+            command_label="site bundle",
+        )
+        checked_ids.append(checked_item.get("id"))
+        if checked_item.get("level") != "pass" or checked_item.get("passed") is not True:
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item should pass: {checked_item.get('id')}")
+        if not isinstance(checked_item.get("evidence"), list) or not checked_item.get("evidence"):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item evidence missing")
+        if not isinstance(checked_item.get("actions"), list):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item actions must be an array")
+    if checked_ids != EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item order changed")
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -593,10 +707,56 @@ def site_workspace_fixture_json() -> str:
                     "risks": ["Could change conversion copy without stakeholder approval"],
                 },
             ],
+            "implementationEvidence": {
+                "executedWork": [],
+                "verificationResults": [],
+                "remainingRisks": [
+                    "MCP readiness gaps may limit verification depth.",
+                    "Copy or brand changes may require stakeholder review.",
+                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+                ],
+                "nextActions": [],
+            },
             "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
         },
         ensure_ascii=False,
     )
+
+
+def site_workspace_evidence_fixture_json() -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["implementationEvidence"] = {
+        key: [value]
+        for key, value in SITE_EVIDENCE_VALUES.items()
+    }
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def site_workspace_warning_fixture_json() -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["siteProfile"]["sentryProject"] = ""
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def assert_site_evidence_payload(payload: object, *, context: str, label: str) -> None:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"{label} after {context} did not emit an object payload")
+    evidence = payload.get("implementationEvidence")
+    if not isinstance(evidence, dict):
+        raise SystemExit(f"{label} after {context} did not preserve implementationEvidence")
+    for key, expected in SITE_EVIDENCE_VALUES.items():
+        if evidence.get(key) != [expected]:
+            raise SystemExit(f"{label} after {context} evidence field {key} changed: {evidence.get(key)!r}")
+
+
+def assert_site_evidence_markdown(raw: str, *, context: str, cmd: list[str], label: str) -> None:
+    assert_no_ansi(raw, cmd)
+    stripped = raw.lstrip()
+    if stripped.startswith("{") or stripped.startswith("["):
+        raise SystemExit(f"{label} after {context} looks like JSON output")
+    for fragment in SITE_EVIDENCE_VALUES.values():
+        if fragment not in raw:
+            raise SystemExit(f"{label} after {context} missing evidence fragment: {fragment!r}")
 
 
 def assert_site_json_smoke(
@@ -642,6 +802,107 @@ def assert_site_tasks_json_smoke(
     assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_next_actions_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_next_actions_human_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_human_file_output(
+        result.stdout,
+        read_forced_markdown_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_report_evidence_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_evidence_markdown(result.stdout, context=context, cmd=cmd, label="site report evidence markdown")
+
+
+def assert_site_tasks_evidence_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_tasks_json(result.stdout, context=context, cmd=cmd)
+    assert_site_evidence_payload(
+        json.loads(result.stdout),
+        context=context,
+        label="site tasks evidence JSON",
+    )
+
+
 def assert_site_prompt_markdown_smoke(
     cmd: list[str],
     *,
@@ -685,6 +946,87 @@ def assert_site_mcp_check_json_smoke(
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_mcp_check_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> dict[str, object]:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json(result.stdout, context=context, cmd=cmd)
+    return json.loads(result.stdout)
+
+
+def assert_site_mcp_check_probes_human_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_human(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_check_probes_human_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_human_file_output(
+        result.stdout,
+        output_path.read_text(encoding="utf-8"),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_mcp_check_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_site_mcp_plan_markdown_smoke(
     cmd: list[str],
     *,
@@ -699,6 +1041,79 @@ def assert_site_mcp_plan_markdown_smoke(
         env=env,
     )
     assert_site_mcp_plan_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_probes_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> object:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_json(result.stdout, context=context, cmd=cmd)
+    return json.loads(result.stdout)
+
+
+def assert_site_mcp_plan_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_workflow_graph_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_workflow_graph_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_site_bundle_smoke(
@@ -723,6 +1138,7 @@ def assert_site_bundle_smoke(
         "summary.json",
         "website-workspace.tasks.json",
         "mcp-check.json",
+        "mcp-probes.json",
         "mcp-action-plan.md",
         "website-handoff.md",
         "website-prompts.md",
@@ -738,6 +1154,15 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} summary status changed: {summary.get('status')!r}")
     if summary.get("taskGeneration", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
+    evidence_counts = summary.get("implementationEvidence")
+    if (
+        not isinstance(evidence_counts, dict)
+        or evidence_counts.get("executedWork") != 0
+        or evidence_counts.get("verificationResults") != 0
+        or evidence_counts.get("remainingRisks") != 3
+        or evidence_counts.get("nextActions") != 0
+    ):
+        raise SystemExit(f"site bundle after {context} implementation evidence counts changed")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site bundle after {context} file manifest changed")
     checksums = summary.get("checksums", {})
@@ -758,9 +1183,14 @@ def assert_site_bundle_smoke(
     task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
     if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
         raise SystemExit(f"site bundle after {context} task ids changed: {task_ids!r}")
+    evidence = tasks.get("implementationEvidence")
+    if not isinstance(evidence, dict) or len(evidence.get("remainingRisks", [])) != 3:
+        raise SystemExit(f"site bundle after {context} did not preserve implementationEvidence in workspace JSON")
 
     mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
     assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
+    mcp_probes = json.loads((out_dir / "mcp-probes.json").read_text(encoding="utf-8"))
+    assert_site_bundle_mcp_probes_payload(mcp_probes, context=context)
     assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
     implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
     assert_no_ansi(implementation_prompt, cmd)
@@ -777,28 +1207,180 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
 
 
-def assert_site_bundle_check_json_smoke(
+def assert_site_warning_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_warning_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
+    if summary.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary status changed: {summary.get('status')!r}")
+    if summary.get("mcp", {}).get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary MCP status changed")
+    if mcp_check.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} mcp-check status changed: {mcp_check.get('status')!r}")
+    sentry_item = next((item for item in mcp_check.get("items", []) if item.get("key") == "sentry"), None)
+    if not isinstance(sentry_item, dict) or sentry_item.get("state") != "missing" or sentry_item.get("level") != "warn":
+        raise SystemExit(f"site warning bundle after {context} did not preserve optional Sentry warning")
+
+
+def assert_site_bundle_compare_warning_strict_smoke(
     cmd: list[str],
     *,
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
 ) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=assert_site_bundle_compare_warning_strict_json,
+    )
+
+
+def assert_site_bundle_evidence_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_evidence_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    summary_path = out_dir / "summary.json"
+    tasks_path = out_dir / "website-workspace.tasks.json"
+    handoff_path = out_dir / "website-handoff.md"
+    readme_path = out_dir / "README.md"
+    for target in (summary_path, tasks_path, handoff_path, readme_path):
+        if not target.is_file():
+            raise SystemExit(f"site evidence bundle after {context} missing {target}")
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    evidence_counts = summary.get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site evidence bundle after {context} did not report implementationEvidence counts")
+    for key in SITE_EVIDENCE_VALUES:
+        if evidence_counts.get(key) != 1:
+            raise SystemExit(f"site evidence bundle after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
+
+    tasks = json.loads(tasks_path.read_text(encoding="utf-8"))
+    assert_site_evidence_payload(tasks, context=context, label="site evidence bundle workspace JSON")
+    assert_site_evidence_markdown(
+        handoff_path.read_text(encoding="utf-8"),
+        context=context,
+        cmd=cmd,
+        label="site evidence bundle handoff markdown",
+    )
+    readme = readme_path.read_text(encoding="utf-8")
+    if "- Evidence entries: 2" not in readme:
+        raise SystemExit(f"site evidence bundle after {context} README evidence count changed")
+
+
+def assert_site_bundle_check_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
+) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle check after {context} expected pass/valid output")
-    if payload.get("counts", {}).get("presentFiles") != 8:
-        raise SystemExit(f"site bundle check after {context} expected 8 present files")
-    if payload.get("counts", {}).get("verifiedChecksumFiles") != 7:
-        raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle check after {context} boundary flags changed")
+    boundaries = payload.get("boundaries")
+    if (
+        not isinstance(boundaries, list)
+        or "deterministic-local" not in boundaries
+        or "no-external-mcp-calls" not in boundaries
+        or "no-target-repo-mutation" not in boundaries
+    ):
+        raise SystemExit(f"site bundle check after {context} boundary list changed: {boundaries!r}")
+    if payload.get("counts", {}).get("presentFiles") != 9:
+        raise SystemExit(f"site bundle check after {context} expected 9 present files")
+    if payload.get("counts", {}).get("verifiedChecksumFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 verified checksum files")
     if payload.get("counts", {}).get("checksumFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no checksum failures")
+    if payload.get("counts", {}).get("verifiedGeneratedFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 current-contract generated files")
+    if payload.get("counts", {}).get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle check after {context} expected no generated bundle contract failures")
+    generated_contract = payload.get("generatedContract")
+    if not isinstance(generated_contract, dict) or generated_contract.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} generated contract diagnostics missing")
+    if generated_contract.get("expectedFiles") != 8 or generated_contract.get("verifiedFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} generated contract file counts changed")
+    if generated_contract.get("driftFiles") != []:
+        raise SystemExit(f"site bundle check after {context} expected no generated contract drift files")
+    generated_files = generated_contract.get("files")
+    if not isinstance(generated_files, list) or len(generated_files) != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 generated contract file diagnostics")
+    for item in generated_files:
+        if item.get("present") is not True or item.get("matches") is not True:
+            raise SystemExit(f"site bundle check after {context} generated contract file did not match: {item!r}")
+        for key in ("expectedDigest", "actualDigest"):
+            digest = item.get(key)
+            if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+                raise SystemExit(f"site bundle check after {context} generated contract {key} is not a SHA-256 hex digest")
+    repair_guidance = payload.get("repairGuidance")
+    if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} repair guidance missing")
+    if repair_guidance.get("targetRepoMutation") is not False or repair_guidance.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle check after {context} repair guidance boundary flags changed")
+    repair_command = repair_guidance.get("command")
+    verify_command = repair_guidance.get("verifyCommand")
+    if (
+        not isinstance(repair_command, str)
+        or "website-workspace.tasks.json --bundle --out " not in repair_command
+        or " --force" not in repair_command
+    ):
+        raise SystemExit(f"site bundle check after {context} repair command changed: {repair_command!r}")
+    if not isinstance(verify_command, str) or "--bundle-check --strict --json" not in verify_command:
+        raise SystemExit(f"site bundle check after {context} repair verify command changed: {verify_command!r}")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle check after {context} site name changed")
+    evidence_counts = payload.get("summary", {}).get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle check after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle check after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
         raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
     bundle_digest = payload.get("summary", {}).get("checksumBundleDigest")
@@ -806,6 +1388,18 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} bundle digest changed")
     if payload.get("mcpStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP status changed")
+    if payload.get("mcpProbeStatus") != "pass":
+        raise SystemExit(f"site bundle check after {context} MCP probe status changed")
+    assert_site_mcp_probe_counts(
+        payload.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check",
+    )
+    assert_site_mcp_probe_counts(
+        payload.get("summary", {}).get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check summary",
+    )
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-ready"]:
         raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
@@ -817,7 +1411,15 @@ def assert_site_bundle_compare_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
@@ -833,6 +1435,21 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+        assert_site_mcp_probe_counts(
+            payload.get(side, {}).get("mcpProbeCounts"),
+            context=context,
+            label=f"site bundle compare {side}",
+        )
+        if payload.get(side, {}).get("verifiedGeneratedFiles") != 8 or payload.get(side, {}).get("generatedFailures") != 0:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
+        if payload.get(side, {}).get("generatedDriftFiles") != []:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract drift changed")
+        evidence_counts = payload.get(side, {}).get("implementationEvidence")
+        if not isinstance(evidence_counts, dict):
+            raise SystemExit(f"site bundle compare after {context} {side} implementationEvidence counts missing")
+        for key, expected in expected_evidence_counts.items():
+            if evidence_counts.get(key) != expected:
+                raise SystemExit(f"site bundle compare after {context} {side} evidence count {key} changed: {evidence_counts.get(key)!r}")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-compare-identical"]:
         raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
@@ -844,17 +1461,67 @@ def assert_site_bundle_handoff_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle handoff after {context} expected pass/valid output")
+    expected_boundaries = [
+        "deterministic-local",
+        "no-external-mcp-calls",
+        "no-target-repo-mutation",
+        "no-lighthouse-axe-visual-diff",
+        "target-repo-work-after-handoff",
+    ]
+    if payload.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} boundary list changed: {payload.get('boundaries')!r}")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} boundary flags changed")
     bundle = payload.get("bundle", {})
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
-    if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
+    if bundle.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
+    if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
+    if bundle.get("mcpProbeStatus") != "pass":
+        raise SystemExit(f"site bundle handoff after {context} MCP probe status changed")
+    assert_site_mcp_probe_counts(
+        bundle.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle handoff",
+    )
+    if bundle.get("verifiedChecksumFiles") != 8 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    if bundle.get("verifiedGeneratedFiles") != 8 or bundle.get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
+    if bundle.get("generatedDriftFiles") != []:
+        raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+    repair_guidance = bundle.get("repairGuidance")
+    if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
+        raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
+    repair_command = repair_guidance.get("command")
+    if (
+        not isinstance(repair_command, str)
+        or "website-workspace.tasks.json --bundle --out " not in repair_command
+        or " --force" not in repair_command
+    ):
+        raise SystemExit(f"site bundle handoff after {context} repair command changed: {repair_command!r}")
+    evidence_counts = bundle.get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle handoff after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     digest = bundle.get("checksumBundleDigest")
     if not isinstance(digest, str) or len(digest) != 64:
         raise SystemExit(f"site bundle handoff after {context} bundle digest changed")
@@ -866,6 +1533,14 @@ def assert_site_bundle_handoff_json_smoke(
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Primary Codex Implementation Prompt",
         "Task ID: task-accessibility",
+        "MCP probes: 4/4 passing, 0 warning, 0 failing",
+        "Generated files: 8/8 match the current CLI bundle contract",
+        "Generated drift files: none",
+        "Handoff generation boundary flags: external calls no; target repo mutation no",
+        "Handoff boundaries: deterministic-local, no-external-mcp-calls, no-target-repo-mutation, no-lighthouse-axe-visual-diff, target-repo-work-after-handoff",
+        "Repair guidance:",
+        "Regenerate: design-ai site ",
+        "website-workspace.tasks.json --bundle --out ",
         "Required Final Response",
     ):
         if fragment not in prompt:
@@ -877,6 +1552,78 @@ def assert_site_bundle_handoff_json_smoke(
     }
     if "codex-implementation.md" not in included or "website-handoff.md" not in included:
         raise SystemExit(f"site bundle handoff after {context} included files changed: {sorted(included)!r}")
+
+
+def assert_site_bundle_repair_json_smoke(
+    preview_cmd: list[str],
+    apply_cmd: list[str],
+    check_cmd: list[str],
+    *,
+    bundle_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    handoff_path = bundle_dir / "website-handoff.md"
+    original_handoff = handoff_path.read_text(encoding="utf-8")
+    tampered_handoff = f"{original_handoff}\nPackage smoke drift before bundle repair.\n"
+    handoff_path.write_text(tampered_handoff, encoding="utf-8")
+
+    preview_result = run_plain(preview_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_result.stdout, preview_cmd)
+    preview = json.loads(preview_result.stdout)
+    if preview.get("status") != "pass" or preview.get("dryRun") is not True or preview.get("applied") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} expected pass dry-run output")
+    if preview.get("before", {}).get("status") != "fail":
+        raise SystemExit(f"site bundle repair preview after {context} expected failing pre-repair bundle")
+    if "website-handoff.md" not in preview.get("before", {}).get("generatedDriftFiles", []):
+        raise SystemExit(f"site bundle repair preview after {context} expected website-handoff.md generated drift")
+    if preview.get("after") is not None or preview.get("written") is not None:
+        raise SystemExit(f"site bundle repair preview after {context} must not report applied artifacts")
+    preview_report_command, apply_report_command, preview_out, apply_out = (
+        assert_site_repair_guidance_report_contract(
+            preview.get("repairGuidance"),
+            bundle_dir=bundle_dir,
+            context=context,
+        )
+    )
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
+
+    preview_report_cmd = site_guidance_command(
+        preview_report_command,
+        preview_cmd,
+        context=f"site bundle repair preview after {context}",
+    )
+    preview_out_result = run_plain(preview_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_out_result.stdout, preview_report_cmd)
+    if "Wrote " not in preview_out_result.stdout:
+        raise SystemExit(f"site bundle repair preview after {context} expected guidance --out write confirmation")
+    preview_out_payload = json.loads(preview_out.read_text(encoding="utf-8"))
+    assert_site_repair_preview_report_payload(preview_out_payload, context=context)
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview guidance --out after {context} mutated the bundle")
+
+    apply_report_cmd = site_guidance_command(
+        apply_report_command,
+        apply_cmd,
+        context=f"site bundle repair apply after {context}",
+    )
+    apply_result = run_plain(apply_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(apply_result.stdout, apply_report_cmd)
+    if "Wrote " not in apply_result.stdout:
+        raise SystemExit(f"site bundle repair apply after {context} expected guidance --out write confirmation")
+    applied = json.loads(apply_out.read_text(encoding="utf-8"))
+    assert_site_repair_apply_report_payload(applied, context=context)
+    if handoff_path.read_text(encoding="utf-8") != original_handoff:
+        raise SystemExit(f"site bundle repair apply after {context} did not restore generated handoff")
+
+    assert_site_bundle_check_json_smoke(
+        check_cmd,
+        cwd=cwd,
+        env=env,
+        context=f"{context} repaired bundle-check JSON",
+    )
 
 
 def assert_workspace_strict_success_smoke(
@@ -3758,6 +4505,67 @@ def assert_route_stdin_smoke(
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
+def assert_route_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse route eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="route eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="route eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="route eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="route eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"design-review-a11y", "component-spec-contract", "website-improvement-control-tower"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="route eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("topRouteId") == case.get("expectedRouteId")
+            and case.get("issues", []) == []
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="route eval case result changed",
+    )
+
+
+def assert_route_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("route", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("route", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_route_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
+
+
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
@@ -4188,6 +4996,141 @@ def assert_pack_stdin_smoke(
     )
 
 
+def assert_prompt_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse prompt eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="prompt eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="prompt eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="prompt eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="prompt eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"component-spec-prompt-plan", "website-improvement-prompt-plan"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="prompt eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("routeId") == case.get("expectedRouteId")
+            and case.get("missingRequiredFiles") == []
+            and case.get("missingChecklist") == []
+            and case.get("missingPromptFragments") == []
+            and case.get("issues") == []
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="prompt eval case result changed",
+    )
+
+
+def assert_pack_eval_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse pack eval JSON") from error
+
+    require_package_smoke(payload.get("evalVersion") == 1, context=context, cmd=cmd, message="pack eval version changed")
+    require_package_smoke(payload.get("status") == "pass", context=context, cmd=cmd, message="pack eval should pass")
+    summary = payload.get("summary")
+    require_package_smoke(
+        isinstance(summary, dict)
+        and summary.get("total", 0) >= 2
+        and summary.get("pass") == summary.get("total")
+        and summary.get("fail") == 0,
+        context=context,
+        cmd=cmd,
+        message="pack eval summary changed",
+    )
+    cases = payload.get("cases")
+    require_package_smoke(isinstance(cases, list) and cases, context=context, cmd=cmd, message="pack eval cases missing")
+    ids = {case.get("id") for case in cases if isinstance(case, dict)}
+    require_package_smoke(
+        {"component-spec-pack", "website-improvement-pack"}.issubset(ids),
+        context=context,
+        cmd=cmd,
+        message="pack eval template case ids changed",
+    )
+    require_package_smoke(
+        all(
+            isinstance(case, dict)
+            and case.get("status") == "pass"
+            and case.get("routeId") == case.get("expectedRouteId")
+            and case.get("contextStatus") == "complete"
+            and case.get("missingRequiredFiles") == []
+            and case.get("missingIncludedFiles") == []
+            and case.get("issues") == []
+            and isinstance(case.get("pack"), dict)
+            and isinstance(case["pack"].get("markdownBytes"), int)
+            and case["pack"]["markdownBytes"] > 0
+            and all(
+                isinstance(file, dict) and "content" not in file
+                for file in case["pack"].get("files", [])
+            )
+            for case in cases
+        ),
+        context=context,
+        cmd=cmd,
+        message="pack eval case result changed",
+    )
+
+
+def assert_prompt_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("prompt", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("prompt", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_prompt_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
+
+
+def assert_pack_eval_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    template_cmd = command_factory("pack", "--eval-template", "--json")
+    template_result = run_plain(template_cmd, cwd=cwd, env=env)
+    eval_cmd = command_factory("pack", "--eval", "--stdin", "--strict", "--json")
+    eval_result = run_plain_with_input(
+        eval_cmd,
+        input_text=template_result.stdout,
+        cwd=cwd,
+        env=env,
+    )
+    assert_pack_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
+
+
 def write_learning_relevance_fixture(profile_path: Path) -> None:
     profile_path.write_text(
         json.dumps(
@@ -4543,6 +5486,1382 @@ def assert_learning_usage_report_human(
             context=context,
             cmd=cmd,
             message=f"learn usage human output missing {expected!r}",
+        )
+
+
+def assert_learning_signal_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    require_agent_status_pass: bool = False,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn signals JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON version changed",
+    )
+    require_package_smoke(
+        payload.get("file") == str(profile_path),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should report the learning profile path",
+    )
+    learning = payload.get("learning")
+    require_package_smoke(
+        isinstance(learning, dict)
+        and learning.get("count") >= 3
+        and isinstance(learning.get("auditSummary"), dict),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include learning profile audit summary",
+    )
+    usage = payload.get("usage")
+    require_package_smoke(
+        isinstance(usage, dict)
+        and usage.get("usageFile") == str(usage_path)
+        and usage.get("eventCount") >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include usage sidecar summary",
+    )
+    evals = payload.get("evals")
+    eval_files = evals.get("files") if isinstance(evals, dict) else None
+    require_package_smoke(
+        isinstance(evals, dict)
+        and isinstance(eval_files, list)
+        and any(isinstance(item, dict) and item.get("kind") == "route-eval" for item in eval_files),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include route eval signal files",
+    )
+    check_capture = payload.get("checkCapture")
+    require_package_smoke(
+        isinstance(check_capture, dict)
+        and isinstance(check_capture.get("count"), int)
+        and isinstance(check_capture.get("latestEntries"), list),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include check capture summary shape",
+    )
+    workspace = payload.get("workspace")
+    require_package_smoke(
+        isinstance(workspace, dict)
+        and isinstance(workspace.get("nextActionCount"), int),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include workspace readiness summary",
+    )
+    readiness = payload.get("readiness")
+    checks = readiness.get("checks") if isinstance(readiness, dict) else None
+    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
+    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
+    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
+    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
+    require_package_smoke(
+        isinstance(readiness, dict)
+        and readiness.get("status") == payload.get("status")
+        and isinstance(checks, list)
+        and isinstance(check_count_by_status, dict)
+        and isinstance(required_check_count_by_status, dict)
+        and isinstance(optional_check_count_by_status, dict)
+        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
+        and sum(check_count_by_status.get(key, 0) for key in count_status_keys) == len(checks),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include readiness status count index",
+    )
+    agent_development = payload.get("agentDevelopment")
+    agent_actions = agent_development.get("actions") if isinstance(agent_development, dict) else None
+    require_package_smoke(
+        isinstance(agent_development, dict)
+        and isinstance(agent_actions, list)
+        and isinstance(agent_development.get("actionCount"), int)
+        and agent_development.get("actionCount") == len(agent_actions)
+        and any(isinstance(item, dict) and item.get("category") == "skill-evolution" for item in agent_actions),
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should include agent development backlog actions",
+    )
+    if require_agent_status_pass:
+        require_package_smoke(
+            agent_development.get("status") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn signals JSON should include passing agent development backlog actions",
+        )
+    agent_privacy = agent_development.get("privacy") if isinstance(agent_development, dict) else None
+    require_package_smoke(
+        isinstance(agent_privacy, dict)
+        and agent_privacy.get("mutatesProfile") is False
+        and agent_privacy.get("mutatesSkillFiles") is False
+        and agent_privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should keep agent development backlog local and preview-only",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn signals JSON should be read-only and privacy-preserving",
+    )
+
+
+def assert_learning_signal_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Learning signal registry",
+        "Signal source:",
+        "Learning audit:",
+        "Eval signals:",
+        "Workspace readiness:",
+        "Agent development backlog:",
+        "Privacy: signal registry is read-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn signals human output missing {expected!r}",
+        )
+
+
+def assert_learning_signal_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Learning Signal Registry Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Readiness Summary",
+        "Readiness check index:",
+        "- Required ids:",
+        "- Optional ids:",
+        "- Status index:",
+        "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
+        "## Learning Profile",
+        "## Usage Signals",
+        "## Eval Signals",
+        "## Check Capture",
+        "## Workspace Readiness",
+        "## Agent Development Backlog",
+        "```bash",
+        "design-ai learn --propose-skills",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Stores raw brief text: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn signals Markdown report missing {expected!r}",
+        )
+
+
+def assert_agent_backlog_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    require_status_pass: bool = False,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn agent backlog JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should report the learning profile and usage paths",
+    )
+    if require_status_pass:
+        require_package_smoke(
+            payload.get("status") == "pass" and payload.get("signalStatus") == "pass",
+            context=context,
+            cmd=cmd,
+            message="learn agent backlog strict JSON should report passing backlog and signal status",
+        )
+    counts = payload.get("counts")
+    require_package_smoke(
+        isinstance(counts, dict)
+        and counts.get("actions", 0) >= 1
+        and counts.get("evalSignals", 0) >= 1
+        and counts.get("checkCaptures", 0) >= 1
+        and counts.get("usageEvents", 0) >= 2,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include focused backlog counts",
+    )
+    actions = payload.get("actions")
+    require_package_smoke(
+        isinstance(actions, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("id") == "agent-skill-proposal-preview"
+            and item.get("category") == "skill-evolution"
+            and "learn --propose-skills" in str(item.get("command", ""))
+            for item in actions
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include skill-evolution next action",
+    )
+    action_plan = payload.get("actionPlan")
+    action_plan_steps = action_plan.get("steps") if isinstance(action_plan, dict) else None
+    action_plan_verification = action_plan.get("verification") if isinstance(action_plan, dict) else None
+    safety_summary = action_plan.get("safetySummary") if isinstance(action_plan, dict) else None
+    execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
+    ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
+    command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
+    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
+    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
+    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
+    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
+    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
+    operator_handoff_source = operator_handoff.get("source") if isinstance(operator_handoff, dict) else ""
+    operator_handoff_matches_source = (
+        (
+            operator_handoff_source == "operator-runbook"
+            and operator_handoff.get("phase") == operator_runbook.get("nextStage")
+            and operator_handoff.get("command") == operator_runbook.get("nextCommand")
+        )
+        or (
+            operator_handoff_source == "execution-queue"
+            and operator_handoff.get("phase") == "execute"
+            and operator_handoff.get("command") == execution_queue.get("nextCommand")
+        )
+    ) if isinstance(operator_handoff, dict) else False
+    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
+    command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
+    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
+    gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
+    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
+    def valid_optional_apply_command(item: object) -> bool:
+        if not isinstance(item, dict):
+            return False
+        apply_command = item.get("applyCommand", "")
+        apply_args = item.get("applyCommandArgs", [])
+        apply_safety = item.get("applyCommandSafety")
+        if not apply_command:
+            return True
+        return (
+            isinstance(apply_command, str)
+            and isinstance(apply_args, list)
+            and len(apply_args) >= 2
+            and isinstance(apply_safety, dict)
+            and apply_safety.get("level") in {"read-only", "writes-local-file", "mutates-local-state"}
+            and isinstance(apply_safety.get("writesLocalFiles"), bool)
+            and isinstance(apply_safety.get("mutatesLocalState"), bool)
+            and isinstance(apply_safety.get("requiresCleanWorkspace"), bool)
+            and isinstance(item.get("applyRequiresReviewBeforeMutation"), bool)
+        )
+    def is_agent_backlog_refresh_command(item: object) -> bool:
+        if not isinstance(item, dict):
+            return False
+        command = str(item.get("command", ""))
+        args = item.get("commandArgs", [])
+        return (
+            "learn --agent-backlog" in command
+            and isinstance(args, list)
+            and args[:3] == ["design-ai", "learn", "--agent-backlog"]
+            and "--from-file" in args
+            and "--file" in args
+            and "--usage-file" in args
+            and "--strict" in args
+            and "--json" in args
+        )
+    require_package_smoke(
+        isinstance(action_plan, dict)
+        and action_plan.get("version") == 1
+        and action_plan.get("stepCount", 0) >= 1
+        and isinstance(safety_summary, dict)
+        and safety_summary.get("total", 0) >= 1
+        and safety_summary.get("readOnly", 0) >= 1
+        and safety_summary.get("writesLocalFile", -1) >= 0
+        and safety_summary.get("mutatesLocalState", -1) >= 0
+        and safety_summary.get("requiresReviewBeforeMutation", -1) >= 0
+        and isinstance(execution_queue, dict)
+        and execution_queue.get("previewCount", -1) >= 1
+        and execution_queue.get("fileWriteReviewCount", -1) >= 0
+        and execution_queue.get("mutationReviewCount", -1) >= 0
+        and execution_queue.get("orderedCount", 0) >= 1
+        and execution_queue.get("commandManifestCount", 0) >= 1
+        and isinstance(execution_queue.get("nextCommandArgs"), list)
+        and len(execution_queue.get("nextCommandArgs")) >= 2
+        and isinstance(next_command_selection, dict)
+        and next_command_selection.get("strategy") == "first-command-in-safety-ordered-queue"
+        and next_command_selection.get("actionId") == execution_queue.get("nextActionId")
+        and isinstance(next_command_selection.get("safetyOrder"), list)
+        and next_command_selection.get("safetyOrder") == ["read-only", "writes-local-file", "mutates-local-state"]
+        and isinstance(next_command_selection.get("matchesPlanNextAction"), bool)
+        and isinstance(next_command_selection.get("reason"), str)
+        and bool(next_command_selection.get("reason"))
+        and isinstance(next_command_alignment, dict)
+        and next_command_alignment.get("strategy") == "compare-operator-runbook-next-command-to-execution-queue-next-command"
+        and next_command_alignment.get("operatorStage") == operator_runbook.get("nextStage")
+        and next_command_alignment.get("operatorCommand") == operator_runbook.get("nextCommand")
+        and next_command_alignment.get("queueActionId") == execution_queue.get("nextActionId")
+        and next_command_alignment.get("queueCommand") == execution_queue.get("nextCommand")
+        and isinstance(next_command_alignment.get("matchesQueueNextCommand"), bool)
+        and isinstance(next_command_alignment.get("matchesQueueNextAction"), bool)
+        and isinstance(next_command_alignment.get("operatorRunsBeforeQueueCommand"), bool)
+        and isinstance(next_command_alignment.get("queueMatchesRankedNextAction"), bool)
+        and isinstance(next_command_alignment.get("reason"), str)
+        and bool(next_command_alignment.get("reason"))
+        and isinstance(operator_handoff, dict)
+        and operator_handoff.get("version") == 1
+        and operator_handoff.get("decision") in {"run-operator-gate", "run-shared-command", "run-operator-command", "run-queue-command", "none"}
+        and isinstance(operator_handoff_state, dict)
+        and operator_handoff_state.get("version") == 1
+        and operator_handoff_state.get("status") in {"ready", "gate-required", "review-required", "no-command"}
+        and isinstance(operator_handoff_state.get("ready"), bool)
+        and isinstance(operator_handoff_state.get("hasCommand"), bool)
+        and isinstance(operator_handoff_state.get("complete"), bool)
+        and isinstance(operator_handoff_state.get("canRunWithoutReview"), bool)
+        and isinstance(operator_handoff_state.get("requiresGate"), bool)
+        and isinstance(operator_handoff_state.get("requiresRefresh"), bool)
+        and isinstance(operator_handoff_state.get("summary"), str)
+        and bool(operator_handoff_state.get("summary"))
+        and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
+        and operator_handoff_matches_source
+        and isinstance(operator_handoff.get("commandArgs"), list)
+        and len(operator_handoff.get("commandArgs")) >= 2
+        and isinstance(operator_handoff.get("required"), bool)
+        and isinstance(operator_handoff.get("isGate"), bool)
+        and operator_handoff.get("nextQueueActionId") == execution_queue.get("nextActionId")
+        and isinstance(operator_handoff.get("nextQueueCommandRequiresGate"), bool)
+        and isinstance(operator_handoff.get("operatorGateAppliesToNextQueueAction"), bool)
+        and operator_handoff.get("nextQueueCommand") == execution_queue.get("nextCommand")
+        and isinstance(operator_handoff.get("nextQueueActionBlockedByGate"), bool)
+        and isinstance(operator_handoff.get("refreshCommand"), str)
+        and bool(operator_handoff.get("refreshCommand"))
+        and isinstance(operator_handoff.get("refreshCommandArgs"), list)
+        and len(operator_handoff.get("refreshCommandArgs")) >= 2
+        and is_agent_backlog_refresh_command({
+            "command": operator_handoff.get("refreshCommand"),
+            "commandArgs": operator_handoff.get("refreshCommandArgs"),
+        })
+        and isinstance(operator_handoff.get("refreshCommandRequired"), bool)
+        and isinstance(operator_handoff.get("requiresOperatorReview"), bool)
+        and isinstance(operator_handoff.get("reason"), str)
+        and bool(operator_handoff.get("reason"))
+        and isinstance(operator_runbook, dict)
+        and operator_runbook.get("version") == 1
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("commandCount", 0) >= execution_queue.get("commandManifestCount", 0)
+        and operator_runbook.get("requiredCommandCount", 0) >= execution_queue.get("commandManifestCount", 0)
+        and isinstance(operator_runbook.get("phases"), list)
+        and operator_runbook.get("phases") == ["before", "execute", "after", "refresh"]
+        and operator_runbook.get("nextStage") in {"before", "execute"}
+        and isinstance(operator_runbook.get("nextCommand"), str)
+        and bool(operator_runbook.get("nextCommand"))
+        and isinstance(operator_runbook.get("nextCommandArgs"), list)
+        and len(operator_runbook.get("nextCommandArgs")) >= 2
+        and isinstance(operator_runbook.get("nextCommandRequired"), bool)
+        and isinstance(operator_next_command_selection, dict)
+        and operator_next_command_selection.get("strategy") == "first-command-in-operator-runbook-stage-order"
+        and operator_next_command_selection.get("stage") == operator_runbook.get("nextStage")
+        and operator_next_command_selection.get("command") == operator_runbook.get("nextCommand")
+        and isinstance(operator_next_command_selection.get("stageOrder"), list)
+        and operator_next_command_selection.get("stageOrder") == ["before", "execute", "after", "refresh"]
+        and isinstance(operator_next_command_selection.get("required"), bool)
+        and isinstance(operator_next_command_selection.get("reason"), str)
+        and bool(operator_next_command_selection.get("reason"))
+        and isinstance(operator_runbook.get("stages"), list)
+        and any(
+            isinstance(stage, dict)
+            and stage.get("phase") == "execute"
+            and stage.get("commandCount", 0) >= 1
+            and any(
+                isinstance(item, dict)
+                and item.get("actionId") == "agent-skill-proposal-preview"
+                and item.get("runPolicy") == "preview-only"
+                and "learn --propose-skills" in str(item.get("command", ""))
+                and item.get("commandArgs", [])[:3] == ["design-ai", "learn", "--propose-skills"]
+                for item in stage.get("commands", [])
+            )
+            for stage in operator_runbook.get("stages", [])
+        )
+        and any(
+            isinstance(stage, dict)
+            and stage.get("phase") == "refresh"
+            and any(
+                isinstance(item, dict)
+                and item.get("required") is True
+                and is_agent_backlog_refresh_command(item)
+                for item in stage.get("commands", [])
+            )
+            for stage in operator_runbook.get("stages", [])
+        )
+        and isinstance(command_effect_summary, dict)
+        and command_effect_summary.get("totalCommands", 0) >= 1
+        and command_effect_summary.get("outputTargetCount", -1) >= 0
+        and command_effect_summary.get("profileTargetCount", -1) >= 0
+        and command_effect_summary.get("usageTargetCount", -1) >= 0
+        and command_effect_summary.get("mutationFlagCount", -1) >= 0
+        and isinstance(command_effect_summary.get("outputTargets"), list)
+        and isinstance(command_effect_summary.get("profileTargets"), list)
+        and isinstance(command_effect_summary.get("usageTargets"), list)
+        and isinstance(command_effect_summary.get("mutationFlags"), list)
+        and isinstance(command_effect_review, dict)
+        and command_effect_review.get("level") in {"clear", "target-review", "mutation-review"}
+        and isinstance(command_effect_review.get("requiresOperatorReview"), bool)
+        and isinstance(command_effect_review.get("headline"), str)
+        and isinstance(command_effect_review.get("checklist"), list)
+        and isinstance(gate_phase_summary, dict)
+        and gate_phase_summary.get("count", 0) >= 1
+        and gate_phase_summary.get("requiredCount", 0) >= 1
+        and gate_phase_summary.get("optionalCount", -1) >= 0
+        and isinstance(gate_phase_summary.get("phases"), list)
+        and gate_phase_summary.get("hasRefresh") is True
+        and isinstance(gate_runbook, dict)
+        and isinstance(gate_runbook.get("before"), list)
+        and isinstance(gate_runbook.get("after"), list)
+        and isinstance(gate_runbook.get("refresh"), list)
+        and isinstance(gate_runbook.get("other"), list)
+        and any(
+            isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is True
+            and is_agent_backlog_refresh_command(item)
+            for item in gate_runbook.get("refresh", [])
+        )
+        and isinstance(command_effect_review.get("gateCommands"), list)
+        and any(
+            isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is True
+            and is_agent_backlog_refresh_command(item)
+            for item in command_effect_review.get("gateCommands", [])
+        )
+        and execution_queue.get("nextActionId")
+        and "learn --propose-skills" in str(execution_queue.get("nextCommand", ""))
+        and execution_queue.get("nextCommandRunPolicy") == "preview-only"
+        and isinstance(ordered_queue, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("actionId") == "agent-skill-proposal-preview"
+            and item.get("safetyLevel") == "read-only"
+            and item.get("runPolicy") == "preview-only"
+            for item in ordered_queue
+        )
+        and isinstance(command_manifest, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("actionId") == "agent-skill-proposal-preview"
+            and item.get("runPolicy") == "preview-only"
+            and isinstance(item.get("commandEffects"), dict)
+            and valid_optional_apply_command(item)
+            and item["commandEffects"].get("writesLocalFiles") is False
+            and item["commandEffects"].get("mutatesLocalState") is False
+            and item["commandEffects"].get("outputTargets") == []
+            and item["commandEffects"].get("mutationFlags") == []
+            for item in command_manifest
+        )
+        and isinstance(action_plan_steps, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("actionId") == "agent-skill-proposal-preview"
+            and "learn --propose-skills" in str(item.get("command", ""))
+            and item.get("requiresReviewBeforeMutation") is False
+            and isinstance(item.get("commandSafety"), dict)
+            and valid_optional_apply_command(item)
+            and item["commandSafety"].get("level") == "read-only"
+            and item["commandSafety"].get("writesLocalFiles") is False
+            and item["commandSafety"].get("mutatesLocalState") is False
+            for item in action_plan_steps
+        )
+        and isinstance(action_plan_verification, list)
+        and any(
+            isinstance(item, dict)
+            and is_agent_backlog_refresh_command(item)
+            for item in action_plan_verification
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include executable action plan steps and verification",
+    )
+    commands = payload.get("commands")
+    require_package_smoke(
+        isinstance(commands, dict)
+        and "learn --signals" in str(commands.get("signalsJson", ""))
+        and "learn --signals" in str(commands.get("signalsReport", "")),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include signal registry follow-up commands",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False
+        and privacy.get("storesRawBriefText") is False,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should keep read-only local privacy boundaries",
+    )
+    assert_agent_backlog_readiness_json(
+        payload,
+        expect_check_capture_gap=False,
+        context=context,
+        cmd=cmd,
+    )
+
+
+EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON = (
+    "Optional refresh command is available as status metadata; "
+    "no executable backlog handoff command is selected."
+)
+EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON = (
+    "No handoff command is required; optional refresh command remains available as status metadata."
+)
+EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON = (
+    "Operator runbook exposes an optional refresh command while the safety-ordered execution queue is empty."
+)
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON = (
+    "No real warn/fail check result has been intentionally captured into the local learning profile yet."
+)
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION = (
+    "Run `design-ai check <artifact.md> --learn --yes` only after reviewing an actual warning or failure "
+    "that should improve future outputs."
+)
+EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY = (
+    "Do not emit placeholder mutation commands for this advisory gap; wait for real check evidence."
+)
+
+
+def assert_agent_backlog_no_command_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse no-command learn agent backlog JSON") from error
+
+    counts = payload.get("counts")
+    action_plan = payload.get("actionPlan")
+    execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
+    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
+    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
+    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
+    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
+    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
+    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
+    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
+    gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
+    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("status") == "pass"
+        and payload.get("signalStatus") == "pass"
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should report passing status and paths",
+    )
+    require_package_smoke(
+        isinstance(counts, dict)
+        and counts.get("actions") == 0
+        and counts.get("checkCaptures") == 0
+        and counts.get("usageEvents", 0) >= 1
+        and counts.get("evalSignals", 0) >= 1,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should report an empty focused backlog",
+    )
+    require_package_smoke(
+        payload.get("actions") == []
+        and isinstance(action_plan, dict)
+        and action_plan.get("stepCount") == 0
+        and action_plan.get("nextStep") is None
+        and action_plan.get("steps") == []
+        and isinstance(execution_queue, dict)
+        and execution_queue.get("orderedCount") == 0
+        and execution_queue.get("commandManifestCount") == 0
+        and execution_queue.get("previewCount") == 0
+        and execution_queue.get("fileWriteReviewCount") == 0
+        and execution_queue.get("mutationReviewCount") == 0
+        and execution_queue.get("nextCommand") == ""
+        and execution_queue.get("nextCommandArgs") == []
+        and execution_queue.get("nextCommandRunPolicy") == "",
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep the execution queue empty",
+    )
+    require_package_smoke(
+        isinstance(next_command_selection, dict)
+        and next_command_selection.get("reason") == "No command-bearing backlog action is available."
+        and isinstance(next_command_alignment, dict)
+        and next_command_alignment.get("operatorStage") == "refresh"
+        and next_command_alignment.get("queueCommand") == ""
+        and next_command_alignment.get("reason") == EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should explain empty queue alignment",
+    )
+    require_package_smoke(
+        isinstance(operator_handoff, dict)
+        and operator_handoff.get("decision") == "none"
+        and operator_handoff.get("command") == ""
+        and operator_handoff.get("commandArgs") == []
+        and operator_handoff.get("hasCommand", operator_handoff_state.get("hasCommand") if isinstance(operator_handoff_state, dict) else None) is False
+        and operator_handoff.get("refreshCommandRequired") is False
+        and operator_handoff.get("reason") == EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON
+        and isinstance(operator_handoff_state, dict)
+        and operator_handoff_state.get("status") == "no-command"
+        and operator_handoff_state.get("ready") is True
+        and operator_handoff_state.get("complete") is True
+        and operator_handoff_state.get("hasCommand") is False
+        and operator_handoff_state.get("requiresRefresh") is False,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should expose completed operator handoff state",
+    )
+    require_package_smoke(
+        isinstance(operator_runbook, dict)
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("commandCount") == 1
+        and operator_runbook.get("requiredCommandCount") == 0
+        and operator_runbook.get("nextStage") == "refresh"
+        and operator_runbook.get("nextCommandRequired") is False
+        and "learn --agent-backlog" in str(operator_runbook.get("nextCommand", ""))
+        and isinstance(operator_next_command_selection, dict)
+        and operator_next_command_selection.get("stage") == "refresh"
+        and operator_next_command_selection.get("required") is False
+        and operator_next_command_selection.get("reason") == EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
+    )
+    require_package_smoke(
+        isinstance(command_effect_review, dict)
+        and command_effect_review.get("level") == "clear"
+        and command_effect_review.get("requiresOperatorReview") is False
+        and isinstance(gate_phase_summary, dict)
+        and gate_phase_summary.get("count") == 1
+        and gate_phase_summary.get("requiredCount") == 0
+        and gate_phase_summary.get("optionalCount") == 1
+        and gate_phase_summary.get("hasRefresh") is True
+        and isinstance(gate_runbook, dict)
+        and any(
+            isinstance(item, dict)
+            and item.get("phase") == "refresh"
+            and item.get("required") is False
+            and "learn --agent-backlog" in str(item.get("command", ""))
+            for item in gate_runbook.get("refresh", [])
+        ),
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep refresh gate optional",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="no-command learn agent backlog JSON should keep local read-only privacy boundaries",
+    )
+    assert_agent_backlog_readiness_json(
+        payload,
+        expect_check_capture_gap=True,
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_agent_backlog_readiness_json(
+    payload: dict,
+    *,
+    expect_check_capture_gap: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    readiness = payload.get("readiness")
+    checks = readiness.get("checks") if isinstance(readiness, dict) else None
+    check_by_id = {
+        item.get("id"): item
+        for item in checks
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    } if isinstance(checks, list) else {}
+    check_capture = check_by_id.get("check-capture")
+    agent_development = check_by_id.get("agent-development")
+    optional_gaps = readiness.get("optionalGaps") if isinstance(readiness, dict) else None
+    optional_gap_details = readiness.get("optionalGapDetails") if isinstance(readiness, dict) else None
+    required_check_ids = readiness.get("requiredCheckIds") if isinstance(readiness, dict) else None
+    optional_check_ids = readiness.get("optionalCheckIds") if isinstance(readiness, dict) else None
+    check_status_by_id = readiness.get("checkStatusById") if isinstance(readiness, dict) else None
+    check_required_by_id = readiness.get("checkRequiredById") if isinstance(readiness, dict) else None
+    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
+    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
+    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
+    blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
+    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
+    check_count_total = sum(
+        check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(check_count_by_status, dict) else -1
+    required_check_count_total = sum(
+        required_check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(required_check_count_by_status, dict) else -1
+    optional_check_count_total = sum(
+        optional_check_count_by_status.get(key, 0)
+        for key in count_status_keys
+    ) if isinstance(optional_check_count_by_status, dict) else -1
+    detail_by_id = {
+        item.get("id"): item
+        for item in optional_gap_details
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    } if isinstance(optional_gap_details, list) else {}
+    check_capture_detail = detail_by_id.get("check-capture")
+    check_capture_detail_valid = (
+        isinstance(check_capture_detail, dict)
+        and check_capture_detail.get("label") == "Check learning capture"
+        and check_capture_detail.get("status") == "info"
+        and check_capture_detail.get("reason") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON
+        and check_capture_detail.get("nextCondition") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION
+        and check_capture_detail.get("automationPolicy") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY
+    )
+    require_package_smoke(
+        isinstance(readiness, dict)
+        and readiness.get("version") == 1
+        and readiness.get("status") == payload.get("signalStatus")
+        and isinstance(readiness.get("summary"), str)
+        and bool(readiness.get("summary"))
+        and isinstance(readiness.get("requiredReady"), bool)
+        and isinstance(readiness.get("requiredPassCount"), int)
+        and isinstance(readiness.get("requiredCount"), int)
+        and readiness.get("requiredCount", 0) >= 1
+        and isinstance(readiness.get("blockingCount"), int)
+        and isinstance(readiness.get("optionalGapCount"), int)
+        and isinstance(blocking_checks, list)
+        and isinstance(optional_gaps, list)
+        and isinstance(optional_gap_details, list)
+        and isinstance(required_check_ids, list)
+        and isinstance(optional_check_ids, list)
+        and isinstance(check_status_by_id, dict)
+        and isinstance(check_required_by_id, dict)
+        and isinstance(checks, list)
+        and len(checks) >= 2
+        and isinstance(check_count_by_status, dict)
+        and isinstance(required_check_count_by_status, dict)
+        and isinstance(optional_check_count_by_status, dict)
+        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
+        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
+        and check_count_total == len(checks)
+        and required_check_count_total == len(required_check_ids)
+        and optional_check_count_total == len(optional_check_ids)
+        and "agent-development" in required_check_ids
+        and "check-capture" in optional_check_ids
+        and isinstance(agent_development, dict)
+        and agent_development.get("required") is True
+        and check_status_by_id.get("agent-development") == agent_development.get("status")
+        and check_required_by_id.get("agent-development") is True
+        and isinstance(agent_development.get("summary"), str)
+        and isinstance(check_capture, dict)
+        and check_capture.get("required") is False
+        and check_status_by_id.get("check-capture") == check_capture.get("status")
+        and check_required_by_id.get("check-capture") is False
+        and isinstance(check_capture.get("summary"), str)
+        and (
+            (
+                expect_check_capture_gap
+                and check_capture.get("status") == "info"
+                and "check-capture" in optional_gaps
+                and check_capture_detail_valid
+                and readiness.get("optionalGapCount", 0) >= 1
+            )
+            or (
+                not expect_check_capture_gap
+                and check_capture.get("status") == "pass"
+                and "check-capture" not in optional_gaps
+                and optional_gap_details == []
+            )
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+    )
+
+
+def assert_agent_backlog_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Agent development backlog",
+        "Signal source:",
+        "Backlog actions:",
+        "Action plan:",
+        "safety summary:",
+        "execution queue:",
+        "next action:",
+        "next command:",
+        "next command policy:",
+        "queue order:",
+        "command manifest:",
+        "command effects:",
+        "command effect review:",
+        "command effect gate phases:",
+        "command effect gate runbook:",
+        "command effect gates:",
+        "operator runbook:",
+        "operator next command:",
+        "refresh:",
+        "safety: read-only",
+        "requires mutation review: no",
+        "learn --propose-skills",
+        "Privacy: agent backlog is read-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn agent backlog human output missing {expected!r}",
+        )
+
+
+def assert_agent_backlog_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Agent Development Backlog Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Summary",
+        "## Signal Readiness",
+        "- Required ready:",
+        "- Required checks:",
+        "- Blocking checks:",
+        "- Optional gaps:",
+        "Readiness check index:",
+        "- Required ids:",
+        "- Optional ids:",
+        "- Status index:",
+        "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
+        "Readiness checks:",
+        "check-capture [optional]",
+        "agent-development [required]",
+        "## Backlog Actions",
+        "design-ai learn --propose-skills",
+        "## Action Plan",
+        "Safety summary:",
+        "- Read-only: 1",
+        "- Writes local file: 0",
+        "- Mutates local state: 0",
+        "Execution queue:",
+        "- Preview/read-only commands: 1",
+        "- Local file-write review commands: 0",
+        "- Local mutation review commands: 0",
+        "- Ordered commands: 1",
+        "- Command manifest entries: 1",
+        "- Command effect targets:",
+        "- Command effect review:",
+        "- Command effect gate phases:",
+        "- Command effect gate runbook:",
+        "- Command effect gates:",
+        "- Operator runbook:",
+        "- Operator next command:",
+        "- Operator handoff state:",
+        "- Recommended next action: agent-skill-proposal-preview",
+        "- Recommended next command policy: preview-only",
+        "Recommended next command:",
+        "Queue order:",
+        "1. agent-skill-proposal-preview (read-only, preview-only)",
+        "Command manifest:",
+        "1. agent-skill-proposal-preview - preview-only",
+        "- Command safety: read-only",
+        "- Writes local files: no",
+        "- Mutates local state: no",
+        "- Requires mutation review: no",
+        "design-ai learn --agent-backlog",
+        "## Follow-Up Commands",
+        "design-ai learn --signals",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn agent backlog Markdown report missing {expected!r}",
+        )
+
+
+def assert_agent_backlog_no_command_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Agent Development Backlog Report",
+        f"- Learning file: {profile_path}",
+        f"- Usage file: {usage_path}",
+        "## Summary",
+        "- Actions: 0",
+        "- Check captures: 0",
+        "## Signal Readiness",
+        "- Required ready: yes",
+        "- Required checks:",
+        "- Blocking checks: 0",
+        "- Optional gaps: 1",
+        "Readiness check index:",
+        "- Required ids:",
+        "- Optional ids:",
+        "- Status index:",
+        "- Required index:",
+        "- Status counts:",
+        "- Required status counts:",
+        "- Optional status counts:",
+        "Readiness checks:",
+        "check-capture [optional] info",
+        "agent-development [required] pass",
+        "Optional gap details:",
+        "No real warn/fail check result has been intentionally captured",
+        "Next condition: Run `design-ai check <artifact.md> --learn --yes`",
+        "Automation policy: Do not emit placeholder mutation commands",
+        "## Backlog Actions",
+        "No agent development backlog actions emitted.",
+        "## Action Plan",
+        "Safety summary:",
+        "- Read-only: 0",
+        "- Writes local file: 0",
+        "- Mutates local state: 0",
+        "Execution queue:",
+        "- Preview/read-only commands: 0",
+        "- Local file-write review commands: 0",
+        "- Local mutation review commands: 0",
+        "- Ordered commands: 0",
+        "- Command manifest entries: 0",
+        "- Command effect review: No command target or mutation flag exposure detected.",
+        "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
+        "- Operator next command: refresh: `design-ai learn --agent-backlog",
+        "- Operator next command selection: first-command-in-operator-runbook-stage-order",
+        "- Recommended next command selection: first-command-in-safety-ordered-queue",
+        "- Operator/queue next command alignment: different",
+        "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
+        "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
+        "- Operator handoff refresh: design-ai learn --agent-backlog",
+        "No execution steps emitted.",
+        "## Follow-Up Commands",
+        "design-ai learn --signals",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is read-only evidence",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"no-command learn agent backlog Markdown report missing {expected!r}",
+        )
+
+
+def assert_skill_proposal_report_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    returncode: int | None = None,
+    expect_status: str | None = "warn",
+) -> None:
+    assert_no_ansi(raw, cmd)
+    if returncode is not None:
+        require_package_smoke(
+            returncode == 1,
+            context=context,
+            cmd=cmd,
+            message="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
+        )
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should report the learning profile and usage paths",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is True and payload.get("applied") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals must remain preview-only",
+    )
+    if expect_status is not None:
+        require_package_smoke(
+            payload.get("status") == expect_status,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals JSON should report {expect_status!r} status when proposals need review",
+        )
+    require_package_smoke(
+        payload.get("checkCaptureCount") >= 2
+        and payload.get("candidateCount") >= 1
+        and payload.get("proposalCount") >= 1
+        and payload.get("count") == payload.get("proposalCount"),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should summarize repeated check captures",
+    )
+    proposals = payload.get("proposals")
+    require_package_smoke(
+        isinstance(proposals, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("sourceIssueCount", 0) >= 2
+            and item.get("proposedInstructionDelta")
+            and item.get("verificationCommand")
+            and isinstance(item.get("evidenceSources"), list)
+            and len(item.get("evidenceSources")) >= 2
+            for item in proposals
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should include the repeated component-spec skill delta",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals JSON should be read-only and local",
+    )
+    return payload
+
+
+def assert_skill_proposal_review_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    review_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    payload = assert_skill_proposal_report_json(
+        raw,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=context,
+        cmd=cmd,
+        expect_status=None,
+    )
+    review = payload.get("review")
+    require_package_smoke(
+        payload.get("reviewFile") == str(review_path)
+        and payload.get("pendingReviewCount") == 0
+        and payload.get("reviewedCount") >= 1
+        and isinstance(review, dict)
+        and review.get("file") == str(review_path)
+        and review.get("exists") is True
+        and review.get("matchedCount") >= 1
+        and review.get("appliedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals review JSON should join applied review decisions",
+    )
+    proposals = payload.get("proposals")
+    require_package_smoke(
+        isinstance(proposals, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("reviewStatus") == "applied"
+            and item.get("reviewClearsStrict") is True
+            for item in proposals
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals review JSON should mark applied proposals as strict-clearing",
+    )
+
+
+def assert_skill_proposal_review_template_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    expected_decision_count: int = 1,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal review-template JSON") from error
+
+    decisions = payload.get("decisions")
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("source") == "design-ai learn --propose-skills --review-template"
+        and payload.get("proposalFile") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path)
+        and isinstance(payload.get("reviewPolicy"), dict)
+        and payload["reviewPolicy"].get("clearsStrict") == ["applied", "rejected"]
+        and payload["reviewPolicy"].get("remainsPending") == ["accepted", "deferred"],
+        context=context,
+        cmd=cmd,
+        message="learn skill proposal review template JSON should describe review policy and source files",
+    )
+    require_package_smoke(
+        isinstance(decisions, list)
+        and len(decisions) == expected_decision_count,
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposal review template JSON should contain {expected_decision_count} pending decision scaffold(s)",
+    )
+    if expected_decision_count > 0:
+        require_package_smoke(
+            any(
+                isinstance(item, dict)
+                and str(item.get("proposalId", "")).startswith("skill-proposal-component-spec-writer-")
+                and item.get("status") == "deferred"
+                and item.get("reviewedAt") == ""
+                and item.get("reviewer") == ""
+                and "skills/component-spec-writer/SKILL.md" in str(item.get("note", ""))
+                for item in decisions
+            ),
+            context=context,
+            cmd=cmd,
+            message="learn skill proposal review template JSON should scaffold a deferred component-spec proposal decision",
+        )
+
+
+def assert_skill_proposal_min_evidence_json(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+    expected_min_evidence: int = 3,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn skill proposal min-evidence JSON") from error
+
+    require_package_smoke(
+        payload.get("version") == 1
+        and payload.get("file") == str(profile_path)
+        and payload.get("usageFile") == str(usage_path),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should report the learning profile and usage paths",
+    )
+    require_package_smoke(
+        payload.get("dryRun") is True and payload.get("applied") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON must remain preview-only",
+    )
+    require_package_smoke(
+        payload.get("minEvidenceCount") == expected_min_evidence,
+        context=context,
+        cmd=cmd,
+        message=f"learn skill proposals min-evidence JSON should report minEvidenceCount {expected_min_evidence}",
+    )
+    require_package_smoke(
+        payload.get("checkCaptureCount") >= 2
+        and payload.get("candidateCount") >= 1
+        and payload.get("proposalCount") == 0
+        and payload.get("count") == 0
+        and payload.get("skippedCount") >= 1,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should skip two-entry groups when threshold is higher",
+    )
+    skipped = payload.get("skipped")
+    require_package_smoke(
+        isinstance(skipped, list)
+        and any(
+            isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+            and item.get("sourceIssueCount") == 2
+            and f"Needs at least {expected_min_evidence}" in str(item.get("reason", ""))
+            for item in skipped
+        ),
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should explain skipped component-spec evidence",
+    )
+    privacy = payload.get("privacy")
+    require_package_smoke(
+        isinstance(privacy, dict)
+        and privacy.get("mutatesProfile") is False
+        and privacy.get("mutatesSkillFiles") is False
+        and privacy.get("callsExternalAiApis") is False,
+        context=context,
+        cmd=cmd,
+        message="learn skill proposals min-evidence JSON should keep read-only privacy boundaries",
+    )
+
+
+def assert_skill_proposal_report_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    for expected in (
+        "Skill evolution proposals",
+        "Signal source:",
+        "Status: warn",
+        "Proposed skill deltas:",
+        "skills/component-spec-writer/SKILL.md",
+        "No changes made. This command is preview-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals human output missing {expected!r}",
+        )
+
+
+def assert_skill_proposal_report_markdown(
+    raw: str,
+    *,
+    profile_path: Path,
+    usage_path: Path,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# Skill Evolution Proposal Report",
+        f"- File: {profile_path}",
+        f"- Usage sidecar: {usage_path}",
+        "- Status: warn",
+        "## Proposed Skill Deltas",
+        "skills/component-spec-writer/SKILL.md",
+        "Proposed instruction delta:",
+        "```bash",
+        "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is preview-only evidence; it does not apply changes.",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals Markdown report missing {expected!r}",
+        )
+
+
+def assert_skill_proposal_patch(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "# design-ai skill proposal patch preview",
+        "# Preview-only output from `design-ai learn --propose-skills --patch`.",
+        "# Review manually before applying. This command does not edit skill files.",
+        "diff --git a/skills/component-spec-writer/SKILL.md b/skills/component-spec-writer/SKILL.md",
+        "--- a/skills/component-spec-writer/SKILL.md",
+        "+++ b/skills/component-spec-writer/SKILL.md",
+        "+## Local Learning Proposal: skill-proposal-component-spec-writer-",
+        "+- Category: accessibility",
+        "+- Routes: component-spec",
+        "+- Risk: low",
+        "+- Evidence count: 2",
+        "+- Proposed instruction: Add a pre-handoff accessibility checkpoint",
+        "+- Verification: `node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json`",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposals patch output missing {expected!r}",
         )
 
 
@@ -5164,6 +7483,713 @@ def assert_learning_relevance_smoke(
         cmd=usage_out_cmd,
     )
 
+    profile_payload = json.loads(profile_path.read_text(encoding="utf-8"))
+    signal_dir = profile_path.parent
+    signal_workspace_root = profile_path.with_name(f"{profile_path.stem}-signals-workspace")
+    prepare_workspace_strict_repo(signal_workspace_root)
+    route_signal_path = signal_dir / "route-eval-report.json"
+    route_signal_path.write_text(
+        json.dumps({
+            "evalVersion": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "status": "pass",
+            "summary": {
+                "total": 1,
+                "pass": 1,
+                "warn": 0,
+                "fail": 0,
+            },
+            "cases": [
+                {
+                    "id": "component-spec-contract",
+                    "status": "pass",
+                    "expectedRouteId": EXPECTED_ROUTE_ID,
+                    "topRouteId": EXPECTED_ROUTE_ID,
+                    "issues": [],
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    no_command_profile_path = profile_path.with_name(f"{profile_path.stem}-no-command.json")
+    no_command_usage_path = profile_path.with_name(f"{profile_path.stem}-no-command.usage.json")
+    no_command_profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
+    no_command_usage_payload = json.loads(usage_path.read_text(encoding="utf-8"))
+    no_command_usage_payload["profileFile"] = str(no_command_profile_path)
+    for event in no_command_usage_payload.get("events", []):
+        if isinstance(event, dict):
+            event["profileFile"] = str(no_command_profile_path)
+    no_command_usage_path.write_text(json.dumps(no_command_usage_payload, indent=2) + "\n", encoding="utf-8")
+    no_command_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(no_command_profile_path),
+        "--usage-file",
+        str(no_command_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    no_command_result = run_plain(no_command_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_no_command_json(
+        no_command_result.stdout,
+        profile_path=no_command_profile_path,
+        usage_path=no_command_usage_path,
+        context=f"{context} learn agent backlog no-command strict JSON",
+        cmd=no_command_cmd,
+    )
+    no_command_report_path = no_command_profile_path.with_name(
+        f"{no_command_profile_path.stem}-agent-backlog-report.md"
+    )
+    no_command_report_path.write_text("stale no-command agent backlog Markdown report\n", encoding="utf-8")
+    no_command_report_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(no_command_profile_path),
+        "--usage-file",
+        str(no_command_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(no_command_report_path),
+        "--force",
+    )
+    no_command_report_result = run_plain(no_command_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        no_command_report_result.stdout,
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+        expected_path=str(no_command_report_path),
+    )
+    assert_agent_backlog_no_command_report_markdown(
+        no_command_report_path.read_text(encoding="utf-8"),
+        profile_path=no_command_profile_path,
+        usage_path=no_command_usage_path,
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+    )
+    require_package_smoke(
+        no_command_profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog no-command Markdown report",
+        cmd=no_command_report_cmd,
+        message="learn agent backlog no-command Markdown report output must not mutate the profile",
+    )
+
+    profile_payload["entries"].append({
+        "id": "learn-check-capture",
+        "category": "workflow",
+        "text": "Improve future outputs by addressing Responsive QA coverage: Add desktop and mobile verification notes.",
+        "source": "check:artifact",
+        "createdAt": "2026-05-22T00:00:03.000Z",
+    })
+    profile_path.write_text(json.dumps(profile_payload, indent=2) + "\n", encoding="utf-8")
+
+    signals_human_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    signals_human_result = run_plain(signals_human_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_learning_signal_report_human(
+        signals_human_result.stdout,
+        context=f"{context} learn signals human",
+        cmd=signals_human_cmd,
+    )
+
+    signals_json_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    signals_json_result = run_plain(signals_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_learning_signal_report_json(
+        signals_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals JSON",
+        cmd=signals_json_cmd,
+    )
+
+    signals_report_path = profile_path.with_name(f"{profile_path.stem}-signals-report.md")
+    signals_report_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(signals_report_path),
+    )
+    signals_report_result = run_plain(signals_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        signals_report_result.stdout,
+        context=f"{context} learn signals Markdown report",
+        cmd=signals_report_cmd,
+        expected_path=str(signals_report_path),
+    )
+    assert_learning_signal_report_markdown(
+        signals_report_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals Markdown report",
+        cmd=signals_report_cmd,
+    )
+
+    signals_strict_json_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    signals_strict_json_result = run_plain(signals_strict_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_learning_signal_report_json(
+        signals_strict_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals strict JSON",
+        cmd=signals_strict_json_cmd,
+        require_agent_status_pass=True,
+    )
+
+    signals_out_path = profile_path.with_name(f"{profile_path.stem}-signals-out.json")
+    signals_out_path.write_text("stale signals output\n", encoding="utf-8")
+    signals_out_cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(signals_out_path),
+        "--force",
+    )
+    signals_out_result = run_plain(signals_out_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        signals_out_result.stdout,
+        context=f"{context} learn signals out",
+        cmd=signals_out_cmd,
+        expected_path=str(signals_out_path),
+    )
+    assert_learning_signal_report_json(
+        signals_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn signals out file",
+        cmd=signals_out_cmd,
+    )
+
+    agent_backlog_human_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    agent_backlog_human_result = run_plain(agent_backlog_human_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_human(
+        agent_backlog_human_result.stdout,
+        context=f"{context} learn agent backlog human",
+        cmd=agent_backlog_human_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog human",
+        cmd=agent_backlog_human_cmd,
+        message="learn agent backlog human output must not mutate the profile",
+    )
+
+    agent_backlog_json_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    agent_backlog_json_result = run_plain(agent_backlog_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_json(
+        agent_backlog_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog JSON",
+        cmd=agent_backlog_json_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog JSON",
+        cmd=agent_backlog_json_cmd,
+        message="learn agent backlog JSON output must not mutate the profile",
+    )
+
+    agent_backlog_strict_json_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    agent_backlog_strict_json_result = run_plain(agent_backlog_strict_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_agent_backlog_report_json(
+        agent_backlog_strict_json_result.stdout,
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog strict JSON",
+        cmd=agent_backlog_strict_json_cmd,
+        require_status_pass=True,
+    )
+
+    agent_backlog_report_path = profile_path.with_name(f"{profile_path.stem}-agent-backlog-report.md")
+    agent_backlog_report_path.write_text("stale agent backlog Markdown report\n", encoding="utf-8")
+    agent_backlog_report_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(agent_backlog_report_path),
+        "--force",
+    )
+    agent_backlog_report_result = run_plain(agent_backlog_report_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        agent_backlog_report_result.stdout,
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+        expected_path=str(agent_backlog_report_path),
+    )
+    assert_agent_backlog_report_markdown(
+        agent_backlog_report_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+    )
+    require_package_smoke(
+        profile_path.read_text(encoding="utf-8") == json.dumps(profile_payload, indent=2) + "\n",
+        context=f"{context} learn agent backlog Markdown report",
+        cmd=agent_backlog_report_cmd,
+        message="learn agent backlog Markdown report output must not mutate the profile",
+    )
+
+    agent_backlog_out_path = profile_path.with_name(f"{profile_path.stem}-agent-backlog-out.json")
+    agent_backlog_out_path.write_text("stale agent backlog output\n", encoding="utf-8")
+    agent_backlog_out_cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(agent_backlog_out_path),
+        "--force",
+    )
+    agent_backlog_out_result = run_plain(agent_backlog_out_cmd, cwd=signal_workspace_root, env=relevance_env)
+    assert_output_write_success(
+        agent_backlog_out_result.stdout,
+        context=f"{context} learn agent backlog out",
+        cmd=agent_backlog_out_cmd,
+        expected_path=str(agent_backlog_out_path),
+    )
+    assert_agent_backlog_report_json(
+        agent_backlog_out_path.read_text(encoding="utf-8"),
+        profile_path=profile_path,
+        usage_path=usage_path,
+        context=f"{context} learn agent backlog out file",
+        cmd=agent_backlog_out_cmd,
+    )
+
+    proposal_profile_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.json")
+    proposal_usage_path = proposal_profile_path.with_name(f"{proposal_profile_path.stem}.usage{proposal_profile_path.suffix}")
+    proposal_profile_path.write_text(
+        json.dumps({
+            "version": 1,
+            "updatedAt": "2026-06-02T00:00:02.000Z",
+            "entries": [
+                {
+                    "id": "learn-skill-proposal-a",
+                    "category": "accessibility",
+                    "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+                    "source": "check:component-spec",
+                    "createdAt": "2026-06-02T00:00:01.000Z",
+                },
+                {
+                    "id": "learn-skill-proposal-b",
+                    "category": "accessibility",
+                    "text": "Improve future outputs by addressing Screen reader behavior: No screen-reader behavior note detected.",
+                    "source": "check:component-spec",
+                    "createdAt": "2026-06-02T00:00:02.000Z",
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+    proposal_usage_path.write_text(
+        json.dumps({
+            "version": 1,
+            "updatedAt": "2026-06-02T00:00:02.000Z",
+            "profileFile": str(proposal_profile_path),
+            "events": [],
+        }),
+        encoding="utf-8",
+    )
+    proposal_before = proposal_profile_path.read_text(encoding="utf-8")
+
+    skill_proposals_human_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+    )
+    skill_proposals_human_result = run_plain(skill_proposals_human_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_report_human(
+        skill_proposals_human_result.stdout,
+        context=f"{context} learn skill proposals human",
+        cmd=skill_proposals_human_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals human",
+        cmd=skill_proposals_human_cmd,
+        message="learn skill proposals human output must not mutate the profile",
+    )
+
+    skill_proposals_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_json_result = run_plain(skill_proposals_json_cmd, cwd=cwd, env=relevance_env)
+    skill_proposals_payload = assert_skill_proposal_report_json(
+        skill_proposals_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals JSON",
+        cmd=skill_proposals_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals JSON",
+        cmd=skill_proposals_json_cmd,
+        message="learn skill proposals JSON output must not mutate the profile",
+    )
+
+    skill_proposals_review_template_path = proposal_profile_path.with_name(f"{proposal_profile_path.stem}.review-template.json")
+    skill_proposals_review_template_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--review-template",
+        "--out",
+        str(skill_proposals_review_template_path),
+    )
+    skill_proposals_review_template_result = run_plain(skill_proposals_review_template_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_review_template_result.stdout,
+        expected_path=str(skill_proposals_review_template_path),
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+    )
+    assert_skill_proposal_review_template_json(
+        skill_proposals_review_template_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals review template",
+        cmd=skill_proposals_review_template_cmd,
+        message="learn skill proposals review-template output must not mutate the profile",
+    )
+
+    review_proposal_id = next(
+        (
+            item.get("id")
+            for item in skill_proposals_payload.get("proposals", [])
+            if isinstance(item, dict)
+            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
+        ),
+        "",
+    )
+    require_package_smoke(
+        bool(review_proposal_id),
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_json_cmd,
+        message="learn skill proposals review fixture needs a component-spec proposal id",
+    )
+    skill_proposals_review_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.review.json")
+    skill_proposals_review_path.write_text(json.dumps({
+        "version": 1,
+        "decisions": [
+            {
+                "proposalId": review_proposal_id,
+                "status": "applied",
+                "reviewedAt": "2026-06-11T00:00:00.000Z",
+                "reviewer": "package-smoke",
+                "note": "Package smoke confirms review-file decision joins remain read-only.",
+            },
+        ],
+    }, indent=2) + "\n", encoding="utf-8")
+    skill_proposals_review_before = skill_proposals_review_path.read_text(encoding="utf-8")
+    skill_proposals_review_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_review_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+    )
+    skill_proposals_review_json_result = run_plain(skill_proposals_review_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_review_json(
+        skill_proposals_review_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        review_path=skill_proposals_review_path,
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_review_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_review_path.read_text(encoding="utf-8") == skill_proposals_review_before,
+        context=f"{context} learn skill proposals review JSON",
+        cmd=skill_proposals_review_json_cmd,
+        message="learn skill proposals review JSON output must not mutate the profile or review file",
+    )
+
+    skill_proposals_min_evidence_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--min-evidence",
+        "3",
+        "--json",
+    )
+    skill_proposals_min_evidence_json_result = run_plain(skill_proposals_min_evidence_json_cmd, cwd=cwd, env=relevance_env)
+    assert_skill_proposal_min_evidence_json(
+        skill_proposals_min_evidence_json_result.stdout,
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals min-evidence JSON",
+        cmd=skill_proposals_min_evidence_json_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals min-evidence JSON",
+        cmd=skill_proposals_min_evidence_json_cmd,
+        message="learn skill proposals min-evidence JSON output must not mutate the profile",
+    )
+
+    skill_proposals_strict_json_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--strict",
+        "--json",
+    )
+    run_expected_failure(
+        skill_proposals_strict_json_cmd,
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn skill proposals strict JSON",
+        assertion=lambda raw, *, returncode, context, cmd: assert_skill_proposal_report_json(
+            raw,
+            profile_path=proposal_profile_path,
+            usage_path=proposal_usage_path,
+            context=context,
+            cmd=cmd,
+            returncode=returncode,
+        ),
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals strict JSON",
+        cmd=skill_proposals_strict_json_cmd,
+        message="learn skill proposals strict JSON output must not mutate the profile",
+    )
+
+    skill_proposals_out_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-out.json")
+    skill_proposals_out_path.write_text("stale skill proposal output\n", encoding="utf-8")
+    skill_proposals_out_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--json",
+        "--out",
+        str(skill_proposals_out_path),
+        "--force",
+    )
+    skill_proposals_out_result = run_plain(skill_proposals_out_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_out_result.stdout,
+        context=f"{context} learn skill proposals out",
+        cmd=skill_proposals_out_cmd,
+        expected_path=str(skill_proposals_out_path),
+    )
+    assert_skill_proposal_report_json(
+        skill_proposals_out_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals out file",
+        cmd=skill_proposals_out_cmd,
+    )
+
+    skill_proposals_report_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals-report.md")
+    skill_proposals_report_path.write_text("stale skill proposal Markdown report\n", encoding="utf-8")
+    skill_proposals_report_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--report",
+        "--out",
+        str(skill_proposals_report_path),
+        "--force",
+    )
+    skill_proposals_report_result = run_plain(skill_proposals_report_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_report_result.stdout,
+        context=f"{context} learn skill proposals Markdown report out",
+        cmd=skill_proposals_report_cmd,
+        expected_path=str(skill_proposals_report_path),
+    )
+    assert_skill_proposal_report_markdown(
+        skill_proposals_report_path.read_text(encoding="utf-8"),
+        profile_path=proposal_profile_path,
+        usage_path=proposal_usage_path,
+        context=f"{context} learn skill proposals Markdown report out file",
+        cmd=skill_proposals_report_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals Markdown report out",
+        cmd=skill_proposals_report_cmd,
+        message="learn skill proposals Markdown report output must not mutate the profile",
+    )
+
+    skill_proposals_patch_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.patch")
+    skill_proposals_patch_path.write_text("stale skill proposal patch\n", encoding="utf-8")
+    skill_proposals_patch_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--from-file",
+        str(signal_dir),
+        "--patch",
+        "--out",
+        str(skill_proposals_patch_path),
+        "--force",
+    )
+    skill_proposals_patch_result = run_plain(skill_proposals_patch_cmd, cwd=cwd, env=relevance_env)
+    assert_output_write_success(
+        skill_proposals_patch_result.stdout,
+        context=f"{context} learn skill proposals patch out",
+        cmd=skill_proposals_patch_cmd,
+        expected_path=str(skill_proposals_patch_path),
+    )
+    assert_skill_proposal_patch(
+        skill_proposals_patch_path.read_text(encoding="utf-8"),
+        context=f"{context} learn skill proposals patch out file",
+        cmd=skill_proposals_patch_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before,
+        context=f"{context} learn skill proposals patch out",
+        cmd=skill_proposals_patch_cmd,
+        message="learn skill proposals patch output must not mutate the profile",
+    )
+
     eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
     eval_template_path.write_text("stale eval template output\n", encoding="utf-8")
     eval_template_cmd = command_factory(
@@ -5389,6 +8415,78 @@ def run_self_test() -> None:
         scope="package smoke",
     )
 
+    site_evidence_cmd = ["design-ai", "site", "--stdin", "--report"]
+    site_evidence_payload = {
+        "implementationEvidence": {
+            key: [value]
+            for key, value in SITE_EVIDENCE_VALUES.items()
+        }
+    }
+    assert_site_evidence_payload(site_evidence_payload, context=context, label="site evidence self-test")
+    assert_site_evidence_markdown(
+        "\n".join(SITE_EVIDENCE_VALUES.values()),
+        context=context,
+        cmd=site_evidence_cmd,
+        label="site evidence self-test markdown",
+    )
+    stale_site_evidence_payload = json.loads(json.dumps(site_evidence_payload))
+    stale_site_evidence_payload["implementationEvidence"]["remainingRisks"] = []
+    expect_self_test_failure(
+        lambda: assert_site_evidence_payload(
+            stale_site_evidence_payload,
+            context=context,
+            label="site evidence self-test",
+        ),
+        expected="evidence field remainingRisks changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_evidence_markdown(
+            SITE_EVIDENCE_VALUES["executedWork"],
+            context=context,
+            cmd=site_evidence_cmd,
+            label="site evidence self-test markdown",
+        ),
+        expected="missing evidence fragment",
+        scope="package smoke",
+    )
+    assert_site_mcp_probe_counts(
+        EXPECTED_SITE_MCP_PROBE_COUNTS,
+        context=f"{context} site bundle check",
+        label="site bundle check",
+    )
+    site_bundle_mcp_probes_payload = json.loads(passing_site_mcp_check_probes_json())["probes"]
+    assert_site_bundle_mcp_probes_payload(
+        site_bundle_mcp_probes_payload,
+        context=f"{context} site bundle mcp-probes.json",
+    )
+    for label in (
+        "site bundle check",
+        "site bundle check summary",
+        "site bundle compare left",
+        "site bundle compare right",
+        "site bundle handoff",
+    ):
+        expect_self_test_failure(
+            lambda label=label: assert_site_mcp_probe_counts(
+                {**EXPECTED_SITE_MCP_PROBE_COUNTS, "warn": 1},
+                context=context,
+                label=label,
+            ),
+            expected=f"{label} after {context} MCP probe counts changed",
+            scope="package smoke",
+        )
+    stale_site_bundle_mcp_probes_payload = json.loads(json.dumps(site_bundle_mcp_probes_payload))
+    stale_site_bundle_mcp_probes_payload["items"][0]["level"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_site_bundle_mcp_probes_payload(
+            stale_site_bundle_mcp_probes_payload,
+            context=f"{context} site bundle mcp-probes.json",
+        ),
+        expected="mcp-probes.json item should pass",
+        scope="package smoke",
+    )
+
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
         report_path = Path(tmp) / "doctor.json"
         report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
@@ -5396,6 +8494,239 @@ def run_self_test() -> None:
         expect_self_test_failure(
             lambda: assert_doctor_report_file(Path(tmp) / "missing.json", context=context),
             expected="failed to read doctor JSON",
+            scope="package smoke",
+        )
+
+        site_next_actions_out_path = Path(tmp) / "site-next-actions.json"
+        site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
+        site_next_actions_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--json",
+            "--out",
+            str(site_next_actions_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_json_file_output(
+            f"Wrote {site_next_actions_out_path}\n",
+            site_next_actions_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_out_path),
+            context=f"{context} site next-actions JSON out",
+            cmd=site_next_actions_out_cmd,
+        )
+        site_next_actions_human_out_path = Path(tmp) / "site-next-actions.md"
+        site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
+        site_next_actions_human_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--out",
+            str(site_next_actions_human_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_human_file_output(
+            f"Wrote {site_next_actions_human_out_path}\n",
+            site_next_actions_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_human_out_path),
+            context=f"{context} site next-actions human out",
+            cmd=site_next_actions_human_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_next_actions_human_file_output(
+                f"Wrote {site_next_actions_human_out_path}\n",
+                passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
+                output_path=str(site_next_actions_human_out_path),
+                context=f"{context} site next-actions human out",
+                cmd=site_next_actions_human_out_cmd,
+            ),
+            expected="missing fragment",
+            scope="package smoke",
+        )
+
+        site_mcp_check_probes_out_path = Path(tmp) / "site-mcp-check-probes.json"
+        site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_check_probes_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_check_probes_out_path),
+            "--force",
+        ]
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_check_probes_out_path}\n",
+            site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_check_probes_out_path),
+            context=f"{context} site mcp-check probes JSON out",
+            cmd=site_mcp_check_probes_out_cmd,
+        )
+        assert_site_mcp_check_probes_human(
+            passing_site_mcp_check_probes_human(),
+            context=f"{context} site mcp-check probes human",
+            cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
+        )
+        site_mcp_check_probes_human_out_path = Path(tmp) / "site-mcp-check-probes.txt"
+        site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+        site_mcp_check_probes_human_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--out",
+            str(site_mcp_check_probes_human_out_path),
+            "--force",
+        ]
+        assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_check_probes_human_out_path}\n",
+            site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_check_probes_human_out_path),
+            context=f"{context} site mcp-check probes human out",
+            cmd=site_mcp_check_probes_human_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_check_probes_out_path}\n",
+                site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_check_probes_out_path),
+                context=f"{context} site mcp-check probes JSON out",
+                cmd=site_mcp_check_probes_out_cmd,
+            ),
+            expected="without external calls",
+            scope="package smoke",
+        )
+
+        site_mcp_plan_json_out_path = Path(tmp) / "site-mcp-plan-probes.json"
+        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_json_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-plan",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_plan_json_out_path),
+            "--force",
+        ]
+        assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_json_out_path),
+            context=f"{context} site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+        )
+        site_mcp_plan_human_out_path = Path(tmp) / "site-mcp-plan-probes-human.txt"
+        site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+        site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesHumanOut",
+            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            output_path=str(site_mcp_plan_human_out_path),
+            context=f"{context} site mcp-plan probes emitted human out command",
+        )
+        assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_plan_human_out_path}\n",
+            site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_human_out_path),
+            context=f"{context} site mcp-plan probes emitted human out",
+            cmd=site_mcp_plan_human_out_cmd,
+        )
+        site_mcp_plan_check_json_out_path = Path(tmp) / "site-mcp-plan-probes-check.json"
+        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesJsonOut",
+            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context=f"{context} site mcp-plan probes emitted check JSON out command",
+        )
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_plan_check_json_out_path}\n",
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context=f"{context} site mcp-plan probes emitted check JSON out",
+            cmd=site_mcp_plan_check_json_out_cmd,
+        )
+        site_mcp_plan_emitted_json_out_path = Path(tmp) / "site-mcp-plan-probes-emitted.json"
+        site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpPlanProbesJsonOut",
+            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            output_path=str(site_mcp_plan_emitted_json_out_path),
+            context=f"{context} site mcp-plan probes emitted plan JSON out command",
+        )
+        assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_emitted_json_out_path),
+            context=f"{context} site mcp-plan probes emitted plan JSON out",
+            cmd=site_mcp_plan_emitted_json_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_human_file_output(
+                f"Wrote {site_mcp_plan_human_out_path}\n",
+                site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
+                    "Probe commands:",
+                    "Probe notes:",
+                ),
+                output_path=str(site_mcp_plan_human_out_path),
+                context=f"{context} site mcp-plan probes emitted human out",
+                cmd=site_mcp_plan_human_out_cmd,
+            ),
+            expected="Probe commands",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_plan_check_json_out_path}\n",
+                site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_plan_check_json_out_path),
+                context=f"{context} site mcp-plan probes emitted check JSON out",
+                cmd=site_mcp_plan_check_json_out_cmd,
+            ),
+            expected="external calls",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+                site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
+                    '"targetRepoMutation": false',
+                    '"targetRepoMutation": true',
+                ),
+                output_path=str(site_mcp_plan_emitted_json_out_path),
+                context=f"{context} site mcp-plan probes emitted plan JSON out",
+                cmd=site_mcp_plan_emitted_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_json_out_path}\n",
+                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_plan_json_out_path),
+                context=f"{context} site mcp-plan probes JSON out",
+                cmd=site_mcp_plan_json_out_cmd,
+            ),
+            expected="local/read-only",
             scope="package smoke",
         )
 
@@ -7027,6 +10358,2079 @@ def run_self_test() -> None:
             scope="package smoke",
         )
 
+        learn_signals_cmd = [
+            "design-ai",
+            "learn",
+            "--signals",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        learning_signal_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "status": "pass",
+            "file": str(learning_profile_path),
+            "signalSource": str(Path(tmp)),
+            "learning": {
+                "exists": True,
+                "version": 1,
+                "updatedAt": "2026-06-01T00:00:00.000Z",
+                "count": 3,
+                "categoryCounts": {"workflow": 2, "brand": 1},
+                "sourceCounts": {"feedback:keep": 2, "check:artifact": 1},
+                "auditSummary": {"status": "pass", "failures": 0, "warnings": 0},
+            },
+            "usage": {
+                "usageFile": str(learning_usage_path),
+                "exists": True,
+                "eventCount": 2,
+                "usedEntryCount": 2,
+                "unusedEntryCount": 1,
+                "staleSelectedEntryCount": 0,
+                "commandCounts": {"prompt": 1, "pack": 1},
+                "routeCounts": {EXPECTED_ROUTE_ID: 2},
+                "latestEvent": learning_usage_report_payload["latestEvent"],
+                "privacy": learning_usage_report_payload["privacy"],
+            },
+            "evals": {
+                "source": str(Path(tmp)),
+                "count": 1,
+                "reports": 1,
+                "templates": 0,
+                "failed": 0,
+                "warned": 0,
+                "passed": 1,
+                "files": [
+                    {
+                        "file": str(Path(tmp) / "route-eval-report.json"),
+                        "exists": True,
+                        "kind": "route-eval",
+                        "shape": "report",
+                        "status": "pass",
+                        "caseCount": 1,
+                        "passed": 1,
+                        "warned": 0,
+                        "failed": 0,
+                        "generatedAt": "2026-06-02T00:00:00.000Z",
+                        "error": "",
+                    },
+                ],
+            },
+            "checkCapture": {
+                "count": 1,
+                "categoryCounts": {"workflow": 1},
+                "sourceCounts": {"check:artifact": 1},
+                "latestEntries": [
+                    {
+                        "id": "learn-check",
+                        "category": "workflow",
+                        "source": "check:artifact",
+                        "createdAt": "2026-06-01T00:00:00.000Z",
+                        "textPreview": "Improve future outputs by addressing responsive QA.",
+                    },
+                ],
+            },
+            "workspace": {
+                "root": str(Path(tmp)),
+                "version": "4.55.0",
+                "git": {"isRepo": True, "branch": "main", "clean": True, "ahead": 0, "behind": 0},
+                "repository": {"status": "pass", "canonical": True},
+                "learning": {"status": "pass", "reason": ""},
+                "learningUsage": {"status": "pass", "reason": ""},
+                "learningEval": {"status": "pass", "reason": ""},
+                "nextActionCounts": {},
+                "nextActionCount": 0,
+            },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required and optional local learning signal surfaces are complete.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 0,
+                "blockingChecks": [],
+                "optionalGaps": [],
+                "optionalGapDetails": [],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "pass",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
+                "checkCountByStatus": {
+                    "pass": 6,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 2,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "checks": [
+                    {"id": "learning-profile", "label": "Learning profile", "status": "pass", "required": True, "summary": "Profile is ready."},
+                    {"id": "usage-sidecar", "label": "Usage sidecar", "status": "pass", "required": False, "summary": "Usage is ready."},
+                    {"id": "eval-signals", "label": "Eval signals", "status": "pass", "required": True, "summary": "Eval is ready."},
+                    {"id": "check-capture", "label": "Check learning capture", "status": "pass", "required": False, "summary": "Check capture is ready."},
+                    {"id": "workspace-readiness", "label": "Workspace readiness", "status": "pass", "required": True, "summary": "Workspace is ready."},
+                    {"id": "agent-development", "label": "Agent development backlog", "status": "pass", "required": True, "summary": "Agent backlog is ready."},
+                ],
+            },
+            "agentDevelopment": {
+                "status": "pass",
+                "actionCount": 1,
+                "p0Count": 0,
+                "p1Count": 0,
+                "p2Count": 1,
+                "p3Count": 0,
+                "actions": [
+                    {
+                        "rank": 1,
+                        "id": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "evidence": {"checkCaptureCount": 1},
+                    },
+                ],
+                "privacy": {
+                    "mutatesProfile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "storesRawBriefText": False,
+                },
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_learning_signal_report_json(
+            json.dumps(learning_signal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_signals_cmd,
+        )
+        assert_learning_signal_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Learning signal registry",
+                f"Signal source: {Path(tmp)}",
+                "Learning audit: pass",
+                "Eval signals:",
+                "Workspace readiness:",
+                "Agent development backlog:",
+                "Privacy: signal registry is read-only",
+            ]),
+            context=context,
+            cmd=learn_signals_cmd,
+        )
+        assert_learning_signal_report_markdown(
+            "\n".join([
+                "# Learning Signal Registry Report",
+                "",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Readiness Summary",
+                "- Required ready: yes",
+                "- Required checks: 4/4",
+                "- Blocking checks: 0",
+                "- Optional gaps: 0",
+                "Readiness check index:",
+                "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+                "- Optional ids: usage-sidecar, check-capture",
+                "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+                "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "## Learning Profile",
+                "## Usage Signals",
+                "## Eval Signals",
+                "## Check Capture",
+                "## Workspace Readiness",
+                "## Agent Development Backlog",
+                "```bash",
+                "design-ai learn --propose-skills --json",
+                "```",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Stores raw brief text: no",
+                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_signals_cmd[:-1], "--report"],
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_markdown(
+                "\n".join([
+                    "# Learning Signal Registry Report",
+                    "",
+                    f"- Learning file: {learning_profile_path}",
+                    f"- Usage file: {learning_usage_path}",
+                    "## Readiness Summary",
+                    "- Required ready: yes",
+                    "- Required checks: 4/4",
+                    "- Blocking checks: 0",
+                    "- Optional gaps: 0",
+                    "Readiness checks:",
+                    "## Learning Profile",
+                    "## Usage Signals",
+                    "## Eval Signals",
+                    "## Check Capture",
+                    "## Workspace Readiness",
+                    "## Agent Development Backlog",
+                    "```bash",
+                    "design-ai learn --propose-skills --json",
+                    "```",
+                    "## Privacy And Boundaries",
+                    "- Mutates learning profile: no",
+                    "- Stores raw brief text: no",
+                    "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+                ]),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_signals_cmd[:-1], "--report"],
+            ),
+            expected="learn signals Markdown report missing 'Readiness check index:'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "evals": {
+                        **learning_signal_payload["evals"],
+                        "files": [],
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals JSON should include route eval signal files",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "agentDevelopment": {
+                        **learning_signal_payload["agentDevelopment"],
+                        "status": "warn",
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+                require_agent_status_pass=True,
+            ),
+            expected="learn signals JSON should include passing agent development backlog actions",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_json(
+                json.dumps({
+                    **learning_signal_payload,
+                    "agentDevelopment": {
+                        **learning_signal_payload["agentDevelopment"],
+                        "privacy": {
+                            **learning_signal_payload["agentDevelopment"]["privacy"],
+                            "callsExternalAiApis": True,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals JSON should keep agent development backlog local and preview-only",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_signal_report_human(
+                "\n".join([
+                    "design-ai learn",
+                    "Learning signal registry",
+                    "Signal source:",
+                    "Learning audit:",
+                    "Eval signals:",
+                    "Privacy: signal registry is read-only",
+                ]),
+                context=context,
+                cmd=learn_signals_cmd,
+            ),
+            expected="learn signals human output missing 'Workspace readiness:'",
+            scope="package smoke",
+        )
+
+        learn_agent_backlog_cmd = [
+            "design-ai",
+            "learn",
+            "--agent-backlog",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        agent_backlog_refresh_args = [
+            "design-ai",
+            "learn",
+            "--agent-backlog",
+            "--from-file",
+            str(Path(tmp)),
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--strict",
+            "--json",
+        ]
+        agent_backlog_refresh_command = " ".join(agent_backlog_refresh_args)
+        learning_agent_backlog_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:05.000Z",
+            "status": "pass",
+            "signalStatus": "pass",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "counts": {
+                "actions": 1,
+                "p0": 0,
+                "p1": 0,
+                "p2": 1,
+                "p3": 0,
+                "learningEntries": 3,
+                "usageEvents": 2,
+                "evalSignals": 1,
+                "checkCaptures": 1,
+                "workspaceNextActions": 0,
+            },
+            "actions": [
+                {
+                    "rank": 1,
+                    "id": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "evidence": {"checkCaptureCount": 1},
+                },
+            ],
+            "actionPlan": {
+                "version": 1,
+                "stepCount": 1,
+                "nextStep": {
+                    "rank": 1,
+                    "actionId": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "verification": [
+                        "Run the command and inspect the preview/report output before applying any follow-up changes.",
+                        "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                    ],
+                    "requiresReviewBeforeMutation": False,
+                    "commandSafety": {
+                        "level": "read-only",
+                        "writesLocalFiles": False,
+                        "mutatesLocalState": False,
+                        "requiresCleanWorkspace": False,
+                        "detectedFlags": [],
+                        "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                    },
+                },
+                "steps": [
+                    {
+                        "rank": 1,
+                        "actionId": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                        "verification": [
+                            "Run the command and inspect the preview/report output before applying any follow-up changes.",
+                            "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                        ],
+                        "requiresReviewBeforeMutation": False,
+                        "commandSafety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "mutatesLocalState": False,
+                            "requiresCleanWorkspace": False,
+                            "detectedFlags": [],
+                            "outputTargets": [],
+                            "profileTargets": [],
+                            "usageTargets": [],
+                            "mutationFlags": [],
+                            "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                        },
+                    },
+                ],
+                "safetySummary": {
+                    "total": 1,
+                    "readOnly": 1,
+                    "writesLocalFile": 0,
+                    "mutatesLocalState": 0,
+                    "requiresCleanWorkspace": 0,
+                    "requiresReviewBeforeMutation": 0,
+                },
+                "executionQueue": {
+                    "orderedCount": 1,
+                    "commandManifestCount": 1,
+                    "previewCount": 1,
+                    "fileWriteReviewCount": 0,
+                    "mutationReviewCount": 0,
+                    "nextActionId": "agent-skill-proposal-preview",
+                    "nextCommand": "design-ai learn --propose-skills --json",
+                    "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "nextCommandRunPolicy": "preview-only",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-safety-ordered-queue",
+                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                        "actionId": "agent-skill-proposal-preview",
+                        "rank": 1,
+                        "safetyLevel": "read-only",
+                        "runPolicy": "preview-only",
+                        "planNextActionId": "agent-skill-proposal-preview",
+                        "planNextActionRank": 1,
+                        "matchesPlanNextAction": True,
+                        "reason": "Selected the ranked next action because it is first in the safety-ordered queue.",
+                    },
+                    "nextCommandAlignment": {
+                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                        "operatorStage": "execute",
+                        "operatorActionId": "agent-skill-proposal-preview",
+                        "operatorCommand": "design-ai learn --propose-skills --json",
+                        "operatorCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "queueActionId": "agent-skill-proposal-preview",
+                        "queueCommand": "design-ai learn --propose-skills --json",
+                        "queueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "rankedNextActionId": "agent-skill-proposal-preview",
+                        "matchesQueueNextCommand": True,
+                        "matchesQueueNextAction": True,
+                        "operatorRunsBeforeQueueCommand": False,
+                        "queueMatchesRankedNextAction": True,
+                        "reason": "Operator runbook starts with the same command as the safety-ordered execution queue.",
+                    },
+                    "operatorHandoff": {
+                        "version": 1,
+                        "decision": "run-shared-command",
+                        "state": {
+                            "version": 1,
+                            "status": "ready",
+                            "ready": True,
+                            "hasCommand": True,
+                            "complete": False,
+                            "canRunWithoutReview": True,
+                            "requiresGate": False,
+                            "requiresRefresh": True,
+                            "summary": "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+                        },
+                        "source": "operator-runbook",
+                        "phase": "execute",
+                        "label": "Run agent-skill-proposal-preview",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "actionId": "agent-skill-proposal-preview",
+                        "rank": 1,
+                        "runPolicy": "preview-only",
+                        "required": True,
+                        "isGate": False,
+                        "nextQueueActionId": "agent-skill-proposal-preview",
+                        "nextQueueCommand": "design-ai learn --propose-skills --json",
+                        "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "nextQueueCommandRequiresGate": False,
+                        "operatorGateAppliesToNextQueueAction": False,
+                        "nextQueueActionBlockedByGate": False,
+                        "refreshCommand": agent_backlog_refresh_command,
+                        "refreshCommandArgs": agent_backlog_refresh_args,
+                        "refreshCommandLabel": "Refresh focused agent backlog after review",
+                        "refreshCommandRequired": True,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "reason": "Run the shared operator and queue command next.",
+                    },
+                    "commandEffectSummary": {
+                        "totalCommands": 1,
+                        "writesLocalFileCount": 0,
+                        "mutatesLocalStateCount": 0,
+                        "requiresCleanWorkspaceCount": 0,
+                        "outputTargetCount": 0,
+                        "profileTargetCount": 0,
+                        "usageTargetCount": 0,
+                        "mutationFlagCount": 0,
+                        "outputTargets": [],
+                        "profileTargets": [],
+                        "usageTargets": [],
+                        "mutationFlags": [],
+                    },
+                    "commandEffectReview": {
+                        "level": "clear",
+                        "requiresOperatorReview": False,
+                        "headline": "No command target or mutation flag exposure detected.",
+                        "checklist": [
+                            "No command target or mutation flag exposure detected.",
+                        ],
+                        "gatePhaseSummary": {
+                            "count": 1,
+                            "requiredCount": 1,
+                            "optionalCount": 0,
+                            "phases": ["refresh"],
+                            "hasBefore": False,
+                            "hasAfter": False,
+                            "hasRefresh": True,
+                        },
+                        "gateRunbook": {
+                            "before": [],
+                            "after": [],
+                            "refresh": [
+                                {
+                                    "phase": "refresh",
+                                    "label": "Refresh focused agent backlog after review",
+                                    "command": agent_backlog_refresh_command,
+                                    "commandArgs": agent_backlog_refresh_args,
+                                    "required": True,
+                                },
+                            ],
+                            "other": [],
+                        },
+                        "gateCommands": [
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh focused agent backlog after review",
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
+                                "required": True,
+                            },
+                        ],
+                    },
+                    "operatorRunbook": {
+                        "version": 1,
+                        "stageCount": 4,
+                        "commandCount": 2,
+                        "requiredCommandCount": 2,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "phases": ["before", "execute", "after", "refresh"],
+                        "nextStage": "execute",
+                        "nextCommandLabel": "Run agent-skill-proposal-preview",
+                        "nextCommand": "design-ai learn --propose-skills --json",
+                        "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "nextCommandRequired": True,
+                        "nextCommandRunPolicy": "preview-only",
+                        "nextCommandSelection": {
+                            "strategy": "first-command-in-operator-runbook-stage-order",
+                            "stageOrder": ["before", "execute", "after", "refresh"],
+                            "stage": "execute",
+                            "label": "Run agent-skill-proposal-preview",
+                            "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                            "actionId": "agent-skill-proposal-preview",
+                            "rank": 1,
+                            "required": True,
+                            "runPolicy": "preview-only",
+                            "reason": "Selected the first command in the execute stage using operator runbook stage order.",
+                        },
+                        "stages": [
+                            {
+                                "phase": "before",
+                                "label": "Run before executing backlog commands",
+                                "commandCount": 0,
+                                "requiredCount": 0,
+                                "commands": [],
+                            },
+                            {
+                                "phase": "execute",
+                                "label": "Execute reviewed backlog commands",
+                                "commandCount": 1,
+                                "requiredCount": 1,
+                                "commands": [
+                                    {
+                                        "phase": "execute",
+                                        "rank": 1,
+                                        "actionId": "agent-skill-proposal-preview",
+                                        "label": "Run agent-skill-proposal-preview",
+                                        "command": "design-ai learn --propose-skills --json",
+                                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                                        "required": True,
+                                        "safetyLevel": "read-only",
+                                        "runPolicy": "preview-only",
+                                        "requiresReviewBeforeMutation": False,
+                                    },
+                                ],
+                            },
+                            {
+                                "phase": "after",
+                                "label": "Run after executing backlog commands",
+                                "commandCount": 0,
+                                "requiredCount": 0,
+                                "commands": [],
+                            },
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh backlog status after execution",
+                                "commandCount": 1,
+                                "requiredCount": 1,
+                                "commands": [
+                                    {
+                                        "phase": "refresh",
+                                        "label": "Refresh focused agent backlog after review",
+                                        "command": agent_backlog_refresh_command,
+                                        "commandArgs": agent_backlog_refresh_args,
+                                        "required": True,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    "ordered": [
+                        {
+                            "rank": 1,
+                            "actionId": "agent-skill-proposal-preview",
+                            "priority": "p2",
+                            "category": "skill-evolution",
+                            "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                            "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                            "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
+                            "requiresReviewBeforeMutation": False,
+                        },
+                    ],
+                    "commandManifest": [
+                        {
+                            "rank": 1,
+                            "actionId": "agent-skill-proposal-preview",
+                            "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                            "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
+                            "requiresReviewBeforeMutation": False,
+                        },
+                    ],
+                    "preview": [
+                        {
+                            "rank": 1,
+                            "actionId": "agent-skill-proposal-preview",
+                            "priority": "p2",
+                            "category": "skill-evolution",
+                            "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                            "command": "design-ai learn --propose-skills --json",
+                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                            "safetyLevel": "read-only",
+                            "runPolicy": "preview-only",
+                            "commandEffects": {
+                                "writesLocalFiles": False,
+                                "mutatesLocalState": False,
+                                "requiresCleanWorkspace": False,
+                                "detectedFlags": [],
+                                "mutationFlags": [],
+                                "outputTargets": [],
+                                "profileTargets": [],
+                                "usageTargets": [],
+                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                            },
+                            "requiresReviewBeforeMutation": False,
+                        },
+                    ],
+                    "fileWriteReview": [],
+                    "mutationReview": [],
+                },
+                "verification": [
+                    {
+                        "label": "Refresh signal registry JSON",
+                        "command": "design-ai learn --signals --from-file . --json",
+                    },
+                    {
+                        "label": "Save signal registry Markdown handoff",
+                        "command": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+                    },
+                    {
+                        "label": "Gate focused agent backlog",
+                        "command": agent_backlog_refresh_command,
+                        "commandArgs": agent_backlog_refresh_args,
+                    },
+                ],
+                "boundaries": {
+                    "reportMutatesProfile": False,
+                    "reportMutatesSkillFiles": False,
+                    "reportCallsExternalAiApis": False,
+                    "generatedFromLocalSignals": True,
+                },
+            },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required and optional local learning signal surfaces are complete.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 0,
+                "blockingChecks": [],
+                "optionalGaps": [],
+                "optionalGapDetails": [],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "pass",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
+                "checkCountByStatus": {
+                    "pass": 6,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 2,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "checks": [
+                    {
+                        "id": "learning-profile",
+                        "label": "Learning profile",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                        "evidence": {"entries": 3},
+                    },
+                    {
+                        "id": "usage-sidecar",
+                        "label": "Usage sidecar",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                        "evidence": {"events": 2},
+                    },
+                    {
+                        "id": "eval-signals",
+                        "label": "Eval signals",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                        "evidence": {"files": 1},
+                    },
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Profile includes 1 check-capture learning entry.",
+                        "evidence": {"entries": 1},
+                    },
+                    {
+                        "id": "workspace-readiness",
+                        "label": "Workspace readiness",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                        "evidence": {"nextActionCount": 0},
+                    },
+                    {
+                        "id": "agent-development",
+                        "label": "Agent development backlog",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                        "evidence": {"actions": 1},
+                    },
+                ],
+            },
+            "commands": {
+                "signalsJson": "design-ai learn --signals --from-file . --json",
+                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_agent_backlog_report_json(
+            json.dumps(learning_agent_backlog_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+            require_status_pass=True,
+        )
+        missing_readiness_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        missing_readiness_payload.pop("readiness", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(missing_readiness_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+            scope="package smoke",
+        )
+        no_command_agent_backlog_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:06.000Z",
+            "status": "pass",
+            "signalStatus": "pass",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "counts": {
+                "actions": 0,
+                "p0": 0,
+                "p1": 0,
+                "p2": 0,
+                "p3": 0,
+                "learningEntries": 3,
+                "usageEvents": 2,
+                "evalSignals": 1,
+                "checkCaptures": 0,
+                "workspaceNextActions": 0,
+            },
+            "actions": [],
+            "actionPlan": {
+                "version": 1,
+                "stepCount": 0,
+                "nextStep": None,
+                "steps": [],
+                "safetySummary": {
+                    "total": 0,
+                    "readOnly": 0,
+                    "writesLocalFile": 0,
+                    "mutatesLocalState": 0,
+                    "requiresCleanWorkspace": 0,
+                    "requiresReviewBeforeMutation": 0,
+                },
+                "executionQueue": {
+                    "orderedCount": 0,
+                    "commandManifestCount": 0,
+                    "previewCount": 0,
+                    "fileWriteReviewCount": 0,
+                    "mutationReviewCount": 0,
+                    "nextActionId": "",
+                    "nextCommand": "",
+                    "nextCommandArgs": [],
+                    "nextCommandRunPolicy": "",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-safety-ordered-queue",
+                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                        "actionId": "",
+                        "rank": None,
+                        "safetyLevel": "",
+                        "runPolicy": "",
+                        "planNextActionId": "",
+                        "planNextActionRank": None,
+                        "matchesPlanNextAction": False,
+                        "reason": "No command-bearing backlog action is available.",
+                    },
+                    "nextCommandAlignment": {
+                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                        "operatorStage": "refresh",
+                        "operatorActionId": "",
+                        "operatorCommand": agent_backlog_refresh_command,
+                        "operatorCommandArgs": agent_backlog_refresh_args,
+                        "queueActionId": "",
+                        "queueCommand": "",
+                        "queueCommandArgs": [],
+                        "rankedNextActionId": "",
+                        "matchesQueueNextCommand": False,
+                        "matchesQueueNextAction": False,
+                        "operatorRunsBeforeQueueCommand": False,
+                        "queueMatchesRankedNextAction": False,
+                        "reason": EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
+                    },
+                    "operatorHandoff": {
+                        "version": 1,
+                        "decision": "none",
+                        "state": {
+                            "version": 1,
+                            "status": "no-command",
+                            "ready": True,
+                            "hasCommand": False,
+                            "complete": True,
+                            "canRunWithoutReview": False,
+                            "requiresGate": False,
+                            "requiresRefresh": False,
+                            "summary": "Focused agent backlog is clear; no handoff command is required.",
+                        },
+                        "source": "",
+                        "phase": "",
+                        "label": "",
+                        "command": "",
+                        "commandArgs": [],
+                        "actionId": "",
+                        "rank": None,
+                        "runPolicy": "",
+                        "required": False,
+                        "isGate": False,
+                        "nextQueueActionId": "",
+                        "nextQueueCommand": "",
+                        "nextQueueCommandArgs": [],
+                        "nextQueueCommandRequiresGate": False,
+                        "operatorGateAppliesToNextQueueAction": False,
+                        "nextQueueActionBlockedByGate": False,
+                        "refreshCommand": agent_backlog_refresh_command,
+                        "refreshCommandArgs": agent_backlog_refresh_args,
+                        "refreshCommandLabel": "Refresh focused agent backlog after review",
+                        "refreshCommandRequired": False,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "reason": EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON,
+                    },
+                    "commandEffectReview": {
+                        "level": "clear",
+                        "requiresOperatorReview": False,
+                        "headline": "No command target or mutation flag exposure detected.",
+                        "checklist": ["No command target or mutation flag exposure detected."],
+                        "gatePhaseSummary": {
+                            "count": 1,
+                            "requiredCount": 0,
+                            "optionalCount": 1,
+                            "phases": ["refresh"],
+                            "hasBefore": False,
+                            "hasAfter": False,
+                            "hasRefresh": True,
+                        },
+                        "gateRunbook": {
+                            "before": [],
+                            "after": [],
+                            "refresh": [
+                                {
+                                    "phase": "refresh",
+                                    "label": "Refresh focused agent backlog after review",
+                                    "command": agent_backlog_refresh_command,
+                                    "commandArgs": agent_backlog_refresh_args,
+                                    "required": False,
+                                },
+                            ],
+                            "other": [],
+                        },
+                        "gateCommands": [
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh focused agent backlog after review",
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
+                                "required": False,
+                            },
+                        ],
+                    },
+                    "operatorRunbook": {
+                        "version": 1,
+                        "stageCount": 4,
+                        "commandCount": 1,
+                        "requiredCommandCount": 0,
+                        "reviewLevel": "clear",
+                        "requiresOperatorReview": False,
+                        "phases": ["before", "execute", "after", "refresh"],
+                        "nextStage": "refresh",
+                        "nextCommandLabel": "Refresh focused agent backlog after review",
+                        "nextCommand": agent_backlog_refresh_command,
+                        "nextCommandArgs": agent_backlog_refresh_args,
+                        "nextCommandRequired": False,
+                        "nextCommandRunPolicy": "",
+                        "nextCommandSelection": {
+                            "strategy": "first-command-in-operator-runbook-stage-order",
+                            "stageOrder": ["before", "execute", "after", "refresh"],
+                            "stage": "refresh",
+                            "label": "Refresh focused agent backlog after review",
+                            "command": agent_backlog_refresh_command,
+                            "commandArgs": agent_backlog_refresh_args,
+                            "actionId": "",
+                            "rank": None,
+                            "required": False,
+                            "runPolicy": "",
+                            "reason": EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
+                        },
+                    },
+                    "ordered": [],
+                    "commandManifest": [],
+                    "preview": [],
+                    "fileWriteReview": [],
+                    "mutationReview": [],
+                },
+                "verification": [
+                    {
+                        "label": "Gate focused agent backlog",
+                        "command": agent_backlog_refresh_command,
+                        "commandArgs": agent_backlog_refresh_args,
+                    },
+                ],
+                "boundaries": {
+                    "reportMutatesProfile": False,
+                    "reportMutatesSkillFiles": False,
+                    "reportCallsExternalAiApis": False,
+                    "generatedFromLocalSignals": True,
+                },
+            },
+            "readiness": {
+                "version": 1,
+                "status": "pass",
+                "summary": "Required local learning signal surfaces are ready; optional evidence gaps remain.",
+                "requiredPassCount": 4,
+                "requiredCount": 4,
+                "requiredReady": True,
+                "blockingCount": 0,
+                "optionalGapCount": 1,
+                "blockingChecks": [],
+                "optionalGaps": ["check-capture"],
+                "optionalGapDetails": [
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "info",
+                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                        "reason": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON,
+                        "nextCondition": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION,
+                        "automationPolicy": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY,
+                    },
+                ],
+                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+                "optionalCheckIds": ["usage-sidecar", "check-capture"],
+                "checkStatusById": {
+                    "learning-profile": "pass",
+                    "usage-sidecar": "pass",
+                    "eval-signals": "pass",
+                    "check-capture": "info",
+                    "workspace-readiness": "pass",
+                    "agent-development": "pass",
+                },
+                "checkRequiredById": {
+                    "learning-profile": True,
+                    "usage-sidecar": False,
+                    "eval-signals": True,
+                    "check-capture": False,
+                    "workspace-readiness": True,
+                    "agent-development": True,
+                },
+                "checkCountByStatus": {
+                    "pass": 5,
+                    "info": 1,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "requiredCheckCountByStatus": {
+                    "pass": 4,
+                    "info": 0,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "optionalCheckCountByStatus": {
+                    "pass": 1,
+                    "info": 1,
+                    "warn": 0,
+                    "fail": 0,
+                    "missing": 0,
+                    "template": 0,
+                    "unknown": 0,
+                },
+                "checks": [
+                    {
+                        "id": "learning-profile",
+                        "label": "Learning profile",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                        "evidence": {"entries": 3},
+                    },
+                    {
+                        "id": "usage-sidecar",
+                        "label": "Usage sidecar",
+                        "status": "pass",
+                        "required": False,
+                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                        "evidence": {"events": 2},
+                    },
+                    {
+                        "id": "eval-signals",
+                        "label": "Eval signals",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                        "evidence": {"files": 1},
+                    },
+                    {
+                        "id": "check-capture",
+                        "label": "Check learning capture",
+                        "status": "info",
+                        "required": False,
+                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                        "evidence": {"entries": 0},
+                    },
+                    {
+                        "id": "workspace-readiness",
+                        "label": "Workspace readiness",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                        "evidence": {"nextActionCount": 0},
+                    },
+                    {
+                        "id": "agent-development",
+                        "label": "Agent development backlog",
+                        "status": "pass",
+                        "required": True,
+                        "summary": "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+                        "evidence": {"actions": 0},
+                    },
+                ],
+            },
+            "commands": {
+                "signalsJson": "design-ai learn --signals --from-file . --json",
+                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+                "agentBacklogJson": agent_backlog_refresh_command,
+                "agentBacklogJsonArgs": agent_backlog_refresh_args,
+            },
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "readsSignalFilesOnly": True,
+            },
+        }
+        assert_agent_backlog_no_command_json(
+            json.dumps(no_command_agent_backlog_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        )
+        no_command_agent_backlog_markdown = "\n".join([
+            "# Agent Development Backlog Report",
+            "",
+            f"- Learning file: {learning_profile_path}",
+            f"- Usage file: {learning_usage_path}",
+            "## Summary",
+            "- Actions: 0",
+            "- Check captures: 0",
+            "## Signal Readiness",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 1",
+            "Readiness check index:",
+            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+            "- Optional ids: usage-sidecar, check-capture",
+            "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
+            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+            "- Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "Readiness checks:",
+            "- check-capture [optional] info: No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+            "- agent-development [required] pass: Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+            "Optional gap details:",
+            f"- check-capture: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON}",
+            f"  Next condition: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION}",
+            f"  Automation policy: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY}",
+            "## Backlog Actions",
+            "No agent development backlog actions emitted.",
+            "## Action Plan",
+            "Safety summary:",
+            "- Read-only: 0",
+            "- Writes local file: 0",
+            "- Mutates local state: 0",
+            "Execution queue:",
+            "- Preview/read-only commands: 0",
+            "- Local file-write review commands: 0",
+            "- Local mutation review commands: 0",
+            "- Ordered commands: 0",
+            "- Command manifest entries: 0",
+            "- Command effect review: No command target or mutation flag exposure detected.",
+            "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
+            f"- Operator next command: refresh: `{agent_backlog_refresh_command}`",
+            "- Operator next command selection: first-command-in-operator-runbook-stage-order",
+            "- Recommended next command selection: first-command-in-safety-ordered-queue",
+            "- Operator/queue next command alignment: different",
+            "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
+            "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
+            f"- Operator handoff refresh: {agent_backlog_refresh_command}",
+            "No execution steps emitted.",
+            "## Follow-Up Commands",
+            "design-ai learn --signals --from-file . --json",
+            "## Privacy And Boundaries",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "This report is read-only evidence",
+        ])
+        assert_agent_backlog_no_command_report_markdown(
+            no_command_agent_backlog_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_report_markdown(
+                no_command_agent_backlog_markdown.replace("Optional gap details:", "Optional evidence details:"),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+            ),
+            expected="no-command learn agent backlog Markdown report missing 'Optional gap details:'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_report_markdown(
+                no_command_agent_backlog_markdown.replace("Readiness check index:", "Readiness check summary:"),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+            ),
+            expected="no-command learn agent backlog Markdown report missing 'Readiness check index:'",
+            scope="package smoke",
+        )
+        optional_gap_detail_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        optional_gap_detail_drift_payload["readiness"].pop("optionalGapDetails", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(optional_gap_detail_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+            scope="package smoke",
+        )
+        check_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        check_index_drift_payload["readiness"].pop("checkStatusById", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(check_index_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+            scope="package smoke",
+        )
+        check_count_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        check_count_index_drift_payload["readiness"].pop("checkCountByStatus", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(check_count_index_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+            scope="package smoke",
+        )
+        refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+        refresh_reason_drift_payload["actionPlan"]["executionQueue"]["operatorRunbook"]["nextCommandSelection"]["reason"] = (
+            "Selected the first command in the refresh stage using operator runbook stage order."
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_no_command_json(
+                json.dumps(refresh_reason_drift_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
+            scope="package smoke",
+        )
+        assert_agent_backlog_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Agent development backlog",
+                f"Signal source: {Path(tmp)}",
+                "Backlog actions:",
+                "Action plan:",
+                "safety summary:",
+                "execution queue:",
+                "next action:",
+                "next command:",
+                "next command policy:",
+                "queue order:",
+                "command manifest:",
+                "command effects:",
+                "command effect review:",
+                "command effect gate phases:",
+                "command effect gate runbook:",
+                "command effect gates:",
+                "operator runbook:",
+                "operator next command:",
+                "refresh:",
+                "safety: read-only",
+                "requires mutation review: no",
+                "design-ai learn --propose-skills --json",
+                "Privacy: agent backlog is read-only",
+            ]),
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        )
+        assert_agent_backlog_report_markdown(
+            "\n".join([
+                "# Agent Development Backlog Report",
+                "",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Summary",
+                "## Signal Readiness",
+                "- Required ready: yes",
+                "- Required checks: 4/4",
+                "- Blocking checks: 0",
+                "- Optional gaps: 0",
+                "Readiness check index:",
+                "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+                "- Optional ids: usage-sidecar, check-capture",
+                "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+                "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "Readiness checks:",
+                "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+                "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                "## Backlog Actions",
+                "design-ai learn --propose-skills --json",
+                "## Action Plan",
+                "Safety summary:",
+                "- Read-only: 1",
+                "- Writes local file: 0",
+                "- Mutates local state: 0",
+                "Execution queue:",
+                "- Preview/read-only commands: 1",
+                "- Local file-write review commands: 0",
+                "- Local mutation review commands: 0",
+                "- Ordered commands: 1",
+                "- Command manifest entries: 1",
+                "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+                "- Command effect review: No command target or mutation flag exposure detected.",
+                "- Command effect gate phases: refresh (1/1 required)",
+                "- Command effect gate runbook: before 0, after 0, refresh 1",
+                "- Command effect gates:",
+                "refresh: Refresh focused agent backlog after review",
+                agent_backlog_refresh_command,
+                "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+                "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+                "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
+                "- Recommended next action: agent-skill-proposal-preview",
+                "- Recommended next command policy: preview-only",
+                "Recommended next command:",
+                "Queue order:",
+                "1. agent-skill-proposal-preview (read-only, preview-only)",
+                "Command manifest:",
+                "1. agent-skill-proposal-preview - preview-only (read-only)",
+                "- Command safety: read-only",
+                "- Writes local files: no",
+                "- Mutates local state: no",
+                "- Requires mutation review: no",
+                agent_backlog_refresh_command,
+                "## Follow-Up Commands",
+                "design-ai learn --signals --from-file . --json",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Mutates skill files: no",
+                "- Calls external AI APIs: no",
+                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
+                    "counts": {
+                        **learning_agent_backlog_payload["counts"],
+                        "evalSignals": 0,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include focused backlog counts",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
+                    "actionPlan": {
+                        **learning_agent_backlog_payload["actionPlan"],
+                        "steps": [],
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
+        missing_safety_summary_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        missing_safety_summary_payload["actionPlan"].pop("safetySummary", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(missing_safety_summary_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
+        missing_execution_queue_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        missing_execution_queue_payload["actionPlan"].pop("executionQueue", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(missing_execution_queue_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
+        unsafe_action_plan_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+        unsafe_action_plan_payload["actionPlan"]["steps"][0].pop("commandSafety", None)
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps(unsafe_action_plan_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should include executable action plan steps and verification",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_json(
+                json.dumps({
+                    **learning_agent_backlog_payload,
+                    "privacy": {
+                        **learning_agent_backlog_payload["privacy"],
+                        "mutatesSkillFiles": True,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_agent_backlog_cmd,
+            ),
+            expected="learn agent backlog JSON should keep read-only local privacy boundaries",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_agent_backlog_report_markdown(
+                "\n".join([
+                    "# Agent Development Backlog Report",
+                    f"- Learning file: {learning_profile_path}",
+                    f"- Usage file: {learning_usage_path}",
+                    "## Summary",
+                    "## Signal Readiness",
+                    "- Required ready: yes",
+                    "- Required checks: 4/4",
+                    "- Blocking checks: 0",
+                    "- Optional gaps: 0",
+                    "Readiness check index:",
+                    "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+                    "- Optional ids: usage-sidecar, check-capture",
+                    "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+                    "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                    "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                    "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                    "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                    "Readiness checks:",
+                    "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+                    "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                    "## Backlog Actions",
+                    "design-ai learn --propose-skills --json",
+                    "## Action Plan",
+                    "Safety summary:",
+                    "- Read-only: 1",
+                    "- Writes local file: 0",
+                    "- Mutates local state: 0",
+                    "Execution queue:",
+                    "- Preview/read-only commands: 1",
+                    "- Local file-write review commands: 0",
+                    "- Local mutation review commands: 0",
+                    "- Ordered commands: 1",
+                    "- Command manifest entries: 1",
+                    "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+                    "- Command effect review: No command target or mutation flag exposure detected.",
+                    "- Command effect gate phases: refresh (1/1 required)",
+                    "- Command effect gate runbook: before 0, after 0, refresh 1",
+                    "- Command effect gates:",
+                    "refresh: Refresh focused agent backlog after review",
+                    agent_backlog_refresh_command,
+                    "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+                    "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+                    "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
+                    "- Recommended next action: agent-skill-proposal-preview",
+                    "- Recommended next command policy: preview-only",
+                    "Recommended next command:",
+                    "Queue order:",
+                    "1. agent-skill-proposal-preview (read-only, preview-only)",
+                    "Command manifest:",
+                    "1. agent-skill-proposal-preview - preview-only (read-only)",
+                    "- Command safety: read-only",
+                    "- Writes local files: no",
+                    "- Mutates local state: no",
+                    "- Requires mutation review: no",
+                    agent_backlog_refresh_command,
+                    "## Follow-Up Commands",
+                    "design-ai learn --signals --from-file . --json",
+                    "## Privacy And Boundaries",
+                    "- Mutates learning profile: no",
+                    "- Mutates skill files: yes",
+                    "- Calls external AI APIs: no",
+                    "This report is read-only evidence",
+                ]),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+            ),
+            expected="learn agent backlog Markdown report missing '- Mutates skill files: no'",
+            scope="package smoke",
+        )
+
+        learn_skill_proposals_cmd = [
+            "design-ai",
+            "learn",
+            "--propose-skills",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--from-file",
+            str(Path(tmp)),
+            "--json",
+        ]
+        learning_skill_proposal_payload = {
+            "version": 1,
+            "generatedAt": "2026-06-02T00:00:00.000Z",
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "dryRun": True,
+            "applied": False,
+            "minEvidenceCount": 2,
+            "checkCaptureCount": 2,
+            "candidateCount": 1,
+            "count": 1,
+            "proposalCount": 1,
+            "skippedCount": 0,
+            "pendingReviewCount": 1,
+            "reviewedCount": 0,
+            "reviewFile": "",
+            "review": {
+                "file": "",
+                "exists": False,
+                "status": "not-configured",
+                "decisionCount": 0,
+                "matchedCount": 0,
+                "staleCount": 0,
+                "pendingCount": 1,
+                "acceptedCount": 0,
+                "rejectedCount": 0,
+                "appliedCount": 0,
+                "deferredCount": 0,
+                "clearedCount": 0,
+                "warnings": [],
+            },
+            "status": "warn",
+            "signalStatus": "pass",
+            "proposals": [
+                {
+                    "id": "skill-proposal-component-spec-writer-abcdef1234",
+                    "candidateSkill": "component-spec-writer",
+                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                    "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                    "riskLevel": "low",
+                    "reviewStatus": "pending",
+                    "reviewClearsStrict": False,
+                    "category": "accessibility",
+                    "routeIds": [EXPECTED_ROUTE_ID],
+                    "sourceIssueCount": 2,
+                    "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
+                    "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
+                    "evidenceSources": [
+                        {
+                            "kind": "check-capture",
+                            "entryId": "learn-skill-proposal-a",
+                            "category": "accessibility",
+                            "source": f"check:{EXPECTED_ROUTE_ID}",
+                            "routeId": EXPECTED_ROUTE_ID,
+                            "textPreview": "Improve future outputs by addressing Keyboard and focus behavior.",
+                        },
+                        {
+                            "kind": "check-capture",
+                            "entryId": "learn-skill-proposal-b",
+                            "category": "accessibility",
+                            "source": f"check:{EXPECTED_ROUTE_ID}",
+                            "routeId": EXPECTED_ROUTE_ID,
+                            "textPreview": "Improve future outputs by addressing Screen reader behavior.",
+                        },
+                    ],
+                },
+            ],
+            "skipped": [],
+            "recommendations": [],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+                "exposesEntryTextPreview": True,
+            },
+        }
+        assert_skill_proposal_report_json(
+            json.dumps(learning_skill_proposal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
+        learning_skill_proposal_review_path = learning_profile_path.with_name("skill-proposals.review.json")
+        assert_skill_proposal_review_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "status": "pass",
+                "pendingReviewCount": 0,
+                "reviewedCount": 1,
+                "reviewFile": str(learning_skill_proposal_review_path),
+                "review": {
+                    **learning_skill_proposal_payload["review"],
+                    "file": str(learning_skill_proposal_review_path),
+                    "exists": True,
+                    "status": "pass",
+                    "decisionCount": 1,
+                    "matchedCount": 1,
+                    "pendingCount": 0,
+                    "appliedCount": 1,
+                    "clearedCount": 1,
+                },
+                "proposals": [
+                    {
+                        **learning_skill_proposal_payload["proposals"][0],
+                        "reviewStatus": "applied",
+                        "reviewClearsStrict": True,
+                        "reviewDecision": {
+                            "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                            "status": "applied",
+                            "reviewedAt": "2026-06-11T00:00:00.000Z",
+                            "reviewer": "package-smoke",
+                            "note": "Instruction delta manually applied.",
+                        },
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+        )
+        assert_skill_proposal_review_template_json(
+            json.dumps({
+                "version": 1,
+                "generatedAt": "2026-06-11T00:00:00.000Z",
+                "source": "design-ai learn --propose-skills --review-template",
+                "proposalFile": str(learning_profile_path),
+                "usageFile": str(learning_usage_path),
+                "signalSource": str(Path(tmp)),
+                "reviewFile": "",
+                "reviewPolicy": {
+                    "clearsStrict": ["applied", "rejected"],
+                    "remainsPending": ["accepted", "deferred"],
+                },
+                "summary": {
+                    "proposalCount": 1,
+                    "pendingReviewCount": 1,
+                    "reviewedCount": 0,
+                    "templateDecisionCount": 1,
+                },
+                "decisions": [
+                    {
+                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                        "status": "deferred",
+                        "reviewedAt": "",
+                        "reviewer": "",
+                        "note": "Review skills/component-spec-writer/SKILL.md: Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-template"],
+        )
+        assert_skill_proposal_min_evidence_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "minEvidenceCount": 3,
+                "count": 0,
+                "proposalCount": 0,
+                "skippedCount": 1,
+                "proposals": [],
+                "skipped": [
+                    {
+                        "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                        "category": "accessibility",
+                        "sourceIssueCount": 2,
+                        "reason": "Needs at least 3 related check-capture entries before proposing a skill edit.",
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+        )
+        assert_skill_proposal_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Skill evolution proposals",
+                f"Signal source: {Path(tmp)}",
+                "Status: warn",
+                "Proposed skill deltas:",
+                "skills/component-spec-writer/SKILL.md",
+                "No changes made. This command is preview-only",
+            ]),
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
+        learning_skill_proposal_markdown = "\n".join([
+            "# Skill Evolution Proposal Report",
+            "",
+            "- Generated: 2026-06-02T00:00:03.000Z",
+            f"- File: {learning_profile_path}",
+            f"- Usage sidecar: {learning_usage_path}",
+            f"- Signal source: {Path(tmp)}",
+            "- Status: warn",
+            "- Signal status: pass",
+            "- Check capture entries: 2",
+            "- Candidate groups: 1",
+            "- Proposal count: 1",
+            "- Skipped groups: 0",
+            "- Dry run: yes",
+            "- Applied: no",
+            "",
+            "## Proposed Skill Deltas",
+            "",
+            "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+            "",
+            "- Proposal id: skill-proposal-component-spec-writer-abc123",
+            "- Candidate skill: skills/component-spec-writer/SKILL.md",
+            "- Category: accessibility",
+            "- Routes: component-spec",
+            "- Risk: low",
+            "- Source issues: 2",
+            "- Rationale: Repeated accessibility check captures were recorded for component-spec.",
+            "",
+            "Proposed instruction delta:",
+            "",
+            "> Add a pre-handoff accessibility checkpoint.",
+            "",
+            "Verification:",
+            "",
+            "```bash",
+            "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
+            "```",
+            "",
+            "Evidence:",
+            "- `learn-skill-proposal-a` [accessibility] check:component-spec",
+            "",
+            "## Skipped Groups",
+            "",
+            "No candidate groups were skipped.",
+            "",
+            "## Privacy And Boundaries",
+            "",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "- Stores raw brief text: no",
+            "- Includes entry text preview: yes",
+            "",
+            "## Next Steps",
+            "",
+            "- This report is preview-only evidence; it does not apply changes.",
+        ])
+        assert_skill_proposal_report_markdown(
+            learning_skill_proposal_markdown,
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        )
+        learning_skill_proposal_patch = "\n".join([
+            "# design-ai skill proposal patch preview",
+            "# Preview-only output from `design-ai learn --propose-skills --patch`.",
+            "# Review manually before applying. This command does not edit skill files.",
+            "",
+            "diff --git a/skills/component-spec-writer/SKILL.md b/skills/component-spec-writer/SKILL.md",
+            "--- a/skills/component-spec-writer/SKILL.md",
+            "+++ b/skills/component-spec-writer/SKILL.md",
+            "@@ -7,1 +7,10 @@",
+            " See [PLAYBOOK.md](PLAYBOOK.md).",
+            "+",
+            "+## Local Learning Proposal: skill-proposal-component-spec-writer-abc123",
+            "+",
+            "+<!-- Generated by design-ai learn --propose-skills --patch. Review manually before applying. -->",
+            "+",
+            "+- Category: accessibility",
+            "+- Routes: component-spec",
+            "+- Risk: low",
+            "+- Evidence count: 2",
+            "+- Proposed instruction: Add a pre-handoff accessibility checkpoint.",
+            "+- Verification: `node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json`",
+        ])
+        assert_skill_proposal_patch(
+            learning_skill_proposal_patch,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "proposals": [],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_review_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "reviewFile": str(learning_skill_proposal_review_path),
+                    "pendingReviewCount": 1,
+                    "reviewedCount": 1,
+                    "review": {
+                        **learning_skill_proposal_payload["review"],
+                        "file": str(learning_skill_proposal_review_path),
+                        "exists": True,
+                        "matchedCount": 1,
+                        "pendingCount": 1,
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+            ),
+            expected="learn skill proposals review JSON should join applied review decisions",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_min_evidence_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "minEvidenceCount": 2,
+                    "count": 1,
+                    "proposalCount": 1,
+                    "skippedCount": 0,
+                    "skipped": [],
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+            ),
+            expected="learn skill proposals min-evidence JSON should report minEvidenceCount 3",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_patch(
+                learning_skill_proposal_patch.replace("This command does not edit skill files.", "This command edits skill files."),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
+            ),
+            expected="learn skill proposals patch output missing",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_markdown(
+                learning_skill_proposal_markdown.replace("- Mutates skill files: no", "- Mutates skill files: yes"),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals Markdown report missing '- Mutates skill files: no'",
+            scope="package smoke",
+        )
+        assert_skill_proposal_report_json(
+            json.dumps(learning_skill_proposal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+            returncode=1,
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps({
+                    **learning_skill_proposal_payload,
+                    "status": "pass",
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+            ),
+            expected="learn skill proposals JSON should report 'warn' status when proposals need review",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_report_json(
+                json.dumps(learning_skill_proposal_payload),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                context=context,
+                cmd=learn_skill_proposals_cmd,
+                returncode=0,
+            ),
+            expected="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
+            scope="package smoke",
+        )
+
         learning_eval_template_path = Path(tmp) / "learning-eval-template.json"
         learning_eval_template_payload = {
             "version": 1,
@@ -7856,6 +13260,45 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site JSON",
         )
+        assert_site_next_actions_json_smoke(
+            [str(bin_path), "site", "--stdin", "--next-actions", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site next-actions JSON",
+        )
+        installed_site_next_actions_out = install_root / "site-next-actions.json"
+        assert_site_next_actions_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(installed_site_next_actions_out),
+                "--force",
+            ],
+            installed_site_next_actions_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site next-actions JSON out file",
+        )
+        installed_site_next_actions_human_out = install_root / "site-next-actions.md"
+        assert_site_next_actions_human_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(installed_site_next_actions_human_out),
+                "--force",
+            ],
+            installed_site_next_actions_human_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site next-actions human out file",
+        )
         assert_site_sample_json_smoke(
             [str(bin_path), "site", "--sample"],
             cwd=install_root,
@@ -7874,11 +13317,202 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-check JSON",
         )
+        installed_site_mcp_check_probes_cmd = [str(bin_path), "site", "--stdin", "--mcp-check", "--probes", "--json"]
+        installed_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
+            installed_site_mcp_check_probes_cmd,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check probes JSON",
+        )
+        assert_site_mcp_check_probes_human_smoke(
+            [str(bin_path), "site", "--stdin", "--mcp-check", "--probes"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check probes human",
+        )
+        installed_site_mcp_check_probes_human_path = install_root / "installed-site-mcp-check-probes.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--out",
+                str(installed_site_mcp_check_probes_human_path),
+                "--force",
+            ],
+            installed_site_mcp_check_probes_human_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check probes human out file",
+        )
+        installed_site_mcp_check_probes_human_emitted_path = install_root / "installed-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                installed_site_mcp_check_probes_cmd,
+                output_path=installed_site_mcp_check_probes_human_emitted_path,
+                context="package smoke installed bin emitted site mcp-check probes human command",
+            ),
+            installed_site_mcp_check_probes_human_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-check probes human out file",
+        )
+        installed_site_mcp_check_probes_json_path = install_root / "installed-site-mcp-check-probes.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--json",
+                "--out",
+                str(installed_site_mcp_check_probes_json_path),
+                "--force",
+            ],
+            installed_site_mcp_check_probes_json_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-check probes JSON out file",
+        )
+        installed_site_mcp_check_probes_emitted_path = install_root / "installed-site-mcp-check-probes-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_check_probes_payload,
+                "mcpCheckProbesJsonOut",
+                installed_site_mcp_check_probes_cmd,
+                output_path=installed_site_mcp_check_probes_emitted_path,
+                context="package smoke installed bin emitted site mcp-check probes command",
+            ),
+            installed_site_mcp_check_probes_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-check probes JSON out file",
+        )
+        assert_site_mcp_plan_probes_json_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_check_probes_payload,
+                "mcpPlanProbesJson",
+                installed_site_mcp_check_probes_cmd,
+                context="package smoke installed bin emitted site mcp-plan probes JSON command",
+            ),
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes JSON",
+        )
+        installed_site_mcp_plan_emitted_json_path = install_root / "installed-site-mcp-plan-probes-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_check_probes_payload,
+                "mcpPlanProbesJsonOut",
+                installed_site_mcp_check_probes_cmd,
+                output_path=installed_site_mcp_plan_emitted_json_path,
+                context="package smoke installed bin emitted site mcp-plan probes output command",
+            ),
+            installed_site_mcp_plan_emitted_json_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes JSON out file",
+        )
         assert_site_mcp_plan_markdown_smoke(
             [str(bin_path), "site", "--stdin", "--mcp-plan"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site mcp-plan markdown",
+        )
+        assert_site_mcp_plan_probes_markdown_smoke(
+            [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-plan probes markdown",
+        )
+        installed_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
+            [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-plan probes JSON",
+        )
+        installed_site_mcp_plan_human_emitted_path = install_root / "installed-site-mcp-plan-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_plan_probes_payload,
+                "mcpCheckProbesHumanOut",
+                [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+                output_path=installed_site_mcp_plan_human_emitted_path,
+                context="package smoke installed bin emitted site mcp-plan probes human command",
+            ),
+            installed_site_mcp_plan_human_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes human out file",
+        )
+        installed_site_mcp_plan_check_json_emitted_path = install_root / "installed-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+                output_path=installed_site_mcp_plan_check_json_emitted_path,
+                context="package smoke installed bin emitted site mcp-plan probes check JSON command",
+            ),
+            installed_site_mcp_plan_check_json_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes check JSON out file",
+        )
+        installed_site_mcp_plan_json_emitted_path = install_root / "installed-site-mcp-plan-probes-plan-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                installed_site_mcp_plan_probes_payload,
+                "mcpPlanProbesJsonOut",
+                [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+                output_path=installed_site_mcp_plan_json_emitted_path,
+                context="package smoke installed bin emitted site mcp-plan probes plan JSON command",
+            ),
+            installed_site_mcp_plan_json_emitted_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin emitted site mcp-plan probes plan JSON out file",
+        )
+        installed_site_mcp_plan_json_path = install_root / "installed-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(installed_site_mcp_plan_json_path),
+                "--force",
+            ],
+            installed_site_mcp_plan_json_path,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site mcp-plan probes JSON out file",
+        )
+        assert_site_workflow_graph_json_smoke(
+            [str(bin_path), "site", "--stdin", "--graph", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site workflow graph JSON",
+        )
+        assert_site_report_evidence_markdown_smoke(
+            [str(bin_path), "site", "--stdin", "--report"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence report markdown",
+        )
+        assert_site_tasks_evidence_json_smoke(
+            [str(bin_path), "site", "--stdin", "--tasks"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence tasks JSON",
         )
         installed_site_bundle_dir = install_root / "installed-site-handoff-bundle"
         assert_site_bundle_smoke(
@@ -7887,6 +13521,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site handoff bundle",
+        )
+        installed_site_evidence_bundle_dir = install_root / "installed-site-evidence-handoff-bundle"
+        assert_site_bundle_evidence_smoke(
+            [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_evidence_bundle_dir)],
+            out_dir=installed_site_evidence_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence handoff bundle",
         )
         assert_site_bundle_check_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-check", "--strict", "--json"],
@@ -7900,11 +13542,63 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-compare JSON",
         )
+        installed_site_warning_bundle_dir = install_root / "installed-site-warning-handoff-bundle"
+        assert_site_warning_bundle_smoke(
+            [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_warning_bundle_dir)],
+            out_dir=installed_site_warning_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site warning handoff bundle",
+        )
+        assert_site_bundle_compare_warning_strict_smoke(
+            [
+                str(bin_path),
+                "site",
+                str(installed_site_warning_bundle_dir),
+                "--bundle-compare",
+                str(installed_site_warning_bundle_dir),
+                "--strict",
+                "--json",
+            ],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site warning bundle-compare strict JSON",
+        )
         assert_site_bundle_handoff_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--strict", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff JSON",
+        )
+        assert_site_bundle_repair_json_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-repair", "--json"],
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-repair", "--yes", "--json"],
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-check", "--strict", "--json"],
+            bundle_dir=installed_site_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-repair JSON",
+        )
+        assert_site_bundle_check_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-check JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_compare_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-compare", str(installed_site_evidence_bundle_dir), "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-compare JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_handoff_json_smoke(
+            [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-handoff", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site evidence bundle-handoff JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
         )
         assert_site_tasks_json_smoke(
             [str(bin_path), "site", "--stdin", "--tasks"],
@@ -8097,6 +13791,11 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin route stdin",
         )
+        assert_route_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin route eval",
+        )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         assert_prompt_smoke(
             [
@@ -8201,6 +13900,11 @@ def smoke_tarball(tarball: Path) -> None:
             installed_prompt_stdin_json,
             env=smoke_env,
             context="package smoke installed bin prompt stdin",
+        )
+        assert_prompt_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin prompt eval",
         )
         installed_pack_json = tmp_root / "installed-pack.json"
         assert_pack_smoke(
@@ -8320,6 +14024,11 @@ def smoke_tarball(tarball: Path) -> None:
             installed_pack_stdin_json,
             env=smoke_env,
             context="package smoke installed bin pack stdin",
+        )
+        assert_pack_eval_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin pack eval",
         )
         assert_examples_smoke(
             [str(bin_path), "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"],
@@ -8639,6 +14348,45 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site JSON",
         )
+        assert_site_next_actions_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site next-actions JSON",
+        )
+        npx_site_next_actions_out = npx_root / "site-next-actions.json"
+        assert_site_next_actions_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(npx_site_next_actions_out),
+                "--force",
+            ),
+            npx_site_next_actions_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site next-actions JSON out file",
+        )
+        npx_site_next_actions_human_out = npx_root / "site-next-actions.md"
+        assert_site_next_actions_human_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(npx_site_next_actions_human_out),
+                "--force",
+            ),
+            npx_site_next_actions_human_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site next-actions human out file",
+        )
         assert_site_sample_json_smoke(
             npm_exec_cmd(tarball, "site", "--sample"),
             cwd=npx_root,
@@ -8657,11 +14405,202 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site mcp-check JSON",
         )
+        npx_site_mcp_check_probes_cmd = npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--probes", "--json")
+        npx_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
+            npx_site_mcp_check_probes_cmd,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check probes JSON",
+        )
+        assert_site_mcp_check_probes_human_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--probes"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check probes human",
+        )
+        npx_site_mcp_check_probes_human_path = npx_root / "npx-site-mcp-check-probes.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--out",
+                str(npx_site_mcp_check_probes_human_path),
+                "--force",
+            ),
+            npx_site_mcp_check_probes_human_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check probes human out file",
+        )
+        npx_site_mcp_check_probes_human_emitted_path = npx_root / "npx-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                npx_site_mcp_check_probes_cmd,
+                output_path=npx_site_mcp_check_probes_human_emitted_path,
+                context="package smoke npm exec emitted site mcp-check probes human command",
+            ),
+            npx_site_mcp_check_probes_human_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-check probes human out file",
+        )
+        npx_site_mcp_check_probes_json_path = npx_root / "npx-site-mcp-check-probes.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--json",
+                "--out",
+                str(npx_site_mcp_check_probes_json_path),
+                "--force",
+            ),
+            npx_site_mcp_check_probes_json_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-check probes JSON out file",
+        )
+        npx_site_mcp_check_probes_emitted_path = npx_root / "npx-site-mcp-check-probes-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_check_probes_payload,
+                "mcpCheckProbesJsonOut",
+                npx_site_mcp_check_probes_cmd,
+                output_path=npx_site_mcp_check_probes_emitted_path,
+                context="package smoke npm exec emitted site mcp-check probes command",
+            ),
+            npx_site_mcp_check_probes_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-check probes JSON out file",
+        )
+        assert_site_mcp_plan_probes_json_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_check_probes_payload,
+                "mcpPlanProbesJson",
+                npx_site_mcp_check_probes_cmd,
+                context="package smoke npm exec emitted site mcp-plan probes JSON command",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes JSON",
+        )
+        npx_site_mcp_plan_emitted_json_path = npx_root / "npx-site-mcp-plan-probes-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_check_probes_payload,
+                "mcpPlanProbesJsonOut",
+                npx_site_mcp_check_probes_cmd,
+                output_path=npx_site_mcp_plan_emitted_json_path,
+                context="package smoke npm exec emitted site mcp-plan probes output command",
+            ),
+            npx_site_mcp_plan_emitted_json_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes JSON out file",
+        )
         assert_site_mcp_plan_markdown_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-plan markdown",
+        )
+        assert_site_mcp_plan_probes_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-plan probes markdown",
+        )
+        npx_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-plan probes JSON",
+        )
+        npx_site_mcp_plan_human_emitted_path = npx_root / "npx-site-mcp-plan-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_plan_probes_payload,
+                "mcpCheckProbesHumanOut",
+                npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=npx_site_mcp_plan_human_emitted_path,
+                context="package smoke npm exec emitted site mcp-plan probes human command",
+            ),
+            npx_site_mcp_plan_human_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes human out file",
+        )
+        npx_site_mcp_plan_check_json_emitted_path = npx_root / "npx-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=npx_site_mcp_plan_check_json_emitted_path,
+                context="package smoke npm exec emitted site mcp-plan probes check JSON command",
+            ),
+            npx_site_mcp_plan_check_json_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes check JSON out file",
+        )
+        npx_site_mcp_plan_json_emitted_path = npx_root / "npx-site-mcp-plan-probes-plan-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                npx_site_mcp_plan_probes_payload,
+                "mcpPlanProbesJsonOut",
+                npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=npx_site_mcp_plan_json_emitted_path,
+                context="package smoke npm exec emitted site mcp-plan probes plan JSON command",
+            ),
+            npx_site_mcp_plan_json_emitted_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec emitted site mcp-plan probes plan JSON out file",
+        )
+        npx_site_mcp_plan_json_path = npx_root / "npx-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(npx_site_mcp_plan_json_path),
+                "--force",
+            ),
+            npx_site_mcp_plan_json_path,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site mcp-plan probes JSON out file",
+        )
+        assert_site_workflow_graph_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--graph", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site workflow graph JSON",
+        )
+        assert_site_report_evidence_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--report"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence report markdown",
+        )
+        assert_site_tasks_evidence_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence tasks JSON",
         )
         npx_site_bundle_dir = npx_root / "npx-site-handoff-bundle"
         assert_site_bundle_smoke(
@@ -8670,6 +14609,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site handoff bundle",
+        )
+        npx_site_evidence_bundle_dir = npx_root / "npx-site-evidence-handoff-bundle"
+        assert_site_bundle_evidence_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_evidence_bundle_dir)),
+            out_dir=npx_site_evidence_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence handoff bundle",
         )
         assert_site_bundle_check_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-check", "--strict", "--json"),
@@ -8683,11 +14630,63 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site bundle-compare JSON",
         )
+        npx_site_warning_bundle_dir = npx_root / "npx-site-warning-handoff-bundle"
+        assert_site_warning_bundle_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_warning_bundle_dir)),
+            out_dir=npx_site_warning_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site warning handoff bundle",
+        )
+        assert_site_bundle_compare_warning_strict_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                str(npx_site_warning_bundle_dir),
+                "--bundle-compare",
+                str(npx_site_warning_bundle_dir),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site warning bundle-compare strict JSON",
+        )
         assert_site_bundle_handoff_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_repair_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-repair", "--json"),
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-repair", "--yes", "--json"),
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+            bundle_dir=npx_site_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-repair JSON",
+        )
+        assert_site_bundle_check_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-check JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_compare_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-compare", str(npx_site_evidence_bundle_dir), "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-compare JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-handoff", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site evidence bundle-handoff JSON",
+            expected_evidence_counts=SITE_EVIDENCE_COUNTS,
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--tasks"),
@@ -8901,6 +14900,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec route stdin",
         )
+        assert_route_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec route eval",
+        )
         npx_prompt_json = npx_root / "npx-prompt.json"
         assert_prompt_smoke(
             npm_exec_cmd(
@@ -9012,6 +15017,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec prompt stdin",
+        )
+        assert_prompt_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec prompt eval",
         )
         npx_pack_json = npx_root / "npx-pack.json"
         assert_pack_smoke(
@@ -9138,6 +15149,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec pack stdin",
+        )
+        assert_pack_eval_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pack eval",
         )
         assert_examples_smoke(
             npm_exec_cmd(tarball, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),

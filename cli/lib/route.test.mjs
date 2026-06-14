@@ -12,9 +12,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  buildRouteEvalTemplate,
   formatRouteJson,
   parseRouteArgs,
   readRouteManifestVersion,
+  routeEvalReport,
   routeCatalog,
   routeById,
   routeBrief,
@@ -71,6 +73,9 @@ test("parseRouteArgs supports brief, limit, and json", () => {
     stdin: false,
     list: false,
     explain: false,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     limit: 2,
     json: true,
     help: false,
@@ -86,6 +91,9 @@ test("parseRouteArgs supports file and stdin brief sources", () => {
     stdin: false,
     list: false,
     explain: false,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     limit: 2,
     json: false,
     help: false,
@@ -99,6 +107,9 @@ test("parseRouteArgs supports file and stdin brief sources", () => {
     stdin: true,
     list: false,
     explain: false,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     limit: 3,
     json: true,
     help: false,
@@ -114,6 +125,9 @@ test("parseRouteArgs supports route catalog listing", () => {
     stdin: false,
     list: true,
     explain: false,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     limit: 3,
     json: true,
     help: false,
@@ -124,10 +138,51 @@ test("parseRouteArgs supports route catalog listing", () => {
   assert.equal(parseRouteArgs(["spec", "Button", "--explain"]).explain, true);
 });
 
+test("parseRouteArgs supports route eval template and eval checkpoints", () => {
+  assert.deepEqual(parseRouteArgs(["--eval-template", "--json"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "",
+    stdin: false,
+    list: false,
+    explain: false,
+    evalTemplate: true,
+    eval: false,
+    strict: false,
+    limit: 3,
+    json: true,
+    help: false,
+    index: undefined,
+  });
+
+  assert.deepEqual(parseRouteArgs(["--eval", "--from-file", "route-eval.json", "--strict", "--json"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "route-eval.json",
+    stdin: false,
+    list: false,
+    explain: false,
+    evalTemplate: false,
+    eval: true,
+    strict: true,
+    limit: 3,
+    json: true,
+    help: false,
+    index: undefined,
+  });
+
+  assert.equal(parseRouteArgs(["--eval", "--stdin", "--limit", "5"]).limit, 5);
+});
+
 test("parseRouteArgs rejects invalid options", () => {
   assert.throws(() => parseRouteArgs(["x", "--limit", "0"]), /--limit/);
   assert.throws(() => parseRouteArgs(["x", "--bad"]), /Unknown route option/);
   assert.throws(() => parseRouteArgs(["x", "--limt", "2"]), /Did you mean `--limit`\?/);
+  assert.throws(() => parseRouteArgs(["--eval", "--eval-template"]), /Choose either --eval-template or --eval/);
+  assert.throws(() => parseRouteArgs(["--strict"]), /--strict can only be used with --eval/);
+  assert.throws(() => parseRouteArgs(["--eval"]), /--eval requires --from-file or --stdin/);
+  assert.throws(() => parseRouteArgs(["--eval-template", "audit"]), /--eval-template cannot be combined/);
+  assert.throws(() => parseRouteArgs(["--eval", "--from-file", "route-eval.json", "audit"]), /--eval cannot be combined/);
 });
 
 test("routeCatalog returns discoverable route ids", () => {
@@ -308,6 +363,80 @@ test("routeBrief falls back to design-from-brief for unmatched briefs", () => {
     assert.equal(routes[0].id, "design-from-brief");
     assert.equal(routes[0].fallback, true);
     assert.equal(routes[0].explanation.summary, "No route keywords matched; using the default design-from-brief workflow.");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildRouteEvalTemplate creates runnable route-selection checkpoints", () => {
+  const root = makeFixture();
+  try {
+    const template = buildRouteEvalTemplate({ sourceRoot: root, generatedAt: new Date("2026-06-02T00:00:00.000Z") });
+
+    assert.equal(template.version, 1);
+    assert.equal(template.sourceRouteVersion, "x");
+    assert.equal(template.generatedAt, "2026-06-02T00:00:00.000Z");
+    assert.equal(template.cases.length >= 5, true);
+    assert.equal(template.cases.some((testCase) => testCase.expectedRouteId === "website-improvement"), true);
+
+    const report = routeEvalReport({
+      evalText: JSON.stringify(template),
+      source: "template",
+      sourceRoot: root,
+      generatedAt: new Date("2026-06-02T00:00:00.000Z"),
+    });
+
+    assert.equal(report.status, "pass");
+    assert.equal(report.summary.fail, 0);
+    assert.equal(report.cases.every((testCase) => testCase.topRouteId === testCase.expectedRouteId), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeEvalReport reports mismatched and invalid route checkpoints", () => {
+  const root = makeFixture();
+  try {
+    const report = routeEvalReport({
+      evalText: JSON.stringify({
+        version: 1,
+        cases: [
+          {
+            id: "bad-route",
+            brief: "Spec a Button component API with keyboard accessibility",
+            expectedRouteId: "website-improvement",
+          },
+          {
+            id: "unknown-route",
+            brief: "Audit a Figma signup flow",
+            expectedRouteId: "missing-route",
+          },
+        ],
+      }),
+      source: "bad-route-eval.json",
+      sourceRoot: root,
+    });
+
+    assert.equal(report.status, "fail");
+    assert.equal(report.summary.fail, 2);
+    assert.equal(report.cases[0].topRouteId, "component-spec");
+    assert.match(report.cases[0].message, /Expected website-improvement/);
+    assert.match(report.cases[1].message, /unknown/);
+
+    assert.throws(
+      () => routeEvalReport({
+        evalText: JSON.stringify({ version: 999, cases: [] }),
+        sourceRoot: root,
+      }),
+      /version must be 1/,
+    );
+    assert.throws(
+      () => routeEvalReport({
+        evalText: JSON.stringify({ version: 1, cases: [{ id: "empty" }] }),
+        sourceRoot: root,
+      }),
+      /missing brief/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

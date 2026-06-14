@@ -45,11 +45,22 @@ for f in AGENTS.md AGENTS.ko.md CLAUDE.md CHANGELOG.md; do
 done
 
 # Corpus directories
-for d in knowledge examples skills commands agents docs; do
-  if [ -d "$REPO_ROOT/$d" ]; then
-    ln -sf "../$d" "$SITE_SRC/$d"
-  fi
-done
+if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  for d in knowledge examples skills commands agents docs; do
+    if [ -d "$REPO_ROOT/$d" ]; then
+      while IFS= read -r -d '' tracked_file; do
+        mkdir -p "$SITE_SRC/$(dirname "$tracked_file")"
+        ln -sf "$REPO_ROOT/$tracked_file" "$SITE_SRC/$tracked_file"
+      done < <(git -C "$REPO_ROOT" ls-files -z -- "$d")
+    fi
+  done
+else
+  for d in knowledge examples skills commands agents docs; do
+    if [ -d "$REPO_ROOT/$d" ]; then
+      ln -sf "../$d" "$SITE_SRC/$d"
+    fi
+  done
+fi
 
 count=$(find "$SITE_SRC" -maxdepth 1 -mindepth 1 | wc -l | tr -d ' ')
 echo -e "${BLUE}ℹ${NC}  Populated $SITE_SRC with $count entries"

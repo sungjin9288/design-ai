@@ -35,6 +35,18 @@ import {
 } from "../lib/learn.mjs";
 import { dim, header, info, success } from "../lib/log.mjs";
 import { writeOutputFile } from "../lib/output.mjs";
+import {
+  agentBacklogReport,
+  learningSignalRegistry,
+  renderAgentBacklogReport,
+  renderLearningSignalReport,
+} from "../lib/signals.mjs";
+import {
+  buildSkillEvolutionProposals,
+  renderSkillProposalReviewTemplate,
+  renderSkillEvolutionProposalPatch,
+  renderSkillEvolutionProposalReport,
+} from "../lib/skill-proposals.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
@@ -66,6 +78,9 @@ function printHelp() {
   console.log("        design-ai learn --curate [--dry-run|--yes] [--usage-file path] [--json|--report] [--out file] [--force]");
   console.log("        design-ai learn --stats [--json] [--out file] [--force]");
   console.log("        design-ai learn --usage [--limit N] [--usage-file path] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
+  console.log("        design-ai learn --agent-backlog [--from-file signal-file-or-dir] [--usage-file path] [--strict] [--json|--report] [--out file] [--force]");
+  console.log("        design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--review-file path] [--min-evidence N] [--strict] [--json|--report|--patch|--review-template] [--out file] [--force]");
   console.log("        design-ai learn --eval-template [--query text] [--category kind] [--limit N] [--json] [--out file] [--force]");
   console.log("        design-ai learn --eval --from-file eval.json [--category kind] [--limit N] [--strict] [--json] [--out file] [--force]");
   console.log("        cat eval.json | design-ai learn --eval --stdin [--category kind] [--limit N] [--strict] [--json]");
@@ -99,20 +114,27 @@ function printHelp() {
   console.log("  --audit              Inspect profile shape, sensitive content, and cleanup suggestions without changing it");
   console.log("  --fix                With --audit, prepare or apply safe cleanup suggestions");
   console.log("  --curate             Preview or apply archive-first curation for duplicate/sensitive entries, plus usage review hints");
-  console.log("  --report             With --curate, emit a Markdown curation report instead of human console output");
+  console.log("  --report             With --curate, --signals, --agent-backlog, or --propose-skills, emit a Markdown review report instead of human console output");
+  console.log("  --patch              With --propose-skills, emit a preview-only unified diff handoff without editing skill files");
+  console.log("  --review-template    With --propose-skills, emit a JSON proposal review-file template without changing review decisions");
   console.log("  --dry-run            Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files");
   console.log("  --stats              Summarize profile counts, recency, and audit status without changing it");
   console.log("  --usage              Summarize prompt/pack --with-learning usage sidecar events without changing files");
+  console.log("  --signals            Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files");
+  console.log("  --agent-backlog      Emit a focused local AI/agent development backlog from the signal registry without changing files");
+  console.log("  --propose-skills     Preview skill instruction deltas from repeated check-capture learning signals without changing files");
+  console.log("  --min-evidence N     With --propose-skills, require N related check-capture entries before emitting a proposal. Default: 2");
+  console.log("  --review-file path   With --propose-skills, read proposal review decisions without changing the review file");
   console.log("  --eval-template      Generate a runnable learning eval checkpoint from the active profile");
   console.log("  --eval               Run deterministic learning-selection checkpoint cases without changing files");
-  console.log("  --strict             With --eval, exit non-zero when any checkpoint warns or fails");
+  console.log("  --strict             With --eval, --signals, --agent-backlog, or --propose-skills, exit non-zero when any checkpoint, signal, backlog, or proposal gate warns or fails");
   console.log("  --forget id-or-number Remove one entry by id or 1-based list number; requires --yes");
   console.log("  --clear              Remove all saved learning entries; requires --yes");
   console.log("  --yes                Confirm destructive local profile changes");
   console.log("  --file path          Override the learning profile path");
-  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage or --curate");
+  console.log("  --usage-file path    Override the learning usage sidecar path used by --usage, --curate, --signals, --agent-backlog, or --propose-skills");
   console.log("  --json               Emit machine-readable output");
-  console.log("  --out file           Write JSON output to a file, export Markdown for --export, or curation report Markdown");
+  console.log("  --out file           Write JSON output to a file, export Markdown for --export, or learning review report Markdown");
   console.log("  --force              Overwrite an existing --out file, or an existing --backup-file during --restore");
   console.log("");
   console.log("Environment:");
@@ -148,6 +170,15 @@ function printHelp() {
   console.log("  design-ai learn --curate --yes --json");
   console.log("  design-ai learn --stats --json");
   console.log("  design-ai learn --usage --json");
+  console.log("  design-ai learn --signals --from-file . --json");
+  console.log("  design-ai learn --signals --from-file . --report --out learning-signals.md");
+  console.log("  design-ai learn --agent-backlog --from-file . --report --out agent-backlog.md");
+  console.log("  design-ai learn --propose-skills --from-file . --min-evidence 3 --json");
+  console.log("  design-ai learn --propose-skills --from-file . --strict --json");
+  console.log("  design-ai learn --propose-skills --from-file . --review-file skill-proposals.review.json --strict --json");
+  console.log("  design-ai learn --propose-skills --from-file . --review-template --out skill-proposals.review.json");
+  console.log("  design-ai learn --propose-skills --from-file . --report --out skill-proposals.md");
+  console.log("  design-ai learn --propose-skills --from-file . --patch --out skill-proposals.patch");
   console.log("  design-ai learn --eval-template --query \"keyboard accessibility\" --out learning-eval.json");
   console.log("  design-ai learn --eval --from-file learning-eval.json --strict --json");
   console.log("  design-ai learn --forget learn-abc123def0 --yes");
@@ -520,6 +551,243 @@ function printUsage(payload) {
   console.log("Privacy: usage events store selected entry ids and a short brief hash, not raw brief text.");
 }
 
+function printSignals(payload) {
+  header("design-ai learn", "Learning signal registry");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Learning entries: ${payload.learning.count}`);
+  info(`Learning audit: ${payload.learning.auditSummary.status} (${payload.learning.auditSummary.failures} failure(s), ${payload.learning.auditSummary.warnings} warning(s))`);
+  info(`Usage events: ${payload.usage.eventCount}`);
+  info(`Eval signals: ${payload.evals.count} (${payload.evals.reports} report(s), ${payload.evals.templates} template(s))`);
+  info(`Check capture entries: ${payload.checkCapture.count}`);
+  info(`Workspace next actions: ${payload.workspace.nextActionCount}`);
+  console.log();
+
+  if (payload.evals.files.length > 0) {
+    console.log("Eval signals:");
+    for (const item of payload.evals.files) {
+      const label = path.basename(item.file);
+      const counts = item.shape === "report"
+        ? ` · pass ${item.passed} / warn ${item.warned} / fail ${item.failed}`
+        : "";
+      console.log(`- ${label}: ${item.kind} ${item.shape} ${item.status} (${item.caseCount} case(s))${counts}`);
+      if (item.error) console.log(`  ${dim(item.error)}`);
+    }
+    console.log();
+  }
+
+  if (payload.checkCapture.latestEntries.length > 0) {
+    console.log("Recent check captures:");
+    for (const entry of payload.checkCapture.latestEntries) {
+      console.log(`- ${entry.id}: [${entry.category}] ${entry.source}`);
+      if (entry.textPreview) console.log(`  ${dim(entry.textPreview)}`);
+    }
+    console.log();
+  }
+
+  console.log("Workspace readiness:");
+  console.log(`- branch: ${payload.workspace.git.branch || "unknown"} (${payload.workspace.git.clean ? "clean" : "dirty"})`);
+  console.log(`- repository: ${payload.workspace.repository.status || "unknown"}`);
+  console.log(`- learning usage: ${payload.workspace.learningUsage?.status || "not checked"}`);
+  console.log(`- learning eval: ${payload.workspace.learningEval?.status || "not checked"}`);
+  console.log();
+
+  if (payload.agentDevelopment?.actions?.length > 0) {
+    console.log("Agent development backlog:");
+    for (const action of payload.agentDevelopment.actions.slice(0, 6)) {
+      console.log(`- ${action.rank}. ${action.priority} ${action.category}: ${action.title}`);
+      if (action.command) console.log(`  ${dim(action.command)}`);
+    }
+    console.log();
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+    console.log();
+  }
+
+  console.log("Privacy: signal registry is read-only and does not mutate learning.json.");
+}
+
+function printAgentBacklog(payload) {
+  header("design-ai learn", "Agent development backlog");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Actions: ${payload.counts.actions}`);
+  info(`Priority: P0 ${payload.counts.p0}, P1 ${payload.counts.p1}, P2 ${payload.counts.p2}, P3 ${payload.counts.p3}`);
+  info(`Learning entries: ${payload.counts.learningEntries}`);
+  info(`Usage events: ${payload.counts.usageEvents}`);
+  info(`Eval signals: ${payload.counts.evalSignals}`);
+  info(`Check captures: ${payload.counts.checkCaptures}`);
+  console.log();
+
+  if (payload.actions.length === 0) {
+    console.log("No agent development backlog actions emitted.");
+  } else {
+    console.log("Backlog actions:");
+    for (const action of payload.actions) {
+      console.log(`- ${action.rank}. ${action.priority} ${action.category}: ${action.title}`);
+      console.log(`  ${dim(action.rationale)}`);
+      if (action.command) console.log(`  ${dim(action.command)}`);
+    }
+  }
+
+  const planSteps = Array.isArray(payload.actionPlan?.steps) ? payload.actionPlan.steps : [];
+  if (planSteps.length > 0) {
+    console.log();
+    console.log("Action plan:");
+    const safety = payload.actionPlan?.safetySummary;
+    if (safety) {
+      console.log(`  ${dim(`safety summary: ${safety.readOnly || 0} read-only, ${safety.writesLocalFile || 0} writes-local-file, ${safety.mutatesLocalState || 0} mutates-local-state`)}`);
+    }
+    const queue = payload.actionPlan?.executionQueue;
+    if (queue) {
+      console.log(`  ${dim(`execution queue: ${queue.previewCount || 0} preview, ${queue.fileWriteReviewCount || 0} file-write review, ${queue.mutationReviewCount || 0} mutation review`)}`);
+      const effectSummary = queue.commandEffectSummary && typeof queue.commandEffectSummary === "object" ? queue.commandEffectSummary : null;
+      if (effectSummary) {
+        console.log(`  ${dim(`command effects: ${effectSummary.outputTargetCount || 0} output, ${effectSummary.profileTargetCount || 0} profile, ${effectSummary.usageTargetCount || 0} usage, ${effectSummary.mutationFlagCount || 0} mutation flags`)}`);
+      }
+      const effectReview = queue.commandEffectReview && typeof queue.commandEffectReview === "object" ? queue.commandEffectReview : null;
+      if (effectReview?.headline) {
+        console.log(`  ${dim(`command effect review: ${effectReview.headline}`)}`);
+        const gatePhaseSummary = effectReview.gatePhaseSummary && typeof effectReview.gatePhaseSummary === "object" ? effectReview.gatePhaseSummary : null;
+        if (gatePhaseSummary) {
+          const phases = Array.isArray(gatePhaseSummary.phases) && gatePhaseSummary.phases.length > 0
+            ? gatePhaseSummary.phases.join(", ")
+            : "none";
+          console.log(`  ${dim(`command effect gate phases: ${phases} (${gatePhaseSummary.requiredCount || 0}/${gatePhaseSummary.count || 0} required)`)}`);
+        }
+        const gateRunbook = effectReview.gateRunbook && typeof effectReview.gateRunbook === "object" ? effectReview.gateRunbook : null;
+        if (gateRunbook) {
+          const countFor = (phase) => Array.isArray(gateRunbook[phase]) ? gateRunbook[phase].length : 0;
+          console.log(`  ${dim(`command effect gate runbook: before ${countFor("before")}, after ${countFor("after")}, refresh ${countFor("refresh")}`)}`);
+        }
+        const gateCommands = Array.isArray(effectReview.gateCommands) ? effectReview.gateCommands : [];
+        if (gateCommands.length > 0) {
+          const gateSummary = gateCommands
+            .map((item) => `${item.phase || "gate"}: ${item.command || ""}`.trim())
+            .filter((item) => item !== "")
+            .slice(0, 3)
+            .join(" -> ");
+          console.log(`  ${dim(`command effect gates: ${gateSummary}`)}`);
+        }
+      }
+      const operatorRunbook = queue.operatorRunbook && typeof queue.operatorRunbook === "object" ? queue.operatorRunbook : null;
+      if (operatorRunbook) {
+        console.log(`  ${dim(`operator runbook: ${operatorRunbook.stageCount || 0} stages, ${operatorRunbook.commandCount || 0} commands, ${operatorRunbook.requiredCommandCount || 0} required`)}`);
+        if (operatorRunbook.nextCommand) {
+          console.log(`  ${dim(`operator next command: ${operatorRunbook.nextStage || "unknown"}: ${operatorRunbook.nextCommand}`)}`);
+        }
+      }
+      if (queue.nextActionId) console.log(`  ${dim(`next action: ${queue.nextActionId}`)}`);
+      if (queue.nextCommand) console.log(`  ${dim(`next command: ${queue.nextCommand}`)}`);
+      if (queue.nextCommandRunPolicy) console.log(`  ${dim(`next command policy: ${queue.nextCommandRunPolicy}`)}`);
+      const ordered = Array.isArray(queue.ordered) ? queue.ordered : [];
+      if (ordered.length > 0) {
+        console.log(`  ${dim(`queue order: ${ordered.slice(0, 3).map((item) => item.actionId).join(" -> ")}`)}`);
+      }
+      const commandManifest = Array.isArray(queue.commandManifest) ? queue.commandManifest : [];
+      if (commandManifest.length > 0) {
+        console.log(`  ${dim(`command manifest: ${commandManifest.slice(0, 3).map((item) => {
+          const effects = item.commandEffects && typeof item.commandEffects === "object" ? item.commandEffects : {};
+          const targets = Array.isArray(effects.outputTargets) && effects.outputTargets.length > 0
+            ? `:${effects.outputTargets.map((target) => target.value).join(",")}`
+            : "";
+          return `${item.actionId}:${item.runPolicy}${targets}`;
+        }).join(" -> ")}`)}`);
+      }
+    }
+    for (const step of planSteps.slice(0, 3)) {
+      console.log(`- ${step.rank}. ${step.priority} ${step.category}: ${step.title}`);
+      if (step.command) console.log(`  ${dim(step.command)}`);
+      if (step.commandSafety?.level) console.log(`  ${dim(`safety: ${step.commandSafety.level}`)}`);
+      console.log(`  ${dim(`requires mutation review: ${step.requiresReviewBeforeMutation ? "yes" : "no"}`)}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("Privacy: agent backlog is read-only, local, and does not mutate learning.json or skill files.");
+}
+
+function printSkillProposals(payload) {
+  header("design-ai learn", "Skill evolution proposals");
+  info(`File: ${payload.file}`);
+  info(`Status: ${payload.status}`);
+  info(`Signal source: ${payload.signalSource}`);
+  info(`Signal status: ${payload.signalStatus}`);
+  info(`Min evidence: ${payload.minEvidenceCount}`);
+  info(`Check capture entries: ${payload.checkCaptureCount}`);
+  info(`Candidates: ${payload.candidateCount}`);
+  info(`Proposals: ${payload.proposalCount}`);
+  info(`Pending review: ${payload.pendingReviewCount ?? payload.proposalCount}`);
+  info(`Reviewed: ${payload.reviewedCount ?? 0}`);
+  info(`Skipped: ${payload.skippedCount}`);
+  if (payload.review?.file) {
+    info(`Review file: ${payload.review.file}`);
+    info(`Review status: ${payload.review.status} (${payload.review.matchedCount} matched, ${payload.review.staleCount} stale)`);
+  }
+  console.log();
+
+  if (payload.proposals.length === 0) {
+    console.log("No repeated check-capture groups crossed the proposal threshold.");
+  } else {
+    console.log("Proposed skill deltas:");
+    for (const proposal of payload.proposals) {
+      const routes = proposal.routeIds.length > 0 ? proposal.routeIds.join(", ") : "artifact";
+      console.log(`- ${proposal.id}: ${proposal.candidateSkillPath}`);
+      console.log(`  ${dim(`${proposal.sourceIssueCount} issue(s) · ${proposal.category} · routes ${routes} · risk ${proposal.riskLevel} · review ${proposal.reviewStatus || "pending"}`)}`);
+      if (proposal.reviewDecision?.note) console.log(`  Review note: ${proposal.reviewDecision.note}`);
+      console.log(`  Delta: ${proposal.proposedInstructionDelta}`);
+      console.log(`  Verify: ${proposal.verificationCommand}`);
+      for (const evidence of proposal.evidenceSources.slice(0, 3)) {
+        console.log(`  Evidence: ${evidence.entryId} [${evidence.category}] ${evidence.source}`);
+        if (evidence.textPreview) console.log(`    ${dim(evidence.textPreview)}`);
+      }
+    }
+  }
+
+  if (payload.skipped.length > 0) {
+    console.log();
+    console.log("Skipped groups:");
+    for (const item of payload.skipped) {
+      console.log(`- ${item.candidateSkillPath} [${item.category}]: ${item.reason}`);
+    }
+  }
+
+  if (payload.review?.warnings?.length > 0) {
+    console.log();
+    console.log("Review file warnings:");
+    for (const warning of payload.review.warnings) {
+      console.log(`- ${warning}`);
+    }
+  }
+
+  if (payload.recommendations.length > 0) {
+    console.log();
+    console.log("Recommendations:");
+    for (const recommendation of payload.recommendations) {
+      console.log(`- ${recommendation.level}: ${recommendation.text}`);
+    }
+  }
+
+  console.log();
+  console.log("No changes made. This command is preview-only and does not edit skill files or learning.json.");
+}
+
 function printDiff(payload) {
   header("design-ai learn", "Learning profile diff");
   info(`File: ${payload.file}`);
@@ -808,6 +1076,27 @@ function printEvalTemplate(payload) {
 }
 
 function applyEvalStrictExit(parsed, payload) {
+  if (parsed.strict && payload.status !== "pass") {
+    process.exitCode = 1;
+  }
+}
+
+function applySignalsStrictExit(parsed, payload) {
+  if (
+    parsed.strict
+    && (payload.status !== "pass" || payload.agentDevelopment?.status !== "pass")
+  ) {
+    process.exitCode = 1;
+  }
+}
+
+function applyAgentBacklogStrictExit(parsed, payload) {
+  if (parsed.strict && (payload.status !== "pass" || payload.signalStatus === "fail")) {
+    process.exitCode = 1;
+  }
+}
+
+function applySkillProposalsStrictExit(parsed, payload) {
   if (parsed.strict && payload.status !== "pass") {
     process.exitCode = 1;
   }
@@ -1203,6 +1492,84 @@ export async function runLearn(args) {
       return;
     }
     printUsage(payload);
+    return;
+  }
+
+  if (parsed.action === "signals") {
+    const payload = learningSignalRegistry({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      applySignalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderLearningSignalReport(payload));
+      applySignalsStrictExit(parsed, payload);
+      return;
+    }
+    printSignals(payload);
+    applySignalsStrictExit(parsed, payload);
+    return;
+  }
+
+  if (parsed.action === "agent-backlog") {
+    const payload = agentBacklogReport({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      applyAgentBacklogStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderAgentBacklogReport(payload));
+      applyAgentBacklogStrictExit(parsed, payload);
+      return;
+    }
+    printAgentBacklog(payload);
+    applyAgentBacklogStrictExit(parsed, payload);
+    return;
+  }
+
+  if (parsed.action === "propose-skills") {
+    const payload = buildSkillEvolutionProposals({
+      filePath: parsed.filePath,
+      usageFile: parsed.usageFilePath,
+      reviewFile: parsed.reviewFilePath,
+      signalSource: parsed.fromFile,
+      root: process.cwd(),
+      minEvidenceCount: parsed.minEvidenceCount || undefined,
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.report) {
+      printOrWriteContent(parsed, renderSkillEvolutionProposalReport(payload));
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.reviewTemplate) {
+      printOrWriteContent(parsed, renderSkillProposalReviewTemplate(payload));
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    if (parsed.patch) {
+      printOrWriteContent(parsed, renderSkillEvolutionProposalPatch(payload));
+      applySkillProposalsStrictExit(parsed, payload);
+      return;
+    }
+    printSkillProposals(payload);
+    applySkillProposalsStrictExit(parsed, payload);
     return;
   }
 

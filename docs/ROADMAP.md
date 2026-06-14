@@ -1,8 +1,5538 @@
 # Roadmap
 
+## Phase 495 — Learning Readiness Status Count Release Evidence (unreleased)
+
+The full release gate now passes after the learning readiness status-count index landed.
+
+### Changed
+- Recorded full `npm run release:check` evidence after Phase 494 added readiness status-count indexes to learning signal and focused agent backlog reports.
+- Confirmed the release gate covers CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke after the status-count contract change.
+
+### Impact
+- The branch has fresh pre-push release evidence after extending local AI/agent readiness metadata.
+- Local AI/agent development can continue from a verified baseline where the packaged CLI preserves the new status-count JSON and Markdown report contract.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
+
+## Phase 494 — Learning Readiness Status Count Index (unreleased)
+
+Learning readiness JSON and Markdown now expose status-count indexes for required and optional checks.
+
+### Changed
+- Added `checkCountByStatus`, `requiredCheckCountByStatus`, and `optionalCheckCountByStatus` to `design-ai learn --signals` and focused `design-ai learn --agent-backlog` readiness JSON.
+- Rendered the same status-count index lines in learning signal and focused agent backlog Markdown reports.
+- Extended packed-tarball smoke assertions so packaged learn signals and agent backlog outputs must preserve the status count index shape.
+
+### Impact
+- Local AI/agent automation can branch on readiness pass/info/warn/fail distribution without scanning the full `checks` array.
+- Human Markdown handoffs now show whether optional evidence gaps are only informational or whether required checks are warning/failing.
+- Existing readiness schemas remain backward compatible because the new fields are additive.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
+
+## Phase 493 — Public Registry Learning Readiness Release Evidence (unreleased)
+
+The full release gate now passes after the public registry learning readiness Markdown report smoke guard.
+
+### Changed
+- Recorded full `npm run release:check` evidence after Phase 492 added public registry smoke coverage for learning readiness Markdown report check indexes.
+- Confirmed the release gate covers CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke after the registry smoke guard change.
+
+### Impact
+- The branch has fresh pre-push release evidence after extending public registry learning readiness Markdown smoke coverage.
+- Local AI/agent development can continue from a verified release baseline rather than only focused registry and metadata self-tests.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real npm publish, because that command requires the public package to exist in npm.
+
+## Phase 492 — Public Registry Learning Readiness Markdown Check Index Smoke (unreleased)
+
+Public registry smoke now protects the readiness check index sections in learning readiness Markdown reports after publish.
+
+### Changed
+- Added public registry smoke coverage for `learn --signals --report --out` Markdown reports.
+- Added public registry smoke coverage for focused `learn --agent-backlog --report --out` Markdown reports.
+- Added registry smoke self-test drift fixtures for missing readiness Markdown check index lines.
+- Updated release-facing docs and release metadata phrase guards for public registry learning readiness Markdown report coverage.
+
+### Impact
+- Published-package `npm exec --package @design-ai/cli@<version>` paths now verify the same human review readiness contract as packed tarball smoke.
+- Release-facing registry smoke guidance cannot silently drop the learning readiness Markdown check index coverage phrase.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run registry:smoke:self-test`
+- `npm run release:self-test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Run post-publish `npm run registry:smoke` after a real publish, because that command requires the public package to exist in npm.
+
+## Phase 491 — Learning Readiness Markdown Check Index Package Smoke (unreleased)
+
+Packed-tarball smoke now protects the readiness check index sections in learning readiness Markdown reports.
+
+### Changed
+- Added package smoke assertions for the `Readiness check index` section in `learn --signals --report` Markdown output.
+- Added package smoke assertions for the same section in focused `learn --agent-backlog --report` Markdown output, including no-command optional-gap reports.
+- Added package smoke self-test drift fixtures for missing Markdown check index sections.
+- Updated release-facing docs and release metadata phrase guards for Markdown check index section coverage.
+
+### Impact
+- Installed-bin and one-shot package paths now verify that human review artifacts expose the same check index contract as JSON.
+- Release-facing smoke guidance cannot silently drop the Markdown check index section coverage phrase.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Keep future Markdown readiness sections aligned with package and release metadata guards.
+
+## Phase 490 — Learning Readiness Check Index Markdown Reports (unreleased)
+
+Learning readiness Markdown reports now expose the same id-based check index that JSON automation consumes.
+
+### Changed
+- Added a shared readiness check index renderer for learning signal and focused agent backlog Markdown reports.
+- Reports now list required ids, optional ids, status lookup, and required lookup next to the existing per-check summaries.
+- Added unit coverage for `learn --signals --report` and `learn --agent-backlog --report` check index sections.
+
+### Impact
+- Operators can compare human reports with machine-readable `requiredCheckIds`, `optionalCheckIds`, `checkStatusById`, and `checkRequiredById` without opening JSON.
+- Local AI/agent handoffs keep the same readiness contract visible in both automation and review artifacts.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Package smoke coverage was added in Phase 491; keep future Markdown readiness sections aligned with package and release metadata guards.
+
+## Phase 489 — Learning Readiness Check Index Release Guard (unreleased)
+
+Release metadata now protects the release-facing package smoke wording for the learning readiness check index added in Phase 488.
+
+### Changed
+- Added release metadata phrase coverage for packed-tarball check index JSON field coverage.
+- Updated README, Korean README, distribution docs, and release checklist wording so packaged `learn --agent-backlog` smoke guidance names the check index contract.
+- Updated release metadata self-test drift fixtures so dropping the check index phrase fails the release guard.
+
+### Impact
+- Release-facing docs cannot silently mention generic readiness summaries while omitting the machine-readable check index contract.
+- Local AI/agent automation keeps one documented packaged output contract for id-based readiness status lookup.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Keep release metadata phrase groups aligned when new readiness indexes or machine-readable gate fields are added.
+
+## Phase 488 — Learning Readiness Check Index (unreleased)
+
+Learning readiness JSON now exposes a deterministic check index for local automation.
+
+### Changed
+- Added `requiredCheckIds` and `optionalCheckIds` to `design-ai learn --signals` and `design-ai learn --agent-backlog` readiness JSON.
+- Added `checkStatusById` and `checkRequiredById` so automation can inspect a specific readiness check without scanning `checks`.
+- Extended package smoke self-test coverage so focused agent backlog readiness output must preserve the check index.
+
+### Impact
+- Local AI/agent runners can branch on `check-capture`, `agent-development`, or workspace readiness directly from machine-readable fields.
+- Existing consumers of the `checks` array remain compatible because the array shape is unchanged.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Keep the check index stable as additional readiness checks are added.
+
+## Phase 487 — Optional Gap Details Package Smoke Guard (unreleased)
+
+Packed-tarball smoke now protects the focused agent backlog `optionalGapDetails` readiness contract added in Phase 486.
+
+### Changed
+- Added package smoke assertions for no-command `design-ai learn --agent-backlog` readiness `optionalGapDetails`.
+- Verified missing check-capture optional gaps keep structured reason, next condition, and automation policy fields.
+- Added release metadata phrase coverage so release-facing docs retain the `optionalGapDetails` package smoke contract.
+
+### Impact
+- Installed-bin and one-shot package paths are guarded against dropping the machine-readable optional gap detail payload.
+- Local AI/agent automation can rely on packaged no-command backlog output to distinguish advisory missing check captures from required blockers.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Keep this smoke guard aligned as additional machine-readable readiness detail fields are added.
+
+## Phase 486 — Learning Readiness Optional Gap Details (unreleased)
+
+Learning signal readiness now explains advisory optional gaps with structured machine-readable detail and Markdown operator guidance.
+
+### Changed
+- Added `readiness.optionalGapDetails` to `design-ai learn --signals --json` for optional gaps such as missing check-capture evidence.
+- Kept the existing `readiness.optionalGaps` id list for compatibility while adding reason, next condition, and automation policy fields for each optional gap.
+- Rendered the same optional gap detail section in learning signal and focused agent backlog Markdown reports.
+
+### Impact
+- Local AI/agent automation can distinguish advisory missing evidence from required blockers without parsing prose.
+- Operators can see that missing check captures require real reviewed warn/fail artifacts and should not trigger placeholder `check --learn --yes` mutation commands.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --report`
+
+### What's still ahead
+- Keep package smoke and release metadata guards aligned as additional optional readiness gaps are added.
+
+## Phase 485 — Agent Backlog Readiness Release Check Evidence (unreleased)
+
+The agent backlog readiness metadata guard now has full release-gate evidence after the focused package smoke and release metadata guard phases.
+
+### Changed
+- Recorded the full `npm run release:check` result after Phase 484 added release metadata phrase coverage for the focused agent backlog readiness contract.
+- Confirmed the release gate covered CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+- Confirmed packed-tarball smoke still exercises installed-bin and one-shot package execution paths, including `check --learn`, learning feedback, restore/diff/curate, agent backlog, and skill proposal flows.
+
+### Impact
+- The current branch has fresh pre-push release evidence after the latest local AI/agent readiness guard work.
+- Internal AI/agent development can continue from a verified package baseline rather than only targeted unit or metadata checks.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Choose the next product surface intentionally: deeper AI learning architecture, Website Console expansion, VS Code integration, Figma integration, or agent SDK work.
+
+## Phase 484 — Agent Backlog Readiness Release Metadata Guard (unreleased)
+
+Release metadata now protects the release-facing docs wording for focused agent backlog readiness smoke coverage.
+
+### Changed
+- Added release metadata phrase coverage for packed-tarball `design-ai learn --agent-backlog` readiness summaries.
+- Required release policy docs to retain check-capture optional-gap semantics next to the focused backlog smoke guidance.
+- Added a release metadata self-test drift fixture that fails when README drops the agent-backlog readiness smoke phrase.
+
+### Impact
+- Release-facing docs cannot silently keep generic agent backlog smoke wording while dropping the readiness summary contract added in Phase 482 and package-smoke-verified in Phase 483.
+- Internal AI/agent development handoffs keep one documented packaged output contract for required gates and optional evidence gaps.
+
+### Verification
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+
+## Phase 483 — Agent Backlog Readiness Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now protects the focused agent backlog readiness pass-through added in Phase 482.
+
+### Changed
+- Added package smoke JSON assertions for `design-ai learn --agent-backlog` readiness summaries.
+- Verified normal backlog payloads keep `check-capture` as a passing optional check when real check captures exist.
+- Verified no-command backlog payloads keep missing check captures as optional evidence gaps, not blocking actions.
+- Added Markdown smoke assertions for the `Signal Readiness` section in agent backlog reports.
+- Added package smoke self-test drift coverage for missing backlog readiness payloads.
+
+### Impact
+- Installed-bin and one-shot package paths are now guarded against dropping the focused backlog readiness summary.
+- Local AI/agent automation can rely on packaged `learn --agent-backlog` output to carry readiness metadata without a second `learn --signals` parse.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Keep the broader release checks in the next full release evidence pass after adjacent learning/agent changes settle.
+
+## Phase 482 — Agent Backlog Readiness Pass-Through (unreleased)
+
+Focused `design-ai learn --agent-backlog` reports now include the same signal readiness summary exposed by `learn --signals`.
+
+### Changed
+- Passed the signal registry `readiness` object through to agent backlog JSON output.
+- Added a `Signal Readiness` section to agent backlog Markdown reports.
+- Preserved the existing agent backlog action plan, safety queue, handoff, and strict status behavior.
+
+### Impact
+- Local AI/agent automation can consume one focused backlog payload and still see required readiness gates, blocking check ids, optional evidence gaps, and per-check summaries.
+- Operators reviewing `learn --agent-backlog --report` can distinguish required blockers from advisory check-capture gaps before running any follow-up command.
+- The change remains read-only and does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --report`
+
+### What's still ahead
+- Run broader repo gates after finalizing the tracked changes, then re-check clean-tree focused backlog state.
+
+## Phase 481 — Learning Signal Readiness Summary (unreleased)
+
+`design-ai learn --signals` now exposes a structured readiness summary that separates required local AI/agent gates from optional evidence gaps.
+
+### Changed
+- Added a `readiness` object to learning signal registry JSON with required check counts, blocking check ids, optional gap ids, and per-check summaries.
+- Classified learning profile, eval signals, workspace readiness, and agent development backlog as required readiness checks.
+- Kept usage sidecar and check-capture evidence as optional checks so missing real `check:*` captures remain advisory instead of blocking pass-state development.
+- Added the same readiness summary to `design-ai learn --signals --report` Markdown output.
+
+### Impact
+- Local automation can determine whether agent learning evidence is gate-ready without re-deriving status from recommendations or nested payloads.
+- Operators can see that missing check-capture entries are optional evidence gaps while real workspace or eval warnings remain required review items.
+- The change stays local and read-only; it does not mutate `learning.json`, usage sidecars, skill files, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+
+### What's still ahead
+- Run broader repo gates after the tracked changes are finalized, then decide whether the next product surface should be Website Console expansion, VS Code integration, Figma integration, or deeper agent SDK work.
+
+## Phase 480 — Agent Backlog Full Release Gate Evidence Closeout (unreleased)
+
+The optional refresh-only agent backlog closeout now has full `npm run release:check` evidence recorded after the post-commit release evidence and focused backlog clear-state checks.
+
+### Changed
+- Recorded the full release gate result after the Phase 479 release evidence closeout.
+- Confirmed the release gate covered CLI unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+- Confirmed packed-tarball smoke still exercises installed-bin and one-shot package execution paths after the optional refresh-only agent backlog no-command assertion landed.
+
+### Impact
+- The current branch has a fresh pre-push release baseline before the next product or AI/agent feature phase starts.
+- Local AI/agent development remains clear of required backlog actions, so the next step can be a deliberate scope choice instead of another backlog hardening pass.
+
+### Verified
+- `npm run release:check`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+
+### What's still ahead
+- Choose the next product surface intentionally: push/Real-CI, deeper AI learning architecture, Website Console expansion, VS Code surface, Figma integration, or agent SDK.
+
+## Phase 479 — Agent Backlog Refresh-Only Release Evidence Closeout (unreleased)
+
+The optional refresh-only agent backlog package smoke work now has post-commit release evidence recorded alongside the focused backlog clear-state check.
+
+### Changed
+- Recorded release self-test and package contents verification after the packed-tarball no-command smoke assertion landed.
+- Confirmed the focused agent backlog still reports `actions: 0`, empty execution queue, no handoff command, and optional refresh-only status metadata after the Phase 478 commit.
+- Closed the Phase 478 follow-up item that asked for a post-commit focused backlog re-check.
+
+### Impact
+- Release evidence now covers both the new package smoke assertion and the broader release self-test/package contents gates.
+- Local AI/agent backlog automation remains clear after the guard changes, with no additional runtime work required.
+
+### Verified
+- `npm run release:self-test`
+- `npm run package:check`
+- `node cli/bin/design-ai.mjs learn --signals --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+
+### What's still ahead
+- Continue with the next local AI/agent development surface once a new non-empty backlog action or product requirement appears.
+
+## Phase 478 — Agent Backlog Refresh-Only Package Smoke Assertion (unreleased)
+
+Packed-tarball smoke now verifies the optional refresh-only `design-ai learn --agent-backlog --strict --json` no-command contract in installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Changed
+- Added a no-command agent backlog JSON smoke assertion for empty focused backlogs.
+- Verified `operatorRunbook.nextCommandSelection.reason` preserves the status-metadata wording for optional refresh-only runbook commands.
+- Added package smoke self-test drift coverage for the old misleading refresh-stage selection reason.
+
+### Impact
+- Release docs and package smoke are now aligned: the packed tarball actually verifies the no-command refresh-only runbook semantics.
+- Local AI/agent automation gets stronger packaged-path protection for the completed backlog state.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Closed by Phase 479 post-commit release evidence and focused backlog re-check.
+
+## Phase 477 — Agent Backlog Refresh-Only Runbook Release Guard (unreleased)
+
+Release metadata now protects the optional refresh-only `design-ai learn --agent-backlog` runbook selection semantics in release-facing policy docs.
+
+### Changed
+- Added a release metadata phrase guard for optional refresh-only runbook selection reasons.
+- Updated README, Korean README, Distribution docs, and Release checklist guidance to state that no-command refresh output is status metadata, not an executable handoff command.
+- Added self-test drift coverage for the new release-facing docs phrase.
+
+### Impact
+- Future release doc edits cannot silently drop the no-command refresh-only runbook semantics.
+- Packed-tarball smoke guidance remains aligned with the JSON contract stabilized in Phase 476.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Re-check focused agent backlog status after this release metadata guard is committed.
+
+## Phase 476 — Agent Backlog Optional Refresh Runbook Selection Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains optional refresh-only operator runbook selection without implying that a backlog handoff command was selected.
+
+### Changed
+- Updated `operatorRunbook.nextCommandSelection.reason` when the only runbook command is an optional refresh check.
+- Preserved `operatorRunbook.nextCommand`, `nextStage: "refresh"`, and `nextCommandRequired: false` for automation that wants a status refresh command.
+- Extended no-command regression coverage for JSON and Markdown runbook selection output.
+
+### Impact
+- Local AI/agent automation can keep reading the optional refresh command while treating the focused backlog as complete.
+- The runbook selection, next-command alignment, and handoff reason now use the same no-command semantics.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this runbook selection reason contract is committed.
+
+## Phase 475 — Agent Backlog Optional Refresh Handoff Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains no-command operator handoff states without implying that optional refresh metadata is an executable handoff command.
+
+### Changed
+- Updated `operatorHandoff.reason` for no-command states with an available optional refresh command.
+- Kept `operatorHandoff.command` empty and `operatorHandoff.refreshCommandRequired: false`, preserving the completed backlog contract.
+- Extended no-command regression coverage for JSON and Markdown handoff reason output.
+
+### Impact
+- Local AI/agent automation can distinguish "no handoff command is required" from "refresh metadata is available."
+- Optional refresh remains useful for re-checking status without becoming required work.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this handoff reason contract is committed.
+
+## Phase 474 — Agent Backlog Optional Refresh Alignment Reason (unreleased)
+
+`design-ai learn --agent-backlog` now explains optional refresh-only no-command states consistently in `nextCommandAlignment.reason`.
+
+### Changed
+- Added an explicit alignment reason for cases where the operator runbook exposes only an optional refresh command while the safety-ordered execution queue is empty.
+- Preserved the existing queue and runbook command fields so automation can keep reading the optional refresh command without treating it as runnable backlog work.
+- Extended the no-command regression test to verify both JSON and Markdown alignment wording.
+
+### Impact
+- Local AI/agent automation no longer receives a contradictory "no operator runbook command" reason when `operatorRunbook.nextCommand` contains the optional refresh command.
+- Completed no-command backlog states remain non-mutating and do not require refresh before being treated as complete.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this alignment reason contract is committed.
+
+## Phase 473 — Agent Backlog Optional Refresh Runbook Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now keeps no-command completion semantics aligned across the operator handoff, command-effect review, and operator runbook sections.
+
+### Changed
+- Marked refresh-only gate commands as optional when the focused backlog has no command-bearing actions.
+- Kept the refresh command visible as follow-up metadata while avoiding required runbook counts in completed no-command states.
+- Extended the no-command regression test to verify `commandEffectReview.gatePhaseSummary`, refresh runbook `required`, `operatorRunbook.requiredCommandCount`, and Markdown summary output.
+
+### Impact
+- Local automation can treat no-command backlog states as complete without receiving a contradictory required refresh from the operator runbook.
+- Command-bearing backlog states still require refresh after execution, preserving the existing review and verification flow.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Re-check the clean-tree focused backlog state after this runbook alignment lands.
+
+## Phase 472 — Agent Backlog No-Command Handoff Completion (unreleased)
+
+`design-ai learn --agent-backlog` now treats a pass-state backlog with no runnable actions as an explicit completed handoff state instead of a refresh-required non-ready state.
+
+### Changed
+- Added `hasCommand` and `complete` to `actionPlan.executionQueue.operatorHandoff.state`.
+- Marked `no-command` handoff states as `ready: true`, `hasCommand: false`, `complete: true`, and `requiresRefresh: false`.
+- Kept the refresh command available as optional follow-up metadata while avoiding a required refresh flag when there is no handoff command to run.
+- Added Markdown output for the operator handoff summary so human reports explain that the focused backlog is clear.
+- Extended package smoke JSON contract checks to require the new handoff state fields.
+
+### Impact
+- Local AI/agent automation can distinguish "no work remains" from "not ready yet" without parsing prose.
+- Existing command-bearing handoff states still require refresh after execution and retain their review/gate behavior.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Rerun focused backlog on a clean tracked tree after this contract change lands.
+
+## Phase 471 — Agent Backlog Test Expectation Stabilization (unreleased)
+
+`design-ai learn --agent-backlog` test coverage now derives expected action counts from the actual generated payload when workspace readiness is environment-dependent.
+
+### Changed
+- Updated the agent backlog JSON/human/Markdown regression test to validate workspace readiness targets only when that action is present.
+- Derived safety summary, execution queue, command effect, report, and human-output counts from the JSON payload instead of hard-coding environment-sensitive totals.
+- Updated the missing-profile ranking test to assert that profile initialization remains first and eval checkpoint generation follows it, while allowing workspace readiness to appear between them when the temp workspace emits readiness warnings.
+
+### Impact
+- `npm test` no longer fails when local temp workspace readiness differs between focused and full test runs.
+- The tests still verify the core contract: profile initialization ranks first, eval checkpoint generation remains present, workspace readiness target metadata is correct when emitted, and `--with-learning` remains mutation-reviewed.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `npm test`
+- `npm run release:check`
+
+### What's still ahead
+- Continue the next AI/agent development phase after this release gate stabilization is committed.
+
+## Phase 470 — Advisory Check-Capture Seed Backlog Cleanup (unreleased)
+
+`design-ai learn --agent-backlog` no longer emits a placeholder `design-ai check artifact.md --learn --yes` command when no check-capture learning entries exist.
+
+### Changed
+- Kept the no-check-capture guidance as an info-level signal registry recommendation.
+- Removed the synthetic `agent-check-capture-seed` action from focused backlog output when `checkCapture.count` is zero.
+- Preserved `agent-skill-proposal-preview` when real `check:*` learning entries exist, so repeated warn/fail captures still become preview-only skill proposal handoffs.
+- Added regression coverage proving that a clean registry with passing usage/eval/workspace gates has zero backlog actions even when no check captures exist.
+
+### Impact
+- A pass-state focused backlog no longer exposes a mutation-capable placeholder command as the next action.
+- Operators still see that `check --learn --yes` is useful only when there are real warning/failure artifacts to capture.
+- Local learning profile mutation remains explicit and tied to actual check results.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue strengthening real check-capture proposal review once repeated production warn/fail captures exist.
+
+## Phase 469 — Agent Eval Replay Report Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now turns template-only learning eval checkpoints into concrete report-generation handoffs and treats sibling executed reports as the evidence that clears the template replay warning.
+
+### Changed
+- Added sibling `learning-eval-report.json` discovery beside the selected learning profile's `learning-eval.json` checkpoint.
+- Changed `agent-eval-template-replay` from a generic `learn --signals` refresh command to a concrete `learn --eval --from-file <checkpoint> --file <profile> --strict --json --out <report>` handoff.
+- Added report/template pairing so a template file no longer emits a replay warning when a same-directory same-kind executed eval report exists.
+- Kept `rawTemplates` in signal JSON for observability while using unresolved `templates` for readiness and backlog decisions.
+- Added regression coverage for template-only replay command metadata and report-backed template suppression.
+
+### Impact
+- Local AI/agent automation can clear eval-template setup debt by running one explicit file-write command.
+- Focused backlog output no longer loops on `agent-eval-template-replay` after an executed `learning-eval-report.json` exists.
+- The registry remains read-only; only the emitted follow-up command writes the report file.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue using real `check --learn --yes` captures only when actual warn/fail artifacts are available, then promote repeated signals through skill proposal review.
+
+## Phase 468 — Workspace Local Artifact Readiness Split (unreleased)
+
+`design-ai workspace` now separates active git changes from known local portfolio/evidence artifacts so internal dogfood readiness is not blocked by intentionally local output files from a separate thread.
+
+### Changed
+- Added git status splitting for untracked portfolio/evidence artifacts while preserving the full raw status in `allStatusShort`.
+- Added `ignoredStatusShort`, `ignoredLocalArtifactCount`, and `hasIgnoredLocalArtifacts` to workspace JSON so automation can show ignored local artifacts without treating them as active changes.
+- Kept tracked modifications and unknown untracked files in active `statusShort` so strict readiness still blocks on real development changes.
+- Updated human workspace output and next actions to report ignored local artifacts as an info item instead of a dirty-workspace warning.
+- Extended workspace unit coverage and smoke JSON assertions for the expanded git contract.
+
+### Impact
+- Local portfolio/evidence files can remain in the working tree while design-ai development continues.
+- `workspace --strict` remains conservative for tracked edits, unknown files, upstream drift, learning warnings, and release-script failures.
+
+### Verified
+- `node --check cli/lib/workspace.mjs`
+- `node --check cli/commands/workspace.mjs`
+- `node --test cli/lib/workspace.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+
+### What's still ahead
+- Continue clearing the focused agent backlog by generating the local learning eval checkpoint and recording privacy-preserving usage sidecar events after the current code changes are committed.
+
+## Phase 467 — Agent Backlog Workspace Usage Target Classification (unreleased)
+
+`design-ai learn --agent-backlog` now classifies workspace readiness `--learning-usage` arguments as usage sidecar targets, matching the command's actual learning usage input contract.
+
+### Changed
+- Added `--learning-usage` to agent backlog usage target extraction.
+- Added regression coverage that verifies `agent-workspace-readiness-review` exposes `--learning-file` as a profile target and `--learning-usage` as a usage sidecar target.
+- Updated aggregate command effect assertions so workspace, skill proposal, and `--with-learning` usage-record sidecar targets are all visible in the execution queue summary.
+
+### Impact
+- Local operators and automation can see the usage sidecar path for workspace readiness commands without parsing shell strings.
+- The command remains read-only; this only fixes target metadata classification.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue aligning every agent backlog follow-up command with explicit target metadata before automating local learning/eval handoffs.
+
+## Phase 466 — Agent Backlog With-Learning Usage Mutation Classification (unreleased)
+
+`design-ai learn --agent-backlog` now treats follow-up commands that run `prompt` or `pack` with `--with-learning` as local-state mutations because they record privacy-preserving usage sidecar events.
+
+### Changed
+- Classified `--with-learning` backlog commands as `mutates-local-state` with `review-before-mutation` run policy.
+- Added env target extraction for `DESIGN_AI_LEARNING_FILE` and `DESIGN_AI_LEARNING_USAGE_FILE` so profile and usage sidecar targets appear in `commandSafety`, `commandEffects`, and aggregate effect summaries.
+- Changed the generated `agent-learning-usage-record` command to set both learning env vars before running `design-ai prompt 'audit a design artifact' --with-learning --json`.
+- Added regression coverage for the usage-record command string, structured `commandArgs`, env target metadata, mutation flags, and human/Markdown output.
+
+### Impact
+- Local automation no longer mistakes usage sidecar recording for a preview-only command.
+- Operators can review the exact learning profile and usage sidecar path before running the usage-record handoff.
+- The focused backlog report itself remains read-only; only the emitted follow-up command is classified as mutation-capable.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue dogfooding the usage/eval/check-capture loop until the focused backlog can clear without manual target-path interpretation.
+
+## Phase 465 — Agent Backlog Learning Eval Sibling Checkpoint Alignment (unreleased)
+
+`design-ai learn --agent-backlog` now aligns its learning eval checkpoint bootstrap with `design-ai workspace`: generated learning eval checkpoints target the active learning profile's sibling `learning-eval.json` path instead of a repo-relative output file.
+
+### Changed
+- Changed `agent-eval-checkpoint-generate` follow-up commands to use `defaultLearningEvalPath(<learning-profile>)` for `--out`.
+- Added `evalOutputFile` evidence so JSON consumers can show the exact checkpoint target without parsing the shell command.
+- Updated signal registry eval discovery to include the active learning profile's sibling `learning-eval.json` even when the `--from-file` signal source points at a separate repository or report directory.
+- Added regression coverage for sibling learning eval auto-detection and for missing-profile backlog actions emitting the sibling checkpoint output path.
+
+### Impact
+- Local AI/agent automation no longer needs to choose between the workspace-recommended checkpoint path and the backlog-recommended checkpoint path.
+- The agent backlog report remains read-only; only the emitted follow-up command target changed.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+
+### What's still ahead
+- Continue tightening usage-sidecar and eval-checkpoint handoffs so the local learning loop can be dogfooded without writing incidental files into target repositories.
+
+## Phase 464 — Agent Backlog Profile Init Apply Command Metadata (unreleased)
+
+`design-ai learn --agent-backlog` now separates first-run learning profile initialization into an explicit preview command and reviewed apply metadata. The handoff can safely present `learn --init --dry-run`, while automation can still find the confirmed `learn --init --yes` command and its mutation-review safety details without guessing.
+
+### Changed
+- Changed the missing-profile backlog action command to `design-ai learn --init --dry-run --file <profile>` so preview semantics are explicit.
+- Added optional `applyCommand`, `applyCommandArgs`, `applyCommandSafety`, and `applyRequiresReviewBeforeMutation` metadata to action-plan steps and execution queue manifest entries.
+- Rendered apply commands in Markdown reports under "Apply command after review" with the apply safety level and mutation-review requirement.
+- Extended package-smoke assertions so packed consumers validate optional apply-command metadata when it appears.
+
+### Impact
+- Local AI/agent automation can distinguish a safe preview handoff from the confirmed profile-write command needed to clear the missing-profile backlog item.
+- The report remains read-only: it does not initialize `learning.json`, edit skills, write eval checkpoints, mutate target repositories, or call external AI APIs.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue tightening first-run local learning bootstrap flows so preview, apply, and refresh steps stay explicit for automation and human operators.
+
+## Phase 463 — Agent Backlog Current-Command Gate Scoping (unreleased)
+
+`design-ai learn --agent-backlog` now scopes operator handoff gates to the current next queue command. A read-only preview command can be reported as `ready` even when later queued commands still require file-write or mutation review.
+
+### Changed
+- Updated `operatorHandoff` selection so before-stage operator gates only block the handoff when the current `nextQueueCommand` itself requires review.
+- Added `nextQueueCommandRequiresGate` and `operatorGateAppliesToNextQueueAction` booleans to the handoff payload for automation that needs to explain why a gate did or did not apply.
+- Extended package-smoke assertions so packed consumers accept both operator-runbook and execution-queue handoff sources and verify the new gate-scope booleans.
+
+### Impact
+- Local automation can present safe read-only next commands without forcing a clean-workspace gate that only protects later file-write or mutation commands.
+- Later risky commands still retain `commandEffectReview`, run-policy, and clean-workspace review metadata in the same execution queue.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --strict --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue tightening the local AI/agent readiness loop so gates are precise per handoff step while aggregate risk remains visible.
+
+## Phase 462 — Agent Backlog Profile Bootstrap Ranking (unreleased)
+
+`design-ai learn --signals` now ranks missing learning profile initialization ahead of eval checkpoint bootstrap when both actions are `p1`. This keeps the ranked next action, safety-ordered execution queue, and operator handoff story aligned during first-run local AI/agent setup.
+
+### Changed
+- Added deterministic action-id tie-breaking to the agent development backlog sorter so profile audit/init work wins before workspace, eval, usage, and skill-evolution follow-ups at the same priority.
+- Added a no-profile `runLearn --signals` regression test that verifies `agent-learning-profile-init` is rank 1 before `agent-eval-checkpoint-generate`.
+
+### Impact
+- First-run operators see the same bootstrap sequence in ranked actions and safe queue guidance: initialize/review the local learning profile before generating eval checkpoint files.
+- The change remains deterministic and local; it only changes action ordering and does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `node cli/bin/design-ai.mjs learn --signals --file <tmp>/missing-learning.json --usage-file <tmp>/missing-learning.usage.json --from-file <tmp> --json`
+
+### What's still ahead
+- Continue closing the local AI/agent learning readiness loop with non-mutating bootstrap guidance before any profile or eval-file apply step.
+
+## Phase 461 — Agent Backlog Operator Handoff State Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now includes compact state metadata for automation. This lets local runners decide whether a handoff command is ready, blocked by a required gate, requires operator review, or has no command without parsing Markdown or reason prose.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff.state` with `status`, `ready`, `canRunWithoutReview`, `requiresGate`, `requiresRefresh`, and `summary`.
+- Rendered the handoff state in Markdown reports next to the existing operator handoff and refresh command lines.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the new state contract.
+
+### Impact
+- Local AI/agent automation can branch on a compact `status` enum before running or presenting the next handoff command.
+- The change remains deterministic and local; it only changes emitted metadata and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --file /tmp/design-ai-phase461-learning.json --usage-file /tmp/design-ai-phase461-learning.usage.json --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 460 — Agent Backlog Context-Aware Refresh Command (unreleased)
+
+`design-ai learn --agent-backlog` refresh metadata now preserves the same signal source, learning profile, and usage sidecar paths that produced the current backlog report. This keeps post-handoff refreshes deterministic even when operators run from another working directory or use non-default learning files.
+
+### Changed
+- Built the refresh command from the active backlog context: `--from-file`, `--file`, `--usage-file`, `--strict`, and `--json`.
+- Reused that context-aware refresh command in `operatorHandoff`, `operatorRunbook`, `commandEffectReview`, and action-plan verification metadata.
+- Strengthened unit tests and package-smoke assertions to validate refresh command semantics through `commandArgs` instead of relying on a context-free shell string.
+
+### Impact
+- Local AI/agent automation can run the selected handoff command and then refresh the exact same backlog scope without reconstructing source/profile/usage paths.
+- The change remains deterministic and local; it only changes emitted metadata and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --file /tmp/design-ai-phase460-learning.json --usage-file /tmp/design-ai-phase460-learning.usage.json --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 459 — Agent Backlog Operator Handoff Refresh Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now exposes the refresh command that should be run after the selected handoff command. This lets local automation re-check focused backlog state without traversing the full operator runbook stage list.
+
+### Changed
+- Added `refreshCommand`, `refreshCommandArgs`, `refreshCommandLabel`, and `refreshCommandRequired` to `actionPlan.executionQueue.operatorHandoff`.
+- Clarified Markdown reports with an operator handoff refresh line so humans can see the follow-up status check.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the refresh metadata contract.
+
+### Impact
+- Local AI/agent automation can execute or present the selected handoff command, then immediately know which deterministic read-only command refreshes the focused backlog state.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 458 — Agent Backlog Operator Handoff Decision Enum (unreleased)
+
+`design-ai learn --agent-backlog` operator handoff now exposes an explicit `decision` enum. This lets local automation branch on the next safe action without parsing `reason` prose or recomputing handoff state from gate and queue fields.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff.decision` with deterministic values: `run-operator-gate`, `run-shared-command`, `run-operator-command`, `run-queue-command`, and `none`.
+- Clarified Markdown reports by including the handoff decision next to the operator handoff reason.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the decision enum.
+
+### Impact
+- Local AI/agent automation can branch directly on one enum before deciding whether to present a gate command, shared command, operator-only command, or queue fallback command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 457 — Agent Backlog Operator Handoff Decision Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now includes a single operator handoff decision. This lets local automation consume the next command to present or run without rebuilding that decision from the safety queue, operator runbook, and alignment metadata.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorHandoff` with source, phase, label, command metadata, action metadata, gate state, queue fallback metadata, review state, and a human-readable reason.
+- Clarified Markdown reports with an operator handoff line so humans can see the active next-command decision directly.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the handoff contract.
+
+### Impact
+- Local AI/agent automation can read one deterministic handoff object before deciding whether to run a before-stage gate or the queue command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 456 — Agent Backlog Next Command Alignment Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now compares the operator runbook's first command with the safety-ordered queue command. This makes it explicit when both surfaces point to the same command and when the operator must run a before-stage gate first.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandAlignment` with operator command metadata, queue command metadata, ranked next-action metadata, match booleans, and a human-readable reason.
+- Clarified Markdown reports with an operator/queue next-command alignment line so humans can see whether the two handoff surfaces agree or intentionally differ.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the alignment contract.
+
+### Impact
+- Local AI/agent automation can avoid comparing command strings manually before deciding whether to run the queue command or a required operator gate.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 455 — Agent Backlog Operator Runbook Selection Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator runbook now explains how its next operator command was selected. This makes the runbook-level `nextCommand` stage order explicit, separate from the execution queue's safety-ordered recommended command.
+
+### Changed
+- Added `actionPlan.executionQueue.operatorRunbook.nextCommandSelection` with the stage-order strategy, selected stage, label, command metadata, action metadata when available, and a human-readable reason.
+- Clarified Markdown reports with an operator next-command selection line so humans can see why a `before`, `execute`, `after`, or `refresh` command is first.
+- Strengthened unit tests and package-smoke assertions so packed and one-shot CLI consumers can rely on the operator runbook selection contract.
+
+### Impact
+- Local AI/agent automation can distinguish the operator runbook's first executable command from the queue-level recommended backlog command and the ranked action-plan next step.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 454 — Agent Backlog Next Command Selection Metadata (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now explains how the recommended queue command was selected. This makes the difference between the ranked action-plan next step and the safety-ordered execution queue explicit for local automation.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandSelection` with the selection strategy, safety order, selected action metadata, ranked plan-next metadata, and a human-readable reason.
+- Clarified Markdown reports with a recommended next-command selection line and whether the selected command matches the ranked next action.
+- Strengthened unit tests and package-smoke assertions so queue consumers can rely on the selection metadata.
+
+### Impact
+- Local AI/agent automation can distinguish priority ranking from safe execution ordering before running or prompting an operator for the next command.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 453 — Agent Backlog Queue Next Command Args (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now exposes `nextCommandArgs` beside the existing `nextCommand` and `nextCommandRunPolicy` fields. This gives local automation a structured args array for the safest queued next action, not only for the operator runbook next command.
+
+### Changed
+- Added `actionPlan.executionQueue.nextCommandArgs`, derived from the same queue item as `nextCommand`.
+- Kept `nextCommand`, `nextActionId`, and `nextCommandRunPolicy` as the existing human-readable / policy fields.
+- Strengthened unit tests and package-smoke self-test assertions so the queue-level next-command structured args cannot drift from the command manifest.
+
+### Impact
+- Local AI/agent automation can start from either the high-level execution queue or the operator runbook without reparsing shell strings.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 452 — Agent Backlog Structured Command Args (unreleased)
+
+`design-ai learn --agent-backlog` command handoff now includes structured args arrays alongside shell-rendered command strings. This lets local automation read `commandArgs` / `nextCommandArgs` directly from reviewed backlog output instead of reparsing quoted shell text.
+
+### Changed
+- Added `commandArgs` to generated agent backlog actions, action-plan steps, execution queue items, command manifest entries, verification commands, gate commands, and operator runbook commands.
+- Added `operatorRunbook.nextCommandArgs` so scripts can start from the same first reviewed command that humans see in `nextCommand`.
+- Kept existing `command` strings unchanged as the human-readable and copy/paste surface.
+- Strengthened unit tests and package-smoke self-test assertions around structured operator command args.
+
+### Impact
+- Local AI/agent operator tooling can consume reviewed commands more safely without shell-string parsing.
+- The feature remains deterministic and local; it emits metadata only and does not execute commands, call external AI APIs, or mutate learning profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 451 — Agent Backlog Operator Next Command Metadata (unreleased)
+
+`design-ai learn --agent-backlog` operator runbook now exposes the first command an operator should run across `before`, `execute`, `after`, and `refresh` stages. This keeps mutation-review flows from skipping the clean-workspace gate when the queue-level next action points at the first backlog command.
+
+### Changed
+- Added `operatorRunbook.nextStage`, `nextCommand`, `nextCommandLabel`, `nextCommandRequired`, and `nextCommandRunPolicy`.
+- Surfaced the operator next command in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so operator next-command drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer because local scripts and operators can distinguish the first reviewed runbook command from the first backlog action command.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 450 — Agent Backlog Operator Runbook (unreleased)
+
+`design-ai learn --agent-backlog` execution queue now includes a deterministic operator runbook. Local operators and scripts can read `before`, `execute`, `after`, and `refresh` stages directly instead of combining gate buckets with the command manifest by hand.
+
+### Changed
+- Added `executionQueue.operatorRunbook` with ordered `before`, `execute`, `after`, and `refresh` stages.
+- Included command counts, required counts, review level, operator-review flag, and per-stage commands in the runbook payload.
+- Surfaced operator runbook counts in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so operator runbook drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute because the reviewed gate commands and backlog commands are exposed as one ordered runbook.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 449 — Agent Backlog Gate Runbook Buckets (unreleased)
+
+`design-ai learn --agent-backlog` command effect review output now includes deterministic gate runbook buckets. Local runbook tooling can read `before`, `after`, `refresh`, and `other` gate command groups directly instead of filtering the flat `gateCommands` array.
+
+### Changed
+- Added `commandEffectReview.gateRunbook` with `before`, `after`, `refresh`, and `other` command buckets.
+- Surfaced gate runbook bucket counts in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so gate runbook drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute from scripts and operator checklists because each gate phase now has a direct command bucket.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 448 — Agent Backlog Gate Phase Summary (unreleased)
+
+`design-ai learn --agent-backlog` command effect review output now includes deterministic gate phase summary metadata. Local runbook tooling can read gate counts, required counts, optional counts, and before/after/refresh coverage directly instead of parsing gate command labels.
+
+### Changed
+- Added `commandEffectReview.gatePhaseSummary` with `count`, `requiredCount`, `optionalCount`, `phases`, `hasBefore`, `hasAfter`, and `hasRefresh`.
+- Surfaced gate phase summary in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke assertions so gate phase summary drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to consume from scripts and operator checklists because gate coverage is explicit structured metadata.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file . --json`
+- `node cli/bin/design-ai.mjs learn --agent-backlog --from-file .`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 447 — Agent Backlog Gate Command Timing Metadata (unreleased)
+
+`design-ai learn --agent-backlog` gate commands now include deterministic timing metadata. Each command effect gate carries a `phase` and `required` flag so operators and local runbook tooling can distinguish before-execution checks, after-execution diff inspection, and backlog-refresh verification.
+
+### Changed
+- Added `phase` and `required` metadata to `commandEffectReview.gateCommands`.
+- Tagged clean-workspace checks as `before`, diff inspection as `after`, and backlog refresh as `refresh`.
+- Surfaced the gate phase in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so timing metadata drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to convert into an operator runbook because each suggested gate now has explicit execution timing.
+- This remains deterministic and local; it only emits metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 446 — Agent Backlog Command Effect Gate Commands (unreleased)
+
+`design-ai learn --agent-backlog` command effect review guidance now includes deterministic `gateCommands`. Operators can see the clean-workspace, diff-inspection, and backlog-refresh commands that should frame command-bearing action execution.
+
+### Changed
+- Added `commandEffectReview.gateCommands` metadata to focused agent backlog execution queues.
+- Derived gate commands from command effect review level and target/mutation exposure.
+- Surfaced command effect gate summaries in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so gate-command drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute safely because review guidance now includes concrete verification commands instead of checklist prose only.
+- This remains deterministic and local; it only emits suggested gate commands and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 445 — Agent Backlog Command Effect Review (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now include deterministic `commandEffectReview` guidance. Operators can read a queue-level review headline and checklist derived from command target exposure before running command-bearing actions.
+
+### Changed
+- Added `commandEffectReview` metadata to focused agent backlog execution queues.
+- Derived review level, operator-review requirement, headline, and checklist from `commandEffectSummary`.
+- Surfaced command effect review guidance in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so review guidance drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to operationalize because target/mutation exposure now becomes a concrete review instruction.
+- This remains deterministic and local; it only interprets already-emitted command metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 444 — Agent Backlog Command Effect Summary (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now include a queue-level `commandEffectSummary`. Operators and local automation can scan aggregate output targets, learning profile targets, usage sidecar targets, and mutation flags before opening every command manifest entry.
+
+### Changed
+- Added deterministic `commandEffectSummary` metadata to focused agent backlog execution queues.
+- Aggregated unique output/profile/usage targets and mutation flags from command manifest `commandEffects`.
+- Surfaced command effect target counts in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so queue-level command effect summary drift is caught.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to review at queue level before inspecting each command-bearing action.
+- This remains deterministic and local; it only summarizes already-emitted command metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 443 — Agent Backlog Command Effects Manifest (unreleased)
+
+`design-ai learn --agent-backlog` command manifests now include explicit effect metadata for command-bearing actions. Operators and local automation can inspect output targets, learning profile targets, usage sidecar targets, mutation flags, and review reasons without parsing shell text.
+
+### Changed
+- Added `commandSafety.outputTargets`, `profileTargets`, `usageTargets`, and `mutationFlags` to focused agent backlog action-plan steps.
+- Added `commandEffects` to execution queue items and command manifest entries so target hints travel with `runPolicy`.
+- Surfaced compact effect summaries in human `learn --agent-backlog` output and Markdown command manifest reports.
+- Strengthened unit tests and package-smoke self-test assertions so command effect metadata drift is caught in JSON and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer for operators and local automation because command effects are explicit alongside run policy.
+- This remains deterministic and local; it only emits effect metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 442 — Agent Backlog Command Manifest (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now expose a command manifest with explicit run policies for command-bearing actions. Operators and local automation can distinguish `preview-only`, `review-before-file-write`, and `review-before-mutation` commands without reclassifying shell text from the grouped queue.
+
+### Changed
+- Added `actionPlan.executionQueue.commandManifest`, `commandManifestCount`, and `nextCommandRunPolicy`.
+- Added `runPolicy` to execution queue items so ordered, preview, file-write, and mutation buckets share the same execution policy vocabulary.
+- Surfaced the recommended command policy and command manifest in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so command manifest drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is safer for operators and local automation because command execution policy is explicit instead of inferred from command text.
+- This remains deterministic and local; it only emits manifest metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 441 — Agent Backlog Ordered Execution Queue (unreleased)
+
+`design-ai learn --agent-backlog` execution queues now preserve an explicit ordered command list in addition to grouped safety buckets. Operators and local automation can read the recommended next action and queue order directly from JSON, human output, or Markdown reports without reconstructing the sequence from preview/file-write/mutation groups.
+
+### Changed
+- Added `actionPlan.executionQueue.ordered`, `orderedCount`, and `nextActionId`.
+- Surfaced the recommended next action and queue order in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so ordered queue drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to pass to operators or local automation while preserving the grouped safety review buckets.
+- This remains deterministic and local; it only emits ordering metadata and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 440 — Agent Backlog Execution Queue (unreleased)
+
+`design-ai learn --agent-backlog` action plans now expose an execution queue that groups safe preview commands before local file-write and local mutation review commands. Operators can see the recommended next command without re-sorting every backlog step manually.
+
+### Changed
+- Added `actionPlan.executionQueue` with preview/read-only, file-write review, and mutation-review command groups.
+- Added a `nextCommand` field derived from the safest available queue item.
+- Surfaced the execution queue in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so execution queue drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to execute in a controlled order after reviewing safety summary counts.
+- This remains deterministic and local; it only reorganizes emitted action-plan commands and does not run commands, call external APIs, or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 439 — Agent Backlog Safety Summary (unreleased)
+
+`design-ai learn --agent-backlog` action plans now include a safety summary across all follow-up steps. Operators can see the total count of read-only, local file-writing, and local state-mutating commands before inspecting each step.
+
+### Changed
+- Added `actionPlan.safetySummary` with total, read-only, local file-write, local mutation, clean-workspace, and mutation-review counts.
+- Surfaced the safety summary in human `learn --agent-backlog` output and Markdown reports.
+- Strengthened unit tests and package-smoke self-test assertions so safety summary drift is caught in JSON, human, and Markdown paths.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent backlog handoff is easier to triage before running generated commands.
+- This remains deterministic and local; it only summarizes emitted commands and does not call external APIs or mutate profiles, skill files, usage sidecars, eval files, or target repositories.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 438 — Agent Backlog Command Safety Classification (unreleased)
+
+`design-ai learn --agent-backlog` action plans now classify each follow-up command before an operator runs it. Steps distinguish read-only preview/report commands from local output-file writes and apply/fix mutations, making the local AI/agent backlog safer to execute without adding external APIs or dependencies.
+
+### Changed
+- Added `commandSafety` metadata to each `actionPlan.steps[]` item with `level`, local file-write state, local mutation state, detected flags, and a short safety reason.
+- Updated action-plan verification guidance so read-only commands ask for preview review, while file-writing or mutating commands ask for a clean working tree or disposable workspace.
+- Surfaced command safety in human and Markdown `learn --agent-backlog` output.
+- Strengthened unit tests and package-smoke self-test assertions so action-plan safety metadata cannot silently disappear.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development follow-up commands are easier to triage before execution.
+- The agent backlog report remains deterministic, local, and non-mutating; the new metadata only describes the safety profile of emitted follow-up commands.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 437 — Agent Backlog Action Plan Export (unreleased)
+
+`design-ai learn --agent-backlog` now turns the focused local AI/agent backlog into an execution-ready action plan. JSON and Markdown reports preserve ordered steps, verification commands, and mutation-review flags while keeping report generation deterministic, local, and read-only.
+
+### Changed
+- Added an `actionPlan` object to focused agent backlog JSON output with ordered steps, the next step, verification commands, and read-only report boundaries.
+- Added a Markdown “Action Plan” section to `learn --agent-backlog --report` output.
+- Added a concise human output “Action plan” preview for the first execution steps.
+- Strengthened unit tests and package-smoke self-test assertions for action plan JSON, human output, and Markdown report coverage.
+- Updated usage docs, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development has a cleaner handoff from backlog diagnosis to controlled local execution.
+- The report remains non-mutating and does not call external AI APIs; individual suggested commands still mark whether they require review before mutation.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue deeper AI/agent learning development or prepare the branch for push when ready.
+
+## Phase 436 — Agent Backlog Release Metadata Guard (unreleased)
+
+Release metadata now protects the packed-tarball focused agent backlog smoke wording across release-facing policy docs. README, Korean README, Release Checklist, and Distribution guidance cannot silently drop the Markdown report, JSON `--out`, or strict gate coverage for `design-ai learn --agent-backlog`.
+
+### Changed
+- Added release metadata phrase guards for `design-ai learn --agent-backlog --report --out agent-backlog.md`, agent backlog JSON `--out` file-write confirmations, and `design-ai learn --agent-backlog --strict --json`.
+- Added release metadata self-test drift fixtures for agent backlog Markdown, JSON `--out`, and strict gate package smoke wording.
+- Updated README, Korean README, and Distribution docs so packed-tarball smoke guidance explicitly preserves focused agent backlog artifacts and strict gates.
+- Updated changelog, roadmap, and session history with the guard hardening.
+
+### Impact
+- The Phase 435 focused agent backlog CLI surface now has release-facing documentation guards matching its package smoke coverage.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 435 — Focused Agent Backlog Reports (unreleased)
+
+`design-ai learn --agent-backlog` now exposes the deterministic local AI/agent development backlog as its own read-only CLI surface. Operators can inspect the next-action queue without reading the full `learn --signals` registry, save a Markdown backlog artifact, or use `--strict --json` as a focused local gate.
+
+### Changed
+- Added `learn --agent-backlog` parsing, help output, human output, JSON output, Markdown report rendering, `--out` support, and strict exit handling.
+- Reused the existing `learningSignalRegistry().agentDevelopment` data so the new surface remains deterministic, local, dependency-free, and non-mutating.
+- Added unit tests for parser behavior, focused report shaping/rendering, runtime JSON/human/Markdown output, output-file persistence, non-mutation, and strict warning exits.
+- Added packed-tarball smoke and package-smoke self-test coverage for installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Updated usage docs, README, Korean README, Product Readiness, Release Checklist, changelog, roadmap, and session history.
+
+### Impact
+- Internal AI/agent development can now archive or gate just the actionable backlog before deeper skill proposal review or release prep.
+- This does not add external AI APIs, embeddings, fine-tuning, backend storage, target repo mutation, skill-file mutation, or new dependencies.
+
+### Verified
+- `node --check cli/commands/help.mjs cli/commands/learn.mjs cli/lib/learn.mjs cli/lib/signals.mjs`
+- `node --test cli/lib/help-command.test.mjs cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue the next AI learning surface after reviewing whether release metadata phrase guards should cover focused agent backlog artifacts explicitly.
+
+## Phase 434 — Full Release Check Evidence After Learning Guard Hardening (unreleased)
+
+The full `npm run release:check` gate now passes after the learning signal and skill proposal package smoke release metadata guard phases. This records that the latest local AI/agent learning artifact guards still work together through tests, audits, package checks, release metadata, release self-tests, and packed-tarball smoke.
+
+### Changed
+- Ran the full release check after Phase 429-433 learning signal and skill proposal package smoke guard hardening.
+- Recorded release evidence so the branch has a single current gate result before push or broader AI/agent feature work.
+- Updated changelog, roadmap, and session history with the passing gate.
+
+### Impact
+- Confirms the recent `learn --signals` and `learn --propose-skills` artifact guards do not weaken the release gate.
+- This is release evidence documentation only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `npm run release:check`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 433 — Learning Signals JSON Out Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball learn signals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining learning signal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
+
+### Changed
+- Added a release metadata phrase guard for learn signals JSON `--out` file-write confirmation package smoke wording.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the learning signal JSON output-file wording while retaining Markdown report and strict gate wording.
+- Updated README, Korean README, Distribution docs, Release Checklist, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve every packaged learning signal artifact path: JSON `--out`, Markdown signal report, and strict signal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 432 — Skill Proposal JSON Out Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball learn skill proposals JSON `--out` file-write confirmation smoke phrase across release-facing policy docs. This closes the remaining skill proposal package artifact gap so README, Distribution, and Release Checklist guidance cannot silently drop JSON output-file persistence coverage.
+
+### Changed
+- Added a release metadata phrase guard for learn skill proposals JSON `--out` file-write confirmation package smoke wording.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the skill proposal JSON output-file wording while retaining other skill proposal smoke wording.
+- Updated README, Korean README, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve every packaged skill proposal artifact path: JSON `--out`, Markdown report, read-only review-file decisions, JSON review template, unified diff patch, threshold skipping, and strict proposal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 431 — Skill Proposal Review-File Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball `design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join smoke phrase across release-facing policy docs. This closes the Phase 427/428 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged review-file decision coverage.
+
+### Changed
+- Added a release metadata phrase guard for the `learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision join package smoke phrase.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the review-file decision wording while retaining other skill proposal smoke wording.
+- Updated changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve the full skill proposal package smoke contract: Markdown report, read-only review-file decisions, JSON review template, unified diff patch, threshold skipping, and strict proposal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 430 — Learning Signal Markdown Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball `design-ai learn --signals --report --out learning-signals.md` Markdown signal report smoke phrase across release-facing policy docs. This closes the Phase 429 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged Markdown signal report coverage.
+
+### Changed
+- Added a release metadata phrase guard for the `learn --signals --report --out learning-signals.md` Markdown signal report package smoke phrase.
+- Added a release metadata `--self-test` drift fixture that fails when a policy doc drops the Markdown signal report wording while retaining the strict signal gate wording.
+- Updated README, Korean README, Korean Distribution docs, Release Checklist, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs now preserve both learning signal package smoke contracts: Markdown signal report persistence and strict signal readiness gating.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package smoke runner behavior, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 429 — Learning Signal Markdown Handoff Reports (unreleased)
+
+`design-ai learn --signals --report --out learning-signals.md` now writes a durable Markdown handoff for the local AI/agent signal registry. This turns the existing read-only JSON/human signal surface into a shareable artifact covering learning audit state, usage sidecar counts, eval signal files, check captures, workspace readiness, deterministic agent development backlog actions, recommendations, and privacy boundaries.
+
+### Changed
+- Added `--report` support for `learn --signals` and kept it mutually exclusive with JSON and other proposal-only output modes.
+- Added a Markdown signal report renderer with sections for profile audit, usage signals, eval signals, check-capture entries, workspace readiness, agent development backlog, recommendations, and privacy boundaries.
+- Wired report output through safe `--out file` writes without mutating learning profiles, usage sidecars, eval files, skill files, or target repositories.
+- Updated command help, shared smoke assertions, package smoke, AI learning docs, Product Readiness, README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for `learn --signals --report --out learning-signals.md` through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators can archive or share the local AI/agent development backlog before running evals, applying skill proposal decisions, or preparing a push.
+- The report is deterministic, local, and read-only: no `learning.json` mutation, usage sidecar mutation, eval file mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/signals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 428 — Skill Proposal Review Template Handoffs (unreleased)
+
+`design-ai learn --propose-skills --review-template --out skill-proposals.review.json` now emits a JSON review-file scaffold for unresolved skill proposals. This closes the operator workflow gap after Phase 427: users no longer need to copy proposal ids by hand before recording manual `applied`, `rejected`, `accepted`, or `deferred` decisions.
+
+### Changed
+- Added `--review-template` parsing for `learn --propose-skills` and rejected the option for unrelated learn actions.
+- Added a JSON review template renderer with review policy metadata, source file paths, summary counts, and one decision scaffold per unresolved proposal.
+- Defaulted generated decisions to `deferred` so the strict proposal gate stays pending until an operator deliberately changes a proposal to `applied` or `rejected`.
+- Excluded proposals already cleared by `applied` or `rejected` review-file decisions from generated templates.
+- Updated command help, shared smoke assertions, package smoke, AI learning docs, Product Readiness, README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for `--review-template --out skill-proposals.review.json` through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators get a safe review ledger starting point for local AI/agent skill evolution decisions without mutating `learning.json`, skill files, or an existing review file.
+- The feature remains deterministic, local, and non-mutating except for explicit `--out` artifact writes: no skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs && node --check cli/commands/help.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 427 — Skill Proposal Review State (unreleased)
+
+`design-ai learn --propose-skills` now accepts `--review-file skill-proposals.review.json` to join manual proposal decisions without mutating the learning profile, skill files, or the review file. This gives local AI/agent skill-evolution work a deterministic way to distinguish unresolved proposals from proposals that were manually applied or rejected.
+
+### Changed
+- Added `--review-file path` parsing for `learn --propose-skills` and rejected the option for unrelated learn actions.
+- Added read-only review file loading for `decisions` or `reviews` arrays with `accepted`, `rejected`, `applied`, and `deferred` statuses.
+- Marked proposal payloads with `reviewStatus`, `reviewDecision`, `reviewClearsStrict`, review summary counts, stale decision counts, and pending review counts.
+- Kept `applied` and `rejected` as strict-clearing statuses; `accepted` and `deferred` remain pending because follow-up work is still unresolved.
+- Updated JSON, human, Markdown report, patch preview, command help, shared smoke assertions, AI learning docs, Product Readiness, README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+- Added packed-tarball smoke execution for the read-only review decision join through installed-bin and one-shot `npm exec --package <tarball>` paths.
+
+### Impact
+- Operators can keep a portable review ledger for skill proposals and clear the proposal-review gate only after manual apply or rejection decisions.
+- Patch previews exclude proposals already marked `applied` or `rejected`, while unresolved proposals still appear in the diff handoff.
+- The feature remains deterministic, local, read-only, and non-mutating: no `learning.json` mutation, skill file mutation, review file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 426 — Skill Proposal Patch Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --patch --out skill-proposals.patch` through installed-bin and one-shot `npm exec --package <tarball>` paths. This turns the Phase 425 unified diff handoff into a package-level local AI/agent learning contract.
+
+### Changed
+- Added package smoke execution for `learn --propose-skills --patch --out skill-proposals.patch`.
+- Added package smoke assertions for patch headers, candidate skill diff paths, proposal metadata, verification commands, and preview-only non-mutation behavior.
+- Added release metadata guard coverage so release-facing docs cannot drop the patch package smoke phrase.
+- Updated README, Korean README, Distribution docs, Release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the diff-style manual-review handoff, not only console, JSON, Markdown, threshold, and strict proposal paths.
+- The smoke remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 425 — Skill Proposal Patch Handoffs (unreleased)
+
+`design-ai learn --propose-skills --patch` now emits preview-only unified diff handoffs for repeated check-capture skill proposals. This gives an operator a concrete manual-review artifact before editing `skills/*/SKILL.md`, while keeping the command non-mutating.
+
+### Changed
+- Added `--patch` parsing for `learn --propose-skills` and rejected conflicting `--json` / `--report` output modes.
+- Added a patch renderer that groups proposals by candidate skill file and appends local learning proposal notes in unified diff format.
+- Wired patch output through stdout and safe `--out file` writes without changing learning profiles or skill files.
+- Updated help output, smoke help assertions, AI learning docs, agent development notes, Product Readiness, README, Korean README, Distribution docs, changelog, roadmap, and session history.
+
+### Impact
+- Operators can review or save a concrete diff-style handoff before manually applying accepted skill instruction changes.
+- The command remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs && node --check cli/commands/help.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Closed by Phase 426.
+
+## Phase 423 — Skill Proposal Minimum Evidence Threshold (unreleased)
+
+`design-ai learn --propose-skills` now accepts `--min-evidence N` so local AI/agent development reviews can tune how much repeated check-capture evidence is required before a candidate skill delta appears.
+
+### Changed
+- Added `--min-evidence N` parsing and validation for `learn --propose-skills`.
+- Passed the threshold into the preview-only skill proposal builder and exposed the effective threshold in JSON, human output, and Markdown reports.
+- Updated help output, CLI help catalog, smoke assertion expectations, AI learning docs, usage docs, distribution docs, README, Korean README, changelog, roadmap, and session history.
+- Added unit coverage for parser validation, threshold-driven skipped groups, help output, and report threshold visibility.
+
+### Impact
+- Operators can keep the default threshold of 2, raise it for stricter internal skill review, or lower it for early dogfood review without editing `learning.json` or skill files.
+- The command remains deterministic, local, preview-only, and non-mutating: no external AI API, embeddings, fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/commands/learn.mjs && node --check cli/lib/learn.mjs && node --check cli/lib/skill-proposals.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- Manual CLI smoke: `design-ai learn --propose-skills --min-evidence 3 --json` reports `minEvidenceCount: 3`, `proposalCount: 0`, and `skippedCount: 1` for a two-entry repeated check-capture profile.
+
+### What's still ahead
+- Closed by Phase 424.
+
+## Phase 424 — Skill Proposal Minimum Evidence Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --min-evidence 3 --json` through installed-bin and one-shot `npm exec --package <tarball>` paths. This turns the Phase 423 threshold option into a package-level contract.
+
+### Changed
+- Added package smoke execution for `learn --propose-skills --min-evidence 3 --json`.
+- Added package smoke assertions for effective `minEvidenceCount`, threshold-driven skipped groups, preview-only boundaries, and read-only privacy metadata.
+- Updated release-facing docs so packed-tarball smoke guidance names the min-evidence threshold path.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify that a two-entry repeated check-capture group is skipped when the proposal threshold is raised to 3.
+- The smoke remains deterministic, local, preview-only, and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embeddings/fine-tuning, backend storage, target repo mutation, or dependency change.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+
+### What's still ahead
+- Continue broader AI/agent learning development or prepare the current branch for push when ready.
+
+## Phase 422 — Local Portfolio Artifact Release Gate Isolation (unreleased)
+
+Release gates now tolerate local portfolio/evidence output artifacts without deleting or editing those artifacts. The link audit and package contents checks distinguish repository release assets from local portfolio exports so `npm run release:check` can run in the same working tree used for portfolio evidence collection.
+
+### Changed
+- Skipped `evidence/` and `_portfolio_export/` in the internal link audit because those directories contain local output artifacts with links outside the package/docs release surface.
+- Excluded local portfolio docs under `docs/` from npm package contents so untracked portfolio pages do not introduce broken package links to non-packaged screenshots.
+- Updated the package contents self-test helper so exact and directory-style `files` negation patterns are handled consistently.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- `npm run release:check` can pass in a workspace that also contains local portfolio/evidence exports.
+- No portfolio files were deleted or modified.
+- CLI runtime behavior, package command behavior, learning profiles, skill files, external AI/API boundaries, target repo boundaries, and dependency surface remain unchanged.
+
+### Verified
+- `python3 -m py_compile tools/audit/link-check.py tools/audit/package-contents.py`
+- `python3 -B tools/audit/link-check.py`
+- `npm run audit:strict`
+- `python3 -B tools/audit/package-contents.py --self-test`
+- `npm run package:check`
+- `npm run release:check`
+
+### What's still ahead
+- Continue product/AI learning development or prepare the current branch for push when ready.
+
+## Phase 421 — Skill Proposal Markdown Release Metadata Guard (unreleased)
+
+Release metadata now protects the packed-tarball `design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifact smoke phrase across release-facing policy docs. This closes the Phase 420 follow-up so README, Distribution, and Release Checklist guidance cannot silently drop packaged Markdown report coverage.
+
+### Changed
+- Added a table-driven release metadata phrase guard for the skill proposal Markdown report package smoke phrase.
+- Added a release metadata self-test drift fixture that fails when a policy doc drops the Markdown `--report --out` review artifact wording while keeping the strict proposal gate wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve both skill proposal package smoke contracts: Markdown review artifact persistence and strict expected-failure readiness.
+- Existing CLI behavior, package smoke execution, learning profile storage, skill files, external AI/API boundaries, target repo boundaries, and dependency surface remain unchanged.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:self-test`
+- `npm run release:metadata`
+
+### What's still ahead
+- Continue broader release hardening or move back to product/AI learning feature development.
+
+## Phase 420 — Skill Proposal Markdown Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --report --out skill-proposals.md` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between the Phase 419 Markdown review artifact and packaged CLI verification.
+
+### Changed
+- Added package smoke assertions for skill proposal Markdown report content, including profile/usage paths, candidate skill, verification command, privacy boundaries, and preview-only next steps.
+- Added installed-bin and one-shot package smoke execution for `learn --propose-skills --report --out`.
+- Added package smoke self-test drift coverage for the Markdown report privacy boundary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the reviewer-friendly skill proposal Markdown artifact, not only human console, JSON, JSON `--out`, and strict JSON paths.
+- The smoke remains local and non-mutating: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Closed by Phase 421.
+
+## Phase 419 — Skill Proposal Markdown Review Reports (unreleased)
+
+`design-ai learn --propose-skills` can now emit a Markdown review artifact with `--report --out skill-proposals.md`. This gives the local AI/agent learning loop a durable human-review handoff before any skill file is edited manually.
+
+### Changed
+- Added a Markdown renderer for skill evolution proposal payloads, including proposal summary, evidence, verification commands, skipped groups, privacy boundaries, and next steps.
+- Wired `learn --propose-skills --report` into the CLI while keeping JSON output and strict gating behavior intact.
+- Updated help smoke assertions, usage docs, distribution docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can archive/review skill proposal evidence without mutating `learning.json`, editing `skills/*/SKILL.md`, calling external AI APIs, adding embeddings/fine-tuning, adding backend storage, touching target repos, or adding dependencies.
+- The proposal gate remains preview-only: `--strict` can still fail pending review, but `--report` only writes the requested Markdown artifact.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `node --check cli/lib/skill-proposals.mjs && node --check cli/lib/learn.mjs && node --check cli/commands/learn.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Package smoke can be extended later to execute the Markdown `--report --out` path through packed tarballs if release evidence needs to cover that exact artifact mode.
+
+## Phase 418 — Skill Proposal Strict Guard Release Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the strict skill proposal package smoke metadata guard. This records that the release assertion fixtures, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests all still agree after the Phase 417 guard.
+
+### Changed
+- Ran the full release assertion self-test chain after adding the strict skill proposal package smoke metadata guard.
+- Recorded the passing evidence in changelog, roadmap, and session history.
+
+### Impact
+- Release evidence now confirms the new `design-ai learn --propose-skills --strict --json` smoke phrase guard does not weaken existing assertion fixtures.
+- This is evidence/documentation only: no CLI runtime behavior, JSON contract, package smoke execution path, learning schema, skill files, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
+## Phase 417 — Skill Proposal Strict Package Smoke Metadata Guard (unreleased)
+
+Release metadata now guards the packed-tarball `design-ai learn --propose-skills --strict --json` expected-failure smoke phrase in release-facing docs. This keeps the Phase 416 package evidence visible in README, Distribution, and Release checklist guidance.
+
+### Changed
+- Added a release metadata phrase guard for packed strict skill proposal smoke coverage.
+- Added release metadata self-test drift coverage that fails when README drops the strict skill proposal package smoke phrase.
+- Tightened Release checklist wording so it names the exact `design-ai learn --propose-skills --strict --json` expected-failure gate.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release docs now preserve the installed-bin and one-shot package strict skill proposal readiness gate alongside package smoke coverage.
+- This remains docs/metadata only: no runtime CLI behavior change, learning schema change, skill file mutation, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
+## Phase 416 — Skill Proposal Strict Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --propose-skills --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths as an expected-failure gate when pending proposal review remains.
+
+### Changed
+- Added strict skill proposal expected-failure smoke execution to package smoke's installed-bin and one-shot package paths.
+- Tightened package smoke proposal assertions so JSON status and human status output remain visible.
+- Added package smoke self-test drift coverage for proposal status and strict exit-code behavior.
+- Updated changelog, roadmap, session history, and distribution guidance.
+
+### Impact
+- Packaged internal/company builds now verify the strict skill proposal readiness gate, not only source-tree unit tests.
+- This remains preview-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict proposal path after publish if post-publish AI/agent readiness evidence becomes required.
+
+## Phase 415 — Skill Proposal Strict Readiness Gate (unreleased)
+
+`design-ai learn --propose-skills --strict` now turns preview-only skill evolution proposals into a local readiness gate. Pending proposal review or upstream learning signal warnings exit non-zero, but the command still does not edit `learning.json`, does not edit skill files, and does not call external AI APIs.
+
+### Changed
+- Added `status` to skill proposal JSON payloads, derived from upstream signal readiness and pending proposal count.
+- Allowed `--strict` with `learn --propose-skills` and set exit code 1 when proposal status is not `pass`.
+- Updated learn help, README command lists, usage docs, distribution docs, and help smoke assertions for the new strict proposal surface.
+- Added unit coverage for parser support, JSON payload status, human status output, non-mutating strict exit behavior, and non-strict success behavior.
+
+### Impact
+- Internal AI/agent development can now fail a local gate when repeated check-capture signals have generated skill deltas that still require manual review.
+- This remains preview-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- A future apply path for accepted skill deltas still requires explicit approval and a separate archive/review design.
+
+## Phase 414 — Learning Signals Strict Package Smoke Metadata Guard (unreleased)
+
+Release metadata now guards the packed-tarball `design-ai learn --signals --strict --json` smoke phrase in release-facing docs. This keeps the Phase 413 package evidence visible in README, Distribution, and Release checklist guidance instead of allowing the strict local AI/agent readiness gate to drift out silently.
+
+### Changed
+- Added a release metadata phrase guard for packed strict learning signal smoke coverage.
+- Added release metadata self-test drift coverage that fails when README drops the strict signal package smoke phrase.
+- Tightened Release checklist wording so it names the exact `design-ai learn --signals --strict --json` command.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release docs now preserve the installed-bin and one-shot package strict AI/agent readiness gate alongside package smoke coverage.
+- This remains docs/metadata only: no runtime CLI behavior change, learning schema change, external AI call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict path after publish if post-publish AI/agent readiness evidence becomes required.
+
+## Phase 413 — Learning Signals Strict Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now executes `design-ai learn --signals --strict --json` through installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the Phase 412 hardening follow-up by proving the local signal registry and deterministic `agentDevelopment` backlog strict gate still passes after packaging.
+
+### Changed
+- Added strict learning signal registry JSON smoke execution to package smoke's installed-bin and one-shot package paths.
+- Tightened shared package smoke assertions so `agentDevelopment.status` must remain `pass` in the good signal fixture.
+- Added package smoke self-test drift coverage for non-passing `agentDevelopment` status.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packaged internal/company builds now verify the strict AI/agent readiness gate, not only source-tree unit tests.
+- This remains read-only and local: no `learning.json` mutation, skill file mutation, external AI API call, embedding/fine-tuning, backend storage, target repo mutation, or new dependency.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add the same strict path after the next publish if we decide this gate should be post-publish required evidence.
+
+## Phase 412 — Learning Signals Strict Agent Gate (unreleased)
+
+`design-ai learn --signals --strict` now exits non-zero when the signal registry or deterministic `agentDevelopment` backlog is not `pass`. This turns the Phase 411 backlog into a local gate for AI/agent development readiness while keeping the command read-only, local, and dependency-free.
+
+### Changed
+- Allowed `--strict` with `learn --signals` in addition to `learn --eval`.
+- Applied strict exit handling after JSON or human `learn --signals` output is emitted.
+- Updated learn help, README command lists, usage docs, and agent development docs with the strict signal gate.
+- Added unit coverage for parser support and non-zero strict exit behavior.
+
+### Impact
+- Local scripts can now fail on warning/failing learning signal registry or agent backlog status without running external AI APIs or mutating `learning.json`.
+- This does not add embeddings, fine-tuning, online model calls, telemetry, backend storage, auth, multi-user sync, target website repo mutation, or new dependencies.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Public registry smoke can add a direct `learn --signals --strict` path after publish if this gate becomes part of the post-publish release checklist.
+
+## Phase 411 — Learning Signals Agent Development Backlog (unreleased)
+
+`design-ai learn --signals` now turns the existing local learning, usage sidecar, eval checkpoint, check-capture, and workspace readiness summaries into a deterministic `agentDevelopment` backlog. The backlog ranks profile audit, usage recording, eval harness replay, check-capture skill evolution, and workspace readiness actions without adding dependencies, changing `learning.json`, editing skill files, or calling external AI APIs.
+
+### Changed
+- Added `agentDevelopment` to the learning signal registry JSON payload with ranked `p0`/`p1`/`p2`/`p3` actions, commands, evidence, and local privacy boundaries.
+- Added an `Agent development backlog` section to human `design-ai learn --signals` output.
+- Extended unit and package smoke assertions so the new backlog shape and local/preview-only privacy boundary cannot drift silently.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Local AI/agent development can now move from raw signal summaries to an ordered next-action queue that fits the Hermes/Harness-style eval loop while staying deterministic and local.
+- This does not add embeddings, fine-tuning, online model calls, telemetry, backend storage, auth, multi-user sync, target website repo mutation, or new dependencies.
+
+### Verified
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Add a future apply path only after explicit approval; v1 stays preview-only and local.
+
+## Phase 410 — Post-Release Scope Decision Boundary (unreleased)
+
+After the Phase 409 full `npm run release:check` evidence, the next work is no longer another release hardening pass. The roadmap now separates three paths: push/Real-CI/public launch evidence, deeper AI learning work with explicit data boundaries, and broader product-surface expansion for Website Console automation, VS Code Webview reuse, Figma/plugin surfaces, or agent SDK workflows.
+
+### Changed
+- Recorded the post-release hardening scope boundary in the roadmap.
+- Kept push/Real-CI/public launch as external-system work that requires explicit approval.
+- Kept embeddings, fine-tuning, backend storage, auth, and multi-user sync outside shipped scope until a dedicated phase defines privacy and data boundaries.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Future development can choose a concrete product path instead of continuing redundant release evidence loops.
+- This is planning documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Choose one path explicitly: push/Real-CI launch, deeper AI learning architecture, or broader product-surface work.
+
+## Phase 409 — Release Policy Product Readiness Full Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the release-facing docs Product Readiness release policy full gate evidence guard. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 408 made the release-facing docs evidence guard durable.
+
+### Changed
+- Ran `npm run release:check` after Phase 408.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the release-facing docs Product Readiness full gate evidence guard is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 408 — Release Policy Product Readiness Full Gate Evidence Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the Product Readiness release policy full gate evidence `npm run release:check` phrase. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke wording recorded in Phase 407.
+
+### Changed
+- Added a release policy phrase group for Product Readiness release policy full gate evidence `release:check` coverage.
+- Added a release metadata `--self-test` drift fixture that fails if release-facing docs drop that evidence phrase.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep Phase 407 full release gate evidence aligned with Product Readiness.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 407 — Product Readiness Release Policy Full Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness release policy full gate evidence guard. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 406 made the Product Readiness evidence guard durable.
+
+### Changed
+- Ran `npm run release:check` after Phase 406.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the Product Readiness release policy full gate evidence guard is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 406 — Product Readiness Release Policy Full Gate Evidence Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence after the release-facing policy docs Product Readiness release policy full gate evidence guard. Product Readiness now keeps the Phase 405 evidence tied to unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+
+### Changed
+- Added a Product Readiness phrase group for release-facing policy docs Product Readiness release policy full gate `release:check` evidence.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the Phase 405 full release gate evidence.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 405 — Release Policy Product Readiness Full Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the release-facing policy docs Product Readiness release policy full gate evidence guard. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 404 made the release-facing policy docs guard durable.
+
+### Changed
+- Ran `npm run release:check` after Phase 404.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the release-facing policy docs Product Readiness full gate evidence guard is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 404 — Release Policy Product Readiness Full Gate Evidence Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the Product Readiness release policy full gate `npm run release:check` evidence phrase for Website Console bundle boundary metadata full `release:check` evidence. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke wording recorded in Phase 403.
+
+### Changed
+- Added a release policy phrase group for Product Readiness release policy full gate `release:check` evidence.
+- Added a release metadata `--self-test` drift fixture that fails if release-facing docs drop that evidence phrase.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep Phase 403 full release gate evidence aligned with Product Readiness.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 403 — Product Readiness Release Policy Full Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness guard for release-facing policy docs Website Console bundle boundary metadata full `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 402 made the readiness evidence durable.
+
+### Changed
+- Ran `npm run release:check` after Phase 402.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the Product Readiness release policy full gate guard is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 402 — Product Readiness Bundle Boundary Release Policy Full Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence recorded after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence. Product Readiness now keeps that Phase 401 evidence tied to unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
+
+### Changed
+- Added a Product Readiness phrase group for release-facing policy docs full bundle boundary `release:check` evidence.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that evidence phrase.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the Phase 401 full release gate evidence, not only the earlier Product Readiness/release-facing policy docs bundle boundary guard evidence.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 401 — Release Policy Bundle Boundary Full Release Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after Phase 400 aligned README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist with Product Readiness.
+
+### Changed
+- Ran `npm run release:check` after Phase 400.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence is covered by the complete pre-push release gate.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 400 — Release Policy Bundle Boundary Full Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases after full `release:self-test` evidence recording. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now keep the same unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke wording that Product Readiness protects.
+
+### Changed
+- Extended the release policy phrase group for Website Console bundle boundary metadata full `release:check` evidence.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist with the full gate evidence wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep Phase 398 full release gate evidence aligned with Product Readiness, including full `release:self-test` evidence recording and the full pre-push gate components.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 399 — Product Readiness Bundle Boundary Full Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence recorded after Website Console bundle boundary metadata `release:check` guards and their full `release:self-test` evidence recording. Product Readiness now explicitly keeps unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke tied to that full release gate evidence.
+
+### Changed
+- Added a Product Readiness phrase group for bundle boundary metadata full `release:check` coverage after `release:self-test` evidence recording.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the Phase 398 full release gate evidence, not only the earlier bundle boundary `release:check` and `release:self-test` evidence phrases.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 398 — Bundle Boundary Release Gate Guard Full Release Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata `release:check` evidence plus their full `release:self-test` evidence recording. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the bundle boundary release gate guard phases.
+
+### Changed
+- Ran `npm run release:check` after Phase 397.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the bundle boundary metadata `release:check` evidence guard chain is covered by the full pre-push release gate, not only targeted metadata checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 397 — Bundle Boundary Release Gate Guard Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata `release:check` evidence. This confirms the new Product Readiness phrase guard, release policy phrase guard, and their drift fixtures run together with shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 395-396.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the bundle boundary metadata `release:check` evidence guards are covered by the full release self-test chain.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 396 — Release Policy Bundle Boundary Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now keep the same bundle-check JSON/human and bundle-handoff JSON/prompt release gate evidence that Product Readiness protects.
+
+### Changed
+- Added bundle boundary metadata `release:check` wording to release-facing docs.
+- Added a release policy phrase guard for Website Console bundle boundary metadata release gate evidence.
+- Added a release metadata `--self-test` drift fixture that fails if README drops the phrase.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep `npm run release:check`, package contents, release self-tests, and packed-tarball smoke tied to Website Console bundle boundary metadata guard phases.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 395 — Product Readiness Bundle Boundary Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for Website Console bundle boundary metadata guard phases. Phase 394 recorded the full release gate result; this phase makes the Product Readiness evidence durable when readiness docs are edited later.
+
+### Changed
+- Added a Product Readiness phrase group for `npm run release:check` coverage after Website Console bundle boundary metadata guard phases.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has deterministic guard coverage for the bundle boundary metadata full release gate evidence, matching the existing mcp-probes saved-payload release gate evidence guard.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 394 — Bundle Boundary Metadata Guard Full Release Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle boundary metadata. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the bundle-check JSON/human and bundle-handoff JSON/prompt boundary wording guards.
+
+### Changed
+- Ran `npm run release:check` after Phases 390-393.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the bundle boundary metadata wording is covered by the full pre-push release gate, not only targeted metadata checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 393 — Release Policy Bundle Boundary Metadata Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping Website Console bundle boundary metadata wording. README, Korean README, Distribution docs, Korean Distribution docs, and the release checklist now preserve the same bundle-check JSON/human and bundle-handoff JSON/prompt boundary contract already protected in Product Readiness.
+
+### Changed
+- Added bundle boundary metadata wording to release-facing docs that summarize public registry Website Console coverage.
+- Added a release policy phrase guard for Website Console bundle-check and bundle-handoff boundary metadata.
+- Added a release metadata `--self-test` drift fixture that fails if README regresses to generic bundle boundary wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now keep deterministic-local, no-external-call, and no-target-repo-mutation handoff boundary wording visible next to public registry Website Console smoke coverage.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 392 — Product Readiness Bundle Boundary Metadata Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the Website Console bundle boundary metadata wording added across bundle-check and bundle-handoff. This keeps the release-facing readiness summary explicit that handoff validation exposes deterministic-local, no-external-call, and no-target-repo-mutation boundaries in bundle-check JSON/human output and bundle-handoff JSON/prompt output.
+
+### Changed
+- Added a Product Readiness phrase guard for Website Console bundle-check and bundle-handoff boundary metadata.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness regresses to generic handoff boundary wording.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release metadata now protects the boundary contract introduced in Phases 390 and 391 at the product readiness layer.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 391 — Bundle Handoff Boundary Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff [--json]` now exposes handoff generation boundary metadata directly in the target-repo handoff output. JSON reports include top-level and bundle-level `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; the generated handoff prompt includes boundary flags and the boundary list so operators can distinguish local handoff generation from later target-repo implementation work.
+
+### Changed
+- Added bundle-handoff boundary metadata to `buildSiteBundleHandoffReport`.
+- Added boundary flags and boundary list context to the generated target-repo handoff prompt.
+- Extended CLI unit coverage and package smoke assertions for bundle-handoff boundary flags and boundary list preservation.
+- Updated changelog, Product Readiness, roadmap, and session history.
+
+### Impact
+- Target-repo handoff reviews can now confirm that handoff prompt generation is deterministic, local, non-mutating, and free of external MCP calls without opening the originating bundle-check output.
+- This does not change bundle generation, checksums, generated contract verification, MCP probe payloads, external MCP behavior, target repo mutation behavior, backend storage, or dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 390 — Bundle Check Boundary Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-check [--json]` now exposes handoff bundle boundary metadata directly in bundle-check output. JSON reports include `boundaries`, `externalCalls: false`, and `targetRepoMutation: false`; human reports include boundary flags and the recorded bundle boundary list so operators can confirm the check is deterministic, local, non-mutating, and not a real MCP/Lighthouse/axe execution before handing work to a target website repo.
+
+### Changed
+- Added bundle-check boundary metadata to `buildSiteBundleCheckReport`.
+- Added human bundle-check output for boundary flags and bundle boundary lines.
+- Extended CLI unit coverage and package smoke assertions for bundle-check boundary flags and boundary list preservation.
+- Updated changelog, Product Readiness, roadmap, and session history.
+
+### Impact
+- Target-repo handoff reviews no longer require opening `summary.json` just to confirm bundle-check safety boundaries.
+- This does not change bundle generation, checksums, generated contract verification, MCP probe payloads, external MCP behavior, target repo mutation behavior, backend storage, or dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 389 — MCP Probe Release Gate Guard Full Release Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the saved-payload release gate phrase guards.
+
+### Changed
+- Ran `npm run release:check` after Phases 386-388.
+- Updated changelog, roadmap, and session history with the full release gate result.
+
+### Impact
+- Release evidence now shows the saved-payload `release:check` wording is covered by the full pre-push release gate, not only targeted metadata checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 388 — MCP Probe Release Gate Guard Self-Test Evidence (unreleased)
+
+The full `npm run release:self-test` chain now passes after the Product Readiness and release-facing policy docs guards for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence. This confirms the new Product Readiness phrase guard, release policy phrase guard, and their drift fixtures run together with shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 386-387.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the saved-payload `release:check` wording is covered by the full release self-test chain, not only by direct `release-metadata.py --self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 387 — Release Policy MCP Probe Release Gate Guard (unreleased)
+
+Release metadata now guards release-facing policy docs against dropping the `npm run release:check` evidence that ties Website Console bundle `mcp-probes.json` saved-payload guard phases to package contents, release self-tests, and packed-tarball smoke. Phase 386 guarded Product Readiness; this phase extends the same release gate evidence to README, Korean README, Distribution docs, and the release checklist.
+
+### Changed
+- Added a release policy phrase group for Website Console bundle `mcp-probes.json` saved-payload `release:check` evidence.
+- Added short release-facing doc guidance in README, Korean README, English/Korean Distribution docs, and the release checklist.
+- Added a release metadata `--self-test` drift fixture that fails if README drops the saved-payload release gate evidence phrase.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve the link between the saved-payload boundary and the full local release gate, not only the standalone `release:check` command or standalone bundle payload assertion.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 386 — Product Readiness MCP Probe Release Gate Guard (unreleased)
+
+Release metadata now guards Product Readiness against dropping the full `npm run release:check` evidence for the Website Console bundle `mcp-probes.json` saved-payload guard phases. Phase 385 recorded the full release gate result; this phase makes the Product Readiness evidence less likely to drift when release-facing docs are edited later.
+
+### Changed
+- Added a Product Readiness phrase group for `npm run release:check` coverage after Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops that full release gate evidence.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now has a deterministic guard for the saved-payload full release gate evidence, matching the existing payload-boundary and self-test coverage guards.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 385 — Bundle MCP Probe Evidence Full Release Gate Evidence (unreleased)
+
+The full `npm run release:check` gate now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke still run together after the saved-payload assertion fix and docs/Product Readiness guards.
+
+### Changed
+- Ran `npm run release:check` after Phases 381-384.
+- Updated Product Readiness release confidence to name the full release gate after the Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release evidence now shows the saved-payload boundary is covered by the full pre-push release gate, not only targeted checks or `release:self-test`.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:check`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 384 — Bundle MCP Probe Evidence Release Self-Test Chain Evidence (unreleased)
+
+The full release self-test chain now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together after the package smoke assertion fix, release-facing docs guard, and Product Readiness guard.
+
+### Changed
+- Ran `npm run release:self-test` after Phases 381-383.
+- Updated Product Readiness release confidence to name the Website Console bundle `mcp-probes.json` saved-payload guard phases.
+- Updated changelog, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the saved-payload boundary is covered by the top-level release self-test command, not only by isolated package smoke and release metadata checks.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 383 — Product Readiness Bundle MCP Probe Evidence Guard (unreleased)
+
+Product Readiness now carries the same Website Console bundle probe evidence boundary as release-facing docs. Bundled `mcp-probes.json` is explicitly documented as a saved probe evidence payload, not the full `site --mcp-check --probes --json` response, and release metadata now guards that readiness wording.
+
+### Changed
+- Added a Product Readiness phrase group for bundled Website Console `mcp-probes.json` saved probe evidence payload wording.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops the saved-payload boundary.
+- Updated Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now matches the Phase 381 package smoke assertion boundary and the Phase 382 release-facing docs guard.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 382 — Website Console Bundle MCP Probe Evidence Release Guard (unreleased)
+
+Release metadata now protects the release-facing wording that clarifies bundled Website Console `mcp-probes.json` is a saved probe evidence payload, not the full `site --mcp-check --probes --json` response. Phase 381 fixed the package smoke assertion boundary; this phase prevents README, distribution, and release checklist docs from drifting back to the wrong payload contract.
+
+### Changed
+- Added a release metadata phrase group for bundled `mcp-probes.json` saved probe evidence payload wording.
+- Added a release metadata `--self-test` drift fixture that fails if README drops the saved-payload assertion phrase.
+- Updated README, Korean README, distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve the Website Console bundle probe evidence boundary alongside bundle `mcpProbeCounts` telemetry and bundle probe count self-test coverage.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 381 — Website Console Bundle MCP Probe Evidence Smoke Assertion Fix (unreleased)
+
+Package smoke now checks bundled Website Console `mcp-probes.json` with the correct payload contract. The bundle file stores the probe evidence object saved inside handoff bundles, not the full `design-ai site --mcp-check --probes --json` CLI response, so this phase adds a bundle-specific assertion and self-test drift fixture.
+
+### Changed
+- Added bundle-specific `mcp-probes.json` expected key and probe item assertions in `tools/audit/package-smoke.py`.
+- Updated Website Console bundle smoke to validate the saved probe evidence payload instead of reusing the full MCP check probe JSON assertion.
+- Added a package smoke `--self-test` fixture that mutates a bundled probe item status and expects the bundle assertion to fail.
+
+### Impact
+- `npm run package:smoke` now matches the actual handoff bundle file shape while still guarding read-only mode, external-call boundaries, pass/warn/fail counts, item order, evidence, and action arrays.
+- This is package smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `npm run release:check`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 380 — MCP Probe Count Guard Release Self-Test Chain Evidence (unreleased)
+
+The full release self-test chain now passes after the Website Console MCP probe count self-test and release metadata guard phases. This confirms that shared smoke assertions, package smoke self-tests, registry smoke self-tests, release metadata self-tests, local CI self-tests, and token extractor self-tests still run together through `npm run release:self-test`.
+
+### Changed
+- Recorded full `npm run release:self-test` evidence after the Website Console MCP probe count guard phases.
+- Updated changelog, Product Readiness, roadmap, and session history with the release self-test chain result.
+
+### Impact
+- Release evidence now shows the MCP probe count assertion hardening is covered by the top-level release self-test command, not only by isolated targeted commands.
+- This is release evidence documentation only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 379 — Product Readiness MCP Probe Count Self-Test Coverage Guard (unreleased)
+
+Product Readiness now reflects the MCP probe count self-test coverage that was added across Website Console next-actions and bundle smoke assertions. Release metadata also guards that Product Readiness wording so the readiness summary cannot drift back to generic MCP probe coverage.
+
+### Changed
+- Added Product Readiness phrase checks for Website Console MCP probe count self-test coverage.
+- Added a release metadata `--self-test` drift fixture that fails if Product Readiness drops the MCP probe count self-test coverage wording.
+- Updated Product Readiness to mention MCP probe count telemetry with package/shared smoke self-test coverage for Website Console MCP probe counts.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Product Readiness now matches the recently hardened next-actions and bundle `mcpProbeCounts` smoke assertion surface.
+- This is Product Readiness and release metadata hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 378 — Website Console Bundle MCP Probe Count Self-Test Release Guard (unreleased)
+
+Release metadata now protects the release-facing wording for package smoke self-test coverage around Website Console bundle MCP probe counts. Phases 374 and 375 completed the bundle count drift fixtures; this phase makes the public release docs keep mentioning that package smoke self-test protection.
+
+### Changed
+- Added a release metadata phrase group for package smoke self-test coverage of Website Console bundle MCP probe counts.
+- Added the phrase to release policy labels and checks.
+- Added a release metadata `--self-test` drift fixture that fails if release docs drop the bundle probe count self-test wording.
+- Updated README, Korean README, distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve both the bundle-check/compare/handoff `mcpProbeCounts` public smoke contract and the package smoke self-test coverage that guards the assertion surface.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 377 — Website Console Next-Actions MCP Probe Count Self-Test Release Guard (unreleased)
+
+Release metadata now protects the release-facing wording for shared smoke assertion self-test coverage around Website Console next-actions MCP probe counts. Phase 376 added the direct drift fixture; this phase makes the public release docs keep mentioning that protection.
+
+### Changed
+- Added a release metadata phrase group for shared smoke assertion self-test coverage of Website Console next-actions MCP probe counts.
+- Added the phrase to release policy labels and checks.
+- Added a release metadata `--self-test` drift fixture that fails if release docs drop the self-test coverage wording.
+- Updated README, Korean README, distribution docs, release checklist, changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now preserve both the `mcpProbeCounts` public smoke contract and the self-test coverage that guards the assertion.
+- This is release metadata and documentation hardening only: no CLI runtime behavior, JSON contract, package smoke runner, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 376 — Website Console Next-Actions MCP Probe Count Smoke Self-Test (unreleased)
+
+Shared smoke assertion self-tests now protect the Website Console next-actions MCP probe count contract. The next-actions JSON smoke already checked `mcpProbeCounts`; this phase adds a direct drift fixture so that assertion cannot silently weaken.
+
+### Changed
+- Added a shared expected MCP probe count constant in `tools/audit/smoke_assertions.py`.
+- Reused the constant in the next-actions JSON smoke assertion.
+- Added a `--self-test` drift fixture that mutates next-actions `mcpProbeCounts` and expects the assertion to fail.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packed-tarball and public-registry next-actions smoke coverage now has self-test protection for probe count drift before package smoke runs.
+- This is smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 375 — Website Console Bundle MCP Probe Count Smoke Surface Completion (unreleased)
+
+Package smoke self-tests now cover every bundle MCP probe count surface asserted by packed smoke. Phase 374 added shared count fixtures for bundle-check summary, bundle-compare left side, and bundle-handoff; this phase adds the remaining bundle-check top-level and bundle-compare right-side drift fixtures.
+
+### Changed
+- Added package smoke self-test drift coverage for the top-level bundle-check `mcpProbeCounts` payload.
+- Added package smoke self-test drift coverage for the right-side bundle-compare `mcpProbeCounts` payload.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- `tools/audit/package-smoke.py --self-test` now exercises all bundle `mcpProbeCounts` assertion labels used by bundle-check, bundle-compare, and bundle-handoff smoke checks.
+- This is smoke assertion coverage only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 374 — Website Console Bundle MCP Probe Count Smoke Self-Test (unreleased)
+
+Package smoke self-tests now protect the Website Console bundle MCP probe count assertions. The packed-tarball smoke already checked bundle-check, bundle-compare, and bundle-handoff `mcpProbeCounts`; this phase adds direct self-test drift fixtures so those assertions cannot silently weaken.
+
+### Changed
+- Added a shared package-smoke helper for the expected Website Console MCP probe count payload.
+- Reused the helper in bundle-check, bundle-compare, and bundle-handoff package smoke assertions.
+- Added package smoke self-test drift fixtures for bundle-check summary, bundle-compare left side, and bundle-handoff MCP probe counts.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Packed-tarball smoke assertion drift around bundle `mcpProbeCounts` is now caught by `tools/audit/package-smoke.py --self-test` before release smoke runs.
+- This is smoke assertion hardening only: no CLI runtime behavior, JSON contract, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 373 — Website Console Bundle Compare Human CLI Coverage (unreleased)
+
+Website Console bundle comparison now has end-to-end CLI coverage for the human MCP probe count summary. Phase 372 added the formatter line; this phase verifies the actual `runSite` human `--bundle-compare` path prints the same left/right probe coverage.
+
+### Changed
+- Added `runSite` test coverage for non-JSON `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` output.
+- Verified the emitted human output includes the left/right MCP probe pass/warn/fail count summary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Future changes cannot keep the formatter unit passing while accidentally breaking the real CLI human output path.
+- This is CLI test coverage and release history only: no runtime behavior, external MCP call, target website repo mutation, package smoke runner behavior, backend storage, or dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 372 — Website Console Bundle Compare Human Probe Counts (unreleased)
+
+Website Console bundle comparison now keeps MCP probe coverage visible in the human report. Bundle compare JSON already carried left/right `mcpProbeCounts`; this phase exposes the same pass/warn/fail count summary in the Markdown-style CLI output.
+
+### Changed
+- Added a left/right MCP probe count summary line to `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir>` human output.
+- Added CLI unit coverage so identical bundle comparisons keep the human probe count summary.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Operators can inspect bundle comparison readiness from the default human report without switching to `--json`.
+- This is deterministic local CLI formatting and unit coverage only: no external MCP call, target website repo mutation, package smoke runner behavior, backend storage, or dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 371 — Website Console Bundle MCP Probe Count Release Guard (unreleased)
+
+Release metadata now protects the Website Console bundle-check/compare/handoff MCP probe count telemetry wording. Phase 368 exposed `mcpProbeCounts` in bundle consumers; this phase makes release-facing docs keep that public smoke contract visible.
+
+### Changed
+- Added a release metadata phrase guard for Website Console bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry.
+- Added a release metadata self-test drift fixture that removes only the bundle `mcpProbeCounts` phrase and expects the guard to fail.
+- Updated README, Korean README, Release Checklist, English/Korean Distribution docs, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs can no longer silently regress to generic bundle-check/compare/handoff smoke wording while omitting the probe count telemetry contract.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package/registry smoke runner behavior, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 370 — Website Console Next-Actions MCP Probe Count Release Guard (unreleased)
+
+Release metadata now protects the Website Console next-actions MCP probe count telemetry wording. Phase 369 added `mcpProbeCounts` to next-actions JSON/human output; this phase makes release-facing docs keep documenting that public smoke contract.
+
+### Changed
+- Added a release metadata phrase guard for `mcpProbeCounts` probe count telemetry in Website Console next-actions guidance.
+- Added a release metadata self-test drift fixture that removes only the `mcpProbeCounts` phrase and expects the guard to fail.
+- Updated README, Korean README, Release Checklist, English/Korean Distribution docs, changelog, roadmap, and session history with the guarded phrase.
+
+### Impact
+- Release-facing docs can no longer silently regress to a generic next-actions smoke phrase while omitting the probe count telemetry contract.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package/registry smoke runner behavior, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 369 — Website Console Next-Actions MCP Probe Count Telemetry (unreleased)
+
+Website Console next-actions now exposes read-only MCP probe counts before operators export a bundle. Phase 368 made bundle consumers carry `mcpProbeCounts`; this phase puts the same `count/pass/warn/fail` telemetry into the first operator checklist so malformed repo/Figma/Browser/deploy references are visible without opening a separate probe report.
+
+### Changed
+- Added `mcpProbeCounts` to `design-ai site --next-actions --json`.
+- Added an MCP probe count summary line to human next-actions output.
+- Extended next-actions unit coverage for pass and probe-gap states.
+- Updated shared smoke assertion fixtures so packed/public next-actions smoke requires the new probe count contract.
+- Updated Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can see both probe status and probe volume directly in the prioritized local checklist before target-repo handoff.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 368 — Website Console Bundle MCP Probe Count Contract (unreleased)
+
+Website Console bundle consumers now expose and validate read-only MCP probe counts, not only probe status. Phase 367 preserved `mcp-probes.json` inside the bundle; this phase makes the downstream JSON reports carry the same `count/pass/warn/fail` telemetry through bundle-check, bundle-compare, and target-repo handoff.
+
+### Changed
+- Added normalized `mcpProbeCounts` to Website Console bundle-check reports.
+- Added `mcpProbeCounts` to bundle-compare left/right summaries and metadata drift detection.
+- Added `mcpProbeCounts` to bundle-handoff JSON and target-repo handoff prompt context.
+- Extended bundle-check validation so `summary.json mcp.probeCounts` must match `mcp-probes.json`.
+- Updated CLI unit coverage, packed-tarball package smoke assertions, Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators and downstream automation can verify whether a passing or warning handoff bundle actually checked all expected read-only MCP probe references.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 367 — Website Console Handoff Bundle MCP Probe Evidence (unreleased)
+
+Website Console handoff bundles now preserve read-only MCP probe evidence beside the base MCP readiness gate. Phase 366 made next-actions probe-aware; this phase carries the same local probe evidence into the portable bundle so target-repo handoff packages retain the repo/Figma/Browser/deploy reference checks used before implementation.
+
+### Changed
+- Added `mcp-probes.json` to the Website Console handoff bundle manifest.
+- Recorded MCP probe status and probe counts in `summary.json` under the existing `mcp` summary block.
+- Included `mcp-probes.json` in bundle checksums, generated contract verification, repair preview/apply, compare summaries, and target-repo handoff context.
+- Extended bundle-check validation so `mcp-probes.json` must match the recomputed read-only MCP probe report.
+- Updated CLI unit coverage, package smoke bundle assertions, Website Improvement docs, Product Readiness, changelog, roadmap, and session history.
+
+### Impact
+- Operators can archive or hand off one bundle that contains both MCP readiness evidence and stricter read-only probe evidence.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 366 — Website Console Next-Actions MCP Probe Readiness (unreleased)
+
+Website Console next-actions now includes read-only MCP probe readiness before target-repo handoff. This closes a practical operator gap where base MCP readiness could pass because a field was present, while the stricter local probe check could still detect an invalid GitHub URL, Figma URL, Browser smoke target, or deployment reference.
+
+### Changed
+- Added `mcpProbeStatus` and `counts.probeGaps` to `design-ai site --next-actions --json`.
+- Added probe follow-up commands to the next-actions `commands` block: `mcpCheckProbes` and `mcpPlanProbes`.
+- Ranked failing/warning MCP probe gaps as blocking or warning next-actions before implementation and bundle handoff steps.
+- Updated next-actions human output with MCP probe status and the read-only probe boundary.
+- Updated CLI unit coverage, shared smoke assertion fixtures, Website Improvement docs, changelog, roadmap, and session history.
+
+### Impact
+- Operators can catch malformed local handoff references directly from the prioritized next-actions report, without running a separate probe command first.
+- This remains deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe execution, screenshot capture, backend storage, or dependency changes.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 365 — Product Readiness JSON Release Policy Guard (unreleased)
+
+Release metadata now guards release-facing docs against dropping the Product Readiness JSON summary phrase. Phase 364 exposed `product_readiness_checked: true`; this phase makes README, release checklist, and distribution docs keep documenting that machine-readable guard signal.
+
+### Changed
+- Added a release policy phrase group for release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage.
+- Updated English/Korean README and Distribution docs plus Release Checklist guidance with the new JSON field phrase.
+- Added a release metadata self-test drift fixture that removes the phrase and expects the release policy guard to fail.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release-facing docs now stay aligned with the release metadata JSON shape added in Phase 364.
+- This is release guard and documentation coverage only: no CLI runtime behavior, package/registry smoke runner behavior, Product Readiness guard logic, JSON field value, external MCP call, target website repo mutation, backend storage, or dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 364 — Product Readiness Release Metadata JSON Visibility (unreleased)
+
+Release metadata JSON now exposes whether Product Readiness guard coverage ran. Phase 363 made Product Readiness part of the release metadata check; this phase makes the machine-readable summary show that state through `product_readiness_checked: true`.
+
+### Changed
+- Added `product_readiness_checked` to the release metadata summary key order.
+- Set the field to `true` when Product Readiness text is provided to the release metadata summary.
+- Updated release metadata self-test coverage for the new JSON field and key order.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Operators and automation can now confirm that Product Readiness guard coverage ran without parsing release metadata errors.
+- This changes release metadata JSON shape only. It does not change CLI runtime behavior, package/registry smoke runner behavior, release policy doc set, external MCP calls, target website repo mutation, backend storage, or dependencies.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --json`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 363 — Product Readiness Warning Strict Release Metadata Guard (unreleased)
+
+Release metadata now checks Product Readiness for the warning-state Website Console bundle-compare strict coverage wording. Phases 361-362 corrected the human-readable readiness summary; this phase makes that correction durable by failing release metadata when Product Readiness drops the warning-state compare contract.
+
+### Changed
+- Added `docs/PRODUCT-READINESS.md` as a release metadata text input.
+- Added a Product Readiness-specific warning strict compare phrase guard.
+- Added a self-test drift fixture that removes warning-state bundle-compare strict coverage wording and expects release metadata to fail.
+- Updated changelog, roadmap, and session history.
+
+### Impact
+- Release metadata now catches Product Readiness regressions where Website Console compare coverage falls back to generic bundle comparison wording.
+- This is release guard coverage only: no CLI runtime behavior, package/registry smoke runner behavior, release policy doc set, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 362 — Product Readiness Public Registry Warning Strict Compare Accuracy (unreleased)
+
+Product readiness public-registry summaries now name the warning-state Website Console bundle-compare strict smoke path. Phase 361 fixed the local release-confidence wording; this phase aligns the post-publish registry-smoke summary so it does not hide the warning-state compare contract inside generic bundle-check/compare/handoff/repair coverage.
+
+### Changed
+- Updated Product Readiness public-registry Website Console coverage wording.
+- Made the published-package path explicitly include warning-state bundle-compare strict smoke coverage.
+- Updated changelog, roadmap, and session history for the public-registry readiness wording.
+
+### Impact
+- Product readiness now describes both packed-tarball and public-registry compare coverage with the same warning-state strict contract.
+- This is documentation accuracy only: no CLI runtime behavior, package/registry smoke runner behavior, release metadata table, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 361 — Product Readiness Warning Strict Compare Accuracy (unreleased)
+
+Product readiness now reflects the warning-state Website Console bundle-compare strict smoke coverage added in Phases 357-360. The readiness summary previously mentioned bundle digest comparison, but it did not explicitly say that warning-state identical bundles keep `sameBundle: true` while still exiting non-zero under `--strict`.
+
+### Changed
+- Updated Product Readiness release confidence wording for Website Console bundle compare.
+- Made the verified compare path include warning-state strict smoke coverage, identical warning bundles, `sameBundle: true`, and strict non-zero exits.
+- Updated changelog, roadmap, and session history so completion status stays aligned with the current smoke contract.
+
+### Impact
+- Product readiness no longer implies that only pass-state bundle comparison is covered.
+- This is documentation accuracy only: no CLI runtime behavior, package smoke runner behavior, release metadata table, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 360 — Website Console Bundle Compare Warning Strict Release Metadata Guard (unreleased)
+
+Release metadata now guards the warning-state Website Console bundle-compare strict smoke phrase across release-facing docs. Phase 359 added the packed-tarball and public-registry smoke execution; this phase makes sure release guidance cannot silently regress to only mentioning pass-state bundle comparison.
+
+### Changed
+- Added a dedicated release metadata term group for warning-state Website Console bundle-compare strict failures.
+- Required release policy docs to mention packed-tarball and public-registry smoke, identical warning bundles, `sameBundle: true`, and non-zero strict exits.
+- Added a release metadata self-test drift fixture that removes the warning strict phrase and expects the guard to fail.
+- Updated English/Korean release-facing docs, changelog, roadmap, and session history.
+
+### Impact
+- Release metadata self-tests now catch docs drift where warning-state bundle-compare strict smoke coverage is dropped while the generic bundle-compare phrase remains.
+- This is documentation and release guard coverage only: no CLI runtime behavior, package smoke runner behavior, JSON schema, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 359 — Website Console Bundle Compare Warning Strict Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify warning-state Website Console bundle-compare strict failures. This extends the Phase 357 runtime/unit contract into distribution checks: identical warning bundles should keep `sameBundle: true` and `digestMatch: true`, but `--bundle-compare --strict --json` should still exit non-zero because optional MCP readiness warnings remain.
+
+### Changed
+- Added a warning-only Website Console bundle fixture for smoke runners by omitting optional Sentry evidence while keeping the workspace structurally valid.
+- Added a shared smoke assertion for warning-state bundle-compare strict JSON, checking exit code 1, `status: "warn"`, `valid: true`, unchanged bundle identity, left/right warning states, and left/right compare warning issues.
+- Wired the warning-state compare smoke through packed-tarball installed-bin, packed-tarball one-shot `npm exec --package <tarball>`, and public-registry `npm exec --package @design-ai/cli@<version>` paths.
+- Updated changelog and session history beside the Phase 357-358 Website Console strict warning coverage.
+
+### Impact
+- Distribution smoke now catches regressions where published or packed package paths silently drop warning-state strict failures for identical Website Console handoff bundles.
+- This is smoke assertion and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 358 — Website Console Bundle Repair Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console bundle repair unit coverage now verifies warning-only strict exits on apply. Regenerating a bundle cannot clear optional MCP readiness warnings by itself, so `--bundle-repair --yes --strict --json` should remain non-zero when the repaired bundle still checks as warning-state.
+
+### Changed
+- Reused the warning-only handoff bundle generated from the Website Console fixture where `siteProfile.sentryProject` is empty.
+- Added CLI coverage for `design-ai site <bundle-dir> --bundle-repair --yes --strict --json`.
+- Verified the repair applies, preserves `before.status: "warn"` and `after.status: "warn"`, reports `bundle-repair-verify-fail`, and exits with code 1.
+- Updated changelog and session history beside the Phase 330-357 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle repair apply falsely reports strict success even though regenerated bundle readiness warnings remain.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 357 — Website Console Bundle Compare Warning Strict Exit Coverage (unreleased)
+
+Website Console bundle compare now preserves warning-state bundle-check results. Identical bundles with optional MCP readiness warnings should still compare as the same bundle, but `--bundle-compare --strict --json` should return non-zero because the compared artifacts are not strict-ready for target-repo handoff.
+
+### Changed
+- Updated `buildSiteBundleCompareReport` to add left/right warning issues when either bundle-check report has `status: "warn"`.
+- Kept `sameBundle` tied to digest, changed-file, and metadata equality instead of overall compare status, so identical warning-state bundles still report `sameBundle: true`.
+- Added CLI coverage for `design-ai site <bundle-dir> --bundle-compare <same-bundle-dir> --strict --json` using a warning-only Website Console handoff bundle.
+- Updated changelog and session history beside the Phase 330-356 Website Console strict/next-actions hardening work.
+
+### Impact
+- Operators can distinguish "the two bundles are identical" from "the identical bundle is strict-ready"; warning-state bundles now fail strict compare without losing identity information.
+- This changes Website Console bundle-compare warning propagation only. It does not add external MCP calls, target website repo mutation, backend storage, dependencies, or schema fields.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 356 — Website Console Bundle Handoff Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console bundle handoff unit coverage now verifies warning-only strict exits. Target-repo handoff prompts generated from structurally valid but warning-state bundles should preserve the bundle warning context and fail `--bundle-handoff --strict --json` before implementation handoff.
+
+### Changed
+- Reused the warning-only handoff bundle generated from the Website Console fixture where `siteProfile.sentryProject` is empty.
+- Verified `design-ai site <bundle-dir> --bundle-handoff --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the handoff payload remains `valid: true`, preserves `bundle.mcpStatus: "warn"`, reports `bundle-readiness-warn`, and includes the local bundle-check warning in the target-repo prompt.
+- Updated changelog and session history beside the Phase 330-355 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle handoff prompt generation treats warning-only bundles as strict-pass implementation inputs.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 355 — Website Console Bundle Check Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console handoff bundle check unit coverage now verifies warning-only strict exits. A generated bundle with optional MCP readiness warnings should remain structurally valid, but `--bundle-check --strict --json` should return non-zero and surface the readiness warning before target-repo handoff.
+
+### Changed
+- Reused the warning-only handoff bundle generated from the Website Console fixture where `siteProfile.sentryProject` is empty.
+- Verified `design-ai site <bundle-dir> --bundle-check --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the bundle remains `valid: true`, preserves `summary.status: "warn"` and `mcpStatus: "warn"`, and reports the `bundle-readiness-warn` issue.
+- Updated changelog and session history beside the Phase 330-354 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle verification treats warning-only handoff bundles as strict-pass artifacts before target-repo handoff.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 354 — Website Console Bundle Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console handoff bundle unit coverage now verifies warning-only strict exits. Bundle generation should still write the local artifact, preserve MCP readiness warning status inside the bundle, and return non-zero under `--strict` when optional readiness gaps remain.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --bundle --out <dir> --strict` writes the handoff bundle and exits with code 1.
+- Verified generated `summary.json` and `mcp-check.json` both preserve `status: "warn"` for the optional Sentry readiness gap.
+- Updated changelog and session history beside the Phase 330-353 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where bundle generation hides warning-only MCP gaps or returns success under strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 353 — Website Console Workflow Graph Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console workflow graph unit coverage now verifies warning-only strict exits. Portable graph exports should preserve MCP readiness warnings and fail `--graph --strict --json` when optional readiness gaps remain.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --graph --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the graph keeps `workspaceStatus: "pass"` while propagating `mcpStatus: "warn"` into the top-level graph and summary payload.
+- Updated changelog and session history beside the Phase 330-352 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where portable workflow graph exports drop MCP warning status or bypass strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 352 — Website Console MCP Check Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console MCP readiness unit coverage now verifies warning-only strict exits at the source gate. Optional MCP readiness warnings should fail `--mcp-check --strict --json` before action plans or next-actions consume the same readiness state.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --mcp-check --strict --json` emits `status: "warn"` and exits with code 1.
+- Verified the Sentry readiness item remains `optional`, `missing`, and `warn`, with exactly one missing readiness item in the report.
+- Updated changelog and session history beside the Phase 330-351 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where the MCP readiness source gate allows optional warning-only gaps through strict mode.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 351 — Website Console MCP Plan Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console MCP action-plan unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should fail `--mcp-plan --strict --json` the same way they fail summary and next-actions strict gates, so planning gaps do not pass through CI or operator checks unnoticed.
+
+### Changed
+- Reused the warning-only Website Console fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --mcp-plan --strict --json` emits `status: "warn"` with zero blocking items.
+- Verified the action-plan warning list includes the optional Sentry readiness gap and still exposes the strict MCP check follow-up command.
+- Updated changelog and session history beside the Phase 330-350 Website Console strict/next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where MCP action-plan strict mode exits cleanly for warning-only readiness gaps.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 350 — Website Console Next Actions Warning Strict Exit Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies warning-only strict exits. Optional MCP readiness warnings should still fail `--strict` so operators resolve readiness planning before target-repo implementation.
+
+### Changed
+- Added a `runSite` warning-only fixture where `siteProfile.sentryProject` is empty while required MCP readiness remains satisfied.
+- Verified `design-ai site <workspace.json> --next-actions --strict --json` emits `status: "warn"` with zero blocking actions.
+- Verified the first action is the optional Sentry readiness warning and strict mode exits with code 1.
+- Updated changelog and session history beside the Phase 330-349 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where `--next-actions --strict` only fails hard blockers and accidentally allows warning-only MCP planning gaps through.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 349 — Website Console Next Actions Rank Sequence Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies action rank sequencing after severity sorting. Human checklist numbering and JSON `rank` fields should always start at 1 and remain gapless across pass, warning, and blocking paths.
+
+### Changed
+- Added pass-state rank assertions for the default implementation, evidence, and bundle actions.
+- Added warning-state rank assertions for optional MCP readiness guidance.
+- Added blocking-state rank assertions to ensure severity sorting still renumbers the final action list from 1.
+- Updated changelog and session history beside the Phase 330-348 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where sorted next-actions keep stale rank numbers or produce gaps in operator checklists.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 348 — Website Console Next Actions Top-Task Cap Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the top-task cap. The payload should report the total task count while exposing only the three highest-priority tasks for operator focus.
+
+### Changed
+- Extended the multi-task next-actions scenario to include a fourth P3 refactor task.
+- Verified `counts.tasks` preserves the full task count.
+- Verified `topTasks` remains capped at three entries and excludes the lower-priority P3 task.
+- Updated changelog and session history beside the Phase 330-347 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where next-actions payloads become too noisy or lose the total task count when more than three refactor tasks exist.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 347 — Website Console Next Actions Priority Selection Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies multi-task priority selection. When a workspace has P0/P1/P2 refactor tasks, the operator checklist should surface the P0 task first for Codex implementation.
+
+### Changed
+- Added a multi-task `buildSiteNextActionsReport` scenario with P0, P1, and P2 refactor tasks.
+- Verified `topTasks` are sorted in P0/P1/P2 order.
+- Verified the first implementation action targets the P0 task and keeps the highest-priority rationale.
+- Updated changelog and session history beside the Phase 330-346 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where Website Console next-actions selects a lower-priority implementation task before a P0 task.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 346 — Website Console Next Actions Stdin Command Target Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies stdin command targets. When the workspace source is `stdin`, the JSON follow-up commands should use the portable `<workspace.json>` placeholder instead of leaking a filesystem path.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for a summary with `filePath: "stdin"`.
+- Verified the full stdin `commands` block uses `<workspace.json>` for summary, MCP check, MCP plan, task generation, implementation prompt, handoff report, and handoff bundle commands.
+- Verified formatted next-actions JSON preserves the same stdin command object as the in-memory report.
+- Updated changelog and session history beside the Phase 330-345 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where stdin-based next-actions payloads emit unusable or environment-specific follow-up commands.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 345 — Website Console Next Actions Command Set Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the full JSON `commands` block. This complements package/public smoke checks that inspect selected commands by ensuring the local unit suite catches drift in every follow-up command emitted by the operator checklist.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for the full command set: summary, MCP check, MCP plan, task generation, implementation prompt, handoff report, and handoff bundle.
+- Verified the formatted next-actions JSON preserves the same command object as the in-memory report.
+- Updated changelog and session history beside the Phase 330-344 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where a follow-up command disappears or changes in the next-actions JSON payload before package/public smoke runs.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 344 — Website Console Next Actions Warning Path Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies warning-state MCP guidance. Optional MCP readiness gaps and task/MCP status mismatches should warn operators and route them to the MCP action plan before target-repo implementation starts.
+
+### Changed
+- Added a missing optional Sentry readiness scenario where `siteProfile.sentryProject` is empty while `mcpReadiness.sentry` remains optional.
+- Verified the optional MCP warning ranks first, explains the missing evidence, and points to `design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md`.
+- Added a task/MCP gap scenario where a refactor task recommends Figma while `mcpReadiness.figma` is marked unused.
+- Verified the task gap warning preserves task/MCP references and uses the same MCP action-plan command.
+- Updated changelog and session history beside the Phase 330-343 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where warning-state Website Console workspaces skip MCP planning and jump straight to implementation guidance.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 343 — Website Console Next Actions Evidence Trail Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the implementation evidence handoff reminder. The operator checklist should ask for `website-handoff.md` evidence when executed work or verification results are empty, and skip that reminder once both are recorded.
+
+### Changed
+- Added assertions for the `Create implementation evidence trail` next-actions item in the default sample workspace.
+- Verified the evidence reminder command points to `design-ai site <workspace.json> --report --out website-handoff.md` in JSON-backed actions and human Markdown.
+- Added an evidence-ready workspace scenario with executed work and verification results populated, verifying the handoff reminder is not emitted.
+- Updated changelog and session history beside the Phase 330-342 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where operators lose the handoff evidence reminder or keep seeing it after evidence is already recorded.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 342 — Website Console Next Actions Setup Path Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the no-task setup path. When a workspace has no `refactorTasks`, the operator checklist must recommend generating starter tasks before preparing implementation prompts.
+
+### Changed
+- Added `buildSiteNextActionsReport` assertions for an empty `refactorTasks` workspace.
+- Verified the next-actions report stays pass, reports zero tasks, has no top tasks, and ranks `Generate starter refactor tasks` as the first setup action.
+- Verified the generated command and human Markdown output point to `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`.
+- Updated changelog and session history beside the Phase 330-341 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where no-task workspaces skip task generation and jump directly to implementation or handoff guidance.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 341 — Website Console Next Actions Strict Failure Unit Coverage (unreleased)
+
+Website Console next-actions unit coverage now verifies the fail-state path where required MCP readiness is missing. This keeps the operator checklist honest when it should block target-repo implementation instead of only covering the pass and saved-file paths.
+
+### Changed
+- Extended `buildSiteNextActionsReport` assertions for a missing GitHub readiness scenario.
+- Verified fail-state JSON and human next-actions output rank the required MCP readiness blocker first.
+- Added `runSite([workspace, "--next-actions", "--strict", "--json"])` coverage to ensure strict mode exits non-zero for fail-state next-actions output.
+- Updated changelog and session history beside the Phase 330-340 next-actions hardening work.
+
+### Impact
+- Local tests now catch regressions where next-actions keeps rendering but stops enforcing blocking MCP readiness through strict exit behavior.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 340 — Website Console Next Actions Help Usage Unit Coverage (unreleased)
+
+Website Console help unit coverage now verifies the `design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]` Usage line directly. This keeps command discovery aligned with the JSON and human Markdown next-actions output-file workflows added and hardened in Phases 330-339.
+
+### Changed
+- Added a `runSite(["--help"])` assertion for the next-actions Usage line.
+- Updated changelog and session history so the help coverage sits beside the existing next-actions output-file smoke, help example, release guard, and unit persistence work.
+
+### Impact
+- Local tests now catch a stale `site --help` Usage block that drops the `--next-actions` output-file workflow while the runtime still supports it.
+- This is CLI help test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 339 — Website Console Next Actions Markdown Output-File Unit Coverage (unreleased)
+
+Website Console unit coverage now verifies the human Markdown `design-ai site --next-actions --out file --force` path directly in `cli/lib/site.test.mjs`. This complements the existing packed/public smoke coverage with a faster local regression check for the operator-facing next-actions runbook artifact.
+
+### Changed
+- Added a direct `runSite` unit assertion for saving human next-actions Markdown to an output file.
+- Verified forced overwrite replacement by seeding stale output before running `--force`.
+- Checked the saved Markdown for prioritized command text, local/operator boundary text, and absence of JSON payload shape.
+- Updated changelog and session history so the coverage intent remains visible beside the Phase 336-338 smoke/help/release guard work.
+
+### Impact
+- Local test runs now catch regressions where `--next-actions --out` stops writing human Markdown correctly even if JSON output still works.
+- This is unit test and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 338 — Website Console Next Actions Help Example Release Guard (unreleased)
+
+Release metadata now guards the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` help example across release-facing docs. This keeps Phase 337's human Markdown next-actions runbook example visible in the release ritual, not only in CLI help smoke assertions.
+
+### Changed
+- Added a release metadata term group for the Website Console next-actions Markdown help example.
+- Added the term group to required release policy phrase labels and checks.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the concrete help example.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the next-actions Markdown help example beside shared site help topic smoke assertions.
+
+### Impact
+- Release-facing docs cannot silently drop the human next-actions Markdown help example while retaining generic site help topic smoke wording.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, output formatter, smoke command execution, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 337 — Website Console Next Actions Help Example Coverage (unreleased)
+
+Website Console help now shows the human Markdown next-actions output-file workflow directly in `design-ai site --help`. This keeps the operator-facing runbook checkpoint discoverable without requiring users to infer it from the generic `--out file` option.
+
+### Changed
+- Added `design-ai site website-workspace.json --next-actions --out website-next-actions.md` to the `site` command help examples.
+- Added CLI help unit coverage for the new next-actions Markdown output-file example.
+- Added shared package/public-registry smoke assertion coverage so `design-ai help site` must retain the human next-actions output-file example.
+- Updated English and Korean Website Improvement docs to show and explain the Markdown next-actions checkpoint alongside JSON next-actions output.
+
+### Impact
+- Operators can discover both machine-readable next-actions JSON and human-readable next-actions Markdown from command help and docs.
+- This is help/documentation/smoke assertion coverage only: no CLI runtime behavior, JSON schema, output formatter, external MCP call, target website repo mutation, backend storage, or new dependency changed.
+
+### Verified
+- `node --test cli/lib/help-command.test.mjs`
+- `node cli/bin/design-ai.mjs help site | rg -n "next-actions|website-next-actions"`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 336 — Website Console Next Actions Human Output-File Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --out file --force` human Markdown output-file persistence. This complements the Phase 334 JSON saved-file smoke by checking the operator-facing report that humans copy into local runbooks.
+
+### Changed
+- Added shared smoke assertions for Website Console next-actions human output files.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` next-actions Markdown output files.
+- Added public-registry smoke coverage for published-package `npm exec --package @design-ai/cli@<version>` next-actions Markdown output files.
+- Added package, registry, and shared assertion self-test fixtures for Markdown output-file persistence and boundary drift.
+- Added release metadata guard coverage and release-facing docs guidance for the human output-file smoke phrase.
+
+### Impact
+- Release smoke now checks both machine-readable JSON and human-readable Markdown saved-file next-action reports, including forced overwrite replacement and local/read-only boundary text.
+- This is smoke/assertion/documentation coverage only: no CLI runtime behavior, JSON schema, command semantics, external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 335 — Website Console Next Actions Output-File Release Guard (unreleased)
+
+Release metadata now guards the `design-ai site --stdin --next-actions --json --out file --force` next-action output-file smoke phrase across release-facing docs. This keeps Phase 334's installed-bin, one-shot, and public-registry output-file coverage visible in the release ritual.
+
+### Changed
+- Added a release metadata term group for Website Console next-actions output-file smoke coverage.
+- Added the term group to the required release policy phrase labels and checks.
+- Added a self-test drift fixture that fails when README guidance drops the next-actions output-file phrase.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the installed-bin, one-shot, and public-registry output-file smoke contract.
+
+### Impact
+- Release-facing docs cannot silently drop the saved-file next-action smoke guidance while retaining stdout next-action smoke coverage.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 334 — Website Console Next Actions Output-File Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --next-actions --json --out file --force` output-file persistence. This closes the remaining release-smoke gap after Phase 331 and Phase 332 covered stdout JSON execution for the next-action operator checklist.
+
+### Changed
+- Added a shared `assert_site_next_actions_json_file_output` helper that validates write confirmation plus the saved next-action JSON contract.
+- Added package smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` next-action JSON output files.
+- Added public-registry smoke coverage for published-package `npm exec --package @design-ai/cli@<version>` next-action JSON output files.
+- Added package, registry, and shared assertion self-test fixtures for next-action JSON file-output persistence.
+
+### Impact
+- Release smoke now checks both stdout and saved-file next-action reports, including forced overwrite replacement and local/read-only boundary fields.
+- This is smoke/runtime coverage only: no CLI schema, command semantics, external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 333 — Website Console Next Actions Registry Smoke Release Guard (unreleased)
+
+Release metadata now guards the public registry `design-ai site --stdin --next-actions --json` next-action operator checklist smoke phrase across release-facing docs. This keeps Phase 332's post-publish registry coverage visible beside the broader Website Console public registry smoke guidance.
+
+### Changed
+- Added a release metadata term group for public registry Website Console next-actions smoke coverage.
+- Added the term group to the required release policy phrase labels and checks.
+- Added a self-test drift fixture that fails when README guidance drops the public registry next-actions phrase.
+- Updated README, Korean README, Release Checklist, and English/Korean Distribution docs to mention the public registry next-actions operator checklist contract.
+
+### Impact
+- Release-facing docs cannot silently keep generic Website Console registry smoke wording while dropping the specific next-actions JSON smoke contract.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 332 — Website Console Next Actions Public Registry Smoke Coverage (unreleased)
+
+Public-registry smoke now directly executes `design-ai site --stdin --next-actions --json` through the published-package `npm exec --package @design-ai/cli@<version>` path. This aligns next-action release verification with the Website Console smoke pattern used for MCP probe outputs and handoff bundle checks after publish.
+
+### Changed
+- Added `assert_site_next_actions_json` to the registry smoke assertion imports and self-test path.
+- Added a registry smoke helper that feeds the shared Website Console sample workspace through stdin and verifies the next-action JSON contract.
+- Added the published-package npm exec smoke call immediately after the baseline `site --stdin --json` registry check.
+
+### Impact
+- Post-publish smoke now catches registry-only regressions in the next-action operator checklist, including boundary flags, ranked actions, top task selection, and follow-up commands.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 331 — Website Console Next Actions Package Smoke Coverage (unreleased)
+
+Packed-tarball smoke now directly executes `design-ai site --stdin --next-actions --json` through both installed-bin and one-shot `npm exec --package <tarball>` paths. This closes the gap between Phase 330's unit coverage and release-package runtime coverage for the next-action operator checklist.
+
+### Changed
+- Added shared `assert_site_next_actions_json` smoke assertions for the `website-improvement-next-actions` JSON contract.
+- Added negative self-test fixtures for ANSI output, boundary flag drift, missing ranked actions, and implementation prompt command drift.
+- Added installed-bin and one-shot npm exec package smoke calls for `site --stdin --next-actions --json`.
+
+### Impact
+- Release smoke now verifies that packed artifacts can execute the next-action checklist, not only advertise it through help text.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 330 — Website Console Next Actions CLI (unreleased)
+
+`design-ai site --next-actions [--json]` now turns a Website Improvement workspace into a prioritized local operator checklist. The report helps decide whether to fix validation/MCP blockers, generate tasks, prepare the selected Codex implementation prompt, preserve handoff evidence, or export a bundle before touching the target website repo.
+
+### Changed
+- Added `--next-actions` as a read-only `design-ai site` output mode with human and JSON formats.
+- Built the next-action payload from existing workspace validation, MCP readiness, task/MCP gap, refactor task, implementation evidence, and bundle command data.
+- Updated command-specific help, top-level help catalog expectations, README command lists, Website Improvement docs, Distribution docs, and Product Readiness notes.
+- Added unit coverage for argument parsing, invalid mode combinations, payload shape, human formatting, and `--out` file persistence.
+
+### Impact
+- Operators can ask the CLI "what should I do next?" without opening the static console or manually reading the MCP action plan.
+- This remains deterministic and local: no external MCP call, target website repo mutation, backend storage, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --check cli/lib/site.mjs && node --check cli/commands/site.mjs && node --check cli/commands/help.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:check`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 329 — MCP Action Plan Command Mapping Self-Test Release Guard (unreleased)
+
+Release metadata now guards the `shared MCP action plan command mapping self-test coverage` phrase across release-facing docs. The guard keeps Phase 328's shared `smoke_assertions.py --self-test` parity coverage visible beside the action-plan emitted human report, check JSON, and self-archive command smoke guidance.
+
+### Changed
+- Added a release metadata term group for shared MCP action plan command mapping self-test coverage.
+- Added a release policy label/check for the shared command mapping self-test phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention shared MCP action plan command mapping self-test coverage.
+- Added a self-test drift fixture that fails when README guidance drops the shared command mapping self-test phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted JSON command mapping is guarded by shared self-tests, not only by package/public-registry runtime smoke.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 328 — MCP Action Plan Embedded Command Self-Test Parity (unreleased)
+
+Shared smoke assertion self-tests now map the action-plan emitted `mcpCheckProbesJsonOut` and `mcpPlanProbesJsonOut` commands back to executable `design-ai site --stdin ... --out file --force` argv. This keeps the common assertion layer aligned with the packed-tarball and public-registry smoke paths that already execute those action-plan emitted commands.
+
+### Changed
+- Added action-plan payload self-test coverage for the emitted MCP readiness probe JSON archive command.
+- Added action-plan payload self-test coverage for the emitted MCP action-plan self-archive JSON command.
+- Added a negative drift fixture for action-plan emitted `mcpPlanProbesJsonOut` command shape changes.
+- Updated CHANGELOG and SESSION-LOG entries for the shared self-test parity coverage.
+
+### Impact
+- Local `smoke_assertions.py --self-test` now catches action-plan emitted JSON command mapping drift before package or public registry smoke executes the commands.
+- This changes shared test coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 327 — MCP Action Plan Check JSON Release Guard (unreleased)
+
+Release metadata now guards the `MCP action plan emitted check JSON command smoke coverage` phrase across release-facing docs. The guard keeps Phase 323's action-plan emitted `mcpCheckProbesJsonOut` execution visible beside the existing human report and self-archive action-plan command smoke guidance.
+
+### Changed
+- Added a release metadata term group for MCP action plan emitted check JSON command smoke coverage.
+- Added a release policy label/check for the check JSON command smoke phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention action-plan emitted check JSON command smoke coverage.
+- Added a self-test drift fixture that fails when README guidance drops the check JSON smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted `mcpCheckProbesJsonOut` is smoke-executed, not only present as schema guidance.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 326 — MCP Action Plan Emitted JSON Drift Fixtures (unreleased)
+
+Package and registry smoke self-tests now include negative drift fixtures for action-plan emitted JSON outputs. The local self-test path fails if the action-plan emitted `mcpCheckProbesJsonOut` report claims external calls or if the action-plan emitted `mcpPlanProbesJsonOut` self-archive report claims target-repo mutation.
+
+### Changed
+- Added a package smoke negative self-test fixture for action-plan emitted MCP check probe JSON output.
+- Added a package smoke negative self-test fixture for action-plan emitted MCP action-plan self-archive JSON output.
+- Added the same registry smoke negative self-test fixtures for the published-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the emitted JSON drift fixture coverage.
+
+### Impact
+- The action-plan emitted JSON output self-tests now guard both command mapping and local/read-only boundary drift.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 325 — MCP Action Plan Self-Archive Release Guard (unreleased)
+
+Release metadata now guards the `MCP action plan emitted self-archive command smoke coverage` phrase across release-facing docs. The guard keeps Phase 324's `mcpPlanProbesJsonOut` action-plan payload execution visible beside the existing action-plan human report command smoke guidance.
+
+### Changed
+- Added a release metadata term group for MCP action plan emitted self-archive command smoke coverage.
+- Added a release policy label/check for the self-archive command smoke phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention action-plan emitted self-archive command smoke coverage.
+- Added a self-test drift fixture that fails when README guidance drops the self-archive smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that action-plan emitted `mcpPlanProbesJsonOut` is smoke-executed, not only present as schema guidance.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 324 — MCP Action Plan Self-Archive Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpPlanProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json` action-plan payloads themselves. This closes the last action-plan emitted command parity gap: the payload can now prove its own JSON archive command works, not only the human readiness report and MCP check probe JSON archive commands.
+
+### Changed
+- Added package smoke execution for action-plan emitted `mcpPlanProbesJsonOut` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added public-registry smoke execution for the same action-plan self-archive command.
+- Added package and registry smoke self-test fixtures that replay the action-plan emitted plan JSON command through shared JSON file-output assertions.
+- Updated CHANGELOG and SESSION-LOG entries for the self-archive command execution coverage.
+
+### Impact
+- Action-plan payload command smoke coverage now covers all emitted output-preservation commands from the action-plan payload itself.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 323 — MCP Action Plan Check JSON Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpCheckProbesJsonOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the remaining action-plan command execution gap: a structured action-plan payload can now preserve both the human readiness probe report and the machine-readable MCP readiness probe JSON without requiring operators to open the original MCP check payload.
+
+### Changed
+- Added package smoke execution for action-plan emitted `mcpCheckProbesJsonOut` in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added public-registry smoke execution for the same action-plan emitted readiness probe JSON preservation command.
+- Added package and registry smoke self-test fixtures that replay the action-plan emitted check JSON command through shared JSON file-output assertions.
+- Updated CHANGELOG and SESSION-LOG entries for the command execution coverage.
+
+### Impact
+- Action-plan payload command smoke coverage now includes human report output, MCP check probe JSON output, action-plan JSON output, and direct action-plan JSON generation.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 322 — MCP Action Plan Human Report Drift Fixtures (unreleased)
+
+Package and registry smoke self-tests now include negative fixtures for the human readiness report generated from action-plan emitted `mcpCheckProbesHumanOut` commands. The local self-test path fails if the saved report loses the `Probe commands` guidance, matching the distribution smoke assertion that operators rely on for copy/paste follow-up commands.
+
+### Changed
+- Added a package smoke negative self-test fixture for action-plan emitted human readiness report output.
+- Added the same registry smoke negative self-test fixture for the public-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the drift fixture coverage.
+
+### Impact
+- The action-plan emitted human report self-test now guards both command mapping and content drift.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 321 — MCP Action Plan Human Command Self-Test Hardening (unreleased)
+
+Package and registry smoke self-tests now replay the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json` through the same human readiness report file-output assertion used by distribution smoke. This keeps the local `--self-test` path aligned with the installed-bin, one-shot npm exec, and public-registry command execution coverage added in Phase 320.
+
+### Changed
+- Added a package smoke self-test fixture that maps the action-plan JSON command to `--stdin`, `--out`, and `--force`, then validates the saved human MCP readiness probe report.
+- Added the same registry smoke self-test fixture for the published-package smoke assertion path.
+- Updated CHANGELOG and SESSION-LOG entries for the self-test hardening.
+
+### Impact
+- Distribution smoke command execution is now backed by local runner-level self-tests, not only by shared assertion self-tests.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 320 — MCP Action Plan Human Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the `mcpCheckProbesHumanOut` command emitted by `design-ai site --mcp-plan --probes --json`. This closes the gap between action-plan JSON command parity and distribution verification: the action-plan payload must now produce a preserved human readiness probe report in installed-bin, one-shot npm exec, and published-package paths.
+
+### Changed
+- Updated package smoke and registry smoke helpers so MCP action plan probe JSON smoke returns the parsed payload.
+- Executed the action-plan emitted `mcpCheckProbesHumanOut` command in packed-tarball installed-bin smoke.
+- Executed the same action-plan emitted command in one-shot `npm exec --package <tarball>` smoke.
+- Executed the same action-plan emitted command in public-registry smoke.
+- Added shared smoke assertion self-test coverage for mapping the action-plan payload's human report command to `--stdin`, `--out`, and `--force`.
+- Added release metadata guard coverage and release-facing docs wording for MCP action plan emitted human report command smoke coverage.
+- Updated CHANGELOG and SESSION-LOG entries for the smoke execution.
+
+### Impact
+- Action-plan JSON command parity is now executable smoke coverage, not only schema guidance.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 319 — MCP Action Plan Human Command Release Guard (unreleased)
+
+Release metadata now guards the MCP action plan human report output command parity phrase across release-facing docs. The guard keeps Phase 318's `mcpCheckProbesHumanOut` action-plan JSON parity visible beside the existing MCP probe action plan JSON output-file command guidance.
+
+### Changed
+- Added a release metadata term group for MCP action plan human report output command parity.
+- Added a release policy label/check for the action-plan human output command parity phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention the action-plan human report output command parity.
+- Added a self-test drift fixture that fails when README guidance drops the action-plan parity phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve that MCP action plan JSON exposes the human readiness report preservation command.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 318 — MCP Action Plan Human Report Command Parity (unreleased)
+
+`design-ai site --mcp-plan --probes --json` now carries `commands.mcpCheckProbesHumanOut` alongside the existing probe JSON preservation commands. Operators can use a single MCP action-plan payload to discover both the human readiness report archive command and the machine-readable probe JSON archive command.
+
+### Changed
+- Added `mcpCheckProbesHumanOut` to the structured MCP action plan JSON command map.
+- Updated MCP action plan Markdown output indirectly through the shared command map so the human report archive command appears in the command list.
+- Updated site unit tests for action-plan data, Markdown output, and `runSite --mcp-plan --probes --json`.
+- Updated shared smoke assertion schema, fixture payload, command validation, and self-test drift coverage for the action-plan human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the command parity change.
+
+### Impact
+- MCP check probe JSON and MCP action plan JSON now both expose the human readiness report preservation command.
+- This is deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 317 — MCP Check Human Output Command Release Guard (unreleased)
+
+Release metadata now guards the embedded MCP check probe human report output command phrase across release-facing docs. The guard keeps the `mcpCheckProbesHumanOut` command contract visible beside human MCP check probe command guidance and output-file smoke coverage.
+
+### Changed
+- Added a release metadata term group for embedded MCP check probe human report output commands.
+- Added a release policy label/check for the human report output command phrase.
+- Added a self-test drift fixture that fails when README guidance drops the embedded human report output command phrase.
+- Updated README, Korean README, distribution docs, and release checklist guidance to mention the embedded human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the release guard.
+
+### Impact
+- Release-facing docs must now preserve the `mcpCheckProbesHumanOut` contract independently from the broader human command guidance phrase.
+- This is release metadata and documentation coverage only: no CLI runtime behavior, JSON schema, smoke command execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 316 — MCP Check Probe Embedded Human Report Command (unreleased)
+
+`design-ai site --mcp-check --probes --json` now embeds `commands.mcpCheckProbesHumanOut` alongside the existing probe JSON and action-plan commands. Human probe output also shows a matching `Save readiness probe report` command, and package/public-registry smoke executes the embedded command to verify that it writes a preserved human report with the `Probe commands` section intact.
+
+### Changed
+- Added `mcpCheckProbesHumanOut` to `buildSiteMcpProbeCommandSet`.
+- Added `Save readiness probe report` to the `Probe commands` section in MCP check probe human output.
+- Updated site unit tests to verify the new JSON command field and human output command line.
+- Extended shared smoke assertions and embedded command parsing to support `mcpCheckProbesHumanOut`.
+- Wired packed-tarball installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke to execute the embedded human report output command.
+- Updated CHANGELOG and SESSION-LOG entries for the embedded human report command.
+
+### Impact
+- Machine-readable MCP readiness probe payloads now expose both human report and JSON report preservation commands.
+- Existing non-probe MCP check JSON remains unchanged; this only expands probe-enabled `commands`.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 315 — MCP Check Probe Human Output Persistence Smoke (unreleased)
+
+`design-ai site --stdin --mcp-check --probes --out file` is now covered by unit and distribution smoke tests. The persisted human report must retain the readiness summary, read-only probe section, and `Probe commands` guidance so operators can archive the exact human handoff output alongside JSON probe evidence.
+
+### Changed
+- Added site unit coverage for writing the probe-enabled MCP check human report to `--out file`.
+- Added `assert_site_mcp_check_probes_human_file_output` to shared smoke assertions.
+- Wired packed-tarball installed-bin and one-shot `npm exec --package <tarball>` smoke to verify human probe report `--out file` persistence.
+- Wired public-registry smoke to verify the same human probe report persistence from the published package path.
+- Updated release metadata phrase guards and release-facing docs to name human MCP check probe command guidance and output-file smoke coverage.
+
+### Impact
+- Human MCP readiness probe reports are now preservation-tested like the existing JSON probe payloads.
+- This is verification coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 314 — MCP Check Probe Human Smoke Coverage (unreleased)
+
+Packed-tarball and public-registry smoke now verify `design-ai site --stdin --mcp-check --probes` human output. The shared smoke assertion checks the readiness summary, read-only probe section, and the `Probe commands` copy/paste guidance that points operators to readiness JSON preservation and structured MCP action plan JSON generation.
+
+### Changed
+- Added `passing_site_mcp_check_probes_human` and `assert_site_mcp_check_probes_human` to `tools/audit/smoke_assertions.py`.
+- Added self-test drift coverage for losing the `Probe commands` section from MCP check probe human output.
+- Wired packed-tarball installed-bin and one-shot `npm exec --package <tarball>` smoke to run `site --stdin --mcp-check --probes` without `--json`.
+- Wired public-registry smoke to run the same human output check through `npm exec --package @design-ai/cli@<version>`.
+- Updated release-facing smoke guidance and project history docs for the human probe command guidance smoke coverage.
+
+### Impact
+- The Phase 313 human output guidance is now protected at the same distribution boundaries as the existing JSON probe command contract.
+- This is smoke coverage only: no CLI runtime behavior, JSON schema, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 313 — MCP Check Probe Human Command Guidance (unreleased)
+
+`design-ai site --mcp-check --probes` now shows the same probe follow-up commands in human output that probe-enabled JSON already carries. Operators can save the readiness probe JSON, generate the structured probe action plan JSON, and save that action plan from the visible report without switching to `--json`. The default `--mcp-check` human output remains unchanged.
+
+### Changed
+- Added a `Probe commands` section to `formatSiteMcpCheckHuman` when the report includes read-only probe commands.
+- Kept the default non-probe MCP readiness human output free of probe command guidance.
+- Added site unit tests for formatted probe reports and `runSite` human output to verify the command section and default-output boundary.
+- Updated CHANGELOG and SESSION-LOG entries for the human command guidance.
+
+### Impact
+- Human operators get the same copy/paste next-step path as JSON consumers when they run MCP readiness probes.
+- This is presentation-only CLI behavior: no external MCP call, target website repo mutation, smoke runner behavior, release metadata policy, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-check --probes`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 312 — MCP Check Executable Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for executable embedded MCP check probe command smoke coverage. The guard ties Phase 311's package/public-registry smoke execution of `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` to README, Release Checklist, and Distribution guidance, so docs cannot describe static embedded command guidance while omitting that the emitted commands are executed by smoke.
+
+### Changed
+- Added `RELEASE_SITE_MCP_CHECK_EXECUTABLE_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP check executable embedded command smoke phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name executable embedded MCP check probe command smoke coverage.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the executable embedded command smoke phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they describe MCP readiness probe JSON `--out` plus embedded command guidance but omit executable embedded command smoke coverage.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 311 — MCP Check Probe Embedded Command Smoke Execution (unreleased)
+
+Packed-tarball and public-registry smoke now execute the embedded commands emitted by `design-ai site --mcp-check --probes --json`. Instead of only checking that the `commands` payload shape is present, the smoke runners rewrite the `<workspace.json>` placeholder to `--stdin`, map the command onto the active installed-bin / one-shot npm exec / published-package runner, and verify the emitted readiness probe `--out`, action-plan JSON, and action-plan JSON `--out` commands.
+
+### Changed
+- Added `site_mcp_probe_embedded_command` to `tools/audit/smoke_assertions.py`.
+- Added self-test coverage that verifies embedded MCP probe commands map to stdin and forced output paths, and fail when the command body drifts.
+- Updated package smoke and registry smoke helpers so `assert_site_mcp_check_probes_json_smoke` returns the parsed payload after validation.
+- Updated packed-tarball installed-bin, packed-tarball one-shot npm exec, and public-registry smoke flows to execute `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` from the emitted payload.
+- Updated CHANGELOG and SESSION-LOG entries for the executable embedded command smoke coverage.
+
+### Impact
+- The `commands` object in MCP readiness probe JSON is now verified as executable guidance, not just a static JSON shape.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node --test cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 310 — MCP Check Probe Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for embedded MCP check probe next-step commands. The guard ties Phase 309's `design-ai site --mcp-check --probes --json` `commands` payload to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP readiness probe JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJson` / `mcpPlanProbesJsonOut` command contract.
+
+### Changed
+- Added `RELEASE_SITE_MCP_CHECK_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP check embedded command phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name embedded MCP check probe next-step commands.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the embedded MCP check command phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they keep MCP readiness probe JSON `--out` coverage but drop the embedded probe payload command contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 309 — MCP Check Probe Output Commands (unreleased)
+
+`design-ai site --mcp-check --probes --json` now embeds the preservation and next-step command hints directly in the probe payload. The default non-probe MCP check JSON shape stays unchanged, while probe-enabled reports include `mcpCheckProbesJsonOut`, `mcpPlanProbesJson`, and `mcpPlanProbesJsonOut` so operators can save readiness evidence and continue into the structured MCP action plan from the same machine-readable output.
+
+### Changed
+- Added shared Website Console MCP command target helpers in `cli/lib/site.mjs`.
+- Added a `commands` object only to probe-enabled MCP check JSON reports.
+- Reused the same probe output command builder for structured MCP action plan JSON output-file commands without expanding the action-plan command key set.
+- Updated site unit tests to verify the default MCP check JSON remains stable and the probe JSON exposes the embedded command hints.
+- Updated shared package/public-registry smoke assertion fixtures, validators, and self-test drift coverage for the probe report command contract.
+- Updated CHANGELOG and SESSION-LOG entries for the MCP check probe command payload.
+
+### Impact
+- Machine-readable MCP readiness probe reports now carry copy/paste preservation and next-step commands alongside probe evidence.
+- Existing consumers of `design-ai site --mcp-check --json` without `--probes` keep the same top-level JSON contract.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-check --probes --json`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 308 — MCP Action Plan Embedded Command Release Guard (unreleased)
+
+Release metadata now protects the release-facing documentation phrase for embedded MCP action plan probe output-file commands. The guard ties Phase 307's structured JSON command fields to README, Release Checklist, and Distribution guidance, so docs cannot describe MCP probe action plan JSON `--out` persistence while omitting the embedded `mcpCheckProbesJsonOut` / `mcpPlanProbesJsonOut` command contract.
+
+### Changed
+- Added `RELEASE_SITE_MCP_ACTION_PLAN_COMMANDS_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site MCP action plan embedded command phrase` to release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name embedded MCP action plan probe output-file commands.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the embedded command phrase.
+- Updated CHANGELOG and SESSION-LOG entries for the release-policy guard.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they keep MCP probe action plan JSON `--out` coverage but drop the embedded command contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 307 — MCP Action Plan Probe Output Commands (unreleased)
+
+Structured Website Console MCP action plan JSON now carries the MCP probe JSON output-file commands directly in its `commands` object. Operators and automation can read one action-plan payload and discover both preservation paths without opening help text: `mcpCheckProbesJsonOut` for readiness probe JSON and `mcpPlanProbesJsonOut` for probe action-plan JSON.
+
+### Changed
+- Added `commands.mcpCheckProbesJsonOut` and `commands.mcpPlanProbesJsonOut` to `buildSiteMcpActionPlanData`.
+- Updated site unit tests so Markdown and JSON MCP action plans must include the probe `--out` commands.
+- Updated shared package/public-registry smoke assertion fixtures and validators for the expanded action-plan `commands` contract.
+- Added a smoke assertion self-test fixture that fails when the MCP readiness probe output command drops the `--out` target.
+- Updated CHANGELOG and SESSION-LOG entries for the structured JSON command improvement.
+
+### Impact
+- Machine-readable Website Console MCP action plans now expose the same saved-probe workflows that `design-ai site --help` documents.
+- This remains deterministic and local: no external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-plan --probes --json`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 306 — Site Help Topic Example Release Guard (unreleased)
+
+Release metadata now protects the shared Website Console site help topic example smoke assertion phrase that Phase 305 added to package and registry smoke assertions. Release-facing docs must mention the command-specific `design-ai help site` example guard alongside help topic smoke coverage, so docs cannot describe generic help topic validation while dropping the MCP probe JSON `--out` example contract.
+
+### Changed
+- Added `RELEASE_SITE_HELP_TOPIC_EXAMPLE_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site help topic example phrase` to the release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name shared Website Console site help topic example smoke assertions.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the shared site help topic example phrase.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if help topic smoke guidance omits the Website Console `site` help example guard.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 305 — Site Help Topic Probe Output Smoke Assertions (unreleased)
+
+Shared package/public-registry smoke assertions now protect the command-specific Website Console `site` help examples for MCP probe JSON output files. The `site` help topic fixture must include copy/paste commands for `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json`, so package and registry smoke catch drift where top-level help still advertises probes but the detailed topic loses the save-to-file workflow.
+
+### Changed
+- Added Website Console MCP probe JSON output-file example fragments to `EXPECTED_HELP_TOPIC_FRAGMENTS["site"]` in `tools/audit/smoke_assertions.py`.
+- Added a positive self-test assertion for the `site` help topic fixture.
+- Added a drift fixture that fails when the MCP readiness probe example drops the `--out mcp-check-probes.json` save target.
+- Updated CHANGELOG and SESSION-LOG entries for the shared help-topic smoke assertion hardening.
+
+### Impact
+- Packed-tarball and public-registry smoke now validate the command-specific Website Console help topic examples through the shared helper path, not only the help JSON usage line and top-level help summary.
+- This is smoke assertion hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 304 — Probe-Capable Site Help Release Guard (unreleased)
+
+Release metadata now protects the probe-capable Website Console site help usage that package and registry smoke assertions validate. Release-facing docs must mention the `design-ai help --json` topic catalog together with probe-capable Website Console site help usage, so the docs cannot keep generic help catalog wording while dropping the `--mcp-check [--probes]` / `--mcp-plan [--probes] [--json]` discovery contract.
+
+### Changed
+- Added `RELEASE_SITE_HELP_USAGE_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Added `site help usage phrase` to the release policy phrase labels and checks.
+- Updated README, README.ko, Distribution docs, and Release Checklist release smoke guidance to name probe-capable Website Console site help usage next to help JSON catalog coverage.
+- Added a release metadata self-test drift fixture that fails when README guidance drops the probe-capable site help usage phrase.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if help JSON catalog guidance omits the Website Console site probe usage contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 303 — Probe-Capable Site Help Smoke Assertions (unreleased)
+
+Shared package/public-registry smoke assertions now require the same probe-capable Website Console site usage that top-level help exposes. The help JSON contract and main help output fixtures now include `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, and the self-test fails if the site usage drifts back to the older probe-less shape.
+
+### Changed
+- Updated `tools/audit/smoke_assertions.py` expected help topic usage for the `site` command.
+- Updated main help fixture fragments so packed-tarball and public-registry smoke validate probe-capable site usage.
+- Added a smoke assertion self-test fixture that fails when help JSON reports stale probe-less site usage.
+
+### Impact
+- Package and registry smoke now catch drift where top-level help/catalog loses Website Console probe discovery while command-specific help still passes.
+- This is smoke assertion hardening only: no CLI runtime behavior, package smoke execution path, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 302 — Site Probe Usage in Top-Level Help (unreleased)
+
+Top-level `design-ai help` and machine-readable `design-ai help --json` now expose the Website Console probe-capable site modes. The site usage line names `--mcp-check [--probes]` and `--mcp-plan [--probes] [--json]`, so operators and tool wrappers can discover probe support before opening command-specific help.
+
+### Changed
+- Updated the `site` entry in `HELP_COMMANDS` to include probe-capable MCP readiness and action-plan modes.
+- Updated help catalog tests for human and JSON output so top-level usage cannot silently fall back to the older probe-less shape.
+- Updated CHANGELOG and SESSION-LOG entries for the top-level help/catalog improvement.
+
+### Impact
+- This is help/catalog hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node cli/bin/design-ai.mjs help`
+- `node cli/bin/design-ai.mjs help --json`
+- `node --test cli/lib/help-command.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 301 — MCP Probe Output-File Help Examples (unreleased)
+
+`design-ai site --help` now surfaces the MCP probe JSON output-file workflows directly in the examples list. Operators can copy the exact `--mcp-check --probes --json --out mcp-check-probes.json` and `--mcp-plan --probes --json --out mcp-action-plan-probes.json` commands without reconstructing them from release smoke guidance.
+
+### Changed
+- Added explicit Website Console MCP readiness probe JSON and MCP probe action plan JSON `--out` examples to the `site` command help.
+- Added help-command and site command unit assertions so the examples cannot silently disappear.
+- Updated CHANGELOG and SESSION-LOG entries for the operator-facing help improvement.
+
+### Impact
+- This is help/documentation hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `node cli/bin/design-ai.mjs help site`
+- `node --test cli/lib/help-command.test.mjs cli/lib/site.test.mjs`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 300 — Shared MCP Probe Output-File Release Guard (unreleased)
+
+Release metadata now treats the shared Website Console MCP probe output-file smoke assertion contract as release-facing policy. The guard requires release docs to mention shared MCP probe output-file smoke assertions next to MCP readiness probe JSON `--out` coverage, and the self-test fails if that helper phrase disappears from README release guidance.
+
+### Changed
+- Added `RELEASE_SITE_MCP_SHARED_OUTPUT_ASSERTION_TERM_GROUPS` to `tools/audit/release-metadata.py`.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared MCP probe output-file smoke assertion coverage.
+- Added a release metadata self-test drift fixture that fails when the shared MCP probe output-file smoke assertion phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document MCP probe output-file smoke without preserving the shared assertion helper contract.
+- This is release-policy hardening only: no CLI runtime behavior, package smoke execution, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 299 — Shared MCP Probe Output-File Smoke Assertions (unreleased)
+
+Website Console MCP probe output-file smoke now uses shared assertion helpers. The packed-tarball and public-registry smoke runners still execute their own installed-bin, one-shot npm exec, and published-package commands, but `smoke_assertions.py` now owns the write-confirmation plus saved JSON payload contract for both MCP readiness probe JSON and MCP probe action plan JSON.
+
+### Changed
+- Added shared `assert_site_mcp_check_probes_json_file_output` and `assert_site_mcp_plan_probes_json_file_output` helpers to `tools/audit/smoke_assertions.py`.
+- Refactored package and registry smoke helpers/self-tests to use the shared output-file assertion contract after runner-specific command execution.
+- Added smoke assertion self-test fixtures for successful output-file validation, missing write confirmation, and saved payload drift.
+
+### Impact
+- Package and registry smoke can no longer drift apart on MCP probe output-file semantics while still keeping their separate runner setup and command execution paths.
+- This is smoke assertion hardening only: no CLI runtime behavior, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 298 — MCP Readiness Probe JSON Output Persistence Smoke (unreleased)
+
+Website Console MCP readiness probe JSON now has output-file persistence smoke coverage. The installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke paths verify that `design-ai site --stdin --mcp-check --probes --json --out file --force` writes a file and that the saved file still matches the read-only MCP probe contract.
+
+### Changed
+- Added package smoke and registry smoke helpers that run the MCP readiness probe JSON command with `--out file --force`, confirm the write message, and validate the saved JSON payload.
+- Added package/registry self-test fixtures for MCP readiness probe JSON output-file persistence and read-only boundary drift.
+- Extended release metadata policy guards and release-facing docs so the output-file smoke phrase cannot be dropped from packed-tarball or public-registry release guidance.
+
+### Impact
+- Release smoke now catches regressions where MCP readiness probe JSON works on stdout but fails to persist, writes artifact text to stdout instead of a confirmation, or saves a payload that drifts from the read-only probe contract.
+- This is smoke/release-policy hardening only: no CLI runtime behavior, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 297 — MCP Action Plan JSON Output Persistence Smoke (unreleased)
+
+Website Console MCP probe action plan JSON now has output-file persistence smoke coverage. The installed-bin, one-shot `npm exec --package <tarball>`, and public-registry smoke paths verify that `design-ai site --stdin --mcp-plan --probes --json --out file --force` writes a file and that the saved file still matches the structured `website-improvement-mcp-action-plan` contract.
+
+### Changed
+- Added package smoke and registry smoke helpers that run the MCP probe action plan JSON command with `--out file --force`, confirm the write message, and validate the saved JSON payload.
+- Added package/registry self-test fixtures for MCP probe action plan JSON output-file persistence and boundary drift.
+- Extended release metadata policy guards and release-facing docs so the output-file smoke phrase cannot be dropped from packed-tarball or public-registry release guidance.
+
+### Impact
+- Release smoke now catches regressions where the JSON action plan works on stdout but fails to persist, writes artifact text to stdout instead of a confirmation, or saves a payload that drifts from the action-plan contract.
+- This is smoke/release-policy hardening only: no CLI runtime behavior, external MCP call, target website repo mutation, new dependency, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 296 — MCP Action Plan JSON Export (unreleased)
+
+Website Console MCP action plans now support a structured JSON output for agent and CI handoff workflows. `design-ai site --mcp-plan [--probes] --json` emits the same deterministic readiness/action-plan data as Markdown, including optional read-only probes, without calling external MCPs or mutating target repos.
+
+### Changed
+- Added `buildSiteMcpActionPlanData` and `formatSiteMcpActionPlanJson` so Markdown and JSON action plans share one deterministic data contract.
+- Updated `design-ai site --mcp-plan` to accept `--json`, including the `--probes --json` path for read-only probe action plans.
+- Added site unit tests, shared smoke assertion helpers, package smoke, and public registry smoke coverage for structured MCP probe action plan JSON.
+- Updated Website Improvement docs, README/Distribution/Release Checklist guidance, and release metadata guard fixtures for the new JSON smoke phrase.
+
+### Impact
+- Agent runners, CI smoke, and handoff scripts can consume MCP action plans without parsing Markdown.
+- Existing Markdown `--mcp-plan` output remains unchanged for operators.
+- This is deterministic and local: no external MCP calls, target website repo mutation, Lighthouse/axe/browser automation, new dependencies, or `--yes` apply behavior changed.
+
+### Verified
+- `node --check cli/lib/site.mjs && node --check cli/commands/site.mjs`
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `node cli/bin/design-ai.mjs site --sample | node cli/bin/design-ai.mjs site --stdin --mcp-plan --probes --json`
+- `npm test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 295 — Public Registry MCP Probe Action Plan Release Guard (unreleased)
+
+Release metadata now protects the post-publish public registry Website Console guidance for MCP probe action plans. The public registry smoke already runs `design-ai site --stdin --mcp-plan --probes`; release-facing docs now have to say that explicitly instead of only mentioning MCP readiness probes and the base MCP action plan.
+
+### Changed
+- Extended the public registry Website Console release metadata term group to require `MCP probe action plan` next to MCP readiness probes and MCP action plan coverage.
+- Updated README, Korean README, Distribution docs, and Release Checklist post-publish registry smoke guidance with the new phrase.
+- Added a release metadata self-test drift fixture that fails when the public registry MCP probe action plan phrase is removed.
+
+### Impact
+- Release docs now stay aligned with the actual `registry-smoke.py` coverage for `design-ai site --stdin --mcp-plan --probes`.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 294 — MCP Plan Probe Smoke Parity (unreleased)
+
+Packed-tarball and public-registry smoke now verify the Website Console read-only MCP probe section in Markdown action plans. The installed-bin, one-shot `npm exec --package <tarball>`, and public `npm exec --package @design-ai/cli@<version>` paths now run `design-ai site --stdin --mcp-plan --probes` and validate the shared Markdown probe contract.
+
+### Changed
+- Added shared smoke assertions for `design-ai site --stdin --mcp-plan --probes` Markdown output, including the read-only probe heading, status, mode, no-external-call boundary, table header, and expected probe rows.
+- Added packed-tarball smoke coverage for MCP probe action plan output in both installed-bin and one-shot package paths.
+- Added public registry smoke coverage and registry self-test coverage for MCP probe action plan output.
+- Extended release metadata policy guards so release-facing docs must retain the MCP probe action plan smoke phrase.
+
+### Impact
+- Smoke now catches drift where `--mcp-plan --probes` loses probe rows or read-only boundary text while the JSON `--mcp-check --probes` path still passes.
+- This is a smoke/release-policy parity change only: no CLI runtime behavior, package output format outside the opt-in command, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 293 — Public Registry MCP Probe Smoke Parity (unreleased)
+
+Public registry smoke now verifies the same Website Console read-only MCP probe JSON contract as packed-tarball smoke. The post-publish `npm exec --package @design-ai/cli@<version>` path now runs `design-ai site --stdin --mcp-check --probes --json` and checks the shared probe payload assertion contract.
+
+### Changed
+- Added a registry smoke wrapper for Website Console MCP probe JSON output using the existing shared smoke assertion helper.
+- Added the public registry MCP probe smoke command to the `npm exec --package @design-ai/cli@<version>` Website Console smoke sequence.
+- Extended registry smoke self-test and release metadata drift fixtures so public registry Website Console guidance must retain MCP readiness probe coverage.
+
+### Impact
+- Published-package smoke now catches drift in Website Console MCP probe payload shape, read-only mode, external-call boundary, probe count, and probe item order.
+- This is a smoke/release-policy parity change only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/registry-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run registry:smoke:self-test`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 292 — Shared Repair Report Release Metadata Guard (unreleased)
+
+Release metadata now treats the shared Website Console repair report assertion helper contract as release-facing policy. The guard requires release docs to mention shared repair report assertion helpers alongside bundle repair preview/apply, repair report `--out file` persistence, and shared repair guidance smoke helpers.
+
+### Changed
+- Added a shared repair report assertion helper term group to the existing site bundle-repair package smoke release metadata guard.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared repair report assertion helper coverage.
+- Added a release metadata self-test fixture that fails when the shared repair report assertion helper phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document shared bundle repair guidance without preserving the shared repair report assertion helper contract.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 291 — Shared Repair Report Smoke Assertions (unreleased)
+
+Website Console repair report smoke now shares the detailed assertion contract for report guidance commands. Package and registry smoke still execute their own installed-bin / npm exec paths, but `smoke_assertions.py` owns the command shape, output path, preview payload, and applied payload checks.
+
+### Changed
+- Added shared smoke assertion helpers for repair guidance report command shape, expected `repair-preview.json` / `repair-applied.json` output paths, preview report payloads, and applied repair report payloads.
+- Updated `tools/audit/package-smoke.py` and `tools/audit/registry-smoke.py` to call the shared helpers instead of duplicating the same report command and payload assertions.
+- Added smoke assertion self-test fixtures for the shared repair report helpers, including invalid preview command and generated drift failure cases.
+
+### Impact
+- Package and registry smoke now fail consistently if repair report command shape, output path, or payload semantics drift.
+- This is a test architecture cleanup only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 290 — Shared Repair Guidance Release Metadata Guard (unreleased)
+
+Release metadata now treats the shared Website Console repair guidance smoke helper contract as release-facing policy. The guard requires release docs to mention shared repair guidance smoke helpers alongside the bundle repair preview/apply and repair report `--out file` smoke coverage, and the self-test includes a drift fixture that removes that phrase from README guidance.
+
+### Changed
+- Added a shared repair guidance helper term group to the existing site bundle-repair package smoke release metadata guard.
+- Updated README, README.ko, Distribution docs, and Release Checklist release-gate guidance to name the shared repair guidance smoke helper coverage.
+- Added a release metadata self-test fixture that fails when the shared helper phrase is removed from README release policy text.
+
+### Impact
+- Release-facing docs now fail `npm run release:metadata` if they document bundle repair smoke without preserving the shared helper contract.
+- This is a release metadata/docs guard only: no CLI runtime behavior, package output, target website repo mutation, external MCP calls, dependency graph, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run audit:strict`
+- `npm run release:self-test`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 289 — Shared Repair Guidance Smoke Helpers (unreleased)
+
+Website Console repair guidance smoke now has a single helper contract for parsing copy/paste commands. The packed-tarball and public-registry smoke runners both use `smoke_assertions.py` helpers for `repairGuidance` command parsing and `--out` path extraction, reducing duplicated release-gate logic after Phase 288 made the guidance executable.
+
+### Changed
+- Moved `site_guidance_command` and `guidance_out_path` into `tools/audit/smoke_assertions.py`.
+- Added smoke assertion self-test fixtures for quoted report paths, invalid non-site guidance, missing `site` runner prefixes, missing `--out`, and dangling `--out`.
+- Updated `tools/audit/package-smoke.py` and `tools/audit/registry-smoke.py` to import the shared helpers instead of maintaining duplicate local copies.
+
+### Impact
+- Package and registry smoke now fail consistently if repair guidance command parsing drifts.
+- This is a test architecture cleanup only: no CLI runtime behavior, dependencies, external MCP calls, target website repo mutation, or `--yes` apply behavior changed.
+
+### Verified
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 288 — Website Console Executable Repair Guidance Smoke (unreleased)
+
+Website Console repair report guidance is now smoke-tested as an executable operator instruction. Instead of only checking that `previewReportCommand` and `applyReportCommand` strings contain `--out`, package and registry smoke parse the emitted guidance commands, map them onto the active installed-bin or `npm exec --package` runner, execute them, and verify the written preview/applied report payloads.
+
+### Changed
+- Added shared smoke helpers that parse `design-ai site ...` repair guidance with `shlex.split` and preserve the smoke runner prefix.
+- Updated packed-tarball smoke so the installed-bin and one-shot `npm exec --package <tarball>` repair report checks execute the emitted guidance commands directly.
+- Updated public-registry smoke so post-publish verification catches broken repair guidance quoting, path generation, or missing `--out` behavior.
+- Kept report paths beside the handoff bundle and asserted those paths before execution.
+
+### Impact
+- Copy/paste repair guidance is now covered as a real executable contract, not just a documented string shape.
+- This remains local and deterministic: no new dependencies, no external MCP calls, no target website repo mutation, and no change to the explicit `--yes` apply requirement.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `git diff --check`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:check`
+- `npm run package:smoke`
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 287 — Website Console Bundle Repair Report Command Guidance (unreleased)
+
+Website Console repair guidance now tells operators how to preserve repair evidence as files. Bundle-check, bundle-handoff, and bundle-repair outputs include preview/apply report commands with `--out file`, using paths outside the handoff bundle directory so saved reports do not create unexpected bundle files.
+
+### Changed
+- Added `previewReportCommand` and `applyReportCommand` to Website Console bundle `repairGuidance` JSON metadata.
+- Added `Preview report` and `Apply report` lines to human repair guidance and the generated target-repo handoff prompt.
+- Extended site unit coverage so bundle-check, bundle-handoff, and bundle-repair JSON/human/prompt outputs assert the report command contract.
+- Extended packed-tarball and public-registry smoke assertions so repair guidance drift is caught in installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths.
+
+### Impact
+- Operators can copy deterministic evidence-preservation commands directly from the guidance instead of manually appending `--out`.
+- Report output paths are generated beside the handoff bundle, not inside it, avoiding unexpected bundle-file drift.
+- The change does not add dependencies, call external MCPs, mutate target website repos, or change the explicit `--yes` requirement for applying repairs.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `python3 -B tools/audit/registry-smoke.py --self-test`.
+- `git diff --check`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:metadata`.
+- `npm run package:check`.
+- `npm run package:smoke`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 286 — Website Console Bundle Repair Report Output Persistence (unreleased)
+
+Website Console bundle repair reports now match the other bundle evidence commands: operators can save preview and apply reports with `--out file`, while repair preview stays read-only and confirmed apply remains scoped to the local handoff bundle directory.
+
+### Changed
+- Added `design-ai site <bundle-dir> --bundle-repair [--yes] [--json] --out file [--force]` support.
+- Reused the existing safe file-write path so repair reports print `Wrote <path>` and respect overwrite protection unless `--force` is provided.
+- Extended site unit coverage so repair preview `--out` does not mutate a drifted bundle and repair apply `--out` records the fail-to-pass transition.
+- Extended packed-tarball and public-registry smoke assertions so installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths verify repair report output-file persistence.
+- Extended help, README, Distribution docs, release checklist, and release metadata guards to document and enforce the new `--out` contract.
+
+### Impact
+- Operators can archive deterministic repair evidence without shell redirection, which makes handoff and release evidence easier to preserve.
+- The change does not add dependencies, call external MCPs, mutate target website repos, or change the explicit `--yes` requirement for applying repairs.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `node --check cli/commands/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `python3 -B tools/audit/registry-smoke.py --self-test`.
+- `python3 -B tools/audit/release-metadata.py --self-test`.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`.
+- `npm run release:metadata`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:self-test`.
+- `npm run package:check`.
+- `npm run package:smoke`.
+- `git diff --check`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 285 — Website Console Bundle Repair Preview/Apply (unreleased)
+
+Website Console handoff bundle repair guidance is now a first-class local CLI flow. Operators can preview a repair plan without changing files, then explicitly apply the repair to regenerate only the handoff bundle directory from its embedded `website-workspace.tasks.json`.
+
+### Changed
+- Added `design-ai site <bundle-dir> --bundle-repair [--json]` as a read-only repair preview mode.
+- Added `design-ai site <bundle-dir> --bundle-repair --yes [--json]` to rewrite the local handoff bundle directory and immediately re-run bundle-check verification.
+- Added `previewCommand` and `applyCommand` to bundle `repairGuidance` metadata.
+- Extended site unit coverage so drifted generated artifacts show a fail-to-pass repair transition and preview mode does not mutate files.
+- Extended packed-tarball and public-registry smoke assertions so installed-bin, one-shot `npm exec --package <tarball>`, and public registry paths verify bundle repair preview/apply behavior.
+
+### Impact
+- Operators no longer have to copy the regeneration command manually after bundle drift; the CLI can perform the local repair after explicit `--yes`.
+- Repair remains scoped to the handoff bundle directory. It does not mutate the target website repo, call external MCPs, crawl pages, run Lighthouse/axe, add dependencies, or modify learning profiles.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `node --check cli/commands/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/registry-smoke.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 284 — Website Console Bundle Repair Guidance (unreleased)
+
+Verified Website Console handoff bundle checks now include deterministic repair guidance. When generated contract drift is found, operators can see the exact local command to regenerate the bundle from its embedded `website-workspace.tasks.json`, plus the follow-up strict verification command.
+
+### Changed
+- Added top-level `repairGuidance` metadata to `design-ai site <bundle-dir> --bundle-check --json`.
+- Added repair guidance to bundle-check human output, including regenerate command, verify command, mutation scope, target-repo mutation flag, and external-call flag.
+- Added repair guidance to `design-ai site <bundle-dir> --bundle-handoff --json` bundle metadata and the generated target-repo handoff prompt.
+- Extended unit coverage so passing bundles and coherent generated-contract drift both expose a regeneration command.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/handoff paths verify repair guidance.
+
+### Impact
+- Website Improvement operators now get an actionable next step after drift detection instead of only a failing issue and digest comparison.
+- Repair remains explicit and local: the command rewrites only the handoff bundle directory with `--force`, does not mutate the target website repo, does not call external MCPs, and does not add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 283 — Website Console Bundle Generated Contract Diagnostics (unreleased)
+
+Verified Website Console handoff bundle checks now expose per-file generated contract diagnostics. Operators can see which checksum-managed artifact drifted from the current CLI output contract, including expected and actual SHA-256 digests, without exposing artifact contents.
+
+### Changed
+- Added a `generatedContract` JSON block to `design-ai site <bundle-dir> --bundle-check --json` with availability, source, expected/verified counts, drift file paths, and per-file expected/actual SHA-256 digests.
+- Added generated drift file summaries to bundle-check human output, bundle-compare summaries, and target-repo bundle-handoff JSON/prompt output.
+- Extended the coherent tamper regression test so `website-handoff.md` drift verifies both the mismatch path and digest diagnostics.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/compare/handoff paths verify generated contract diagnostics and empty drift lists.
+
+### Impact
+- Website Improvement operators can distinguish checksum mismatch, coherent manual bundle edits, and current CLI contract drift without inspecting every bundle artifact manually.
+- Diagnostics remain deterministic and local: they expose digests and file paths only, not generated Markdown contents, and do not mutate target repos, call external MCPs, crawl pages, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 282 — Website Console Bundle Generated Contract Guard (unreleased)
+
+Verified Website Console handoff bundle checks now confirm that the generated bundle artifacts still match the current CLI output contract. This protects target-repo handoff against coherent manual edits where a bundle file and `summary.json` checksums are changed together.
+
+### Changed
+- Added generated contract verification to `design-ai site <bundle-dir> --bundle-check --json` for the seven checksum-managed bundle artifacts.
+- Added `expectedGeneratedFiles`, `verifiedGeneratedFiles`, and `generatedFailures` counts to bundle-check JSON.
+- Added generated contract metadata to bundle-compare summaries and target-repo bundle-handoff JSON/prompt output.
+- Added a coherent tamper regression test where `website-handoff.md` is edited and `summary.json` checksums are recomputed; bundle-check now fails on `bundle-generated-website-handoff.md`.
+- Extended packed-tarball smoke assertions so installed-bin and one-shot `npm exec --package <tarball>` bundle-check/compare/handoff JSON verify the generated bundle contract counts.
+- Extended release metadata guidance so release-facing docs keep generated bundle contract verification visible.
+
+### Impact
+- Website Improvement operators can trust that a verified handoff bundle is not only checksum-consistent, but also reproducible from `website-workspace.tasks.json` under the current CLI.
+- `summary.json` remains validated through manifest, checksum, digest, evidence count, and workspace drift checks; exact regeneration is applied to the seven checksum-managed artifacts where the task-generation summary does not depend on original pre-generation state.
+- The feature remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims automatically, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 281 — Website Console Verified Bundle Evidence Metadata (unreleased)
+
+Verified Website Console handoff bundle flows now keep implementation evidence counts visible after bundle verification. This closes the gap between evidence-preserving bundle export and the later `--bundle-check`, `--bundle-compare`, and `--bundle-handoff` JSON summaries used before target-repo implementation.
+
+### Changed
+- Added normalized `implementationEvidence` count metadata to `design-ai site <bundle-dir> --bundle-check --json` summaries.
+- Added evidence count metadata to both sides of `design-ai site <bundle-dir> --bundle-compare other-bundle-dir --json`.
+- Added evidence count metadata to `design-ai site <bundle-dir> --bundle-handoff --json` and the generated target-repo handoff prompt.
+- Added bundle-check validation that fails when `summary.json.implementationEvidence` counts drift from `website-workspace.tasks.json`.
+- Extended packed-tarball smoke so installed-bin and one-shot `npm exec --package <tarball>` paths verify non-empty evidence counts through evidence bundle check, compare, and handoff JSON.
+
+### Impact
+- Website Improvement operators can confirm recorded target-repo evidence survives the whole handoff chain: browser workspace export, CLI report/tasks/bundle generation, bundle verification, bundle comparison, and target-repo handoff prompt generation.
+- The feature remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims automatically, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`.
+- `node --test cli/lib/site.test.mjs`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 280 — Website Console Evidence Package Smoke Expansion (unreleased)
+
+Packed-tarball smoke now verifies that non-empty Website Console handoff evidence survives the release distribution paths. This protects the Phase 278/279 evidence workflow after packaging, install shims, and one-shot `npm exec --package <tarball>` execution.
+
+### Changed
+- Added a non-empty `implementationEvidence` smoke fixture for executed work, verification results, remaining risks, and next actions.
+- Added installed-bin smoke coverage for `design-ai site --stdin --report`, `design-ai site --stdin --tasks`, and `design-ai site --stdin --bundle --out <dir>` using the evidence fixture.
+- Added one-shot `npm exec --package <tarball>` smoke coverage for the same report, tasks, and bundle evidence preservation paths.
+- Added package smoke self-test drift fixtures for evidence payload and Markdown fragment assertions.
+
+### Impact
+- Website Improvement evidence capture is now protected across browser export, CLI report generation, generated task workspaces, handoff bundles, local package install shims, and one-shot tarball execution.
+- The smoke remains deterministic and local: it does not mutate target repos, call external MCPs, validate real target-repo claims, crawl pages, or add dependencies.
+
+### Verified
+- `python3 -m py_compile tools/audit/package-smoke.py`.
+- `python3 -B tools/audit/package-smoke.py --self-test`.
+- `npm run package:smoke`.
+- `npm test`.
+- `npm run audit:strict`.
+- `npm run release:metadata`.
+- `python3 -B tools/audit/local-ci.py --docs-only`.
+- `npm run release:self-test`.
+- `git diff --check`.
+
+### What's still ahead
+- Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 279 — Website Console CLI Handoff Evidence Export (unreleased)
+
+`design-ai site` now preserves Website Console handoff evidence when operators move from the browser workspace to file-first CLI reports and bundles. Evidence recorded in the static app can now survive `--tasks`, appear in `--report`, and be archived in `--bundle` artifacts.
+
+### Changed
+- Added `implementationEvidence` normalization to `cli/lib/site.mjs` with executed work, verification results, remaining risks, and next actions.
+- Added optional evidence-shape validation so malformed evidence arrays fail workspace analysis while older workspaces without the block remain compatible.
+- Added evidence counts to `design-ai site --json` summaries.
+- Updated CLI-generated handoff reports to render evidence-backed `Executed work`, `Verification results`, `Remaining risks`, and `Next actions` sections.
+- Preserved evidence through `design-ai site --tasks` and `design-ai site --bundle`, including `website-workspace.tasks.json`, `website-handoff.md`, and `summary.json`.
+- Added unit and smoke assertion coverage for sample schema, evidence preservation, bundle summary counts, and assertion drift.
+
+### Impact
+- Website Improvement operators can now use the static console for local evidence capture and the CLI for durable report/bundle export without losing implementation proof.
+- The CLI remains deterministic and local: it does not mutate target repos, call external MCPs, verify evidence claims automatically, add dependencies, run crawling, or run Lighthouse/axe.
+
+### Verified
+- `node --check cli/lib/site.mjs`.
+- `node --test cli/lib/site.test.mjs`.
+- `python3 -B tools/audit/smoke_assertions.py --self-test`.
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`.
+
+### What's still ahead
+- Evidence-specific package smoke expansion is covered in Phase 280. Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 278 — Website Console Handoff Evidence Tracking (unreleased)
+
+The static Website Improvement Console now lets operators record target-repo implementation evidence before exporting a final handoff report. This closes the gap between planning prompts and the local Markdown report without letting this repo edit the target website source.
+
+### Changed
+- Added an `implementationEvidence` localStorage workspace block for executed work, verification results, remaining risks, and next actions.
+- Added editable Handoff Report evidence fields plus compact count metrics in `docs/website-console/`.
+- Updated generated Markdown handoff reports so copied/exported reports include operator-entered implementation evidence instead of fixed placeholder text.
+- Preserved existing JSON import/export compatibility by normalizing older workspaces that do not include the new evidence block.
+- Kept the static console dependency-free, browser-local, and target-repo safe.
+
+### Impact
+- Website Improvement operators can now keep planning, implementation proof, verification results, risks, and next actions in one browser workspace.
+- The console still does not call external MCPs, mutate target repos, run crawling/Lighthouse/axe automation, add backend sync, or add dependencies.
+
+### Verified
+- `node --check docs/website-console/app.js`.
+- Browser smoke confirmed Handoff Report evidence inputs, live Markdown preview, JSON import restore, mobile overflow safety, and zero console errors.
+
+### What's still ahead
+- CLI evidence export is covered in Phase 279, and packed-tarball evidence smoke coverage is covered in Phase 280. Real MCP connection checks, Playwright/Lighthouse/axe automation, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 277 — Website Console Workflow Graph Rendering (unreleased)
+
+The static Website Improvement Console now renders the portable workflow graph directly in the browser. Operators can inspect the same local workflow shape before exporting graph JSON or moving implementation prompts into the target website repo.
+
+### Changed
+- Added a `Workflow Graph` tab to `docs/website-console/`.
+- Added deterministic in-browser graph generation for workspace intake, site profile, audit categories, MCP readiness, refactor tasks, prompt templates, handoff report, handoff bundle, and target repo boundary.
+- Added lane-based graph rendering, summary metrics, boundary markers, and a complete edge table.
+- Added browser-side copy/export actions for `website-workflow-graph.json`.
+- Kept the static console dependency-free and local/read-only.
+
+### Impact
+- Website Improvement operators can now review graph structure visually before saving the portable JSON artifact.
+- The static console can render the graph without a workflow runtime dependency, external MCP calls, target-repo mutation, crawling, Lighthouse/axe automation, or backend sync.
+
+### Verified
+- `node --check docs/website-console/app.js`.
+- Browser smoke at `http://127.0.0.1:8765/` confirmed 35 graph nodes, 67 edge rows, 6 lanes, boundary markers, and zero console errors.
+
+### What's still ahead
+- Target-repo implementation tracking is covered in Phase 278. Real MCP connection checks, Playwright/Lighthouse/axe automation, CLI evidence export, and VS Code Webview reuse remain future Website Console automation work.
+
+## Phase 276 — Website Console Workflow Graph Export (unreleased)
+
+`design-ai site --graph [--json]` now exports Website Improvement workspaces and agent plans as portable workflow graphs. The graph can be stored as JSON and, as of Phase 277, rendered by the static console without adding a visual workflow runtime dependency.
+
+### Changed
+- Added `design-ai site <workspace.json|--stdin> --graph [--json] [--out file] [--force]`.
+- Added deterministic graph nodes for workspace intake, site profile, audit categories, MCP readiness, generated and retained refactor tasks, prompt templates, handoff report, handoff bundle, and target website repo boundary.
+- Added deterministic graph edges for profile context, audit finding to task conversion, MCP support, task-selected Codex implementation prompts, handoff report inputs, prompt-to-target workflow, and bundle handoff.
+- Added JSON and Markdown graph formatters while keeping the export local/read-only.
+- Added unit coverage, smoke assertion fixtures, and packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` graph JSON paths.
+
+### Impact
+- Website Improvement operators can preserve a machine-readable workflow map alongside MCP readiness, prompts, and handoff artifacts.
+- The graph exports the useful part of visual workflow tools without adding dependencies, external MCP calls, target-repo mutation, crawling, Lighthouse/axe automation, or hidden background state.
+
+### Verified
+- Targeted `site` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Static console graph rendering is covered by Phase 277; real MCP connection checks remain future Website Console automation work.
+
+## Phase 275 — Website Console MCP Probes (unreleased)
+
+`design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` now add read-only local probe results to the Website Improvement MCP readiness workflow. The default `--mcp-check` JSON shape remains unchanged unless `--probes` is explicitly requested.
+
+### Changed
+- Added `--probes` for `design-ai site --mcp-check` and `design-ai site --mcp-plan`.
+- Added a separate `probes` JSON block with mode, external call policy, pass/warn/fail counts, and itemized probe evidence.
+- Added deterministic probes for GitHub repo references, Figma URLs, Browser smoke targets, and deployment provider references.
+- Added human and Markdown action-plan probe sections when probe mode is enabled.
+- Added unit coverage, smoke assertion fixtures, and packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` probe JSON paths.
+
+### Impact
+- Website Improvement operators can verify handoff readiness beyond declared MCP statuses while preserving the stable local readiness contract.
+- Probes are read-only and deterministic: they do not call external MCPs, write to external systems, crawl target sites, run Lighthouse/axe, mutate target repos, add dependencies, or use external AI APIs.
+
+### Verified
+- Targeted `site` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Workflow graph export is covered by Phase 276; real MCP connection checks remain future Website Console automation work.
+
+## Phase 274 — Skill Evolution Proposals (unreleased)
+
+`design-ai learn --propose-skills` now converts repeated check-capture learning signals into preview-only skill instruction delta proposals. It uses the active local learning profile, optional usage sidecar path, and optional eval signal file/directory to keep the same operator context as `learn --signals`.
+
+### Changed
+- Added `design-ai learn --propose-skills [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]`.
+- Added deterministic grouping from `source: check:*` learning entries to candidate skill paths through route skills or category fallback.
+- Added proposal JSON fields for candidate skill, evidence sources, proposed instruction delta, verification command, risk level, skipped single-entry groups, and privacy metadata.
+- Added human output for quick review of candidate skill deltas and evidence previews.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` skill proposal JSON/human/`--out` paths.
+- Added help, unit, smoke assertion, and docs coverage for the new preview-only proposal flow.
+
+### Impact
+- Repeated local QA feedback can now be reviewed as concrete skill improvement candidates before any skill file is edited.
+- The command is deterministic and preview-only; it rejects `--yes`, does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, does not call external AI APIs, and does not add dependencies.
+
+### Verified
+- Targeted `learn` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Workflow graph export remains a future phase.
+
+## Phase 273 — Learning Signal Registry (unreleased)
+
+`design-ai learn --signals` now reports a joined, read-only local signal registry for AI/agent development. It combines learning profile audit state, learning usage sidecar activity, eval signal files, check learning capture entries, and workspace readiness without changing the active learning profile.
+
+### Changed
+- Added `design-ai learn --signals [--from-file signal-file-or-dir] [--usage-file path] [--json] [--out file] [--force]`.
+- Added signal-file discovery for route, prompt, pack, and learning eval reports/templates.
+- Added registry JSON fields for learning health, usage sidecar status, eval signal summary, check capture summaries, workspace readiness, recommendations, and privacy metadata.
+- Added human output for quick review of eval signals, recent check captures, workspace readiness, and recommended next actions.
+- Added package-smoke coverage for installed-bin and one-shot `npm exec --package <tarball>` learning signal registry JSON/human/`--out` paths.
+- Added help, unit, smoke assertion, and docs coverage for the new read-only registry flow.
+
+### Impact
+- Local learning and agent eval drift can be reviewed from one command before deeper skill evolution, MCP probe, or Website Console automation work.
+- The registry is deterministic and read-only; it does not mutate `learning.json`, call external AI APIs, add dependencies, or store raw brief text.
+
+### Verified
+- Targeted `learn` and help unit tests.
+- Package smoke assertion self-tests.
+
+### What's still ahead
+- Optional MCP probes and workflow graph export remain future phases.
+
+## Phase 272 — Agent Prompt and Pack Eval Harness (unreleased)
+
+`design-ai prompt` and `design-ai pack` now have deterministic eval surfaces for prompt plans and context bundles. This extends the Phase 271 route eval pattern into the actual agent handoff payloads used by design-ai.
+
+### Changed
+- Added `design-ai prompt --eval-template [--json]` to generate runnable prompt-plan checkpoint JSON.
+- Added `design-ai prompt --eval --from-file prompt-eval.json [--strict] [--json]` and stdin support for local prompt-plan conformance checks.
+- Added prompt eval assertions for expected route id, required files to read, required checklist items, required prompt fragments, and optional learning context.
+- Added `design-ai pack --eval-template [--json]` to generate runnable prompt-pack checkpoint JSON.
+- Added `design-ai pack --eval --from-file pack-eval.json [--strict] [--json]` and stdin support for local context-bundle conformance checks.
+- Added pack eval assertions for expected route id, planned files, included context files, context status, and optional learning context.
+- Kept pack eval JSON readable by returning context file metadata and markdown byte counts instead of embedding full context file bodies.
+- Added packed-tarball smoke coverage for route eval, prompt eval, and pack eval checkpoints in installed-bin and one-shot `npm exec --package <tarball>` paths.
+- Added release metadata guard coverage for the route/prompt/pack eval smoke phrase in release policy docs.
+- Added help and unit coverage for eval argument parsing, template generation, passing checkpoints, strict failure fixtures, invalid combinations, and machine-readable help catalog drift.
+
+### Impact
+- Agent prompt generation and context bundling can now be checked after route selection but before deeper learning or Website Console automation depends on them.
+- The eval harness is deterministic and read-only; it does not add dependencies, external AI calls, background telemetry, or learning-profile mutation.
+
+### Verified
+- `node --test cli/lib/pack.test.mjs cli/lib/prompt.test.mjs cli/lib/help-command.test.mjs`
+- `design-ai prompt --eval-template --json | design-ai prompt --eval --stdin --strict --json`
+- `design-ai pack --eval-template --json | design-ai pack --eval --stdin --strict --json`
+- Package smoke and release metadata self-tests.
+
+### What's still ahead
+- Preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+
+## Phase 271 — Agent Route Eval Harness (unreleased)
+
+`design-ai route` now has a deterministic eval surface for agent routing. This is the first AI/agent development step after reviewing Hermes, Harness, Strands, Superpowers, ECC, OpenCode, Langflow, Dify, Anthropic Skills, LangChain, Gemini CLI, CC Switch, TradingAgents, and related reference repos.
+
+### Changed
+- Added `design-ai route --eval-template [--json]` to generate a runnable route-selection checkpoint JSON file.
+- Added `design-ai route --eval --from-file route-eval.json [--strict] [--json]` and stdin support for local conformance checks.
+- Added route eval JSON reports with status, summary counts, expected route, top route, confidence, score, matched keywords, and full candidate routes.
+- Added unit coverage for eval argument parsing, template generation, passing checkpoints, mismatched checkpoints, invalid route ids, and invalid payloads.
+- Added `docs/AGENT-DEVELOPMENT.md` with reference-repo analysis and the phased plan for future prompt/learning/skill evolution work.
+
+### Impact
+- Agent routing can now be checked before prompt generation, learning capture, or Website Console workflows depend on a route.
+- The eval harness is deterministic and read-only; it does not add dependencies, external AI calls, background telemetry, or learning-profile mutation.
+
+### What's still ahead
+- Prompt/pack evals, joined learning signal registry, preview-only skill evolution proposals, optional MCP probes, and workflow graph export remain future phases.
+
 ## Phase 270 — Public Registry Website Console Smoke Coverage (v4.55.0) ✓ shipped
 
-`npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff, generated tasks, and task-selected prompt flows.
+`npm run registry:smoke` now verifies the published-package Website Improvement Console CLI surface. The public `npm exec --package @design-ai/cli@<version>` smoke runs `design-ai site` sample, JSON validation, prompt template listing, MCP readiness, MCP action plan, handoff bundle, bundle-check/compare/handoff/repair, generated tasks, and task-selected prompt flows.
 
 ### Changed
 - Added public registry smoke coverage for `design-ai site --stdin --json`, `design-ai site --sample`, and `design-ai site --prompt-list --json`.

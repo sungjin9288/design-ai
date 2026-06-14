@@ -46,25 +46,25 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /list \[skills\|commands\|agents\] \[--json\]/);
   assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
-  assert.match(output, /route <brief\|--from-file file\|--stdin\|--list> \[--limit N\]/);
-  assert.match(output, /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);
-  assert.match(output, /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
+  assert.match(output, /route <brief\|--from-file file\|--stdin\|--list\|--eval-template\|--eval> \[--limit N\]/);
+  assert.match(output, /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);
+  assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
-  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]/);
+  assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
-  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check\|--mcp-plan\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
+  assert.match(output, /site <workspace\.json\|--stdin> \[--strict\] \[--json\|--mcp-check \[--probes\]\|--mcp-plan \[--probes\] \[--json\]\|--next-actions \[--json\]\|--graph\|--tasks\|--bundle\|--report\|--prompts\|--prompt id \[--task id\]\] \[--out file\] \| site <bundle-dir> --bundle-check \[--json\] \| site <bundle-dir> --bundle-compare other-bundle-dir \[--json\] \| site <bundle-dir> --bundle-handoff \[--json\] \| site <bundle-dir> --bundle-repair \[--yes\] \[--json\] \[--out file\] \| site --sample \[--out file\] \| site --prompt-list \[--json\]/);
   assert.match(
     output,
-    /prompt <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt/,
+    /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt and prompt-plan eval checkpoints/,
   );
   assert.match(
     output,
-    /pack <brief\|--from-file file\|--stdin> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context with summary/,
+    /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context and prompt-pack eval checkpoints/,
   );
   assert.match(
     output,
-    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--eval-template\|--eval\|--forget id\|--clear\] \[--json\|--report\] \[--out file\]\s+Manage local learning preferences, usage reports, and eval checkpoints for prompt personalization/,
+    /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]\s+Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization/,
   );
   assert.ok(
     output.includes(`Plugin:  ${pluginInventory} (UI/UX, website improvement, motion,`),
@@ -92,11 +92,19 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   assert.deepEqual(catalog.aliases, HELP_ALIASES);
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "route").usage,
-    "design-ai route <brief|--from-file file|--stdin|--list> [--limit N]",
+    "design-ai route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "prompt").usage,
+    "design-ai prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--out file]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "pack").usage,
+    "design-ai pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--max-bytes N]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
-    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]",
+    "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "check").usage,
@@ -108,7 +116,7 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "search").aliases, ["find"]);
   assert.deepEqual(catalog.topics.find((topic) => topic.topic === "workspace").aliases, ["ws"]);
@@ -162,7 +170,7 @@ test("formatHelpJson preserves help catalog order and alias map order", () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "site").usage,
-    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check|--mcp-plan|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site --sample [--out file] | site --prompt-list [--json]",
+    "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
   );
   assert.match(formatted, /"topics": \[\n    \{\n      "topic": "install",/);
 });
@@ -195,21 +203,33 @@ test("runHelp delegates command topics to command-specific help", async () => {
   const routeOutput = await captureStdout(() => runHelp(["route"]));
   assert.match(routeOutput, /Usage:\s+design-ai route <brief>/);
   assert.match(routeOutput, /design-ai route --list \[--json\]/);
+  assert.match(routeOutput, /design-ai route --eval-template \[--json\]/);
+  assert.match(routeOutput, /design-ai route --eval --from-file route-eval\.json \[--strict\] \[--json\]/);
   assert.match(routeOutput, /design-ai route --from-file brief\.md \[--limit N\] \[--explain\] \[--json\]/);
   assert.match(routeOutput, /cat brief\.md \| design-ai route --stdin \[--limit N\] \[--explain\] \[--json\]/);
+  assert.match(routeOutput, /--eval-template\s+Generate a runnable route eval checkpoint JSON template/);
+  assert.match(routeOutput, /--eval\s+Run deterministic route-selection checkpoint cases/);
   assert.doesNotMatch(routeOutput, /Environment overrides:/);
 
   const promptOutput = await captureStdout(() => runHelp(["prompt"]));
   assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /design-ai prompt --eval-template \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /design-ai prompt --eval --from-file prompt-eval\.json \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\]/);
   assert.match(promptOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
   assert.match(promptOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
+  assert.match(promptOutput, /--eval-template\s+Generate a runnable prompt eval checkpoint JSON template/);
+  assert.match(promptOutput, /--eval\s+Run deterministic prompt-plan checkpoint cases/);
 
   const packOutput = await captureStdout(() => runHelp(["pack"]));
   assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /design-ai pack --eval-template \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /design-ai pack --eval --from-file pack-eval\.json \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\]/);
   assert.match(packOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
   assert.match(packOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
+  assert.match(packOutput, /--eval-template\s+Generate a runnable pack eval checkpoint JSON template/);
+  assert.match(packOutput, /--eval\s+Run deterministic prompt-pack checkpoint cases/);
 
   const learnOutput = await captureStdout(() => runHelp(["learn"]));
   assert.match(learnOutput, /Usage:\s+design-ai learn \[--list\] \[--category kind\] \[--query text\] \[--explain\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
@@ -229,7 +249,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /cat learning-backup\.json \| design-ai learn --redact --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--redact\s+Print a portable JSON backup with sensitive-looking text redacted/);
   assert.match(learnOutput, /--from-file file\s+Read remember\/feedback text or import\/verify\/diff\/restore\/redact JSON from a file/);
-  assert.match(learnOutput, /--out file\s+Write JSON output to a file, export Markdown for --export, or curation report Markdown/);
+  assert.match(learnOutput, /--out file\s+Write JSON output to a file, export Markdown for --export, or learning review report Markdown/);
   assert.match(learnOutput, /--force\s+Overwrite an existing --out file, or an existing --backup-file during --restore/);
   assert.match(learnOutput, /design-ai learn --verify --from-file learning\.json \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --verify --stdin \[--json\] \[--out file\] \[--force\]/);
@@ -249,28 +269,40 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /cat workspace\.json \| design-ai site --stdin \[--strict\] \[--json\]/);
   assert.match(siteOutput, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
-  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-plan \[--strict\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --mcp-plan \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --next-actions \[--json\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <workspace\.json> --graph \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --tasks \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-handoff \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(siteOutput, /design-ai site <bundle-dir> --bundle-repair \[--yes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(siteOutput, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(siteOutput, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(siteOutput, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
-  assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown MCP readiness action plan/);
+  assert.match(siteOutput, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
+  assert.match(siteOutput, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
+  assert.match(siteOutput, /--next-actions\s+Generate a prioritized local next-action list/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --next-actions --json/);
+  assert.match(siteOutput, /design-ai site website-workspace\.json --next-actions --out website-next-actions\.md/);
+  assert.match(siteOutput, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(siteOutput, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(siteOutput, /--bundle\s+Write a complete local handoff bundle directory/);
   assert.match(siteOutput, /--bundle-check\s+Validate a generated handoff bundle directory/);
   assert.match(siteOutput, /--bundle-compare dir\s+Compare two generated handoff bundles/);
   assert.match(siteOutput, /--bundle-handoff\s+Generate a target-repo Codex handoff prompt/);
+  assert.match(siteOutput, /--bundle-repair\s+Preview or apply local handoff bundle regeneration/);
+  assert.match(siteOutput, /--yes\s+With --bundle-repair, rewrite the handoff bundle directory/);
   assert.match(siteOutput, /--report\s+Generate a Markdown website improvement handoff report/);
   assert.match(siteOutput, /--prompts\s+Generate a Markdown bundle of Codex and Claude prompts/);
   assert.match(siteOutput, /--prompt id Generate one Markdown prompt template/);
   assert.match(siteOutput, /--task id\s+Select a refactor task by id or 1-based top-task number/);
-  assert.match(siteOutput, /--out file\s+Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt output to a file or directory/);
+  assert.match(siteOutput, /--out file\s+Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory/);
   assert.match(learnOutput, /design-ai learn --diff --from-file learning\.json \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /cat learning\.json \| design-ai learn --diff --stdin \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--diff\s+Compare the active profile against a portable learning JSON payload without importing it/);
@@ -295,7 +327,7 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /design-ai learn --curate \[--dry-run\|--yes\] \[--usage-file path\] \[--json\|--report\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--fix\s+With --audit, prepare or apply safe cleanup suggestions/);
   assert.match(learnOutput, /--curate\s+Preview or apply archive-first curation for duplicate\/sensitive entries, plus usage review hints/);
-  assert.match(learnOutput, /--report\s+With --curate, emit a Markdown curation report instead of human console output/);
+  assert.match(learnOutput, /--report\s+With --curate, --signals, --agent-backlog, or --propose-skills, emit a Markdown review report instead of human console output/);
   assert.match(learnOutput, /--dry-run\s+Preview --init, --import, --restore, --curate, --restore-backups --prune, or --audit --fix without changing files/);
   assert.match(learnOutput, /design-ai learn --init --yes --json/);
   assert.match(learnOutput, /design-ai learn --curate --yes --json/);
@@ -304,14 +336,33 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(learnOutput, /--stats\s+Summarize profile counts, recency, and audit status without changing it/);
   assert.match(learnOutput, /design-ai learn --usage \[--limit N\] \[--usage-file path\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--usage\s+Summarize prompt\/pack --with-learning usage sidecar events without changing files/);
-  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage or --curate/);
+  assert.match(learnOutput, /design-ai learn --signals \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--strict\] \[--json\|--report\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /--signals\s+Summarize local learning, usage, eval, check-capture, agent backlog, and workspace readiness signals without changing files/);
+  assert.match(learnOutput, /design-ai learn --agent-backlog \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--strict\] \[--json\|--report\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /--agent-backlog\s+Emit a focused local AI\/agent development backlog from the signal registry without changing files/);
+  assert.match(learnOutput, /design-ai learn --propose-skills \[--from-file signal-file-or-dir\] \[--usage-file path\] \[--review-file path\] \[--min-evidence N\] \[--strict\] \[--json\|--report\|--patch\|--review-template\] \[--out file\] \[--force\]/);
+  assert.match(learnOutput, /--propose-skills\s+Preview skill instruction deltas from repeated check-capture learning signals without changing files/);
+  assert.match(learnOutput, /--patch\s+With --propose-skills, emit a preview-only unified diff handoff without editing skill files/);
+  assert.match(learnOutput, /--review-template\s+With --propose-skills, emit a JSON proposal review-file template without changing review decisions/);
+  assert.match(learnOutput, /--usage-file path\s+Override the learning usage sidecar path used by --usage, --curate, --signals, --agent-backlog, or --propose-skills/);
+  assert.match(learnOutput, /--review-file path\s+With --propose-skills, read proposal review decisions without changing the review file/);
+  assert.match(learnOutput, /--min-evidence N\s+With --propose-skills, require N related check-capture entries before emitting a proposal\. Default: 2/);
   assert.match(learnOutput, /design-ai learn --eval-template \[--query text\] \[--category kind\] \[--limit N\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--eval-template\s+Generate a runnable learning eval checkpoint from the active profile/);
   assert.match(learnOutput, /design-ai learn --eval --from-file eval\.json \[--category kind\] \[--limit N\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(learnOutput, /--eval\s+Run deterministic learning-selection checkpoint cases without changing files/);
-  assert.match(learnOutput, /--strict\s+With --eval, exit non-zero when any checkpoint warns or fails/);
+  assert.match(learnOutput, /--strict\s+With --eval, --signals, --agent-backlog, or --propose-skills, exit non-zero when any checkpoint, signal, backlog, or proposal gate warns or fails/);
   assert.match(learnOutput, /design-ai learn --eval-template --query "keyboard accessibility" --out learning-eval\.json/);
   assert.match(learnOutput, /design-ai learn --eval --from-file learning-eval\.json --strict --json/);
+  assert.match(learnOutput, /design-ai learn --signals --from-file \. --json/);
+  assert.match(learnOutput, /design-ai learn --signals --from-file \. --report --out learning-signals\.md/);
+  assert.match(learnOutput, /design-ai learn --agent-backlog --from-file \. --report --out agent-backlog\.md/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --min-evidence 3 --json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --strict --json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-file skill-proposals\.review\.json --strict --json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --review-template --out skill-proposals\.review\.json/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --report --out skill-proposals\.md/);
+  assert.match(learnOutput, /design-ai learn --propose-skills --from-file \. --patch --out skill-proposals\.patch/);
   assert.match(learnOutput, /design-ai learn --list --query "keyboard accessibility" --explain --json/);
   assert.match(learnOutput, /design-ai learn --export --query "pricing page" --limit 3/);
   assert.match(learnOutput, /design-ai learn --forget id-or-number --yes \[--json\] \[--out file\] \[--force\]/);

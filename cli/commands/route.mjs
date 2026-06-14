@@ -4,31 +4,42 @@ import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { dim, header, info, warn } from "../lib/log.mjs";
 import { resolveBriefInput } from "../lib/brief.mjs";
 import {
+  buildRouteEvalTemplate,
   formatRouteJson,
   parseRouteArgs,
   readRouteManifestVersion,
   routeBrief,
   routeCatalog,
+  routeEvalReport,
 } from "../lib/route.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai route <brief> [--limit N] [--explain] [--json]");
   console.log("        design-ai route --from-file brief.md [--limit N] [--explain] [--json]");
   console.log("        design-ai route --list [--json]");
+  console.log("        design-ai route --eval-template [--json]");
+  console.log("        design-ai route --eval --from-file route-eval.json [--strict] [--json]");
+  console.log("        cat route-eval.json | design-ai route --eval --stdin [--strict] [--json]");
   console.log("        cat brief.md | design-ai route --stdin [--limit N] [--explain] [--json]\n");
-  console.log("Recommends the best design-ai command, skill, and knowledge files for a task brief.\n");
+  console.log("Recommends the best design-ai command, skill, and knowledge files for a task brief.");
+  console.log("Route eval is read-only and checks deterministic agent routing fixtures.\n");
   console.log("Options:");
-  console.log("  --from-file file  Read the task brief from a markdown/text file");
-  console.log("  --stdin           Read the task brief from standard input");
+  console.log("  --from-file file  Read the task brief, or route eval JSON with --eval, from a file");
+  console.log("  --stdin           Read the task brief, or route eval JSON with --eval, from standard input");
   console.log("  --list            List route ids without scoring a brief");
   console.log("  --limit N         Maximum route recommendations to return, 1-10. Default: 3");
   console.log("  --explain         Include route scoring and reference coverage details");
+  console.log("  --eval-template   Generate a runnable route eval checkpoint JSON template");
+  console.log("  --eval            Run deterministic route-selection checkpoint cases");
+  console.log("  --strict          With --eval, exit non-zero on warning or failure");
   console.log("  --json            Emit machine-readable route results");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai route \"audit a Figma signup flow for Korean fintech\"");
   console.log("  design-ai route \"spec a Button component\" --explain");
   console.log("  design-ai route --list");
+  console.log("  design-ai route --eval-template --json > route-eval.json");
+  console.log("  design-ai route --eval --from-file route-eval.json --strict --json");
   console.log("  design-ai route --from-file product-brief.md");
   console.log("  design-ai route \"spec a Button component\" --json");
 }
@@ -82,10 +93,74 @@ function printCatalogRoute(route, index) {
   }
 }
 
+function printRouteEvalTemplate(template) {
+  header("design-ai route", "Route eval checkpoint template");
+  info(`Source: ${DESIGN_AI_HOME}`);
+  info(`Corpus version: ${template.sourceRouteVersion}`);
+  info(`Cases: ${template.cases.length}`);
+  console.log();
+  console.log("Write the JSON below to a file, edit cases if needed, then run:");
+  console.log("design-ai route --eval --from-file route-eval.json --strict");
+  console.log();
+  console.log(formatRouteJson(template));
+}
+
+function printRouteEvalReport(report) {
+  header("design-ai route", "Route eval report");
+  info(`Source: ${report.source}`);
+  info(`Corpus version: ${report.version}`);
+  info(`Status: ${report.status}`);
+  info(`Cases: ${report.summary.total} (${report.summary.pass} pass, ${report.summary.warn} warn, ${report.summary.fail} fail)`);
+  console.log();
+
+  for (const result of report.cases) {
+    const top = result.topRouteId || "none";
+    console.log(`${result.status.toUpperCase()} ${result.id}`);
+    console.log(`   expected: ${result.expectedRouteId}`);
+    console.log(`   top:      ${top} ${dim(result.topConfidence ? `(${result.topConfidence}, score ${result.topScore})` : "")}`);
+    if (result.matchedKeywords.length > 0) {
+      console.log(`   matched:  ${result.matchedKeywords.join(", ")}`);
+    }
+    console.log(`   result:   ${result.message}`);
+    console.log();
+  }
+}
+
 export async function runRoute(args) {
   const parsed = parseRouteArgs(args);
   if (parsed.help) {
     printHelp();
+    return;
+  }
+
+  if (parsed.evalTemplate) {
+    const template = buildRouteEvalTemplate({ sourceRoot: DESIGN_AI_HOME });
+    if (parsed.json) {
+      console.log(formatRouteJson(template));
+      return;
+    }
+    printRouteEvalTemplate(template);
+    return;
+  }
+
+  if (parsed.eval) {
+    const evalText = resolveBriefInput(parsed);
+    const report = routeEvalReport({
+      evalText,
+      source: parsed.fromFile || "stdin",
+      sourceRoot: DESIGN_AI_HOME,
+      limit: parsed.limit,
+    });
+
+    if (parsed.json) {
+      console.log(formatRouteJson(report));
+    } else {
+      printRouteEvalReport(report);
+    }
+
+    if (parsed.strict && report.status !== "pass") {
+      process.exitCode = 1;
+    }
     return;
   }
 

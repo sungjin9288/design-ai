@@ -12,8 +12,11 @@ Open the MVP app:
 - Manages an Audit Pipeline across visual design, UX flow, responsive QA, accessibility, performance, SEO, technical quality, runtime issues, and content quality.
 - Classifies MCP readiness as `required`, `optional`, `unused`, or `unavailable`.
 - Converts audit findings into starter refactor tasks with impact, effort, priority, MCP recommendations, Codex prompts, verification steps, and risks.
+- Renders a local Workflow Graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edge rows.
 - Generates prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
-- Drafts a Markdown handoff report for before/after status and verification evidence.
+- Tracks executed work, verification results, remaining risks, and next actions after target-repo implementation.
+- Drafts a Markdown handoff report that includes before/after status, implementation evidence, verification evidence, and follow-up work.
+- Preserves handoff evidence when exported JSON is processed by `design-ai site --report`, `--tasks`, or `--bundle`.
 
 ## Boundaries
 
@@ -26,9 +29,11 @@ Actual code changes happen in the target website repository. Use the generated C
 1. Fill or import a Site Profile.
 2. Review the Audit Checklist and record findings.
 3. Set the MCP Readiness Matrix so prompts include realistic tool assumptions.
-4. Generate starter refactor tasks from findings.
-5. Copy a Codex or Claude prompt and run it in the right tool.
-6. Export the handoff report after implementation and verification.
+4. Review the Workflow Graph to confirm audit, MCP, task, prompt, and handoff dependencies.
+5. Generate starter refactor tasks from findings.
+6. Copy a Codex or Claude prompt and run it in the right tool.
+7. Record executed work, verification results, remaining risks, and next actions in the Handoff Report tab.
+8. Export the handoff report after implementation and verification.
 
 ## CLI Export Workflow
 
@@ -39,7 +44,11 @@ design-ai site --sample --out website-workspace.json
 design-ai site website-workspace.json --tasks --out website-workspace.tasks.json
 design-ai site website-workspace.json --json
 design-ai site website-workspace.json --mcp-check --strict --json
+design-ai site website-workspace.json --mcp-check --probes --json
 design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md
+design-ai site website-workspace.json --next-actions --json
+design-ai site website-workspace.json --next-actions --out website-next-actions.md
+design-ai site website-workspace.json --graph --json --out website-workflow-graph.json
 design-ai site website-workspace.json --bundle --out website-handoff-bundle
 design-ai site website-handoff-bundle --bundle-check --strict --json
 design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --strict --json
@@ -51,7 +60,9 @@ design-ai site website-workspace.json --prompt codex-implementation --task task-
 cat website-workspace.json | design-ai site --stdin --strict --json
 ```
 
-`design-ai site --sample` creates a valid starter workspace JSON for file-first workflows. `design-ai site --prompt-list --json` lists the available prompt template ids before you choose one. `design-ai site --mcp-check --json` checks local MCP readiness evidence and task/MCP gaps without calling external MCPs; add `--strict` to fail when required readiness evidence is missing. `design-ai site --mcp-plan` turns the same readiness state into a Markdown action plan with blocking items, warnings, task/MCP alignment, execution sequence, and follow-up commands. `design-ai site --bundle --out <dir>` writes a complete local handoff package with a README, summary JSON, generated tasks workspace, MCP readiness JSON, MCP action plan, handoff report, prompt bundle, and top-priority Codex implementation prompt. `design-ai site <bundle-dir> --bundle-check --strict --json` validates the generated package before target-repo handoff by checking the file manifest, JSON consistency, recomputed MCP readiness, required Markdown anchors, SHA-256 checksums recorded in `summary.json`, and `summary.json.checksums.bundleDigest` bundle identity. `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` compares two valid handoff bundles by bundle digest, file checksums, and summary metadata so operators can confirm whether an archived or regenerated bundle is identical before using it in a target repo. `design-ai site <bundle-dir> --bundle-handoff --strict --json` turns a verified handoff bundle into a target-repo Codex prompt that carries the bundle digest, bundle-check status, implementation prompt, operating rules, and final response requirements. `design-ai site --tasks` expands audit findings into deterministic starter refactor tasks. `design-ai site --prompt <template-id>` exports one prompt template when you want to paste only the next Codex or Claude instruction into another tool. For implementation prompts, add `--task <id-or-number>` to target a specific refactor task instead of the default top-priority task. The command validates the local workspace schema, summarizes audit/MCP/task readiness, and generates Markdown handoff reports, prompt bundles, complete handoff bundle directories, or target-repo handoff prompts. It still does not modify the target website repo or call external MCPs.
+`design-ai site --sample` creates a valid starter workspace JSON for file-first workflows. `design-ai site --prompt-list --json` lists the available prompt template ids before you choose one. `design-ai site --mcp-check --json` checks local MCP readiness evidence and task/MCP gaps without calling external MCPs; add `--strict` to fail when required readiness evidence is missing. Add `--probes` to `--mcp-check` or `--mcp-plan` when you want read-only URL/path/tool-handoff probes for GitHub, Figma, Browser smoke targets, and deployment provider references; probes do not call external MCPs or write to any outside system. `design-ai site --mcp-plan` turns the same readiness state into an action plan with blocking items, warnings, task/MCP alignment, optional read-only probes, execution sequence, and follow-up commands; add `--json` when another agent, CI smoke, or handoff script needs the structured `website-improvement-mcp-action-plan` payload instead of Markdown. `design-ai site --next-actions [--json]` distills validation issues, MCP readiness, read-only MCP probe readiness and probe counts, task/MCP gaps, top refactor tasks, and handoff commands into a prioritized local operator checklist before you move into the target repo; omit `--json` and add `--out website-next-actions.md` when you want a Markdown runbook checkpoint. `design-ai site --graph --json` exports a portable Website Improvement workflow graph with workspace, site profile, audit, MCP readiness, refactor task, prompt template, handoff, bundle, and target-repo nodes plus deterministic edges; the graph is local/read-only and the static console can render the same workflow from browser state without adding a workflow runtime dependency. `design-ai site --bundle --out <dir>` writes a complete local handoff package with a README, summary JSON, generated tasks workspace, MCP readiness JSON, read-only MCP probe JSON, MCP action plan, handoff report, prompt bundle, and top-priority Codex implementation prompt. `design-ai site <bundle-dir> --bundle-check --strict --json` validates the generated package before target-repo handoff by checking the file manifest, JSON consistency, recomputed MCP readiness and probe readiness, required Markdown anchors, SHA-256 checksums recorded in `summary.json`, and `summary.json.checksums.bundleDigest` bundle identity. `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` compares two valid handoff bundles by bundle digest, file checksums, and summary metadata so operators can confirm whether an archived or regenerated bundle is identical before using it in a target repo. `design-ai site <bundle-dir> --bundle-handoff --strict --json` turns a verified handoff bundle into a target-repo Codex prompt that carries the bundle digest, bundle-check status, MCP probe status, MCP probe counts, implementation prompt, operating rules, and final response requirements. `design-ai site --tasks` expands audit findings into deterministic starter refactor tasks. `design-ai site --prompt <template-id>` exports one prompt template when you want to paste only the next Codex or Claude instruction into another tool. For implementation prompts, add `--task <id-or-number>` to target a specific refactor task instead of the default top-priority task. The command validates the local workspace schema, summarizes audit/MCP/task/probe readiness and probe counts, and generates prioritized next-action checklists, Markdown handoff reports, prompt bundles, structured MCP action plans, portable workflow graphs, complete handoff bundle directories, or target-repo handoff prompts. It still does not modify the target website repo or call external MCPs.
+
+When a workspace JSON includes `implementationEvidence`, the CLI keeps it local and deterministic: `--json` reports evidence counts, `--tasks` preserves the evidence block, `--report` renders the evidence sections, and `--bundle` stores the same evidence in `website-workspace.tasks.json`, `website-handoff.md`, and `summary.json`.
 
 ## Accessibility And Responsive Notes
 

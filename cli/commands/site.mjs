@@ -6,11 +6,17 @@ import {
   buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
   buildSiteBundleHandoffReport,
+  buildSiteBundleRepairAppliedReport,
+  buildSiteBundleRepairBundle,
+  buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
+  buildSiteMcpActionPlanData,
+  buildSiteNextActionsReport,
   buildSiteMcpCheckReport,
   buildSitePrompt,
   buildSitePromptBundle,
   buildSiteReport,
+  buildSiteWorkflowGraph,
   createSampleSiteWorkspace,
   formatSiteJson,
   formatSiteBundleCompareHuman,
@@ -19,10 +25,17 @@ import {
   formatSiteBundleCheckJson,
   formatSiteBundleHandoffHuman,
   formatSiteBundleHandoffJson,
+  formatSiteBundleRepairHuman,
+  formatSiteBundleRepairJson,
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
+  formatSiteMcpActionPlanJson,
+  formatSiteNextActionsHuman,
+  formatSiteNextActionsJson,
   formatSitePromptTemplatesHuman,
   formatSitePromptTemplatesJson,
+  formatSiteWorkflowGraphJson,
+  formatSiteWorkflowGraphMarkdown,
   generateSiteRefactorTasks,
   parseSiteArgs,
 } from "../lib/site.mjs";
@@ -34,13 +47,16 @@ function printHelp() {
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --mcp-check [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai site <workspace.json> --mcp-plan [--strict] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --graph [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]\n");
@@ -52,8 +68,14 @@ function printHelp() {
   console.log("              List Website Improvement prompt template ids and intended use");
   console.log("  --mcp-check");
   console.log("              Check MCP readiness evidence and task/MCP gaps without external MCP calls");
+  console.log("  --probes");
+  console.log("              Add read-only local URL/path/tool-handoff probes to --mcp-check or --mcp-plan; no external writes or MCP calls");
   console.log("  --mcp-plan");
-  console.log("              Generate a Markdown MCP readiness action plan without external MCP calls");
+  console.log("              Generate a Markdown or JSON MCP readiness action plan without external MCP calls");
+  console.log("  --next-actions");
+  console.log("              Generate a prioritized local next-action list from validation, MCP readiness, and refactor tasks");
+  console.log("  --graph");
+  console.log("              Export a portable Website Improvement workflow graph without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
   console.log("  --bundle    Write a complete local handoff bundle directory");
   console.log("  --bundle-check");
@@ -62,6 +84,9 @@ function printHelp() {
   console.log("              Compare two generated handoff bundles by bundle digest, checksums, and summary metadata");
   console.log("  --bundle-handoff");
   console.log("              Generate a target-repo Codex handoff prompt from a validated handoff bundle");
+  console.log("  --bundle-repair");
+  console.log("              Preview or apply local handoff bundle regeneration from embedded website-workspace.tasks.json");
+  console.log("  --yes       With --bundle-repair, rewrite the handoff bundle directory and re-run bundle-check");
   console.log("  --strict    Exit non-zero when validation warnings or failures are present");
   console.log("  --json      Emit a machine-readable validation summary");
   console.log("  --report    Generate a Markdown website improvement handoff report");
@@ -69,19 +94,29 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
+  console.log("  design-ai site website-workspace.json --mcp-check --probes --json");
+  console.log("  design-ai site website-workspace.json --mcp-check --probes --json --out mcp-check-probes.json");
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
+  console.log("  design-ai site website-workspace.json --mcp-plan --probes --json");
+  console.log("  design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
+  console.log("  design-ai site website-workspace.json --next-actions --json");
+  console.log("  design-ai site website-workspace.json --next-actions --out website-next-actions.md");
+  console.log("  design-ai site website-workspace.json --graph --json --out website-workflow-graph.json");
   console.log("  design-ai site website-workspace.json --tasks --out website-workspace.tasks.json");
   console.log("  design-ai site website-workspace.json --bundle --out website-handoff-bundle");
   console.log("  design-ai site website-handoff-bundle --bundle-check --json");
   console.log("  design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --json");
   console.log("  design-ai site website-handoff-bundle --bundle-handoff --out target-repo-prompt.md");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --json");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --json --out bundle-repair-preview.json");
+  console.log("  design-ai site website-handoff-bundle --bundle-repair --yes --json");
   console.log("  design-ai site website-workspace.json --json");
   console.log("  design-ai site website-workspace.json --report --out handoff.md");
   console.log("  design-ai site website-workspace.json --prompts --out prompts.md");
@@ -130,6 +165,7 @@ function printHumanSummary(summary) {
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --prompt codex-implementation --task 1 --out codex-implementation.md`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-check --json`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --mcp-plan --out mcp-action-plan.md`);
+  console.log(`  ${dim("$")} design-ai site ${summary.filePath} --graph --json --out website-workflow-graph.json`);
   console.log(`  ${dim("$")} design-ai site ${summary.filePath} --bundle --out website-handoff-bundle`);
 }
 
@@ -246,6 +282,47 @@ export async function runSite(args) {
     return;
   }
 
+  if (parsed.bundleRepair) {
+    let repairReport;
+    if (parsed.yes) {
+      const repair = buildSiteBundleRepairBundle({
+        target: parsed.target,
+      });
+      if (!repair.bundle) {
+        repairReport = repair.preview;
+      } else {
+        const written = writeOutputFiles({
+          outPath: repair.preview.directory,
+          files: repair.bundle.files,
+          force: true,
+        });
+        repairReport = buildSiteBundleRepairAppliedReport({
+          beforeReport: repair.beforeReport,
+          written,
+        });
+      }
+    } else {
+      repairReport = buildSiteBundleRepairPreview({
+        target: parsed.target,
+      });
+    }
+    const content = `${parsed.json ? formatSiteBundleRepairJson(repairReport) : formatSiteBundleRepairHuman(repairReport)}\n`;
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
+    if (shouldFail(repairReport, parsed.strict)) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   const report = buildSiteReport({
     target: parsed.target,
     stdin: parsed.stdin,
@@ -255,13 +332,21 @@ export async function runSite(args) {
   let content = "";
   let status = summary.status;
   if (parsed.mcpCheck) {
-    const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+    const mcpReport = buildSiteMcpCheckReport(workspace, summary, { probes: parsed.probes });
     status = mcpReport.status;
     content = `${parsed.json ? formatSiteMcpCheckJson(mcpReport) : formatSiteMcpCheckHuman(mcpReport)}\n`;
   } else if (parsed.mcpPlan) {
-    const mcpReport = buildSiteMcpCheckReport(workspace, summary);
-    status = mcpReport.status;
-    content = `${buildSiteMcpActionPlan(workspace, summary)}\n`;
+    const mcpPlan = buildSiteMcpActionPlanData(workspace, summary, { probes: parsed.probes });
+    status = mcpPlan.status;
+    content = `${parsed.json ? formatSiteMcpActionPlanJson(mcpPlan) : buildSiteMcpActionPlan(workspace, summary, { probes: parsed.probes })}\n`;
+  } else if (parsed.nextActions) {
+    const nextActionsReport = buildSiteNextActionsReport(workspace, summary);
+    status = nextActionsReport.status;
+    content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
+  } else if (parsed.graph) {
+    const graph = buildSiteWorkflowGraph(workspace, summary);
+    status = graph.status;
+    content = `${parsed.json ? formatSiteWorkflowGraphJson(graph) : formatSiteWorkflowGraphMarkdown(graph)}\n`;
   } else if (parsed.report) {
     content = `${buildSiteHandoffReport(workspace)}\n`;
   } else if (parsed.prompts) {
@@ -292,7 +377,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
+  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.nextActions || parsed.graph || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);

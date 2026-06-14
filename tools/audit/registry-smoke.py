@@ -71,6 +71,9 @@ from smoke_assertions import (
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
+    assert_site_repair_apply_report_payload,
+    assert_site_repair_guidance_report_contract,
+    assert_site_repair_preview_report_payload,
     assert_prompt_json_component_spec,
     assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
@@ -85,7 +88,19 @@ from smoke_assertions import (
     assert_show_json_line,
     assert_site_json,
     assert_site_mcp_check_json,
+    assert_site_mcp_check_probes_human,
+    assert_site_mcp_check_probes_human_file_output,
+    assert_site_mcp_check_probes_json,
+    assert_site_mcp_check_probes_json_file_output,
+    assert_site_mcp_plan_json,
     assert_site_mcp_plan_markdown,
+    assert_site_mcp_plan_probes_json,
+    assert_site_mcp_plan_probes_json_file_output,
+    assert_site_mcp_plan_probes_markdown,
+    assert_site_bundle_compare_warning_strict_json,
+    assert_site_next_actions_human_file_output,
+    assert_site_next_actions_json,
+    assert_site_next_actions_json_file_output,
     assert_site_prompt_markdown,
     assert_site_prompt_templates_json,
     assert_site_sample_json,
@@ -117,7 +132,13 @@ from smoke_assertions import (
     passing_check_artifact_content,
     passing_site_json,
     passing_site_mcp_check_json,
+    passing_site_mcp_check_probes_human,
+    passing_site_mcp_check_probes_json,
+    passing_site_mcp_plan_json,
     passing_site_mcp_plan_markdown,
+    passing_site_mcp_plan_probes_markdown,
+    passing_site_next_actions_human,
+    passing_site_next_actions_json,
     passing_site_prompt_markdown,
     passing_site_prompt_templates_json,
     passing_site_sample_json,
@@ -125,6 +146,8 @@ from smoke_assertions import (
     passing_workspace_json,
     passing_workspace_strict_clean_json,
     seed_force_overwrite_target,
+    site_guidance_command,
+    site_mcp_probe_embedded_command,
     unknown_option_args,
 )
 
@@ -2676,6 +2699,12 @@ def site_workspace_fixture_json() -> str:
     return passing_site_sample_json()
 
 
+def site_workspace_warning_fixture_json() -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["siteProfile"]["sentryProject"] = ""
+    return json.dumps(payload, ensure_ascii=False)
+
+
 def assert_site_json_smoke(
     cmd: list[str],
     *,
@@ -2690,6 +2719,70 @@ def assert_site_json_smoke(
         env=env,
     )
     assert_site_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_next_actions_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_next_actions_human_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_next_actions_human_file_output(
+        result.stdout,
+        read_forced_markdown_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_site_sample_json_smoke(
@@ -2762,6 +2855,87 @@ def assert_site_mcp_check_json_smoke(
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_mcp_check_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> dict[str, object]:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json(result.stdout, context=context, cmd=cmd)
+    return json.loads(result.stdout)
+
+
+def assert_site_mcp_check_probes_human_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_human(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_check_probes_human_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_human_file_output(
+        result.stdout,
+        output_path.read_text(encoding="utf-8"),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_mcp_check_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_check_probes_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_site_mcp_plan_markdown_smoke(
     cmd: list[str],
     *,
@@ -2776,6 +2950,63 @@ def assert_site_mcp_plan_markdown_smoke(
         env=env,
     )
     assert_site_mcp_plan_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_probes_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_mcp_plan_probes_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> object:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_json(result.stdout, context=context, cmd=cmd)
+    return json.loads(result.stdout)
+
+
+def assert_site_mcp_plan_probes_json_file_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_mcp_plan_probes_json_file_output(
+        result.stdout,
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        output_path=str(output_path),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_site_bundle_smoke(
@@ -2852,6 +3083,56 @@ def assert_site_bundle_smoke(
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
     if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+
+
+def assert_site_warning_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_workspace_warning_fixture_json(),
+        cwd=cwd,
+        env=env,
+    )
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
+    if summary.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary status changed: {summary.get('status')!r}")
+    if summary.get("mcp", {}).get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} summary MCP status changed")
+    if mcp_check.get("status") != "warn":
+        raise SystemExit(f"site warning bundle after {context} mcp-check status changed: {mcp_check.get('status')!r}")
+    sentry_item = next((item for item in mcp_check.get("items", []) if item.get("key") == "sentry"), None)
+    if (
+        not isinstance(sentry_item, dict)
+        or sentry_item.get("state") != "missing"
+        or sentry_item.get("level") != "warn"
+    ):
+        raise SystemExit(f"site warning bundle after {context} did not preserve optional Sentry warning")
+
+
+def assert_site_bundle_compare_warning_strict_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    run_expected_failure(
+        cmd,
+        cwd=cwd,
+        env=env,
+        context=context,
+        assertion=assert_site_bundle_compare_warning_strict_json,
+    )
 
 
 def assert_site_bundle_check_json_smoke(
@@ -2947,6 +3228,76 @@ def assert_site_bundle_handoff_json_smoke(
     ):
         if fragment not in prompt:
             raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
+
+
+def assert_site_bundle_repair_json_smoke(
+    preview_cmd: list[str],
+    apply_cmd: list[str],
+    check_cmd: list[str],
+    *,
+    bundle_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    handoff_path = bundle_dir / "website-handoff.md"
+    original_handoff = handoff_path.read_text(encoding="utf-8")
+    tampered_handoff = f"{original_handoff}\nRegistry smoke drift before bundle repair.\n"
+    handoff_path.write_text(tampered_handoff, encoding="utf-8")
+
+    preview_result = run_plain(preview_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_result.stdout, preview_cmd)
+    preview = json.loads(preview_result.stdout)
+    if preview.get("status") != "pass" or preview.get("dryRun") is not True or preview.get("applied") is not False:
+        raise SystemExit(f"site bundle repair preview after {context} expected pass dry-run output")
+    if preview.get("before", {}).get("status") != "fail":
+        raise SystemExit(f"site bundle repair preview after {context} expected failing pre-repair bundle")
+    if "website-handoff.md" not in preview.get("before", {}).get("generatedDriftFiles", []):
+        raise SystemExit(f"site bundle repair preview after {context} expected website-handoff.md generated drift")
+    preview_report_command, apply_report_command, preview_out, apply_out = (
+        assert_site_repair_guidance_report_contract(
+            preview.get("repairGuidance"),
+            bundle_dir=bundle_dir,
+            context=context,
+        )
+    )
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview after {context} mutated the bundle")
+
+    preview_report_cmd = site_guidance_command(
+        preview_report_command,
+        preview_cmd,
+        context=f"site bundle repair preview after {context}",
+    )
+    preview_out_result = run_plain(preview_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(preview_out_result.stdout, preview_report_cmd)
+    if "Wrote " not in preview_out_result.stdout:
+        raise SystemExit(f"site bundle repair preview after {context} expected guidance --out write confirmation")
+    preview_out_payload = json.loads(preview_out.read_text(encoding="utf-8"))
+    assert_site_repair_preview_report_payload(preview_out_payload, context=context)
+    if handoff_path.read_text(encoding="utf-8") != tampered_handoff:
+        raise SystemExit(f"site bundle repair preview guidance --out after {context} mutated the bundle")
+
+    apply_report_cmd = site_guidance_command(
+        apply_report_command,
+        apply_cmd,
+        context=f"site bundle repair apply after {context}",
+    )
+    apply_result = run_plain(apply_report_cmd, cwd=cwd, env=env)
+    assert_no_ansi(apply_result.stdout, apply_report_cmd)
+    if "Wrote " not in apply_result.stdout:
+        raise SystemExit(f"site bundle repair apply after {context} expected guidance --out write confirmation")
+    applied = json.loads(apply_out.read_text(encoding="utf-8"))
+    assert_site_repair_apply_report_payload(applied, context=context)
+    if handoff_path.read_text(encoding="utf-8") != original_handoff:
+        raise SystemExit(f"site bundle repair apply after {context} did not restore generated handoff")
+
+    assert_site_bundle_check_json_smoke(
+        check_cmd,
+        cwd=cwd,
+        env=env,
+        context=f"{context} repaired bundle-check JSON",
+    )
 
 
 def assert_command_alias_smoke(
@@ -4125,6 +4476,91 @@ def assert_learning_eval_template_report_json(
     )
 
 
+def assert_learning_readiness_markdown_index(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Readiness check index:",
+        "- Required ids:",
+        "- Optional ids:",
+        "- Status index:",
+        "- Required index:",
+    ):
+        require_registry_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learning readiness Markdown report missing {expected!r}",
+        )
+
+
+def assert_learning_signals_report_smoke(
+    command_factory,
+    profile_path: Path,
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--signals", "--report"])
+    cmd = command_factory(
+        "learn",
+        "--signals",
+        "--file",
+        str(profile_path),
+        "--from-file",
+        str(cwd or profile_path.parent),
+        "--report",
+        "--out",
+        str(output_path),
+        "--force",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    markdown = read_forced_markdown_output_file(output_path, context=context, cmd=cmd)
+    assert_learning_readiness_markdown_index(markdown, context=context, cmd=cmd)
+    require_registry_smoke(
+        "# Learning Signal Registry Report" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn signals Markdown report heading changed",
+    )
+
+
+def assert_learning_agent_backlog_report_smoke(
+    command_factory,
+    profile_path: Path,
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--agent-backlog", "--report"])
+    cmd = command_factory(
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(profile_path),
+        "--from-file",
+        str(cwd or profile_path.parent),
+        "--report",
+        "--out",
+        str(output_path),
+        "--force",
+    )
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    markdown = read_forced_markdown_output_file(output_path, context=context, cmd=cmd)
+    assert_learning_readiness_markdown_index(markdown, context=context, cmd=cmd)
+    require_registry_smoke(
+        "# Agent Development Backlog Report" in markdown,
+        context=context,
+        cmd=cmd,
+        message="learn agent backlog Markdown report heading changed",
+    )
+
+
 def assert_learning_relevance_smoke(
     command_factory,
     profile_path: Path,
@@ -4274,6 +4710,23 @@ def assert_learning_relevance_smoke(
         cmd=eval_template_check_cmd,
     )
 
+    assert_learning_signals_report_smoke(
+        command_factory,
+        profile_path,
+        profile_path.with_name(f"{profile_path.stem}-signals.md"),
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn signals Markdown report",
+    )
+    assert_learning_agent_backlog_report_smoke(
+        command_factory,
+        profile_path,
+        profile_path.with_name(f"{profile_path.stem}-agent-backlog.md"),
+        cwd=cwd,
+        env=relevance_env,
+        context=f"{context} learn agent backlog Markdown report",
+    )
+
 
 def wait_for_registry_package(
     package_spec: str,
@@ -4396,6 +4849,45 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site JSON",
         )
+        assert_site_next_actions_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site next-actions JSON",
+        )
+        registry_site_next_actions_out = npx_root / "site-next-actions.json"
+        assert_site_next_actions_json_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(registry_site_next_actions_out),
+                "--force",
+            ),
+            registry_site_next_actions_out,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site next-actions JSON out file",
+        )
+        registry_site_next_actions_human_out = npx_root / "site-next-actions.md"
+        assert_site_next_actions_human_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(registry_site_next_actions_human_out),
+                "--force",
+            ),
+            registry_site_next_actions_human_out,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site next-actions human out file",
+        )
         assert_site_sample_json_smoke(
             npm_exec_cmd(package_spec, "site", "--sample"),
             cwd=npx_root,
@@ -4414,11 +4906,184 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site mcp-check JSON",
         )
+        registry_site_mcp_check_probes_cmd = npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes", "--json")
+        registry_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
+            registry_site_mcp_check_probes_cmd,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check probes JSON",
+        )
+        assert_site_mcp_check_probes_human_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check probes human",
+        )
+        registry_site_mcp_check_probes_human_path = npx_root / "registry-site-mcp-check-probes.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--out",
+                str(registry_site_mcp_check_probes_human_path),
+                "--force",
+            ),
+            registry_site_mcp_check_probes_human_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check probes human out file",
+        )
+        registry_site_mcp_check_probes_human_emitted_path = npx_root / "registry-site-mcp-check-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_check_probes_payload,
+                "mcpCheckProbesHumanOut",
+                registry_site_mcp_check_probes_cmd,
+                output_path=registry_site_mcp_check_probes_human_emitted_path,
+                context="registry smoke npm exec emitted site mcp-check probes human command",
+            ),
+            registry_site_mcp_check_probes_human_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-check probes human out file",
+        )
+        registry_site_mcp_check_probes_json_path = npx_root / "registry-site-mcp-check-probes.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--mcp-check",
+                "--probes",
+                "--json",
+                "--out",
+                str(registry_site_mcp_check_probes_json_path),
+                "--force",
+            ),
+            registry_site_mcp_check_probes_json_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-check probes JSON out file",
+        )
+        registry_site_mcp_check_probes_emitted_path = npx_root / "registry-site-mcp-check-probes-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_check_probes_payload,
+                "mcpCheckProbesJsonOut",
+                registry_site_mcp_check_probes_cmd,
+                output_path=registry_site_mcp_check_probes_emitted_path,
+                context="registry smoke npm exec emitted site mcp-check probes command",
+            ),
+            registry_site_mcp_check_probes_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-check probes JSON out file",
+        )
+        assert_site_mcp_plan_probes_json_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_check_probes_payload,
+                "mcpPlanProbesJson",
+                registry_site_mcp_check_probes_cmd,
+                context="registry smoke npm exec emitted site mcp-plan probes JSON command",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes JSON",
+        )
+        registry_site_mcp_plan_emitted_json_path = npx_root / "registry-site-mcp-plan-probes-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_check_probes_payload,
+                "mcpPlanProbesJsonOut",
+                registry_site_mcp_check_probes_cmd,
+                output_path=registry_site_mcp_plan_emitted_json_path,
+                context="registry smoke npm exec emitted site mcp-plan probes output command",
+            ),
+            registry_site_mcp_plan_emitted_json_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes JSON out file",
+        )
         assert_site_mcp_plan_markdown_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan"),
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec site mcp-plan markdown",
+        )
+        assert_site_mcp_plan_probes_markdown_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-plan probes markdown",
+        )
+        registry_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-plan probes JSON",
+        )
+        registry_site_mcp_plan_human_emitted_path = npx_root / "registry-site-mcp-plan-probes-human-emitted.txt"
+        assert_site_mcp_check_probes_human_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_plan_probes_payload,
+                "mcpCheckProbesHumanOut",
+                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=registry_site_mcp_plan_human_emitted_path,
+                context="registry smoke npm exec emitted site mcp-plan probes human command",
+            ),
+            registry_site_mcp_plan_human_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes human out file",
+        )
+        registry_site_mcp_plan_check_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-check-emitted.json"
+        assert_site_mcp_check_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_plan_probes_payload,
+                "mcpCheckProbesJsonOut",
+                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=registry_site_mcp_plan_check_json_emitted_path,
+                context="registry smoke npm exec emitted site mcp-plan probes check JSON command",
+            ),
+            registry_site_mcp_plan_check_json_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes check JSON out file",
+        )
+        registry_site_mcp_plan_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-plan-emitted.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            site_mcp_probe_embedded_command(
+                registry_site_mcp_plan_probes_payload,
+                "mcpPlanProbesJsonOut",
+                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+                output_path=registry_site_mcp_plan_json_emitted_path,
+                context="registry smoke npm exec emitted site mcp-plan probes plan JSON command",
+            ),
+            registry_site_mcp_plan_json_emitted_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec emitted site mcp-plan probes plan JSON out file",
+        )
+        registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
+        assert_site_mcp_plan_probes_json_file_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                "--stdin",
+                "--mcp-plan",
+                "--probes",
+                "--json",
+                "--out",
+                str(registry_site_mcp_plan_json_path),
+                "--force",
+            ),
+            registry_site_mcp_plan_json_path,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site mcp-plan probes JSON out file",
         )
         registry_site_bundle_dir = npx_root / "registry-site-handoff-bundle"
         assert_site_bundle_smoke(
@@ -4448,11 +5113,42 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec site bundle-compare JSON",
         )
+        registry_site_warning_bundle_dir = npx_root / "registry-site-warning-handoff-bundle"
+        assert_site_warning_bundle_smoke(
+            npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_warning_bundle_dir)),
+            out_dir=registry_site_warning_bundle_dir,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site warning handoff bundle",
+        )
+        assert_site_bundle_compare_warning_strict_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "site",
+                str(registry_site_warning_bundle_dir),
+                "--bundle-compare",
+                str(registry_site_warning_bundle_dir),
+                "--strict",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site warning bundle-compare strict JSON",
+        )
         assert_site_bundle_handoff_json_smoke(
             npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_repair_json_smoke(
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--json"),
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--yes", "--json"),
+            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+            bundle_dir=registry_site_bundle_dir,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec site bundle-repair JSON",
         )
         assert_site_tasks_json_smoke(
             npm_exec_cmd(package_spec, "site", "--stdin", "--tasks"),
@@ -5346,10 +6042,14 @@ def run_self_test() -> None:
         )
 
         site_cmd = ["design-ai", "site", "--stdin", "--json"]
+        site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
         site_sample_cmd = ["design-ai", "site", "--sample"]
         site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
         site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
+        site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
         site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
+        site_mcp_plan_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes"]
+        site_mcp_plan_probes_json_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"]
         site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
         site_prompt_cmd = [
             "design-ai",
@@ -5361,6 +6061,59 @@ def run_self_test() -> None:
             "task-homepage-cta",
         ]
         assert_site_json(passing_site_json(), context="registry smoke self-test site JSON", cmd=site_cmd)
+        assert_site_next_actions_json(
+            passing_site_next_actions_json(),
+            context="registry smoke self-test site next-actions JSON",
+            cmd=site_next_actions_cmd,
+        )
+        site_next_actions_out_path = tmp_root / "registry-site-next-actions.json"
+        site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
+        site_next_actions_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--json",
+            "--out",
+            str(site_next_actions_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_json_file_output(
+            f"Wrote {site_next_actions_out_path}\n",
+            site_next_actions_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_out_path),
+            context="registry smoke self-test site next-actions JSON out",
+            cmd=site_next_actions_out_cmd,
+        )
+        site_next_actions_human_out_path = tmp_root / "registry-site-next-actions.md"
+        site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
+        site_next_actions_human_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--out",
+            str(site_next_actions_human_out_path),
+            "--force",
+        ]
+        assert_site_next_actions_human_file_output(
+            f"Wrote {site_next_actions_human_out_path}\n",
+            site_next_actions_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_next_actions_human_out_path),
+            context="registry smoke self-test site next-actions human out",
+            cmd=site_next_actions_human_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_next_actions_human_file_output(
+                f"Wrote {site_next_actions_human_out_path}\n",
+                passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
+                output_path=str(site_next_actions_human_out_path),
+                context="registry smoke self-test site next-actions human out",
+                cmd=site_next_actions_human_out_cmd,
+            ),
+            expected="missing fragment",
+            scope="registry smoke",
+        )
         assert_site_sample_json(
             passing_site_sample_json(),
             context="registry smoke self-test site sample",
@@ -5376,10 +6129,207 @@ def run_self_test() -> None:
             context="registry smoke self-test site mcp-check",
             cmd=site_mcp_check_cmd,
         )
+        assert_site_mcp_check_probes_json(
+            passing_site_mcp_check_probes_json(),
+            context="registry smoke self-test site mcp-check probes",
+            cmd=site_mcp_check_probes_cmd,
+        )
+        assert_site_mcp_check_probes_human(
+            passing_site_mcp_check_probes_human(),
+            context="registry smoke self-test site mcp-check probes human",
+            cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
+        )
+        site_mcp_check_probes_human_out_path = tmp_root / "registry-site-mcp-check-probes.txt"
+        site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+        site_mcp_check_probes_human_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--out",
+            str(site_mcp_check_probes_human_out_path),
+            "--force",
+        ]
+        assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_check_probes_human_out_path}\n",
+            site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_check_probes_human_out_path),
+            context="registry smoke self-test site mcp-check probes human out",
+            cmd=site_mcp_check_probes_human_out_cmd,
+        )
+        site_mcp_check_probes_out_path = tmp_root / "registry-site-mcp-check-probes.json"
+        site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_check_probes_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_check_probes_out_path),
+            "--force",
+        ]
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_check_probes_out_path}\n",
+            site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_check_probes_out_path),
+            context="registry smoke self-test site mcp-check probes JSON out",
+            cmd=site_mcp_check_probes_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_check_probes_out_path}\n",
+                site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_check_probes_out_path),
+                context="registry smoke self-test site mcp-check probes JSON out",
+                cmd=site_mcp_check_probes_out_cmd,
+            ),
+            expected="without external calls",
+            scope="registry smoke",
+        )
         assert_site_mcp_plan_markdown(
             passing_site_mcp_plan_markdown(),
             context="registry smoke self-test site mcp-plan",
             cmd=site_mcp_plan_cmd,
+        )
+        assert_site_mcp_plan_probes_markdown(
+            passing_site_mcp_plan_probes_markdown(),
+            context="registry smoke self-test site mcp-plan probes",
+            cmd=site_mcp_plan_probes_cmd,
+        )
+        assert_site_mcp_plan_probes_json(
+            passing_site_mcp_plan_json(probes=True),
+            context="registry smoke self-test site mcp-plan probes JSON",
+            cmd=site_mcp_plan_probes_json_cmd,
+        )
+        site_mcp_plan_json_out_path = tmp_root / "registry-site-mcp-plan-probes.json"
+        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_json_out_cmd = [
+            "design-ai",
+            "site",
+            "--stdin",
+            "--mcp-plan",
+            "--probes",
+            "--json",
+            "--out",
+            str(site_mcp_plan_json_out_path),
+            "--force",
+        ]
+        assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_json_out_path),
+            context="registry smoke self-test site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+        )
+        site_mcp_plan_human_out_path = tmp_root / "registry-site-mcp-plan-probes-human.txt"
+        site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+        site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesHumanOut",
+            site_mcp_plan_probes_json_cmd,
+            output_path=str(site_mcp_plan_human_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted human out command",
+        )
+        assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_plan_human_out_path}\n",
+            site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_human_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted human out",
+            cmd=site_mcp_plan_human_out_cmd,
+        )
+        site_mcp_plan_check_json_out_path = tmp_root / "registry-site-mcp-plan-probes-check.json"
+        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpCheckProbesJsonOut",
+            site_mcp_plan_probes_json_cmd,
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted check JSON out command",
+        )
+        assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_plan_check_json_out_path}\n",
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted check JSON out",
+            cmd=site_mcp_plan_check_json_out_cmd,
+        )
+        site_mcp_plan_emitted_json_out_path = tmp_root / "registry-site-mcp-plan-probes-emitted.json"
+        site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+        site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
+            json.loads(passing_site_mcp_plan_json(probes=True)),
+            "mcpPlanProbesJsonOut",
+            site_mcp_plan_probes_json_cmd,
+            output_path=str(site_mcp_plan_emitted_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted plan JSON out command",
+        )
+        assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
+            output_path=str(site_mcp_plan_emitted_json_out_path),
+            context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
+            cmd=site_mcp_plan_emitted_json_out_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_human_file_output(
+                f"Wrote {site_mcp_plan_human_out_path}\n",
+                site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
+                    "Probe commands:",
+                    "Probe notes:",
+                ),
+                output_path=str(site_mcp_plan_human_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted human out",
+                cmd=site_mcp_plan_human_out_cmd,
+            ),
+            expected="Probe commands",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_check_probes_json_file_output(
+                f"Wrote {site_mcp_plan_check_json_out_path}\n",
+                site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
+                    '"externalCalls": false',
+                    '"externalCalls": true',
+                ),
+                output_path=str(site_mcp_plan_check_json_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted check JSON out",
+                cmd=site_mcp_plan_check_json_out_cmd,
+            ),
+            expected="external calls",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+                site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
+                    '"targetRepoMutation": false',
+                    '"targetRepoMutation": true',
+                ),
+                output_path=str(site_mcp_plan_emitted_json_out_path),
+                context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
+                cmd=site_mcp_plan_emitted_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_site_mcp_plan_probes_json_file_output(
+                f"Wrote {site_mcp_plan_json_out_path}\n",
+                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                    '"targetRepoMutation": false',
+                    '"targetRepoMutation": true',
+                ),
+                output_path=str(site_mcp_plan_json_out_path),
+                context="registry smoke self-test site mcp-plan probes JSON out",
+                cmd=site_mcp_plan_json_out_cmd,
+            ),
+            expected="local/read-only",
+            scope="registry smoke",
         )
         assert_site_tasks_json(
             passing_site_tasks_json(),
@@ -6872,6 +7822,51 @@ def run_self_test() -> None:
                 "--strict",
                 "--json",
             ],
+        )
+        learning_readiness_markdown = "\n".join([
+            "# Learning Signal Registry Report",
+            "",
+            "## Readiness Summary",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 1",
+            "Readiness check index:",
+            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+            "- Optional ids: usage-sidecar, check-capture",
+            "- Status index: learning-profile=pass, usage-sidecar=info, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
+            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+        ])
+        learn_signals_report_cmd = [
+            "design-ai",
+            "learn",
+            "--signals",
+            "--file",
+            str(learning_relevance_path),
+            "--report",
+        ]
+        assert_learning_readiness_markdown_index(
+            learning_readiness_markdown,
+            context="registry smoke self-test learn signals Markdown report",
+            cmd=learn_signals_report_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_readiness_markdown_index(
+                learning_readiness_markdown.replace("Readiness check index:", "Readiness check summary:"),
+                context="registry smoke self-test learn signals Markdown report",
+                cmd=learn_signals_report_cmd,
+            ),
+            expected="learning readiness Markdown report missing 'Readiness check index:'",
+            scope="registry smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_learning_readiness_markdown_index(
+                learning_readiness_markdown.replace("- Required index:", "- Required lookup:"),
+                context="registry smoke self-test learn signals Markdown report",
+                cmd=learn_signals_report_cmd,
+            ),
+            expected="learning readiness Markdown report missing '- Required index:'",
+            scope="registry smoke",
         )
 
         learning_relevance_payload = {

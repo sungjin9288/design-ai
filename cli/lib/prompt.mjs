@@ -16,6 +16,9 @@ const PROMPT_OPTIONS = [
   "--help",
   "--json",
   "--route",
+  "--eval-template",
+  "--eval",
+  "--strict",
   "--from-file",
   "--stdin",
   "--out",
@@ -24,6 +27,8 @@ const PROMPT_OPTIONS = [
   "--learning-category",
   "--learning-limit",
 ];
+const PROMPT_EVAL_VERSION = 1;
+const PROMPT_EVAL_DEFAULT_LIMIT = 12;
 
 export function parsePromptArgs(args) {
   const out = {
@@ -37,6 +42,9 @@ export function parsePromptArgs(args) {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
   };
 
@@ -49,6 +57,12 @@ export function parsePromptArgs(args) {
       out.json = true;
     } else if (arg === "--with-learning") {
       out.withLearning = true;
+    } else if (arg === "--eval-template") {
+      out.evalTemplate = true;
+    } else if (arg === "--eval") {
+      out.eval = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (arg === "--learning-category") {
       const category = args[i + 1];
       if (!category || category.startsWith("--")) throw new Error("--learning-category expects a category");
@@ -81,6 +95,21 @@ export function parsePromptArgs(args) {
 
   if ((out.learningCategory || out.learningLimit) && !out.withLearning) {
     throw new Error("--learning-category and --learning-limit require --with-learning");
+  }
+  if (out.eval && out.evalTemplate) {
+    throw new Error("Choose either --eval-template or --eval, not both");
+  }
+  if (out.strict && !out.eval) {
+    throw new Error("--strict can only be used with --eval");
+  }
+  if (out.evalTemplate && (out.briefParts.length > 0 || out.fromFile || out.stdin || out.routeId || out.withLearning)) {
+    throw new Error("--eval-template cannot be combined with a brief, --from-file, --stdin, --route, or --with-learning");
+  }
+  if (out.eval && (!out.fromFile && !out.stdin)) {
+    throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.eval && (out.briefParts.length > 0 || out.routeId || out.withLearning)) {
+    throw new Error("--eval cannot be combined with an inline brief, --route, or --with-learning");
   }
 
   return {
@@ -240,6 +269,252 @@ export function buildPromptPlan({
 
 export function formatPromptJson(plan) {
   return JSON.stringify(plan, null, 2);
+}
+
+function isoTimestamp(now = new Date()) {
+  return (now instanceof Date ? now : new Date(now)).toISOString();
+}
+
+export function buildPromptEvalTemplate({ sourceRoot, generatedAt = new Date() } = {}) {
+  return {
+    version: PROMPT_EVAL_VERSION,
+    generatedAt: isoTimestamp(generatedAt),
+    sourcePromptVersion: sourceRoot ? readRouteManifestVersion(sourceRoot) : "unknown",
+    description: "Deterministic prompt-plan checkpoints for design-ai agent workflows.",
+    cases: [
+      {
+        id: "component-spec-prompt-plan",
+        brief: "Spec a Button component API with variants, states, props, and keyboard accessibility",
+        expectedRouteId: "component-spec",
+        requiredFiles: [
+          "AGENTS.md",
+          "commands/component-spec.md",
+          "skills/component-spec-writer/SKILL.md",
+          "skills/component-spec-writer/PLAYBOOK.md",
+          "knowledge/PRINCIPLES.md",
+          "knowledge/a11y/keyboard-and-focus.md",
+        ],
+        requiredChecklist: [
+          "Cover anatomy, variants, states, API, tokens, ARIA, keyboard behavior, and edge cases.",
+          "Include at least one implementation-oriented example.",
+        ],
+      },
+      {
+        id: "website-improvement-prompt-plan",
+        brief: "Improve a SaaS homepage with website audit, SEO, performance, MCP readiness, refactor plan, and handoff report",
+        expectedRouteId: "website-improvement",
+        requiredFiles: [
+          "AGENTS.md",
+          "commands/website-improvement.md",
+          "skills/website-improvement/SKILL.md",
+          "skills/website-improvement/PLAYBOOK.md",
+          "docs/WEBSITE-IMPROVEMENT.md",
+        ],
+        requiredChecklist: [
+          "Include Site Profile, Audit Checklist, MCP Readiness Matrix, Refactor Plan, Prompt Generator, and Handoff Report sections.",
+          "State that implementation happens in the target website repo, not in design-ai.",
+        ],
+      },
+    ],
+  };
+}
+
+function promptEvalStatus(counts) {
+  if (counts.fail > 0) return "fail";
+  if (counts.warn > 0) return "warn";
+  return "pass";
+}
+
+function normalizePromptEvalPayload(evalText, source = "prompt-eval.json") {
+  let payload;
+  try {
+    payload = JSON.parse(evalText);
+  } catch (err) {
+    throw new Error(`Could not parse prompt eval JSON from ${source}: ${err.message}`);
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Prompt eval payload must be a JSON object");
+  }
+  if (payload.version !== PROMPT_EVAL_VERSION) {
+    throw new Error(`Prompt eval payload version must be ${PROMPT_EVAL_VERSION}`);
+  }
+  if (!Array.isArray(payload.cases)) {
+    throw new Error("Prompt eval payload must include a cases array");
+  }
+
+  return payload;
+}
+
+function normalizeStringList(rawValue, label, id) {
+  if (rawValue === undefined || rawValue === null) return [];
+  if (!Array.isArray(rawValue)) {
+    throw new Error(`Prompt eval case ${id} ${label} must be an array`);
+  }
+  return rawValue.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function normalizePromptEvalCase(rawCase, index) {
+  if (!rawCase || typeof rawCase !== "object" || Array.isArray(rawCase)) {
+    throw new Error(`Prompt eval case ${index + 1} must be a JSON object`);
+  }
+
+  const id = String(rawCase.id || `case-${index + 1}`).trim();
+  const brief = String(rawCase.brief || "").trim();
+  const expectedRouteId = String(rawCase.expectedRouteId || rawCase.expected || "").trim();
+  const routeId = String(rawCase.routeId || "").trim();
+  const learningCategory = String(rawCase.learningCategory || "").trim();
+  const learningLimit = rawCase.learningLimit === undefined || rawCase.learningLimit === null
+    ? 0
+    : Number(rawCase.learningLimit);
+
+  if (!id) throw new Error(`Prompt eval case ${index + 1} is missing id`);
+  if (!brief) throw new Error(`Prompt eval case ${id} is missing brief`);
+  if (!expectedRouteId) throw new Error(`Prompt eval case ${id} is missing expectedRouteId`);
+  if (learningLimit && (!Number.isInteger(learningLimit) || learningLimit < 1 || learningLimit > 100)) {
+    throw new Error(`Prompt eval case ${id} learningLimit must be an integer from 1 to 100`);
+  }
+
+  return {
+    id,
+    brief,
+    expectedRouteId,
+    routeId,
+    requiredFiles: normalizeStringList(rawCase.requiredFiles, "requiredFiles", id),
+    requiredChecklist: normalizeStringList(rawCase.requiredChecklist, "requiredChecklist", id),
+    requiredPromptFragments: normalizeStringList(rawCase.requiredPromptFragments, "requiredPromptFragments", id),
+    withLearning: Boolean(rawCase.withLearning),
+    requireLearningContext: Boolean(rawCase.requireLearningContext),
+    learningCategory,
+    learningLimit,
+  };
+}
+
+function includesEveryText(haystackItems, requiredItems) {
+  return requiredItems.filter((required) => !haystackItems.some((item) => item.includes(required)));
+}
+
+function evaluatePromptPlanCase(testCase, {
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  learningFilePath = "",
+}) {
+  const plan = buildPromptPlan({
+    brief: testCase.brief,
+    sourceRoot,
+    prefix,
+    routeId: testCase.routeId,
+    withLearning: testCase.withLearning || testCase.requireLearningContext,
+    learningFilePath,
+    learningCategory: testCase.learningCategory,
+    learningLimit: testCase.learningLimit,
+  });
+
+  const issues = [];
+  const warnings = [];
+  const routeId = plan?.route?.id || "";
+  if (!plan) {
+    issues.push("No prompt plan was produced.");
+  } else if (routeId !== testCase.expectedRouteId) {
+    issues.push(`Expected route ${testCase.expectedRouteId}, but prompt plan selected ${routeId}.`);
+  }
+
+  const missingRequiredFiles = plan
+    ? testCase.requiredFiles.filter((file) => !plan.filesToRead.includes(file))
+    : testCase.requiredFiles;
+  if (missingRequiredFiles.length > 0) {
+    issues.push(`Missing required files: ${missingRequiredFiles.join(", ")}`);
+  }
+
+  const missingChecklist = plan
+    ? includesEveryText(plan.checklist, testCase.requiredChecklist)
+    : testCase.requiredChecklist;
+  if (missingChecklist.length > 0) {
+    issues.push(`Missing checklist items: ${missingChecklist.join(" | ")}`);
+  }
+
+  const missingPromptFragments = plan
+    ? testCase.requiredPromptFragments.filter((fragment) => !plan.prompt.includes(fragment))
+    : testCase.requiredPromptFragments;
+  if (missingPromptFragments.length > 0) {
+    issues.push(`Missing prompt fragments: ${missingPromptFragments.join(" | ")}`);
+  }
+
+  const learningContext = plan?.learningContext || null;
+  if (testCase.requireLearningContext && !learningContext) {
+    issues.push("Expected learning context, but none was included.");
+  } else if (testCase.withLearning && learningContext && learningContext.entries.length === 0) {
+    warnings.push("Learning context was requested but selected no entries.");
+  }
+
+  const status = issues.length > 0 ? "fail" : warnings.length > 0 ? "warn" : "pass";
+
+  return {
+    id: testCase.id,
+    status,
+    message: issues[0] || warnings[0] || "Prompt plan matched expectations.",
+    expectedRouteId: testCase.expectedRouteId,
+    routeId,
+    forcedRouteId: testCase.routeId,
+    filesToReadCount: plan?.filesToRead?.length || 0,
+    requiredFiles: testCase.requiredFiles,
+    missingRequiredFiles,
+    requiredChecklist: testCase.requiredChecklist,
+    missingChecklist,
+    requiredPromptFragments: testCase.requiredPromptFragments,
+    missingPromptFragments,
+    learningContext: learningContext
+      ? {
+        category: learningContext.category,
+        limit: learningContext.limit,
+        count: learningContext.entries.length,
+        selectedCount: learningContext.selection?.selectedCount || 0,
+      }
+      : null,
+    issues,
+    warnings,
+    brief: testCase.brief,
+    plan,
+  };
+}
+
+export function promptEvalReport({
+  evalText,
+  source = "prompt-eval.json",
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  learningFilePath = "",
+  generatedAt = new Date(),
+}) {
+  const payload = normalizePromptEvalPayload(evalText, source);
+  const normalizedCases = payload.cases.map((testCase, index) => normalizePromptEvalCase(testCase, index));
+  const cases = normalizedCases.map((testCase) => evaluatePromptPlanCase(testCase, {
+    sourceRoot,
+    prefix,
+    learningFilePath,
+  }));
+  const counts = cases.reduce(
+    (acc, testCase) => ({
+      ...acc,
+      [testCase.status]: acc[testCase.status] + 1,
+    }),
+    { pass: 0, warn: 0, fail: 0 },
+  );
+
+  return {
+    version: readRouteManifestVersion(sourceRoot),
+    evalVersion: payload.version,
+    source,
+    generatedAt: isoTimestamp(generatedAt),
+    status: promptEvalStatus(counts),
+    summary: {
+      total: cases.length,
+      pass: counts.pass,
+      warn: counts.warn,
+      fail: counts.fail,
+    },
+    cases,
+  };
 }
 
 export function renderPrompt({

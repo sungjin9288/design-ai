@@ -94,6 +94,7 @@ plugins:
             Quickstart: 빠른 시작
             Distribution: 배포
             Architecture: 아키텍처
+            Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
             Knowledge: 지식
             Skills: 스킬
@@ -169,6 +170,7 @@ nav:
   - Quickstart: docs/QUICKSTART.md
   - Distribution: docs/DISTRIBUTION.md
   - Architecture: docs/ARCHITECTURE.md
+  - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Website Improvement: docs/WEBSITE-IMPROVEMENT.md
   - Knowledge:
       - Principles: knowledge/PRINCIPLES.md

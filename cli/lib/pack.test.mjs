@@ -12,8 +12,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  buildPackEvalTemplate,
   buildPromptPack,
   formatPackJson,
+  packEvalReport,
   parsePackArgs,
 } from "./pack.mjs";
 
@@ -24,10 +26,15 @@ function makeFixture() {
     "AGENTS.md": "# Agents\nFollow repo rules.",
     "commands/design-review.md": "# Review command",
     "commands/component-spec.md": "# Component command",
+    "commands/website-improvement.md": "# Website command",
     "skills/ux-audit/SKILL.md": "# UX audit skill",
     "skills/ux-audit/PLAYBOOK.md": "# UX audit playbook",
     "skills/design-critique/SKILL.md": "# Critique skill",
     "skills/design-critique/PLAYBOOK.md": "# Critique playbook",
+    "skills/website-improvement/SKILL.md": "# Website skill",
+    "skills/website-improvement/PLAYBOOK.md": "# Website playbook",
+    "skills/handoff-spec/SKILL.md": "# Handoff skill",
+    "skills/handoff-spec/PLAYBOOK.md": "# Handoff playbook",
     "skills/component-spec-writer/SKILL.md": "# Component skill",
     "skills/component-spec-writer/PLAYBOOK.md": "# Component playbook",
     "agents/component-architect.md": "# Architect",
@@ -35,6 +42,10 @@ function makeFixture() {
     "agents/design-critic.md": "# Critic",
     "knowledge/PRINCIPLES.md": "# Principles",
     "knowledge/patterns/ux-guidelines.md": "# UX",
+    "knowledge/layout/spacing-and-grid.md": "# Layout",
+    "knowledge/patterns/report-design.md": "# Report",
+    "docs/MCP-INTEGRATION.md": "# MCP",
+    "docs/WEBSITE-IMPROVEMENT.md": "# Website improvement",
     "knowledge/a11y/contrast.md": "# Contrast",
     "knowledge/components/INDEX.md": "# Components",
     "knowledge/components/shadcn-registry.md": "# shadcn",
@@ -66,6 +77,9 @@ test("parsePackArgs supports brief, max bytes, and json", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -85,6 +99,9 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -102,6 +119,9 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
     index: undefined,
   });
@@ -127,6 +147,48 @@ test("parsePackArgs supports explicit learning context", () => {
   assert.equal(parsed.maxBytes, 2000);
 });
 
+test("parsePackArgs supports pack eval template and eval checkpoints", () => {
+  assert.deepEqual(parsePackArgs(["--eval-template", "--json", "--out", "pack-eval.json", "--force"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "",
+    stdin: false,
+    routeId: "",
+    maxBytes: 120000,
+    json: true,
+    outPath: "pack-eval.json",
+    force: true,
+    withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
+    evalTemplate: true,
+    eval: false,
+    strict: false,
+    help: false,
+    index: undefined,
+  });
+
+  assert.deepEqual(parsePackArgs(["--eval", "--from-file", "pack-eval.json", "--strict", "--json"]), {
+    briefParts: [],
+    brief: "",
+    fromFile: "pack-eval.json",
+    stdin: false,
+    routeId: "",
+    maxBytes: 120000,
+    json: true,
+    outPath: "",
+    force: false,
+    withLearning: false,
+    learningCategory: "",
+    learningLimit: 0,
+    evalTemplate: false,
+    eval: true,
+    strict: true,
+    help: false,
+    index: undefined,
+  });
+});
+
 test("parsePackArgs rejects invalid options", () => {
   assert.throws(() => parsePackArgs(["spec", "--max-bytes", "999"]), /--max-bytes/);
   assert.throws(() => parsePackArgs(["spec", "--route"]), /--route expects a route id/);
@@ -135,6 +197,11 @@ test("parsePackArgs rejects invalid options", () => {
   assert.throws(() => parsePackArgs(["spec", "--learning-limit", "2"]), /require --with-learning/);
   assert.throws(() => parsePackArgs(["spec", "--with-learning", "--learning-category", "private"]), /category expects one of:/);
   assert.throws(() => parsePackArgs(["spec", "--with-learning", "--learning-limit", "0"]), /--learning-limit expects an integer from 1 to 100/);
+  assert.throws(() => parsePackArgs(["--eval", "--eval-template"]), /Choose either --eval-template or --eval/);
+  assert.throws(() => parsePackArgs(["--strict"]), /--strict can only be used with --eval/);
+  assert.throws(() => parsePackArgs(["--eval"]), /--eval requires --from-file or --stdin/);
+  assert.throws(() => parsePackArgs(["--eval-template", "spec"]), /--eval-template cannot be combined/);
+  assert.throws(() => parsePackArgs(["--eval", "--from-file", "pack-eval.json", "spec"]), /--eval cannot be combined/);
 });
 
 test("buildPromptPack includes prompt and context files", () => {
@@ -385,6 +452,73 @@ test("buildPromptPack reports missing context files", () => {
     assert.ok(pack.files.some((file) => file.path === "knowledge/components/shadcn-registry.md" && file.error));
     assert.ok(pack.warnings.some((warning) => warning.includes("Missing context file: knowledge/components/shadcn-registry.md")));
     assert.ok(pack.markdown.includes("_Not included:"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildPackEvalTemplate creates runnable prompt-pack checkpoints", () => {
+  const root = makeFixture();
+  try {
+    const template = buildPackEvalTemplate({ sourceRoot: root, generatedAt: new Date("2026-06-02T00:00:00.000Z") });
+
+    assert.equal(template.version, 1);
+    assert.equal(template.sourcePackVersion, "test");
+    assert.equal(template.generatedAt, "2026-06-02T00:00:00.000Z");
+    assert.equal(template.cases.length >= 2, true);
+
+    const report = packEvalReport({
+      evalText: JSON.stringify(template),
+      source: "pack-eval.json",
+      sourceRoot: root,
+      generatedAt: new Date("2026-06-02T00:00:00.000Z"),
+    });
+
+    assert.equal(report.status, "pass");
+    assert.equal(report.summary.fail, 0);
+    assert.equal(report.cases.every((testCase) => testCase.routeId === testCase.expectedRouteId), true);
+    assert.equal(report.cases.every((testCase) => testCase.contextStatus === "complete"), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("packEvalReport reports route, planned-file, included-file, and payload failures", () => {
+  const root = makeFixture();
+  try {
+    const report = packEvalReport({
+      evalText: JSON.stringify({
+        version: 1,
+        cases: [
+          {
+            id: "bad-pack",
+            brief: "Spec a Button component API",
+            expectedRouteId: "website-improvement",
+            requiredFiles: ["missing.md"],
+            requiredIncludedFiles: ["missing-context.md"],
+            requireContextStatus: "incomplete",
+          },
+        ],
+      }),
+      source: "bad-pack-eval.json",
+      sourceRoot: root,
+    });
+
+    assert.equal(report.status, "fail");
+    assert.equal(report.summary.fail, 1);
+    assert.equal(report.cases[0].routeId, "component-spec");
+    assert.match(report.cases[0].message, /Expected route website-improvement/);
+    assert.deepEqual(report.cases[0].missingRequiredFiles, ["missing.md"]);
+    assert.deepEqual(report.cases[0].missingIncludedFiles, ["missing-context.md"]);
+
+    assert.throws(
+      () => packEvalReport({ evalText: JSON.stringify({ version: 999, cases: [] }), sourceRoot: root }),
+      /version must be 1/,
+    );
+    assert.throws(
+      () => packEvalReport({ evalText: JSON.stringify({ version: 1, cases: [{ id: "empty" }] }), sourceRoot: root }),
+      /missing brief/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

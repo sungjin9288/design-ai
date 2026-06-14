@@ -46,6 +46,10 @@ const LEARN_OPTIONS = [
   "--audit",
   "--stats",
   "--usage",
+  "--signals",
+  "--agent-backlog",
+  "--propose-skills",
+  "--patch",
   "--eval",
   "--eval-template",
   "--strict",
@@ -58,9 +62,12 @@ const LEARN_OPTIONS = [
   "--clear",
   "--category",
   "--limit",
+  "--min-evidence",
   "--keep",
   "--file",
   "--usage-file",
+  "--review-file",
+  "--review-template",
   "--backup-file",
   "--yes",
 ];
@@ -219,6 +226,14 @@ export function parseLearningKeep(rawKeep) {
   return keep;
 }
 
+export function parseLearningMinEvidence(rawMinEvidence) {
+  const minEvidence = Number(rawMinEvidence);
+  if (!Number.isInteger(minEvidence) || minEvidence < 1 || minEvidence > 100) {
+    throw new Error("--min-evidence expects an integer from 1 to 100");
+  }
+  return minEvidence;
+}
+
 export function parseLearnArgs(args) {
   const out = {
     action: "",
@@ -231,6 +246,7 @@ export function parseLearnArgs(args) {
     outcomeSpecified: false,
     filePath: "",
     usageFilePath: "",
+    reviewFilePath: "",
     backupFilePath: "",
     outPath: "",
     force: false,
@@ -238,12 +254,15 @@ export function parseLearnArgs(args) {
     explain: false,
     forgetTarget: "",
     limit: 0,
+    minEvidenceCount: 0,
     keep: 0,
     fix: false,
     prune: false,
     dryRun: false,
     strict: false,
     report: false,
+    patch: false,
+    reviewTemplate: false,
     yes: false,
     json: false,
     help: false,
@@ -289,6 +308,12 @@ export function parseLearnArgs(args) {
       setAction(out, "stats");
     } else if (arg === "--usage") {
       setAction(out, "usage");
+    } else if (arg === "--signals") {
+      setAction(out, "signals");
+    } else if (arg === "--agent-backlog") {
+      setAction(out, "agent-backlog");
+    } else if (arg === "--propose-skills") {
+      setAction(out, "propose-skills");
     } else if (arg === "--eval") {
       setAction(out, "eval");
     } else if (arg === "--eval-template") {
@@ -297,6 +322,10 @@ export function parseLearnArgs(args) {
       setAction(out, "curate");
     } else if (arg === "--report") {
       out.report = true;
+    } else if (arg === "--patch") {
+      out.patch = true;
+    } else if (arg === "--review-template") {
+      out.reviewTemplate = true;
     } else if (arg === "--fix") {
       out.fix = true;
     } else if (arg === "--dry-run") {
@@ -337,6 +366,11 @@ export function parseLearnArgs(args) {
       if (!limit || limit.startsWith("--")) throw new Error("--limit expects an integer from 1 to 100");
       out.limit = parseLearningLimit(limit);
       i += 1;
+    } else if (arg === "--min-evidence") {
+      const minEvidence = args[i + 1];
+      if (!minEvidence || minEvidence.startsWith("--")) throw new Error("--min-evidence expects an integer from 1 to 100");
+      out.minEvidenceCount = parseLearningMinEvidence(minEvidence);
+      i += 1;
     } else if (arg === "--keep") {
       const keep = args[i + 1];
       if (!keep || keep.startsWith("--")) throw new Error("--keep expects an integer from 1 to 100");
@@ -352,6 +386,11 @@ export function parseLearnArgs(args) {
       if (!usageFilePath || usageFilePath.startsWith("--")) throw new Error("--usage-file expects a path");
       out.usageFilePath = usageFilePath;
       i += 1;
+    } else if (arg === "--review-file") {
+      const reviewFilePath = args[i + 1];
+      if (!reviewFilePath || reviewFilePath.startsWith("--")) throw new Error("--review-file expects a path");
+      out.reviewFilePath = reviewFilePath;
+      i += 1;
     } else if (arg === "--backup-file") {
       const backupFilePath = args[i + 1];
       if (!backupFilePath || backupFilePath.startsWith("--")) throw new Error("--backup-file expects a path");
@@ -360,7 +399,7 @@ export function parseLearnArgs(args) {
     } else if (parseBriefSourceFlag(args, out)) {
       if (!out.action) {
         setAction(out, "remember");
-      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval"].includes(out.action)) {
+      } else if (!["remember", "feedback", "import", "verify", "diff", "restore", "redact", "eval", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
         setAction(out, "remember");
       }
       i = out.index;
@@ -425,23 +464,50 @@ export function parseLearnArgs(args) {
   if (out.explain && out.action !== "list") {
     throw new Error("--explain can only be used with --list");
   }
-  if (out.usageFilePath && !["usage", "curate"].includes(out.action)) {
-    throw new Error("--usage-file can only be used with --usage or --curate");
+  if (out.usageFilePath && !["usage", "curate", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--usage-file can only be used with --usage, --curate, --signals, --agent-backlog, or --propose-skills");
+  }
+  if (out.reviewFilePath && out.action !== "propose-skills") {
+    throw new Error("--review-file can only be used with --propose-skills");
+  }
+  if (out.reviewTemplate && out.action !== "propose-skills") {
+    throw new Error("--review-template can only be used with --propose-skills");
+  }
+  if (out.minEvidenceCount && out.action !== "propose-skills") {
+    throw new Error("--min-evidence can only be used with --propose-skills");
   }
   if (out.backupFilePath && out.action !== "restore") {
     throw new Error("--backup-file can only be used with --restore");
   }
-  if (out.report && out.action !== "curate") {
-    throw new Error("--report can only be used with --curate");
+  if (out.report && !["curate", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--report can only be used with --curate, --signals, --agent-backlog, or --propose-skills");
   }
-  if (out.report && out.json) {
-    throw new Error("Choose either --json or --report for --curate");
+  if (out.patch && out.action !== "propose-skills") {
+    throw new Error("--patch can only be used with --propose-skills");
   }
-  if (out.strict && out.action !== "eval") {
-    throw new Error("--strict can only be used with --eval");
+  if ([out.json, out.report, out.patch, out.reviewTemplate].filter(Boolean).length > 1) {
+    throw new Error("Choose only one output mode: --json, --report, --patch, or --review-template");
+  }
+  if (out.strict && !["eval", "signals", "agent-backlog", "propose-skills"].includes(out.action)) {
+    throw new Error("--strict can only be used with --eval, --signals, --agent-backlog, or --propose-skills");
   }
   if (out.action === "eval" && !out.fromFile && !out.stdin) {
     throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.action === "signals" && out.stdin) {
+    throw new Error("--signals does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "agent-backlog" && out.stdin) {
+    throw new Error("--agent-backlog does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "agent-backlog" && out.yes) {
+    throw new Error("--agent-backlog is read-only and does not accept --yes");
+  }
+  if (out.action === "propose-skills" && out.stdin) {
+    throw new Error("--propose-skills does not support --stdin; use --from-file for a signal file or directory");
+  }
+  if (out.action === "propose-skills" && out.yes) {
+    throw new Error("--propose-skills is preview-only and does not accept --yes");
   }
   if (out.action === "diff" && !out.fromFile && !out.stdin) {
     throw new Error("--diff requires --from-file or --stdin");
@@ -450,9 +516,12 @@ export function parseLearnArgs(args) {
     throw new Error("--restore requires --from-file or --stdin");
   }
   const allowsMarkdownOut = ["export", "eval-template"].includes(out.action)
-    || (out.action === "curate" && out.report);
+    || (out.action === "curate" && out.report)
+    || (out.action === "signals" && out.report)
+    || (out.action === "agent-backlog" && out.report)
+    || (out.action === "propose-skills" && (out.report || out.patch || out.reviewTemplate));
   if (!out.help && out.outPath && !allowsMarkdownOut && !out.json) {
-    throw new Error("--out requires --json for learn actions other than --export, --eval-template, or --curate --report");
+    throw new Error("--out requires --json for learn actions other than --export, --eval-template, --curate --report, --signals --report, --agent-backlog --report, --propose-skills --report, --propose-skills --patch, or --propose-skills --review-template");
   }
 
   const resolvedFilePath = path.resolve(out.filePath || defaultLearningFile());
@@ -462,6 +531,7 @@ export function parseLearnArgs(args) {
     briefParts: out.noteParts,
     filePath: resolvedFilePath,
     usageFilePath: path.resolve(out.usageFilePath || defaultLearningUsageFile(resolvedFilePath)),
+    reviewFilePath: out.reviewFilePath ? path.resolve(out.reviewFilePath) : "",
     backupFilePath: out.backupFilePath ? path.resolve(out.backupFilePath) : "",
     category: normalizeCategory(out.category),
     feedbackOutcome: normalizeFeedbackOutcome(out.feedbackOutcome),

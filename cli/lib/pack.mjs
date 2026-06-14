@@ -6,15 +6,20 @@ import { parseBriefSourceFlag } from "./brief.mjs";
 import { normalizeCategory, parseLearningLimit } from "./learn.mjs";
 import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
+import { readRouteManifestVersion } from "./route.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { resolveShowFile } from "./show.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_MAX_BYTES = 120_000;
+const PACK_EVAL_VERSION = 1;
 const PACK_OPTIONS = [
   "-h",
   "--help",
   "--json",
+  "--eval-template",
+  "--eval",
+  "--strict",
   "--from-file",
   "--stdin",
   "--out",
@@ -39,6 +44,9 @@ export function parsePackArgs(args) {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    evalTemplate: false,
+    eval: false,
+    strict: false,
     help: false,
   };
 
@@ -50,6 +58,12 @@ export function parsePackArgs(args) {
       out.json = true;
     } else if (arg === "--with-learning") {
       out.withLearning = true;
+    } else if (arg === "--eval-template") {
+      out.evalTemplate = true;
+    } else if (arg === "--eval") {
+      out.eval = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (arg === "--learning-category") {
       const category = args[i + 1];
       if (!category || category.startsWith("--")) throw new Error("--learning-category expects a category");
@@ -93,6 +107,21 @@ export function parsePackArgs(args) {
 
   if ((out.learningCategory || out.learningLimit) && !out.withLearning) {
     throw new Error("--learning-category and --learning-limit require --with-learning");
+  }
+  if (out.eval && out.evalTemplate) {
+    throw new Error("Choose either --eval-template or --eval, not both");
+  }
+  if (out.strict && !out.eval) {
+    throw new Error("--strict can only be used with --eval");
+  }
+  if (out.evalTemplate && (out.briefParts.length > 0 || out.fromFile || out.stdin || out.routeId || out.withLearning)) {
+    throw new Error("--eval-template cannot be combined with a brief, --from-file, --stdin, --route, or --with-learning");
+  }
+  if (out.eval && (!out.fromFile && !out.stdin)) {
+    throw new Error("--eval requires --from-file or --stdin");
+  }
+  if (out.eval && (out.briefParts.length > 0 || out.routeId || out.withLearning)) {
+    throw new Error("--eval cannot be combined with an inline brief, --route, or --with-learning");
   }
 
   return {
@@ -236,6 +265,280 @@ export function buildPromptPack({
 
 export function formatPackJson(pack) {
   return JSON.stringify(pack, null, 2);
+}
+
+function isoTimestamp(now = new Date()) {
+  return (now instanceof Date ? now : new Date(now)).toISOString();
+}
+
+export function buildPackEvalTemplate({ sourceRoot, generatedAt = new Date() } = {}) {
+  return {
+    version: PACK_EVAL_VERSION,
+    generatedAt: isoTimestamp(generatedAt),
+    sourcePackVersion: sourceRoot ? readRouteManifestVersion(sourceRoot) : "unknown",
+    description: "Deterministic prompt-pack checkpoints for design-ai context bundles.",
+    cases: [
+      {
+        id: "component-spec-pack",
+        brief: "Spec a Button component API with variants, states, props, and keyboard accessibility",
+        expectedRouteId: "component-spec",
+        maxBytes: 400000,
+        requireContextStatus: "complete",
+        requiredFiles: [
+          "AGENTS.md",
+          "commands/component-spec.md",
+          "skills/component-spec-writer/SKILL.md",
+          "skills/component-spec-writer/PLAYBOOK.md",
+          "knowledge/PRINCIPLES.md",
+        ],
+        requiredIncludedFiles: [
+          "AGENTS.md",
+          "commands/component-spec.md",
+          "skills/component-spec-writer/PLAYBOOK.md",
+        ],
+      },
+      {
+        id: "website-improvement-pack",
+        brief: "Improve a SaaS homepage with website audit, SEO, performance, MCP readiness, refactor plan, and handoff report",
+        expectedRouteId: "website-improvement",
+        maxBytes: 400000,
+        requireContextStatus: "complete",
+        requiredFiles: [
+          "AGENTS.md",
+          "commands/website-improvement.md",
+          "skills/website-improvement/SKILL.md",
+          "skills/website-improvement/PLAYBOOK.md",
+          "docs/WEBSITE-IMPROVEMENT.md",
+        ],
+        requiredIncludedFiles: [
+          "AGENTS.md",
+          "commands/website-improvement.md",
+          "skills/website-improvement/PLAYBOOK.md",
+        ],
+      },
+    ],
+  };
+}
+
+function packEvalStatus(counts) {
+  if (counts.fail > 0) return "fail";
+  if (counts.warn > 0) return "warn";
+  return "pass";
+}
+
+function normalizePackEvalPayload(evalText, source = "pack-eval.json") {
+  let payload;
+  try {
+    payload = JSON.parse(evalText);
+  } catch (err) {
+    throw new Error(`Could not parse pack eval JSON from ${source}: ${err.message}`);
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Pack eval payload must be a JSON object");
+  }
+  if (payload.version !== PACK_EVAL_VERSION) {
+    throw new Error(`Pack eval payload version must be ${PACK_EVAL_VERSION}`);
+  }
+  if (!Array.isArray(payload.cases)) {
+    throw new Error("Pack eval payload must include a cases array");
+  }
+
+  return payload;
+}
+
+function normalizeStringList(rawValue, label, id) {
+  if (rawValue === undefined || rawValue === null) return [];
+  if (!Array.isArray(rawValue)) {
+    throw new Error(`Pack eval case ${id} ${label} must be an array`);
+  }
+  return rawValue.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function normalizePackEvalCase(rawCase, index, defaultMaxBytes) {
+  if (!rawCase || typeof rawCase !== "object" || Array.isArray(rawCase)) {
+    throw new Error(`Pack eval case ${index + 1} must be a JSON object`);
+  }
+
+  const id = String(rawCase.id || `case-${index + 1}`).trim();
+  const brief = String(rawCase.brief || "").trim();
+  const expectedRouteId = String(rawCase.expectedRouteId || rawCase.expected || "").trim();
+  const routeId = String(rawCase.routeId || "").trim();
+  const maxBytes = rawCase.maxBytes === undefined || rawCase.maxBytes === null
+    ? defaultMaxBytes
+    : Number(rawCase.maxBytes);
+  const requireContextStatus = String(rawCase.requireContextStatus || "").trim().toLowerCase();
+  const learningCategory = String(rawCase.learningCategory || "").trim();
+  const learningLimit = rawCase.learningLimit === undefined || rawCase.learningLimit === null
+    ? 0
+    : Number(rawCase.learningLimit);
+
+  if (!id) throw new Error(`Pack eval case ${index + 1} is missing id`);
+  if (!brief) throw new Error(`Pack eval case ${id} is missing brief`);
+  if (!expectedRouteId) throw new Error(`Pack eval case ${id} is missing expectedRouteId`);
+  if (!Number.isInteger(maxBytes) || maxBytes < 1000 || maxBytes > 1_000_000) {
+    throw new Error(`Pack eval case ${id} maxBytes must be an integer from 1000 to 1000000`);
+  }
+  if (requireContextStatus && !["complete", "partial", "incomplete"].includes(requireContextStatus)) {
+    throw new Error(`Pack eval case ${id} requireContextStatus must be complete, partial, or incomplete`);
+  }
+  if (learningLimit && (!Number.isInteger(learningLimit) || learningLimit < 1 || learningLimit > 100)) {
+    throw new Error(`Pack eval case ${id} learningLimit must be an integer from 1 to 100`);
+  }
+
+  return {
+    id,
+    brief,
+    expectedRouteId,
+    routeId,
+    maxBytes,
+    requireContextStatus,
+    requiredFiles: normalizeStringList(rawCase.requiredFiles, "requiredFiles", id),
+    requiredIncludedFiles: normalizeStringList(rawCase.requiredIncludedFiles, "requiredIncludedFiles", id),
+    withLearning: Boolean(rawCase.withLearning),
+    requireLearningContext: Boolean(rawCase.requireLearningContext),
+    learningCategory,
+    learningLimit,
+  };
+}
+
+function evaluatePackEvalCase(testCase, {
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  learningFilePath = "",
+}) {
+  const pack = buildPromptPack({
+    brief: testCase.brief,
+    sourceRoot,
+    prefix,
+    maxBytes: testCase.maxBytes,
+    routeId: testCase.routeId,
+    withLearning: testCase.withLearning || testCase.requireLearningContext,
+    learningFilePath,
+    learningCategory: testCase.learningCategory,
+    learningLimit: testCase.learningLimit,
+  });
+
+  const issues = [];
+  const warnings = [];
+  const routeId = pack?.plan?.route?.id || "";
+
+  if (routeId !== testCase.expectedRouteId) {
+    issues.push(`Expected route ${testCase.expectedRouteId}, but prompt pack selected ${routeId}.`);
+  }
+
+  const missingRequiredFiles = testCase.requiredFiles.filter((file) => !pack.plan.filesToRead.includes(file));
+  if (missingRequiredFiles.length > 0) {
+    issues.push(`Missing required files: ${missingRequiredFiles.join(", ")}`);
+  }
+
+  const includedPaths = pack.files.filter((file) => file.included && !file.error).map((file) => file.path);
+  const missingIncludedFiles = testCase.requiredIncludedFiles.filter((file) => !includedPaths.includes(file));
+  if (missingIncludedFiles.length > 0) {
+    issues.push(`Missing included context files: ${missingIncludedFiles.join(", ")}`);
+  }
+
+  if (testCase.requireContextStatus && pack.summary.status !== testCase.requireContextStatus) {
+    issues.push(`Expected context status ${testCase.requireContextStatus}, but got ${pack.summary.status}.`);
+  } else if (!testCase.requireContextStatus && pack.summary.status !== "complete") {
+    warnings.push(`Context status is ${pack.summary.status}.`);
+  }
+
+  const learningContext = pack?.plan?.learningContext || null;
+  if (testCase.requireLearningContext && !learningContext) {
+    issues.push("Expected learning context, but none was included.");
+  } else if (testCase.withLearning && learningContext && learningContext.entries.length === 0) {
+    warnings.push("Learning context was requested but selected no entries.");
+  }
+
+  const status = issues.length > 0 ? "fail" : warnings.length > 0 ? "warn" : "pass";
+
+  return {
+    id: testCase.id,
+    status,
+    message: issues[0] || warnings[0] || "Prompt pack matched expectations.",
+    expectedRouteId: testCase.expectedRouteId,
+    routeId,
+    forcedRouteId: testCase.routeId,
+    maxBytes: testCase.maxBytes,
+    contextStatus: pack.summary.status,
+    includedFiles: pack.summary.includedFiles,
+    totalFiles: pack.summary.totalFiles,
+    truncatedFiles: pack.summary.truncatedFiles,
+    missingFiles: pack.summary.missingFiles,
+    requiredFiles: testCase.requiredFiles,
+    missingRequiredFiles,
+    requiredIncludedFiles: testCase.requiredIncludedFiles,
+    missingIncludedFiles,
+    warnings: [
+      ...warnings,
+      ...pack.warnings,
+    ],
+    issues,
+    brief: testCase.brief,
+    pack: summarizeEvalPack(pack),
+  };
+}
+
+function summarizeEvalPack(pack) {
+  return {
+    brief: pack.brief,
+    version: pack.version,
+    maxBytes: pack.maxBytes,
+    usedBytes: pack.usedBytes,
+    summary: pack.summary,
+    warnings: pack.warnings,
+    plan: pack.plan,
+    files: pack.files.map((file) => ({
+      path: file.path,
+      bytes: file.bytes,
+      includedBytes: file.includedBytes,
+      included: file.included,
+      truncated: file.truncated,
+      error: file.error || "",
+    })),
+    markdownBytes: Buffer.byteLength(pack.markdown || "", "utf8"),
+  };
+}
+
+export function packEvalReport({
+  evalText,
+  source = "pack-eval.json",
+  sourceRoot,
+  prefix = SYMLINK_PREFIX,
+  maxBytes = DEFAULT_MAX_BYTES,
+  learningFilePath = "",
+  generatedAt = new Date(),
+}) {
+  const payload = normalizePackEvalPayload(evalText, source);
+  const normalizedCases = payload.cases.map((testCase, index) => normalizePackEvalCase(testCase, index, maxBytes));
+  const cases = normalizedCases.map((testCase) => evaluatePackEvalCase(testCase, {
+    sourceRoot,
+    prefix,
+    learningFilePath,
+  }));
+  const counts = cases.reduce(
+    (acc, testCase) => ({
+      ...acc,
+      [testCase.status]: acc[testCase.status] + 1,
+    }),
+    { pass: 0, warn: 0, fail: 0 },
+  );
+
+  return {
+    version: readRouteManifestVersion(sourceRoot),
+    evalVersion: payload.version,
+    source,
+    generatedAt: isoTimestamp(generatedAt),
+    status: packEvalStatus(counts),
+    summary: {
+      total: cases.length,
+      pass: counts.pass,
+      warn: counts.warn,
+      fail: counts.fail,
+    },
+    cases,
+  };
 }
 
 function formatPercent(ratio) {

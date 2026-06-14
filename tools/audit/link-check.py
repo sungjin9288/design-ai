@@ -28,6 +28,8 @@ LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+?)(?:#[^)]+)?\)")
 SKIP_PATH_MARKERS = (
     "refs/",
     ".claude/",
+    "evidence/",
+    "_portfolio_export/",
     "site-src/",
     "/site/",
     "node_modules/",

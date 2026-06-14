@@ -13,6 +13,77 @@ codex "Generate a color palette for a Korean fintech app"
 
 Codex will consume `AGENTS.md`, navigate `knowledge/`, and apply the relevant skill playbook. No setup required.
 
+## Route eval checkpoints
+
+Use route evals when you want to verify that task briefs still select the intended design-ai command, skill, agents, and knowledge set after changing keywords, skills, or agent docs.
+
+```bash
+design-ai route --eval-template --json > route-eval.json
+design-ai route --eval --from-file route-eval.json --strict --json
+```
+
+The eval is deterministic and read-only. It does not call an AI provider, write to the learning profile, or mutate installed skills. Treat it as the first agent-routing conformance check before deeper prompt, learning, or Website Console evals.
+
+## Prompt and pack eval checkpoints
+
+Use prompt and pack evals after route evals pass. They verify that generated agent prompts and context bundles still include the expected route, playbook files, checklist items, and context coverage.
+
+```bash
+design-ai prompt --eval-template --json > prompt-eval.json
+design-ai prompt --eval --from-file prompt-eval.json --strict --json
+
+design-ai pack --eval-template --json > pack-eval.json
+design-ai pack --eval --from-file pack-eval.json --strict --json
+```
+
+Prompt evals check the plan before context bundling. Pack evals check the bundled file set and context status without printing the full context file bodies in eval JSON. Both paths are deterministic, local, and read-only.
+
+## Learning signal registry
+
+Use the learning signal registry when you want one read-only snapshot that joins local learning profile health, usage sidecar activity, route/prompt/pack/learning eval files, check learning capture entries, and workspace readiness.
+
+```bash
+design-ai learn --signals --from-file . --json
+design-ai learn --signals --from-file . --strict --json
+design-ai learn --signals --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+`--from-file` accepts either a single eval signal file or a directory containing `route-eval*.json`, `prompt-eval*.json`, `pack-eval*.json`, or `learning-eval*.json` reports. The command does not mutate `learning.json`, does not call external AI APIs, and exposes only local metadata plus short check-capture text previews. Add `--strict` when you want the signal registry or agent development backlog to fail a local gate on warn/fail status.
+
+Readiness JSON keeps `optionalGaps` as a compact id list and adds `optionalGapDetails` for operator and automation handoff. It also exposes `requiredCheckIds`, `optionalCheckIds`, `checkStatusById`, and `checkRequiredById`; Markdown reports render the same check index so operators can review id-based readiness without opening JSON. For missing check-capture evidence, the detail explains that the gap stays advisory until a real warn/fail check artifact is reviewed and captured with `check --learn --yes`; no placeholder mutation command is emitted.
+
+## Agent development backlog
+
+Use the focused backlog when you want only the local AI/agent next-action queue from the signal registry, without the full learning/usage/eval/workspace report.
+
+```bash
+design-ai learn --agent-backlog --from-file . --json
+design-ai learn --agent-backlog --from-file . --strict --json
+design-ai learn --agent-backlog --from-file . --report --out agent-backlog.md
+```
+
+The command is read-only and uses the same deterministic `agentDevelopment` data as `learn --signals`. JSON and Markdown output include the signal readiness summary, the readiness check index, and an `actionPlan` with ordered steps, an `executionQueue` that groups preview/read-only commands before file-write and mutation-review commands while also exposing `ordered`, `orderedCount`, `nextActionId`, `nextCommand`, `nextCommandArgs`, `nextCommandRunPolicy`, `nextCommandSelection`, `nextCommandAlignment`, `operatorHandoff`, `operatorHandoff.decision`, `operatorHandoff.state`, `operatorHandoff.refreshCommand`, and a command-bearing `commandManifest`, aggregate `safetySummary` counts, verification commands, `requiresReviewBeforeMutation` flags, and `commandSafety` metadata that classifies follow-up commands as `read-only`, `writes-local-file`, or `mutates-local-state`. Queue items also expose a `runPolicy` of `preview-only`, `review-before-file-write`, or `review-before-mutation`, plus `commandEffects` target hints for output files, learning profile files, usage sidecars, mutation flags, and clean-workspace review reasons. Generated actions, plan steps, verification commands, queue items, command manifest entries, gate commands, and operator runbook commands also include `commandArgs` arrays alongside human-readable `command` strings. First-run profile initialization steps use an explicit `learn --init --dry-run` preview command and expose the confirmed `learn --init --yes` profile write through `applyCommand`, `applyCommandArgs`, `applyCommandSafety`, and `applyRequiresReviewBeforeMutation` so local automation can require review before mutating `learning.json`. Learning eval bootstrap commands target the active profile's sibling `learning-eval.json`, signal registry summaries include that sibling checkpoint even when `--from-file` points at a separate signal directory, and template-only replay actions emit `learn --eval --from-file <checkpoint> --file <profile> --strict --json --out <checkpoint-report>` so a sibling executed report can clear the template replay warning. Usage-record commands that include `--with-learning` are classified as `mutates-local-state`, use `review-before-mutation`, and expose `DESIGN_AI_LEARNING_FILE` plus `DESIGN_AI_LEARNING_USAGE_FILE` targets because they write privacy-preserving usage sidecar metadata. Workspace readiness commands also expose `--learning-usage` as a usage sidecar target alongside `--learning-file` profile metadata. The queue also includes `commandEffectSummary` aggregate counts, `nextCommandSelection` strategy/reason metadata for distinguishing ranked next actions from safety-ordered recommended commands, `nextCommandAlignment` metadata for comparing the operator runbook's first command with the queue's recommended command, `operatorHandoff` metadata for the single next command local automation should present or run, a `decision` enum for branching on `run-operator-gate`, `run-shared-command`, `run-operator-command`, `run-queue-command`, or `none`, a compact `state.status` enum for `ready`, `gate-required`, `review-required`, or `no-command`, context-aware refresh command metadata for re-checking the same signal source, learning profile, and usage sidecar after the selected handoff, and `commandEffectReview` guidance so an operator can scan target and mutation-flag exposure, then follow a concrete review headline, checklist, phase-tagged gate commands, `gatePhaseSummary` counts, and `gateRunbook` buckets before opening every manifest entry. The same queue also exposes an `operatorRunbook` with `before`, `execute`, `after`, and `refresh` stages plus `nextStage` / `nextCommand` / `nextCommandArgs` / `nextCommandSelection` metadata, so local operators can start with the first required gate command when present and understand the stage-order reason before following the reviewed handoff sequence without rebuilding it from separate gate and command-manifest fields or reparsing shell strings. This lets an operator move from backlog review to controlled execution without guessing which commands may change local files or rebuilding the recommended action order from grouped buckets. It does not mutate `learning.json`, skill files, usage sidecars, eval files, or target repositories, and it does not call external AI APIs.
+
+On first-run workspaces where the selected learning profile does not exist yet, the ranked backlog starts with `agent-learning-profile-init` before eval checkpoint bootstrap so the ranked action and safe queue tell the same setup story.
+
+Operator handoff gates are scoped to the current next queue command. If the next command is a read-only preview, `operatorHandoff.state.status` can be `ready` even when later queued commands still require file-write or mutation review; use `nextQueueCommandRequiresGate` and `operatorGateAppliesToNextQueueAction` to explain that distinction.
+
+Missing check-capture entries stay advisory. The focused backlog does not emit a placeholder `check artifact.md --learn --yes` action until real `check:*` learning entries exist; capture actual warn/fail artifacts first, then use the generated skill proposal handoff.
+
+## Skill evolution proposals
+
+Use skill evolution proposals after repeated `check --learn --yes` captures point at the same route or category. The report turns those local signals into candidate skill edits, but it remains preview-only.
+
+```bash
+design-ai learn --propose-skills --from-file . --json
+design-ai learn --propose-skills --from-file . --min-evidence 3 --json
+design-ai learn --propose-skills --from-file . --strict --json
+design-ai learn --propose-skills --from-file . --report --out skill-proposals.md
+design-ai learn --propose-skills --from-file route-eval-report.json --usage-file learning.usage.json
+```
+
+Each proposal includes the candidate skill path, evidence sources, proposed instruction delta, verification command, and risk level. Use `--min-evidence N` to tune how many related check-capture entries are required before a proposal appears. Use `--report --out skill-proposals.md` when you need a reviewer-friendly Markdown artifact before editing a skill by hand. Add `--strict` when pending proposals or upstream signal readiness warnings should fail a local gate. The command does not mutate `learning.json`, does not edit `skills/*/SKILL.md`, and does not call external AI APIs.
+
 ## Claude Code
 
 Claude Code reads `CLAUDE.md` automatically. To get **slash commands** and **skill auto-loading**, optionally symlink:

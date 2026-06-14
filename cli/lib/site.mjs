@@ -23,9 +23,13 @@ export const SITE_OPTIONS = [
   "--bundle-check",
   "--bundle-compare",
   "--bundle-handoff",
+  "--bundle-repair",
+  "--next-actions",
   "--prompt-list",
   "--mcp-check",
   "--mcp-plan",
+  "--graph",
+  "--probes",
   "--prompt",
   "--task",
   "--strict",
@@ -34,6 +38,7 @@ export const SITE_OPTIONS = [
   "--out",
   "--output",
   "--force",
+  "--yes",
 ];
 
 export const AUDIT_CATEGORIES = [
@@ -133,6 +138,12 @@ const MCP_STATUS_OPTIONS = ["required", "optional", "unused", "unavailable"];
 const PRIORITY_OPTIONS = ["p0", "p1", "p2", "p3"];
 const IMPACT_OPTIONS = ["high", "medium", "low"];
 const EFFORT_OPTIONS = ["high", "medium", "low"];
+const DEFAULT_IMPLEMENTATION_RISKS = [
+  "MCP readiness gaps may limit verification depth.",
+  "Copy or brand changes may require stakeholder review.",
+  "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+];
+const IMPLEMENTATION_EVIDENCE_KEYS = ["executedWork", "verificationResults", "remainingRisks", "nextActions"];
 export const SITE_PROMPT_TEMPLATE_IDS = [
   "codex-repo-intake",
   "codex-implementation",
@@ -149,6 +160,7 @@ export const SITE_BUNDLE_FILES = [
   "summary.json",
   "website-workspace.tasks.json",
   "mcp-check.json",
+  "mcp-probes.json",
   "mcp-action-plan.md",
   "website-handoff.md",
   "website-prompts.md",
@@ -238,9 +250,13 @@ export function parseSiteArgs(args) {
     bundleCheck: false,
     bundleCompareTarget: "",
     bundleHandoff: false,
+    bundleRepair: false,
+    nextActions: false,
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    graph: false,
+    probes: false,
     promptTemplate: "",
     taskSelector: "",
     json: false,
@@ -249,6 +265,7 @@ export function parseSiteArgs(args) {
     prompts: false,
     outPath: "",
     force: false,
+    yes: false,
     help: false,
   };
 
@@ -279,12 +296,20 @@ export function parseSiteArgs(args) {
       i += 1;
     } else if (arg === "--bundle-handoff") {
       out.bundleHandoff = true;
+    } else if (arg === "--bundle-repair") {
+      out.bundleRepair = true;
+    } else if (arg === "--next-actions") {
+      out.nextActions = true;
     } else if (arg === "--prompt-list") {
       out.promptList = true;
     } else if (arg === "--mcp-check") {
       out.mcpCheck = true;
     } else if (arg === "--mcp-plan") {
       out.mcpPlan = true;
+    } else if (arg === "--graph") {
+      out.graph = true;
+    } else if (arg === "--probes") {
+      out.probes = true;
     } else if (arg === "--prompt") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -308,6 +333,8 @@ export function parseSiteArgs(args) {
       out.report = true;
     } else if (arg === "--prompts") {
       out.prompts = true;
+    } else if (arg === "--yes") {
+      out.yes = true;
     } else if (parseOutputFlags(args, out)) {
       i = out.index;
     } else if (arg.startsWith("--")) {
@@ -329,26 +356,29 @@ export function parseSiteArgs(args) {
   if (out.promptList && sources.length > 0) {
     throw new Error("Use --prompt-list without a workspace JSON file path or --stdin");
   }
-  if (out.sample && (out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --sample without --report, --prompts, or --prompt");
+  if (out.sample && (out.report || out.prompts || out.promptTemplate || out.nextActions || out.graph)) {
+    throw new Error("Use --sample without --report, --prompts, --prompt, --next-actions, or --graph");
   }
-  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.mcpCheck || out.mcpPlan || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --mcp-check, --mcp-plan, --report, --prompts, --prompt, or --strict");
+  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
   }
-  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt");
+  if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-check without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, or --prompt");
   }
-  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --report, --prompts, or --prompt");
+  if (out.mcpPlan && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --mcp-plan without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, or --prompt");
   }
-  if (out.bundle && (out.sample || out.tasks || out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("Use --bundle without --sample, --tasks, --report, --prompts, or --prompt");
+  if (out.probes && !(out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --probes only with --mcp-check or --mcp-plan");
+  }
+  if (out.bundle && (out.sample || out.tasks || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --bundle without --sample, --tasks, --graph, --report, --prompts, or --prompt");
   }
   if (out.bundleCheck && out.stdin) {
     throw new Error("Use --bundle-check with a handoff bundle directory path, not --stdin");
   }
-  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.bundleHandoff || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --bundle-handoff, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCheck && (out.sample || out.tasks || out.bundle || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-check without --sample, --tasks, --bundle, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleCompareTarget && out.stdin) {
     throw new Error("Use --bundle-compare with handoff bundle directory paths, not --stdin");
@@ -356,8 +386,8 @@ export function parseSiteArgs(args) {
   if (out.bundleCompareTarget && !out.target) {
     throw new Error("--bundle-compare requires a primary handoff bundle directory path");
   }
-  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleHandoff || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --bundle-handoff, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleCompareTarget && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-compare without --sample, --tasks, --bundle, --bundle-check, --bundle-handoff, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
   }
   if (out.bundleHandoff && out.stdin) {
     throw new Error("Use --bundle-handoff with a handoff bundle directory path, not --stdin");
@@ -365,8 +395,20 @@ export function parseSiteArgs(args) {
   if (out.bundleHandoff && !out.target) {
     throw new Error("--bundle-handoff requires a handoff bundle directory path");
   }
-  if (out.bundleHandoff && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("Use --bundle-handoff without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.bundleHandoff && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-handoff without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-repair, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  }
+  if (out.bundleRepair && out.stdin) {
+    throw new Error("Use --bundle-repair with a handoff bundle directory path, not --stdin");
+  }
+  if (out.bundleRepair && !out.target) {
+    throw new Error("--bundle-repair requires a handoff bundle directory path");
+  }
+  if (out.bundleRepair && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate || out.promptList || out.mcpCheck || out.mcpPlan)) {
+    throw new Error("Use --bundle-repair without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --next-actions, --graph, --report, --prompts, --prompt, --prompt-list, --mcp-check, or --mcp-plan");
+  }
+  if (out.yes && !out.bundleRepair) {
+    throw new Error("Use --yes only with --bundle-repair");
   }
   if (out.sample && (out.tasks || out.bundle)) {
     throw new Error("Use only one generated workspace mode: --sample, --tasks, or --bundle");
@@ -380,27 +422,27 @@ export function parseSiteArgs(args) {
   if (out.taskSelector && out.promptTemplate !== "codex-implementation") {
     throw new Error("Use --task only with --prompt codex-implementation");
   }
-  if (out.tasks && (out.json || out.report || out.prompts)) {
-    throw new Error("Use --tasks without --json, --report, or --prompts; validate the generated file in a separate command");
+  if (out.tasks && (out.json || out.nextActions || out.graph || out.report || out.prompts)) {
+    throw new Error("Use --tasks without --json, --next-actions, --graph, --report, or --prompts; validate the generated file in a separate command");
   }
   if (out.tasks && out.promptTemplate) {
     throw new Error("Use --tasks without --prompt; generate tasks in a separate command first");
   }
   if (out.bundle && out.json) {
-    throw new Error("--json is only supported for the site summary or --mcp-check; use --bundle --out dir for bundle artifacts");
+    throw new Error("--json is not supported with --bundle; use --bundle --out dir for bundle artifacts");
   }
   if (out.bundle && !out.outPath) {
     throw new Error("--bundle requires --out directory");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.nextActions ? "--next-actions" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.graph ? "--graph" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : "", out.bundleRepair ? "--bundle-repair" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, --mcp-check, --mcp-plan, --bundle, --bundle-check, --bundle-compare, or --bundle-handoff");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
   }
-  if (out.json && (out.report || out.prompts || out.promptTemplate || out.mcpPlan)) {
-    throw new Error("--json is only supported for the site summary, --mcp-check, --bundle-check, --bundle-compare, or --bundle-handoff; use --out with --report, --prompts, --prompt, or --mcp-plan for Markdown artifacts");
+  if (out.json && (out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.promptList || out.mcpCheck || out.mcpPlan)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --prompt-list, --mcp-check, or --mcp-plan");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
   const { index, ...parsed } = out;
@@ -596,6 +638,12 @@ export function createSampleSiteWorkspace() {
         risks: ["Could change conversion copy without stakeholder approval"],
       },
     ],
+    implementationEvidence: {
+      executedWork: [],
+      verificationResults: [],
+      remainingRisks: [...DEFAULT_IMPLEMENTATION_RISKS],
+      nextActions: [],
+    },
     reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
   };
 }
@@ -683,6 +731,26 @@ function normalizeTasks(value) {
   });
 }
 
+function normalizeImplementationEvidence(value) {
+  const source = normalizeObject(value);
+  return {
+    executedWork: normalizeStringArray(source.executedWork),
+    verificationResults: normalizeStringArray(source.verificationResults),
+    remainingRisks: normalizeStringArray(source.remainingRisks, DEFAULT_IMPLEMENTATION_RISKS),
+    nextActions: normalizeStringArray(source.nextActions),
+  };
+}
+
+function countImplementationEvidence(value = {}) {
+  const source = normalizeObject(value);
+  return Object.fromEntries(IMPLEMENTATION_EVIDENCE_KEYS.map((key) => {
+    const items = source[key];
+    if (Array.isArray(items)) return [key, items.length];
+    if (Number.isInteger(items) && items >= 0) return [key, items];
+    return [key, 0];
+  }));
+}
+
 export function normalizeSiteWorkspace(raw) {
   const fallback = createSampleSiteWorkspace();
   const source = normalizeObject(raw);
@@ -712,6 +780,7 @@ export function normalizeSiteWorkspace(raw) {
     auditChecklist: normalizeChecklist(source.auditChecklist || fallback.auditChecklist),
     mcpReadiness: normalizeMcpReadiness(source.mcpReadiness || fallback.mcpReadiness),
     refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
+    implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
     reportNotes: String(source.reportNotes || ""),
   };
 }
@@ -751,6 +820,18 @@ function validateRawWorkspace(raw) {
   }
   if (!Array.isArray(root.refactorTasks)) {
     addIssue(issues, "fail", "refactor-tasks", "refactorTasks array is required");
+  }
+  if (root.implementationEvidence !== undefined) {
+    const evidence = normalizeObject(root.implementationEvidence);
+    if (root.implementationEvidence === null || typeof root.implementationEvidence !== "object" || Array.isArray(root.implementationEvidence)) {
+      addIssue(issues, "fail", "implementation-evidence", "implementationEvidence must be an object when provided");
+    } else {
+      for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
+        if (evidence[key] !== undefined && !Array.isArray(evidence[key])) {
+          addIssue(issues, "fail", `implementation-evidence-${key}`, `implementationEvidence.${key} must be an array`);
+        }
+      }
+    }
   }
 
   if (!String(profile.name || "").trim()) {
@@ -864,6 +945,7 @@ function summarizeWorkspace(workspace, issues, filePath) {
   }));
   const totalFindings = auditRows.reduce((sum, item) => sum + item.row.findings.length, 0);
   const requiredMcp = mcpRows.filter((item) => item.status === "required").map((item) => item.key);
+  const evidence = normalizeImplementationEvidence(workspace.implementationEvidence);
   const topTasks = workspace.refactorTasks
     .slice()
     .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
@@ -902,6 +984,10 @@ function summarizeWorkspace(workspace, issues, filePath) {
       auditCategories: AUDIT_CATEGORIES.length,
       auditFindings: totalFindings,
       refactorTasks: workspace.refactorTasks.length,
+      executedWork: evidence.executedWork.length,
+      verificationResults: evidence.verificationResults.length,
+      remainingRisks: evidence.remainingRisks.length,
+      nextActions: evidence.nextActions.length,
       requiredMcp: requiredMcp.length,
       optionalMcp: mcpRows.filter((item) => item.status === "optional").length,
       unavailableMcp: mcpRows.filter((item) => item.status === "unavailable").length,
@@ -1004,6 +1090,168 @@ function isLikelyHttpUrl(value) {
   } catch {
     return false;
   }
+}
+
+function parseHttpUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function probeLevel({ passed, requestedStatus }) {
+  if (passed) return "pass";
+  return requestedStatus === "required" ? "fail" : "warn";
+}
+
+function probeStatus(items) {
+  if (items.some((item) => item.level === "fail")) return "fail";
+  if (items.some((item) => item.level === "warn")) return "warn";
+  return "pass";
+}
+
+function combineStatuses(...statuses) {
+  if (statuses.includes("fail")) return "fail";
+  if (statuses.includes("warn")) return "warn";
+  return "pass";
+}
+
+function githubRepoSlug(repoUrl) {
+  const parsed = parseHttpUrl(repoUrl);
+  if (!parsed) return "";
+  const host = parsed.hostname.toLowerCase();
+  if (host !== "github.com" && !host.endsWith(".github.com")) return "";
+  const parts = parsed.pathname.replace(/^\/+|\/+$/g, "").replace(/\.git$/i, "").split("/");
+  if (parts.length < 2 || !parts[0] || !parts[1]) return "";
+  return `${parts[0]}/${parts[1]}`;
+}
+
+function figmaFileReference(figmaUrl) {
+  const parsed = parseHttpUrl(figmaUrl);
+  if (!parsed) return "";
+  const host = parsed.hostname.toLowerCase();
+  if (host !== "figma.com" && !host.endsWith(".figma.com")) return "";
+  const parts = parsed.pathname.replace(/^\/+|\/+$/g, "").split("/");
+  const supportedKinds = new Set(["design", "file", "board", "slides", "make"]);
+  if (parts.length < 2 || !supportedKinds.has(parts[0]) || !parts[1]) return "";
+  return `${parts[0]}/${parts[1]}`;
+}
+
+function pathExistsAsDirectory(localPath) {
+  const raw = String(localPath || "").trim();
+  if (!raw) return false;
+  try {
+    return existsSync(raw) && statSync(raw).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function buildProbeItem({ id, key, label, requestedStatus, passed, message, evidence = [], actions = [] }) {
+  const level = probeLevel({ passed, requestedStatus });
+  return {
+    id,
+    key,
+    label,
+    requestedStatus,
+    level,
+    passed,
+    message,
+    evidence,
+    actions: passed ? [] : actions,
+  };
+}
+
+function buildSiteMcpProbeItems(workspace) {
+  const profile = workspace.siteProfile;
+  const liveUrl = parseHttpUrl(profile.liveUrl);
+  const repoSlug = githubRepoSlug(profile.repoUrl);
+  const localRepoAvailable = pathExistsAsDirectory(profile.localPath);
+  const figmaRef = figmaFileReference(profile.figmaUrl);
+  const deployConfigured = profile.deployProvider !== "none";
+  const browserTargetReady = Boolean(liveUrl && profile.viewports.length > 0);
+
+  return [
+    buildProbeItem({
+      id: "github-repo-reference",
+      key: "github",
+      label: "GitHub repo reference",
+      requestedStatus: workspace.mcpReadiness.github,
+      passed: Boolean(repoSlug || localRepoAvailable),
+      message: repoSlug || localRepoAvailable
+        ? "Target repo reference is parseable for Codex handoff."
+        : "Target repo reference is not probe-ready.",
+      evidence: [
+        repoSlug ? `github repo: ${repoSlug}` : "",
+        localRepoAvailable ? `localPath exists: ${profile.localPath}` : "",
+      ].filter(Boolean),
+      actions: ["Add a github.com owner/repo URL or an existing local repo path before implementation handoff."],
+    }),
+    buildProbeItem({
+      id: "figma-url-reference",
+      key: "figma",
+      label: "Figma file reference",
+      requestedStatus: workspace.mcpReadiness.figma,
+      passed: Boolean(figmaRef),
+      message: figmaRef
+        ? "Figma URL is parseable for design-context handoff."
+        : "Figma URL is missing or not parseable.",
+      evidence: figmaRef ? [`figma reference: ${figmaRef}`] : [],
+      actions: ["Add a figma.com design/file/board/slides/make URL or mark Figma unused."],
+    }),
+    buildProbeItem({
+      id: "browser-smoke-target",
+      key: "browser",
+      label: "Browser smoke target",
+      requestedStatus: workspace.mcpReadiness.browser,
+      passed: browserTargetReady,
+      message: browserTargetReady
+        ? "Browser smoke target and viewport set are ready for manual or MCP-driven QA."
+        : "Browser smoke target is incomplete.",
+      evidence: [
+        liveUrl ? `liveUrl host: ${liveUrl.hostname}` : "",
+        profile.viewports.length ? `viewports: ${profile.viewports.join(", ")}` : "",
+      ].filter(Boolean),
+      actions: ["Add a valid http(s) liveUrl and at least one viewport before Browser/Playwright QA."],
+    }),
+    buildProbeItem({
+      id: "deploy-provider-reference",
+      key: "deploy",
+      label: "Deployment provider reference",
+      requestedStatus: workspace.mcpReadiness.deploy,
+      passed: Boolean(deployConfigured && liveUrl),
+      message: deployConfigured && liveUrl
+        ? "Deployment provider and live URL are configured for verification handoff."
+        : "Deployment provider or live URL is not configured.",
+      evidence: [
+        `deployProvider: ${profile.deployProvider}`,
+        liveUrl ? `liveUrl host: ${liveUrl.hostname}` : "",
+      ].filter(Boolean),
+      actions: ["Set siteProfile.deployProvider and liveUrl before deployment verification."],
+    }),
+  ];
+}
+
+export function buildSiteMcpProbeReport(workspace) {
+  const items = buildSiteMcpProbeItems(workspace)
+    .filter((item) => item.requestedStatus !== "unused" && item.requestedStatus !== "unavailable");
+  const status = probeStatus(items);
+  return {
+    enabled: true,
+    mode: "read-only-local",
+    externalCalls: false,
+    status,
+    count: items.length,
+    pass: items.filter((item) => item.level === "pass").length,
+    warn: items.filter((item) => item.level === "warn").length,
+    fail: items.filter((item) => item.level === "fail").length,
+    items,
+  };
 }
 
 function mcpReadinessEvidence(workspace, key) {
@@ -1191,17 +1439,33 @@ function siteMcpCheckStatus(items, taskGaps, workspaceIssues) {
   return "pass";
 }
 
-export function buildSiteMcpCheckReport(workspace, summary = {}) {
+function siteMcpCommandTarget(filePath) {
+  return filePath === "stdin" ? "<workspace.json>" : filePath;
+}
+
+function buildSiteMcpProbeCommandSet(commandTarget) {
+  return {
+    mcpCheckProbesHumanOut: `design-ai site ${commandTarget} --mcp-check --probes --out mcp-check-probes.txt`,
+    mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
+    mcpPlanProbesJson: `design-ai site ${commandTarget} --mcp-plan --probes --json`,
+    mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
+  };
+}
+
+export function buildSiteMcpCheckReport(workspace, summary = {}, options = {}) {
   const items = MCP_ITEMS.map(([key, label]) => mcpItemReport(workspace, key, label));
   const taskGaps = mcpTaskGaps(workspace);
   const workspaceIssues = (summary.issues || []).filter((issue) => issue.level !== "pass");
-  const status = siteMcpCheckStatus(items, taskGaps, workspaceIssues);
+  const baseStatus = siteMcpCheckStatus(items, taskGaps, workspaceIssues);
+  const probes = options.probes ? buildSiteMcpProbeReport(workspace) : null;
+  const status = probes ? combineStatuses(baseStatus, probes.status) : baseStatus;
   const nextActions = [
     ...items.flatMap((item) => item.actions),
+    ...(probes ? probes.items.flatMap((item) => item.actions.map((action) => `Probe ${item.id}: ${action}`)) : []),
     ...taskGaps.map((gap) => `Align task '${gap.taskId}' recommendedMcp with mcpReadiness.${gap.mcp}.`),
   ];
 
-  return {
+  const report = {
     filePath: summary.filePath || "workspace.json",
     status,
     workspaceStatus: summary.status || "unknown",
@@ -1226,6 +1490,11 @@ export function buildSiteMcpCheckReport(workspace, summary = {}) {
     workspaceIssues,
     nextActions,
   };
+  if (probes) {
+    report.probes = probes;
+    report.commands = buildSiteMcpProbeCommandSet(siteMcpCommandTarget(report.filePath));
+  }
+  return report;
 }
 
 export function formatSiteMcpCheckJson(report) {
@@ -1254,6 +1523,24 @@ export function formatSiteMcpCheckHuman(report) {
     ...(report.taskGaps.length
       ? report.taskGaps.map((gap) => `- [${gap.level}] ${gap.taskId}: ${gap.message}`)
       : ["- none"]),
+    ...(report.probes ? [
+      "",
+      "Read-only probes:",
+      `Mode: ${report.probes.mode}; external calls: ${report.probes.externalCalls ? "yes" : "no"}; status: ${report.probes.status}`,
+      ...report.probes.items.map((item) => {
+        const evidence = item.evidence.length ? item.evidence.join("; ") : "no evidence";
+        const action = item.actions.length ? `\n   Next: ${item.actions.join(" ")}` : "";
+        return `- [${item.level}] ${item.label} (${item.requestedStatus}) -> ${item.passed ? "pass" : "needs attention"}\n   Evidence: ${evidence}${action}`;
+      }),
+    ] : []),
+    ...(report.commands ? [
+      "",
+      "Probe commands:",
+      `- Save readiness probe report: \`${report.commands.mcpCheckProbesHumanOut}\``,
+      `- Save readiness probe JSON: \`${report.commands.mcpCheckProbesJsonOut}\``,
+      `- Generate probe action plan JSON: \`${report.commands.mcpPlanProbesJson}\``,
+      `- Save probe action plan JSON: \`${report.commands.mcpPlanProbesJsonOut}\``,
+    ] : []),
     "",
     "Next actions:",
     ...(report.nextActions.length ? report.nextActions.map((action) => `- ${action}`) : ["- none"]),
@@ -1297,10 +1584,11 @@ function mcpActionPlanTaskRows(workspace, report) {
   });
 }
 
-export function buildSiteMcpActionPlan(workspace, summary = {}) {
-  const report = buildSiteMcpCheckReport(workspace, summary);
+export function buildSiteMcpActionPlanData(workspace, summary = {}, options = {}) {
+  const report = buildSiteMcpCheckReport(workspace, summary, options);
   const filePath = report.filePath || "workspace.json";
-  const commandTarget = filePath === "stdin" ? "<workspace.json>" : filePath;
+  const commandTarget = siteMcpCommandTarget(filePath);
+  const probeCommands = buildSiteMcpProbeCommandSet(commandTarget);
   const requiredGaps = report.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass");
   const optionalGaps = report.items.filter((item) => item.requestedStatus === "optional" && item.level !== "pass");
   const blockingIssues = [
@@ -1312,24 +1600,82 @@ export function buildSiteMcpActionPlan(workspace, summary = {}) {
     ...optionalGaps.map((item) => `${item.label}: ${item.actions.join(" ") || "Add optional readiness evidence or mark unused."}`),
     ...report.taskGaps.map((gap) => `${gap.taskId}: ${gap.message}`),
   ];
+  const taskAlignment = mcpActionPlanTaskRows(workspace, report).map((row) => ({
+    task: row[0],
+    priorityImpact: row[1],
+    recommendedMcp: row[2],
+    readinessState: row[3],
+  }));
+  const commands = {
+    mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    mcpCheckProbesHumanOut: probeCommands.mcpCheckProbesHumanOut,
+    mcpCheckProbesJsonOut: probeCommands.mcpCheckProbesJsonOut,
+    mcpPlanProbesJsonOut: probeCommands.mcpPlanProbesJsonOut,
+    tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
+    implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
+    handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
+  };
+  const executionSequence = [
+    "Fix every blocking item before target-repo implementation handoff.",
+    "Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
+    "Re-run the strict readiness gate and keep the JSON output with the handoff package.",
+    "Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
+    "Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
+  ];
+  const boundaries = [
+    "This plan is deterministic and local.",
+    "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
+    "Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
+  ];
+
+  return {
+    kind: "website-improvement-mcp-action-plan",
+    version: 1,
+    filePath,
+    status: report.status,
+    workspaceStatus: report.workspaceStatus,
+    site: report.site,
+    counts: report.counts,
+    readinessMatrix: report.items,
+    probes: report.probes || null,
+    blockingItems: blockingIssues,
+    warnings: warningIssues,
+    taskAlignment,
+    taskGaps: report.taskGaps,
+    workspaceIssues: report.workspaceIssues,
+    nextActions: report.nextActions,
+    executionSequence,
+    commands,
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
+  };
+}
+
+export function formatSiteMcpActionPlanJson(plan) {
+  return JSON.stringify(plan, null, 2);
+}
+
+export function buildSiteMcpActionPlan(workspace, summary = {}, options = {}) {
+  const plan = buildSiteMcpActionPlanData(workspace, summary, options);
 
   return [
-    `# Website improvement MCP action plan: ${report.site.name}`,
+    `# Website improvement MCP action plan: ${plan.site.name}`,
     "",
     "## Summary",
-    `- Source: ${filePath}`,
-    `- Status: ${report.status}`,
-    `- Workspace status: ${report.workspaceStatus}`,
-    `- Live URL: ${report.site.liveUrl || "not provided"}`,
-    `- Repo: ${report.site.repoUrl || report.site.localPath || "not provided"}`,
-    `- Ready MCP: ${report.counts.ready}/${report.counts.total}`,
-    `- Missing MCP: ${report.counts.missing}`,
-    `- Task/MCP gaps: ${report.counts.taskGaps}`,
+    `- Source: ${plan.filePath}`,
+    `- Status: ${plan.status}`,
+    `- Workspace status: ${plan.workspaceStatus}`,
+    `- Live URL: ${plan.site.liveUrl || "not provided"}`,
+    `- Repo: ${plan.site.repoUrl || plan.site.localPath || "not provided"}`,
+    `- Ready MCP: ${plan.counts.ready}/${plan.counts.total}`,
+    `- Missing MCP: ${plan.counts.missing}`,
+    `- Task/MCP gaps: ${plan.counts.taskGaps}`,
     "",
     "## Readiness Matrix",
     markdownTable(
       ["MCP", "Requested", "State", "Level", "Evidence"],
-      report.items.map((item) => [
+      plan.readinessMatrix.map((item) => [
         item.label,
         item.requestedStatus,
         item.state,
@@ -1337,40 +1683,567 @@ export function buildSiteMcpActionPlan(workspace, summary = {}) {
         item.evidence.length ? item.evidence.join("; ") : "none",
       ]),
     ),
+    ...(plan.probes ? [
+      "",
+      "## Read-Only Probes",
+      "",
+      `- Probe status: ${plan.probes.status}`,
+      `- Mode: ${plan.probes.mode}`,
+      `- External calls: ${plan.probes.externalCalls ? "yes" : "no"}`,
+      "",
+      markdownTable(
+        ["Probe", "MCP", "Level", "Result", "Evidence", "Next Action"],
+        plan.probes.items.map((item) => [
+          item.label,
+          item.key,
+          item.level,
+          item.passed ? "pass" : "needs attention",
+          item.evidence.length ? item.evidence.join("; ") : "none",
+          item.actions.length ? item.actions.join(" ") : "none",
+        ]),
+      ),
+    ] : []),
     "",
     "## Blocking Items",
-    markdownList(blockingIssues, "No blocking readiness issues."),
+    markdownList(plan.blockingItems, "No blocking readiness issues."),
     "",
     "## Warnings",
-    markdownList(warningIssues, "No optional readiness or task/MCP warnings."),
+    markdownList(plan.warnings, "No optional readiness or task/MCP warnings."),
     "",
     "## Task/MCP Alignment",
     markdownTable(
       ["Task", "Priority / impact", "Recommended MCP", "Readiness state"],
-      mcpActionPlanTaskRows(workspace, report),
+      plan.taskAlignment.map((item) => [
+        item.task,
+        item.priorityImpact,
+        item.recommendedMcp,
+        item.readinessState,
+      ]),
     ),
     "",
     "## Execution Sequence",
-    "1. Fix every blocking item before target-repo implementation handoff.",
-    "2. Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
-    "3. Re-run the strict readiness gate and keep the JSON output with the handoff package.",
-    "4. Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
-    "5. Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
+    ...plan.executionSequence.map((item, index) => `${index + 1}. ${item}`),
     "",
     "## Commands",
-    `- \`design-ai site ${commandTarget} --mcp-check --strict --json\``,
-    `- \`design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json\``,
-    `- \`design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md\``,
-    `- \`design-ai site ${commandTarget} --report --out website-handoff.md\``,
+    ...Object.values(plan.commands).map((command) => `- \`${command}\``),
     "",
     "## Boundaries",
-    "- This plan is deterministic and local.",
-    "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
-    "- Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
+    ...plan.boundaries.map((boundary) => `- ${boundary}`),
   ].join("\n");
 }
 
-function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
+function nextActionEntry({ severity, title, reason, command = "", references = [] }) {
+  return {
+    severity,
+    title,
+    reason,
+    command,
+    references,
+  };
+}
+
+function buildSiteNextActionCommandSet(commandTarget) {
+  return {
+    summary: `design-ai site ${commandTarget} --json`,
+    mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
+    mcpPlan: `design-ai site ${commandTarget} --mcp-plan --out mcp-action-plan.md`,
+    mcpCheckProbes: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
+    mcpPlanProbes: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
+    tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
+    implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
+    handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
+    handoffBundle: `design-ai site ${commandTarget} --bundle --out website-handoff-bundle`,
+  };
+}
+
+export function buildSiteNextActionsReport(workspace, summary = {}) {
+  const filePath = summary.filePath || "workspace.json";
+  const commandTarget = siteMcpCommandTarget(filePath);
+  const commands = buildSiteNextActionCommandSet(commandTarget);
+  const mcpReport = buildSiteMcpCheckReport(workspace, summary);
+  const mcpProbeReport = buildSiteMcpProbeReport(workspace);
+  const topTasks = workspace.refactorTasks
+    .slice()
+    .sort((a, b) => PRIORITY_OPTIONS.indexOf(a.priority) - PRIORITY_OPTIONS.indexOf(b.priority))
+    .slice(0, 3);
+  const actions = [];
+
+  for (const issue of (summary.issues || []).filter((item) => item.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: issue.level === "fail" ? "blocking" : "warning",
+      title: `Fix workspace validation: ${issue.id}`,
+      reason: issue.message,
+      command: commands.summary,
+      references: [issue.id],
+    }));
+  }
+
+  for (const item of mcpReport.items.filter((mcp) => mcp.requestedStatus === "required" && mcp.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: "blocking",
+      title: `Add required MCP readiness: ${item.label}`,
+      reason: item.actions.join(" ") || "Required MCP readiness is missing.",
+      command: commands.mcpCheck,
+      references: [item.key],
+    }));
+  }
+
+  for (const item of mcpReport.items.filter((mcp) => mcp.requestedStatus === "optional" && mcp.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: "warning",
+      title: `Clarify optional MCP readiness: ${item.label}`,
+      reason: item.actions.join(" ") || "Optional MCP readiness is missing; add evidence or mark it unused.",
+      command: commands.mcpPlan,
+      references: [item.key],
+    }));
+  }
+
+  for (const gap of mcpReport.taskGaps) {
+    actions.push(nextActionEntry({
+      severity: "warning",
+      title: `Align MCP status for ${gap.taskId}`,
+      reason: gap.message,
+      command: commands.mcpPlan,
+      references: [gap.taskId, gap.mcp],
+    }));
+  }
+
+  for (const item of mcpProbeReport.items.filter((probe) => probe.level !== "pass")) {
+    actions.push(nextActionEntry({
+      severity: item.level === "fail" ? "blocking" : "warning",
+      title: `Resolve MCP probe readiness: ${item.label}`,
+      reason: item.actions.join(" ") || item.message,
+      command: item.level === "fail" ? commands.mcpCheckProbes : commands.mcpPlanProbes,
+      references: [item.id, item.key],
+    }));
+  }
+
+  if (workspace.refactorTasks.length === 0) {
+    actions.push(nextActionEntry({
+      severity: "setup",
+      title: "Generate starter refactor tasks",
+      reason: "No refactor tasks exist yet; generate task scaffolding from audit findings before implementation handoff.",
+      command: commands.tasks,
+      references: ["refactorTasks"],
+    }));
+  } else {
+    const selected = topTasks[0];
+    actions.push(nextActionEntry({
+      severity: "implementation",
+      title: `Prepare Codex implementation prompt for ${selected.id}`,
+      reason: `${selected.title} is the highest-priority available refactor task.`,
+      command: commands.implementationPrompt,
+      references: [selected.id],
+    }));
+  }
+
+  const evidenceCounts = countImplementationEvidence(summary.counts || workspace.implementationEvidence);
+  if (evidenceCounts.executedWork === 0 || evidenceCounts.verificationResults === 0) {
+    actions.push(nextActionEntry({
+      severity: "handoff",
+      title: "Create implementation evidence trail",
+      reason: "Executed work or verification results are still empty, so the handoff report should capture what remains unverified.",
+      command: commands.handoffReport,
+      references: ["implementationEvidence"],
+    }));
+  }
+
+  actions.push(nextActionEntry({
+    severity: "handoff",
+    title: "Export portable handoff bundle",
+    reason: "A bundle keeps summary, tasks, MCP evidence, prompts, and handoff report together for the target website repo workflow.",
+    command: commands.handoffBundle,
+    references: ["bundle"],
+  }));
+
+  const severityOrder = {
+    blocking: 0,
+    warning: 1,
+    setup: 2,
+    implementation: 3,
+    handoff: 4,
+  };
+  const rankedActions = actions
+    .map((action, index) => ({ action, index }))
+    .sort((a, b) => {
+      const severityDiff = (severityOrder[a.action.severity] ?? 99) - (severityOrder[b.action.severity] ?? 99);
+      return severityDiff || a.index - b.index;
+    })
+    .map(({ action }, index) => ({
+      rank: index + 1,
+      ...action,
+    }));
+
+  return {
+    kind: "website-improvement-next-actions",
+    version: 1,
+    filePath,
+    status: combineStatuses(summary.status || "pass", mcpReport.status, mcpProbeReport.status),
+    workspaceStatus: summary.status || "unknown",
+    mcpStatus: mcpReport.status,
+    mcpProbeStatus: mcpProbeReport.status,
+    mcpProbeCounts: {
+      count: mcpProbeReport.count,
+      pass: mcpProbeReport.pass,
+      warn: mcpProbeReport.warn,
+      fail: mcpProbeReport.fail,
+    },
+    site: {
+      name: workspace.siteProfile.name,
+      liveUrl: workspace.siteProfile.liveUrl,
+      repoUrl: workspace.siteProfile.repoUrl,
+      localPath: workspace.siteProfile.localPath,
+    },
+    counts: {
+      actions: rankedActions.length,
+      blocking: rankedActions.filter((action) => action.severity === "blocking").length,
+      warnings: rankedActions.filter((action) => action.severity === "warning").length,
+      tasks: workspace.refactorTasks.length,
+      requiredMcpMissing: mcpReport.items.filter((item) => item.requestedStatus === "required" && item.level !== "pass").length,
+      taskGaps: mcpReport.taskGaps.length,
+      probeGaps: mcpProbeReport.items.filter((item) => item.level !== "pass").length,
+    },
+    topTasks: topTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      priority: task.priority,
+      category: task.category,
+      impact: task.impact,
+      effort: task.effort,
+    })),
+    actions: rankedActions,
+    commands,
+    boundaries: [
+      "This next-action report is deterministic and local.",
+      "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
+      "MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
+      "Run implementation commands in the target website workflow after readiness blockers are cleared.",
+    ],
+    externalCalls: false,
+    targetRepoMutation: false,
+  };
+}
+
+export function formatSiteNextActionsJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteNextActionsHuman(report) {
+  return [
+    `Website Improvement next actions: ${report.site.name}`,
+    "",
+    `Status: ${report.status}`,
+    `Workspace status: ${report.workspaceStatus}`,
+    `MCP status: ${report.mcpStatus}`,
+    `MCP probe status: ${report.mcpProbeStatus}`,
+    `MCP probes: ${report.mcpProbeCounts.pass}/${report.mcpProbeCounts.count} passing, ${report.mcpProbeCounts.warn} warning, ${report.mcpProbeCounts.fail} failing`,
+    `Actions: ${report.counts.actions} (${report.counts.blocking} blocking, ${report.counts.warnings} warning)`,
+    "",
+    "Prioritized actions:",
+    ...report.actions.map((action) => {
+      const command = action.command ? `\n   Command: \`${action.command}\`` : "";
+      const refs = action.references.length ? `\n   References: ${action.references.join(", ")}` : "";
+      return `${action.rank}. [${action.severity}] ${action.title}\n   Why: ${action.reason}${command}${refs}`;
+    }),
+    "",
+    "Boundaries:",
+    ...report.boundaries.map((boundary) => `- ${boundary}`),
+  ].join("\n");
+}
+
+function workflowNode(id, type, label, status, data = {}) {
+  return {
+    id,
+    type,
+    label,
+    status,
+    data,
+  };
+}
+
+function workflowEdge(from, to, type, label) {
+  return {
+    id: `${from}->${to}:${type}`,
+    from,
+    to,
+    type,
+    label,
+  };
+}
+
+function siteProfileNodeId(profile) {
+  return `profile:${profile.id || "site"}`;
+}
+
+function workflowGraphMcpNodes(mcpReport) {
+  return mcpReport.items.map((item) => workflowNode(
+    `mcp:${item.key}`,
+    "mcp-readiness",
+    item.label,
+    item.level,
+    {
+      key: item.key,
+      requestedStatus: item.requestedStatus,
+      state: item.state,
+      evidence: item.evidence,
+      actions: item.actions,
+    },
+  ));
+}
+
+function workflowGraphTaskNode(task) {
+  return workflowNode(
+    `task:${task.id}`,
+    "refactor-task",
+    task.title,
+    "planned",
+    {
+      id: task.id,
+      category: task.category,
+      problem: task.problem,
+      evidence: task.evidence,
+      impact: task.impact,
+      effort: task.effort,
+      priority: task.priority,
+      pages: task.pages,
+      recommendedMcp: task.recommendedMcp,
+      codexPrompt: task.codexPrompt,
+      verification: task.verification,
+      risks: task.risks,
+    },
+  );
+}
+
+export function buildSiteWorkflowGraph(workspaceInput, summary = {}) {
+  const taskResult = generateSiteRefactorTasks(workspaceInput);
+  const workspace = taskResult.workspace;
+  const filePath = summary.filePath || "workspace.json";
+  const { summary: taskSummary } = analyzeSiteWorkspace(workspace, { filePath });
+  const mcpReport = buildSiteMcpCheckReport(workspace, taskSummary);
+  const profile = workspace.siteProfile;
+  const profileNodeId = siteProfileNodeId(profile);
+  const orderedTasks = orderedRefactorTasks(workspace);
+  const nodes = [];
+  const edges = [];
+
+  nodes.push(workflowNode(
+    "workspace:intake",
+    "workspace",
+    "Workspace intake",
+    taskSummary.status,
+    {
+      version: workspace.version,
+      updatedAt: workspace.updatedAt,
+      source: filePath,
+      workspaceStatus: taskSummary.status,
+      mcpStatus: mcpReport.status,
+    },
+  ));
+  nodes.push(workflowNode(
+    profileNodeId,
+    "site-profile",
+    profile.name,
+    taskSummary.status,
+    {
+      id: profile.id,
+      liveUrl: profile.liveUrl,
+      repoUrl: profile.repoUrl,
+      localPath: profile.localPath,
+      figmaUrl: profile.figmaUrl,
+      deployProvider: profile.deployProvider,
+      cms: profile.cms,
+      database: profile.database,
+      pages: profile.pages,
+      userFlows: profile.userFlows,
+      viewports: profile.viewports,
+      brandNotes: profile.brandNotes,
+    },
+  ));
+  edges.push(workflowEdge("workspace:intake", profileNodeId, "profile", "Workspace defines the target site profile"));
+
+  for (const category of AUDIT_CATEGORIES) {
+    const row = workspace.auditChecklist[category.id];
+    const nodeId = `audit:${category.id}`;
+    nodes.push(workflowNode(
+      nodeId,
+      "audit-category",
+      category.label,
+      row.status,
+      {
+        category: category.id,
+        notes: row.notes,
+        findings: row.findings,
+        findingCount: row.findings.length,
+        defaultVerification: category.defaultVerification,
+      },
+    ));
+    edges.push(workflowEdge(profileNodeId, nodeId, "audit-input", "Site context drives this audit category"));
+  }
+
+  const mcpNodes = workflowGraphMcpNodes(mcpReport);
+  nodes.push(...mcpNodes);
+  for (const node of mcpNodes) {
+    edges.push(workflowEdge(profileNodeId, node.id, "readiness-input", "Site profile provides MCP readiness evidence"));
+  }
+
+  for (const task of orderedTasks) {
+    const taskNode = workflowGraphTaskNode(task);
+    nodes.push(taskNode);
+    edges.push(workflowEdge(`audit:${task.category}`, taskNode.id, "finding-to-task", "Audit finding informs this refactor task"));
+    edges.push(workflowEdge(profileNodeId, taskNode.id, "site-context", "Site profile scopes this refactor task"));
+    for (const rawMcp of task.recommendedMcp) {
+      const key = normalizeMcpKey(rawMcp);
+      if (workspace.mcpReadiness[key]) {
+        edges.push(workflowEdge(`mcp:${key}`, taskNode.id, "mcp-support", "MCP readiness supports task execution"));
+      }
+    }
+  }
+
+  for (const template of SITE_PROMPT_TEMPLATES) {
+    const promptNodeId = `prompt:${template.id}`;
+    nodes.push(workflowNode(
+      promptNodeId,
+      "prompt-template",
+      template.label,
+      "ready",
+      {
+        id: template.id,
+        agent: template.agent,
+        output: template.output,
+        description: template.description,
+        taskSelectable: template.taskSelectable,
+      },
+    ));
+    edges.push(workflowEdge(profileNodeId, promptNodeId, "profile-context", "Prompt template receives site profile context"));
+  }
+
+  for (const task of orderedTasks) {
+    edges.push(workflowEdge(`task:${task.id}`, "prompt:codex-implementation", "implementation-prompt", "Task can be exported as a Codex implementation prompt"));
+  }
+
+  nodes.push(workflowNode(
+    "handoff:report",
+    "handoff-report",
+    "Handoff report",
+    "ready",
+    {
+      output: "website-handoff.md",
+      purpose: "Summarize site state, audit findings, priority improvements, verification, and remaining risk",
+    },
+  ));
+  nodes.push(workflowNode(
+    "handoff:bundle",
+    "handoff-bundle",
+    "Local handoff bundle",
+    "ready",
+    {
+      output: "website-handoff-bundle",
+      purpose: "Package the local Website Improvement plan without mutating the target repo",
+    },
+  ));
+  nodes.push(workflowNode(
+    "handoff:target-repo",
+    "target-repo",
+    "Target website repo",
+    "external",
+    {
+      repoUrl: profile.repoUrl,
+      localPath: profile.localPath,
+      boundary: "Implementation happens outside the design-ai repository",
+    },
+  ));
+  edges.push(workflowEdge(profileNodeId, "handoff:report", "handoff-input", "Site profile anchors the handoff report"));
+  for (const task of orderedTasks) {
+    edges.push(workflowEdge(`task:${task.id}`, "handoff:report", "handoff-input", "Refactor task is summarized in the handoff report"));
+  }
+  for (const item of mcpReport.items.filter((item) => item.requestedStatus !== "unused")) {
+    edges.push(workflowEdge(`mcp:${item.key}`, "handoff:report", "readiness-input", "MCP readiness is summarized in the handoff report"));
+  }
+  for (const template of SITE_PROMPT_TEMPLATES) {
+    edges.push(workflowEdge(`prompt:${template.id}`, "handoff:target-repo", "agent-prompt", "Prompt can be used in the target website workflow"));
+  }
+  edges.push(workflowEdge("handoff:report", "handoff:bundle", "bundle-input", "Handoff report can be packaged into a local bundle"));
+  edges.push(workflowEdge("handoff:bundle", "handoff:target-repo", "handoff", "Verified bundle can become target-repo implementation context"));
+
+  const status = combineStatuses(taskSummary.status, mcpReport.status);
+  return {
+    version: 1,
+    kind: "website-improvement-workflow-graph",
+    generatedAt: workspace.updatedAt,
+    filePath,
+    status,
+    workspaceStatus: taskSummary.status,
+    mcpStatus: mcpReport.status,
+    externalCalls: false,
+    site: {
+      id: profile.id,
+      name: profile.name,
+      liveUrl: profile.liveUrl,
+      repoUrl: profile.repoUrl,
+      localPath: profile.localPath,
+    },
+    summary: {
+      status,
+      workspaceStatus: taskSummary.status,
+      mcpStatus: mcpReport.status,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+      auditCategoryCount: AUDIT_CATEGORIES.length,
+      taskCount: orderedTasks.length,
+      generatedTaskCount: taskResult.created.length,
+      requiredMcpCount: mcpReport.counts.required,
+      promptTemplateCount: SITE_PROMPT_TEMPLATES.length,
+    },
+    nodes,
+    edges,
+    boundaries: [
+      "deterministic-local",
+      "no-external-mcp-calls",
+      "no-target-repo-mutation",
+      "no-new-dependencies",
+    ],
+  };
+}
+
+export function formatSiteWorkflowGraphJson(graph) {
+  return JSON.stringify(graph, null, 2);
+}
+
+export function formatSiteWorkflowGraphMarkdown(graph) {
+  return [
+    `# Website improvement workflow graph: ${graph.site.name}`,
+    "",
+    "## Summary",
+    `- Source: ${graph.filePath}`,
+    `- Status: ${graph.status}`,
+    `- Workspace status: ${graph.workspaceStatus}`,
+    `- MCP status: ${graph.mcpStatus}`,
+    `- Nodes: ${graph.summary.nodeCount}`,
+    `- Edges: ${graph.summary.edgeCount}`,
+    `- Tasks: ${graph.summary.taskCount}`,
+    `- Prompt templates: ${graph.summary.promptTemplateCount}`,
+    `- External calls: ${graph.externalCalls ? "yes" : "no"}`,
+    "",
+    "## Nodes",
+    markdownTable(
+      ["ID", "Type", "Status", "Label"],
+      graph.nodes.map((node) => [node.id, node.type, node.status, node.label]),
+    ),
+    "",
+    "## Edges",
+    markdownTable(
+      ["From", "To", "Type", "Label"],
+      graph.edges.map((edge) => [edge.from, edge.to, edge.type, edge.label]),
+    ),
+    "",
+    "## Boundaries",
+    "- This graph is deterministic and local.",
+    "- No external MCP calls are made.",
+    "- It does not mutate the target website repo, run Lighthouse/axe, crawl pages, add dependencies, or write to external systems.",
+  ].join("\n");
+}
+
+function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeReport, filePaths) {
   const commandTarget = bundleSummary.source === "stdin" ? "<workspace.json>" : bundleSummary.source;
   return [
     `# Website improvement handoff bundle: ${workspace.siteProfile.name}`,
@@ -1385,6 +2258,7 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
           "summary.json": "Machine-readable bundle manifest and readiness summary",
           "website-workspace.tasks.json": "Workspace JSON with deterministic starter refactor tasks added",
           "mcp-check.json": "Machine-readable MCP readiness gate output",
+          "mcp-probes.json": "Machine-readable read-only MCP probe readiness output",
           "mcp-action-plan.md": "Operator-facing MCP readiness action plan",
           "website-handoff.md": "Markdown handoff report for implementation planning",
           "website-prompts.md": "Full Codex and Claude prompt bundle",
@@ -1402,15 +2276,17 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, filePaths) {
     `- Live URL: ${workspace.siteProfile.liveUrl || "not provided"}`,
     `- Repo: ${workspace.siteProfile.repoUrl || workspace.siteProfile.localPath || "not provided"}`,
     `- Tasks: ${bundleSummary.taskGeneration.totalTasks}`,
+    `- Evidence entries: ${bundleSummary.implementationEvidence.executedWork + bundleSummary.implementationEvidence.verificationResults}`,
     `- MCP ready: ${mcpReport.counts.ready}/${mcpReport.counts.total}`,
+    `- MCP probes: ${mcpProbeReport.pass}/${mcpProbeReport.count} passing`,
     "",
     "## Suggested Sequence",
-    "1. Read `summary.json` and `mcp-action-plan.md` first.",
-    "2. Fix required MCP readiness gaps, then re-run the strict gate.",
+    "1. Read `summary.json`, `mcp-check.json`, `mcp-probes.json`, and `mcp-action-plan.md` first.",
+    "2. Fix required MCP readiness or probe gaps, then re-run the strict gate.",
     "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
     "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
     "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
-    "6. Paste target-repo verification results into `website-handoff.md` after implementation.",
+    "6. Record target-repo executed work, verification results, remaining risks, and next actions in `website-handoff.md` after implementation.",
     "",
     "## Regenerate",
     `- \`design-ai site ${commandTarget} --bundle --out website-handoff-bundle --force\``,
@@ -1457,12 +2333,14 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const source = summary.filePath || "workspace.json";
   const { summary: taskSummary } = analyzeSiteWorkspace(taskWorkspace, { filePath: source });
   const mcpReport = buildSiteMcpCheckReport(taskWorkspace, taskSummary);
+  const mcpProbeReport = buildSiteMcpProbeReport(taskWorkspace);
   const filePaths = SITE_BUNDLE_FILES;
+  const bundleStatus = combineStatuses(mcpReport.status, mcpProbeReport.status);
   const bundleSummary = {
     version: 1,
     generatedAt: taskWorkspace.updatedAt,
     source,
-    status: mcpReport.status,
+    status: bundleStatus,
     workspaceStatus: taskSummary.status,
     site: taskSummary.site,
     counts: taskSummary.counts,
@@ -1477,10 +2355,18 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
         priority: task.priority,
       })),
     },
+    implementationEvidence: countImplementationEvidence(taskWorkspace.implementationEvidence),
     mcp: {
       status: mcpReport.status,
       counts: mcpReport.counts,
       taskGaps: mcpReport.taskGaps.length,
+      probeStatus: mcpProbeReport.status,
+      probeCounts: {
+        count: mcpProbeReport.count,
+        pass: mcpProbeReport.pass,
+        warn: mcpProbeReport.warn,
+        fail: mcpProbeReport.fail,
+      },
     },
     files: filePaths,
     boundaries: [
@@ -1494,7 +2380,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const contentFiles = [
     {
       path: "README.md",
-      content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, filePaths)}\n`,
+      content: `${buildSiteBundleReadme(taskWorkspace, bundleSummary, mcpReport, mcpProbeReport, filePaths)}\n`,
     },
     {
       path: "website-workspace.tasks.json",
@@ -1503,6 +2389,10 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
     {
       path: "mcp-check.json",
       content: `${formatSiteMcpCheckJson(mcpReport)}\n`,
+    },
+    {
+      path: "mcp-probes.json",
+      content: `${JSON.stringify(mcpProbeReport, null, 2)}\n`,
     },
     {
       path: "mcp-action-plan.md",
@@ -1524,7 +2414,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   bundleSummary.checksums = buildBundleChecksums(contentFiles);
 
   return {
-    status: mcpReport.status,
+    status: bundleStatus,
     summary: bundleSummary,
     files: [
       contentFiles.find((file) => file.path === "README.md"),
@@ -1577,10 +2467,270 @@ function addBundleMarkdownIssue(directory, relativePath, fragments, issues) {
   }
 }
 
+function shortDigest(digest) {
+  return digest ? String(digest).slice(0, 12) : "missing";
+}
+
+function shellQuote(value) {
+  const text = String(value || "");
+  if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(text)) return text;
+  return `'${text.replaceAll("'", "'\"'\"'")}'`;
+}
+
+function emptyBundleGeneratedContract(source = "") {
+  return {
+    available: false,
+    source: source || "",
+    expectedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+    verifiedFiles: 0,
+    driftFiles: [],
+    files: [],
+  };
+}
+
+function buildBundleGeneratedContract(directory, workspace, source) {
+  const contractSource = source || "website-workspace.tasks.json";
+  const expectedBundle = buildSiteHandoffBundle(workspace, { filePath: contractSource });
+  const expectedFiles = new Map(expectedBundle.files.map((file) => [file.path, file.content]));
+  const files = SITE_BUNDLE_CHECKSUM_FILES.map((filePath) => {
+    const expectedContent = expectedFiles.get(filePath);
+    const expectedDigest = typeof expectedContent === "string" ? sha256Hex(expectedContent) : "";
+    const targetPath = path.join(directory, filePath);
+    const present = existsSync(targetPath) && statSync(targetPath).isFile();
+    const actualDigest = present ? sha256Hex(readFileSync(targetPath, "utf8")) : "";
+    return {
+      path: filePath,
+      present,
+      matches: Boolean(present && expectedDigest && actualDigest === expectedDigest),
+      expectedDigest,
+      actualDigest,
+    };
+  });
+  return {
+    available: true,
+    source: contractSource,
+    expectedFiles: SITE_BUNDLE_CHECKSUM_FILES.length,
+    verifiedFiles: files.filter((file) => file.matches).length,
+    driftFiles: files.filter((file) => file.present && !file.matches).map((file) => file.path),
+    files,
+  };
+}
+
+function addBundleGeneratedContractIssues(generatedContract, issues) {
+  if (!generatedContract.available) return;
+  for (const file of generatedContract.files) {
+    if (!file.present || file.matches) continue;
+    addIssue(
+      issues,
+      "fail",
+      `bundle-generated-${file.path}`,
+      `${file.path} does not match the current CLI-generated bundle contract (expected ${shortDigest(file.expectedDigest)}, actual ${shortDigest(file.actualDigest)})`,
+    );
+  }
+}
+
+function formatGeneratedContractDriftLines(generatedContract) {
+  const driftFiles = generatedContract.files.filter((file) => file.present && !file.matches);
+  if (driftFiles.length === 0) return ["- none"];
+  return driftFiles.map((file) => `- ${file.path}: expected ${shortDigest(file.expectedDigest)}, actual ${shortDigest(file.actualDigest)}`);
+}
+
+function formatGeneratedContractDriftSummary(generatedContract) {
+  if (!generatedContract.driftFiles.length) return "none";
+  return generatedContract.driftFiles.join(", ");
+}
+
+function buildBundleRepairGuidance(directory, generatedContract) {
+  const workspacePath = path.join(directory, "website-workspace.tasks.json");
+  const reportBaseName = path.basename(directory);
+  const reportDirectory = path.dirname(directory);
+  const previewReportPath = path.join(reportDirectory, `${reportBaseName}-repair-preview.json`);
+  const appliedReportPath = path.join(reportDirectory, `${reportBaseName}-repair-applied.json`);
+  const hasWorkspace = existsSync(workspacePath) && statSync(workspacePath).isFile();
+  const available = Boolean(generatedContract.available && hasWorkspace);
+  return {
+    available,
+    reason: available
+      ? "Regenerate the bundle from its embedded website-workspace.tasks.json when generated contract drift is reported."
+      : "Repair guidance requires a readable website-workspace.tasks.json and generated contract analysis.",
+    command: available ? `design-ai site ${shellQuote(workspacePath)} --bundle --out ${shellQuote(directory)} --force` : "",
+    previewCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --json` : "",
+    applyCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --yes --json` : "",
+    previewReportCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --json --out ${shellQuote(previewReportPath)}` : "",
+    applyReportCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-repair --yes --json --out ${shellQuote(appliedReportPath)}` : "",
+    verifyCommand: available ? `design-ai site ${shellQuote(directory)} --bundle-check --strict --json` : "",
+    mutates: available ? "handoff-bundle-directory-only" : "none",
+    targetRepoMutation: false,
+    externalCalls: false,
+  };
+}
+
+function formatBundleRepairGuidanceLines(repairGuidance) {
+  if (!repairGuidance.available) {
+    return [
+      `- Available: no`,
+      `- Reason: ${repairGuidance.reason}`,
+    ];
+  }
+  return [
+    "- Available: yes",
+    `- Reason: ${repairGuidance.reason}`,
+    `- Regenerate: ${repairGuidance.command}`,
+    `- Preview repair: ${repairGuidance.previewCommand}`,
+    `- Apply repair: ${repairGuidance.applyCommand}`,
+    `- Preview report: ${repairGuidance.previewReportCommand}`,
+    `- Apply report: ${repairGuidance.applyReportCommand}`,
+    `- Verify: ${repairGuidance.verifyCommand}`,
+    `- Scope: ${repairGuidance.mutates}; target repo mutation ${repairGuidance.targetRepoMutation ? "yes" : "no"}; external calls ${repairGuidance.externalCalls ? "yes" : "no"}`,
+  ];
+}
+
+function summarizeBundleRepairCheck(report) {
+  return {
+    status: report.status,
+    valid: report.valid,
+    checksumBundleDigest: report.summary.checksumBundleDigest || "",
+    checksumFailures: report.counts.checksumFailures,
+    generatedFailures: report.counts.generatedFailures,
+    verifiedGeneratedFiles: report.counts.verifiedGeneratedFiles,
+    expectedGeneratedFiles: report.counts.expectedGeneratedFiles,
+    generatedDriftFiles: [...report.generatedContract.driftFiles],
+    issueCount: report.issues.length,
+  };
+}
+
+function buildSiteBundleRepairReportFromChecks({
+  beforeReport,
+  afterReport = null,
+  written = null,
+  applied = false,
+} = {}) {
+  const issues = [];
+  const repairGuidance = beforeReport.repairGuidance;
+
+  if (!repairGuidance.available) {
+    addIssue(issues, "fail", "bundle-repair-unavailable", repairGuidance.reason);
+  } else if (!applied) {
+    addIssue(issues, "pass", "bundle-repair-preview-ready", "Bundle repair preview is ready; run again with --yes to rewrite the handoff bundle directory");
+  } else if (!afterReport || afterReport.status !== "pass") {
+    addIssue(issues, "fail", "bundle-repair-verify-fail", "Bundle repair applied, but the repaired bundle did not pass bundle-check verification");
+  } else {
+    addIssue(issues, "pass", "bundle-repair-applied", "Bundle repair applied and the regenerated bundle passed local bundle-check verification");
+  }
+
+  const status = statusFromIssues(issues);
+  return {
+    directory: beforeReport.directory,
+    workspaceFile: path.join(beforeReport.directory, "website-workspace.tasks.json"),
+    dryRun: !applied,
+    applied,
+    valid: status !== "fail",
+    status,
+    repairGuidance,
+    before: summarizeBundleRepairCheck(beforeReport),
+    after: afterReport ? summarizeBundleRepairCheck(afterReport) : null,
+    written: written ? {
+      directory: written.directory,
+      files: written.files,
+      count: written.files.length,
+    } : null,
+    issues,
+  };
+}
+
+export function buildSiteBundleRepairPreview({
+  target,
+  cwd = process.cwd(),
+} = {}) {
+  const beforeReport = buildSiteBundleCheckReport({ target, cwd });
+  return buildSiteBundleRepairReportFromChecks({ beforeReport });
+}
+
+export function buildSiteBundleRepairBundle({
+  target,
+  cwd = process.cwd(),
+} = {}) {
+  const beforeReport = buildSiteBundleCheckReport({ target, cwd });
+  const preview = buildSiteBundleRepairReportFromChecks({ beforeReport });
+  if (!preview.repairGuidance.available) {
+    return {
+      preview,
+      beforeReport,
+      bundle: null,
+    };
+  }
+
+  const input = loadSiteWorkspaceInput({
+    target: preview.workspaceFile,
+    cwd,
+  });
+  const analyzed = analyzeSiteWorkspace(input.raw, { filePath: input.filePath });
+  const bundle = buildSiteHandoffBundle(analyzed.workspace, analyzed.summary);
+  return {
+    preview,
+    beforeReport,
+    bundle,
+  };
+}
+
+export function buildSiteBundleRepairAppliedReport({
+  beforeReport,
+  written,
+  cwd = process.cwd(),
+} = {}) {
+  const afterReport = buildSiteBundleCheckReport({
+    target: beforeReport.directory,
+    cwd,
+  });
+  return buildSiteBundleRepairReportFromChecks({
+    beforeReport,
+    afterReport,
+    written,
+    applied: true,
+  });
+}
+
+export function formatSiteBundleRepairJson(report) {
+  return JSON.stringify(report, null, 2);
+}
+
+export function formatSiteBundleRepairHuman(report) {
+  const afterLines = report.after ? [
+    `After status: ${report.after.status}`,
+    `After generated drift files: ${report.after.generatedDriftFiles.length ? report.after.generatedDriftFiles.join(", ") : "none"}`,
+    `After bundle digest: ${report.after.checksumBundleDigest || "not recorded"}`,
+  ] : [
+    "After status: not applied",
+  ];
+  return [
+    `Website Improvement handoff bundle repair: ${report.directory}`,
+    "",
+    `Status: ${report.status}`,
+    `Dry run: ${report.dryRun ? "yes" : "no"}`,
+    `Applied: ${report.applied ? "yes" : "no"}`,
+    `Workspace: ${report.workspaceFile}`,
+    `Before status: ${report.before.status}`,
+    `Before generated drift files: ${report.before.generatedDriftFiles.length ? report.before.generatedDriftFiles.join(", ") : "none"}`,
+    `Before bundle digest: ${report.before.checksumBundleDigest || "not recorded"}`,
+    ...afterLines,
+    ...(report.written ? [
+      `Written directory: ${report.written.directory}`,
+      `Written files: ${report.written.count}`,
+    ] : []),
+    "",
+    "Repair guidance:",
+    ...formatBundleRepairGuidanceLines(report.repairGuidance),
+    "",
+    "Issues:",
+    ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
+  ].join("\n");
+}
+
 function summarizeBundlePayload(summaryPayload) {
   const taskGeneration = normalizeObject(summaryPayload?.taskGeneration);
   const site = normalizeObject(summaryPayload?.site);
   const mcp = normalizeObject(summaryPayload?.mcp);
+  const probeCounts = normalizeObject(mcp.probeCounts);
   const checksums = normalizeObject(summaryPayload?.checksums);
   return {
     source: String(summaryPayload?.source || ""),
@@ -1588,11 +2738,30 @@ function summarizeBundlePayload(summaryPayload) {
     workspaceStatus: String(summaryPayload?.workspaceStatus || "unknown"),
     siteName: String(site.name || ""),
     totalTasks: Number.isFinite(taskGeneration.totalTasks) ? taskGeneration.totalTasks : 0,
+    implementationEvidence: countImplementationEvidence(summaryPayload?.implementationEvidence),
     mcpStatus: String(mcp.status || "unknown"),
+    mcpProbeStatus: String(mcp.probeStatus || "unknown"),
+    mcpProbeCounts: {
+      count: Number.isInteger(probeCounts.count) && probeCounts.count >= 0 ? probeCounts.count : 0,
+      pass: Number.isInteger(probeCounts.pass) && probeCounts.pass >= 0 ? probeCounts.pass : 0,
+      warn: Number.isInteger(probeCounts.warn) && probeCounts.warn >= 0 ? probeCounts.warn : 0,
+      fail: Number.isInteger(probeCounts.fail) && probeCounts.fail >= 0 ? probeCounts.fail : 0,
+    },
     files: Array.isArray(summaryPayload?.files) ? summaryPayload.files.map(String) : [],
     checksumAlgorithm: String(checksums.algorithm || ""),
     checksumBundleDigest: String(checksums.bundleDigest || ""),
     checksumFiles: normalizeObject(checksums.files),
+  };
+}
+
+function summarizeBundleBoundaries(summaryPayload) {
+  const boundaries = Array.isArray(summaryPayload?.boundaries)
+    ? summaryPayload.boundaries.map(String)
+    : [];
+  return {
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
   };
 }
 
@@ -1642,10 +2811,14 @@ export function buildSiteBundleCheckReport({
   const summaryPayload = canReadDirectory ? parseBundleJson(directory, "summary.json", issues) : null;
   const workspacePayload = canReadDirectory ? parseBundleJson(directory, "website-workspace.tasks.json", issues) : null;
   const mcpPayload = canReadDirectory ? parseBundleJson(directory, "mcp-check.json", issues) : null;
+  const mcpProbePayload = canReadDirectory ? parseBundleJson(directory, "mcp-probes.json", issues) : null;
   const summary = summarizeBundlePayload(summaryPayload);
+  const boundarySummary = summarizeBundleBoundaries(summaryPayload);
 
   let workspaceSummary = null;
   let recomputedMcp = null;
+  let recomputedMcpProbes = null;
+  let generatedContract = emptyBundleGeneratedContract(summary.source);
 
   if (summaryPayload) {
     if (summaryPayload.version !== 1) {
@@ -1660,6 +2833,18 @@ export function buildSiteBundleCheckReport({
     }
     if (!arraysEqual(summary.files, SITE_BUNDLE_FILES)) {
       addIssue(issues, "fail", "bundle-summary-files", "summary.json files must match the expected handoff bundle manifest");
+    }
+    if (summaryPayload.implementationEvidence !== undefined) {
+      const evidenceCounts = normalizeObject(summaryPayload.implementationEvidence);
+      if (summaryPayload.implementationEvidence === null || typeof summaryPayload.implementationEvidence !== "object" || Array.isArray(summaryPayload.implementationEvidence)) {
+        addIssue(issues, "fail", "bundle-summary-implementation-evidence", "summary.json implementationEvidence must be an object when provided");
+      } else {
+        for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
+          if (!Number.isInteger(evidenceCounts[key]) || evidenceCounts[key] < 0) {
+            addIssue(issues, "fail", `bundle-summary-implementation-evidence-${key}`, `summary.json implementationEvidence.${key} must be a non-negative integer`);
+          }
+        }
+      }
     }
     const boundaries = Array.isArray(summaryPayload.boundaries) ? summaryPayload.boundaries : [];
     for (const boundary of ["deterministic-local", "no-external-mcp-calls", "no-target-repo-mutation"]) {
@@ -1746,7 +2931,22 @@ export function buildSiteBundleCheckReport({
     if (summaryPayload && summary.totalTasks !== analyzed.workspace.refactorTasks.length) {
       addIssue(issues, "fail", "bundle-task-count", "summary.json taskGeneration.totalTasks does not match website-workspace.tasks.json");
     }
+    const workspaceEvidenceCounts = countImplementationEvidence(analyzed.workspace.implementationEvidence);
+    if (summaryPayload && summaryPayload.implementationEvidence !== undefined) {
+      for (const key of IMPLEMENTATION_EVIDENCE_KEYS) {
+        if (summary.implementationEvidence[key] !== workspaceEvidenceCounts[key]) {
+          addIssue(issues, "fail", `bundle-implementation-evidence-${key}`, `summary.json implementationEvidence.${key} does not match website-workspace.tasks.json`);
+        }
+      }
+    } else {
+      summary.implementationEvidence = workspaceEvidenceCounts;
+    }
+    if (canReadDirectory && workspaceSummary.status !== "fail") {
+      generatedContract = buildBundleGeneratedContract(directory, analyzed.workspace, summary.source);
+      addBundleGeneratedContractIssues(generatedContract, issues);
+    }
     recomputedMcp = buildSiteMcpCheckReport(analyzed.workspace, analyzed.summary);
+    recomputedMcpProbes = buildSiteMcpProbeReport(analyzed.workspace);
   }
 
   if (mcpPayload && recomputedMcp) {
@@ -1764,6 +2964,30 @@ export function buildSiteBundleCheckReport({
     }
   }
 
+  if (mcpProbePayload && recomputedMcpProbes) {
+    if (mcpProbePayload.status !== recomputedMcpProbes.status) {
+      addIssue(issues, "fail", "bundle-mcp-probe-status", "mcp-probes.json status does not match recomputed MCP probe readiness");
+    }
+    if (!arraysEqual((mcpProbePayload.items || []).map((item) => item.id), recomputedMcpProbes.items.map((item) => item.id))) {
+      addIssue(issues, "fail", "bundle-mcp-probe-items", "mcp-probes.json item order does not match the current MCP probe contract");
+    }
+    for (const key of ["count", "pass", "warn", "fail"]) {
+      if (mcpProbePayload[key] !== recomputedMcpProbes[key]) {
+        addIssue(issues, "fail", `bundle-mcp-probe-${key}`, `mcp-probes.json ${key} does not match recomputed MCP probe readiness`);
+      }
+    }
+    if (summaryPayload && summary.mcpProbeStatus !== String(mcpProbePayload.status || "")) {
+      addIssue(issues, "fail", "bundle-summary-mcp-probe-status", "summary.json mcp.probeStatus does not match mcp-probes.json");
+    }
+    if (summaryPayload) {
+      for (const key of ["count", "pass", "warn", "fail"]) {
+        if (summary.mcpProbeCounts[key] !== mcpProbePayload[key]) {
+          addIssue(issues, "fail", `bundle-summary-mcp-probe-counts-${key}`, `summary.json mcp.probeCounts.${key} does not match mcp-probes.json`);
+        }
+      }
+    }
+  }
+
   if (canReadDirectory) {
     addBundleMarkdownIssue(directory, "README.md", [
       "Website improvement handoff bundle",
@@ -1771,6 +2995,10 @@ export function buildSiteBundleCheckReport({
     ], issues);
     addBundleMarkdownIssue(directory, "mcp-action-plan.md", [
       "# Website improvement MCP action plan",
+    ], issues);
+    addBundleMarkdownIssue(directory, "mcp-probes.json", [
+      "\"mode\": \"read-only-local\"",
+      "\"externalCalls\": false",
     ], issues);
     addBundleMarkdownIssue(directory, "website-handoff.md", [
       "# Website improvement handoff",
@@ -1790,6 +3018,7 @@ export function buildSiteBundleCheckReport({
   }
 
   const status = statusFromIssues(issues);
+  const repairGuidance = buildBundleRepairGuidance(directory, generatedContract);
   return {
     directory,
     valid: status !== "fail",
@@ -1808,6 +3037,9 @@ export function buildSiteBundleCheckReport({
         return sha256Hex(readFileSync(targetPath, "utf8")) === expectedDigest;
       }).length,
       checksumFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-checksum-")).length,
+      expectedGeneratedFiles: generatedContract.expectedFiles,
+      verifiedGeneratedFiles: generatedContract.verifiedFiles,
+      generatedFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-generated-")).length,
       issues: issues.length,
       warnings: issues.filter((issue) => issue.level === "warn").length,
       failures: issues.filter((issue) => issue.level === "fail").length,
@@ -1815,8 +3047,20 @@ export function buildSiteBundleCheckReport({
     summary,
     workspaceStatus: workspaceSummary?.status || "unknown",
     mcpStatus: mcpPayload?.status || "unknown",
+    mcpProbeStatus: mcpProbePayload?.status || "unknown",
+    mcpProbeCounts: {
+      count: Number.isInteger(mcpProbePayload?.count) && mcpProbePayload.count >= 0 ? mcpProbePayload.count : summary.mcpProbeCounts.count,
+      pass: Number.isInteger(mcpProbePayload?.pass) && mcpProbePayload.pass >= 0 ? mcpProbePayload.pass : summary.mcpProbeCounts.pass,
+      warn: Number.isInteger(mcpProbePayload?.warn) && mcpProbePayload.warn >= 0 ? mcpProbePayload.warn : summary.mcpProbeCounts.warn,
+      fail: Number.isInteger(mcpProbePayload?.fail) && mcpProbePayload.fail >= 0 ? mcpProbePayload.fail : summary.mcpProbeCounts.fail,
+    },
+    boundaries: boundarySummary.boundaries,
+    externalCalls: boundarySummary.externalCalls,
+    targetRepoMutation: boundarySummary.targetRepoMutation,
     files,
     unexpectedFiles,
+    generatedContract,
+    repairGuidance,
     issues,
   };
 }
@@ -1832,15 +3076,30 @@ export function formatSiteBundleCheckHuman(report) {
     `Status: ${report.status}`,
     `Files: ${report.counts.presentFiles}/${report.counts.expectedFiles}`,
     `Checksums: ${report.counts.verifiedChecksumFiles}/${report.counts.expectedChecksumFiles} verified`,
+    `Generated contract: ${report.counts.verifiedGeneratedFiles}/${report.counts.expectedGeneratedFiles} verified`,
     `Bundle digest: ${report.summary.checksumBundleDigest || "not recorded"}`,
     `Unexpected files: ${report.unexpectedFiles.length ? report.unexpectedFiles.join(", ") : "none"}`,
+    `Generated drift files: ${formatGeneratedContractDriftSummary(report.generatedContract)}`,
     `Source: ${report.summary.source || "unknown"}`,
     `Site: ${report.summary.siteName || "unknown"}`,
     `Tasks: ${report.summary.totalTasks}`,
+    `Evidence: executed work ${report.summary.implementationEvidence.executedWork}, verification ${report.summary.implementationEvidence.verificationResults}, risks ${report.summary.implementationEvidence.remainingRisks}, next actions ${report.summary.implementationEvidence.nextActions}`,
     `MCP status: ${report.mcpStatus}`,
+    `MCP probe status: ${report.mcpProbeStatus}`,
+    `MCP probes: ${report.mcpProbeCounts.pass}/${report.mcpProbeCounts.count} passing, ${report.mcpProbeCounts.warn} warning, ${report.mcpProbeCounts.fail} failing`,
+    `Boundary flags: external calls ${report.externalCalls ? "yes" : "no"}; target repo mutation ${report.targetRepoMutation ? "yes" : "no"}`,
     "",
     "Files:",
     ...report.files.map((file) => `- [${file.present ? "pass" : "fail"}] ${file.path}`),
+    "",
+    "Generated contract drift:",
+    ...formatGeneratedContractDriftLines(report.generatedContract),
+    "",
+    "Repair guidance:",
+    ...formatBundleRepairGuidanceLines(report.repairGuidance),
+    "",
+    "Bundle boundaries:",
+    ...(report.boundaries.length ? report.boundaries.map((boundary) => `- ${boundary}`) : ["- none recorded"]),
     "",
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
@@ -1856,10 +3115,16 @@ function summarizeBundleForCompare(report) {
     source: report.summary.source || "",
     workspaceStatus: report.workspaceStatus || "unknown",
     mcpStatus: report.mcpStatus || "unknown",
+    mcpProbeStatus: report.mcpProbeStatus || "unknown",
+    mcpProbeCounts: { ...report.mcpProbeCounts },
     totalTasks: report.summary.totalTasks || 0,
+    implementationEvidence: { ...report.summary.implementationEvidence },
     checksumAlgorithm: report.summary.checksumAlgorithm || "",
     checksumBundleDigest: report.summary.checksumBundleDigest || "",
     checksumFailures: report.counts.checksumFailures,
+    generatedFailures: report.counts.generatedFailures,
+    verifiedGeneratedFiles: report.counts.verifiedGeneratedFiles,
+    generatedDriftFiles: [...report.generatedContract.driftFiles],
     issueCount: report.issues.length,
   };
 }
@@ -1870,7 +3135,20 @@ function buildBundleMetadataChanges(left, right) {
     ["source", "Source", left.summary.source || "", right.summary.source || ""],
     ["workspaceStatus", "Workspace status", left.workspaceStatus || "unknown", right.workspaceStatus || "unknown"],
     ["mcpStatus", "MCP status", left.mcpStatus || "unknown", right.mcpStatus || "unknown"],
+    ["mcpProbeStatus", "MCP probe status", left.mcpProbeStatus || "unknown", right.mcpProbeStatus || "unknown"],
+    ...["count", "pass", "warn", "fail"].map((key) => [
+      `mcpProbeCounts.${key}`,
+      `MCP probe ${key}`,
+      String(left.summary.mcpProbeCounts[key] || 0),
+      String(right.summary.mcpProbeCounts[key] || 0),
+    ]),
     ["totalTasks", "Task count", String(left.summary.totalTasks || 0), String(right.summary.totalTasks || 0)],
+    ...IMPLEMENTATION_EVIDENCE_KEYS.map((key) => [
+      `implementationEvidence.${key}`,
+      `Evidence ${key}`,
+      String(left.summary.implementationEvidence[key] || 0),
+      String(right.summary.implementationEvidence[key] || 0),
+    ]),
   ];
   return pairs
     .filter(([, , leftValue, rightValue]) => leftValue !== rightValue)
@@ -1894,9 +3172,13 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
 
   if (left.status === "fail") {
     addIssue(issues, "fail", "bundle-compare-left-invalid", "Primary bundle must pass bundle-check before comparison can be trusted");
+  } else if (left.status === "warn") {
+    addIssue(issues, "warn", "bundle-compare-left-warn", "Primary bundle has bundle-check warnings; review them before target-repo handoff");
   }
   if (right.status === "fail") {
     addIssue(issues, "fail", "bundle-compare-right-invalid", "Comparison bundle must pass bundle-check before comparison can be trusted");
+  } else if (right.status === "warn") {
+    addIssue(issues, "warn", "bundle-compare-right-warn", "Comparison bundle has bundle-check warnings; review them before target-repo handoff");
   }
 
   const leftDigest = left.summary.checksumBundleDigest || "";
@@ -1904,10 +3186,12 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
   const digestMatch = Boolean(leftDigest && rightDigest && leftDigest === rightDigest);
   const changedFiles = buildBundleFileChanges(left, right);
   const metadataChanges = buildBundleMetadataChanges(left, right);
+  const hasDifferences = !digestMatch || changedFiles.length > 0 || metadataChanges.length > 0;
+  const hasFailures = issues.some((issue) => issue.level === "fail");
 
-  if (issues.length === 0 && digestMatch && changedFiles.length === 0 && metadataChanges.length === 0) {
+  if (issues.length === 0 && !hasDifferences) {
     addIssue(issues, "pass", "bundle-compare-identical", "Handoff bundles have the same bundle digest and checksum manifest");
-  } else if (issues.length === 0) {
+  } else if (!hasFailures && hasDifferences) {
     addIssue(issues, "warn", "bundle-compare-different", "Handoff bundles differ; review changed files before target-repo handoff");
   }
 
@@ -1915,7 +3199,7 @@ export function buildSiteBundleCompareReport({ target, compareTarget }) {
   return {
     status,
     valid: left.valid && right.valid,
-    sameBundle: status === "pass",
+    sameBundle: !hasDifferences,
     digestMatch,
     left: summarizeBundleForCompare(left),
     right: summarizeBundleForCompare(right),
@@ -1938,6 +3222,10 @@ export function formatSiteBundleCompareJson(report) {
   return JSON.stringify(report, null, 2);
 }
 
+function formatMcpProbeCounts(counts = {}) {
+  return `${counts.pass || 0}/${counts.count || 0} passing, ${counts.warn || 0} warning, ${counts.fail || 0} failing`;
+}
+
 export function formatSiteBundleCompareHuman(report) {
   return [
     `Website Improvement handoff bundle compare: ${report.left.directory} -> ${report.right.directory}`,
@@ -1949,6 +3237,9 @@ export function formatSiteBundleCompareHuman(report) {
     `Right digest: ${report.right.checksumBundleDigest || "not recorded"}`,
     `Changed files: ${report.counts.changedFiles}`,
     `Metadata changes: ${report.counts.metadataChanges}`,
+    `Generated contract: left ${report.left.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}, right ${report.right.verifiedGeneratedFiles}/${SITE_BUNDLE_CHECKSUM_FILES.length}`,
+    `Generated drift files: left ${report.left.generatedDriftFiles.length ? report.left.generatedDriftFiles.join(", ") : "none"}, right ${report.right.generatedDriftFiles.length ? report.right.generatedDriftFiles.join(", ") : "none"}`,
+    `MCP probes: left ${formatMcpProbeCounts(report.left.mcpProbeCounts)}, right ${formatMcpProbeCounts(report.right.mcpProbeCounts)}`,
     "",
     "Changed files:",
     ...(report.changedFiles.length
@@ -1980,6 +3271,7 @@ function formatBundleHandoffIssueLines(issues) {
 function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
   const bundleDigest = checkReport.summary.checksumBundleDigest || "not recorded";
   const checksumStatus = `${checkReport.counts.verifiedChecksumFiles}/${checkReport.counts.expectedChecksumFiles} verified`;
+  const handoffBoundaries = buildSiteBundleHandoffBoundaries(checkReport);
   const bundleReadinessLine = checkReport.status === "pass"
     ? "The bundle passed local bundle-check validation. Proceed in the target website repo after confirming the repo path."
     : "The bundle did not fully pass local bundle-check validation. Resolve the listed bundle issues before treating this as implementation authority.";
@@ -1996,13 +3288,23 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Bundle status: ${checkReport.status}`,
     `- Workspace status: ${checkReport.workspaceStatus}`,
     `- MCP status: ${checkReport.mcpStatus}`,
+    `- MCP probe status: ${checkReport.mcpProbeStatus}`,
+    `- MCP probes: ${checkReport.mcpProbeCounts.pass}/${checkReport.mcpProbeCounts.count} passing, ${checkReport.mcpProbeCounts.warn} warning, ${checkReport.mcpProbeCounts.fail} failing`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
+    `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
+    `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
+    `- Generated drift files: ${formatGeneratedContractDriftSummary(checkReport.generatedContract)}`,
     `- SHA-256 bundle digest: ${bundleDigest}`,
     `- Checksums: ${checksumStatus}`,
+    `- Handoff generation boundary flags: external calls no; target repo mutation no`,
+    `- Handoff boundaries: ${handoffBoundaries.join(", ")}`,
     "",
     "## Bundle Gate",
     bundleReadinessLine,
     formatBundleHandoffIssueLines(checkReport.issues),
+    "",
+    "Repair guidance:",
+    ...formatBundleRepairGuidanceLines(checkReport.repairGuidance),
     "",
     "## Operating Rules",
     "1. Confirm the current working directory is the target website repo before editing files.",
@@ -2019,6 +3321,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "## Additional Bundle Context",
     "Use these files only as supporting evidence:",
     "- `website-handoff.md`: audit summary, priority recommendations, and remaining risk context.",
+    "- `mcp-probes.json`: read-only MCP probe evidence for repo, Figma, Browser, and deployment references.",
     "- `mcp-action-plan.md`: MCP readiness gaps and operator sequence.",
     "- `website-prompts.md`: alternate Codex/Claude review, QA, deployment, research, and copy prompts.",
     "- `summary.json`: bundle manifest, source workspace, task count, and checksum digest.",
@@ -2036,6 +3339,13 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
   ].join("\n");
 }
 
+function buildSiteBundleHandoffBoundaries(checkReport) {
+  return Array.from(new Set([
+    ...normalizeStringArray(checkReport?.boundaries),
+    "target-repo-work-after-handoff",
+  ]));
+}
+
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
@@ -2043,6 +3353,7 @@ export function buildSiteBundleHandoffReport({
   const checkReport = buildSiteBundleCheckReport({ target, cwd });
   const includedFilePaths = [
     "summary.json",
+    "mcp-probes.json",
     "mcp-action-plan.md",
     "website-handoff.md",
     "website-prompts.md",
@@ -2053,22 +3364,37 @@ export function buildSiteBundleHandoffReport({
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
   };
   const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
+  const boundaries = buildSiteBundleHandoffBoundaries(checkReport);
   return {
     status: checkReport.status,
     valid: checkReport.valid,
     directory: checkReport.directory,
+    boundaries,
+    externalCalls: false,
+    targetRepoMutation: false,
     bundle: {
       directory: checkReport.directory,
       siteName: checkReport.summary.siteName || "",
       source: checkReport.summary.source || "",
       workspaceStatus: checkReport.workspaceStatus || "unknown",
       mcpStatus: checkReport.mcpStatus || "unknown",
+      mcpProbeStatus: checkReport.mcpProbeStatus || "unknown",
+      mcpProbeCounts: { ...checkReport.mcpProbeCounts },
       totalTasks: checkReport.summary.totalTasks || 0,
+      implementationEvidence: { ...checkReport.summary.implementationEvidence },
       checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",
       checksumBundleDigest: checkReport.summary.checksumBundleDigest || "",
       expectedChecksumFiles: checkReport.counts.expectedChecksumFiles,
       verifiedChecksumFiles: checkReport.counts.verifiedChecksumFiles,
       checksumFailures: checkReport.counts.checksumFailures,
+      expectedGeneratedFiles: checkReport.counts.expectedGeneratedFiles,
+      verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
+      generatedFailures: checkReport.counts.generatedFailures,
+      generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
+      boundaries,
+      externalCalls: false,
+      targetRepoMutation: false,
+      repairGuidance: { ...checkReport.repairGuidance },
     },
     prompt,
     files: checkReport.files.map((file) => ({
@@ -2299,6 +3625,7 @@ export function buildSitePromptBundle(workspace) {
 export function buildSiteHandoffReport(workspace) {
   const profile = workspace.siteProfile;
   const tasks = workspace.refactorTasks;
+  const evidence = normalizeImplementationEvidence(workspace.implementationEvidence);
   return [
     `# Website improvement handoff: ${profile.name}`,
     "",
@@ -2345,17 +3672,19 @@ export function buildSiteHandoffReport(workspace) {
     "",
     "## Executed work",
     "",
-    "- Not recorded in this MVP. Add implementation notes after running Codex in the target repo.",
+    markdownList(evidence.executedWork, "Not recorded yet. Add implementation notes after running Codex in the target repo."),
     "",
     "## Verification results",
     "",
-    "- Not recorded in this MVP. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here.",
+    markdownList(evidence.verificationResults, "Not recorded yet. Paste target repo lint/typecheck/build, Browser QA, and deployment checks here."),
     "",
     "## Remaining risks",
     "",
-    "- MCP readiness gaps may limit verification depth.",
-    "- Copy or brand changes may require stakeholder review.",
-    "- Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+    markdownList(evidence.remainingRisks, "No remaining risks recorded."),
+    "",
+    "## Next actions",
+    "",
+    markdownList(evidence.nextActions, "No next actions recorded."),
     "",
     "## Notes",
     "",
