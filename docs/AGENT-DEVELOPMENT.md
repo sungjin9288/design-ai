@@ -125,6 +125,22 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 509: apply-plan sequence safety summary
+
+Added `commandSequenceSummary` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can branch on the full follow-up handoff without reducing the full `commandSequence` array.
+
+The summary reports:
+
+- whether the sequence is executable or blocked
+- total step count
+- read-only vs local-output step counts
+- local write/output artifact flags
+- profile, review-file, and skill-file mutation flags
+- external AI API and clean-workspace boundaries
+- aggregate run policy
+
+This keeps the apply-plan handoff deterministic and explicit: preview/report/patch artifacts may write local output files when requested with `--out`, but the sequence still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
 ### Phase 275: Website Console MCP probes
 
 Implemented `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` as optional read-only probe overlays for the existing Website Console MCP readiness matrix:

@@ -735,6 +735,24 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         },
       };
     });
+  const commandSequenceSummary = {
+    executable: failures === 0,
+    blocked: failures > 0,
+    stepCount: commandSequence.length,
+    readOnlyStepCount: commandSequence.filter((item) => item.safety?.level === "read-only").length,
+    localOutputStepCount: commandSequence.filter((item) => item.safety?.level === "local-output").length,
+    writesLocalFiles: commandSequence.some((item) => Boolean(item.safety?.writesLocalFiles)),
+    writesOutputArtifacts: commandSequence.some((item) => Boolean(item.safety?.writesOutputArtifact)),
+    mutatesProfile: commandSequence.some((item) => Boolean(item.safety?.mutatesProfile)),
+    mutatesReviewFile: commandSequence.some((item) => Boolean(item.safety?.mutatesReviewFile)),
+    mutatesSkillFiles: commandSequence.some((item) => Boolean(item.safety?.mutatesSkillFiles)),
+    callsExternalAiApis: commandSequence.some((item) => Boolean(item.safety?.callsExternalAiApis)),
+    requiresCleanWorkspace: commandSequence.some((item) => Boolean(item.safety?.requiresCleanWorkspace)),
+    runPolicy: failures > 0 ? "blocked" : "mixed-preview-local-output",
+    reason: failures > 0
+      ? "Command contract failures must be fixed before running follow-up commands."
+      : "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
+  };
   return {
     version: 1,
     valid: failures === 0,
@@ -760,6 +778,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     nextCommandSafety,
     commandSequenceCount: commandSequence.length,
     commandSequence,
+    commandSequenceSummary,
     nextAction: failures > 0
       ? "Fix command contract failures before running follow-up commands."
       : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
@@ -1267,6 +1286,14 @@ export function renderSkillProposalApplyPlanReport(payload, {
   if (commandContract.nextCommandSafety?.level) lines.push(listItem("Next command safety", commandContract.nextCommandSafety.level));
   if (commandContract.nextCommand) lines.push(listItem("Next command", `\`${commandContract.nextCommand}\``));
   lines.push(listItem("Command sequence count", commandContract.commandSequenceCount || 0));
+  const sequenceSummary = commandContract.commandSequenceSummary || {};
+  lines.push(listItem("Command sequence policy", sequenceSummary.runPolicy || "none"));
+  lines.push(listItem("Command sequence executable", yesNo(Boolean(sequenceSummary.executable))));
+  lines.push(listItem("Command sequence local outputs", sequenceSummary.localOutputStepCount || 0));
+  lines.push(listItem("Command sequence mutates profile", yesNo(Boolean(sequenceSummary.mutatesProfile))));
+  lines.push(listItem("Command sequence mutates review file", yesNo(Boolean(sequenceSummary.mutatesReviewFile))));
+  lines.push(listItem("Command sequence mutates skill files", yesNo(Boolean(sequenceSummary.mutatesSkillFiles))));
+  lines.push(listItem("Command sequence calls external AI APIs", yesNo(Boolean(sequenceSummary.callsExternalAiApis))));
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
   if (commandSequence.length > 0) {
     lines.push("");

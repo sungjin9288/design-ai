@@ -894,6 +894,14 @@ function printSkillProposalApplyPlan(payload) {
       console.log(`- next command: ${contract.nextCommand}`);
     }
     console.log(`- command sequence count: ${contract.commandSequenceCount || 0}`);
+    const sequenceSummary = contract.commandSequenceSummary || {};
+    console.log(`- command sequence policy: ${sequenceSummary.runPolicy || "none"}`);
+    console.log(`- command sequence executable: ${sequenceSummary.executable ? "yes" : "no"}`);
+    console.log(`- command sequence local outputs: ${sequenceSummary.localOutputStepCount || 0}`);
+    console.log(`- command sequence mutates profile: ${sequenceSummary.mutatesProfile ? "yes" : "no"}`);
+    console.log(`- command sequence mutates review file: ${sequenceSummary.mutatesReviewFile ? "yes" : "no"}`);
+    console.log(`- command sequence mutates skill files: ${sequenceSummary.mutatesSkillFiles ? "yes" : "no"}`);
+    console.log(`- command sequence calls external AI APIs: ${sequenceSummary.callsExternalAiApis ? "yes" : "no"}`);
     if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {
       console.log("Command sequence:");
       for (const item of contract.commandSequence) {

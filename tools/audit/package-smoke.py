@@ -6824,6 +6824,7 @@ def assert_skill_proposal_apply_plan_json(
         "strictGate": [*command_context_args, "--strict", "--json"],
     }
     command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
+    command_sequence_summary = command_contract.get("commandSequenceSummary") if isinstance(command_contract, dict) else None
     expected_command_sequence = [
         (1, "reviewCheckJson", "preview-only", "read-only", False),
         (2, "reviewCheckReport", "output-artifact", "local-output", True),
@@ -6890,6 +6891,20 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
         and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
         and command_contract.get("commandSequenceCount") == 4
+        and isinstance(command_sequence_summary, dict)
+        and command_sequence_summary.get("executable") is True
+        and command_sequence_summary.get("blocked") is False
+        and command_sequence_summary.get("stepCount") == 4
+        and command_sequence_summary.get("readOnlyStepCount") == 2
+        and command_sequence_summary.get("localOutputStepCount") == 2
+        and command_sequence_summary.get("writesLocalFiles") is True
+        and command_sequence_summary.get("writesOutputArtifacts") is True
+        and command_sequence_summary.get("mutatesProfile") is False
+        and command_sequence_summary.get("mutatesReviewFile") is False
+        and command_sequence_summary.get("mutatesSkillFiles") is False
+        and command_sequence_summary.get("callsExternalAiApis") is False
+        and command_sequence_summary.get("requiresCleanWorkspace") is False
+        and command_sequence_summary.get("runPolicy") == "mixed-preview-local-output"
         and isinstance(command_sequence, list)
         and len(command_sequence) == 4
         and all(
@@ -6966,6 +6981,13 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Next command safety: read-only",
         "- Next command: `design-ai learn --propose-skills",
         "- Command sequence count: 4",
+        "- Command sequence policy: mixed-preview-local-output",
+        "- Command sequence executable: yes",
+        "- Command sequence local outputs: 2",
+        "- Command sequence mutates profile: no",
+        "- Command sequence mutates review file: no",
+        "- Command sequence mutates skill files: no",
+        "- Command sequence calls external AI APIs: no",
         "Command sequence:",
         "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
         "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
@@ -7012,6 +7034,13 @@ def assert_skill_proposal_apply_plan_human(
         "- next command safety: read-only",
         "- next command: design-ai learn --propose-skills",
         "- command sequence count: 4",
+        "- command sequence policy: mixed-preview-local-output",
+        "- command sequence executable: yes",
+        "- command sequence local outputs: 2",
+        "- command sequence mutates profile: no",
+        "- command sequence mutates review file: no",
+        "- command sequence mutates skill files: no",
+        "- command sequence calls external AI APIs: no",
         "Command sequence:",
         "- 1. reviewCheckJson: preview-only / read-only",
         "- 2. reviewCheckReport: output-artifact / local-output",
@@ -12988,6 +13017,22 @@ def run_self_test() -> None:
                     "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
                 },
                 "commandSequenceCount": 4,
+                "commandSequenceSummary": {
+                    "executable": True,
+                    "blocked": False,
+                    "stepCount": 4,
+                    "readOnlyStepCount": 2,
+                    "localOutputStepCount": 2,
+                    "writesLocalFiles": True,
+                    "writesOutputArtifacts": True,
+                    "mutatesProfile": False,
+                    "mutatesReviewFile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "requiresCleanWorkspace": False,
+                    "runPolicy": "mixed-preview-local-output",
+                    "reason": "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
+                },
                 "commandSequence": [
                     {
                         "step": 1,
@@ -13166,6 +13211,13 @@ def run_self_test() -> None:
             "- next command safety: read-only",
             f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
             "- command sequence count: 4",
+            "- command sequence policy: mixed-preview-local-output",
+            "- command sequence executable: yes",
+            "- command sequence local outputs: 2",
+            "- command sequence mutates profile: no",
+            "- command sequence mutates review file: no",
+            "- command sequence mutates skill files: no",
+            "- command sequence calls external AI APIs: no",
             "Command sequence:",
             "- 1. reviewCheckJson: preview-only / read-only",
             "- 2. reviewCheckReport: output-artifact / local-output",
@@ -13222,6 +13274,13 @@ def run_self_test() -> None:
             "- Next command safety: read-only",
             f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
             "- Command sequence count: 4",
+            "- Command sequence policy: mixed-preview-local-output",
+            "- Command sequence executable: yes",
+            "- Command sequence local outputs: 2",
+            "- Command sequence mutates profile: no",
+            "- Command sequence mutates review file: no",
+            "- Command sequence mutates skill files: no",
+            "- Command sequence calls external AI APIs: no",
             "",
             "Command sequence:",
             "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",

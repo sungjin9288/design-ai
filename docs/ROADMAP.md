@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 509 — Apply-Plan Command Sequence Summary Contract (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a top-level summary for the full follow-up command sequence. Phase 508 made each step executable from structured args; this phase lets local AI/agent wrappers decide whether the whole sequence is executable, blocked, read-only, local-output-producing, mutating, or external-call-free without reducing the full array.
+
+### Changed
+- Added `commandSequenceSummary` to apply-plan command contracts.
+- The summary reports `executable`, `blocked`, step counts, read-only vs local-output counts, local write/output flags, mutation flags, external AI API flags, clean-workspace requirements, and an aggregate run policy.
+- Rendered sequence summary fields in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the summary contract.
+
+### Impact
+- Automation can branch on the full sequence boundary before running any follow-up command.
+- Wrappers can distinguish local preview artifact writes from profile/review/skill mutation.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 508 — Apply-Plan Follow-Up Command Sequence Contract (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose the full follow-up command sequence. Phase 507 made the first next command safety-checkable; this phase lets local AI/agent wrappers run the complete operator handoff in a deterministic order without reparsing human prose.
