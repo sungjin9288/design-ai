@@ -22,6 +22,12 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS = Object.freeze({
   proposalPatchPreview: ["--patch", "--out", "skill-proposals.patch"],
   strictGate: ["--strict", "--json"],
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_POLICIES = Object.freeze({
+  reviewCheckJson: "preview-only",
+  reviewCheckReport: "output-artifact",
+  proposalPatchPreview: "output-artifact",
+  strictGate: "strict-readiness-gate",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -703,6 +709,32 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       reason: "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
     }
     : {};
+  const commandSequence = failures > 0
+    ? []
+    : requiredKeys.map((key, index) => {
+      const writesOutputArtifact = key === "reviewCheckReport" || key === "proposalPatchPreview";
+      return {
+        step: index + 1,
+        key,
+        command: followUpCommands[key]?.command || "",
+        commandArgs: commandArgs[key] || [],
+        runPolicy: APPLY_PLAN_FOLLOW_UP_COMMAND_POLICIES[key] || "preview-only",
+        safety: {
+          level: writesOutputArtifact ? "local-output" : "read-only",
+          writesLocalFiles: writesOutputArtifact,
+          writesOutputArtifact,
+          mutatesLocalState: writesOutputArtifact,
+          mutatesProfile: false,
+          mutatesReviewFile: false,
+          mutatesSkillFiles: false,
+          callsExternalAiApis: false,
+          requiresCleanWorkspace: false,
+          reason: writesOutputArtifact
+            ? "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files."
+            : "This follow-up command validates readiness without writing local files or mutating local state.",
+        },
+      };
+    });
   return {
     version: 1,
     valid: failures === 0,
@@ -726,6 +758,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     nextCommandArgs,
     nextCommandRunPolicy,
     nextCommandSafety,
+    commandSequenceCount: commandSequence.length,
+    commandSequence,
     nextAction: failures > 0
       ? "Fix command contract failures before running follow-up commands."
       : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
@@ -1232,6 +1266,16 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Next command policy", commandContract.nextCommandRunPolicy || "none"));
   if (commandContract.nextCommandSafety?.level) lines.push(listItem("Next command safety", commandContract.nextCommandSafety.level));
   if (commandContract.nextCommand) lines.push(listItem("Next command", `\`${commandContract.nextCommand}\``));
+  lines.push(listItem("Command sequence count", commandContract.commandSequenceCount || 0));
+  const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
+  if (commandSequence.length > 0) {
+    lines.push("");
+    lines.push("Command sequence:");
+    for (const item of commandSequence) {
+      const safetyLevel = item.safety?.level || "unknown";
+      lines.push(`- ${item.step}. ${item.key} (${item.runPolicy || "unknown"} / ${safetyLevel}): \`${item.command}\``);
+    }
+  }
   if (commandContract.nextAction) lines.push(listItem("Next action", commandContract.nextAction));
   const missingCommandKeys = Array.isArray(commandContract.missingCommandKeys) ? commandContract.missingCommandKeys : [];
   const unexpectedCommandKeys = Array.isArray(commandContract.unexpectedCommandKeys) ? commandContract.unexpectedCommandKeys : [];

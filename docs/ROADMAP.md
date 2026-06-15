@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 508 — Apply-Plan Follow-Up Command Sequence Contract (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose the full follow-up command sequence. Phase 507 made the first next command safety-checkable; this phase lets local AI/agent wrappers run the complete operator handoff in a deterministic order without reparsing human prose.
+
+### Changed
+- Added `commandSequenceCount` and `commandSequence` to valid apply-plan command contracts.
+- Each sequence item includes `step`, `key`, `command`, `commandArgs`, `runPolicy`, and per-command safety metadata.
+- Marked pure validation commands as `read-only` and local `--out` preview commands as `local-output`, preserving explicit `writesLocalFiles` and `writesOutputArtifact` booleans.
+- Kept invalid command contracts fail-closed by returning an empty command sequence when contract checks fail.
+- Rendered command sequence count and ordered command sequence in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the sequence contract.
+
+### Impact
+- Automation can execute the review-check JSON command first, produce optional local report/patch preview artifacts, and finish with the strict readiness gate from structured `commandArgs`.
+- Wrappers can distinguish read-only validation commands from local output artifact commands before execution.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 507 — Apply-Plan Next Command Safety Metadata (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now describe the selected next command's run policy and safety profile. Phase 506 made the first safe follow-up command directly executable from `nextCommandArgs`; this phase lets local AI/agent wrappers verify that the selected command is read-only and non-mutating before running it.

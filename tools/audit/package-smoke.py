@@ -6823,6 +6823,13 @@ def assert_skill_proposal_apply_plan_json(
         ],
         "strictGate": [*command_context_args, "--strict", "--json"],
     }
+    command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
+    expected_command_sequence = [
+        (1, "reviewCheckJson", "preview-only", "read-only", False),
+        (2, "reviewCheckReport", "output-artifact", "local-output", True),
+        (3, "proposalPatchPreview", "output-artifact", "local-output", True),
+        (4, "strictGate", "strict-readiness-gate", "read-only", False),
+    ]
     require_package_smoke(
         payload.get("kind") == "skill-proposal-apply-plan"
         and payload.get("version") == 1
@@ -6882,6 +6889,27 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract["nextCommandSafety"].get("mutatesReviewFile") is False
         and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
         and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
+        and command_contract.get("commandSequenceCount") == 4
+        and isinstance(command_sequence, list)
+        and len(command_sequence) == 4
+        and all(
+            isinstance(item, dict)
+            and item.get("step") == step
+            and item.get("key") == key
+            and item.get("command") == str(commands.get(key, ""))
+            and item.get("commandArgs") == expected_command_args[key]
+            and item.get("runPolicy") == run_policy
+            and isinstance(item.get("safety"), dict)
+            and item["safety"].get("level") == safety_level
+            and item["safety"].get("writesLocalFiles") is writes_local_files
+            and item["safety"].get("writesOutputArtifact") is writes_local_files
+            and item["safety"].get("mutatesProfile") is False
+            and item["safety"].get("mutatesReviewFile") is False
+            and item["safety"].get("mutatesSkillFiles") is False
+            and item["safety"].get("callsExternalAiApis") is False
+            for item, (step, key, run_policy, safety_level, writes_local_files)
+            in zip(command_sequence, expected_command_sequence, strict=True)
+        )
         and "Run reviewCheckJson after manual skill edits" in str(command_contract.get("nextAction", ""))
         and isinstance(command_contract.get("summary"), dict)
         and command_contract["summary"].get("failures") == 0
@@ -6937,6 +6965,12 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Next command policy: preview-only",
         "- Next command safety: read-only",
         "- Next command: `design-ai learn --propose-skills",
+        "- Command sequence count: 4",
+        "Command sequence:",
+        "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
+        "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
         "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "## Privacy And Boundaries",
         "- Mutates learning profile: no",
@@ -6977,6 +7011,12 @@ def assert_skill_proposal_apply_plan_human(
         "- next command policy: preview-only",
         "- next command safety: read-only",
         "- next command: design-ai learn --propose-skills",
+        "- command sequence count: 4",
+        "Command sequence:",
+        "- 1. reviewCheckJson: preview-only / read-only",
+        "- 2. reviewCheckReport: output-artifact / local-output",
+        "- 3. proposalPatchPreview: output-artifact / local-output",
+        "- 4. strictGate: strict-readiness-gate / read-only",
         "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "Privacy: apply plan is read-only",
     ):
@@ -12947,6 +12987,113 @@ def run_self_test() -> None:
                     "requiresCleanWorkspace": False,
                     "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
                 },
+                "commandSequenceCount": 4,
+                "commandSequence": [
+                    {
+                        "step": 1,
+                        "key": "reviewCheckJson",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--review-check", "--json",
+                        ],
+                        "runPolicy": "preview-only",
+                        "safety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "writesOutputArtifact": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                        },
+                    },
+                    {
+                        "step": 2,
+                        "key": "reviewCheckReport",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                        ],
+                        "runPolicy": "output-artifact",
+                        "safety": {
+                            "level": "local-output",
+                            "writesLocalFiles": True,
+                            "writesOutputArtifact": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                        },
+                    },
+                    {
+                        "step": 3,
+                        "key": "proposalPatchPreview",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--patch", "--out", "skill-proposals.patch",
+                        ],
+                        "runPolicy": "output-artifact",
+                        "safety": {
+                            "level": "local-output",
+                            "writesLocalFiles": True,
+                            "writesOutputArtifact": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                        },
+                    },
+                    {
+                        "step": 4,
+                        "key": "strictGate",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--strict", "--json",
+                        ],
+                        "runPolicy": "strict-readiness-gate",
+                        "safety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "writesOutputArtifact": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                        },
+                    },
+                ],
                 "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
                 "checks": [
                     {"id": "required-command-keys-present", "level": "pass", "passed": True},
@@ -13018,6 +13165,12 @@ def run_self_test() -> None:
             "- next command policy: preview-only",
             "- next command safety: read-only",
             f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "- command sequence count: 4",
+            "Command sequence:",
+            "- 1. reviewCheckJson: preview-only / read-only",
+            "- 2. reviewCheckReport: output-artifact / local-output",
+            "- 3. proposalPatchPreview: output-artifact / local-output",
+            "- 4. strictGate: strict-readiness-gate / read-only",
             "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
@@ -13068,6 +13221,13 @@ def run_self_test() -> None:
             "- Next command policy: preview-only",
             "- Next command safety: read-only",
             f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            "- Command sequence count: 4",
+            "",
+            "Command sequence:",
+            "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
+            "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
+            "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
+            "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
             "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "## Privacy And Boundaries",

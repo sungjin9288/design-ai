@@ -893,6 +893,14 @@ function printSkillProposalApplyPlan(payload) {
     if (contract.nextCommand) {
       console.log(`- next command: ${contract.nextCommand}`);
     }
+    console.log(`- command sequence count: ${contract.commandSequenceCount || 0}`);
+    if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {
+      console.log("Command sequence:");
+      for (const item of contract.commandSequence) {
+        const safetyLevel = item.safety?.level || "unknown";
+        console.log(`- ${item.step}. ${item.key}: ${item.runPolicy || "unknown"} / ${safetyLevel}`);
+      }
+    }
     if (contract.nextAction) {
       console.log(`- next action: ${contract.nextAction}`);
     }
