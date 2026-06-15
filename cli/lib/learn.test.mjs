@@ -6041,6 +6041,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
             requiresCleanWorkspace: false,
           },
         },
+        commandStepByKey: {
+          reviewCheckReport: 2,
+          proposalPatchPreview: 3,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6617,6 +6621,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           callsExternalAiApis: false,
           requiresCleanWorkspace: false,
         },
+      },
+      commandStepByKey: {
+        reviewCheckReport: 2,
+        proposalPatchPreview: 3,
       },
       nextCommandEntry: {
         step: 2,

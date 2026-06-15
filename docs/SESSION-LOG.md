@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 524 (unreleased)** — Added apply-plan `decision.commandStepByKey` so wrappers can validate selected preview command order by key without scanning arrays.
 - **Phase 523 (unreleased)** — Added apply-plan decision command step metadata so compact selected preview commands preserve their original command-sequence order.
 - **Phase 522 (unreleased)** — Added apply-plan `decision.nextCommandSafety` so wrappers consuming the separate `nextCommand*` fields can gate the selected optional preview command directly.
 - **Phase 521 (unreleased)** — Added nested safety objects to compact apply-plan decision commands so wrappers can gate `decision.commands`, `decision.commandByKey`, and `decision.nextCommandEntry` without jumping to the full command sequence.
