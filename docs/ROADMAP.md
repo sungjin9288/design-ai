@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 522 — Apply-Plan Decision Next Command Safety (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected preview command's full safety object next to the existing `nextCommand*` fields. Phase 521 made compact decision command objects self-contained; this phase lets wrappers that already consume `decision.nextCommandKey`, `decision.nextCommand`, `decision.nextCommandArgs`, and `decision.nextCommandRunPolicy` gate the same command without reading `nextCommandEntry`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.nextCommandSafety`.
+- The field mirrors `decision.nextCommandEntry.safety` for the selected optional preview command, currently `reviewCheckReport`.
+- Kept `decision.nextCommandSafetyLevel` and flattened fields for backward compatibility.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves the selected next-command safety object.
+
+### Impact
+- Wrappers can gate the selected optional preview handoff from the `nextCommand*` field family alone.
+- `decision.nextCommandEntry.safety`, `decision.commandByKey.<key>.safety`, and `commandSequenceByKey.<key>.safety` remain available for full object and lookup-based consumers.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 521 — Apply-Plan Decision Command Safety Objects (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decision commands now carry their own nested command-level `safety` objects. Phase 520 exposed the selected optional preview command as `nextCommandEntry`; this phase makes `decision.commands`, `decision.commandByKey`, and `decision.nextCommandEntry` self-contained for safety gating without requiring wrappers to jump to `commandSequenceByKey`.

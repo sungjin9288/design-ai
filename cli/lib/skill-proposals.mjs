@@ -900,6 +900,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandArgs: decisionNextCommand.commandArgs || [],
         nextCommandRunPolicy: decisionNextCommand.runPolicy || "",
         nextCommandSafetyLevel: decisionNextCommand.safetyLevel || "",
+        nextCommandSafety: decisionNextCommand.safety || {},
         runPolicy: "optional-local-output-preview",
         safety: {
           level: nextStageSummary.writesLocalFiles ? "local-output" : "read-only",

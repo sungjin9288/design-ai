@@ -125,6 +125,14 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 522: apply-plan decision next command safety
+
+Added selected next-command safety metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.nextCommandSafety`: the full safety object for the command named by `decision.nextCommandKey`
+
+This lets wrappers that already consume `decision.nextCommand`, `decision.nextCommandArgs`, and `decision.nextCommandRunPolicy` gate the selected optional preview command without reading `decision.nextCommandEntry`. The field mirrors `decision.nextCommandEntry.safety` and keeps the existing `decision.nextCommandSafetyLevel` string for compatibility.
+
 ### Phase 521: apply-plan decision command safety objects
 
 Added nested command-level safety objects under `operatorRunbook.stageSelection.decision`:

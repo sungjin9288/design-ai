@@ -7014,6 +7014,7 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
         and operator_stage_decision.get("nextCommandRunPolicy") == "output-artifact"
         and operator_stage_decision.get("nextCommandSafetyLevel") == "local-output"
+        and operator_stage_decision.get("nextCommandSafety") == expected_local_output_decision_safety
         and operator_stage_decision.get("runPolicy") == "optional-local-output-preview"
         and isinstance(operator_stage_decision_safety, dict)
         and operator_stage_decision_safety.get("level") == "local-output"
@@ -13561,6 +13562,7 @@ def run_self_test() -> None:
                             ],
                             "nextCommandRunPolicy": "output-artifact",
                             "nextCommandSafetyLevel": "local-output",
+                            "nextCommandSafety": learning_skill_proposal_apply_plan_decision_command_safety,
                             "runPolicy": "optional-local-output-preview",
                             "safety": {
                                 "level": "local-output",
@@ -14188,6 +14190,37 @@ def run_self_test() -> None:
                         "operatorRunbook": {
                             **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
                             "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "nextCommandSafety": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandSafety"],
+                                        "level": "read-only",
+                                    },
+                                },
+                            },
                         },
                     },
                 }),
