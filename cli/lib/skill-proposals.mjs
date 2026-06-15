@@ -866,6 +866,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionCommands = failures > 0
     ? []
     : (nextStage?.commands || []).map((command) => summarizeDecisionCommand(command));
+  const decisionCommandByKey = Object.fromEntries(decisionCommands.map((command) => [command.key, command]));
+  const decisionNextCommand = decisionCommands[0] || {};
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -879,6 +881,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandCount: decisionCommands.length,
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
         commands: decisionCommands,
+        commandByKey: decisionCommandByKey,
+        nextCommandKey: decisionNextCommand.key || "",
+        nextCommand: decisionNextCommand.command || "",
+        nextCommandArgs: decisionNextCommand.commandArgs || [],
+        nextCommandRunPolicy: decisionNextCommand.runPolicy || "",
+        nextCommandSafetyLevel: decisionNextCommand.safetyLevel || "",
         runPolicy: "optional-local-output-preview",
         safety: {
           level: nextStageSummary.writesLocalFiles ? "local-output" : "read-only",
@@ -1491,6 +1499,9 @@ export function renderSkillProposalApplyPlanReport(payload, {
       }
       if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
         lines.push(listItem("Operator runbook decision commands", operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"));
+      }
+      if (operatorRunbook.stageSelection.decision.nextCommandKey) {
+        lines.push(listItem("Operator runbook decision next command", operatorRunbook.stageSelection.decision.nextCommandKey));
       }
     }
     if (operatorRunbook.stageSelection.nextStage?.key) {

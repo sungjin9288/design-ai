@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 519 — Apply-Plan Decision Command Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose direct command lookup metadata for the selected optional preview branch. Phase 518 added compact decision commands; this phase makes the first command and per-key command lookup addressable without scanning arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandByKey`.
+- Added `decision.nextCommandKey`, `decision.nextCommand`, `decision.nextCommandArgs`, `decision.nextCommandRunPolicy`, and `decision.nextCommandSafetyLevel`.
+- Rendered the decision next command key in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision command lookup contract.
+
+### Impact
+- Automation can branch on `decision.action`, gate on `decision.safety`, then fetch `reviewCheckReport` or `proposalPatchPreview` directly from `decision.commandByKey`.
+- Wrappers can offer the first optional preview command from `decision.nextCommand*` without scanning `decision.commands`.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 518 — Apply-Plan Decision Command Handoff (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now include compact command handoffs for the selected branch. Phase 517 made the decision safe to gate; this phase makes the optional preview branch executable without requiring wrappers to look up `commandSequenceByKey`.

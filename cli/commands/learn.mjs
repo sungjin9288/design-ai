@@ -920,6 +920,9 @@ function printSkillProposalApplyPlan(payload) {
         if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
           console.log(`- operator runbook decision commands: ${operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"}`);
         }
+        if (operatorRunbook.stageSelection.decision.nextCommandKey) {
+          console.log(`- operator runbook decision next command: ${operatorRunbook.stageSelection.decision.nextCommandKey}`);
+        }
       }
       if (operatorRunbook.stageSelection.nextStage?.key) {
         const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";

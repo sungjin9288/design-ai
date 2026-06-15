@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 519 (unreleased)** — Added apply-plan decision command lookup and next-command metadata so wrappers can retrieve optional preview commands without scanning `decision.commands`.
 - **Phase 518 (unreleased)** — Added compact apply-plan decision command handoffs so local AI/agent wrappers can offer optional preview commands directly from `stageSelection.decision`.
 - **Phase 517 (unreleased)** — Added apply-plan `stageSelection.decision.safety` so local AI/agent wrappers can gate the selected branch from the decision object itself.
 - **Phase 516 (unreleased)** — Added apply-plan `stageSelection.decision` enum so local AI/agent wrappers can branch to the optional preview stage without combining strategy text and stage summaries.
