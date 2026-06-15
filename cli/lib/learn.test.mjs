@@ -5763,6 +5763,9 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(applyPlan.commandContract.valid, true);
     assert.equal(applyPlan.commandContract.status, "pass");
     assert.equal(applyPlan.commandContract.commandCount, 4);
+    assert.equal(applyPlan.commandContract.checkCount, 18);
+    assert.equal(applyPlan.commandContract.passCount, 18);
+    assert.equal(applyPlan.commandContract.warningCount, 0);
     assert.deepEqual(applyPlan.commandContract.requiredKeys, [
       "reviewCheckJson",
       "reviewCheckReport",
@@ -5775,9 +5778,67 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(applyPlan.commandContract.reviewFileRequired, true);
     assert.equal(applyPlan.commandContract.reviewFile, acceptedReviewFile);
     assert.deepEqual(applyPlan.commandContract.forbiddenFlags, ["--yes"]);
+    assert.equal(applyPlan.commandContract.failureCount, 0);
+    assert.deepEqual(applyPlan.commandContract.failedCheckIds, []);
+    assert.deepEqual(applyPlan.commandContract.failedChecks, []);
+    assert.equal(applyPlan.commandContract.nextCommandKey, "reviewCheckJson");
+    assert.equal(applyPlan.commandContract.nextCommand, applyPlan.commands.reviewCheckJson);
+    assert.deepEqual(applyPlan.commandContract.nextCommandArgs, applyPlan.commandArgs.reviewCheckJson);
+    assert.equal(applyPlan.commandContract.nextCommandRunPolicy, "preview-only");
+    assert.deepEqual(applyPlan.commandContract.nextCommandSafety, {
+      level: "read-only",
+      writesLocalFiles: false,
+      mutatesLocalState: false,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+    });
+    assert.match(applyPlan.commandContract.nextAction, /Run reviewCheckJson after manual skill edits/);
     assert.equal(applyPlan.commandContract.summary.failures, 0);
+    assert.equal(applyPlan.commandContract.summary.warnings, 0);
+    assert.equal(applyPlan.commandContract.summary.passes, 18);
     assert.equal(applyPlan.commandContract.summary.total, 18);
     assert.equal(applyPlan.commandContract.checks.every((check) => check.passed), true);
+    const missingReviewFileApplyPlan = buildSkillProposalApplyPlan({
+      ...acceptedProposalPayload,
+      reviewFile: "",
+      review: {
+        ...acceptedProposalPayload.review,
+        file: "",
+      },
+    }, {
+      generatedAt: new Date("2026-06-10T00:12:30.000Z"),
+    });
+    assert.equal(missingReviewFileApplyPlan.commandContract.valid, false);
+    assert.equal(missingReviewFileApplyPlan.commandContract.status, "fail");
+    assert.equal(missingReviewFileApplyPlan.commandContract.checkCount, 18);
+    assert.equal(missingReviewFileApplyPlan.commandContract.passCount, 14);
+    assert.equal(missingReviewFileApplyPlan.commandContract.warningCount, 0);
+    assert.equal(missingReviewFileApplyPlan.commandContract.failureCount, 4);
+    assert.equal(missingReviewFileApplyPlan.commandContract.nextCommandKey, "");
+    assert.equal(missingReviewFileApplyPlan.commandContract.nextCommand, "");
+    assert.deepEqual(missingReviewFileApplyPlan.commandContract.nextCommandArgs, []);
+    assert.equal(missingReviewFileApplyPlan.commandContract.nextCommandRunPolicy, "");
+    assert.deepEqual(missingReviewFileApplyPlan.commandContract.nextCommandSafety, {});
+    assert.deepEqual(missingReviewFileApplyPlan.commandContract.failedCheckIds, [
+      "reviewCheckJson-review-file-context",
+      "reviewCheckReport-review-file-context",
+      "proposalPatchPreview-review-file-context",
+      "strictGate-review-file-context",
+    ]);
+    assert.match(missingReviewFileApplyPlan.commandContract.nextAction, /Fix command contract failures/);
+    const missingReviewFileReport = renderSkillProposalApplyPlanReport(missingReviewFileApplyPlan, {
+      generatedAt: new Date("2026-06-10T00:12:45.000Z"),
+    });
+    assert.match(missingReviewFileReport, /- Check count: 18/);
+    assert.match(missingReviewFileReport, /- Pass count: 14/);
+    assert.match(missingReviewFileReport, /- Warning count: 0/);
+    assert.match(missingReviewFileReport, /- Failure count: 4/);
+    assert.match(missingReviewFileReport, /- Failed checks: reviewCheckJson-review-file-context, reviewCheckReport-review-file-context, proposalPatchPreview-review-file-context, strictGate-review-file-context/);
+    assert.match(missingReviewFileReport, /Failed command checks:/);
     assert.equal(applyPlan.privacy.mutatesReviewFile, false);
     assert.equal(applyPlan.privacy.mutatesSkillFiles, false);
     const applyPlanReport = renderSkillProposalApplyPlanReport(applyPlan, {
@@ -5789,6 +5850,16 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /## Command Contract/);
     assert.match(applyPlanReport, /- Valid: yes/);
     assert.match(applyPlanReport, /- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate/);
+    assert.match(applyPlanReport, /- Check count: 18/);
+    assert.match(applyPlanReport, /- Pass count: 18/);
+    assert.match(applyPlanReport, /- Warning count: 0/);
+    assert.match(applyPlanReport, /- Failure count: 0/);
+    assert.match(applyPlanReport, /- Failed checks: none/);
+    assert.match(applyPlanReport, /- Next command key: reviewCheckJson/);
+    assert.match(applyPlanReport, /- Next command policy: preview-only/);
+    assert.match(applyPlanReport, /- Next command safety: read-only/);
+    assert.match(applyPlanReport, /- Next command: `design-ai learn --propose-skills .* --review-check --json`/);
+    assert.match(applyPlanReport, /- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied\./);
     assert.match(applyPlanReport, /- Mutates review file: no/);
 
     const applyPlanJsonOutput = await captureStdout(() => runLearn([
@@ -5829,6 +5900,23 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       "strictGate",
     ]);
     assert.equal(applyPlanJsonPayload.commandContract.summary.failures, 0);
+    assert.equal(applyPlanJsonPayload.commandContract.summary.warnings, 0);
+    assert.equal(applyPlanJsonPayload.commandContract.summary.passes, 18);
+    assert.equal(applyPlanJsonPayload.commandContract.checkCount, 18);
+    assert.equal(applyPlanJsonPayload.commandContract.passCount, 18);
+    assert.equal(applyPlanJsonPayload.commandContract.warningCount, 0);
+    assert.equal(applyPlanJsonPayload.commandContract.failureCount, 0);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.failedCheckIds, []);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.failedChecks, []);
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandKey, "reviewCheckJson");
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommand, applyPlanJsonPayload.commands.reviewCheckJson);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.nextCommandArgs, applyPlanJsonPayload.commandArgs.reviewCheckJson);
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandRunPolicy, "preview-only");
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandSafety.level, "read-only");
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandSafety.mutatesLocalState, false);
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandSafety.mutatesSkillFiles, false);
+    assert.equal(applyPlanJsonPayload.commandContract.nextCommandSafety.callsExternalAiApis, false);
+    assert.match(applyPlanJsonPayload.commandContract.nextAction, /Run reviewCheckJson after manual skill edits/);
     assert.equal(readFileSync(filePath, "utf8"), before);
     assert.equal(readFileSync(acceptedReviewFile, "utf8"), acceptedReviewBefore);
     assert.equal(readFileSync(candidateSkillPath, "utf8"), candidateSkillBefore);
@@ -5852,6 +5940,16 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- status: pass/);
     assert.match(applyPlanHumanOutput, /- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate/);
     assert.match(applyPlanHumanOutput, /- forbidden flags: --yes/);
+    assert.match(applyPlanHumanOutput, /- check count: 18/);
+    assert.match(applyPlanHumanOutput, /- pass count: 18/);
+    assert.match(applyPlanHumanOutput, /- warning count: 0/);
+    assert.match(applyPlanHumanOutput, /- failure count: 0/);
+    assert.match(applyPlanHumanOutput, /- failed checks: none/);
+    assert.match(applyPlanHumanOutput, /- next command key: reviewCheckJson/);
+    assert.match(applyPlanHumanOutput, /- next command policy: preview-only/);
+    assert.match(applyPlanHumanOutput, /- next command safety: read-only/);
+    assert.match(applyPlanHumanOutput, /- next command: design-ai learn --propose-skills .* --review-check --json/);
+    assert.match(applyPlanHumanOutput, /- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied\./);
     assert.match(applyPlanHumanOutput, /Privacy: apply plan is read-only/);
 
     const applyPlanReportPath = path.join(dir, "skill-proposal-apply-plan.md");
@@ -5876,6 +5974,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReportFile, /- Accepted proposals: 1/);
     assert.match(applyPlanReportFile, /## Command Contract/);
     assert.match(applyPlanReportFile, /- Valid: yes/);
+    assert.match(applyPlanReportFile, /- Failed checks: none/);
     assert.match(applyPlanReportFile, /- Mutates skill files: no/);
     assert.equal(readFileSync(filePath, "utf8"), before);
     assert.equal(readFileSync(acceptedReviewFile, "utf8"), acceptedReviewBefore);

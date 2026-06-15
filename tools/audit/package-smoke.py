@@ -6857,6 +6857,9 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract.get("valid") is True
         and command_contract.get("status") == "pass"
         and command_contract.get("commandCount") == 4
+        and command_contract.get("checkCount") == 18
+        and command_contract.get("passCount") == 18
+        and command_contract.get("warningCount") == 0
         and command_contract.get("requiredKeys") == list(expected_command_args.keys())
         and command_contract.get("missingCommandKeys") == []
         and command_contract.get("unexpectedCommandKeys") == []
@@ -6864,8 +6867,26 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract.get("reviewFileRequired") is True
         and command_contract.get("reviewFile") == str(review_path)
         and command_contract.get("forbiddenFlags") == ["--yes"]
+        and command_contract.get("failureCount") == 0
+        and command_contract.get("failedCheckIds") == []
+        and command_contract.get("failedChecks") == []
+        and command_contract.get("nextCommandKey") == "reviewCheckJson"
+        and command_contract.get("nextCommand") == review_check_json_command
+        and command_contract.get("nextCommandArgs") == expected_command_args["reviewCheckJson"]
+        and command_contract.get("nextCommandRunPolicy") == "preview-only"
+        and isinstance(command_contract.get("nextCommandSafety"), dict)
+        and command_contract["nextCommandSafety"].get("level") == "read-only"
+        and command_contract["nextCommandSafety"].get("writesLocalFiles") is False
+        and command_contract["nextCommandSafety"].get("mutatesLocalState") is False
+        and command_contract["nextCommandSafety"].get("mutatesProfile") is False
+        and command_contract["nextCommandSafety"].get("mutatesReviewFile") is False
+        and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
+        and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
+        and "Run reviewCheckJson after manual skill edits" in str(command_contract.get("nextAction", ""))
         and isinstance(command_contract.get("summary"), dict)
         and command_contract["summary"].get("failures") == 0
+        and command_contract["summary"].get("warnings") == 0
+        and command_contract["summary"].get("passes") == 18
         and command_contract["summary"].get("total") == 18
         and isinstance(command_contract.get("checks"), list)
         and all(check.get("passed") is True for check in command_contract.get("checks", []))
@@ -6907,6 +6928,16 @@ def assert_skill_proposal_apply_plan_markdown(
         "## Command Contract",
         "- Valid: yes",
         "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- Check count: 18",
+        "- Pass count: 18",
+        "- Warning count: 0",
+        "- Failure count: 0",
+        "- Failed checks: none",
+        "- Next command key: reviewCheckJson",
+        "- Next command policy: preview-only",
+        "- Next command safety: read-only",
+        "- Next command: `design-ai learn --propose-skills",
+        "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "## Privacy And Boundaries",
         "- Mutates learning profile: no",
         "- Mutates review file: no",
@@ -6937,6 +6968,16 @@ def assert_skill_proposal_apply_plan_human(
         "- status: pass",
         "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
         "- forbidden flags: --yes",
+        "- check count: 18",
+        "- pass count: 18",
+        "- warning count: 0",
+        "- failure count: 0",
+        "- failed checks: none",
+        "- next command key: reviewCheckJson",
+        "- next command policy: preview-only",
+        "- next command safety: read-only",
+        "- next command: design-ai learn --propose-skills",
+        "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "Privacy: apply plan is read-only",
     ):
         require_package_smoke(
@@ -12866,6 +12907,9 @@ def run_self_test() -> None:
                 "valid": True,
                 "status": "pass",
                 "commandCount": 4,
+                "checkCount": 18,
+                "passCount": 18,
+                "warningCount": 0,
                 "requiredKeys": [
                     "reviewCheckJson",
                     "reviewCheckReport",
@@ -12878,6 +12922,32 @@ def run_self_test() -> None:
                 "reviewFileRequired": True,
                 "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
                 "forbiddenFlags": ["--yes"],
+                "failureCount": 0,
+                "failedCheckIds": [],
+                "failedChecks": [],
+                "nextCommandKey": "reviewCheckJson",
+                "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                "nextCommandArgs": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--review-check", "--json",
+                ],
+                "nextCommandRunPolicy": "preview-only",
+                "nextCommandSafety": {
+                    "level": "read-only",
+                    "writesLocalFiles": False,
+                    "mutatesLocalState": False,
+                    "mutatesProfile": False,
+                    "mutatesReviewFile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "requiresCleanWorkspace": False,
+                    "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+                },
+                "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
                 "checks": [
                     {"id": "required-command-keys-present", "level": "pass", "passed": True},
                     {"id": "no-unexpected-command-keys", "level": "pass", "passed": True},
@@ -12900,6 +12970,7 @@ def run_self_test() -> None:
                 ],
                 "summary": {
                     "failures": 0,
+                    "warnings": 0,
                     "passes": 18,
                     "total": 18,
                 },
@@ -12938,6 +13009,16 @@ def run_self_test() -> None:
             "- status: pass",
             "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
             "- forbidden flags: --yes",
+            "- check count: 18",
+            "- pass count: 18",
+            "- warning count: 0",
+            "- failure count: 0",
+            "- failed checks: none",
+            "- next command key: reviewCheckJson",
+            "- next command policy: preview-only",
+            "- next command safety: read-only",
+            f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
         ])
@@ -12978,6 +13059,16 @@ def run_self_test() -> None:
             "",
             "- Valid: yes",
             "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+            "- Check count: 18",
+            "- Pass count: 18",
+            "- Warning count: 0",
+            "- Failure count: 0",
+            "- Failed checks: none",
+            "- Next command key: reviewCheckJson",
+            "- Next command policy: preview-only",
+            "- Next command safety: read-only",
+            f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "## Privacy And Boundaries",
             "",

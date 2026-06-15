@@ -1,5 +1,117 @@
 # Roadmap
 
+## Phase 507 — Apply-Plan Next Command Safety Metadata (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now describe the selected next command's run policy and safety profile. Phase 506 made the first safe follow-up command directly executable from `nextCommandArgs`; this phase lets local AI/agent wrappers verify that the selected command is read-only and non-mutating before running it.
+
+### Changed
+- Added `nextCommandRunPolicy: "preview-only"` for valid apply-plan command contracts.
+- Added `nextCommandSafety` metadata for the selected next command, including read-only level, no local file writes, no local-state mutation, no learning/review/skill file mutation, no external AI calls, and no clean-workspace requirement.
+- Kept invalid command contracts fail-closed by returning an empty run policy and empty safety object when contract checks fail.
+- Rendered next-command policy and safety level in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the safety contract.
+
+### Impact
+- Automation can execute `commandContract.nextCommandArgs` only after confirming `nextCommandSafety.level === "read-only"` and `nextCommandRunPolicy === "preview-only"`.
+- Manual operators see whether the recommended follow-up command is safe before copying it.
+- The change remains additive and read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, execution policy, safety metadata, readiness counts, and failure recovery guidance.
+
+## Phase 506 — Apply-Plan Next Command Contract Handoff (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now identify the first safe follow-up command directly. Earlier phases exposed reproducible command strings, structured args, contract validity, failure diagnostics, and pass/warn/fail counts; this phase adds the single next-command handoff fields that local AI/agent wrappers can execute without reparsing command prose.
+
+### Changed
+- Added `nextCommandKey`, `nextCommand`, and `nextCommandArgs` to valid apply-plan command contracts.
+- Kept invalid contracts non-executable by returning empty next-command fields when any command-contract check fails.
+- Rendered the next command key and command in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the next-command contract.
+
+### Impact
+- Automation can run the first read-only review-check command from `commandContract.nextCommandArgs` without selecting from the full command map.
+- Invalid command contracts remain fail-closed, so wrappers can avoid running follow-up commands until contract failures are fixed.
+- The change remains additive and read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose both readiness diagnostics and a fail-closed next-command handoff.
+
+## Phase 505 — Apply-Plan Command Contract Check Summary Counts (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose top-level check summary counts. Phase 504 made failures easy to recover from; this phase also makes the valid/pass path cheap for local AI/agent wrappers to summarize without scanning the full `checks` array.
+
+### Changed
+- Added `checkCount`, `passCount`, and `warningCount` next to the existing `failureCount` apply-plan command contract diagnostics.
+- Added `warnings` to `commandContract.summary` so nested summaries and top-level counts stay aligned.
+- Rendered check, pass, and warning counts in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the count contract.
+
+### Impact
+- Automation can branch on pass/warn/fail counts directly instead of reducing the full contract check list.
+- Operators see the whole contract health summary before running read-only follow-up commands.
+- The change is additive and keeps apply-plan read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from command contracts that expose direct pass, warn, and fail readiness counts.
+
+## Phase 504 — Apply-Plan Command Contract Failure Diagnostics (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now include fail-focused diagnostics in addition to the full check list. Local AI/agent wrappers can branch on `failureCount`, `failedCheckIds`, and `failedChecks`, while human and Markdown outputs show a concise failed-check summary and a deterministic next action.
+
+### Changed
+- Added `failureCount`, `failedCheckIds`, `failedChecks`, and `nextAction` to apply-plan `commandContract` metadata.
+- Rendered failure count, failed-check ids, and next action in human and Markdown apply-plan command contract summaries.
+- Added unit coverage for both valid contracts and missing-review-file contract failures.
+- Extended packed-tarball smoke assertions so packaged apply-plan JSON, Markdown, and human output preserve the new diagnostics.
+
+### Impact
+- Automation no longer has to scan every command-contract check to decide whether the apply-plan follow-up command set is usable.
+- Operators get explicit recovery guidance when the command contract fails, while valid contracts continue to point at `reviewCheckJson` followed by `strictGate`.
+- The change is additive and keeps the read-only apply-plan boundary intact.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from command contracts that expose both pass summaries and fail-focused recovery metadata.
+
 ## Phase 503 — Apply-Plan Human Command Contract Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball smoke wording for the default human `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contract summary. Phase 502 added the console output and package smoke assertion; this phase makes release-facing docs fail metadata checks if they stop mentioning the human apply-plan `Command contract` path.

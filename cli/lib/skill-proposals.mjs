@@ -676,6 +676,33 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   }
 
   const failures = checks.filter((check) => check.level === "fail").length;
+  const warnings = checks.filter((check) => check.level === "warn").length;
+  const passes = checks.filter((check) => check.level === "pass").length;
+  const checkCount = checks.length;
+  const failedChecks = checks
+    .filter((check) => check.level === "fail")
+    .map((check) => ({
+      id: check.id,
+      message: check.message,
+      evidence: check.evidence || {},
+    }));
+  const nextCommandKey = failures > 0 ? "" : "reviewCheckJson";
+  const nextCommand = nextCommandKey ? followUpCommands[nextCommandKey]?.command || "" : "";
+  const nextCommandArgs = nextCommandKey ? commandArgs[nextCommandKey] || [] : [];
+  const nextCommandRunPolicy = nextCommandKey ? "preview-only" : "";
+  const nextCommandSafety = nextCommandKey
+    ? {
+      level: "read-only",
+      writesLocalFiles: false,
+      mutatesLocalState: false,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+    }
+    : {};
   return {
     version: 1,
     valid: failures === 0,
@@ -688,11 +715,26 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     reviewFileRequired: true,
     reviewFile,
     forbiddenFlags: [...APPLY_PLAN_FORBIDDEN_FLAGS],
+    checkCount,
+    passCount: passes,
+    warningCount: warnings,
+    failureCount: failures,
+    failedCheckIds: failedChecks.map((check) => check.id),
+    failedChecks,
+    nextCommandKey,
+    nextCommand,
+    nextCommandArgs,
+    nextCommandRunPolicy,
+    nextCommandSafety,
+    nextAction: failures > 0
+      ? "Fix command contract failures before running follow-up commands."
+      : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
     checks,
     summary: {
       failures,
-      passes: checks.length - failures,
-      total: checks.length,
+      warnings,
+      passes,
+      total: checkCount,
     },
   };
 }
@@ -1178,13 +1220,31 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Valid", yesNo(Boolean(commandContract.valid))));
   lines.push(listItem("Status", commandContract.status || "unknown"));
   lines.push(listItem("Command count", commandContract.commandCount || 0));
+  lines.push(listItem("Check count", commandContract.checkCount || 0));
+  lines.push(listItem("Pass count", commandContract.passCount || 0));
+  lines.push(listItem("Warning count", commandContract.warningCount || 0));
   lines.push(listItem("Required keys", (commandContract.requiredKeys || []).join(", ") || "none"));
   lines.push(listItem("Review file required", yesNo(Boolean(commandContract.reviewFileRequired))));
   lines.push(listItem("Forbidden flags", (commandContract.forbiddenFlags || []).join(", ") || "none"));
+  lines.push(listItem("Failure count", commandContract.failureCount || 0));
+  lines.push(listItem("Failed checks", (commandContract.failedCheckIds || []).join(", ") || "none"));
+  lines.push(listItem("Next command key", commandContract.nextCommandKey || "none"));
+  lines.push(listItem("Next command policy", commandContract.nextCommandRunPolicy || "none"));
+  if (commandContract.nextCommandSafety?.level) lines.push(listItem("Next command safety", commandContract.nextCommandSafety.level));
+  if (commandContract.nextCommand) lines.push(listItem("Next command", `\`${commandContract.nextCommand}\``));
+  if (commandContract.nextAction) lines.push(listItem("Next action", commandContract.nextAction));
   const missingCommandKeys = Array.isArray(commandContract.missingCommandKeys) ? commandContract.missingCommandKeys : [];
   const unexpectedCommandKeys = Array.isArray(commandContract.unexpectedCommandKeys) ? commandContract.unexpectedCommandKeys : [];
   if (missingCommandKeys.length > 0) lines.push(listItem("Missing command keys", missingCommandKeys.join(", ")));
   if (unexpectedCommandKeys.length > 0) lines.push(listItem("Unexpected command keys", unexpectedCommandKeys.join(", ")));
+  const failedChecks = Array.isArray(commandContract.failedChecks) ? commandContract.failedChecks : [];
+  if (failedChecks.length > 0) {
+    lines.push("");
+    lines.push("Failed command checks:");
+    for (const check of failedChecks) {
+      lines.push(`- ${check.id}: ${check.message}`);
+    }
+  }
 
   lines.push("", "## Recommendations", "");
   for (const recommendation of payload.recommendations || []) {

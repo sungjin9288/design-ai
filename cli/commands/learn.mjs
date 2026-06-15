@@ -878,13 +878,35 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- status: ${contract.status || "unknown"}`);
     console.log(`- required keys: ${(contract.requiredKeys || []).join(", ") || "none"}`);
     console.log(`- command count: ${contract.commandCount || 0}`);
+    console.log(`- check count: ${contract.checkCount || 0}`);
+    console.log(`- pass count: ${contract.passCount || 0}`);
+    console.log(`- warning count: ${contract.warningCount || 0}`);
     console.log(`- review file required: ${contract.reviewFileRequired ? "yes" : "no"}`);
     console.log(`- forbidden flags: ${(contract.forbiddenFlags || []).join(", ") || "none"}`);
+    console.log(`- failure count: ${contract.failureCount || 0}`);
+    console.log(`- failed checks: ${(contract.failedCheckIds || []).join(", ") || "none"}`);
+    console.log(`- next command key: ${contract.nextCommandKey || "none"}`);
+    console.log(`- next command policy: ${contract.nextCommandRunPolicy || "none"}`);
+    if (contract.nextCommandSafety?.level) {
+      console.log(`- next command safety: ${contract.nextCommandSafety.level}`);
+    }
+    if (contract.nextCommand) {
+      console.log(`- next command: ${contract.nextCommand}`);
+    }
+    if (contract.nextAction) {
+      console.log(`- next action: ${contract.nextAction}`);
+    }
     if (Array.isArray(contract.missingCommandKeys) && contract.missingCommandKeys.length > 0) {
       console.log(`- missing command keys: ${contract.missingCommandKeys.join(", ")}`);
     }
     if (Array.isArray(contract.unexpectedCommandKeys) && contract.unexpectedCommandKeys.length > 0) {
       console.log(`- unexpected command keys: ${contract.unexpectedCommandKeys.join(", ")}`);
+    }
+    if (Array.isArray(contract.failedChecks) && contract.failedChecks.length > 0) {
+      console.log("Failed command checks:");
+      for (const check of contract.failedChecks) {
+        console.log(`- ${check.id}: ${check.message}`);
+      }
     }
   }
 

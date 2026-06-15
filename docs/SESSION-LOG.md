@@ -5,6 +5,10 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 507 (unreleased)** — Added apply-plan `nextCommandRunPolicy` and `nextCommandSafety` metadata so local AI/agent wrappers can verify the selected follow-up command is read-only and non-mutating before execution.
+- **Phase 506 (unreleased)** — Added `nextCommandKey`, `nextCommand`, and `nextCommandArgs` to skill proposal apply-plan `commandContract` output so local AI/agent wrappers can run the first safe read-only review-check command without parsing prose.
+- **Phase 505 (unreleased)** — Added top-level apply-plan `commandContract` check summary counts (`checkCount`, `passCount`, `warningCount`) so local AI/agent wrappers can read command readiness without reducing the full checks array.
+- **Phase 504 (unreleased)** — Added fail-focused `commandContract` diagnostics for skill proposal apply-plan outputs, including `failureCount`, `failedCheckIds`, `failedChecks`, and deterministic next-action guidance.
 - **Phase 503 (unreleased)** — Added release metadata guard coverage for packed-tarball human apply-plan `Command contract` smoke wording.
 - **Phase 502 (unreleased)** — Added default human output and packed-tarball smoke coverage for skill proposal apply-plan command contract summaries.
 - **Phase 501 (unreleased)** — Added self-describing `commandContract` metadata and Markdown summaries for skill proposal apply-plan follow-up commands so local automation can validate required keys, review-file context, suffixes, and read-only flags.
