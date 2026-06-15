@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 521 — Apply-Plan Decision Command Safety Objects (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decision commands now carry their own nested command-level `safety` objects. Phase 520 exposed the selected optional preview command as `nextCommandEntry`; this phase makes `decision.commands`, `decision.commandByKey`, and `decision.nextCommandEntry` self-contained for safety gating without requiring wrappers to jump to `commandSequenceByKey`.
+
+### Changed
+- Added nested `safety` objects to compact decision command summaries.
+- Preserved existing `safetyLevel` and flattened write/mutation/external-AI flags for backward compatibility.
+- Kept the command-level `safety.reason` on selected preview commands, distinguishing local output artifact writes from learning profile, review file, skill file, external AI, embedding, and fine-tuning mutations.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves nested decision command safety objects.
+
+### Impact
+- Wrappers can gate selected optional preview commands directly from `decision.commands[*].safety`, `decision.commandByKey.<key>.safety`, or `decision.nextCommandEntry.safety`.
+- `commandSequenceByKey` remains the canonical full command lookup, but decision command objects now carry enough safety detail for selected-branch rendering and approval checks.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 520 — Apply-Plan Decision Next Command Entry (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected optional preview command as one compact object. Phase 519 added direct lookup and separate `nextCommand*` fields; this phase removes the need for wrappers to reconstruct the first preview command from separate fields before rendering or execution.

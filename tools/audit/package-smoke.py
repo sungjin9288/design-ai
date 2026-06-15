@@ -6860,6 +6860,18 @@ def assert_skill_proposal_apply_plan_json(
         (3, "proposalPatchPreview", "output-artifact", "local-output", True),
         (4, "strictGate", "strict-readiness-gate", "read-only", False),
     ]
+    expected_local_output_decision_safety = {
+        "level": "local-output",
+        "writesLocalFiles": True,
+        "writesOutputArtifact": True,
+        "mutatesLocalState": True,
+        "mutatesProfile": False,
+        "mutatesReviewFile": False,
+        "mutatesSkillFiles": False,
+        "callsExternalAiApis": False,
+        "requiresCleanWorkspace": False,
+        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+    }
     expected_operator_runbook_stages = [
         (1, "previewArtifacts", "local-output-preview", False, ["reviewCheckReport", "proposalPatchPreview"]),
         (2, "manualSkillEdit", "manual-review", True, []),
@@ -6978,12 +6990,14 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision_commands[0].get("commandArgs") == expected_command_args["reviewCheckReport"]
         and operator_stage_decision_commands[0].get("runPolicy") == "output-artifact"
         and operator_stage_decision_commands[0].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[0].get("safety") == expected_local_output_decision_safety
         and operator_stage_decision_commands[0].get("writesLocalFiles") is True
         and operator_stage_decision_commands[0].get("mutatesSkillFiles") is False
         and operator_stage_decision_commands[1].get("command") == commands.get("proposalPatchPreview")
         and operator_stage_decision_commands[1].get("commandArgs") == expected_command_args["proposalPatchPreview"]
         and operator_stage_decision_commands[1].get("runPolicy") == "output-artifact"
         and operator_stage_decision_commands[1].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[1].get("safety") == expected_local_output_decision_safety
         and operator_stage_decision_commands[1].get("writesLocalFiles") is True
         and operator_stage_decision_commands[1].get("mutatesSkillFiles") is False
         and isinstance(operator_stage_decision_command_by_key, dict)
@@ -6994,6 +7008,7 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision_command_by_key["reviewCheckReport"] == operator_stage_decision_commands[0]
         and operator_stage_decision_command_by_key["proposalPatchPreview"] == operator_stage_decision_commands[1]
         and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
+        and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
         and operator_stage_decision.get("nextCommandKey") == "reviewCheckReport"
         and operator_stage_decision.get("nextCommand") == commands.get("reviewCheckReport")
         and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
@@ -13080,6 +13095,18 @@ def run_self_test() -> None:
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
         )
         learning_skill_proposal_apply_plan_review_path = learning_profile_path.with_name("skill-proposals.accepted.review.json")
+        learning_skill_proposal_apply_plan_decision_command_safety = {
+            "level": "local-output",
+            "writesLocalFiles": True,
+            "writesOutputArtifact": True,
+            "mutatesLocalState": True,
+            "mutatesProfile": False,
+            "mutatesReviewFile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "requiresCleanWorkspace": False,
+            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+        }
         learning_skill_proposal_apply_plan_payload = {
             "version": 1,
             "kind": "skill-proposal-apply-plan",
@@ -13417,6 +13444,7 @@ def run_self_test() -> None:
                                     ],
                                     "runPolicy": "output-artifact",
                                     "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
                                     "writesLocalFiles": True,
                                     "writesOutputArtifact": True,
                                     "mutatesLocalState": True,
@@ -13439,6 +13467,7 @@ def run_self_test() -> None:
                                     ],
                                     "runPolicy": "output-artifact",
                                     "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
                                     "writesLocalFiles": True,
                                     "writesOutputArtifact": True,
                                     "mutatesLocalState": True,
@@ -13463,6 +13492,7 @@ def run_self_test() -> None:
                                     ],
                                     "runPolicy": "output-artifact",
                                     "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
                                     "writesLocalFiles": True,
                                     "writesOutputArtifact": True,
                                     "mutatesLocalState": True,
@@ -13485,6 +13515,7 @@ def run_self_test() -> None:
                                     ],
                                     "runPolicy": "output-artifact",
                                     "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
                                     "writesLocalFiles": True,
                                     "writesOutputArtifact": True,
                                     "mutatesLocalState": True,
@@ -13508,6 +13539,7 @@ def run_self_test() -> None:
                                 ],
                                 "runPolicy": "output-artifact",
                                 "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
                                 "writesLocalFiles": True,
                                 "writesOutputArtifact": True,
                                 "mutatesLocalState": True,
@@ -14156,6 +14188,43 @@ def run_self_test() -> None:
                         "operatorRunbook": {
                             **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
                             "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commands": [
+                                        {
+                                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0],
+                                            "safety": {
+                                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0]["safety"],
+                                                "reason": "drift",
+                                            },
+                                        },
+                                        *learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][1:],
+                                    ],
+                                },
+                            },
                         },
                     },
                 }),
