@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 523 — Apply-Plan Decision Command Step Metadata (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decision commands now carry their original command-sequence step numbers. Phase 522 made the selected preview command's safety available from the `nextCommand*` field family; this phase lets wrappers preserve command order and display step context without reading the full `commandSequence`.
+
+### Changed
+- Added `step` to compact `operatorRunbook.stageSelection.decision.commands` entries.
+- Added `step` to `decision.commandByKey.<key>` and `decision.nextCommandEntry`.
+- Added `decision.nextCommandStep` for wrappers consuming the separate `nextCommand*` fields.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch step metadata.
+
+### Impact
+- Wrappers can show or execute the selected optional preview branch with stable command-sequence step context.
+- `decision.nextCommandStep` currently reports `2` for `reviewCheckReport`, matching the full command sequence after the read-only `reviewCheckJson` gate.
+- `commandSequence` and `commandSequenceByKey` remain the canonical full ordered command contract.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 522 — Apply-Plan Decision Next Command Safety (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected preview command's full safety object next to the existing `nextCommand*` fields. Phase 521 made compact decision command objects self-contained; this phase lets wrappers that already consume `decision.nextCommandKey`, `decision.nextCommand`, `decision.nextCommandArgs`, and `decision.nextCommandRunPolicy` gate the same command without reading `nextCommandEntry`.

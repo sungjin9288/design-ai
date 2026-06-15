@@ -848,6 +848,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const nextRequiredCommandStageSummary = summarizeOperatorRunbookStage(nextRequiredCommandStage);
   const summarizeDecisionCommand = (command) => command
     ? {
+      step: command.step,
       key: command.key,
       command: command.command,
       commandArgs: command.commandArgs,
@@ -896,6 +897,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandByKey: decisionCommandByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
+        nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
         nextCommandRunPolicy: decisionNextCommand.runPolicy || "",

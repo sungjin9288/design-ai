@@ -5927,6 +5927,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
         commands: [
           {
+            step: 2,
             key: "reviewCheckReport",
             command: applyPlan.commands.reviewCheckReport,
             commandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -5954,6 +5955,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
             requiresCleanWorkspace: false,
           },
           {
+            step: 3,
             key: "proposalPatchPreview",
             command: applyPlan.commands.proposalPatchPreview,
             commandArgs: applyPlan.commandArgs.proposalPatchPreview,
@@ -5983,6 +5985,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         ],
         commandByKey: {
           reviewCheckReport: {
+            step: 2,
             key: "reviewCheckReport",
             command: applyPlan.commands.reviewCheckReport,
             commandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6010,6 +6013,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
             requiresCleanWorkspace: false,
           },
           proposalPatchPreview: {
+            step: 3,
             key: "proposalPatchPreview",
             command: applyPlan.commands.proposalPatchPreview,
             commandArgs: applyPlan.commandArgs.proposalPatchPreview,
@@ -6038,6 +6042,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           },
         },
         nextCommandEntry: {
+          step: 2,
           key: "reviewCheckReport",
           command: applyPlan.commands.reviewCheckReport,
           commandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6065,6 +6070,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           requiresCleanWorkspace: false,
         },
         nextCommandKey: "reviewCheckReport",
+        nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
         nextCommandRunPolicy: "output-artifact",
@@ -6498,6 +6504,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
       commands: [
         {
+          step: 2,
           key: "reviewCheckReport",
           command: applyPlanJsonPayload.commands.reviewCheckReport,
           commandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
@@ -6525,6 +6532,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           requiresCleanWorkspace: false,
         },
         {
+          step: 3,
           key: "proposalPatchPreview",
           command: applyPlanJsonPayload.commands.proposalPatchPreview,
           commandArgs: applyPlanJsonPayload.commandArgs.proposalPatchPreview,
@@ -6554,6 +6562,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       ],
       commandByKey: {
         reviewCheckReport: {
+          step: 2,
           key: "reviewCheckReport",
           command: applyPlanJsonPayload.commands.reviewCheckReport,
           commandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
@@ -6581,6 +6590,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           requiresCleanWorkspace: false,
         },
         proposalPatchPreview: {
+          step: 3,
           key: "proposalPatchPreview",
           command: applyPlanJsonPayload.commands.proposalPatchPreview,
           commandArgs: applyPlanJsonPayload.commandArgs.proposalPatchPreview,
@@ -6609,6 +6619,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         },
       },
       nextCommandEntry: {
+        step: 2,
         key: "reviewCheckReport",
         command: applyPlanJsonPayload.commands.reviewCheckReport,
         commandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
@@ -6636,6 +6647,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         requiresCleanWorkspace: false,
       },
       nextCommandKey: "reviewCheckReport",
+      nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
       nextCommandRunPolicy: "output-artifact",
