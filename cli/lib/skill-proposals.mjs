@@ -847,6 +847,19 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     ? {}
     : {
       strategy: "optional-preview-before-required-manual-edit",
+      decision: {
+        action: "offer-optional-preview",
+        stageKey: "previewArtifacts",
+        stageKind: "local-output-preview",
+        required: false,
+        hasCommands: true,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        runPolicy: "optional-local-output-preview",
+        nextRequiredStageKey: nextRequiredStage?.key || "",
+        nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+        requiresOperatorActionBeforeRequiredCommands: true,
+        reason: "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+      },
       stageOrder: operatorRunbookStageKeys,
       nextStageKey: "previewArtifacts",
       nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
@@ -1434,6 +1447,9 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Operator runbook next required command stage", operatorRunbook.nextRequiredCommandStageKey || "none"));
   if (operatorRunbook.stageSelection?.strategy) {
     lines.push(listItem("Operator runbook stage selection", operatorRunbook.stageSelection.strategy));
+    if (operatorRunbook.stageSelection.decision?.action) {
+      lines.push(listItem("Operator runbook decision", operatorRunbook.stageSelection.decision.action));
+    }
     if (operatorRunbook.stageSelection.nextStage?.key) {
       const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
       lines.push(listItem("Operator runbook selected stage", `${operatorRunbook.stageSelection.nextStage.key} (${nextStageLabel}, ${operatorRunbook.stageSelection.nextStage.kind})`));

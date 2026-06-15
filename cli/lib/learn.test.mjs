@@ -5917,6 +5917,19 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.nextRequiredCommandStageCommandKeys, ["reviewCheckJson"]);
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageSelection, {
       strategy: "optional-preview-before-required-manual-edit",
+      decision: {
+        action: "offer-optional-preview",
+        stageKey: "previewArtifacts",
+        stageKind: "local-output-preview",
+        required: false,
+        hasCommands: true,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        runPolicy: "optional-local-output-preview",
+        nextRequiredStageKey: "manualSkillEdit",
+        nextRequiredCommandStageKey: "reviewReadiness",
+        requiresOperatorActionBeforeRequiredCommands: true,
+        reason: "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+      },
       stageOrder: ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
       nextStageKey: "previewArtifacts",
       nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
@@ -6163,6 +6176,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanReport, /- Operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanReport, /- Operator runbook stage selection: optional-preview-before-required-manual-edit/);
+    assert.match(applyPlanReport, /- Operator runbook decision: offer-optional-preview/);
     assert.match(applyPlanReport, /- Operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanReport, /Command sequence:/);
     assert.match(applyPlanReport, /- 1\. reviewCheckJson \(preview-only \/ read-only\): `design-ai learn --propose-skills .* --review-check --json`/);
@@ -6302,6 +6316,19 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       "reviewReadiness",
       "strictGate",
     ]);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.decision, {
+      action: "offer-optional-preview",
+      stageKey: "previewArtifacts",
+      stageKind: "local-output-preview",
+      required: false,
+      hasCommands: true,
+      commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      runPolicy: "optional-local-output-preview",
+      nextRequiredStageKey: "manualSkillEdit",
+      nextRequiredCommandStageKey: "reviewReadiness",
+      requiresOperatorActionBeforeRequiredCommands: true,
+      reason: "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+    });
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredStageKey, "manualSkillEdit");
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextStage, {
       key: "previewArtifacts",
@@ -6447,6 +6474,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanHumanOutput, /- operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanHumanOutput, /- operator runbook stage selection: optional-preview-before-required-manual-edit/);
+    assert.match(applyPlanHumanOutput, /- operator runbook decision: offer-optional-preview/);
     assert.match(applyPlanHumanOutput, /- operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);
     assert.match(applyPlanHumanOutput, /- 1\. reviewCheckJson: preview-only \/ read-only/);

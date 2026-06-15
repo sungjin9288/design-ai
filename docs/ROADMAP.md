@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 516 — Apply-Plan Stage Decision Enum (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now exposes a compact decision enum for the current branch. Phase 515 made selected stages self-describing; this phase adds a single machine-readable action that tells local AI/agent wrappers what to offer first.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision` for valid apply-plan command contracts.
+- The decision reports `action: offer-optional-preview`, selected `stageKey`, `stageKind`, `required`, `hasCommands`, `commandKeys`, `runPolicy`, required follow-up stage keys, and whether operator action is required before required commands.
+- Rendered the decision action in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision enum.
+
+### Impact
+- Automation can branch on one enum instead of combining strategy text, selected-stage summaries, and required-stage keys.
+- The first branch remains optional local preview artifacts; the mandatory path still begins with manual skill edits before read-only command gates.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 515 — Apply-Plan Selected Stage Summaries (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now includes compact summaries for the selected optional preview stage, first required manual stage, and first required command-bearing stage. Phase 514 grouped the branch strategy into one object; this phase makes each selected branch self-describing without requiring wrappers to scan `stageByKey`.

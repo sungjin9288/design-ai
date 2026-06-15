@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 516 (unreleased)** — Added apply-plan `stageSelection.decision` enum so local AI/agent wrappers can branch to the optional preview stage without combining strategy text and stage summaries.
 - **Phase 515 (unreleased)** — Added compact apply-plan selected-stage summaries so local AI/agent wrappers can inspect optional preview, required manual, and required command-bearing branches without scanning the full stage list.
 - **Phase 514 (unreleased)** — Added apply-plan operator runbook `stageSelection` summary metadata so local AI/agent wrappers can consume optional preview, required manual edit, and required command-gate selection from one object.
 - **Phase 513 (unreleased)** — Added apply-plan operator runbook required-stage handoff fields so local AI/agent wrappers can distinguish optional preview artifacts from required manual edits and the next required command-bearing review gate.

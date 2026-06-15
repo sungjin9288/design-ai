@@ -912,6 +912,9 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- operator runbook next required command stage: ${operatorRunbook.nextRequiredCommandStageKey || "none"}`);
     if (operatorRunbook.stageSelection?.strategy) {
       console.log(`- operator runbook stage selection: ${operatorRunbook.stageSelection.strategy}`);
+      if (operatorRunbook.stageSelection.decision?.action) {
+        console.log(`- operator runbook decision: ${operatorRunbook.stageSelection.decision.action}`);
+      }
       if (operatorRunbook.stageSelection.nextStage?.key) {
         const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
         console.log(`- operator runbook selected stage: ${operatorRunbook.stageSelection.nextStage.key} (${nextStageLabel}, ${operatorRunbook.stageSelection.nextStage.kind})`);
