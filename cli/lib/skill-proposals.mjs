@@ -843,6 +843,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const nextRequiredCommandStage = failures > 0
     ? null
     : operatorRunbookStages.find((stage) => stage.required && stage.commandKeys.length > 0) || null;
+  const nextStageSummary = summarizeOperatorRunbookStage(nextStage);
+  const nextRequiredStageSummary = summarizeOperatorRunbookStage(nextRequiredStage);
+  const nextRequiredCommandStageSummary = summarizeOperatorRunbookStage(nextRequiredCommandStage);
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -855,6 +858,18 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         hasCommands: true,
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
         runPolicy: "optional-local-output-preview",
+        safety: {
+          level: nextStageSummary.writesLocalFiles ? "local-output" : "read-only",
+          writesLocalFiles: nextStageSummary.writesLocalFiles,
+          writesOutputArtifacts: nextStageSummary.writesOutputArtifacts,
+          mutatesLocalState: nextStageSummary.mutatesLocalState,
+          mutatesProfile: nextStageSummary.mutatesProfile,
+          mutatesReviewFile: nextStageSummary.mutatesReviewFile,
+          mutatesSkillFiles: nextStageSummary.mutatesSkillFiles,
+          callsExternalAiApis: nextStageSummary.callsExternalAiApis,
+          requiresCleanWorkspace: nextStageSummary.requiresCleanWorkspace,
+          reason: "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+        },
         nextRequiredStageKey: nextRequiredStage?.key || "",
         nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
         requiresOperatorActionBeforeRequiredCommands: true,
@@ -863,13 +878,13 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       stageOrder: operatorRunbookStageKeys,
       nextStageKey: "previewArtifacts",
       nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
-      nextStage: summarizeOperatorRunbookStage(nextStage),
+      nextStage: nextStageSummary,
       nextRequiredStageKey: nextRequiredStage?.key || "",
       nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
-      nextRequiredStage: summarizeOperatorRunbookStage(nextRequiredStage),
+      nextRequiredStage: nextRequiredStageSummary,
       nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
       nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
-      nextRequiredCommandStage: summarizeOperatorRunbookStage(nextRequiredCommandStage),
+      nextRequiredCommandStage: nextRequiredCommandStageSummary,
       reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
     };
   const operatorRunbook = {
@@ -1449,6 +1464,9 @@ export function renderSkillProposalApplyPlanReport(payload, {
     lines.push(listItem("Operator runbook stage selection", operatorRunbook.stageSelection.strategy));
     if (operatorRunbook.stageSelection.decision?.action) {
       lines.push(listItem("Operator runbook decision", operatorRunbook.stageSelection.decision.action));
+      if (operatorRunbook.stageSelection.decision.safety?.level) {
+        lines.push(listItem("Operator runbook decision safety", operatorRunbook.stageSelection.decision.safety.level));
+      }
     }
     if (operatorRunbook.stageSelection.nextStage?.key) {
       const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";

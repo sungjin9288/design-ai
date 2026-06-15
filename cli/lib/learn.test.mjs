@@ -5925,6 +5925,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         hasCommands: true,
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
         runPolicy: "optional-local-output-preview",
+        safety: {
+          level: "local-output",
+          writesLocalFiles: true,
+          writesOutputArtifacts: true,
+          mutatesLocalState: true,
+          mutatesProfile: false,
+          mutatesReviewFile: false,
+          mutatesSkillFiles: false,
+          callsExternalAiApis: false,
+          requiresCleanWorkspace: false,
+          reason: "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+        },
         nextRequiredStageKey: "manualSkillEdit",
         nextRequiredCommandStageKey: "reviewReadiness",
         requiresOperatorActionBeforeRequiredCommands: true,
@@ -6177,6 +6189,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanReport, /- Operator runbook stage selection: optional-preview-before-required-manual-edit/);
     assert.match(applyPlanReport, /- Operator runbook decision: offer-optional-preview/);
+    assert.match(applyPlanReport, /- Operator runbook decision safety: local-output/);
     assert.match(applyPlanReport, /- Operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanReport, /Command sequence:/);
     assert.match(applyPlanReport, /- 1\. reviewCheckJson \(preview-only \/ read-only\): `design-ai learn --propose-skills .* --review-check --json`/);
@@ -6324,6 +6337,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       hasCommands: true,
       commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
       runPolicy: "optional-local-output-preview",
+      safety: {
+        level: "local-output",
+        writesLocalFiles: true,
+        writesOutputArtifacts: true,
+        mutatesLocalState: true,
+        mutatesProfile: false,
+        mutatesReviewFile: false,
+        mutatesSkillFiles: false,
+        callsExternalAiApis: false,
+        requiresCleanWorkspace: false,
+        reason: "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+      },
       nextRequiredStageKey: "manualSkillEdit",
       nextRequiredCommandStageKey: "reviewReadiness",
       requiresOperatorActionBeforeRequiredCommands: true,
@@ -6475,6 +6500,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanHumanOutput, /- operator runbook stage selection: optional-preview-before-required-manual-edit/);
     assert.match(applyPlanHumanOutput, /- operator runbook decision: offer-optional-preview/);
+    assert.match(applyPlanHumanOutput, /- operator runbook decision safety: local-output/);
     assert.match(applyPlanHumanOutput, /- operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);
     assert.match(applyPlanHumanOutput, /- 1\. reviewCheckJson: preview-only \/ read-only/);

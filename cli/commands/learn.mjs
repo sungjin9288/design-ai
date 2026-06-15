@@ -914,6 +914,9 @@ function printSkillProposalApplyPlan(payload) {
       console.log(`- operator runbook stage selection: ${operatorRunbook.stageSelection.strategy}`);
       if (operatorRunbook.stageSelection.decision?.action) {
         console.log(`- operator runbook decision: ${operatorRunbook.stageSelection.decision.action}`);
+        if (operatorRunbook.stageSelection.decision.safety?.level) {
+          console.log(`- operator runbook decision safety: ${operatorRunbook.stageSelection.decision.safety.level}`);
+        }
       }
       if (operatorRunbook.stageSelection.nextStage?.key) {
         const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";

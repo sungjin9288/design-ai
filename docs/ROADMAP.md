@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 517 — Apply-Plan Decision Safety Summary (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now carry their own safety summary. Phase 516 added the branch decision enum; this phase lets wrappers evaluate the selected decision's local-output and mutation boundary without jumping to the selected-stage detail object.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.safety`.
+- The decision safety summary reports `level`, local file writes, output artifact writes, local-state mutation, profile/review/skill mutation, external-AI calls, clean-workspace requirement, and reason.
+- Rendered decision safety in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision safety contract.
+
+### Impact
+- Automation can branch on `decision.action` and immediately gate execution from `decision.safety`.
+- The current selected decision is explicitly `local-output`: optional preview artifacts may write files, but learning profiles, review files, skill files, external AI APIs, embeddings, and fine-tuning remain untouched.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- Existing selected-stage summaries and stage lookup fields remain additive and backward compatible.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 516 — Apply-Plan Stage Decision Enum (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now exposes a compact decision enum for the current branch. Phase 515 made selected stages self-describing; this phase adds a single machine-readable action that tells local AI/agent wrappers what to offer first.

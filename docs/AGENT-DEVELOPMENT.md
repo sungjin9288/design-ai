@@ -125,6 +125,18 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 517: apply-plan decision safety summary
+
+Added `operatorRunbook.stageSelection.decision.safety` so wrappers can gate the selected decision directly:
+
+- `level`: currently `local-output`
+- `writesLocalFiles` / `writesOutputArtifacts`: true for optional preview artifacts
+- `mutatesProfile` / `mutatesReviewFile` / `mutatesSkillFiles`: false
+- `callsExternalAiApis`: false
+- `requiresCleanWorkspace`: false
+
+Wrappers should branch on `decision.action`, then inspect `decision.safety` before executing or offering commands. The selected-stage summaries remain available for fuller detail, but the decision object is now self-contained for first-branch gating.
+
 ### Phase 516: apply-plan stage decision enum
 
 Added `operatorRunbook.stageSelection.decision` as the first branch decision for apply-plan wrappers:
