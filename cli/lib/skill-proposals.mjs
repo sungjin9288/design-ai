@@ -846,6 +846,26 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const nextStageSummary = summarizeOperatorRunbookStage(nextStage);
   const nextRequiredStageSummary = summarizeOperatorRunbookStage(nextRequiredStage);
   const nextRequiredCommandStageSummary = summarizeOperatorRunbookStage(nextRequiredCommandStage);
+  const summarizeDecisionCommand = (command) => command
+    ? {
+      key: command.key,
+      command: command.command,
+      commandArgs: command.commandArgs,
+      runPolicy: command.runPolicy,
+      safetyLevel: command.safety?.level || "",
+      writesLocalFiles: Boolean(command.safety?.writesLocalFiles),
+      writesOutputArtifact: Boolean(command.safety?.writesOutputArtifact),
+      mutatesLocalState: Boolean(command.safety?.mutatesLocalState),
+      mutatesProfile: Boolean(command.safety?.mutatesProfile),
+      mutatesReviewFile: Boolean(command.safety?.mutatesReviewFile),
+      mutatesSkillFiles: Boolean(command.safety?.mutatesSkillFiles),
+      callsExternalAiApis: Boolean(command.safety?.callsExternalAiApis),
+      requiresCleanWorkspace: Boolean(command.safety?.requiresCleanWorkspace),
+    }
+    : {};
+  const decisionCommands = failures > 0
+    ? []
+    : (nextStage?.commands || []).map((command) => summarizeDecisionCommand(command));
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -856,7 +876,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         stageKind: "local-output-preview",
         required: false,
         hasCommands: true,
+        commandCount: decisionCommands.length,
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        commands: decisionCommands,
         runPolicy: "optional-local-output-preview",
         safety: {
           level: nextStageSummary.writesLocalFiles ? "local-output" : "read-only",
@@ -1466,6 +1488,9 @@ export function renderSkillProposalApplyPlanReport(payload, {
       lines.push(listItem("Operator runbook decision", operatorRunbook.stageSelection.decision.action));
       if (operatorRunbook.stageSelection.decision.safety?.level) {
         lines.push(listItem("Operator runbook decision safety", operatorRunbook.stageSelection.decision.safety.level));
+      }
+      if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
+        lines.push(listItem("Operator runbook decision commands", operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"));
       }
     }
     if (operatorRunbook.stageSelection.nextStage?.key) {

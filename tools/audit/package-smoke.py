@@ -6834,6 +6834,9 @@ def assert_skill_proposal_apply_plan_json(
     operator_stage_decision_safety = (
         operator_stage_decision.get("safety") if isinstance(operator_stage_decision, dict) else None
     )
+    operator_stage_decision_commands = (
+        operator_stage_decision.get("commands") if isinstance(operator_stage_decision, dict) else None
+    )
     operator_selected_stage = (
         operator_stage_selection.get("nextStage") if isinstance(operator_stage_selection, dict) else None
     )
@@ -6957,7 +6960,26 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision.get("stageKind") == "local-output-preview"
         and operator_stage_decision.get("required") is False
         and operator_stage_decision.get("hasCommands") is True
+        and operator_stage_decision.get("commandCount") == 2
         and operator_stage_decision.get("commandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and isinstance(operator_stage_decision_commands, list)
+        and len(operator_stage_decision_commands) == 2
+        and [command.get("key") for command in operator_stage_decision_commands] == [
+            "reviewCheckReport",
+            "proposalPatchPreview",
+        ]
+        and operator_stage_decision_commands[0].get("command") == commands.get("reviewCheckReport")
+        and operator_stage_decision_commands[0].get("commandArgs") == expected_command_args["reviewCheckReport"]
+        and operator_stage_decision_commands[0].get("runPolicy") == "output-artifact"
+        and operator_stage_decision_commands[0].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[0].get("writesLocalFiles") is True
+        and operator_stage_decision_commands[0].get("mutatesSkillFiles") is False
+        and operator_stage_decision_commands[1].get("command") == commands.get("proposalPatchPreview")
+        and operator_stage_decision_commands[1].get("commandArgs") == expected_command_args["proposalPatchPreview"]
+        and operator_stage_decision_commands[1].get("runPolicy") == "output-artifact"
+        and operator_stage_decision_commands[1].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[1].get("writesLocalFiles") is True
+        and operator_stage_decision_commands[1].get("mutatesSkillFiles") is False
         and operator_stage_decision.get("runPolicy") == "optional-local-output-preview"
         and isinstance(operator_stage_decision_safety, dict)
         and operator_stage_decision_safety.get("level") == "local-output"
@@ -7131,6 +7153,7 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
         "- Operator runbook decision: offer-optional-preview",
         "- Operator runbook decision safety: local-output",
+        "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
         "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
         "Command sequence:",
         "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
@@ -7199,6 +7222,7 @@ def assert_skill_proposal_apply_plan_human(
         "- operator runbook stage selection: optional-preview-before-required-manual-edit",
         "- operator runbook decision: offer-optional-preview",
         "- operator runbook decision safety: local-output",
+        "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
         "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
         "Command sequence:",
         "- 1. reviewCheckJson: preview-only / read-only",
@@ -13356,7 +13380,54 @@ def run_self_test() -> None:
                             "stageKind": "local-output-preview",
                             "required": False,
                             "hasCommands": True,
+                            "commandCount": 2,
                             "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [
+                                {
+                                    "key": "reviewCheckReport",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                                {
+                                    "key": "proposalPatchPreview",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--patch", "--out", "skill-proposals.patch",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                            ],
                             "runPolicy": "optional-local-output-preview",
                             "safety": {
                                 "level": "local-output",
@@ -13601,6 +13672,7 @@ def run_self_test() -> None:
             "- operator runbook stage selection: optional-preview-before-required-manual-edit",
             "- operator runbook decision: offer-optional-preview",
             "- operator runbook decision safety: local-output",
+            "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
             "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
             "Command sequence:",
             "- 1. reviewCheckJson: preview-only / read-only",
@@ -13680,6 +13752,7 @@ def run_self_test() -> None:
             "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
             "- Operator runbook decision: offer-optional-preview",
             "- Operator runbook decision safety: local-output",
+            "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
             "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
             "",
             "Command sequence:",
@@ -13980,6 +14053,34 @@ def run_self_test() -> None:
                         "operatorRunbook": {
                             **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
                             "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commands": [],
+                                },
+                            },
                         },
                     },
                 }),

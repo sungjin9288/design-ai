@@ -917,6 +917,9 @@ function printSkillProposalApplyPlan(payload) {
         if (operatorRunbook.stageSelection.decision.safety?.level) {
           console.log(`- operator runbook decision safety: ${operatorRunbook.stageSelection.decision.safety.level}`);
         }
+        if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
+          console.log(`- operator runbook decision commands: ${operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"}`);
+        }
       }
       if (operatorRunbook.stageSelection.nextStage?.key) {
         const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
