@@ -6045,6 +6045,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: 2,
           proposalPatchPreview: 3,
         },
+        commandRunPolicyByKey: {
+          reviewCheckReport: "output-artifact",
+          proposalPatchPreview: "output-artifact",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6625,6 +6629,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       commandStepByKey: {
         reviewCheckReport: 2,
         proposalPatchPreview: 3,
+      },
+      commandRunPolicyByKey: {
+        reviewCheckReport: "output-artifact",
+        proposalPatchPreview: "output-artifact",
       },
       nextCommandEntry: {
         step: 2,
