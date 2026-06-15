@@ -801,6 +801,42 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     ];
   const operatorRunbookStageKeys = operatorRunbookStages.map((stage) => stage.key);
   const operatorRunbookStageByKey = Object.fromEntries(operatorRunbookStages.map((stage) => [stage.key, stage]));
+  const summarizeOperatorRunbookStage = (stage) => {
+    if (!stage) return {};
+    const commandSafetyItems = stage.commands
+      .map((command) => command?.safety)
+      .filter((safety) => safety && typeof safety === "object");
+    const writesLocalFiles = commandSafetyItems.some((safety) => Boolean(safety.writesLocalFiles));
+    const writesOutputArtifacts = commandSafetyItems.some((safety) => Boolean(safety.writesOutputArtifact));
+    const mutatesLocalState = commandSafetyItems.some((safety) => Boolean(safety.mutatesLocalState));
+    const mutatesProfile = commandSafetyItems.some((safety) => Boolean(safety.mutatesProfile));
+    const mutatesReviewFile = commandSafetyItems.some((safety) => Boolean(safety.mutatesReviewFile));
+    const mutatesSkillFiles = commandSafetyItems.some((safety) => Boolean(safety.mutatesSkillFiles));
+    const callsExternalAiApis = commandSafetyItems.some((safety) => Boolean(safety.callsExternalAiApis));
+    const requiresCleanWorkspace = commandSafetyItems.some((safety) => Boolean(safety.requiresCleanWorkspace));
+    return {
+      key: stage.key,
+      step: stage.step,
+      label: stage.label,
+      kind: stage.kind,
+      required: stage.required,
+      hasCommands: stage.commandKeys.length > 0,
+      commandCount: stage.commandKeys.length,
+      commandKeys: stage.commandKeys,
+      writesLocalFiles,
+      writesOutputArtifacts,
+      mutatesLocalState,
+      mutatesProfile,
+      mutatesReviewFile,
+      mutatesSkillFiles,
+      callsExternalAiApis,
+      requiresCleanWorkspace,
+      reason: stage.reason,
+    };
+  };
+  const nextStage = failures > 0
+    ? null
+    : operatorRunbookStageByKey.previewArtifacts || null;
   const nextRequiredStage = failures > 0
     ? null
     : operatorRunbookStages.find((stage) => stage.required) || null;
@@ -814,10 +850,13 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       stageOrder: operatorRunbookStageKeys,
       nextStageKey: "previewArtifacts",
       nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      nextStage: summarizeOperatorRunbookStage(nextStage),
       nextRequiredStageKey: nextRequiredStage?.key || "",
       nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
+      nextRequiredStage: summarizeOperatorRunbookStage(nextRequiredStage),
       nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
       nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
+      nextRequiredCommandStage: summarizeOperatorRunbookStage(nextRequiredCommandStage),
       reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
     };
   const operatorRunbook = {
@@ -1395,6 +1434,10 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Operator runbook next required command stage", operatorRunbook.nextRequiredCommandStageKey || "none"));
   if (operatorRunbook.stageSelection?.strategy) {
     lines.push(listItem("Operator runbook stage selection", operatorRunbook.stageSelection.strategy));
+    if (operatorRunbook.stageSelection.nextStage?.key) {
+      const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
+      lines.push(listItem("Operator runbook selected stage", `${operatorRunbook.stageSelection.nextStage.key} (${nextStageLabel}, ${operatorRunbook.stageSelection.nextStage.kind})`));
+    }
   }
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
   if (commandSequence.length > 0) {

@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 515 — Apply-Plan Selected Stage Summaries (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now includes compact summaries for the selected optional preview stage, first required manual stage, and first required command-bearing stage. Phase 514 grouped the branch strategy into one object; this phase makes each selected branch self-describing without requiring wrappers to scan `stageByKey`.
+
+### Changed
+- Added `stageSelection.nextStage`, `stageSelection.nextRequiredStage`, and `stageSelection.nextRequiredCommandStage`.
+- Each selected-stage summary reports `key`, `step`, `label`, `kind`, `required`, command count, command keys, local-output flags, mutation flags, external-AI flags, clean-workspace requirement, and reason.
+- Rendered the selected optional stage in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the selected-stage summary contract.
+
+### Impact
+- Automation can decide whether the selected branch is optional, manual, command-bearing, local-output-producing, read-only, or external-call-free without scanning the full stage list.
+- The summary stays compact and additive; `stageByKey` remains the canonical full stage lookup.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 514 — Apply-Plan Stage Selection Summary (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now expose a compact stage-selection summary. Phase 513 added direct required-stage handoff fields; this phase groups the optional preview path, first required manual stage, and first required command-bearing gate into one machine-readable object.

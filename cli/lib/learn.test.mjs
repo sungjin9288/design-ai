@@ -5920,10 +5920,67 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       stageOrder: ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
       nextStageKey: "previewArtifacts",
       nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      nextStage: {
+        key: "previewArtifacts",
+        step: 1,
+        label: "Generate optional review artifacts",
+        kind: "local-output-preview",
+        required: false,
+        hasCommands: true,
+        commandCount: 2,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        writesLocalFiles: true,
+        writesOutputArtifacts: true,
+        mutatesLocalState: true,
+        mutatesProfile: false,
+        mutatesReviewFile: false,
+        mutatesSkillFiles: false,
+        callsExternalAiApis: false,
+        requiresCleanWorkspace: false,
+        reason: "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+      },
       nextRequiredStageKey: "manualSkillEdit",
       nextRequiredStageCommandKeys: [],
+      nextRequiredStage: {
+        key: "manualSkillEdit",
+        step: 2,
+        label: "Apply accepted skill deltas manually",
+        kind: "manual-review",
+        required: true,
+        hasCommands: false,
+        commandCount: 0,
+        commandKeys: [],
+        writesLocalFiles: false,
+        writesOutputArtifacts: false,
+        mutatesLocalState: false,
+        mutatesProfile: false,
+        mutatesReviewFile: false,
+        mutatesSkillFiles: false,
+        callsExternalAiApis: false,
+        requiresCleanWorkspace: false,
+        reason: "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+      },
       nextRequiredCommandStageKey: "reviewReadiness",
       nextRequiredCommandStageCommandKeys: ["reviewCheckJson"],
+      nextRequiredCommandStage: {
+        key: "reviewReadiness",
+        step: 3,
+        label: "Run review readiness check",
+        kind: "read-only-check",
+        required: true,
+        hasCommands: true,
+        commandCount: 1,
+        commandKeys: ["reviewCheckJson"],
+        writesLocalFiles: false,
+        writesOutputArtifacts: false,
+        mutatesLocalState: false,
+        mutatesProfile: false,
+        mutatesReviewFile: false,
+        mutatesSkillFiles: false,
+        callsExternalAiApis: false,
+        requiresCleanWorkspace: false,
+        reason: "Run the read-only review check after manual skill edits to verify proposal review state.",
+      },
       reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
     });
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageKeys, [
@@ -6106,6 +6163,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanReport, /- Operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanReport, /- Operator runbook stage selection: optional-preview-before-required-manual-edit/);
+    assert.match(applyPlanReport, /- Operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanReport, /Command sequence:/);
     assert.match(applyPlanReport, /- 1\. reviewCheckJson \(preview-only \/ read-only\): `design-ai learn --propose-skills .* --review-check --json`/);
     assert.match(applyPlanReport, /- 2\. reviewCheckReport \(output-artifact \/ local-output\): `design-ai learn --propose-skills .* --review-check --report --out skill-proposal-review-check\.md`/);
@@ -6245,7 +6303,64 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       "strictGate",
     ]);
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredStageKey, "manualSkillEdit");
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextStage, {
+      key: "previewArtifacts",
+      step: 1,
+      label: "Generate optional review artifacts",
+      kind: "local-output-preview",
+      required: false,
+      hasCommands: true,
+      commandCount: 2,
+      commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      writesLocalFiles: true,
+      writesOutputArtifacts: true,
+      mutatesLocalState: true,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+    });
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredStage, {
+      key: "manualSkillEdit",
+      step: 2,
+      label: "Apply accepted skill deltas manually",
+      kind: "manual-review",
+      required: true,
+      hasCommands: false,
+      commandCount: 0,
+      commandKeys: [],
+      writesLocalFiles: false,
+      writesOutputArtifacts: false,
+      mutatesLocalState: false,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+    });
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredCommandStageKey, "reviewReadiness");
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredCommandStage, {
+      key: "reviewReadiness",
+      step: 3,
+      label: "Run review readiness check",
+      kind: "read-only-check",
+      required: true,
+      hasCommands: true,
+      commandCount: 1,
+      commandKeys: ["reviewCheckJson"],
+      writesLocalFiles: false,
+      writesOutputArtifacts: false,
+      mutatesLocalState: false,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "Run the read-only review check after manual skill edits to verify proposal review state.",
+    });
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageKeys, [
       "previewArtifacts",
       "manualSkillEdit",
@@ -6332,6 +6447,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanHumanOutput, /- operator runbook next required command stage: reviewReadiness/);
     assert.match(applyPlanHumanOutput, /- operator runbook stage selection: optional-preview-before-required-manual-edit/);
+    assert.match(applyPlanHumanOutput, /- operator runbook selected stage: previewArtifacts \(optional, local-output-preview\)/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);
     assert.match(applyPlanHumanOutput, /- 1\. reviewCheckJson: preview-only \/ read-only/);
     assert.match(applyPlanHumanOutput, /- 2\. reviewCheckReport: output-artifact \/ local-output/);

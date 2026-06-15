@@ -6828,6 +6828,17 @@ def assert_skill_proposal_apply_plan_json(
     command_sequence_by_key = command_contract.get("commandSequenceByKey") if isinstance(command_contract, dict) else None
     operator_runbook = command_contract.get("operatorRunbook") if isinstance(command_contract, dict) else None
     operator_stage_selection = operator_runbook.get("stageSelection") if isinstance(operator_runbook, dict) else None
+    operator_selected_stage = (
+        operator_stage_selection.get("nextStage") if isinstance(operator_stage_selection, dict) else None
+    )
+    operator_selected_required_stage = (
+        operator_stage_selection.get("nextRequiredStage") if isinstance(operator_stage_selection, dict) else None
+    )
+    operator_selected_required_command_stage = (
+        operator_stage_selection.get("nextRequiredCommandStage")
+        if isinstance(operator_stage_selection, dict)
+        else None
+    )
     expected_command_sequence = [
         (1, "reviewCheckJson", "preview-only", "read-only", False),
         (2, "reviewCheckReport", "output-artifact", "local-output", True),
@@ -6937,10 +6948,32 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_selection.get("stageOrder") == [stage[1] for stage in expected_operator_runbook_stages]
         and operator_stage_selection.get("nextStageKey") == "previewArtifacts"
         and operator_stage_selection.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and isinstance(operator_selected_stage, dict)
+        and operator_selected_stage.get("key") == "previewArtifacts"
+        and operator_selected_stage.get("kind") == "local-output-preview"
+        and operator_selected_stage.get("required") is False
+        and operator_selected_stage.get("hasCommands") is True
+        and operator_selected_stage.get("commandCount") == 2
+        and operator_selected_stage.get("writesOutputArtifacts") is True
+        and operator_selected_stage.get("mutatesSkillFiles") is False
         and operator_stage_selection.get("nextRequiredStageKey") == "manualSkillEdit"
         and operator_stage_selection.get("nextRequiredStageCommandKeys") == []
+        and isinstance(operator_selected_required_stage, dict)
+        and operator_selected_required_stage.get("key") == "manualSkillEdit"
+        and operator_selected_required_stage.get("kind") == "manual-review"
+        and operator_selected_required_stage.get("required") is True
+        and operator_selected_required_stage.get("hasCommands") is False
+        and operator_selected_required_stage.get("commandCount") == 0
         and operator_stage_selection.get("nextRequiredCommandStageKey") == "reviewReadiness"
         and operator_stage_selection.get("nextRequiredCommandStageCommandKeys") == ["reviewCheckJson"]
+        and isinstance(operator_selected_required_command_stage, dict)
+        and operator_selected_required_command_stage.get("key") == "reviewReadiness"
+        and operator_selected_required_command_stage.get("kind") == "read-only-check"
+        and operator_selected_required_command_stage.get("required") is True
+        and operator_selected_required_command_stage.get("hasCommands") is True
+        and operator_selected_required_command_stage.get("commandCount") == 1
+        and operator_selected_required_command_stage.get("writesLocalFiles") is False
+        and operator_selected_required_command_stage.get("callsExternalAiApis") is False
         and operator_runbook.get("stageKeys") == [stage[1] for stage in expected_operator_runbook_stages]
         and isinstance(operator_runbook.get("stageByKey"), dict)
         and list(operator_runbook["stageByKey"].keys()) == [stage[1] for stage in expected_operator_runbook_stages]
@@ -7069,6 +7102,7 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Operator runbook next required stage: manualSkillEdit",
         "- Operator runbook next required command stage: reviewReadiness",
         "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
         "Command sequence:",
         "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
         "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
@@ -7134,6 +7168,7 @@ def assert_skill_proposal_apply_plan_human(
         "- operator runbook next required stage: manualSkillEdit",
         "- operator runbook next required command stage: reviewReadiness",
         "- operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
         "Command sequence:",
         "- 1. reviewCheckJson: preview-only / read-only",
         "- 2. reviewCheckReport: output-artifact / local-output",
@@ -13287,10 +13322,67 @@ def run_self_test() -> None:
                         "stageOrder": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
                         "nextStageKey": "previewArtifacts",
                         "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "nextStage": {
+                            "key": "previewArtifacts",
+                            "step": 1,
+                            "label": "Generate optional review artifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "hasCommands": True,
+                            "commandCount": 2,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "writesLocalFiles": True,
+                            "writesOutputArtifacts": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+                        },
                         "nextRequiredStageKey": "manualSkillEdit",
                         "nextRequiredStageCommandKeys": [],
+                        "nextRequiredStage": {
+                            "key": "manualSkillEdit",
+                            "step": 2,
+                            "label": "Apply accepted skill deltas manually",
+                            "kind": "manual-review",
+                            "required": True,
+                            "hasCommands": False,
+                            "commandCount": 0,
+                            "commandKeys": [],
+                            "writesLocalFiles": False,
+                            "writesOutputArtifacts": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+                        },
                         "nextRequiredCommandStageKey": "reviewReadiness",
                         "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
+                        "nextRequiredCommandStage": {
+                            "key": "reviewReadiness",
+                            "step": 3,
+                            "label": "Run review readiness check",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "hasCommands": True,
+                            "commandCount": 1,
+                            "commandKeys": ["reviewCheckJson"],
+                            "writesLocalFiles": False,
+                            "writesOutputArtifacts": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "Run the read-only review check after manual skill edits to verify proposal review state.",
+                        },
                         "reason": "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
                     },
                     "stageKeys": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
@@ -13451,6 +13543,7 @@ def run_self_test() -> None:
             "- operator runbook next required stage: manualSkillEdit",
             "- operator runbook next required command stage: reviewReadiness",
             "- operator runbook stage selection: optional-preview-before-required-manual-edit",
+            "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
             "Command sequence:",
             "- 1. reviewCheckJson: preview-only / read-only",
             "- 2. reviewCheckReport: output-artifact / local-output",
@@ -13527,6 +13620,7 @@ def run_self_test() -> None:
             "- Operator runbook next required stage: manualSkillEdit",
             "- Operator runbook next required command stage: reviewReadiness",
             "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
+            "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
             "",
             "Command sequence:",
             "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
@@ -13894,6 +13988,34 @@ def run_self_test() -> None:
                             "stageSelection": {
                                 **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
                                 "strategy": "",
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "nextStage": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["nextStage"],
+                                    "kind": "manual-review",
+                                },
                             },
                         },
                     },
