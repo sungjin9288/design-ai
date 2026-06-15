@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 520 — Apply-Plan Decision Next Command Entry (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected optional preview command as one compact object. Phase 519 added direct lookup and separate `nextCommand*` fields; this phase removes the need for wrappers to reconstruct the first preview command from separate fields before rendering or execution.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.nextCommandEntry`.
+- The entry mirrors the first `decision.commands` item, currently `reviewCheckReport`, including command string, structured args, run policy, safety level, write/mutation flags, external-AI flags, and clean-workspace requirement.
+- Kept existing `nextCommandKey`, `nextCommand`, `nextCommandArgs`, `nextCommandRunPolicy`, and `nextCommandSafetyLevel` fields for backward compatibility.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves the selected command entry contract.
+
+### Impact
+- Wrappers can branch on `decision.action`, gate on `decision.safety`, then consume `decision.nextCommandEntry` as the first optional local-output preview handoff.
+- `decision.commandByKey` remains available for explicit operator choices, and `commandSequenceByKey` remains the canonical full command lookup.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 519 — Apply-Plan Decision Command Lookup (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose direct command lookup metadata for the selected optional preview branch. Phase 518 added compact decision commands; this phase makes the first command and per-key command lookup addressable without scanning arrays.

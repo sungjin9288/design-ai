@@ -882,6 +882,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
         commands: decisionCommands,
         commandByKey: decisionCommandByKey,
+        nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

@@ -125,6 +125,14 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 520: apply-plan decision next command entry
+
+Added a compact full command object under `operatorRunbook.stageSelection.decision`:
+
+- `nextCommandEntry`: the first selected optional preview command object, currently `reviewCheckReport`
+
+Wrappers should prefer `decision.nextCommandEntry` when rendering or running the first optional preview handoff because it carries the command string, structured args, run policy, safety level, write/mutation flags, external-AI flags, and clean-workspace requirement in one object. The separate `decision.nextCommand*` fields remain for compatibility, while `decision.commandByKey` remains the lookup surface for explicit operator command choice.
+
 ### Phase 519: apply-plan decision command lookup
 
 Added direct lookup fields under `operatorRunbook.stageSelection.decision`:
