@@ -801,6 +801,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     ];
   const operatorRunbookStageKeys = operatorRunbookStages.map((stage) => stage.key);
   const operatorRunbookStageByKey = Object.fromEntries(operatorRunbookStages.map((stage) => [stage.key, stage]));
+  const nextRequiredStage = failures > 0
+    ? null
+    : operatorRunbookStages.find((stage) => stage.required) || null;
+  const nextRequiredCommandStage = failures > 0
+    ? null
+    : operatorRunbookStages.find((stage) => stage.required && stage.commandKeys.length > 0) || null;
   const operatorRunbook = {
     version: 1,
     executable: failures === 0,
@@ -810,6 +816,10 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     commandStageCount: operatorRunbookStages.filter((stage) => stage.commandKeys.length > 0).length,
     nextStageKey: failures > 0 ? "" : "previewArtifacts",
     nextStageCommandKeys: failures > 0 ? [] : ["reviewCheckReport", "proposalPatchPreview"],
+    nextRequiredStageKey: nextRequiredStage?.key || "",
+    nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
+    nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+    nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
     stageKeys: operatorRunbookStageKeys,
     stageByKey: operatorRunbookStageByKey,
     stages: operatorRunbookStages,
@@ -1367,6 +1377,8 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Operator runbook keys", (operatorRunbook.stageKeys || []).join(", ") || "none"));
   lines.push(listItem("Operator runbook required stages", operatorRunbook.requiredStageCount || 0));
   lines.push(listItem("Operator runbook next stage", operatorRunbook.nextStageKey || "none"));
+  lines.push(listItem("Operator runbook next required stage", operatorRunbook.nextRequiredStageKey || "none"));
+  lines.push(listItem("Operator runbook next required command stage", operatorRunbook.nextRequiredCommandStageKey || "none"));
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
   if (commandSequence.length > 0) {
     lines.push("");
