@@ -6826,11 +6826,18 @@ def assert_skill_proposal_apply_plan_json(
     command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
     command_sequence_summary = command_contract.get("commandSequenceSummary") if isinstance(command_contract, dict) else None
     command_sequence_by_key = command_contract.get("commandSequenceByKey") if isinstance(command_contract, dict) else None
+    operator_runbook = command_contract.get("operatorRunbook") if isinstance(command_contract, dict) else None
     expected_command_sequence = [
         (1, "reviewCheckJson", "preview-only", "read-only", False),
         (2, "reviewCheckReport", "output-artifact", "local-output", True),
         (3, "proposalPatchPreview", "output-artifact", "local-output", True),
         (4, "strictGate", "strict-readiness-gate", "read-only", False),
+    ]
+    expected_operator_runbook_stages = [
+        (1, "previewArtifacts", "local-output-preview", False, ["reviewCheckReport", "proposalPatchPreview"]),
+        (2, "manualSkillEdit", "manual-review", True, []),
+        (3, "reviewReadiness", "read-only-check", True, ["reviewCheckJson"]),
+        (4, "strictGate", "read-only-gate", True, ["strictGate"]),
     ]
     require_package_smoke(
         payload.get("kind") == "skill-proposal-apply-plan"
@@ -6911,6 +6918,33 @@ def assert_skill_proposal_apply_plan_json(
         and len(command_sequence) == 4
         and isinstance(command_sequence_by_key, dict)
         and list(command_sequence_by_key.keys()) == list(expected_command_args.keys())
+        and isinstance(operator_runbook, dict)
+        and operator_runbook.get("version") == 1
+        and operator_runbook.get("executable") is True
+        and operator_runbook.get("blocked") is False
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("requiredStageCount") == 3
+        and operator_runbook.get("commandStageCount") == 3
+        and operator_runbook.get("nextStageKey") == "previewArtifacts"
+        and operator_runbook.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and isinstance(operator_runbook.get("stages"), list)
+        and len(operator_runbook["stages"]) == 4
+        and all(
+            isinstance(stage, dict)
+            and stage.get("step") == step
+            and stage.get("key") == key
+            and stage.get("kind") == kind
+            and stage.get("required") is required
+            and stage.get("commandKeys") == command_keys
+            and [
+                command.get("key")
+                for command in stage.get("commands", [])
+                if isinstance(command, dict)
+            ] == command_keys
+            for stage, (step, key, kind, required, command_keys)
+            in zip(operator_runbook["stages"], expected_operator_runbook_stages, strict=True)
+        )
+        and "Generate optional local review artifacts" in str(operator_runbook.get("reason", ""))
         and all(
             isinstance(command_sequence_by_key.get(key), dict)
             and command_sequence_by_key[key].get("key") == key
@@ -7002,11 +7036,19 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Command sequence mutates review file: no",
         "- Command sequence mutates skill files: no",
         "- Command sequence calls external AI APIs: no",
+        "- Operator runbook stages: 4",
+        "- Operator runbook required stages: 3",
+        "- Operator runbook next stage: previewArtifacts",
         "Command sequence:",
         "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
         "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
         "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
         "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
+        "Operator runbook:",
+        "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit (required / manual-review): manual",
+        "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
+        "- 4. strictGate (required / read-only-gate): strictGate",
         "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "## Privacy And Boundaries",
         "- Mutates learning profile: no",
@@ -7055,11 +7097,19 @@ def assert_skill_proposal_apply_plan_human(
         "- command sequence mutates review file: no",
         "- command sequence mutates skill files: no",
         "- command sequence calls external AI APIs: no",
+        "- operator runbook stages: 4",
+        "- operator runbook required stages: 3",
+        "- operator runbook next stage: previewArtifacts",
         "Command sequence:",
         "- 1. reviewCheckJson: preview-only / read-only",
         "- 2. reviewCheckReport: output-artifact / local-output",
         "- 3. proposalPatchPreview: output-artifact / local-output",
         "- 4. strictGate: strict-readiness-gate / read-only",
+        "Operator runbook:",
+        "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit: required / manual-review / manual",
+        "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
+        "- 4. strictGate: required / read-only-gate / strictGate",
         "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "Privacy: apply plan is read-only",
     ):
@@ -13185,6 +13235,51 @@ def run_self_test() -> None:
                         },
                     },
                 ],
+                "operatorRunbook": {
+                    "version": 1,
+                    "executable": True,
+                    "blocked": False,
+                    "stageCount": 4,
+                    "requiredStageCount": 3,
+                    "commandStageCount": 3,
+                    "nextStageKey": "previewArtifacts",
+                    "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                    "stages": [
+                        {
+                            "step": 1,
+                            "key": "previewArtifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                        },
+                        {
+                            "step": 2,
+                            "key": "manualSkillEdit",
+                            "kind": "manual-review",
+                            "required": True,
+                            "commandKeys": [],
+                            "commands": [],
+                        },
+                        {
+                            "step": 3,
+                            "key": "reviewReadiness",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "commandKeys": ["reviewCheckJson"],
+                            "commands": [{"key": "reviewCheckJson"}],
+                        },
+                        {
+                            "step": 4,
+                            "key": "strictGate",
+                            "kind": "read-only-gate",
+                            "required": True,
+                            "commandKeys": ["strictGate"],
+                            "commands": [{"key": "strictGate"}],
+                        },
+                    ],
+                    "reason": "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
+                },
                 "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
                 "checks": [
                     {"id": "required-command-keys-present", "level": "pass", "passed": True},
@@ -13265,11 +13360,19 @@ def run_self_test() -> None:
             "- command sequence mutates review file: no",
             "- command sequence mutates skill files: no",
             "- command sequence calls external AI APIs: no",
+            "- operator runbook stages: 4",
+            "- operator runbook required stages: 3",
+            "- operator runbook next stage: previewArtifacts",
             "Command sequence:",
             "- 1. reviewCheckJson: preview-only / read-only",
             "- 2. reviewCheckReport: output-artifact / local-output",
             "- 3. proposalPatchPreview: output-artifact / local-output",
             "- 4. strictGate: strict-readiness-gate / read-only",
+            "Operator runbook:",
+            "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
+            "- 2. manualSkillEdit: required / manual-review / manual",
+            "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
+            "- 4. strictGate: required / read-only-gate / strictGate",
             "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
@@ -13329,12 +13432,21 @@ def run_self_test() -> None:
             "- Command sequence mutates review file: no",
             "- Command sequence mutates skill files: no",
             "- Command sequence calls external AI APIs: no",
+            "- Operator runbook stages: 4",
+            "- Operator runbook required stages: 3",
+            "- Operator runbook next stage: previewArtifacts",
             "",
             "Command sequence:",
             "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
             "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
             "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
             "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
+            "",
+            "Operator runbook:",
+            "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
+            "- 2. manualSkillEdit (required / manual-review): manual",
+            "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
+            "- 4. strictGate (required / read-only-gate): strictGate",
             "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "## Privacy And Boundaries",
@@ -13614,6 +13726,28 @@ def run_self_test() -> None:
             scope="package smoke",
         )
         expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
             lambda: assert_skill_proposal_apply_plan_human(
                 learning_skill_proposal_apply_plan_human.replace(
                     "Command contract:",
@@ -13623,6 +13757,18 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
             ),
             expected="learn skill proposal apply-plan human output missing 'Command contract:'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_human(
+                learning_skill_proposal_apply_plan_human.replace(
+                    "Operator runbook:",
+                    "Operator stages:",
+                ),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+            ),
+            expected="learn skill proposal apply-plan human output missing 'Operator runbook:'",
             scope="package smoke",
         )
         expect_self_test_failure(
@@ -13638,6 +13784,21 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
             ),
             expected="learn skill proposal apply-plan Markdown report missing '- Mutates skill files: no'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_markdown(
+                learning_skill_proposal_apply_plan_markdown.replace(
+                    "Operator runbook:",
+                    "Operator stages:",
+                ),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+            ),
+            expected="learn skill proposal apply-plan Markdown report missing 'Operator runbook:'",
             scope="package smoke",
         )
         expect_self_test_failure(

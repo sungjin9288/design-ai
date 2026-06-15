@@ -755,6 +755,64 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   };
   const commandSequenceKeys = commandSequence.map((item) => item.key);
   const commandSequenceByKey = Object.fromEntries(commandSequence.map((item) => [item.key, item]));
+  const operatorRunbookStages = failures > 0
+    ? []
+    : [
+      {
+        step: 1,
+        key: "previewArtifacts",
+        label: "Generate optional review artifacts",
+        kind: "local-output-preview",
+        required: false,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        commands: ["reviewCheckReport", "proposalPatchPreview"].map((key) => commandSequenceByKey[key]),
+        reason: "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+      },
+      {
+        step: 2,
+        key: "manualSkillEdit",
+        label: "Apply accepted skill deltas manually",
+        kind: "manual-review",
+        required: true,
+        commandKeys: [],
+        commands: [],
+        reason: "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+      },
+      {
+        step: 3,
+        key: "reviewReadiness",
+        label: "Run review readiness check",
+        kind: "read-only-check",
+        required: true,
+        commandKeys: ["reviewCheckJson"],
+        commands: [commandSequenceByKey.reviewCheckJson],
+        reason: "Run the read-only review check after manual skill edits to verify proposal review state.",
+      },
+      {
+        step: 4,
+        key: "strictGate",
+        label: "Run strict readiness gate",
+        kind: "read-only-gate",
+        required: true,
+        commandKeys: ["strictGate"],
+        commands: [commandSequenceByKey.strictGate],
+        reason: "Run the strict gate before marking accepted proposals applied.",
+      },
+    ];
+  const operatorRunbook = {
+    version: 1,
+    executable: failures === 0,
+    blocked: failures > 0,
+    stageCount: operatorRunbookStages.length,
+    requiredStageCount: operatorRunbookStages.filter((stage) => stage.required).length,
+    commandStageCount: operatorRunbookStages.filter((stage) => stage.commandKeys.length > 0).length,
+    nextStageKey: failures > 0 ? "" : "previewArtifacts",
+    nextStageCommandKeys: failures > 0 ? [] : ["reviewCheckReport", "proposalPatchPreview"],
+    stages: operatorRunbookStages,
+    reason: failures > 0
+      ? "Command contract failures must be fixed before running the operator runbook."
+      : "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
+  };
   return {
     version: 1,
     valid: failures === 0,
@@ -783,6 +841,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     commandSequenceSummary,
     commandSequenceKeys,
     commandSequenceByKey,
+    operatorRunbook,
     nextAction: failures > 0
       ? "Fix command contract failures before running follow-up commands."
       : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
@@ -1299,6 +1358,10 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Command sequence mutates review file", yesNo(Boolean(sequenceSummary.mutatesReviewFile))));
   lines.push(listItem("Command sequence mutates skill files", yesNo(Boolean(sequenceSummary.mutatesSkillFiles))));
   lines.push(listItem("Command sequence calls external AI APIs", yesNo(Boolean(sequenceSummary.callsExternalAiApis))));
+  const operatorRunbook = commandContract.operatorRunbook || {};
+  lines.push(listItem("Operator runbook stages", operatorRunbook.stageCount || 0));
+  lines.push(listItem("Operator runbook required stages", operatorRunbook.requiredStageCount || 0));
+  lines.push(listItem("Operator runbook next stage", operatorRunbook.nextStageKey || "none"));
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
   if (commandSequence.length > 0) {
     lines.push("");
@@ -1306,6 +1369,18 @@ export function renderSkillProposalApplyPlanReport(payload, {
     for (const item of commandSequence) {
       const safetyLevel = item.safety?.level || "unknown";
       lines.push(`- ${item.step}. ${item.key} (${item.runPolicy || "unknown"} / ${safetyLevel}): \`${item.command}\``);
+    }
+  }
+  const runbookStages = Array.isArray(operatorRunbook.stages) ? operatorRunbook.stages : [];
+  if (runbookStages.length > 0) {
+    lines.push("");
+    lines.push("Operator runbook:");
+    for (const stage of runbookStages) {
+      const required = stage.required ? "required" : "optional";
+      const commandKeys = Array.isArray(stage.commandKeys) && stage.commandKeys.length > 0
+        ? stage.commandKeys.join(", ")
+        : "manual";
+      lines.push(`- ${stage.step}. ${stage.key} (${required} / ${stage.kind || "unknown"}): ${commandKeys}`);
     }
   }
   if (commandContract.nextAction) lines.push(listItem("Next action", commandContract.nextAction));

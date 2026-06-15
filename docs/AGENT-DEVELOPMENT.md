@@ -125,6 +125,19 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 511: apply-plan operator runbook
+
+Added `operatorRunbook` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can follow the accepted-proposal handoff at the operator stage level.
+
+The runbook exposes four deterministic stages:
+
+- `previewArtifacts`: optional local-output previews for `reviewCheckReport` and `proposalPatchPreview`
+- `manualSkillEdit`: required manual review/edit of accepted skill deltas
+- `reviewReadiness`: required read-only `reviewCheckJson` validation after manual edits
+- `strictGate`: required read-only strict gate before marking proposals applied
+
+Invalid command contracts stay fail-closed with `blocked: true`, zero stages, and no next stage. The runbook is additive and preserves the existing boundary: preview artifact commands may write explicit `--out` files, but apply-plan output still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
 ### Phase 510: apply-plan sequence key index
 
 Added `commandSequenceKeys` and `commandSequenceByKey` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can retrieve named follow-up commands without scanning the ordered `commandSequence` array.

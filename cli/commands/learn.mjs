@@ -903,11 +903,25 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- command sequence mutates review file: ${sequenceSummary.mutatesReviewFile ? "yes" : "no"}`);
     console.log(`- command sequence mutates skill files: ${sequenceSummary.mutatesSkillFiles ? "yes" : "no"}`);
     console.log(`- command sequence calls external AI APIs: ${sequenceSummary.callsExternalAiApis ? "yes" : "no"}`);
+    const operatorRunbook = contract.operatorRunbook || {};
+    console.log(`- operator runbook stages: ${operatorRunbook.stageCount || 0}`);
+    console.log(`- operator runbook required stages: ${operatorRunbook.requiredStageCount || 0}`);
+    console.log(`- operator runbook next stage: ${operatorRunbook.nextStageKey || "none"}`);
     if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {
       console.log("Command sequence:");
       for (const item of contract.commandSequence) {
         const safetyLevel = item.safety?.level || "unknown";
         console.log(`- ${item.step}. ${item.key}: ${item.runPolicy || "unknown"} / ${safetyLevel}`);
+      }
+    }
+    if (Array.isArray(operatorRunbook.stages) && operatorRunbook.stages.length > 0) {
+      console.log("Operator runbook:");
+      for (const stage of operatorRunbook.stages) {
+        const required = stage.required ? "required" : "optional";
+        const commandKeys = Array.isArray(stage.commandKeys) && stage.commandKeys.length > 0
+          ? stage.commandKeys.join(", ")
+          : "manual";
+        console.log(`- ${stage.step}. ${stage.key}: ${required} / ${stage.kind || "unknown"} / ${commandKeys}`);
       }
     }
     if (contract.nextAction) {

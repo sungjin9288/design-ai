@@ -5900,6 +5900,59 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.deepEqual(applyPlan.commandContract.commandSequenceByKey.reviewCheckReport.commandArgs, applyPlan.commandArgs.reviewCheckReport);
     assert.equal(applyPlan.commandContract.commandSequenceByKey.proposalPatchPreview.safety.level, "local-output");
     assert.equal(applyPlan.commandContract.commandSequenceByKey.strictGate.runPolicy, "strict-readiness-gate");
+    assert.equal(applyPlan.commandContract.operatorRunbook.version, 1);
+    assert.equal(applyPlan.commandContract.operatorRunbook.executable, true);
+    assert.equal(applyPlan.commandContract.operatorRunbook.blocked, false);
+    assert.equal(applyPlan.commandContract.operatorRunbook.stageCount, 4);
+    assert.equal(applyPlan.commandContract.operatorRunbook.requiredStageCount, 3);
+    assert.equal(applyPlan.commandContract.operatorRunbook.commandStageCount, 3);
+    assert.equal(applyPlan.commandContract.operatorRunbook.nextStageKey, "previewArtifacts");
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.nextStageCommandKeys, [
+      "reviewCheckReport",
+      "proposalPatchPreview",
+    ]);
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stages.map((stage) => ({
+      step: stage.step,
+      key: stage.key,
+      kind: stage.kind,
+      required: stage.required,
+      commandKeys: stage.commandKeys,
+      commandItemKeys: stage.commands.map((command) => command.key),
+    })), [
+      {
+        step: 1,
+        key: "previewArtifacts",
+        kind: "local-output-preview",
+        required: false,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        commandItemKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      },
+      {
+        step: 2,
+        key: "manualSkillEdit",
+        kind: "manual-review",
+        required: true,
+        commandKeys: [],
+        commandItemKeys: [],
+      },
+      {
+        step: 3,
+        key: "reviewReadiness",
+        kind: "read-only-check",
+        required: true,
+        commandKeys: ["reviewCheckJson"],
+        commandItemKeys: ["reviewCheckJson"],
+      },
+      {
+        step: 4,
+        key: "strictGate",
+        kind: "read-only-gate",
+        required: true,
+        commandKeys: ["strictGate"],
+        commandItemKeys: ["strictGate"],
+      },
+    ]);
+    assert.match(applyPlan.commandContract.operatorRunbook.reason, /Generate optional local review artifacts/);
     assert.match(applyPlan.commandContract.nextAction, /Run reviewCheckJson after manual skill edits/);
     assert.equal(applyPlan.commandContract.summary.failures, 0);
     assert.equal(applyPlan.commandContract.summary.warnings, 0);
@@ -5931,6 +5984,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.deepEqual(missingReviewFileApplyPlan.commandContract.commandSequence, []);
     assert.deepEqual(missingReviewFileApplyPlan.commandContract.commandSequenceKeys, []);
     assert.deepEqual(missingReviewFileApplyPlan.commandContract.commandSequenceByKey, {});
+    assert.deepEqual(missingReviewFileApplyPlan.commandContract.operatorRunbook, {
+      version: 1,
+      executable: false,
+      blocked: true,
+      stageCount: 0,
+      requiredStageCount: 0,
+      commandStageCount: 0,
+      nextStageKey: "",
+      nextStageCommandKeys: [],
+      stages: [],
+      reason: "Command contract failures must be fixed before running the operator runbook.",
+    });
     assert.deepEqual(missingReviewFileApplyPlan.commandContract.commandSequenceSummary, {
       executable: false,
       blocked: true,
@@ -5992,11 +6057,19 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Command sequence mutates review file: no/);
     assert.match(applyPlanReport, /- Command sequence mutates skill files: no/);
     assert.match(applyPlanReport, /- Command sequence calls external AI APIs: no/);
+    assert.match(applyPlanReport, /- Operator runbook stages: 4/);
+    assert.match(applyPlanReport, /- Operator runbook required stages: 3/);
+    assert.match(applyPlanReport, /- Operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanReport, /Command sequence:/);
     assert.match(applyPlanReport, /- 1\. reviewCheckJson \(preview-only \/ read-only\): `design-ai learn --propose-skills .* --review-check --json`/);
     assert.match(applyPlanReport, /- 2\. reviewCheckReport \(output-artifact \/ local-output\): `design-ai learn --propose-skills .* --review-check --report --out skill-proposal-review-check\.md`/);
     assert.match(applyPlanReport, /- 3\. proposalPatchPreview \(output-artifact \/ local-output\): `design-ai learn --propose-skills .* --patch --out skill-proposals\.patch`/);
     assert.match(applyPlanReport, /- 4\. strictGate \(strict-readiness-gate \/ read-only\): `design-ai learn --propose-skills .* --strict --json`/);
+    assert.match(applyPlanReport, /Operator runbook:/);
+    assert.match(applyPlanReport, /- 1\. previewArtifacts \(optional \/ local-output-preview\): reviewCheckReport, proposalPatchPreview/);
+    assert.match(applyPlanReport, /- 2\. manualSkillEdit \(required \/ manual-review\): manual/);
+    assert.match(applyPlanReport, /- 3\. reviewReadiness \(required \/ read-only-check\): reviewCheckJson/);
+    assert.match(applyPlanReport, /- 4\. strictGate \(required \/ read-only-gate\): strictGate/);
     assert.match(applyPlanReport, /- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied\./);
     assert.match(applyPlanReport, /- Mutates review file: no/);
 
@@ -6109,6 +6182,25 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     );
     assert.equal(applyPlanJsonPayload.commandContract.commandSequenceByKey.proposalPatchPreview.safety.level, "local-output");
     assert.equal(applyPlanJsonPayload.commandContract.commandSequenceByKey.strictGate.runPolicy, "strict-readiness-gate");
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.executable, true);
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageCount, 4);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.nextStageCommandKeys, [
+      "reviewCheckReport",
+      "proposalPatchPreview",
+    ]);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stages.map((stage) => [
+      stage.step,
+      stage.key,
+      stage.kind,
+      stage.required,
+      stage.commandKeys,
+      stage.commands.map((command) => command.key),
+    ]), [
+      [1, "previewArtifacts", "local-output-preview", false, ["reviewCheckReport", "proposalPatchPreview"], ["reviewCheckReport", "proposalPatchPreview"]],
+      [2, "manualSkillEdit", "manual-review", true, [], []],
+      [3, "reviewReadiness", "read-only-check", true, ["reviewCheckJson"], ["reviewCheckJson"]],
+      [4, "strictGate", "read-only-gate", true, ["strictGate"], ["strictGate"]],
+    ]);
     assert.match(applyPlanJsonPayload.commandContract.nextAction, /Run reviewCheckJson after manual skill edits/);
     assert.equal(readFileSync(filePath, "utf8"), before);
     assert.equal(readFileSync(acceptedReviewFile, "utf8"), acceptedReviewBefore);
@@ -6151,11 +6243,19 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- command sequence mutates review file: no/);
     assert.match(applyPlanHumanOutput, /- command sequence mutates skill files: no/);
     assert.match(applyPlanHumanOutput, /- command sequence calls external AI APIs: no/);
+    assert.match(applyPlanHumanOutput, /- operator runbook stages: 4/);
+    assert.match(applyPlanHumanOutput, /- operator runbook required stages: 3/);
+    assert.match(applyPlanHumanOutput, /- operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);
     assert.match(applyPlanHumanOutput, /- 1\. reviewCheckJson: preview-only \/ read-only/);
     assert.match(applyPlanHumanOutput, /- 2\. reviewCheckReport: output-artifact \/ local-output/);
     assert.match(applyPlanHumanOutput, /- 3\. proposalPatchPreview: output-artifact \/ local-output/);
     assert.match(applyPlanHumanOutput, /- 4\. strictGate: strict-readiness-gate \/ read-only/);
+    assert.match(applyPlanHumanOutput, /Operator runbook:/);
+    assert.match(applyPlanHumanOutput, /- 1\. previewArtifacts: optional \/ local-output-preview \/ reviewCheckReport, proposalPatchPreview/);
+    assert.match(applyPlanHumanOutput, /- 2\. manualSkillEdit: required \/ manual-review \/ manual/);
+    assert.match(applyPlanHumanOutput, /- 3\. reviewReadiness: required \/ read-only-check \/ reviewCheckJson/);
+    assert.match(applyPlanHumanOutput, /- 4\. strictGate: required \/ read-only-gate \/ strictGate/);
     assert.match(applyPlanHumanOutput, /- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied\./);
     assert.match(applyPlanHumanOutput, /Privacy: apply plan is read-only/);
 
