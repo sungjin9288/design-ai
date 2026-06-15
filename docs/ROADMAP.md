@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 512 — Apply-Plan Operator Runbook Stage Index (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now expose a stable stage key index. Phase 511 added the ordered runbook stages; this phase lets local AI/agent wrappers retrieve `previewArtifacts`, `manualSkillEdit`, `reviewReadiness`, or `strictGate` directly without scanning the `stages` array.
+
+### Changed
+- Added `operatorRunbook.stageKeys` to preserve validated operator stage order as a top-level list.
+- Added `operatorRunbook.stageByKey` so each runbook stage is addressable by its stable key.
+- Rendered runbook stage keys in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the stage-index contract.
+
+### Impact
+- Automation can select a named operator stage directly while still using `operatorRunbook.stages` for deterministic execution order.
+- The index mirrors the existing `commandSequenceKeys` / `commandSequenceByKey` contract at the higher operator-runbook layer.
+- Invalid command contracts stay fail-closed with an empty stage key list and empty stage map.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 511 — Apply-Plan Operator Runbook Contract (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a staged operator runbook for accepted skill proposal handoffs. Phase 510 made named command lookup direct; this phase makes the higher-level operator order explicit: optional preview artifacts, manual skill edits, review readiness, then strict gate.

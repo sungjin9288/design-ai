@@ -905,6 +905,7 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- command sequence calls external AI APIs: ${sequenceSummary.callsExternalAiApis ? "yes" : "no"}`);
     const operatorRunbook = contract.operatorRunbook || {};
     console.log(`- operator runbook stages: ${operatorRunbook.stageCount || 0}`);
+    console.log(`- operator runbook keys: ${(operatorRunbook.stageKeys || []).join(", ") || "none"}`);
     console.log(`- operator runbook required stages: ${operatorRunbook.requiredStageCount || 0}`);
     console.log(`- operator runbook next stage: ${operatorRunbook.nextStageKey || "none"}`);
     if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {

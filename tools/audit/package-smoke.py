@@ -6927,8 +6927,20 @@ def assert_skill_proposal_apply_plan_json(
         and operator_runbook.get("commandStageCount") == 3
         and operator_runbook.get("nextStageKey") == "previewArtifacts"
         and operator_runbook.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and operator_runbook.get("stageKeys") == [stage[1] for stage in expected_operator_runbook_stages]
+        and isinstance(operator_runbook.get("stageByKey"), dict)
+        and list(operator_runbook["stageByKey"].keys()) == [stage[1] for stage in expected_operator_runbook_stages]
         and isinstance(operator_runbook.get("stages"), list)
         and len(operator_runbook["stages"]) == 4
+        and all(
+            isinstance(operator_runbook["stageByKey"].get(key), dict)
+            and operator_runbook["stageByKey"][key].get("step") == step
+            and operator_runbook["stageByKey"][key].get("kind") == kind
+            and operator_runbook["stageByKey"][key].get("required") is required
+            and operator_runbook["stageByKey"][key].get("commandKeys") == command_keys
+            for step, key, kind, required, command_keys
+            in expected_operator_runbook_stages
+        )
         and all(
             isinstance(stage, dict)
             and stage.get("step") == step
@@ -7037,6 +7049,7 @@ def assert_skill_proposal_apply_plan_markdown(
         "- Command sequence mutates skill files: no",
         "- Command sequence calls external AI APIs: no",
         "- Operator runbook stages: 4",
+        "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
         "- Operator runbook required stages: 3",
         "- Operator runbook next stage: previewArtifacts",
         "Command sequence:",
@@ -7098,6 +7111,7 @@ def assert_skill_proposal_apply_plan_human(
         "- command sequence mutates skill files: no",
         "- command sequence calls external AI APIs: no",
         "- operator runbook stages: 4",
+        "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
         "- operator runbook required stages: 3",
         "- operator runbook next stage: previewArtifacts",
         "Command sequence:",
@@ -13244,6 +13258,41 @@ def run_self_test() -> None:
                     "commandStageCount": 3,
                     "nextStageKey": "previewArtifacts",
                     "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                    "stageKeys": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+                    "stageByKey": {
+                        "previewArtifacts": {
+                            "step": 1,
+                            "key": "previewArtifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                        },
+                        "manualSkillEdit": {
+                            "step": 2,
+                            "key": "manualSkillEdit",
+                            "kind": "manual-review",
+                            "required": True,
+                            "commandKeys": [],
+                            "commands": [],
+                        },
+                        "reviewReadiness": {
+                            "step": 3,
+                            "key": "reviewReadiness",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "commandKeys": ["reviewCheckJson"],
+                            "commands": [{"key": "reviewCheckJson"}],
+                        },
+                        "strictGate": {
+                            "step": 4,
+                            "key": "strictGate",
+                            "kind": "read-only-gate",
+                            "required": True,
+                            "commandKeys": ["strictGate"],
+                            "commands": [{"key": "strictGate"}],
+                        },
+                    },
                     "stages": [
                         {
                             "step": 1,
@@ -13361,6 +13410,7 @@ def run_self_test() -> None:
             "- command sequence mutates skill files: no",
             "- command sequence calls external AI APIs: no",
             "- operator runbook stages: 4",
+            "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
             "- operator runbook required stages: 3",
             "- operator runbook next stage: previewArtifacts",
             "Command sequence:",
@@ -13433,6 +13483,7 @@ def run_self_test() -> None:
             "- Command sequence mutates skill files: no",
             "- Command sequence calls external AI APIs: no",
             "- Operator runbook stages: 4",
+            "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
             "- Operator runbook required stages: 3",
             "- Operator runbook next stage: previewArtifacts",
             "",
@@ -13734,6 +13785,28 @@ def run_self_test() -> None:
                         "operatorRunbook": {
                             **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
                             "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageKeys": [],
                         },
                     },
                 }),

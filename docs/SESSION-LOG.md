@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 512 (unreleased)** — Added apply-plan operator runbook `stageKeys` and `stageByKey` so local AI/agent wrappers can retrieve named runbook stages without scanning the ordered stage array.
 - **Phase 511 (unreleased)** — Added apply-plan `operatorRunbook` stages so local AI/agent wrappers can follow optional preview artifacts, manual skill edits, review readiness, and strict gate order without inferring operator workflow from prose.
 - **Phase 510 (unreleased)** — Added apply-plan `commandSequenceKeys` and `commandSequenceByKey` so local AI/agent wrappers can retrieve named follow-up commands directly without scanning the ordered sequence array.
 - **Phase 509 (unreleased)** — Added apply-plan `commandSequenceSummary` so local AI/agent wrappers can branch on executable/blocked state, local output writes, mutation flags, and external-AI boundaries without reducing the full sequence array.

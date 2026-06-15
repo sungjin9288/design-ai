@@ -5911,6 +5911,26 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       "reviewCheckReport",
       "proposalPatchPreview",
     ]);
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageKeys, [
+      "previewArtifacts",
+      "manualSkillEdit",
+      "reviewReadiness",
+      "strictGate",
+    ]);
+    assert.deepEqual(Object.keys(applyPlan.commandContract.operatorRunbook.stageByKey), [
+      "previewArtifacts",
+      "manualSkillEdit",
+      "reviewReadiness",
+      "strictGate",
+    ]);
+    assert.equal(applyPlan.commandContract.operatorRunbook.stageByKey.previewArtifacts.kind, "local-output-preview");
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageByKey.previewArtifacts.commandKeys, [
+      "reviewCheckReport",
+      "proposalPatchPreview",
+    ]);
+    assert.equal(applyPlan.commandContract.operatorRunbook.stageByKey.manualSkillEdit.required, true);
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageByKey.reviewReadiness.commands.map((command) => command.key), ["reviewCheckJson"]);
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageByKey.strictGate.commands.map((command) => command.key), ["strictGate"]);
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.stages.map((stage) => ({
       step: stage.step,
       key: stage.key,
@@ -5993,6 +6013,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       commandStageCount: 0,
       nextStageKey: "",
       nextStageCommandKeys: [],
+      stageKeys: [],
+      stageByKey: {},
       stages: [],
       reason: "Command contract failures must be fixed before running the operator runbook.",
     });
@@ -6058,6 +6080,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Command sequence mutates skill files: no/);
     assert.match(applyPlanReport, /- Command sequence calls external AI APIs: no/);
     assert.match(applyPlanReport, /- Operator runbook stages: 4/);
+    assert.match(applyPlanReport, /- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate/);
     assert.match(applyPlanReport, /- Operator runbook required stages: 3/);
     assert.match(applyPlanReport, /- Operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanReport, /Command sequence:/);
@@ -6184,6 +6207,26 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(applyPlanJsonPayload.commandContract.commandSequenceByKey.strictGate.runPolicy, "strict-readiness-gate");
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.executable, true);
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageCount, 4);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageKeys, [
+      "previewArtifacts",
+      "manualSkillEdit",
+      "reviewReadiness",
+      "strictGate",
+    ]);
+    assert.deepEqual(Object.keys(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey), [
+      "previewArtifacts",
+      "manualSkillEdit",
+      "reviewReadiness",
+      "strictGate",
+    ]);
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey.previewArtifacts.kind, "local-output-preview");
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey.previewArtifacts.commandKeys, [
+      "reviewCheckReport",
+      "proposalPatchPreview",
+    ]);
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey.manualSkillEdit.required, true);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey.reviewReadiness.commands.map((command) => command.key), ["reviewCheckJson"]);
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageByKey.strictGate.commands.map((command) => command.key), ["strictGate"]);
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.nextStageCommandKeys, [
       "reviewCheckReport",
       "proposalPatchPreview",
@@ -6244,6 +6287,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- command sequence mutates skill files: no/);
     assert.match(applyPlanHumanOutput, /- command sequence calls external AI APIs: no/);
     assert.match(applyPlanHumanOutput, /- operator runbook stages: 4/);
+    assert.match(applyPlanHumanOutput, /- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate/);
     assert.match(applyPlanHumanOutput, /- operator runbook required stages: 3/);
     assert.match(applyPlanHumanOutput, /- operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);

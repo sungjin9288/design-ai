@@ -799,6 +799,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         reason: "Run the strict gate before marking accepted proposals applied.",
       },
     ];
+  const operatorRunbookStageKeys = operatorRunbookStages.map((stage) => stage.key);
+  const operatorRunbookStageByKey = Object.fromEntries(operatorRunbookStages.map((stage) => [stage.key, stage]));
   const operatorRunbook = {
     version: 1,
     executable: failures === 0,
@@ -808,6 +810,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     commandStageCount: operatorRunbookStages.filter((stage) => stage.commandKeys.length > 0).length,
     nextStageKey: failures > 0 ? "" : "previewArtifacts",
     nextStageCommandKeys: failures > 0 ? [] : ["reviewCheckReport", "proposalPatchPreview"],
+    stageKeys: operatorRunbookStageKeys,
+    stageByKey: operatorRunbookStageByKey,
     stages: operatorRunbookStages,
     reason: failures > 0
       ? "Command contract failures must be fixed before running the operator runbook."
@@ -1360,6 +1364,7 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Command sequence calls external AI APIs", yesNo(Boolean(sequenceSummary.callsExternalAiApis))));
   const operatorRunbook = commandContract.operatorRunbook || {};
   lines.push(listItem("Operator runbook stages", operatorRunbook.stageCount || 0));
+  lines.push(listItem("Operator runbook keys", (operatorRunbook.stageKeys || []).join(", ") || "none"));
   lines.push(listItem("Operator runbook required stages", operatorRunbook.requiredStageCount || 0));
   lines.push(listItem("Operator runbook next stage", operatorRunbook.nextStageKey || "none"));
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
