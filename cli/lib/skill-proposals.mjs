@@ -16,6 +16,14 @@ import { learningSignalRegistry } from "./signals.mjs";
 const DEFAULT_MIN_EVIDENCE_COUNT = 2;
 const REVIEW_STATUSES = ["accepted", "rejected", "applied", "deferred"];
 const REVIEW_CLEAR_STATUSES = new Set(["rejected", "applied"]);
+const APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS = Object.freeze({
+  reviewCheckJson: ["--review-check", "--json"],
+  reviewCheckReport: ["--review-check", "--report", "--out", "skill-proposal-review-check.md"],
+  proposalPatchPreview: ["--patch", "--out", "skill-proposals.patch"],
+  strictGate: ["--strict", "--json"],
+});
+const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
+const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
   accessibility: "skills/ux-audit/SKILL.md",
   korean: "skills/design-system-builder/SKILL.md",
@@ -548,16 +556,145 @@ export function buildSkillProposalReviewCheck(payload, {
   };
 }
 
-function commandForReviewFile(reviewFile, extraArgs = []) {
+function shellQuote(value) {
+  const text = String(value ?? "");
+  if (/^[A-Za-z0-9_./:=@%+-]+$/.test(text)) return text;
+  return `'${text.replace(/'/g, "'\\''")}'`;
+}
+
+function commandFromArgs(args) {
+  return args.map(shellQuote).join(" ");
+}
+
+function proposalContextArgs(payload = {}) {
+  const args = [];
+  if (payload.file) args.push("--file", payload.file);
+  if (payload.usageFile) args.push("--usage-file", payload.usageFile);
+  if (payload.signalSource) args.push("--from-file", payload.signalSource);
+  return args;
+}
+
+function commandForReviewFile(payload, extraArgs = []) {
+  const reviewFile = payload.reviewFile || payload.review?.file || "skill-proposals.review.json";
   const args = [
     "design-ai",
     "learn",
     "--propose-skills",
+    ...proposalContextArgs(payload),
     "--review-file",
-    reviewFile || "skill-proposals.review.json",
+    reviewFile,
     ...extraArgs,
   ];
-  return args.join(" ");
+  return {
+    command: commandFromArgs(args),
+    commandArgs: args.map((item) => String(item)),
+  };
+}
+
+function applyPlanFollowUpCommands(payload, reviewFile) {
+  const context = { ...payload, reviewFile };
+  return Object.fromEntries(Object.entries(APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS).map(([key, extraArgs]) => [
+    key,
+    commandForReviewFile(context, extraArgs),
+  ]));
+}
+
+function argsEndWith(args, suffix) {
+  if (!Array.isArray(args) || args.length < suffix.length) return false;
+  return suffix.every((item, index) => args[args.length - suffix.length + index] === item);
+}
+
+function argsStartWith(args, prefix) {
+  if (!Array.isArray(args) || args.length < prefix.length) return false;
+  return prefix.every((item, index) => args[index] === item);
+}
+
+function commandArgCheck({ id, passed, message, evidence = {} }) {
+  return {
+    id,
+    level: passed ? "pass" : "fail",
+    passed,
+    message,
+    evidence,
+  };
+}
+
+function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
+  const requiredKeys = Object.keys(APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS);
+  const commandArgs = Object.fromEntries(Object.entries(followUpCommands).map(([key, value]) => [
+    key,
+    Array.isArray(value?.commandArgs) ? value.commandArgs : [],
+  ]));
+  const missingCommandKeys = requiredKeys.filter((key) => !Array.isArray(commandArgs[key]) || commandArgs[key].length === 0);
+  const unexpectedCommandKeys = Object.keys(commandArgs).filter((key) => !requiredKeys.includes(key));
+  const checks = [
+    commandArgCheck({
+      id: "required-command-keys-present",
+      passed: missingCommandKeys.length === 0,
+      message: missingCommandKeys.length === 0
+        ? "All required apply-plan follow-up commands are present."
+        : "Some required apply-plan follow-up commands are missing.",
+      evidence: { requiredKeys, missingCommandKeys },
+    }),
+    commandArgCheck({
+      id: "no-unexpected-command-keys",
+      passed: unexpectedCommandKeys.length === 0,
+      message: unexpectedCommandKeys.length === 0
+        ? "No unexpected apply-plan follow-up commands are present."
+        : "Unexpected apply-plan follow-up command keys were found.",
+      evidence: { unexpectedCommandKeys },
+    }),
+  ];
+
+  for (const key of requiredKeys) {
+    const args = commandArgs[key] || [];
+    const reviewFileIndex = args.indexOf("--review-file");
+    checks.push(commandArgCheck({
+      id: `${key}-base-command`,
+      passed: argsStartWith(args, APPLY_PLAN_BASE_COMMAND),
+      message: `${key} starts with design-ai learn --propose-skills.`,
+      evidence: { commandArgs: args.slice(0, APPLY_PLAN_BASE_COMMAND.length) },
+    }));
+    checks.push(commandArgCheck({
+      id: `${key}-review-file-context`,
+      passed: Boolean(reviewFile) && reviewFileIndex >= 0 && args[reviewFileIndex + 1] === reviewFile,
+      message: `${key} preserves the configured review file.`,
+      evidence: { reviewFile, commandReviewFile: reviewFileIndex >= 0 ? args[reviewFileIndex + 1] || "" : "" },
+    }));
+    checks.push(commandArgCheck({
+      id: `${key}-expected-suffix`,
+      passed: argsEndWith(args, APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS[key]),
+      message: `${key} ends with the expected action flags.`,
+      evidence: { expectedSuffix: APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS[key], actualSuffix: args.slice(-APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS[key].length) },
+    }));
+    checks.push(commandArgCheck({
+      id: `${key}-read-only-flags`,
+      passed: APPLY_PLAN_FORBIDDEN_FLAGS.every((flag) => !args.includes(flag)),
+      message: `${key} does not include write/apply confirmation flags.`,
+      evidence: { forbiddenFlags: APPLY_PLAN_FORBIDDEN_FLAGS },
+    }));
+  }
+
+  const failures = checks.filter((check) => check.level === "fail").length;
+  return {
+    version: 1,
+    valid: failures === 0,
+    status: failures > 0 ? "fail" : "pass",
+    commandCount: Object.keys(commandArgs).length,
+    requiredKeys,
+    missingCommandKeys,
+    unexpectedCommandKeys,
+    baseCommand: [...APPLY_PLAN_BASE_COMMAND],
+    reviewFileRequired: true,
+    reviewFile,
+    forbiddenFlags: [...APPLY_PLAN_FORBIDDEN_FLAGS],
+    checks,
+    summary: {
+      failures,
+      passes: checks.length - failures,
+      total: checks.length,
+    },
+  };
 }
 
 function acceptedProposalTask(proposal, index) {
@@ -617,6 +754,8 @@ export function buildSkillProposalApplyPlan(payload, {
     : tasks.length > 0
       ? "warn"
       : "pass";
+  const followUpCommands = applyPlanFollowUpCommands(payload, reviewFile);
+  const commandContract = buildApplyPlanCommandContract(followUpCommands, reviewFile);
 
   return {
     version: 1,
@@ -638,11 +777,18 @@ export function buildSkillProposalApplyPlan(payload, {
     review,
     tasks,
     commands: {
-      reviewCheckJson: commandForReviewFile(reviewFile, ["--review-check", "--json"]),
-      reviewCheckReport: commandForReviewFile(reviewFile, ["--review-check", "--report", "--out", "skill-proposal-review-check.md"]),
-      proposalPatchPreview: commandForReviewFile(reviewFile, ["--patch", "--out", "skill-proposals.patch"]),
-      strictGate: commandForReviewFile(reviewFile, ["--strict", "--json"]),
+      reviewCheckJson: followUpCommands.reviewCheckJson.command,
+      reviewCheckReport: followUpCommands.reviewCheckReport.command,
+      proposalPatchPreview: followUpCommands.proposalPatchPreview.command,
+      strictGate: followUpCommands.strictGate.command,
     },
+    commandArgs: {
+      reviewCheckJson: followUpCommands.reviewCheckJson.commandArgs,
+      reviewCheckReport: followUpCommands.reviewCheckReport.commandArgs,
+      proposalPatchPreview: followUpCommands.proposalPatchPreview.commandArgs,
+      strictGate: followUpCommands.strictGate.commandArgs,
+    },
+    commandContract,
     recommendations: tasks.length > 0
       ? [{
         level: "warning",
@@ -1026,6 +1172,19 @@ export function renderSkillProposalApplyPlanReport(payload, {
   for (const [label, command] of Object.entries(commands)) {
     lines.push(listItem(label, `\`${command}\``));
   }
+
+  const commandContract = payload.commandContract || {};
+  lines.push("", "## Command Contract", "");
+  lines.push(listItem("Valid", yesNo(Boolean(commandContract.valid))));
+  lines.push(listItem("Status", commandContract.status || "unknown"));
+  lines.push(listItem("Command count", commandContract.commandCount || 0));
+  lines.push(listItem("Required keys", (commandContract.requiredKeys || []).join(", ") || "none"));
+  lines.push(listItem("Review file required", yesNo(Boolean(commandContract.reviewFileRequired))));
+  lines.push(listItem("Forbidden flags", (commandContract.forbiddenFlags || []).join(", ") || "none"));
+  const missingCommandKeys = Array.isArray(commandContract.missingCommandKeys) ? commandContract.missingCommandKeys : [];
+  const unexpectedCommandKeys = Array.isArray(commandContract.unexpectedCommandKeys) ? commandContract.unexpectedCommandKeys : [];
+  if (missingCommandKeys.length > 0) lines.push(listItem("Missing command keys", missingCommandKeys.join(", ")));
+  if (unexpectedCommandKeys.length > 0) lines.push(listItem("Unexpected command keys", unexpectedCommandKeys.join(", ")));
 
   lines.push("", "## Recommendations", "");
   for (const recommendation of payload.recommendations || []) {

@@ -1,5 +1,137 @@
 # Roadmap
 
+## Phase 503 — Apply-Plan Human Command Contract Release Guard (unreleased)
+
+Release metadata now protects the packed-tarball smoke wording for the default human `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contract summary. Phase 502 added the console output and package smoke assertion; this phase makes release-facing docs fail metadata checks if they stop mentioning the human apply-plan `Command contract` path.
+
+### Changed
+- Added a release metadata term group for the human apply-plan command contract smoke phrase.
+- Updated release-facing English and Korean docs so packed-tarball smoke guidance mentions the default human `--apply-plan` `Command contract` section alongside JSON and Markdown outputs.
+- Added release metadata self-test drift coverage for missing human apply-plan command contract wording.
+
+### Impact
+- The human console contract added in Phase 502 is now protected by the same release metadata guard family as apply-plan JSON and Markdown report coverage.
+- Release docs can no longer silently describe only `--json` and `--report` apply-plan paths while omitting the default operator-facing command contract.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from a release-guarded apply-plan command contract across human, JSON, and Markdown surfaces.
+
+## Phase 502 — Skill Proposal Apply-Plan Human Command Contract Smoke (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` now prints the same command contract summary that JSON and Markdown report outputs expose. Operators running the default human console path can see whether the follow-up command set is valid, which command keys are required, whether a review file is required, and which write/apply flags remain forbidden before copying any command.
+
+### Changed
+- Added a `Command contract` section to the default human apply-plan output.
+- Extended unit coverage so human output must show contract validity, status, required keys, and forbidden flags.
+- Added packed-tarball smoke coverage for the apply-plan human output path, including installed-bin and one-shot `npm exec --package <tarball>` execution.
+- Added package-smoke self-test drift coverage for missing human command contract wording.
+
+### Impact
+- Manual operators no longer need `--json` or `--report` to inspect the apply-plan command contract.
+- Local automation and human review now see the same read-only follow-up command boundary across JSON, Markdown, and console output.
+- Existing apply-plan JSON and Markdown schemas remain additive and unchanged from Phase 501.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from a consistent apply-plan command contract across every output mode.
+
+## Phase 501 — Skill Proposal Apply-Plan Command Contract Metadata (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --json` now emits an explicit `commandContract` block next to `commands` and `commandArgs`. The apply plan remains read-only, but local automation can now verify the required follow-up command keys, base command, review-file context, expected action suffixes, and forbidden write/apply flags without reparsing prose or rebuilding the contract externally.
+
+### Changed
+- Added deterministic apply-plan command contract metadata for the four follow-up commands: `reviewCheckJson`, `reviewCheckReport`, `proposalPatchPreview`, and `strictGate`.
+- Added per-command contract checks for `design-ai learn --propose-skills` base arguments, configured review-file preservation, expected suffix flags, and forbidden `--yes` usage.
+- Rendered the command contract summary in Markdown apply-plan reports.
+- Extended unit and package-smoke self-test coverage so packaged apply-plan JSON and Markdown reports must preserve the command contract shape.
+
+### Impact
+- Local AI/agent wrappers can inspect `commandContract.valid` and `commandContract.checks` before offering or executing follow-up commands.
+- Manual skill proposal apply plans keep the existing read-only boundary while making the automation contract self-describing.
+- The contract is additive and does not change existing `commands`, `commandArgs`, task, review, or privacy fields.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader local AI/agent learning development from a self-describing manual apply-plan command contract.
+
+## Phase 500 — Skill Proposal Apply-Plan CommandArgs Contract Coverage (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --json` now treats every follow-up command as a structured automation contract. The apply plan already exposed human command strings and machine-readable `commandArgs`; this phase ensures all four follow-up paths stay aligned under unit tests and packed-tarball smoke self-tests.
+
+### Changed
+- Consolidated apply-plan follow-up command generation so `commands` and `commandArgs` are derived from the same command map.
+- Extended unit coverage for `reviewCheckJson`, `reviewCheckReport`, `proposalPatchPreview`, and `strictGate` argument arrays.
+- Extended package-smoke self-test fixtures and assertions so packaged apply-plan JSON cannot silently drop any follow-up `commandArgs` path.
+
+### Impact
+- Local AI/agent skill proposal handoffs remain read-only while becoming safer for automation wrappers that execute `commandArgs` directly.
+- Manual apply plans now have stronger drift protection between human command strings and structured command arrays.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue AI/agent learning development from the verified proposal handoff contract.
+
+## Phase 499 — Skill Proposal Apply-Plan Context Commands (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` now carries the active proposal context into its follow-up commands. The apply plan already named the next review-check, report, patch-preview, and strict-gate commands; those commands now preserve `--file`, `--usage-file`, `--from-file`, and `--review-file` so operators can reproduce the same local signal context after manual skill edits.
+
+### Changed
+- Added shell-safe, context-preserving follow-up command generation for apply-plan output.
+- Added machine-readable `commandArgs` alongside the human command strings so local automation can run the same review-check or strict-gate commands without parsing shell text.
+- Extended unit tests and package-smoke self-tests to verify the apply-plan command context contract.
+
+### Impact
+- Manual skill proposal application remains read-only in `design-ai`: no learning profile, review file, skill file, target repo, external AI API, embedding, or fine-tuning mutation is introduced.
+- Operators get reproducible follow-up commands tied to the same learning profile, usage sidecar, signal directory, and review file used to create the apply plan.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue broader AI/agent learning development from a reproducible manual apply handoff baseline.
+
 ## Phase 495 — Learning Readiness Status Count Release Evidence (unreleased)
 
 The full release gate now passes after the learning readiness status-count index landed.

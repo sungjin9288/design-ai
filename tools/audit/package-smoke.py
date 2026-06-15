@@ -6774,6 +6774,7 @@ def assert_skill_proposal_apply_plan_json(
     profile_path: Path,
     usage_path: Path,
     review_path: Path,
+    signal_source: Path | None = None,
     context: str,
     cmd: list[str],
 ) -> None:
@@ -6786,7 +6787,42 @@ def assert_skill_proposal_apply_plan_json(
     review = payload.get("review")
     tasks = payload.get("tasks")
     commands = payload.get("commands")
+    command_args = payload.get("commandArgs")
+    command_contract = payload.get("commandContract")
     privacy = payload.get("privacy")
+    review_check_json_command = str(commands.get("reviewCheckJson", "")) if isinstance(commands, dict) else ""
+    command_context_args = [
+        "design-ai",
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(profile_path),
+        "--usage-file",
+        str(usage_path),
+    ]
+    if signal_source is not None:
+        command_context_args.extend(["--from-file", str(signal_source)])
+    command_context_args.extend([
+        "--review-file",
+        str(review_path),
+    ])
+    expected_command_args = {
+        "reviewCheckJson": [*command_context_args, "--review-check", "--json"],
+        "reviewCheckReport": [
+            *command_context_args,
+            "--review-check",
+            "--report",
+            "--out",
+            "skill-proposal-review-check.md",
+        ],
+        "proposalPatchPreview": [
+            *command_context_args,
+            "--patch",
+            "--out",
+            "skill-proposals.patch",
+        ],
+        "strictGate": [*command_context_args, "--strict", "--json"],
+    }
     require_package_smoke(
         payload.get("kind") == "skill-proposal-apply-plan"
         and payload.get("version") == 1
@@ -6809,8 +6845,30 @@ def assert_skill_proposal_apply_plan_json(
         and "accepted" in " ".join(tasks[0].get("manualSteps", []))
         and "applied" in " ".join(tasks[0].get("manualSteps", []))
         and isinstance(commands, dict)
-        and "learn --propose-skills" in str(commands.get("reviewCheckJson", ""))
-        and "--review-check --json" in str(commands.get("reviewCheckJson", ""))
+        and "learn --propose-skills" in review_check_json_command
+        and f"--file {profile_path}" in review_check_json_command
+        and f"--usage-file {usage_path}" in review_check_json_command
+        and (signal_source is None or f"--from-file {signal_source}" in review_check_json_command)
+        and f"--review-file {review_path}" in review_check_json_command
+        and "--review-check --json" in review_check_json_command
+        and isinstance(command_args, dict)
+        and all(command_args.get(key) == expected for key, expected in expected_command_args.items())
+        and isinstance(command_contract, dict)
+        and command_contract.get("valid") is True
+        and command_contract.get("status") == "pass"
+        and command_contract.get("commandCount") == 4
+        and command_contract.get("requiredKeys") == list(expected_command_args.keys())
+        and command_contract.get("missingCommandKeys") == []
+        and command_contract.get("unexpectedCommandKeys") == []
+        and command_contract.get("baseCommand") == ["design-ai", "learn", "--propose-skills"]
+        and command_contract.get("reviewFileRequired") is True
+        and command_contract.get("reviewFile") == str(review_path)
+        and command_contract.get("forbiddenFlags") == ["--yes"]
+        and isinstance(command_contract.get("summary"), dict)
+        and command_contract["summary"].get("failures") == 0
+        and command_contract["summary"].get("total") == 18
+        and isinstance(command_contract.get("checks"), list)
+        and all(check.get("passed") is True for check in command_contract.get("checks", []))
         and isinstance(privacy, dict)
         and privacy.get("mutatesProfile") is False
         and privacy.get("mutatesReviewFile") is False
@@ -6846,6 +6904,9 @@ def assert_skill_proposal_apply_plan_markdown(
         "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
         "## Follow-up Commands",
         "--review-check --json",
+        "## Command Contract",
+        "- Valid: yes",
+        "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
         "## Privacy And Boundaries",
         "- Mutates learning profile: no",
         "- Mutates review file: no",
@@ -6857,6 +6918,32 @@ def assert_skill_proposal_apply_plan_markdown(
             context=context,
             cmd=cmd,
             message=f"learn skill proposal apply-plan Markdown report missing {expected!r}",
+        )
+
+
+def assert_skill_proposal_apply_plan_human(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    for expected in (
+        "Skill proposal apply plan",
+        "Manual apply tasks:",
+        "Follow-up commands:",
+        "Command contract:",
+        "- valid: yes",
+        "- status: pass",
+        "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- forbidden flags: --yes",
+        "Privacy: apply plan is read-only",
+    ):
+        require_package_smoke(
+            expected in raw,
+            context=context,
+            cmd=cmd,
+            message=f"learn skill proposal apply-plan human output missing {expected!r}",
         )
 
 
@@ -8340,6 +8427,7 @@ def assert_learning_relevance_smoke(
         profile_path=proposal_profile_path,
         usage_path=proposal_usage_path,
         review_path=skill_proposals_apply_plan_review_path,
+        signal_source=signal_dir,
         context=f"{context} learn skill proposals apply-plan JSON",
         cmd=skill_proposals_apply_plan_json_cmd,
     )
@@ -8349,6 +8437,37 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn skill proposals apply-plan JSON",
         cmd=skill_proposals_apply_plan_json_cmd,
         message="learn skill proposals apply-plan JSON output must not mutate the profile or review file",
+    )
+
+    skill_proposals_apply_plan_human_cmd = command_factory(
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(proposal_profile_path),
+        "--usage-file",
+        str(proposal_usage_path),
+        "--review-file",
+        str(skill_proposals_apply_plan_review_path),
+        "--apply-plan",
+        "--from-file",
+        str(signal_dir),
+    )
+    skill_proposals_apply_plan_human_result = run_plain(
+        skill_proposals_apply_plan_human_cmd,
+        cwd=cwd,
+        env=relevance_env,
+    )
+    assert_skill_proposal_apply_plan_human(
+        skill_proposals_apply_plan_human_result.stdout,
+        context=f"{context} learn skill proposals apply-plan human output",
+        cmd=skill_proposals_apply_plan_human_cmd,
+    )
+    require_package_smoke(
+        proposal_profile_path.read_text(encoding="utf-8") == proposal_before
+        and skill_proposals_apply_plan_review_path.read_text(encoding="utf-8") == skill_proposals_apply_plan_review_before,
+        context=f"{context} learn skill proposals apply-plan human output",
+        cmd=skill_proposals_apply_plan_human_cmd,
+        message="learn skill proposals apply-plan human output must not mutate the profile or review file",
     )
 
     skill_proposals_apply_plan_report_path = profile_path.with_name(f"{profile_path.stem}-skill-proposal-apply-plan.md")
@@ -12703,8 +12822,87 @@ def run_self_test() -> None:
                 },
             ],
             "commands": {
-                "reviewCheckJson": f"design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-                "reviewCheckReport": f"design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                "reviewCheckJson": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                "strictGate": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+            },
+            "commandArgs": {
+                "reviewCheckJson": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--review-check", "--json",
+                ],
+                "reviewCheckReport": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                ],
+                "proposalPatchPreview": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--patch", "--out", "skill-proposals.patch",
+                ],
+                "strictGate": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--strict", "--json",
+                ],
+            },
+            "commandContract": {
+                "version": 1,
+                "valid": True,
+                "status": "pass",
+                "commandCount": 4,
+                "requiredKeys": [
+                    "reviewCheckJson",
+                    "reviewCheckReport",
+                    "proposalPatchPreview",
+                    "strictGate",
+                ],
+                "missingCommandKeys": [],
+                "unexpectedCommandKeys": [],
+                "baseCommand": ["design-ai", "learn", "--propose-skills"],
+                "reviewFileRequired": True,
+                "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
+                "forbiddenFlags": ["--yes"],
+                "checks": [
+                    {"id": "required-command-keys-present", "level": "pass", "passed": True},
+                    {"id": "no-unexpected-command-keys", "level": "pass", "passed": True},
+                    {"id": "reviewCheckJson-base-command", "level": "pass", "passed": True},
+                    {"id": "reviewCheckJson-review-file-context", "level": "pass", "passed": True},
+                    {"id": "reviewCheckJson-expected-suffix", "level": "pass", "passed": True},
+                    {"id": "reviewCheckJson-read-only-flags", "level": "pass", "passed": True},
+                    {"id": "reviewCheckReport-base-command", "level": "pass", "passed": True},
+                    {"id": "reviewCheckReport-review-file-context", "level": "pass", "passed": True},
+                    {"id": "reviewCheckReport-expected-suffix", "level": "pass", "passed": True},
+                    {"id": "reviewCheckReport-read-only-flags", "level": "pass", "passed": True},
+                    {"id": "proposalPatchPreview-base-command", "level": "pass", "passed": True},
+                    {"id": "proposalPatchPreview-review-file-context", "level": "pass", "passed": True},
+                    {"id": "proposalPatchPreview-expected-suffix", "level": "pass", "passed": True},
+                    {"id": "proposalPatchPreview-read-only-flags", "level": "pass", "passed": True},
+                    {"id": "strictGate-base-command", "level": "pass", "passed": True},
+                    {"id": "strictGate-review-file-context", "level": "pass", "passed": True},
+                    {"id": "strictGate-expected-suffix", "level": "pass", "passed": True},
+                    {"id": "strictGate-read-only-flags", "level": "pass", "passed": True},
+                ],
+                "summary": {
+                    "failures": 0,
+                    "passes": 18,
+                    "total": 18,
+                },
             },
             "recommendations": [{"level": "warning", "text": "Apply accepted proposal deltas manually."}],
             "privacy": {
@@ -12721,8 +12919,32 @@ def run_self_test() -> None:
             profile_path=learning_profile_path,
             usage_path=learning_usage_path,
             review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
             context=context,
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        )
+        learning_skill_proposal_apply_plan_human = "\n".join([
+            "  design-ai learn",
+            "  Skill proposal apply plan",
+            "",
+            "Manual apply tasks:",
+            "- skill-proposal-component-spec-writer-abcdef1234: skills/component-spec-writer/SKILL.md",
+            "",
+            "Follow-up commands:",
+            f"- reviewCheckJson: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "",
+            "Command contract:",
+            "- valid: yes",
+            "- status: pass",
+            "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+            "- forbidden flags: --yes",
+            "",
+            "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
+        ])
+        assert_skill_proposal_apply_plan_human(
+            learning_skill_proposal_apply_plan_human,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
         )
         learning_skill_proposal_apply_plan_markdown = "\n".join([
             "# Skill Proposal Apply Plan",
@@ -12750,7 +12972,12 @@ def run_self_test() -> None:
             "",
             "## Follow-up Commands",
             "",
-            f"- reviewCheckJson: `design-ai learn --propose-skills --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            f"- reviewCheckJson: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            "",
+            "## Command Contract",
+            "",
+            "- Valid: yes",
+            "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
             "",
             "## Privacy And Boundaries",
             "",
@@ -13021,10 +13248,23 @@ def run_self_test() -> None:
                 profile_path=learning_profile_path,
                 usage_path=learning_usage_path,
                 review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
                 context=context,
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
             ),
             expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_human(
+                learning_skill_proposal_apply_plan_human.replace(
+                    "Command contract:",
+                    "Command summary:",
+                ),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+            ),
+            expected="learn skill proposal apply-plan human output missing 'Command contract:'",
             scope="package smoke",
         )
         expect_self_test_failure(

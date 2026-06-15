@@ -870,6 +870,24 @@ function printSkillProposalApplyPlan(payload) {
     }
   }
 
+  if (payload.commandContract) {
+    const contract = payload.commandContract;
+    console.log();
+    console.log("Command contract:");
+    console.log(`- valid: ${contract.valid ? "yes" : "no"}`);
+    console.log(`- status: ${contract.status || "unknown"}`);
+    console.log(`- required keys: ${(contract.requiredKeys || []).join(", ") || "none"}`);
+    console.log(`- command count: ${contract.commandCount || 0}`);
+    console.log(`- review file required: ${contract.reviewFileRequired ? "yes" : "no"}`);
+    console.log(`- forbidden flags: ${(contract.forbiddenFlags || []).join(", ") || "none"}`);
+    if (Array.isArray(contract.missingCommandKeys) && contract.missingCommandKeys.length > 0) {
+      console.log(`- missing command keys: ${contract.missingCommandKeys.join(", ")}`);
+    }
+    if (Array.isArray(contract.unexpectedCommandKeys) && contract.unexpectedCommandKeys.length > 0) {
+      console.log(`- unexpected command keys: ${contract.unexpectedCommandKeys.join(", ")}`);
+    }
+  }
+
   if (payload.recommendations.length > 0) {
     console.log();
     console.log("Recommendations:");

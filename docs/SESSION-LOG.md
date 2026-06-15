@@ -5,6 +5,11 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 503 (unreleased)** — Added release metadata guard coverage for packed-tarball human apply-plan `Command contract` smoke wording.
+- **Phase 502 (unreleased)** — Added default human output and packed-tarball smoke coverage for skill proposal apply-plan command contract summaries.
+- **Phase 501 (unreleased)** — Added self-describing `commandContract` metadata and Markdown summaries for skill proposal apply-plan follow-up commands so local automation can validate required keys, review-file context, suffixes, and read-only flags.
+- **Phase 500 (unreleased)** — Consolidated skill proposal apply-plan follow-up command generation and expanded unit/package-smoke coverage for every machine-readable `commandArgs` path.
+- **Phase 499 (unreleased)** — Added context-preserving apply-plan follow-up commands and machine-readable `commandArgs` for `learn --propose-skills --apply-plan` manual skill proposal handoffs.
 - **Phase 498 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` accepted proposal manual apply plans plus packed-tarball smoke and release metadata guard coverage.
 - **Phase 497 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` Markdown readiness reports.
 - **Phase 496 (unreleased)** — Added read-only `design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check` review-file readiness checks plus packed-tarball smoke and release metadata guard coverage.

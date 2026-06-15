@@ -5720,6 +5720,64 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(applyPlan.tasks[0].proposalId, strictPayload.proposals[0].id);
     assert.equal(applyPlan.tasks[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
     assert.match(applyPlan.tasks[0].manualSteps.join("\n"), /update the review decision from `accepted` to `applied`/);
+    assert.match(applyPlan.commands.reviewCheckJson, /--file /);
+    assert.match(applyPlan.commands.reviewCheckJson, /--usage-file /);
+    assert.match(applyPlan.commands.reviewCheckJson, /--from-file /);
+    assert.match(applyPlan.commands.reviewCheckJson, /--review-check --json/);
+    const applyPlanContextArgs = [
+      "design-ai",
+      "learn",
+      "--propose-skills",
+      "--file",
+      filePath,
+      "--usage-file",
+      usageFile,
+      "--from-file",
+      dir,
+      "--review-file",
+      acceptedReviewFile,
+    ];
+    assert.deepEqual(applyPlan.commandArgs.reviewCheckJson, [
+      ...applyPlanContextArgs,
+      "--review-check",
+      "--json",
+    ]);
+    assert.deepEqual(applyPlan.commandArgs.reviewCheckReport, [
+      ...applyPlanContextArgs,
+      "--review-check",
+      "--report",
+      "--out",
+      "skill-proposal-review-check.md",
+    ]);
+    assert.deepEqual(applyPlan.commandArgs.proposalPatchPreview, [
+      ...applyPlanContextArgs,
+      "--patch",
+      "--out",
+      "skill-proposals.patch",
+    ]);
+    assert.deepEqual(applyPlan.commandArgs.strictGate, [
+      ...applyPlanContextArgs,
+      "--strict",
+      "--json",
+    ]);
+    assert.equal(applyPlan.commandContract.valid, true);
+    assert.equal(applyPlan.commandContract.status, "pass");
+    assert.equal(applyPlan.commandContract.commandCount, 4);
+    assert.deepEqual(applyPlan.commandContract.requiredKeys, [
+      "reviewCheckJson",
+      "reviewCheckReport",
+      "proposalPatchPreview",
+      "strictGate",
+    ]);
+    assert.deepEqual(applyPlan.commandContract.missingCommandKeys, []);
+    assert.deepEqual(applyPlan.commandContract.unexpectedCommandKeys, []);
+    assert.deepEqual(applyPlan.commandContract.baseCommand, ["design-ai", "learn", "--propose-skills"]);
+    assert.equal(applyPlan.commandContract.reviewFileRequired, true);
+    assert.equal(applyPlan.commandContract.reviewFile, acceptedReviewFile);
+    assert.deepEqual(applyPlan.commandContract.forbiddenFlags, ["--yes"]);
+    assert.equal(applyPlan.commandContract.summary.failures, 0);
+    assert.equal(applyPlan.commandContract.summary.total, 18);
+    assert.equal(applyPlan.commandContract.checks.every((check) => check.passed), true);
     assert.equal(applyPlan.privacy.mutatesReviewFile, false);
     assert.equal(applyPlan.privacy.mutatesSkillFiles, false);
     const applyPlanReport = renderSkillProposalApplyPlanReport(applyPlan, {
@@ -5728,6 +5786,9 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /^# Skill Proposal Apply Plan/);
     assert.match(applyPlanReport, /Manual Apply Tasks/);
     assert.match(applyPlanReport, /After the skill edit and verification pass, update the review decision from `accepted` to `applied`/);
+    assert.match(applyPlanReport, /## Command Contract/);
+    assert.match(applyPlanReport, /- Valid: yes/);
+    assert.match(applyPlanReport, /- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate/);
     assert.match(applyPlanReport, /- Mutates review file: no/);
 
     const applyPlanJsonOutput = await captureStdout(() => runLearn([
@@ -5748,6 +5809,26 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.equal(applyPlanJsonPayload.acceptedCount, 1);
     assert.equal(applyPlanJsonPayload.count, 1);
     assert.equal(applyPlanJsonPayload.tasks[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
+    assert.deepEqual(applyPlanJsonPayload.commandArgs.strictGate, [
+      ...applyPlanContextArgs,
+      "--strict",
+      "--json",
+    ]);
+    assert.deepEqual(applyPlanJsonPayload.commandArgs.proposalPatchPreview, [
+      ...applyPlanContextArgs,
+      "--patch",
+      "--out",
+      "skill-proposals.patch",
+    ]);
+    assert.equal(applyPlanJsonPayload.commandContract.valid, true);
+    assert.equal(applyPlanJsonPayload.commandContract.status, "pass");
+    assert.deepEqual(applyPlanJsonPayload.commandContract.requiredKeys, [
+      "reviewCheckJson",
+      "reviewCheckReport",
+      "proposalPatchPreview",
+      "strictGate",
+    ]);
+    assert.equal(applyPlanJsonPayload.commandContract.summary.failures, 0);
     assert.equal(readFileSync(filePath, "utf8"), before);
     assert.equal(readFileSync(acceptedReviewFile, "utf8"), acceptedReviewBefore);
     assert.equal(readFileSync(candidateSkillPath, "utf8"), candidateSkillBefore);
@@ -5766,6 +5847,11 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     ]));
     assert.match(applyPlanHumanOutput, /Skill proposal apply plan/);
     assert.match(applyPlanHumanOutput, /Manual apply tasks:/);
+    assert.match(applyPlanHumanOutput, /Command contract:/);
+    assert.match(applyPlanHumanOutput, /- valid: yes/);
+    assert.match(applyPlanHumanOutput, /- status: pass/);
+    assert.match(applyPlanHumanOutput, /- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate/);
+    assert.match(applyPlanHumanOutput, /- forbidden flags: --yes/);
     assert.match(applyPlanHumanOutput, /Privacy: apply plan is read-only/);
 
     const applyPlanReportPath = path.join(dir, "skill-proposal-apply-plan.md");
@@ -5788,6 +5874,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     const applyPlanReportFile = readFileSync(applyPlanReportPath, "utf8");
     assert.match(applyPlanReportFile, /^# Skill Proposal Apply Plan/);
     assert.match(applyPlanReportFile, /- Accepted proposals: 1/);
+    assert.match(applyPlanReportFile, /## Command Contract/);
+    assert.match(applyPlanReportFile, /- Valid: yes/);
     assert.match(applyPlanReportFile, /- Mutates skill files: no/);
     assert.equal(readFileSync(filePath, "utf8"), before);
     assert.equal(readFileSync(acceptedReviewFile, "utf8"), acceptedReviewBefore);
