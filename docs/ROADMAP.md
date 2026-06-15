@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 514 — Apply-Plan Stage Selection Summary (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now expose a compact stage-selection summary. Phase 513 added direct required-stage handoff fields; this phase groups the optional preview path, first required manual stage, and first required command-bearing gate into one machine-readable object.
+
+### Changed
+- Added `operatorRunbook.stageSelection` for valid apply-plan command contracts.
+- The selection summary reports `strategy`, `stageOrder`, `nextStageKey`, optional preview command keys, `nextRequiredStageKey`, and `nextRequiredCommandStageKey`.
+- Rendered the stage-selection strategy in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the stage-selection contract.
+
+### Impact
+- Automation can read one object to decide whether to offer optional preview artifacts, route the operator to manual skill edits, or continue to the read-only review gate.
+- The strategy value makes the optional-before-required policy explicit without parsing prose.
+- Invalid command contracts stay fail-closed with an empty `stageSelection` object.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 513 — Apply-Plan Required Stage Handoff Index (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now separate the optional next stage from the first required operator stage. Phase 512 made every stage addressable by key; this phase lets local AI/agent wrappers branch directly to `manualSkillEdit` or the next required command-bearing gate without scanning stage metadata.

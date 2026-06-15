@@ -125,6 +125,18 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 514: apply-plan stage selection summary
+
+Added `operatorRunbook.stageSelection` to group the stage-selection policy in one object:
+
+- `strategy`: currently `optional-preview-before-required-manual-edit`
+- `stageOrder`: stable operator stage order
+- `nextStageKey` / `nextStageCommandKeys`: optional preview artifacts
+- `nextRequiredStageKey` / `nextRequiredStageCommandKeys`: required manual skill edit stage
+- `nextRequiredCommandStageKey` / `nextRequiredCommandStageCommandKeys`: required read-only review gate
+
+Wrappers should use this object when they need a single branch point for optional previews versus mandatory operator work. The top-level fields remain for backward compatibility, and invalid command contracts still return an empty `stageSelection` object.
+
 ### Phase 513: apply-plan required stage handoff
 
 Added required-stage handoff fields to `operatorRunbook` so local AI/agent wrappers can distinguish optional local preview artifacts from required operator work:

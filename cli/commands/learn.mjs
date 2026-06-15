@@ -910,6 +910,9 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- operator runbook next stage: ${operatorRunbook.nextStageKey || "none"}`);
     console.log(`- operator runbook next required stage: ${operatorRunbook.nextRequiredStageKey || "none"}`);
     console.log(`- operator runbook next required command stage: ${operatorRunbook.nextRequiredCommandStageKey || "none"}`);
+    if (operatorRunbook.stageSelection?.strategy) {
+      console.log(`- operator runbook stage selection: ${operatorRunbook.stageSelection.strategy}`);
+    }
     if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {
       console.log("Command sequence:");
       for (const item of contract.commandSequence) {

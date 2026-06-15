@@ -5915,6 +5915,17 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.nextRequiredStageCommandKeys, []);
     assert.equal(applyPlan.commandContract.operatorRunbook.nextRequiredCommandStageKey, "reviewReadiness");
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.nextRequiredCommandStageCommandKeys, ["reviewCheckJson"]);
+    assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageSelection, {
+      strategy: "optional-preview-before-required-manual-edit",
+      stageOrder: ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+      nextStageKey: "previewArtifacts",
+      nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      nextRequiredStageKey: "manualSkillEdit",
+      nextRequiredStageCommandKeys: [],
+      nextRequiredCommandStageKey: "reviewReadiness",
+      nextRequiredCommandStageCommandKeys: ["reviewCheckJson"],
+      reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
+    });
     assert.deepEqual(applyPlan.commandContract.operatorRunbook.stageKeys, [
       "previewArtifacts",
       "manualSkillEdit",
@@ -6021,6 +6032,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextRequiredStageCommandKeys: [],
       nextRequiredCommandStageKey: "",
       nextRequiredCommandStageCommandKeys: [],
+      stageSelection: {},
       stageKeys: [],
       stageByKey: {},
       stages: [],
@@ -6093,6 +6105,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanReport, /- Operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanReport, /- Operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanReport, /- Operator runbook next required command stage: reviewReadiness/);
+    assert.match(applyPlanReport, /- Operator runbook stage selection: optional-preview-before-required-manual-edit/);
     assert.match(applyPlanReport, /Command sequence:/);
     assert.match(applyPlanReport, /- 1\. reviewCheckJson \(preview-only \/ read-only\): `design-ai learn --propose-skills .* --review-check --json`/);
     assert.match(applyPlanReport, /- 2\. reviewCheckReport \(output-artifact \/ local-output\): `design-ai learn --propose-skills .* --review-check --report --out skill-proposal-review-check\.md`/);
@@ -6221,6 +6234,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.nextRequiredStageCommandKeys, []);
     assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.nextRequiredCommandStageKey, "reviewReadiness");
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.nextRequiredCommandStageCommandKeys, ["reviewCheckJson"]);
+    assert.equal(
+      applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.strategy,
+      "optional-preview-before-required-manual-edit",
+    );
+    assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.stageOrder, [
+      "previewArtifacts",
+      "manualSkillEdit",
+      "reviewReadiness",
+      "strictGate",
+    ]);
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredStageKey, "manualSkillEdit");
+    assert.equal(applyPlanJsonPayload.commandContract.operatorRunbook.stageSelection.nextRequiredCommandStageKey, "reviewReadiness");
     assert.deepEqual(applyPlanJsonPayload.commandContract.operatorRunbook.stageKeys, [
       "previewArtifacts",
       "manualSkillEdit",
@@ -6306,6 +6331,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
     assert.match(applyPlanHumanOutput, /- operator runbook next stage: previewArtifacts/);
     assert.match(applyPlanHumanOutput, /- operator runbook next required stage: manualSkillEdit/);
     assert.match(applyPlanHumanOutput, /- operator runbook next required command stage: reviewReadiness/);
+    assert.match(applyPlanHumanOutput, /- operator runbook stage selection: optional-preview-before-required-manual-edit/);
     assert.match(applyPlanHumanOutput, /Command sequence:/);
     assert.match(applyPlanHumanOutput, /- 1\. reviewCheckJson: preview-only \/ read-only/);
     assert.match(applyPlanHumanOutput, /- 2\. reviewCheckReport: output-artifact \/ local-output/);

@@ -807,6 +807,19 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const nextRequiredCommandStage = failures > 0
     ? null
     : operatorRunbookStages.find((stage) => stage.required && stage.commandKeys.length > 0) || null;
+  const operatorRunbookStageSelection = failures > 0
+    ? {}
+    : {
+      strategy: "optional-preview-before-required-manual-edit",
+      stageOrder: operatorRunbookStageKeys,
+      nextStageKey: "previewArtifacts",
+      nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      nextRequiredStageKey: nextRequiredStage?.key || "",
+      nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
+      nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+      nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
+      reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
+    };
   const operatorRunbook = {
     version: 1,
     executable: failures === 0,
@@ -820,6 +833,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
     nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
     nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
+    stageSelection: operatorRunbookStageSelection,
     stageKeys: operatorRunbookStageKeys,
     stageByKey: operatorRunbookStageByKey,
     stages: operatorRunbookStages,
@@ -1379,6 +1393,9 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Operator runbook next stage", operatorRunbook.nextStageKey || "none"));
   lines.push(listItem("Operator runbook next required stage", operatorRunbook.nextRequiredStageKey || "none"));
   lines.push(listItem("Operator runbook next required command stage", operatorRunbook.nextRequiredCommandStageKey || "none"));
+  if (operatorRunbook.stageSelection?.strategy) {
+    lines.push(listItem("Operator runbook stage selection", operatorRunbook.stageSelection.strategy));
+  }
   const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
   if (commandSequence.length > 0) {
     lines.push("");
