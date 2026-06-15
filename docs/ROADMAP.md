@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 510 — Apply-Plan Command Sequence Key Index (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a key index for the follow-up command sequence. Phase 509 added aggregate sequence safety; this phase lets local AI/agent wrappers jump directly to `reviewCheckJson`, `reviewCheckReport`, `proposalPatchPreview`, or `strictGate` without scanning the ordered array.
+
+### Changed
+- Added `commandSequenceKeys` to preserve the validated follow-up command key order as a top-level list.
+- Added `commandSequenceByKey` so each sequence item is addressable by its stable key.
+- Rendered command sequence keys in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the key-index contract.
+
+### Impact
+- Automation can retrieve named follow-up commands directly while still using `commandSequence` for deterministic execution order.
+- The index remains fail-closed: invalid command contracts expose an empty key list and empty key map.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 509 — Apply-Plan Command Sequence Summary Contract (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a top-level summary for the full follow-up command sequence. Phase 508 made each step executable from structured args; this phase lets local AI/agent wrappers decide whether the whole sequence is executable, blocked, read-only, local-output-producing, mutating, or external-call-free without reducing the full array.

@@ -6825,6 +6825,7 @@ def assert_skill_proposal_apply_plan_json(
     }
     command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
     command_sequence_summary = command_contract.get("commandSequenceSummary") if isinstance(command_contract, dict) else None
+    command_sequence_by_key = command_contract.get("commandSequenceByKey") if isinstance(command_contract, dict) else None
     expected_command_sequence = [
         (1, "reviewCheckJson", "preview-only", "read-only", False),
         (2, "reviewCheckReport", "output-artifact", "local-output", True),
@@ -6891,6 +6892,7 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
         and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
         and command_contract.get("commandSequenceCount") == 4
+        and command_contract.get("commandSequenceKeys") == list(expected_command_args.keys())
         and isinstance(command_sequence_summary, dict)
         and command_sequence_summary.get("executable") is True
         and command_sequence_summary.get("blocked") is False
@@ -6907,6 +6909,18 @@ def assert_skill_proposal_apply_plan_json(
         and command_sequence_summary.get("runPolicy") == "mixed-preview-local-output"
         and isinstance(command_sequence, list)
         and len(command_sequence) == 4
+        and isinstance(command_sequence_by_key, dict)
+        and list(command_sequence_by_key.keys()) == list(expected_command_args.keys())
+        and all(
+            isinstance(command_sequence_by_key.get(key), dict)
+            and command_sequence_by_key[key].get("key") == key
+            and command_sequence_by_key[key].get("command") == str(commands.get(key, ""))
+            and command_sequence_by_key[key].get("runPolicy") == run_policy
+            and isinstance(command_sequence_by_key[key].get("safety"), dict)
+            and command_sequence_by_key[key]["safety"].get("level") == safety_level
+            for _, key, run_policy, safety_level, _
+            in expected_command_sequence
+        )
         and all(
             isinstance(item, dict)
             and item.get("step") == step
@@ -13033,6 +13047,38 @@ def run_self_test() -> None:
                     "runPolicy": "mixed-preview-local-output",
                     "reason": "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
                 },
+                "commandSequenceKeys": [
+                    "reviewCheckJson",
+                    "reviewCheckReport",
+                    "proposalPatchPreview",
+                    "strictGate",
+                ],
+                "commandSequenceByKey": {
+                    "reviewCheckJson": {
+                        "key": "reviewCheckJson",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                        "runPolicy": "preview-only",
+                        "safety": {"level": "read-only"},
+                    },
+                    "reviewCheckReport": {
+                        "key": "reviewCheckReport",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                        "runPolicy": "output-artifact",
+                        "safety": {"level": "local-output"},
+                    },
+                    "proposalPatchPreview": {
+                        "key": "proposalPatchPreview",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                        "runPolicy": "output-artifact",
+                        "safety": {"level": "local-output"},
+                    },
+                    "strictGate": {
+                        "key": "strictGate",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                        "runPolicy": "strict-readiness-gate",
+                        "safety": {"level": "read-only"},
+                    },
+                },
                 "commandSequence": [
                     {
                         "step": 1,
@@ -13211,6 +13257,7 @@ def run_self_test() -> None:
             "- next command safety: read-only",
             f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
             "- command sequence count: 4",
+            "- command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
             "- command sequence policy: mixed-preview-local-output",
             "- command sequence executable: yes",
             "- command sequence local outputs: 2",
@@ -13274,6 +13321,7 @@ def run_self_test() -> None:
             "- Next command safety: read-only",
             f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
             "- Command sequence count: 4",
+            "- Command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
             "- Command sequence policy: mixed-preview-local-output",
             "- Command sequence executable: yes",
             "- Command sequence local outputs: 2",

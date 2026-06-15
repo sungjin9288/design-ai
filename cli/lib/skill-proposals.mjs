@@ -753,6 +753,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       ? "Command contract failures must be fixed before running follow-up commands."
       : "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
   };
+  const commandSequenceKeys = commandSequence.map((item) => item.key);
+  const commandSequenceByKey = Object.fromEntries(commandSequence.map((item) => [item.key, item]));
   return {
     version: 1,
     valid: failures === 0,
@@ -779,6 +781,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     commandSequenceCount: commandSequence.length,
     commandSequence,
     commandSequenceSummary,
+    commandSequenceKeys,
+    commandSequenceByKey,
     nextAction: failures > 0
       ? "Fix command contract failures before running follow-up commands."
       : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
@@ -1286,6 +1290,7 @@ export function renderSkillProposalApplyPlanReport(payload, {
   if (commandContract.nextCommandSafety?.level) lines.push(listItem("Next command safety", commandContract.nextCommandSafety.level));
   if (commandContract.nextCommand) lines.push(listItem("Next command", `\`${commandContract.nextCommand}\``));
   lines.push(listItem("Command sequence count", commandContract.commandSequenceCount || 0));
+  lines.push(listItem("Command sequence keys", (commandContract.commandSequenceKeys || []).join(", ") || "none"));
   const sequenceSummary = commandContract.commandSequenceSummary || {};
   lines.push(listItem("Command sequence policy", sequenceSummary.runPolicy || "none"));
   lines.push(listItem("Command sequence executable", yesNo(Boolean(sequenceSummary.executable))));

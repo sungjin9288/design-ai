@@ -894,6 +894,7 @@ function printSkillProposalApplyPlan(payload) {
       console.log(`- next command: ${contract.nextCommand}`);
     }
     console.log(`- command sequence count: ${contract.commandSequenceCount || 0}`);
+    console.log(`- command sequence keys: ${(contract.commandSequenceKeys || []).join(", ") || "none"}`);
     const sequenceSummary = contract.commandSequenceSummary || {};
     console.log(`- command sequence policy: ${sequenceSummary.runPolicy || "none"}`);
     console.log(`- command sequence executable: ${sequenceSummary.executable ? "yes" : "no"}`);

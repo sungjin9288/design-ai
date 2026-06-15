@@ -125,6 +125,19 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 510: apply-plan sequence key index
+
+Added `commandSequenceKeys` and `commandSequenceByKey` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can retrieve named follow-up commands without scanning the ordered `commandSequence` array.
+
+The index preserves the same validated command items:
+
+- `reviewCheckJson`
+- `reviewCheckReport`
+- `proposalPatchPreview`
+- `strictGate`
+
+Invalid command contracts stay fail-closed with an empty key list and empty key map. The key index is additive and keeps the same boundary as the ordered sequence: local output previews may write requested `--out` artifacts, but the apply plan still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
 ### Phase 509: apply-plan sequence safety summary
 
 Added `commandSequenceSummary` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can branch on the full follow-up handoff without reducing the full `commandSequence` array.

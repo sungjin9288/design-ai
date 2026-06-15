@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 510 (unreleased)** — Added apply-plan `commandSequenceKeys` and `commandSequenceByKey` so local AI/agent wrappers can retrieve named follow-up commands directly without scanning the ordered sequence array.
 - **Phase 509 (unreleased)** — Added apply-plan `commandSequenceSummary` so local AI/agent wrappers can branch on executable/blocked state, local output writes, mutation flags, and external-AI boundaries without reducing the full sequence array.
 - **Phase 508 (unreleased)** — Added apply-plan `commandSequence` and per-step run-policy/safety metadata so local AI/agent wrappers can execute the full follow-up handoff in deterministic order without parsing prose.
 - **Phase 507 (unreleased)** — Added apply-plan `nextCommandRunPolicy` and `nextCommandSafety` metadata so local AI/agent wrappers can verify the selected follow-up command is read-only and non-mutating before execution.
