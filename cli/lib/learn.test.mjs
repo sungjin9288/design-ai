@@ -6109,6 +6109,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: [],
           proposalPatchPreview: ["manual-review", "clean-workspace"],
         },
+        commandOutputArtifactApplyPreconditionLabelsByKey: {
+          reviewCheckReport: [],
+          proposalPatchPreview: ["Manual review completed", "Clean workspace confirmed"],
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6150,6 +6154,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
         nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
         nextCommandOutputArtifactApplyPreconditionIds: [],
+        nextCommandOutputArtifactApplyPreconditionLabels: [],
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6766,6 +6771,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: [],
         proposalPatchPreview: ["manual-review", "clean-workspace"],
       },
+      commandOutputArtifactApplyPreconditionLabelsByKey: {
+        reviewCheckReport: [],
+        proposalPatchPreview: ["Manual review completed", "Clean workspace confirmed"],
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6807,6 +6816,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
       nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
       nextCommandOutputArtifactApplyPreconditionIds: [],
+      nextCommandOutputArtifactApplyPreconditionLabels: [],
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

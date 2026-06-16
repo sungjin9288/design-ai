@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 541 (unreleased)** — Added apply-plan `decision.commandOutputArtifactApplyPreconditionLabelsByKey` and `decision.nextCommandOutputArtifactApplyPreconditionLabels` so wrappers can render patch-apply checklist copy without hard-coding labels for precondition ids.
 - **Phase 540 (unreleased)** — Added apply-plan `decision.commandOutputArtifactApplyPreconditionIdsByKey` and `decision.nextCommandOutputArtifactApplyPreconditionIds` so wrappers can render ordered patch-apply checklist items without recombining review and clean-workspace booleans.
 - **Phase 539 (unreleased)** — Added apply-plan `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey` and `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply` so wrappers can require clean workspaces before manual patch-preview apply without confusing preview generation safety with apply safety.
 - **Phase 538 (unreleased)** — Added apply-plan `decision.commandOutputArtifactReviewInstructionByKey` and `decision.nextCommandOutputArtifactReviewInstruction` so wrappers can render artifact-specific review guidance without hard-coding Markdown report or patch-preview copy.

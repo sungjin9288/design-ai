@@ -80,6 +80,10 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS = Obje
   reviewCheckReport: Object.freeze([]),
   proposalPatchPreview: Object.freeze(["manual-review", "clean-workspace"]),
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS = Object.freeze({
+  reviewCheckReport: Object.freeze([]),
+  proposalPatchPreview: Object.freeze(["Manual review completed", "Clean workspace confirmed"]),
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -1017,6 +1021,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       [...(APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS[command.key] || [])],
     ]),
   );
+  const decisionCommandOutputArtifactApplyPreconditionLabelsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      [...(APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS[command.key] || [])],
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1054,6 +1064,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactApplyPreconditionIds = decisionNextCommand.key
     ? decisionCommandOutputArtifactApplyPreconditionIdsByKey[decisionNextCommand.key] || []
     : [];
+  const decisionNextCommandOutputArtifactApplyPreconditionLabels = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionLabelsByKey[decisionNextCommand.key] || []
+    : [];
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1085,6 +1098,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactReviewInstructionByKey: decisionCommandOutputArtifactReviewInstructionByKey,
         commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey: decisionCommandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey,
         commandOutputArtifactApplyPreconditionIdsByKey: decisionCommandOutputArtifactApplyPreconditionIdsByKey,
+        commandOutputArtifactApplyPreconditionLabelsByKey: decisionCommandOutputArtifactApplyPreconditionLabelsByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1099,6 +1113,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactReviewInstruction: decisionNextCommandOutputArtifactReviewInstruction,
         nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: decisionNextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply,
         nextCommandOutputArtifactApplyPreconditionIds: decisionNextCommandOutputArtifactApplyPreconditionIds,
+        nextCommandOutputArtifactApplyPreconditionLabels: decisionNextCommandOutputArtifactApplyPreconditionLabels,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

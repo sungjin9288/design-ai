@@ -125,6 +125,16 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 541: apply-plan decision apply precondition labels
+
+Added selected-branch ordered apply-precondition labels under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactApplyPreconditionLabelsByKey.reviewCheckReport`
+- `decision.commandOutputArtifactApplyPreconditionLabelsByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactApplyPreconditionLabels`
+
+Wrappers can now render checklist copy without maintaining a local label map for precondition ids. Use `decision.commandOutputArtifactApplyPreconditionIdsByKey.<key>` for stable automation ids and `decision.commandOutputArtifactApplyPreconditionLabelsByKey.<key>` for display copy in the same order.
+
 ### Phase 540: apply-plan decision apply precondition ids
 
 Added selected-branch ordered apply-precondition ids under `operatorRunbook.stageSelection.decision`:
