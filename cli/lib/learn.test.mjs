@@ -6105,6 +6105,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: false,
           proposalPatchPreview: true,
         },
+        commandOutputArtifactApplyPreconditionIdsByKey: {
+          reviewCheckReport: [],
+          proposalPatchPreview: ["manual-review", "clean-workspace"],
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6145,6 +6149,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactRequiresManualReview: false,
         nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
         nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
+        nextCommandOutputArtifactApplyPreconditionIds: [],
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6757,6 +6762,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: false,
         proposalPatchPreview: true,
       },
+      commandOutputArtifactApplyPreconditionIdsByKey: {
+        reviewCheckReport: [],
+        proposalPatchPreview: ["manual-review", "clean-workspace"],
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6797,6 +6806,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactRequiresManualReview: false,
       nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
       nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
+      nextCommandOutputArtifactApplyPreconditionIds: [],
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

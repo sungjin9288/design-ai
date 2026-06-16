@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 540 — Apply-Plan Decision Apply Precondition IDs (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose ordered apply-precondition ids for output artifacts in the selected optional preview branch. Phase 539 separated preview safety from manual apply safety; this phase gives wrappers a stable checklist surface without recombining review and clean-workspace booleans.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactApplyPreconditionIdsByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactApplyPreconditionIds`.
+- The lookup currently maps `reviewCheckReport` to `[]` and `proposalPatchPreview` to `["manual-review", "clean-workspace"]`.
+- Kept `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey`, `decision.commandOutputArtifactReviewInstructionByKey`, `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch apply-precondition metadata.
+
+### Impact
+- Wrappers can render ordered patch-apply checklist items from `decision.commandOutputArtifactApplyPreconditionIdsByKey.proposalPatchPreview` without re-deriving them from multiple booleans.
+- `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` and `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.<key>` remain the stable boolean gates, while `commandOutputArtifactApplyPreconditionIdsByKey.<key>` is the stable ordered checklist surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 539 — Apply-Plan Decision Clean Workspace Apply Gates (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose clean-workspace-before-apply flags for output artifacts in the selected optional preview branch. Phase 538 added artifact review instructions; this phase separates preview command safety from manual patch-apply safety so wrappers do not infer apply requirements from the preview command's `requiresCleanWorkspace: false`.
