@@ -124,6 +124,10 @@ function applyPreconditionsForCommandKey(commandKey) {
   }));
 }
 
+function applyPreconditionIsSatisfied(precondition) {
+  return precondition?.satisfied === true;
+}
+
 function routeIdFromSource(source) {
   const text = String(source || "").trim();
   if (!text.startsWith("check:")) return "";
@@ -1056,6 +1060,27 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         .filter((precondition) => precondition.required).length,
     ]),
   );
+  const decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactPendingApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => !applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => precondition.required && !applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1105,6 +1130,15 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactRequiredApplyPreconditionCount = decisionNextCommand.key
     ? decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey[decisionNextCommand.key] || 0
     : 0;
+  const decisionNextCommandOutputArtifactSatisfiedApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactPendingApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactPendingApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1140,6 +1174,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactApplyPreconditionsByKey: decisionCommandOutputArtifactApplyPreconditionsByKey,
         commandOutputArtifactApplyPreconditionCountByKey: decisionCommandOutputArtifactApplyPreconditionCountByKey,
         commandOutputArtifactRequiredApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey,
+        commandOutputArtifactSatisfiedApplyPreconditionCountByKey: decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey,
+        commandOutputArtifactPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactPendingApplyPreconditionCountByKey,
+        commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1158,6 +1195,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactApplyPreconditions: decisionNextCommandOutputArtifactApplyPreconditions,
         nextCommandOutputArtifactApplyPreconditionCount: decisionNextCommandOutputArtifactApplyPreconditionCount,
         nextCommandOutputArtifactRequiredApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredApplyPreconditionCount,
+        nextCommandOutputArtifactSatisfiedApplyPreconditionCount: decisionNextCommandOutputArtifactSatisfiedApplyPreconditionCount,
+        nextCommandOutputArtifactPendingApplyPreconditionCount: decisionNextCommandOutputArtifactPendingApplyPreconditionCount,
+        nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

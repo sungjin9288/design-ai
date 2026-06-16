@@ -6128,6 +6128,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: 0,
           proposalPatchPreview: 2,
         },
+        commandOutputArtifactSatisfiedApplyPreconditionCountByKey: {
+          reviewCheckReport: 0,
+          proposalPatchPreview: 0,
+        },
+        commandOutputArtifactPendingApplyPreconditionCountByKey: {
+          reviewCheckReport: 0,
+          proposalPatchPreview: 2,
+        },
+        commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: {
+          reviewCheckReport: 0,
+          proposalPatchPreview: 2,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6173,6 +6185,9 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactApplyPreconditions: [],
         nextCommandOutputArtifactApplyPreconditionCount: 0,
         nextCommandOutputArtifactRequiredApplyPreconditionCount: 0,
+        nextCommandOutputArtifactSatisfiedApplyPreconditionCount: 0,
+        nextCommandOutputArtifactPendingApplyPreconditionCount: 0,
+        nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6808,6 +6823,18 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: 0,
         proposalPatchPreview: 2,
       },
+      commandOutputArtifactSatisfiedApplyPreconditionCountByKey: {
+        reviewCheckReport: 0,
+        proposalPatchPreview: 0,
+      },
+      commandOutputArtifactPendingApplyPreconditionCountByKey: {
+        reviewCheckReport: 0,
+        proposalPatchPreview: 2,
+      },
+      commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: {
+        reviewCheckReport: 0,
+        proposalPatchPreview: 2,
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6853,6 +6880,9 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactApplyPreconditions: [],
       nextCommandOutputArtifactApplyPreconditionCount: 0,
       nextCommandOutputArtifactRequiredApplyPreconditionCount: 0,
+      nextCommandOutputArtifactSatisfiedApplyPreconditionCount: 0,
+      nextCommandOutputArtifactPendingApplyPreconditionCount: 0,
+      nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
