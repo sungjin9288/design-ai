@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 534 (unreleased)** — Added apply-plan `decision.commandOutputArtifactMediaTypeByKey` and `decision.nextCommandOutputArtifactMediaType` so wrappers can configure Markdown and diff viewers/downloads without parsing file extensions or artifact type strings.
 - **Phase 533 (unreleased)** — Added apply-plan `decision.commandOutputArtifactActionByKey` and `decision.nextCommandOutputArtifactAction` so wrappers can choose Markdown report rendering or unified diff preview rendering without deriving UI behavior from artifact type strings.
 - **Phase 532 (unreleased)** — Added apply-plan `decision.commandOutputArtifactTypeByKey` and `decision.nextCommandOutputArtifactType` so wrappers can distinguish Markdown reports from unified diff previews without parsing file extensions.
 - **Phase 531 (unreleased)** — Added apply-plan `decision.commandOutputArtifactByKey` and `decision.nextCommandOutputArtifact` so wrappers can display selected preview artifact targets without parsing `--out` arguments.

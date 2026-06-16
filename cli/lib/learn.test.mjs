@@ -6081,6 +6081,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "render-markdown-report",
           proposalPatchPreview: "render-unified-diff-preview",
         },
+        commandOutputArtifactMediaTypeByKey: {
+          reviewCheckReport: "text/markdown",
+          proposalPatchPreview: "text/x-diff",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6115,6 +6119,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifact: "skill-proposal-review-check.md",
         nextCommandOutputArtifactType: "markdown-report",
         nextCommandOutputArtifactAction: "render-markdown-report",
+        nextCommandOutputArtifactMediaType: "text/markdown",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6703,6 +6708,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "render-markdown-report",
         proposalPatchPreview: "render-unified-diff-preview",
       },
+      commandOutputArtifactMediaTypeByKey: {
+        reviewCheckReport: "text/markdown",
+        proposalPatchPreview: "text/x-diff",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6737,6 +6746,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifact: "skill-proposal-review-check.md",
       nextCommandOutputArtifactType: "markdown-report",
       nextCommandOutputArtifactAction: "render-markdown-report",
+      nextCommandOutputArtifactMediaType: "text/markdown",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

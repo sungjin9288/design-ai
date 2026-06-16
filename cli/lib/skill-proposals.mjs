@@ -52,6 +52,10 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS = Object.freeze({
   reviewCheckReport: "render-markdown-report",
   proposalPatchPreview: "render-unified-diff-preview",
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MEDIA_TYPES = Object.freeze({
+  reviewCheckReport: "text/markdown",
+  proposalPatchPreview: "text/x-diff",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -947,6 +951,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS[command.key] || "",
     ]),
   );
+  const decisionCommandOutputArtifactMediaTypeByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MEDIA_TYPES[command.key] || "",
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -962,6 +972,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     : "";
   const decisionNextCommandOutputArtifactAction = decisionNextCommand.key
     ? decisionCommandOutputArtifactActionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactMediaType = decisionNextCommand.key
+    ? decisionCommandOutputArtifactMediaTypeByKey[decisionNextCommand.key] || ""
     : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
@@ -987,6 +1000,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactByKey: decisionCommandOutputArtifactByKey,
         commandOutputArtifactTypeByKey: decisionCommandOutputArtifactTypeByKey,
         commandOutputArtifactActionByKey: decisionCommandOutputArtifactActionByKey,
+        commandOutputArtifactMediaTypeByKey: decisionCommandOutputArtifactMediaTypeByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -994,6 +1008,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifact: decisionNextCommandOutputArtifact,
         nextCommandOutputArtifactType: decisionNextCommandOutputArtifactType,
         nextCommandOutputArtifactAction: decisionNextCommandOutputArtifactAction,
+        nextCommandOutputArtifactMediaType: decisionNextCommandOutputArtifactMediaType,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
