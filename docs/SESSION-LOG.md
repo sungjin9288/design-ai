@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 531 (unreleased)** — Added apply-plan `decision.commandOutputArtifactByKey` and `decision.nextCommandOutputArtifact` so wrappers can display selected preview artifact targets without parsing `--out` arguments.
 - **Phase 530 (unreleased)** — Added apply-plan `decision.commandDescriptionByKey` and `decision.nextCommandDescription` so wrappers can render selected preview command tooltips or secondary descriptions without hard-coding command semantics.
 - **Phase 529 (unreleased)** — Added apply-plan `decision.commandDisplayLabelByKey` and `decision.nextCommandDisplayLabel` so wrappers can render selected preview command labels without deriving UI copy from camelCase keys.
 - **Phase 528 (unreleased)** — Added apply-plan `decision.commandStringByKey` so wrappers can display or copy selected preview command strings by key without scanning arrays.

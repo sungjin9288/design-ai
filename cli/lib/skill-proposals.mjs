@@ -40,6 +40,10 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS = Object.freeze({
   proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
   strictGate: "Run the strict proposal readiness gate before marking accepted proposals applied.",
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACTS = Object.freeze({
+  reviewCheckReport: "skill-proposal-review-check.md",
+  proposalPatchPreview: "skill-proposals.patch",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -917,12 +921,21 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS[command.key] || "",
     ]),
   );
+  const decisionCommandOutputArtifactByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACTS[command.key] || "",
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
     : "";
   const decisionNextCommandDescription = decisionNextCommand.key
     ? decisionCommandDescriptionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifact = decisionNextCommand.key
+    ? decisionCommandOutputArtifactByKey[decisionNextCommand.key] || ""
     : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
@@ -945,10 +958,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandStringByKey: decisionCommandStringByKey,
         commandDisplayLabelByKey: decisionCommandDisplayLabelByKey,
         commandDescriptionByKey: decisionCommandDescriptionByKey,
+        commandOutputArtifactByKey: decisionCommandOutputArtifactByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
         nextCommandDescription: decisionNextCommandDescription,
+        nextCommandOutputArtifact: decisionNextCommandOutputArtifact,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

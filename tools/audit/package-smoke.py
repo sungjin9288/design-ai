@@ -6861,6 +6861,9 @@ def assert_skill_proposal_apply_plan_json(
     operator_stage_decision_command_description_by_key = (
         operator_stage_decision.get("commandDescriptionByKey") if isinstance(operator_stage_decision, dict) else None
     )
+    operator_stage_decision_command_output_artifact_by_key = (
+        operator_stage_decision.get("commandOutputArtifactByKey") if isinstance(operator_stage_decision, dict) else None
+    )
     operator_stage_decision_next_command_entry = (
         operator_stage_decision.get("nextCommandEntry") if isinstance(operator_stage_decision, dict) else None
     )
@@ -7057,11 +7060,16 @@ def assert_skill_proposal_apply_plan_json(
             "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
             "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
         }
+        and operator_stage_decision_command_output_artifact_by_key == {
+            "reviewCheckReport": "skill-proposal-review-check.md",
+            "proposalPatchPreview": "skill-proposals.patch",
+        }
         and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
         and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
         and operator_stage_decision.get("nextCommandKey") == "reviewCheckReport"
         and operator_stage_decision.get("nextCommandDisplayLabel") == "Review check Markdown report"
         and operator_stage_decision.get("nextCommandDescription") == "Generate a Markdown review-check artifact for accepted proposal readiness."
+        and operator_stage_decision.get("nextCommandOutputArtifact") == "skill-proposal-review-check.md"
         and operator_stage_decision.get("nextCommandStep") == 2
         and operator_stage_decision.get("nextCommand") == commands.get("reviewCheckReport")
         and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
@@ -13626,6 +13634,10 @@ def run_self_test() -> None:
                                 "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
                                 "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
                             },
+                            "commandOutputArtifactByKey": {
+                                "reviewCheckReport": "skill-proposal-review-check.md",
+                                "proposalPatchPreview": "skill-proposals.patch",
+                            },
                             "nextCommandEntry": {
                                 "step": 2,
                                 "key": "reviewCheckReport",
@@ -13653,6 +13665,7 @@ def run_self_test() -> None:
                             "nextCommandKey": "reviewCheckReport",
                             "nextCommandDisplayLabel": "Review check Markdown report",
                             "nextCommandDescription": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+                            "nextCommandOutputArtifact": "skill-proposal-review-check.md",
                             "nextCommandStep": 2,
                             "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
                             "nextCommandArgs": [
@@ -14299,6 +14312,37 @@ def run_self_test() -> None:
                                     "commandDescriptionByKey": {
                                         **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDescriptionByKey"],
                                         "reviewCheckReport": "Generate review report.",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactByKey"],
+                                        "proposalPatchPreview": "proposal.patch",
                                     },
                                 },
                             },

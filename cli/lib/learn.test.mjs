@@ -6069,6 +6069,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
           proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
         },
+        commandOutputArtifactByKey: {
+          reviewCheckReport: "skill-proposal-review-check.md",
+          proposalPatchPreview: "skill-proposals.patch",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6100,6 +6104,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandKey: "reviewCheckReport",
         nextCommandDisplayLabel: "Review check Markdown report",
         nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+        nextCommandOutputArtifact: "skill-proposal-review-check.md",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6676,6 +6681,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
         proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
       },
+      commandOutputArtifactByKey: {
+        reviewCheckReport: "skill-proposal-review-check.md",
+        proposalPatchPreview: "skill-proposals.patch",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6707,6 +6716,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandKey: "reviewCheckReport",
       nextCommandDisplayLabel: "Review check Markdown report",
       nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+      nextCommandOutputArtifact: "skill-proposal-review-check.md",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
