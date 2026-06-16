@@ -6065,6 +6065,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "Review check Markdown report",
           proposalPatchPreview: "Skill proposal patch preview",
         },
+        commandDescriptionByKey: {
+          reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+          proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6095,6 +6099,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         },
         nextCommandKey: "reviewCheckReport",
         nextCommandDisplayLabel: "Review check Markdown report",
+        nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6667,6 +6672,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "Review check Markdown report",
         proposalPatchPreview: "Skill proposal patch preview",
       },
+      commandDescriptionByKey: {
+        reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+        proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6697,6 +6706,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       },
       nextCommandKey: "reviewCheckReport",
       nextCommandDisplayLabel: "Review check Markdown report",
+      nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

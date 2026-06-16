@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 530 — Apply-Plan Decision Command Descriptions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose descriptions for the selected optional preview branch. Phase 529 added display labels; this phase lets wrappers render tooltips or secondary command descriptions without hard-coding command semantics or scanning `decision.commands`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandDescriptionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandDescription`.
+- The lookup currently maps `reviewCheckReport` to `Generate a Markdown review-check artifact for accepted proposal readiness.` and `proposalPatchPreview` to `Generate a unified diff preview for accepted skill proposal edits.`.
+- Kept `decision.commandDisplayLabelByKey`, `decision.commandStringByKey`, `decision.commandArgsByKey`, and `decision.nextCommandDisplayLabel` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch description metadata.
+
+### Impact
+- Wrappers can render selected preview command tooltips or secondary copy from `decision.commandDescriptionByKey.reviewCheckReport`, `decision.commandDescriptionByKey.proposalPatchPreview`, and `decision.nextCommandDescription`.
+- `decision.commandDisplayLabelByKey.<key>` remains the UI label surface, `decision.commandStringByKey.<key>` remains the copy/display command surface, and `decision.commandArgsByKey.<key>` remains the automation execution surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 529 — Apply-Plan Decision Command Display Labels (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose display labels for the selected optional preview branch. Phase 528 added key-to-command-string lookup; this phase lets wrappers render stable human-readable labels without deriving UI copy from camelCase command keys or scanning `decision.commands`.

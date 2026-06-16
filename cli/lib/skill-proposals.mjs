@@ -34,6 +34,12 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS = Object.freeze({
   proposalPatchPreview: "Skill proposal patch preview",
   strictGate: "Strict proposal readiness gate",
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS = Object.freeze({
+  reviewCheckJson: "Check proposal review readiness as machine-readable JSON without writing local files.",
+  reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+  proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
+  strictGate: "Run the strict proposal readiness gate before marking accepted proposals applied.",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -905,9 +911,18 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS[command.key] || command.key,
     ]),
   );
+  const decisionCommandDescriptionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS[command.key] || "",
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
+    : "";
+  const decisionNextCommandDescription = decisionNextCommand.key
+    ? decisionCommandDescriptionByKey[decisionNextCommand.key] || ""
     : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
@@ -929,9 +944,11 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandArgsByKey: decisionCommandArgsByKey,
         commandStringByKey: decisionCommandStringByKey,
         commandDisplayLabelByKey: decisionCommandDisplayLabelByKey,
+        commandDescriptionByKey: decisionCommandDescriptionByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
+        nextCommandDescription: decisionNextCommandDescription,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
