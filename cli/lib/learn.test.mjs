@@ -6053,6 +6053,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "local-output",
           proposalPatchPreview: "local-output",
         },
+        commandArgsByKey: {
+          reviewCheckReport: applyPlan.commandArgs.reviewCheckReport,
+          proposalPatchPreview: applyPlan.commandArgs.proposalPatchPreview,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6641,6 +6645,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       commandSafetyLevelByKey: {
         reviewCheckReport: "local-output",
         proposalPatchPreview: "local-output",
+      },
+      commandArgsByKey: {
+        reviewCheckReport: applyPlanJsonPayload.commandArgs.reviewCheckReport,
+        proposalPatchPreview: applyPlanJsonPayload.commandArgs.proposalPatchPreview,
       },
       nextCommandEntry: {
         step: 2,

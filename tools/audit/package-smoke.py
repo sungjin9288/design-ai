@@ -6849,6 +6849,9 @@ def assert_skill_proposal_apply_plan_json(
     operator_stage_decision_command_safety_level_by_key = (
         operator_stage_decision.get("commandSafetyLevelByKey") if isinstance(operator_stage_decision, dict) else None
     )
+    operator_stage_decision_command_args_by_key = (
+        operator_stage_decision.get("commandArgsByKey") if isinstance(operator_stage_decision, dict) else None
+    )
     operator_stage_decision_next_command_entry = (
         operator_stage_decision.get("nextCommandEntry") if isinstance(operator_stage_decision, dict) else None
     )
@@ -7028,6 +7031,10 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision_command_safety_level_by_key == {
             "reviewCheckReport": "local-output",
             "proposalPatchPreview": "local-output",
+        }
+        and operator_stage_decision_command_args_by_key == {
+            "reviewCheckReport": expected_command_args["reviewCheckReport"],
+            "proposalPatchPreview": expected_command_args["proposalPatchPreview"],
         }
         and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
         and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
@@ -13566,6 +13573,24 @@ def run_self_test() -> None:
                                 "reviewCheckReport": "local-output",
                                 "proposalPatchPreview": "local-output",
                             },
+                            "commandArgsByKey": {
+                                "reviewCheckReport": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                ],
+                                "proposalPatchPreview": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--patch", "--out", "skill-proposals.patch",
+                                ],
+                            },
                             "nextCommandEntry": {
                                 "step": 2,
                                 "key": "reviewCheckReport",
@@ -14231,6 +14256,40 @@ def run_self_test() -> None:
                         "operatorRunbook": {
                             **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
                             "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandArgsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandArgsByKey"],
+                                        "proposalPatchPreview": [
+                                            "design-ai", "learn", "--propose-skills",
+                                            "--patch",
+                                        ],
+                                    },
+                                },
+                            },
                         },
                     },
                 }),

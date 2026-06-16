@@ -1,5 +1,36 @@
 # Roadmap
 
+## Phase 527 — Apply-Plan Decision Command Args Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-argv lookup for the selected optional preview branch. Phase 526 added key-to-safety-level lookup; this phase lets wrappers retrieve selected preview command args by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commandArgs` object.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandArgsByKey`.
+- The lookup currently maps `reviewCheckReport` and `proposalPatchPreview` to their full structured argv arrays.
+- Kept `decision.commands[*].commandArgs`, `decision.commandByKey.<key>.commandArgs`, `decision.nextCommandArgs`, and top-level `commandArgs` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch command-args lookup metadata.
+
+### Impact
+- Wrappers can execute or display selected preview commands from `decision.commandArgsByKey.reviewCheckReport` and `decision.commandArgsByKey.proposalPatchPreview` without reducing arrays.
+- `decision.commandByKey.<key>` remains available for full command objects, and `commandSequenceByKey.<key>` remains the canonical full ordered command contract.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 526 — Apply-Plan Decision Command Safety Level Lookup (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-safety-level lookup for the selected optional preview branch. Phase 525 added key-to-run-policy lookup; this phase lets wrappers validate selected command safety levels by key without scanning `decision.commands` or opening `commandByKey`.
