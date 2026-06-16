@@ -6093,6 +6093,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: false,
           proposalPatchPreview: true,
         },
+        commandOutputArtifactRequiresManualReviewByKey: {
+          reviewCheckReport: false,
+          proposalPatchPreview: true,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6130,6 +6134,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactMediaType: "text/markdown",
         nextCommandOutputArtifactDisposition: "review-only",
         nextCommandOutputArtifactManualApplyCandidate: false,
+        nextCommandOutputArtifactRequiresManualReview: false,
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6730,6 +6735,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: false,
         proposalPatchPreview: true,
       },
+      commandOutputArtifactRequiresManualReviewByKey: {
+        reviewCheckReport: false,
+        proposalPatchPreview: true,
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6767,6 +6776,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactMediaType: "text/markdown",
       nextCommandOutputArtifactDisposition: "review-only",
       nextCommandOutputArtifactManualApplyCandidate: false,
+      nextCommandOutputArtifactRequiresManualReview: false,
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

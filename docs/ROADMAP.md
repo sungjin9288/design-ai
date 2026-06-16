@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 537 — Apply-Plan Decision Manual Review Gates (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-review-required flags for output artifacts in the selected optional preview branch. Phase 536 added manual-apply candidate flags; this phase lets wrappers require human review before applying patch previews without parsing command keys, disposition strings, or manual-apply candidate flags.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactRequiresManualReviewByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactRequiresManualReview`.
+- The lookup currently maps `reviewCheckReport` to `false` and `proposalPatchPreview` to `true`.
+- Kept `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-review gate metadata.
+
+### Impact
+- Wrappers can branch review gates, confirmation copy, or disabled apply states from `decision.commandOutputArtifactRequiresManualReviewByKey.reviewCheckReport`, `decision.commandOutputArtifactRequiresManualReviewByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactRequiresManualReview`.
+- `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` remains the stable boolean affordance surface, while `commandOutputArtifactRequiresManualReviewByKey.<key>` is the stable review-gate surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 536 — Apply-Plan Decision Manual Apply Candidate Flags (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply candidate flags for output artifacts in the selected optional preview branch. Phase 535 added artifact dispositions; this phase lets wrappers show manual-apply affordances only for patch previews without parsing disposition strings or hard-coding command keys.
