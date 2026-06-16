@@ -48,6 +48,10 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_TYPES = Object.freeze({
   reviewCheckReport: "markdown-report",
   proposalPatchPreview: "unified-diff",
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS = Object.freeze({
+  reviewCheckReport: "render-markdown-report",
+  proposalPatchPreview: "render-unified-diff-preview",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -937,6 +941,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_TYPES[command.key] || "",
     ]),
   );
+  const decisionCommandOutputArtifactActionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS[command.key] || "",
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -949,6 +959,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     : "";
   const decisionNextCommandOutputArtifactType = decisionNextCommand.key
     ? decisionCommandOutputArtifactTypeByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactAction = decisionNextCommand.key
+    ? decisionCommandOutputArtifactActionByKey[decisionNextCommand.key] || ""
     : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
@@ -973,12 +986,14 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandDescriptionByKey: decisionCommandDescriptionByKey,
         commandOutputArtifactByKey: decisionCommandOutputArtifactByKey,
         commandOutputArtifactTypeByKey: decisionCommandOutputArtifactTypeByKey,
+        commandOutputArtifactActionByKey: decisionCommandOutputArtifactActionByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
         nextCommandDescription: decisionNextCommandDescription,
         nextCommandOutputArtifact: decisionNextCommandOutputArtifact,
         nextCommandOutputArtifactType: decisionNextCommandOutputArtifactType,
+        nextCommandOutputArtifactAction: decisionNextCommandOutputArtifactAction,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

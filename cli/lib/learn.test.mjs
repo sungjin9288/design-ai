@@ -6077,6 +6077,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "markdown-report",
           proposalPatchPreview: "unified-diff",
         },
+        commandOutputArtifactActionByKey: {
+          reviewCheckReport: "render-markdown-report",
+          proposalPatchPreview: "render-unified-diff-preview",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6110,6 +6114,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
         nextCommandOutputArtifact: "skill-proposal-review-check.md",
         nextCommandOutputArtifactType: "markdown-report",
+        nextCommandOutputArtifactAction: "render-markdown-report",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6694,6 +6699,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "markdown-report",
         proposalPatchPreview: "unified-diff",
       },
+      commandOutputArtifactActionByKey: {
+        reviewCheckReport: "render-markdown-report",
+        proposalPatchPreview: "render-unified-diff-preview",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6727,6 +6736,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandDescription: "Generate a Markdown review-check artifact for accepted proposal readiness.",
       nextCommandOutputArtifact: "skill-proposal-review-check.md",
       nextCommandOutputArtifactType: "markdown-report",
+      nextCommandOutputArtifactAction: "render-markdown-report",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
