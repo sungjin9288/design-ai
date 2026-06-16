@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 532 — Apply-Plan Decision Output Artifact Types (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact types for the selected optional preview branch. Phase 531 added artifact target names; this phase lets wrappers distinguish Markdown review reports from unified diff previews without parsing file extensions, command strings, or argv arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactTypeByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactType`.
+- The lookup currently maps `reviewCheckReport` to `markdown-report` and `proposalPatchPreview` to `unified-diff`.
+- Kept `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact type metadata.
+
+### Impact
+- Wrappers can branch rendering or download behavior from `decision.commandOutputArtifactTypeByKey.reviewCheckReport`, `decision.commandOutputArtifactTypeByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactType`.
+- `decision.commandOutputArtifactByKey.<key>` remains the stable file target surface, while `commandOutputArtifactTypeByKey.<key>` is the stable artifact rendering/type surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 531 — Apply-Plan Decision Output Artifact Lookup (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact targets for the selected optional preview branch. Phase 530 added command descriptions; this phase lets wrappers display generated artifact names without parsing `--out` arguments from command strings or argv arrays.
