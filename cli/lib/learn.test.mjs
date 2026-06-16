@@ -6148,6 +6148,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "not-applicable",
           proposalPatchPreview: "blocked",
         },
+        commandOutputArtifactManualApplyStatusLabelByKey: {
+          reviewCheckReport: "Review only",
+          proposalPatchPreview: "Blocked",
+        },
         commandOutputArtifactManualApplyBlockedReasonByKey: {
           reviewCheckReport: "This output artifact is review-only and cannot be applied.",
           proposalPatchPreview: "Complete required apply preconditions before applying this patch preview.",
@@ -6206,6 +6210,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
         nextCommandOutputArtifactManualApplyReady: false,
         nextCommandOutputArtifactManualApplyStatus: "not-applicable",
+        nextCommandOutputArtifactManualApplyStatusLabel: "Review only",
         nextCommandOutputArtifactManualApplyBlockedReason: "This output artifact is review-only and cannot be applied.",
         nextCommandOutputArtifactManualApplyBlockedReasonCode: "not-manual-apply-candidate",
         nextCommandStep: 2,
@@ -6863,6 +6868,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "not-applicable",
         proposalPatchPreview: "blocked",
       },
+      commandOutputArtifactManualApplyStatusLabelByKey: {
+        reviewCheckReport: "Review only",
+        proposalPatchPreview: "Blocked",
+      },
       commandOutputArtifactManualApplyBlockedReasonByKey: {
         reviewCheckReport: "This output artifact is review-only and cannot be applied.",
         proposalPatchPreview: "Complete required apply preconditions before applying this patch preview.",
@@ -6921,6 +6930,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
       nextCommandOutputArtifactManualApplyReady: false,
       nextCommandOutputArtifactManualApplyStatus: "not-applicable",
+      nextCommandOutputArtifactManualApplyStatusLabel: "Review only",
       nextCommandOutputArtifactManualApplyBlockedReason: "This output artifact is review-only and cannot be applied.",
       nextCommandOutputArtifactManualApplyBlockedReasonCode: "not-manual-apply-candidate",
       nextCommandStep: 2,
