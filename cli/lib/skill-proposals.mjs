@@ -156,6 +156,12 @@ function manualApplyStatusLabel(status) {
   return "Review only";
 }
 
+function manualApplyStatusTone(status) {
+  if (status === "ready") return "success";
+  if (status === "blocked") return "warning";
+  return "neutral";
+}
+
 function routeIdFromSource(source) {
   const text = String(source || "").trim();
   if (!text.startsWith("check:")) return "";
@@ -1131,6 +1137,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       manualApplyStatusLabel(decisionCommandOutputArtifactManualApplyStatusByKey[command.key]),
     ]),
   );
+  const decisionCommandOutputArtifactManualApplyStatusToneByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyStatusTone(decisionCommandOutputArtifactManualApplyStatusByKey[command.key]),
+    ]),
+  );
   const decisionCommandOutputArtifactManualApplyBlockedReasonByKey = Object.fromEntries(
     decisionCommands.map((command) => [
       command.key,
@@ -1216,6 +1228,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactManualApplyStatusLabel = decisionNextCommand.key
     ? decisionCommandOutputArtifactManualApplyStatusLabelByKey[decisionNextCommand.key] || "Review only"
     : "Review only";
+  const decisionNextCommandOutputArtifactManualApplyStatusTone = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyStatusToneByKey[decisionNextCommand.key] || "neutral"
+    : "neutral";
   const decisionNextCommandOutputArtifactManualApplyBlockedReason = decisionNextCommand.key
     ? decisionCommandOutputArtifactManualApplyBlockedReasonByKey[decisionNextCommand.key] || ""
     : "";
@@ -1263,6 +1278,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactManualApplyReadyByKey: decisionCommandOutputArtifactManualApplyReadyByKey,
         commandOutputArtifactManualApplyStatusByKey: decisionCommandOutputArtifactManualApplyStatusByKey,
         commandOutputArtifactManualApplyStatusLabelByKey: decisionCommandOutputArtifactManualApplyStatusLabelByKey,
+        commandOutputArtifactManualApplyStatusToneByKey: decisionCommandOutputArtifactManualApplyStatusToneByKey,
         commandOutputArtifactManualApplyBlockedReasonByKey: decisionCommandOutputArtifactManualApplyBlockedReasonByKey,
         commandOutputArtifactManualApplyBlockedReasonCodeByKey: decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey,
         nextCommandEntry: decisionNextCommand,
@@ -1289,6 +1305,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactManualApplyReady: decisionNextCommandOutputArtifactManualApplyReady,
         nextCommandOutputArtifactManualApplyStatus: decisionNextCommandOutputArtifactManualApplyStatus,
         nextCommandOutputArtifactManualApplyStatusLabel: decisionNextCommandOutputArtifactManualApplyStatusLabel,
+        nextCommandOutputArtifactManualApplyStatusTone: decisionNextCommandOutputArtifactManualApplyStatusTone,
         nextCommandOutputArtifactManualApplyBlockedReason: decisionNextCommandOutputArtifactManualApplyBlockedReason,
         nextCommandOutputArtifactManualApplyBlockedReasonCode: decisionNextCommandOutputArtifactManualApplyBlockedReasonCode,
         nextCommandStep: decisionNextCommand.step || 0,

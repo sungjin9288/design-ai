@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 549 (unreleased)** — Added apply-plan manual-apply status tone fields so wrappers can style apply badges without maintaining local status-tone mapping.
 - **Phase 548 (unreleased)** — Added apply-plan manual-apply status label fields so wrappers can render apply badges without maintaining a local enum-to-label map.
 - **Phase 547 (unreleased)** — Added apply-plan manual-apply status enum fields so wrappers can render apply badges without recomputing readiness and blocked states.
 - **Phase 546 (unreleased)** — Added apply-plan manual-apply blocked reason code/message fields so wrappers can render disabled patch-apply copy without recomputing candidate and precondition state.

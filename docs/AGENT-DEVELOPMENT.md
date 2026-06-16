@@ -125,6 +125,15 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 549: apply-plan decision manual apply status tones
+
+Added selected-branch manual-apply status tones under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyStatusToneByKey`
+- `decision.nextCommandOutputArtifactManualApplyStatusTone`
+
+Wrappers can now style apply badges without keeping a local status-to-tone map. Current tones are `neutral` for review-only artifacts, `warning` for blocked patch previews, and `success` for ready manual-apply artifacts.
+
 ### Phase 548: apply-plan decision manual apply status labels
 
 Added selected-branch manual-apply status display labels under `operatorRunbook.stageSelection.decision`:

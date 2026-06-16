@@ -6953,6 +6953,11 @@ def assert_skill_proposal_apply_plan_json(
         if isinstance(operator_stage_decision, dict)
         else None
     )
+    operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyStatusToneByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
     operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key = (
         operator_stage_decision.get("commandOutputArtifactManualApplyBlockedReasonByKey")
         if isinstance(operator_stage_decision, dict)
@@ -7242,6 +7247,10 @@ def assert_skill_proposal_apply_plan_json(
             "reviewCheckReport": "Review only",
             "proposalPatchPreview": "Blocked",
         }
+        and operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key == {
+            "reviewCheckReport": "neutral",
+            "proposalPatchPreview": "warning",
+        }
         and operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key == {
             "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
             "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
@@ -7275,6 +7284,7 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision.get("nextCommandOutputArtifactManualApplyReady") is False
         and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatus") == "not-applicable"
         and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusLabel") == "Review only"
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusTone") == "neutral"
         and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReason") == "This output artifact is review-only and cannot be applied."
         and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReasonCode") == "not-manual-apply-candidate"
         and operator_stage_decision.get("nextCommandStep") == 2
@@ -13924,6 +13934,10 @@ def run_self_test() -> None:
                                 "reviewCheckReport": "Review only",
                                 "proposalPatchPreview": "Blocked",
                             },
+                            "commandOutputArtifactManualApplyStatusToneByKey": {
+                                "reviewCheckReport": "neutral",
+                                "proposalPatchPreview": "warning",
+                            },
                             "commandOutputArtifactManualApplyBlockedReasonByKey": {
                                 "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
                                 "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
@@ -13979,6 +13993,7 @@ def run_self_test() -> None:
                             "nextCommandOutputArtifactManualApplyReady": False,
                             "nextCommandOutputArtifactManualApplyStatus": "not-applicable",
                             "nextCommandOutputArtifactManualApplyStatusLabel": "Review only",
+                            "nextCommandOutputArtifactManualApplyStatusTone": "neutral",
                             "nextCommandOutputArtifactManualApplyBlockedReason": "This output artifact is review-only and cannot be applied.",
                             "nextCommandOutputArtifactManualApplyBlockedReasonCode": "not-manual-apply-candidate",
                             "nextCommandStep": 2,
@@ -14627,6 +14642,37 @@ def run_self_test() -> None:
                                     "commandOutputArtifactRequiresManualReviewByKey": {
                                         **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresManualReviewByKey"],
                                         "proposalPatchPreview": False,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyStatusToneByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusToneByKey"],
+                                        "proposalPatchPreview": "success",
                                     },
                                 },
                             },

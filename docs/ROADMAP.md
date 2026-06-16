@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 549 — Apply-Plan Decision Manual Apply Status Tones (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status tone fields for output artifacts in the selected optional preview branch. Phase 548 added display labels; this phase lets wrappers style apply badges without maintaining their own status-to-tone map.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyStatusToneByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyStatusTone`.
+- The tone lookup currently maps `reviewCheckReport` to `neutral` and `proposalPatchPreview` to `warning`.
+- The possible tones are `neutral`, `warning`, and `success`.
+- Kept manual-apply status labels, status enums, blocked reasons, readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply status tone metadata.
+
+### Impact
+- Wrappers can style apply badges from `decision.commandOutputArtifactManualApplyStatusToneByKey.<key>` without shipping a duplicate status-tone map.
+- Tone is a display hint; the status enum remains the canonical machine-readable state.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply status tones, manual-apply status labels, manual-apply status, manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 548 — Apply-Plan Decision Manual Apply Status Labels (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status display labels for output artifacts in the selected optional preview branch. Phase 547 added status enums; this phase lets wrappers render apply badges without maintaining their own enum-to-label map.
