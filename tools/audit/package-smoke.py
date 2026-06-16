@@ -6908,6 +6908,11 @@ def assert_skill_proposal_apply_plan_json(
         if isinstance(operator_stage_decision, dict)
         else None
     )
+    operator_stage_decision_command_output_artifact_apply_preconditions_by_key = (
+        operator_stage_decision.get("commandOutputArtifactApplyPreconditionsByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
     operator_stage_decision_next_command_entry = (
         operator_stage_decision.get("nextCommandEntry") if isinstance(operator_stage_decision, dict) else None
     )
@@ -7148,6 +7153,13 @@ def assert_skill_proposal_apply_plan_json(
             "reviewCheckReport": [],
             "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
         }
+        and operator_stage_decision_command_output_artifact_apply_preconditions_by_key == {
+            "reviewCheckReport": [],
+            "proposalPatchPreview": [
+                {"id": "manual-review", "label": "Manual review completed", "required": True},
+                {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
+            ],
+        }
         and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
         and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
         and operator_stage_decision.get("nextCommandKey") == "reviewCheckReport"
@@ -7164,6 +7176,7 @@ def assert_skill_proposal_apply_plan_json(
         and operator_stage_decision.get("nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply") is False
         and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionIds") == []
         and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionLabels") == []
+        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditions") == []
         and operator_stage_decision.get("nextCommandStep") == 2
         and operator_stage_decision.get("nextCommand") == commands.get("reviewCheckReport")
         and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
@@ -13772,6 +13785,13 @@ def run_self_test() -> None:
                                 "reviewCheckReport": [],
                                 "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
                             },
+                            "commandOutputArtifactApplyPreconditionsByKey": {
+                                "reviewCheckReport": [],
+                                "proposalPatchPreview": [
+                                    {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                    {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
+                                ],
+                            },
                             "nextCommandEntry": {
                                 "step": 2,
                                 "key": "reviewCheckReport",
@@ -13810,6 +13830,7 @@ def run_self_test() -> None:
                             "nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply": False,
                             "nextCommandOutputArtifactApplyPreconditionIds": [],
                             "nextCommandOutputArtifactApplyPreconditionLabels": [],
+                            "nextCommandOutputArtifactApplyPreconditions": [],
                             "nextCommandStep": 2,
                             "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
                             "nextCommandArgs": [
@@ -14456,6 +14477,39 @@ def run_self_test() -> None:
                                     "commandOutputArtifactRequiresManualReviewByKey": {
                                         **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresManualReviewByKey"],
                                         "proposalPatchPreview": False,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactApplyPreconditionsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionsByKey"],
+                                        "proposalPatchPreview": [
+                                            {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                        ],
                                     },
                                 },
                             },

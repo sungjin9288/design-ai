@@ -6113,6 +6113,13 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: [],
           proposalPatchPreview: ["Manual review completed", "Clean workspace confirmed"],
         },
+        commandOutputArtifactApplyPreconditionsByKey: {
+          reviewCheckReport: [],
+          proposalPatchPreview: [
+            { id: "manual-review", label: "Manual review completed", required: true },
+            { id: "clean-workspace", label: "Clean workspace confirmed", required: true },
+          ],
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6155,6 +6162,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
         nextCommandOutputArtifactApplyPreconditionIds: [],
         nextCommandOutputArtifactApplyPreconditionLabels: [],
+        nextCommandOutputArtifactApplyPreconditions: [],
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6775,6 +6783,13 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: [],
         proposalPatchPreview: ["Manual review completed", "Clean workspace confirmed"],
       },
+      commandOutputArtifactApplyPreconditionsByKey: {
+        reviewCheckReport: [],
+        proposalPatchPreview: [
+          { id: "manual-review", label: "Manual review completed", required: true },
+          { id: "clean-workspace", label: "Clean workspace confirmed", required: true },
+        ],
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6817,6 +6832,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: false,
       nextCommandOutputArtifactApplyPreconditionIds: [],
       nextCommandOutputArtifactApplyPreconditionLabels: [],
+      nextCommandOutputArtifactApplyPreconditions: [],
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

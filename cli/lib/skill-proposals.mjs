@@ -114,6 +114,16 @@ function previewText(text, maxLength = 180) {
   return `${normalized.slice(0, maxLength - 1)}...`;
 }
 
+function applyPreconditionsForCommandKey(commandKey) {
+  const ids = APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS[commandKey] || [];
+  const labels = APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS[commandKey] || [];
+  return ids.map((id, index) => ({
+    id,
+    label: labels[index] || id,
+    required: true,
+  }));
+}
+
 function routeIdFromSource(source) {
   const text = String(source || "").trim();
   if (!text.startsWith("check:")) return "";
@@ -1027,6 +1037,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       [...(APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS[command.key] || [])],
     ]),
   );
+  const decisionCommandOutputArtifactApplyPreconditionsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      applyPreconditionsForCommandKey(command.key),
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1067,6 +1083,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactApplyPreconditionLabels = decisionNextCommand.key
     ? decisionCommandOutputArtifactApplyPreconditionLabelsByKey[decisionNextCommand.key] || []
     : [];
+  const decisionNextCommandOutputArtifactApplyPreconditions = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionsByKey[decisionNextCommand.key] || []
+    : [];
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1099,6 +1118,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey: decisionCommandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey,
         commandOutputArtifactApplyPreconditionIdsByKey: decisionCommandOutputArtifactApplyPreconditionIdsByKey,
         commandOutputArtifactApplyPreconditionLabelsByKey: decisionCommandOutputArtifactApplyPreconditionLabelsByKey,
+        commandOutputArtifactApplyPreconditionsByKey: decisionCommandOutputArtifactApplyPreconditionsByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1114,6 +1134,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: decisionNextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply,
         nextCommandOutputArtifactApplyPreconditionIds: decisionNextCommandOutputArtifactApplyPreconditionIds,
         nextCommandOutputArtifactApplyPreconditionLabels: decisionNextCommandOutputArtifactApplyPreconditionLabels,
+        nextCommandOutputArtifactApplyPreconditions: decisionNextCommandOutputArtifactApplyPreconditions,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
