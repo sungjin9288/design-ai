@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 538 — Apply-Plan Decision Output Artifact Review Instructions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose artifact-specific review instructions for output artifacts in the selected optional preview branch. Phase 537 added manual-review-required flags; this phase lets wrappers render review guidance for Markdown reports and patch previews without hard-coding command keys, artifact names, or copy.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactReviewInstructionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactReviewInstruction`.
+- The lookup currently maps `reviewCheckReport` to Markdown readiness report review guidance and `proposalPatchPreview` to unified diff manual-review guidance before skill-file edits.
+- Kept `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch review-instruction metadata.
+
+### Impact
+- Wrappers can render guidance from `decision.commandOutputArtifactReviewInstructionByKey.reviewCheckReport`, `decision.commandOutputArtifactReviewInstructionByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactReviewInstruction`.
+- `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` remains the stable review-gate surface, while `commandOutputArtifactReviewInstructionByKey.<key>` is the stable review-copy surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 537 — Apply-Plan Decision Manual Review Gates (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-review-required flags for output artifacts in the selected optional preview branch. Phase 536 added manual-apply candidate flags; this phase lets wrappers require human review before applying patch previews without parsing command keys, disposition strings, or manual-apply candidate flags.

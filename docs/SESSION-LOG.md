@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 538 (unreleased)** — Added apply-plan `decision.commandOutputArtifactReviewInstructionByKey` and `decision.nextCommandOutputArtifactReviewInstruction` so wrappers can render artifact-specific review guidance without hard-coding Markdown report or patch-preview copy.
 - **Phase 537 (unreleased)** — Added apply-plan `decision.commandOutputArtifactRequiresManualReviewByKey` and `decision.nextCommandOutputArtifactRequiresManualReview` so wrappers can require human review before applying patch previews without parsing command keys or manual-apply candidate flags.
 - **Phase 536 (unreleased)** — Added apply-plan `decision.commandOutputArtifactManualApplyCandidateByKey` and `decision.nextCommandOutputArtifactManualApplyCandidate` so wrappers can show manual-apply affordances only for patch previews without parsing artifact disposition strings.
 - **Phase 535 (unreleased)** — Added apply-plan `decision.commandOutputArtifactDispositionByKey` and `decision.nextCommandOutputArtifactDisposition` so wrappers can distinguish review-only artifacts from manual-apply previews without hard-coding command keys.

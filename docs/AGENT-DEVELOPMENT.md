@@ -125,6 +125,16 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 538: apply-plan decision output artifact review instructions
+
+Added selected-branch output artifact review guidance under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactReviewInstructionByKey.reviewCheckReport`
+- `decision.commandOutputArtifactReviewInstructionByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactReviewInstruction`
+
+Wrappers can now render artifact-specific review guidance for Markdown reports and patch previews without hard-coding command keys, artifact names, or copy. Use `decision.commandOutputArtifactReviewInstructionByKey.<key>` for review copy, `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` for review gates, and `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` for boolean apply affordances.
+
 ### Phase 537: apply-plan decision manual review gates
 
 Added selected-branch manual-review-required metadata under `operatorRunbook.stageSelection.decision`:

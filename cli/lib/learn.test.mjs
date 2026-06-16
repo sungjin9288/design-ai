@@ -6097,6 +6097,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: false,
           proposalPatchPreview: true,
         },
+        commandOutputArtifactReviewInstructionByKey: {
+          reviewCheckReport: "Review the Markdown readiness report before changing proposal review status.",
+          proposalPatchPreview: "Review the unified diff manually before applying any skill-file edits.",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6135,6 +6139,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactDisposition: "review-only",
         nextCommandOutputArtifactManualApplyCandidate: false,
         nextCommandOutputArtifactRequiresManualReview: false,
+        nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6739,6 +6744,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: false,
         proposalPatchPreview: true,
       },
+      commandOutputArtifactReviewInstructionByKey: {
+        reviewCheckReport: "Review the Markdown readiness report before changing proposal review status.",
+        proposalPatchPreview: "Review the unified diff manually before applying any skill-file edits.",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6777,6 +6786,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactDisposition: "review-only",
       nextCommandOutputArtifactManualApplyCandidate: false,
       nextCommandOutputArtifactRequiresManualReview: false,
+      nextCommandOutputArtifactReviewInstruction: "Review the Markdown readiness report before changing proposal review status.",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

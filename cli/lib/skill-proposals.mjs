@@ -68,6 +68,10 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_MANUAL_REVIEW = Obje
   reviewCheckReport: false,
   proposalPatchPreview: true,
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REVIEW_INSTRUCTIONS = Object.freeze({
+  reviewCheckReport: "Review the Markdown readiness report before changing proposal review status.",
+  proposalPatchPreview: "Review the unified diff manually before applying any skill-file edits.",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -987,6 +991,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_MANUAL_REVIEW[command.key] || false,
     ]),
   );
+  const decisionCommandOutputArtifactReviewInstructionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REVIEW_INSTRUCTIONS[command.key] || "",
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1015,6 +1025,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactRequiresManualReview = decisionNextCommand.key
     ? decisionCommandOutputArtifactRequiresManualReviewByKey[decisionNextCommand.key] || false
     : false;
+  const decisionNextCommandOutputArtifactReviewInstruction = decisionNextCommand.key
+    ? decisionCommandOutputArtifactReviewInstructionByKey[decisionNextCommand.key] || ""
+    : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1043,6 +1056,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactDispositionByKey: decisionCommandOutputArtifactDispositionByKey,
         commandOutputArtifactManualApplyCandidateByKey: decisionCommandOutputArtifactManualApplyCandidateByKey,
         commandOutputArtifactRequiresManualReviewByKey: decisionCommandOutputArtifactRequiresManualReviewByKey,
+        commandOutputArtifactReviewInstructionByKey: decisionCommandOutputArtifactReviewInstructionByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1054,6 +1068,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactDisposition: decisionNextCommandOutputArtifactDisposition,
         nextCommandOutputArtifactManualApplyCandidate: decisionNextCommandOutputArtifactManualApplyCandidate,
         nextCommandOutputArtifactRequiresManualReview: decisionNextCommandOutputArtifactRequiresManualReview,
+        nextCommandOutputArtifactReviewInstruction: decisionNextCommandOutputArtifactReviewInstruction,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
