@@ -125,6 +125,15 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 547: apply-plan decision manual apply status
+
+Added selected-branch manual-apply status metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyStatusByKey`
+- `decision.nextCommandOutputArtifactManualApplyStatus`
+
+Wrappers can now render apply badges from one enum. The values are `not-applicable` for review-only artifacts, `blocked` for manual-apply candidates with pending required preconditions, and `ready` once a manual-apply candidate has no required pending preconditions.
+
 ### Phase 546: apply-plan decision manual apply blocked reasons
 
 Added selected-branch manual-apply blocked reason metadata under `operatorRunbook.stageSelection.decision`:

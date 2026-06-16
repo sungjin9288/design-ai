@@ -144,6 +144,12 @@ function manualApplyBlockedReason({ manualApplyCandidate, requiredPendingApplyPr
   return { code: "", message: "" };
 }
 
+function manualApplyStatus({ manualApplyCandidate, manualApplyReady }) {
+  if (manualApplyReady) return "ready";
+  if (manualApplyCandidate) return "blocked";
+  return "not-applicable";
+}
+
 function routeIdFromSource(source) {
   const text = String(source || "").trim();
   if (!text.startsWith("check:")) return "";
@@ -1104,6 +1110,15 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         && (decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0) === 0,
     ]),
   );
+  const decisionCommandOutputArtifactManualApplyStatusByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyStatus({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        manualApplyReady: Boolean(decisionCommandOutputArtifactManualApplyReadyByKey[command.key]),
+      }),
+    ]),
+  );
   const decisionCommandOutputArtifactManualApplyBlockedReasonByKey = Object.fromEntries(
     decisionCommands.map((command) => [
       command.key,
@@ -1183,6 +1198,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactManualApplyReady = decisionNextCommand.key
     ? decisionCommandOutputArtifactManualApplyReadyByKey[decisionNextCommand.key] || false
     : false;
+  const decisionNextCommandOutputArtifactManualApplyStatus = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyStatusByKey[decisionNextCommand.key] || "not-applicable"
+    : "not-applicable";
   const decisionNextCommandOutputArtifactManualApplyBlockedReason = decisionNextCommand.key
     ? decisionCommandOutputArtifactManualApplyBlockedReasonByKey[decisionNextCommand.key] || ""
     : "";
@@ -1228,6 +1246,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactPendingApplyPreconditionCountByKey,
         commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey,
         commandOutputArtifactManualApplyReadyByKey: decisionCommandOutputArtifactManualApplyReadyByKey,
+        commandOutputArtifactManualApplyStatusByKey: decisionCommandOutputArtifactManualApplyStatusByKey,
         commandOutputArtifactManualApplyBlockedReasonByKey: decisionCommandOutputArtifactManualApplyBlockedReasonByKey,
         commandOutputArtifactManualApplyBlockedReasonCodeByKey: decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey,
         nextCommandEntry: decisionNextCommand,
@@ -1252,6 +1271,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactPendingApplyPreconditionCount: decisionNextCommandOutputArtifactPendingApplyPreconditionCount,
         nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount,
         nextCommandOutputArtifactManualApplyReady: decisionNextCommandOutputArtifactManualApplyReady,
+        nextCommandOutputArtifactManualApplyStatus: decisionNextCommandOutputArtifactManualApplyStatus,
         nextCommandOutputArtifactManualApplyBlockedReason: decisionNextCommandOutputArtifactManualApplyBlockedReason,
         nextCommandOutputArtifactManualApplyBlockedReasonCode: decisionNextCommandOutputArtifactManualApplyBlockedReasonCode,
         nextCommandStep: decisionNextCommand.step || 0,

@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 547 (unreleased)** — Added apply-plan manual-apply status enum fields so wrappers can render apply badges without recomputing readiness and blocked states.
 - **Phase 546 (unreleased)** — Added apply-plan manual-apply blocked reason code/message fields so wrappers can render disabled patch-apply copy without recomputing candidate and precondition state.
 - **Phase 545 (unreleased)** — Added apply-plan manual-apply readiness booleans so wrappers can gate patch-apply affordances without recomputing candidate and required-pending precondition state.
 - **Phase 544 (unreleased)** — Added apply-plan satisfied, pending, and required-pending precondition count fields so wrappers can render checklist enabled/disabled summaries without recomputing row state.
