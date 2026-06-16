@@ -125,6 +125,16 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 536: apply-plan decision manual-apply candidate flags
+
+Added selected-branch manual-apply candidate metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyCandidateByKey.reviewCheckReport`
+- `decision.commandOutputArtifactManualApplyCandidateByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactManualApplyCandidate`
+
+Wrappers can now show manual-apply buttons, warnings, or confirmation affordances only for patch previews without parsing artifact disposition strings or hard-coding command keys. Use `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` for boolean UI gates, `decision.commandOutputArtifactDispositionByKey.<key>` for post-render handling, and `decision.commandArgsByKey.<key>` for automation execution.
+
 ### Phase 535: apply-plan decision output artifact dispositions
 
 Added selected-branch output artifact disposition metadata under `operatorRunbook.stageSelection.decision`:

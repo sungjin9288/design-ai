@@ -6089,6 +6089,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: "review-only",
           proposalPatchPreview: "manual-apply-preview",
         },
+        commandOutputArtifactManualApplyCandidateByKey: {
+          reviewCheckReport: false,
+          proposalPatchPreview: true,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6125,6 +6129,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactAction: "render-markdown-report",
         nextCommandOutputArtifactMediaType: "text/markdown",
         nextCommandOutputArtifactDisposition: "review-only",
+        nextCommandOutputArtifactManualApplyCandidate: false,
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6721,6 +6726,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: "review-only",
         proposalPatchPreview: "manual-apply-preview",
       },
+      commandOutputArtifactManualApplyCandidateByKey: {
+        reviewCheckReport: false,
+        proposalPatchPreview: true,
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6757,6 +6766,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactAction: "render-markdown-report",
       nextCommandOutputArtifactMediaType: "text/markdown",
       nextCommandOutputArtifactDisposition: "review-only",
+      nextCommandOutputArtifactManualApplyCandidate: false,
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
