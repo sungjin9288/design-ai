@@ -1,5 +1,38 @@
 # Roadmap
 
+## Phase 545 — Apply-Plan Decision Manual Apply Readiness (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply readiness booleans for output artifacts in the selected optional preview branch. Phase 544 added satisfied and pending precondition counts; this phase lets wrappers gate patch-apply affordances without recomputing the manual-apply candidate flag and required-pending precondition state.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyReadyByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyReady`.
+- `manualApplyReady` is true only when the artifact is a manual-apply candidate and `requiredPendingApplyPreconditionCount` is `0`.
+- The lookup currently maps `reviewCheckReport` to `false` because it is not a manual-apply candidate and `proposalPatchPreview` to `false` because its required manual-review and clean-workspace preconditions are pending by default.
+- Kept manual-apply candidate flags, state counts, compact precondition rows, total/required counts, split id/label arrays, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply readiness metadata.
+
+### Impact
+- Wrappers can show or disable patch-apply buttons from `decision.commandOutputArtifactManualApplyReadyByKey.<key>` without deriving readiness from several fields.
+- The readiness boolean is fail-closed for current generated patch previews until manual review and clean-workspace preconditions are explicitly satisfied.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 544 — Apply-Plan Decision Apply Precondition State Counts (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose apply-precondition state counts for output artifacts in the selected optional preview branch. Phase 543 added total and required counts; this phase lets wrappers render checklist progress, pending summaries, and disabled apply affordances without reducing the row-level precondition objects.

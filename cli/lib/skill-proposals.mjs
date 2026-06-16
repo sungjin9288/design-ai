@@ -1081,6 +1081,13 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         .filter((precondition) => precondition.required && !applyPreconditionIsSatisfied(precondition)).length,
     ]),
   );
+  const decisionCommandOutputArtifactManualApplyReadyByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key])
+        && (decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0) === 0,
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1139,6 +1146,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount = decisionNextCommand.key
     ? decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[decisionNextCommand.key] || 0
     : 0;
+  const decisionNextCommandOutputArtifactManualApplyReady = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyReadyByKey[decisionNextCommand.key] || false
+    : false;
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1177,6 +1187,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactSatisfiedApplyPreconditionCountByKey: decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey,
         commandOutputArtifactPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactPendingApplyPreconditionCountByKey,
         commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey,
+        commandOutputArtifactManualApplyReadyByKey: decisionCommandOutputArtifactManualApplyReadyByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1198,6 +1209,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactSatisfiedApplyPreconditionCount: decisionNextCommandOutputArtifactSatisfiedApplyPreconditionCount,
         nextCommandOutputArtifactPendingApplyPreconditionCount: decisionNextCommandOutputArtifactPendingApplyPreconditionCount,
         nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount,
+        nextCommandOutputArtifactManualApplyReady: decisionNextCommandOutputArtifactManualApplyReady,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
