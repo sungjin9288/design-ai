@@ -125,6 +125,16 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 539: apply-plan decision clean workspace apply gates
+
+Added selected-branch clean-workspace apply gates under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.reviewCheckReport`
+- `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply`
+
+Wrappers can now require a clean workspace before manually applying a patch preview without blocking the preview-generation command itself. Treat `decision.nextCommandSafety.requiresCleanWorkspace` as the safety requirement for running the selected command, and `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply` as the safety requirement for applying the generated artifact after review.
+
 ### Phase 538: apply-plan decision output artifact review instructions
 
 Added selected-branch output artifact review guidance under `operatorRunbook.stageSelection.decision`:
