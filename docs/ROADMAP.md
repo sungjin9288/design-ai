@@ -1,5 +1,39 @@
 # Roadmap
 
+## Phase 546 — Apply-Plan Decision Manual Apply Blocked Reasons (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply blocked reason code/message fields for output artifacts in the selected optional preview branch. Phase 545 added readiness booleans; this phase lets wrappers render disabled patch-apply copy without recomputing the readiness explanation from candidate flags and precondition counts.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyBlockedReasonByKey`.
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyBlockedReasonCodeByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyBlockedReason`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyBlockedReasonCode`.
+- The lookup currently maps `reviewCheckReport` to `not-manual-apply-candidate` and `proposalPatchPreview` to `required-preconditions-pending`.
+- Kept manual-apply readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply blocked reason metadata.
+
+### Impact
+- Wrappers can render disabled apply button copy from `decision.commandOutputArtifactManualApplyBlockedReasonByKey.<key>` without deriving explanation text from several fields.
+- The blocked reason is explicit and fail-closed for current generated patch previews until required apply preconditions are satisfied.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 545 — Apply-Plan Decision Manual Apply Readiness (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply readiness booleans for output artifacts in the selected optional preview branch. Phase 544 added satisfied and pending precondition counts; this phase lets wrappers gate patch-apply affordances without recomputing the manual-apply candidate flag and required-pending precondition state.

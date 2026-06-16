@@ -125,6 +125,17 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 546: apply-plan decision manual apply blocked reasons
+
+Added selected-branch manual-apply blocked reason metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyBlockedReasonByKey`
+- `decision.commandOutputArtifactManualApplyBlockedReasonCodeByKey`
+- `decision.nextCommandOutputArtifactManualApplyBlockedReason`
+- `decision.nextCommandOutputArtifactManualApplyBlockedReasonCode`
+
+Wrappers can now render disabled patch-apply copy from explicit reason fields. Current review reports return `not-manual-apply-candidate`, while patch previews return `required-preconditions-pending` until manual review and clean-workspace preconditions are satisfied.
+
 ### Phase 545: apply-plan decision manual apply readiness
 
 Added selected-branch manual-apply readiness booleans under `operatorRunbook.stageSelection.decision`:

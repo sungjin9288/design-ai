@@ -6144,6 +6144,14 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: false,
           proposalPatchPreview: false,
         },
+        commandOutputArtifactManualApplyBlockedReasonByKey: {
+          reviewCheckReport: "This output artifact is review-only and cannot be applied.",
+          proposalPatchPreview: "Complete required apply preconditions before applying this patch preview.",
+        },
+        commandOutputArtifactManualApplyBlockedReasonCodeByKey: {
+          reviewCheckReport: "not-manual-apply-candidate",
+          proposalPatchPreview: "required-preconditions-pending",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6193,6 +6201,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactPendingApplyPreconditionCount: 0,
         nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
         nextCommandOutputArtifactManualApplyReady: false,
+        nextCommandOutputArtifactManualApplyBlockedReason: "This output artifact is review-only and cannot be applied.",
+        nextCommandOutputArtifactManualApplyBlockedReasonCode: "not-manual-apply-candidate",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6844,6 +6854,14 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: false,
         proposalPatchPreview: false,
       },
+      commandOutputArtifactManualApplyBlockedReasonByKey: {
+        reviewCheckReport: "This output artifact is review-only and cannot be applied.",
+        proposalPatchPreview: "Complete required apply preconditions before applying this patch preview.",
+      },
+      commandOutputArtifactManualApplyBlockedReasonCodeByKey: {
+        reviewCheckReport: "not-manual-apply-candidate",
+        proposalPatchPreview: "required-preconditions-pending",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6893,6 +6911,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactPendingApplyPreconditionCount: 0,
       nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: 0,
       nextCommandOutputArtifactManualApplyReady: false,
+      nextCommandOutputArtifactManualApplyBlockedReason: "This output artifact is review-only and cannot be applied.",
+      nextCommandOutputArtifactManualApplyBlockedReasonCode: "not-manual-apply-candidate",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

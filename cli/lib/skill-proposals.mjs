@@ -128,6 +128,22 @@ function applyPreconditionIsSatisfied(precondition) {
   return precondition?.satisfied === true;
 }
 
+function manualApplyBlockedReason({ manualApplyCandidate, requiredPendingApplyPreconditionCount }) {
+  if (!manualApplyCandidate) {
+    return {
+      code: "not-manual-apply-candidate",
+      message: "This output artifact is review-only and cannot be applied.",
+    };
+  }
+  if (requiredPendingApplyPreconditionCount > 0) {
+    return {
+      code: "required-preconditions-pending",
+      message: "Complete required apply preconditions before applying this patch preview.",
+    };
+  }
+  return { code: "", message: "" };
+}
+
 function routeIdFromSource(source) {
   const text = String(source || "").trim();
   if (!text.startsWith("check:")) return "";
@@ -1088,6 +1104,24 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         && (decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0) === 0,
     ]),
   );
+  const decisionCommandOutputArtifactManualApplyBlockedReasonByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyBlockedReason({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        requiredPendingApplyPreconditionCount: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0,
+      }).message,
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyBlockedReason({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        requiredPendingApplyPreconditionCount: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0,
+      }).code,
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1149,6 +1183,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactManualApplyReady = decisionNextCommand.key
     ? decisionCommandOutputArtifactManualApplyReadyByKey[decisionNextCommand.key] || false
     : false;
+  const decisionNextCommandOutputArtifactManualApplyBlockedReason = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyBlockedReasonByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactManualApplyBlockedReasonCode = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey[decisionNextCommand.key] || ""
+    : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1188,6 +1228,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactPendingApplyPreconditionCountByKey,
         commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey,
         commandOutputArtifactManualApplyReadyByKey: decisionCommandOutputArtifactManualApplyReadyByKey,
+        commandOutputArtifactManualApplyBlockedReasonByKey: decisionCommandOutputArtifactManualApplyBlockedReasonByKey,
+        commandOutputArtifactManualApplyBlockedReasonCodeByKey: decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1210,6 +1252,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactPendingApplyPreconditionCount: decisionNextCommandOutputArtifactPendingApplyPreconditionCount,
         nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount,
         nextCommandOutputArtifactManualApplyReady: decisionNextCommandOutputArtifactManualApplyReady,
+        nextCommandOutputArtifactManualApplyBlockedReason: decisionNextCommandOutputArtifactManualApplyBlockedReason,
+        nextCommandOutputArtifactManualApplyBlockedReasonCode: decisionNextCommandOutputArtifactManualApplyBlockedReasonCode,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],
