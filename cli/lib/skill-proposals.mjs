@@ -890,6 +890,9 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionCommandArgsByKey = Object.fromEntries(
     decisionCommands.map((command) => [command.key, command.commandArgs]),
   );
+  const decisionCommandStringByKey = Object.fromEntries(
+    decisionCommands.map((command) => [command.key, command.command]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const operatorRunbookStageSelection = failures > 0
     ? {}
@@ -909,6 +912,7 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandRunPolicyByKey: decisionCommandRunPolicyByKey,
         commandSafetyLevelByKey: decisionCommandSafetyLevelByKey,
         commandArgsByKey: decisionCommandArgsByKey,
+        commandStringByKey: decisionCommandStringByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandStep: decisionNextCommand.step || 0,

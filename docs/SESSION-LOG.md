@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 528 (unreleased)** — Added apply-plan `decision.commandStringByKey` so wrappers can display or copy selected preview command strings by key without scanning arrays.
 - **Phase 527 (unreleased)** — Added apply-plan `decision.commandArgsByKey` so wrappers can retrieve selected preview command argv by key without scanning arrays.
 - **Phase 526 (unreleased)** — Added apply-plan `decision.commandSafetyLevelByKey` so wrappers can validate selected preview command safety levels by key without scanning arrays.
 - **Phase 525 (unreleased)** — Added apply-plan `decision.commandRunPolicyByKey` so wrappers can validate selected preview command run policies by key without scanning arrays.

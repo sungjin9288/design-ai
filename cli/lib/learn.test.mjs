@@ -6057,6 +6057,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: applyPlan.commandArgs.reviewCheckReport,
           proposalPatchPreview: applyPlan.commandArgs.proposalPatchPreview,
         },
+        commandStringByKey: {
+          reviewCheckReport: applyPlan.commands.reviewCheckReport,
+          proposalPatchPreview: applyPlan.commands.proposalPatchPreview,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6649,6 +6653,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       commandArgsByKey: {
         reviewCheckReport: applyPlanJsonPayload.commandArgs.reviewCheckReport,
         proposalPatchPreview: applyPlanJsonPayload.commandArgs.proposalPatchPreview,
+      },
+      commandStringByKey: {
+        reviewCheckReport: applyPlanJsonPayload.commands.reviewCheckReport,
+        proposalPatchPreview: applyPlanJsonPayload.commands.proposalPatchPreview,
       },
       nextCommandEntry: {
         step: 2,
