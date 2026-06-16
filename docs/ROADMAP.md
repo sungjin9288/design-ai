@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 529 — Apply-Plan Decision Command Display Labels (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose display labels for the selected optional preview branch. Phase 528 added key-to-command-string lookup; this phase lets wrappers render stable human-readable labels without deriving UI copy from camelCase command keys or scanning `decision.commands`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandDisplayLabelByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandDisplayLabel`.
+- The lookup currently maps `reviewCheckReport` to `Review check Markdown report` and `proposalPatchPreview` to `Skill proposal patch preview`.
+- Kept `decision.commandKeys`, `decision.commandStringByKey`, `decision.commandArgsByKey`, and `decision.nextCommandKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch display label metadata.
+
+### Impact
+- Wrappers can render selected preview command labels from `decision.commandDisplayLabelByKey.reviewCheckReport`, `decision.commandDisplayLabelByKey.proposalPatchPreview`, and `decision.nextCommandDisplayLabel`.
+- `decision.commandStringByKey.<key>` remains the human-readable command copy surface, while `decision.commandArgsByKey.<key>` remains the automation execution surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
 ## Phase 528 — Apply-Plan Decision Command String Lookup (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-command-string lookup for the selected optional preview branch. Phase 527 added key-to-argv lookup; this phase lets wrappers display or copy selected preview command strings by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commands` object.

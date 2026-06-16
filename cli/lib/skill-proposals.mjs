@@ -28,6 +28,12 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_POLICIES = Object.freeze({
   proposalPatchPreview: "output-artifact",
   strictGate: "strict-readiness-gate",
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS = Object.freeze({
+  reviewCheckJson: "Review check JSON",
+  reviewCheckReport: "Review check Markdown report",
+  proposalPatchPreview: "Skill proposal patch preview",
+  strictGate: "Strict proposal readiness gate",
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -893,7 +899,16 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionCommandStringByKey = Object.fromEntries(
     decisionCommands.map((command) => [command.key, command.command]),
   );
+  const decisionCommandDisplayLabelByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS[command.key] || command.key,
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
+  const decisionNextCommandDisplayLabel = decisionNextCommand.key
+    ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
+    : "";
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -913,8 +928,10 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandSafetyLevelByKey: decisionCommandSafetyLevelByKey,
         commandArgsByKey: decisionCommandArgsByKey,
         commandStringByKey: decisionCommandStringByKey,
+        commandDisplayLabelByKey: decisionCommandDisplayLabelByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
+        nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

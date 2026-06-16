@@ -125,6 +125,16 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 529: apply-plan decision command display labels
+
+Added selected-branch command display-label metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandDisplayLabelByKey.reviewCheckReport`
+- `decision.commandDisplayLabelByKey.proposalPatchPreview`
+- `decision.nextCommandDisplayLabel`
+
+Wrappers can now render selected optional preview command labels without deriving UI copy from camelCase command keys or scanning `decision.commands`. Use `decision.commandDisplayLabelByKey.<key>` for UI labels, `decision.commandStringByKey.<key>` for copy/display command strings, and `decision.commandArgsByKey.<key>` for automation execution.
+
 ### Phase 528: apply-plan decision command string lookup
 
 Added selected-branch command-string lookup metadata under `operatorRunbook.stageSelection.decision`:

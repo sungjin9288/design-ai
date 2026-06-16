@@ -6061,6 +6061,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           reviewCheckReport: applyPlan.commands.reviewCheckReport,
           proposalPatchPreview: applyPlan.commands.proposalPatchPreview,
         },
+        commandDisplayLabelByKey: {
+          reviewCheckReport: "Review check Markdown report",
+          proposalPatchPreview: "Skill proposal patch preview",
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6090,6 +6094,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           requiresCleanWorkspace: false,
         },
         nextCommandKey: "reviewCheckReport",
+        nextCommandDisplayLabel: "Review check Markdown report",
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6658,6 +6663,10 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         reviewCheckReport: applyPlanJsonPayload.commands.reviewCheckReport,
         proposalPatchPreview: applyPlanJsonPayload.commands.proposalPatchPreview,
       },
+      commandDisplayLabelByKey: {
+        reviewCheckReport: "Review check Markdown report",
+        proposalPatchPreview: "Skill proposal patch preview",
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6687,6 +6696,7 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         requiresCleanWorkspace: false,
       },
       nextCommandKey: "reviewCheckReport",
+      nextCommandDisplayLabel: "Review check Markdown report",
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,
