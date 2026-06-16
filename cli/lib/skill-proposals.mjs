@@ -1043,6 +1043,19 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
       applyPreconditionsForCommandKey(command.key),
     ]),
   );
+  const decisionCommandOutputArtifactApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      decisionCommandOutputArtifactApplyPreconditionsByKey[command.key]?.length || 0,
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => precondition.required).length,
+    ]),
+  );
   const decisionNextCommand = decisionCommands[0] || {};
   const decisionNextCommandDisplayLabel = decisionNextCommand.key
     ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
@@ -1086,6 +1099,12 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   const decisionNextCommandOutputArtifactApplyPreconditions = decisionNextCommand.key
     ? decisionCommandOutputArtifactApplyPreconditionsByKey[decisionNextCommand.key] || []
     : [];
+  const decisionNextCommandOutputArtifactApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactRequiredApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
   const operatorRunbookStageSelection = failures > 0
     ? {}
     : {
@@ -1119,6 +1138,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         commandOutputArtifactApplyPreconditionIdsByKey: decisionCommandOutputArtifactApplyPreconditionIdsByKey,
         commandOutputArtifactApplyPreconditionLabelsByKey: decisionCommandOutputArtifactApplyPreconditionLabelsByKey,
         commandOutputArtifactApplyPreconditionsByKey: decisionCommandOutputArtifactApplyPreconditionsByKey,
+        commandOutputArtifactApplyPreconditionCountByKey: decisionCommandOutputArtifactApplyPreconditionCountByKey,
+        commandOutputArtifactRequiredApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey,
         nextCommandEntry: decisionNextCommand,
         nextCommandKey: decisionNextCommand.key || "",
         nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
@@ -1135,6 +1156,8 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
         nextCommandOutputArtifactApplyPreconditionIds: decisionNextCommandOutputArtifactApplyPreconditionIds,
         nextCommandOutputArtifactApplyPreconditionLabels: decisionNextCommandOutputArtifactApplyPreconditionLabels,
         nextCommandOutputArtifactApplyPreconditions: decisionNextCommandOutputArtifactApplyPreconditions,
+        nextCommandOutputArtifactApplyPreconditionCount: decisionNextCommandOutputArtifactApplyPreconditionCount,
+        nextCommandOutputArtifactRequiredApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredApplyPreconditionCount,
         nextCommandStep: decisionNextCommand.step || 0,
         nextCommand: decisionNextCommand.command || "",
         nextCommandArgs: decisionNextCommand.commandArgs || [],

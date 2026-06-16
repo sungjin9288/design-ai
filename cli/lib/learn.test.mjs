@@ -6120,6 +6120,14 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
             { id: "clean-workspace", label: "Clean workspace confirmed", required: true },
           ],
         },
+        commandOutputArtifactApplyPreconditionCountByKey: {
+          reviewCheckReport: 0,
+          proposalPatchPreview: 2,
+        },
+        commandOutputArtifactRequiredApplyPreconditionCountByKey: {
+          reviewCheckReport: 0,
+          proposalPatchPreview: 2,
+        },
         nextCommandEntry: {
           step: 2,
           key: "reviewCheckReport",
@@ -6163,6 +6171,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
         nextCommandOutputArtifactApplyPreconditionIds: [],
         nextCommandOutputArtifactApplyPreconditionLabels: [],
         nextCommandOutputArtifactApplyPreconditions: [],
+        nextCommandOutputArtifactApplyPreconditionCount: 0,
+        nextCommandOutputArtifactRequiredApplyPreconditionCount: 0,
         nextCommandStep: 2,
         nextCommand: applyPlan.commands.reviewCheckReport,
         nextCommandArgs: applyPlan.commandArgs.reviewCheckReport,
@@ -6790,6 +6800,14 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
           { id: "clean-workspace", label: "Clean workspace confirmed", required: true },
         ],
       },
+      commandOutputArtifactApplyPreconditionCountByKey: {
+        reviewCheckReport: 0,
+        proposalPatchPreview: 2,
+      },
+      commandOutputArtifactRequiredApplyPreconditionCountByKey: {
+        reviewCheckReport: 0,
+        proposalPatchPreview: 2,
+      },
       nextCommandEntry: {
         step: 2,
         key: "reviewCheckReport",
@@ -6833,6 +6851,8 @@ test("runLearn --propose-skills --strict exits non-zero when proposal review is 
       nextCommandOutputArtifactApplyPreconditionIds: [],
       nextCommandOutputArtifactApplyPreconditionLabels: [],
       nextCommandOutputArtifactApplyPreconditions: [],
+      nextCommandOutputArtifactApplyPreconditionCount: 0,
+      nextCommandOutputArtifactRequiredApplyPreconditionCount: 0,
       nextCommandStep: 2,
       nextCommand: applyPlanJsonPayload.commands.reviewCheckReport,
       nextCommandArgs: applyPlanJsonPayload.commandArgs.reviewCheckReport,

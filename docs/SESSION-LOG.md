@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 543 (unreleased)** — Added apply-plan precondition count fields so wrappers can render checklist summaries without recounting compact precondition objects.
 - **Phase 542 (unreleased)** — Added apply-plan `decision.commandOutputArtifactApplyPreconditionsByKey` and `decision.nextCommandOutputArtifactApplyPreconditions` so wrappers can consume compact `{ id, label, required }` checklist items without zipping parallel arrays.
 - **Phase 541 (unreleased)** — Added apply-plan `decision.commandOutputArtifactApplyPreconditionLabelsByKey` and `decision.nextCommandOutputArtifactApplyPreconditionLabels` so wrappers can render patch-apply checklist copy without hard-coding labels for precondition ids.
 - **Phase 540 (unreleased)** — Added apply-plan `decision.commandOutputArtifactApplyPreconditionIdsByKey` and `decision.nextCommandOutputArtifactApplyPreconditionIds` so wrappers can render ordered patch-apply checklist items without recombining review and clean-workspace booleans.
