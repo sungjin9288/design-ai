@@ -18,6 +18,7 @@ import {
   buildSitePromptBundle,
   buildSiteReport,
   buildSiteWorkflowGraph,
+  analyzeSiteWorkspace,
   createSiteWorkspaceFromInitOptions,
   createSampleSiteWorkspace,
   formatSiteJson,
@@ -49,6 +50,7 @@ function printHelp() {
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
+  console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
@@ -104,7 +106,7 @@ function printHelp() {
   console.log("  --graph");
   console.log("              Export a portable Website Improvement workflow graph without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
-  console.log("  --bundle    Write a complete local handoff bundle directory");
+  console.log("  --bundle    Write a complete local handoff bundle directory; can be combined with --init");
   console.log("  --bundle-check");
   console.log("              Validate a generated handoff bundle directory, including SHA-256 checksums");
   console.log("  --bundle-compare dir");
@@ -127,6 +129,7 @@ function printHelp() {
   console.log("Examples:");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow \"Visitor compares plans and starts signup\" --out website-workspace.json");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
+  console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
@@ -215,7 +218,17 @@ export async function runSite(args) {
     const workspace = createSiteWorkspaceFromInitOptions(parsed.initProfile);
     let content = `${JSON.stringify(workspace, null, 2)}\n`;
     let status = "pass";
-    if (parsed.nextActions) {
+    if (parsed.bundle) {
+      const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+      const bundle = buildSiteHandoffBundle(workspace, summary);
+      status = bundle.status;
+      const written = writeOutputFiles({
+        outPath: parsed.outPath,
+        files: bundle.files,
+        force: parsed.force,
+      });
+      success(`Wrote Website Improvement handoff bundle to ${written.directory} (${written.files.length} files)`);
+    } else if (parsed.nextActions) {
       const nextActionsReport = buildSiteInitNextActionsReport(workspace, {
         filePath: "website-workspace.json",
         status: "pass",
@@ -228,7 +241,9 @@ export async function runSite(args) {
       status = nextActionsReport.status;
       content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
     }
-    if (parsed.outPath) {
+    if (parsed.bundle) {
+      // Bundle output writes multiple files above.
+    } else if (parsed.outPath) {
       const written = writeOutputFile({
         outPath: parsed.outPath,
         content,

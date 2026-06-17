@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 552 (unreleased)** — Added `design-ai site --init --bundle --out <dir>` so company website intake fields can produce a complete local handoff bundle in one deterministic command.
 - **Phase 551 (unreleased)** — Added `design-ai site --init --next-actions` so company website intake fields can immediately produce a save-and-continue dogfood runbook.
 - **Phase 550 (unreleased)** — Added `design-ai site --init` so real company website workspaces can be generated from CLI project fields before Website Improvement dogfood.
 - **Phase 549 (unreleased)** — Added apply-plan manual-apply status tone fields so wrappers can style apply badges without maintaining local status-tone mapping.

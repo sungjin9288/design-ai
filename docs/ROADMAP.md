@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 552 — Website Project Init Handoff Bundle (unreleased)
+
+`design-ai site --init --bundle --out <dir>` now turns company website intake fields into a complete local handoff bundle without requiring a separate workspace save step first.
+
+### Added
+- Added `--bundle --out <dir>` support to the `site --init` flow while preserving default workspace JSON output and the init next-actions runbook mode.
+- Added one-shot bundle generation from deterministic Site Profile, audit checklist, MCP readiness, implementation evidence placeholders, and generated bundle artifacts.
+- Added parser, command, help, and bundle-check coverage for init-generated handoff bundles.
+
+### Impact
+- Operators can create a portable company dogfood handoff kit from known site facts in one command before switching to the target website repo.
+- The flow stays deterministic/local and does not call external MCPs, mutate target website repos, add dependencies, or run automatic website audits.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 551 — Website Project Init Next-Actions Runbook (unreleased)
 
 `design-ai site --init --next-actions` now turns real project intake fields into an immediate company dogfood runbook before target-repo implementation starts.

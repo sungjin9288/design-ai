@@ -961,6 +961,27 @@ RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_INIT_BUNDLE_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --init --bundle --out <dir>`",
+        "design-ai site --init --bundle --out <dir>",
+        "site --init --bundle --out",
+        "site init handoff bundle",
+    ),
+    (
+        "Website Console init handoff bundle",
+        "Website Improvement init handoff bundle",
+        "site init handoff bundle",
+        "Website Console project init handoff bundle",
+        "Website Console init handoff bundle 생성",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_PROMPT_LIST_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --prompt-list --json`",
@@ -2989,6 +3010,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
     "site init package smoke phrase",
+    "site init handoff bundle package smoke phrase",
     "site prompt-list package smoke phrase",
     "site mcp-check package smoke phrase",
     "site mcp-plan package smoke phrase",
@@ -3284,6 +3306,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site init package smoke phrase",
         RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site init handoff bundle package smoke phrase",
+        RELEASE_SITE_INIT_BUNDLE_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site prompt-list package smoke phrase",
@@ -4023,6 +4049,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --sample` Website Console sample workspace coverage,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths,
+`design-ai site --init --bundle --out <dir>` Website Console init handoff bundle coverage in package bin path and one-shot paths,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command,
@@ -4128,6 +4155,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths도 확인하고,
+`design-ai site --init --bundle --out <dir>` Website Console init handoff bundle도 설치된 binary와 one-shot 경로에서 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, MCP check 내장 probe next-step commands, MCP check 내장 command 실행 smoke coverage, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command도 확인하고,

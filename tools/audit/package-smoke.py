@@ -824,6 +824,51 @@ def assert_site_init_json_smoke(
     assert_site_init_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_init_bundle_smoke(
+    cmd: list[str],
+    *,
+    out_dir: Path,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_no_ansi(result.stdout, cmd)
+    assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
+
+    expected_files = [
+        "README.md",
+        "summary.json",
+        "website-workspace.tasks.json",
+        "mcp-check.json",
+        "mcp-probes.json",
+        "mcp-action-plan.md",
+        "website-handoff.md",
+        "website-prompts.md",
+        "codex-implementation.md",
+    ]
+    for name in expected_files:
+        target = out_dir / name
+        if not target.is_file():
+            raise SystemExit(f"site init bundle after {context} missing {target}")
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    if summary.get("site", {}).get("name") != "Company marketing site":
+        raise SystemExit(f"site init bundle after {context} site name changed")
+    if summary.get("source") != "website-workspace.json":
+        raise SystemExit(f"site init bundle after {context} source changed: {summary.get('source')!r}")
+    if summary.get("counts", {}).get("refactorTasks") != 0 or summary.get("taskGeneration", {}).get("totalTasks") != 0:
+        raise SystemExit(f"site init bundle after {context} expected zero starter tasks")
+    if summary.get("files") != expected_files:
+        raise SystemExit(f"site init bundle after {context} file manifest changed")
+
+    workspace = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
+    if workspace.get("siteProfile", {}).get("name") != "Company marketing site":
+        raise SystemExit(f"site init bundle after {context} workspace site name changed")
+    if workspace.get("refactorTasks") != []:
+        raise SystemExit(f"site init bundle after {context} expected no starter refactor tasks")
+
+
 def assert_site_tasks_json_smoke(
     cmd: list[str],
     *,
@@ -16872,6 +16917,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site init JSON",
         )
+        installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [str(bin_path), *SITE_INIT_SMOKE_ARGS, "--bundle", "--out", str(installed_site_init_bundle_dir)],
+            out_dir=installed_site_init_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site init handoff bundle",
+        )
         assert_site_prompt_templates_json_smoke(
             [str(bin_path), "site", "--prompt-list", "--json"],
             cwd=install_root,
@@ -17965,6 +18018,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site init JSON",
+        )
+        npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(tarball, *SITE_INIT_SMOKE_ARGS, "--bundle", "--out", str(npx_site_init_bundle_dir)),
+            out_dir=npx_site_init_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site init handoff bundle",
         )
         assert_site_prompt_templates_json_smoke(
             npm_exec_cmd(tarball, "site", "--prompt-list", "--json"),

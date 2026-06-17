@@ -192,6 +192,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--probes", "--json"]).probes, true);
   assert.equal(parseSiteArgs(["workspace.json", "--next-actions", "--json"]).nextActions, true);
   assert.equal(parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--next-actions", "--json"]).nextActions, true);
+  assert.equal(parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--json"]).graph, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--out", "website-workflow-graph.md"]).outPath, "website-workflow-graph.md");
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
@@ -281,7 +282,10 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--viewport", "watch"]), /--viewport must be one of/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--sample"]), /Use --init without --sample/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--mcp-check"]), /Use --init without --sample/);
-  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--strict"]), /Use --init --strict only with --next-actions/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--strict"]), /Use --init --strict only with --next-actions or --bundle/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle"]), /--bundle requires --out directory/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle", "--json", "--out", "bundle"]), /--json is not supported with --bundle/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle", "--next-actions", "--out", "bundle"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
@@ -2071,6 +2075,35 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.match(readFileSync(nextActionsFile, "utf8"), /Website Improvement next actions: Company marketing site/);
     assert.match(readFileSync(nextActionsFile, "utf8"), /Save the generated Website Improvement workspace/);
 
+    const bundleDir = path.join(dir, "company-handoff-bundle");
+    const bundleOutput = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Company marketing site",
+      "--live-url",
+      "https://example.com",
+      "--repo-url",
+      "https://github.com/acme/site",
+      "--page",
+      "/",
+      "--flow",
+      "Visitor compares plans and starts signup",
+      "--bundle",
+      "--out",
+      bundleDir,
+    ]));
+    assert.match(bundleOutput.stdout, /Wrote Website Improvement handoff bundle/);
+    for (const filePath of SITE_BUNDLE_FILES) {
+      assert.equal(existsSync(path.join(bundleDir, filePath)), true, `${filePath} should be written`);
+    }
+    const bundleSummary = JSON.parse(readFileSync(path.join(bundleDir, "summary.json"), "utf8"));
+    assert.equal(bundleSummary.site.name, "Company marketing site");
+    assert.equal(bundleSummary.source, "website-workspace.json");
+    assert.equal(bundleSummary.counts.refactorTasks, 0);
+    assert.equal(bundleSummary.taskGeneration.totalTasks, 0);
+    assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "website-workspace.tasks.json"), "utf8")).siteProfile.name, "Company marketing site");
+    assert.equal(buildSiteBundleCheckReport({ target: bundleDir }).valid, true);
+
     const writeOutput = await captureConsole(() => runSite([
       "--init",
       "--name",
@@ -2256,6 +2289,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
+  assert.match(output.stdout, /design-ai site --init --name name --live-url url --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -2281,11 +2315,12 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /can be combined with --init/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site"/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--next-actions --out website-next-actions\.md/);
+  assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
-  assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory/);
+  assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory; can be combined with --init/);
   assert.match(output.stdout, /--bundle-check\s+Validate a generated handoff bundle directory/);
   assert.match(output.stdout, /--bundle-compare dir\s+Compare two generated handoff bundles/);
   assert.match(output.stdout, /--bundle-handoff\s+Generate a target-repo Codex handoff prompt/);
