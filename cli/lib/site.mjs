@@ -472,8 +472,11 @@ export function parseSiteArgs(args) {
   if (out.init && !out.initProfile.liveUrl.trim()) {
     throw new Error("--init requires --live-url");
   }
-  if (out.init && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
-    throw new Error("Use --init without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
+  if (out.init && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate)) {
+    throw new Error("Use --init without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, --graph, --report, --prompts, or --prompt");
+  }
+  if (out.init && out.strict && !out.nextActions) {
+    throw new Error("Use --init --strict only with --next-actions");
   }
   if (out.sample && sources.length > 0) {
     throw new Error("Use --sample without a workspace JSON file path or --stdin");
@@ -2001,6 +2004,37 @@ function buildSiteNextActionCommandSet(commandTarget) {
   };
 }
 
+function quoteCliValue(value) {
+  const text = String(value || "");
+  if (/^[A-Za-z0-9_./:@+-]+$/.test(text)) {
+    return text;
+  }
+  return `'${text.replaceAll("'", "'\"'\"'")}'`;
+}
+
+function buildSiteInitCommand(profile, outPath = "website-workspace.json") {
+  const args = [
+    "design-ai site --init",
+    "--name",
+    quoteCliValue(profile.name),
+    "--live-url",
+    quoteCliValue(profile.liveUrl),
+  ];
+  if (profile.repoUrl) args.push("--repo-url", quoteCliValue(profile.repoUrl));
+  if (profile.localPath) args.push("--local-path", quoteCliValue(profile.localPath));
+  if (profile.figmaUrl) args.push("--figma-url", quoteCliValue(profile.figmaUrl));
+  if (profile.brandNotes) args.push("--brand-notes", quoteCliValue(profile.brandNotes));
+  if (profile.deployProvider && profile.deployProvider !== "none") args.push("--deploy", quoteCliValue(profile.deployProvider));
+  if (profile.sentryProject) args.push("--sentry", quoteCliValue(profile.sentryProject));
+  if (profile.cms && profile.cms !== "none") args.push("--cms", quoteCliValue(profile.cms));
+  if (profile.database && profile.database !== "none") args.push("--database", quoteCliValue(profile.database));
+  for (const page of profile.pages) args.push("--page", quoteCliValue(page));
+  for (const flow of profile.userFlows) args.push("--flow", quoteCliValue(flow));
+  for (const viewport of profile.viewports) args.push("--viewport", quoteCliValue(viewport));
+  args.push("--out", quoteCliValue(outPath));
+  return args.join(" ");
+}
+
 export function buildSiteNextActionsReport(workspace, summary = {}) {
   const filePath = summary.filePath || "workspace.json";
   const commandTarget = siteMcpCommandTarget(filePath);
@@ -2166,6 +2200,49 @@ export function buildSiteNextActionsReport(workspace, summary = {}) {
     ],
     externalCalls: false,
     targetRepoMutation: false,
+  };
+}
+
+export function buildSiteInitNextActionsReport(workspace, summary = {}) {
+  const filePath = summary.filePath || "website-workspace.json";
+  const report = buildSiteNextActionsReport(workspace, {
+    ...summary,
+    filePath,
+  });
+  const createWorkspaceCommand = buildSiteInitCommand(workspace.siteProfile, filePath);
+  const createWorkspaceAction = {
+    rank: 1,
+    ...nextActionEntry({
+      severity: "setup",
+      title: "Save the generated Website Improvement workspace",
+      reason: "The company dogfood flow needs a durable workspace JSON before MCP checks, task generation, handoff reports, or target-repo prompts can reference it.",
+      command: createWorkspaceCommand,
+      references: ["siteProfile", "workspace"],
+    }),
+  };
+  const actions = [createWorkspaceAction, ...report.actions.map((action) => ({
+    ...action,
+    rank: action.rank + 1,
+  }))];
+  return {
+    ...report,
+    mode: "init-next-actions",
+    counts: {
+      ...report.counts,
+      actions: actions.length,
+      blocking: actions.filter((action) => action.severity === "blocking").length,
+      warnings: actions.filter((action) => action.severity === "warning").length,
+    },
+    actions,
+    commands: {
+      createWorkspace: createWorkspaceCommand,
+      ...report.commands,
+    },
+    boundaries: [
+      "This init next-action report is deterministic and local.",
+      "Save the workspace JSON first when you plan to continue in the Website Console or target website repo.",
+      ...report.boundaries,
+    ],
   };
 }
 

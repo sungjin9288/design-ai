@@ -3,6 +3,7 @@
 import {
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
+  buildSiteInitNextActionsReport,
   buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
   buildSiteBundleHandoffReport,
@@ -47,6 +48,7 @@ function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
+  console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
@@ -98,7 +100,7 @@ function printHelp() {
   console.log("  --mcp-plan");
   console.log("              Generate a Markdown or JSON MCP readiness action plan without external MCP calls");
   console.log("  --next-actions");
-  console.log("              Generate a prioritized local next-action list from validation, MCP readiness, and refactor tasks");
+  console.log("              Generate a prioritized local next-action list from validation, MCP readiness, and refactor tasks; can be combined with --init");
   console.log("  --graph");
   console.log("              Export a portable Website Improvement workflow graph without external MCP calls");
   console.log("  --tasks     Emit workspace JSON with starter refactor tasks generated from audit findings");
@@ -124,6 +126,7 @@ function printHelp() {
   console.log("");
   console.log("Examples:");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow \"Visitor compares plans and starts signup\" --out website-workspace.json");
+  console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
@@ -209,7 +212,22 @@ export async function runSite(args) {
   }
 
   if (parsed.init) {
-    const content = `${JSON.stringify(createSiteWorkspaceFromInitOptions(parsed.initProfile), null, 2)}\n`;
+    const workspace = createSiteWorkspaceFromInitOptions(parsed.initProfile);
+    let content = `${JSON.stringify(workspace, null, 2)}\n`;
+    let status = "pass";
+    if (parsed.nextActions) {
+      const nextActionsReport = buildSiteInitNextActionsReport(workspace, {
+        filePath: "website-workspace.json",
+        status: "pass",
+        issues: [{
+          level: "pass",
+          id: "workspace-ready",
+          message: "Generated init workspace is ready to save before continuing.",
+        }],
+      });
+      status = nextActionsReport.status;
+      content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
+    }
     if (parsed.outPath) {
       const written = writeOutputFile({
         outPath: parsed.outPath,
@@ -219,6 +237,9 @@ export async function runSite(args) {
       success(`Wrote ${written}`);
     } else {
       console.log(content.trimEnd());
+    }
+    if (shouldFail({ status }, parsed.strict)) {
+      process.exitCode = 1;
     }
     return;
   }
