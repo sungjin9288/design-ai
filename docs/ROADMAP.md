@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 551 — Website Project Init Next-Actions Runbook (unreleased)
+
+`design-ai site --init --next-actions` now turns real project intake fields into an immediate company dogfood runbook before target-repo implementation starts.
+
+### Added
+- Added `--next-actions` support to the `site --init` flow while preserving the default `site --init` workspace JSON output.
+- Added an init-specific next-action report mode that prepends a durable `site --init ... --out website-workspace.json` save command before MCP checks, task generation, handoff reports, and bundle export commands.
+- Added human, JSON, and `--out` coverage for the init next-action runbook.
+
+### Impact
+- Operators can paste known company site facts once and immediately get the exact save-and-continue sequence for Website Improvement dogfood.
+- The flow stays deterministic/local and does not call external MCPs, mutate target website repos, add dependencies, or run automatic website audits.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 550 — Website Project Init Workspace Generation (unreleased)
 
 `design-ai site --init` now creates a real-project Website Improvement workspace JSON from CLI fields so company dogfood can start from actual site metadata instead of editing the sample fixture by hand.

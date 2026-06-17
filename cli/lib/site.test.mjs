@@ -14,6 +14,7 @@ import {
   buildSiteBundleCheckReport,
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
+  buildSiteInitNextActionsReport,
   buildSiteBundleRepairBundle,
   buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
@@ -190,6 +191,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]).json, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--probes", "--json"]).probes, true);
   assert.equal(parseSiteArgs(["workspace.json", "--next-actions", "--json"]).nextActions, true);
+  assert.equal(parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--next-actions", "--json"]).nextActions, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--json"]).graph, true);
   assert.equal(parseSiteArgs(["workspace.json", "--graph", "--out", "website-workflow-graph.md"]).outPath, "website-workflow-graph.md");
   assert.equal(parseSiteArgs(["workspace.json", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
@@ -279,6 +281,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--viewport", "watch"]), /--viewport must be one of/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--sample"]), /Use --init without --sample/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--mcp-check"]), /Use --init without --sample/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--strict"]), /Use --init --strict only with --next-actions/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
@@ -402,6 +405,32 @@ test("createSiteWorkspaceFromInitOptions creates a valid real-project workspace"
   assert.equal(minimal.mcpReadiness.figma, "unused");
   assert.equal(minimal.mcpReadiness.cms, "unused");
   assert.equal(minimal.mcpReadiness.database, "unused");
+});
+
+test("buildSiteInitNextActionsReport prepends a durable workspace save action", () => {
+  const workspace = createSiteWorkspaceFromInitOptions({
+    name: "Company marketing site",
+    liveUrl: "https://example.com",
+    repoUrl: "https://github.com/acme/site",
+    deployProvider: "vercel",
+    pages: ["/", "/pricing"],
+    userFlows: ["Visitor compares plans and starts signup"],
+    viewports: ["desktop", "mobile"],
+  });
+  const report = buildSiteInitNextActionsReport(workspace);
+  const json = JSON.parse(formatSiteNextActionsJson(report));
+  const human = formatSiteNextActionsHuman(report);
+
+  assert.equal(json.kind, "website-improvement-next-actions");
+  assert.equal(json.mode, "init-next-actions");
+  assert.equal(json.filePath, "website-workspace.json");
+  assert.equal(json.actions[0].title, "Save the generated Website Improvement workspace");
+  assert.match(json.actions[0].command, /design-ai site --init/);
+  assert.match(json.actions[0].command, /--out website-workspace\.json/);
+  assert.equal(json.commands.createWorkspace, json.actions[0].command);
+  assert.match(json.commands.tasks, /design-ai site website-workspace\.json --tasks/);
+  assert.match(human, /Save the generated Website Improvement workspace/);
+  assert.match(human, /This init next-action report is deterministic and local/);
 });
 
 test("formatSitePromptTemplates lists all Website Improvement prompt templates", () => {
@@ -1973,6 +2002,7 @@ test("runSite emits and writes a valid sample workspace", async () => {
 test("runSite emits and writes a valid project init workspace", async () => {
   await withTempDir(async (dir) => {
     const outFile = path.join(dir, "company-workspace.json");
+    const nextActionsFile = path.join(dir, "company-next-actions.md");
 
     const initOutput = await captureConsole(() => runSite([
       "--init",
@@ -2002,6 +2032,44 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.equal(workspace.mcpReadiness.browser, "required");
     assert.deepEqual(workspace.refactorTasks, []);
     assert.equal(initOutput.exitCode, undefined);
+
+    const nextActionsOutput = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Company marketing site",
+      "--live-url",
+      "https://example.com",
+      "--repo-url",
+      "https://github.com/acme/site",
+      "--page",
+      "/",
+      "--flow",
+      "Visitor compares plans and starts signup",
+      "--next-actions",
+      "--json",
+    ]));
+    const nextActionsPayload = JSON.parse(nextActionsOutput.stdout);
+    assert.equal(nextActionsPayload.kind, "website-improvement-next-actions");
+    assert.equal(nextActionsPayload.mode, "init-next-actions");
+    assert.equal(nextActionsPayload.actions[0].title, "Save the generated Website Improvement workspace");
+    assert.match(nextActionsPayload.commands.createWorkspace, /--out website-workspace\.json/);
+    assert.equal(nextActionsOutput.exitCode, undefined);
+
+    const nextActionsWriteOutput = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Company marketing site",
+      "--live-url",
+      "https://example.com",
+      "--repo-url",
+      "https://github.com/acme/site",
+      "--next-actions",
+      "--out",
+      nextActionsFile,
+    ]));
+    assert.match(nextActionsWriteOutput.stdout, /Wrote /);
+    assert.match(readFileSync(nextActionsFile, "utf8"), /Website Improvement next actions: Company marketing site/);
+    assert.match(readFileSync(nextActionsFile, "utf8"), /Save the generated Website Improvement workspace/);
 
     const writeOutput = await captureConsole(() => runSite([
       "--init",
@@ -2187,6 +2255,7 @@ test("runSite prints command-specific help", async () => {
   const output = await captureConsole(() => runSite(["--help"]));
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
+  assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -2209,7 +2278,9 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(output.stdout, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
   assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
+  assert.match(output.stdout, /can be combined with --init/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site"/);
+  assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--next-actions --out website-next-actions\.md/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
