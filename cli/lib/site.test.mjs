@@ -1042,6 +1042,8 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   assert.match(files["README.md"], /MCP probes: 4\/4 passing/);
   assert.match(files["README.md"], /Strict-ready: yes/);
   assert.match(files["README.md"], /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff\.md`/);
+  assert.match(files["README.md"], /Target Repo Execution Checklist/);
+  assert.match(files["README.md"], /Confirm target repo working directory/);
   assert.match(files["mcp-probes.json"], /"mode": "read-only-local"/);
   assert.match(files["mcp-probes.json"], /"externalCalls": false/);
   assert.match(files["mcp-action-plan.md"], /Website improvement MCP action plan/);
@@ -1060,6 +1062,38 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
     draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
     verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
     note: "Use the strict handoff command before target-repo implementation.",
+    executionChecklist: [
+      {
+        id: "confirm-target-repo",
+        label: "Confirm target repo working directory",
+        required: true,
+        evidence: "State the target repo path and confirm it is not the design-ai repo before editing.",
+      },
+      {
+        id: "inspect-architecture",
+        label: "Inspect existing architecture and design system",
+        required: true,
+        evidence: "Name the routing, component, styling, token, and test/build surfaces inspected before implementation.",
+      },
+      {
+        id: "apply-focused-task",
+        label: "Apply one focused Website Improvement task",
+        required: true,
+        evidence: "Identify the completed task id/title, changed files, and why the scope stayed limited.",
+      },
+      {
+        id: "verify-quality-gates",
+        label: "Run target repo quality gates",
+        required: true,
+        evidence: "Record lint/typecheck/build/test results plus browser, viewport, accessibility, and deployment checks that were available.",
+      },
+      {
+        id: "record-handoff-evidence",
+        label: "Record implementation evidence and remaining risks",
+        required: true,
+        evidence: "Return executed work, verification results, remaining risks, next actions, and the bundle digest used.",
+      },
+    ],
   });
   assert.equal(summaryPayload.taskGeneration.totalTasks, 3);
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
@@ -1427,6 +1461,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.targetRepoMutation, false);
   assert.equal(report.bundle.repairGuidance.available, true);
   assert.equal(report.bundle.repairGuidance.targetRepoMutation, false);
+  assert.deepEqual(report.bundle.executionChecklist.map((item) => item.id), [
+    "confirm-target-repo",
+    "inspect-architecture",
+    "apply-focused-task",
+    "verify-quality-gates",
+    "record-handoff-evidence",
+  ]);
   assert.match(report.bundle.repairGuidance.command, /website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.match(report.bundle.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
   assert.match(report.bundle.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
@@ -1442,6 +1483,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Generated drift files: none/);
   assert.match(report.prompt, /Handoff generation boundary flags: external calls no; target repo mutation no/);
   assert.match(report.prompt, /Handoff boundaries: deterministic-local, no-external-mcp-calls, no-target-repo-mutation, no-lighthouse-axe-visual-diff, target-repo-work-after-handoff/);
+  assert.match(report.prompt, /Target Repo Execution Checklist/);
+  assert.match(report.prompt, /Run target repo quality gates/);
   assert.match(report.prompt, /Repair guidance:\n- Available: yes/);
   assert.match(report.prompt, /Regenerate: design-ai site .*website-workspace\.tasks\.json --bundle --out .* --force/);
   assert.match(report.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
@@ -2115,12 +2158,44 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.deepEqual(bundleSummary.handoff, {
       strictReady: false,
       readiness: "review-warnings-before-strict-handoff",
-      recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
-      strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
-      draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
-      verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
-      note: "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
-    });
+    recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+    strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+    draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+    verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
+    note: "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
+    executionChecklist: [
+      {
+        id: "confirm-target-repo",
+        label: "Confirm target repo working directory",
+        required: true,
+        evidence: "State the target repo path and confirm it is not the design-ai repo before editing.",
+      },
+      {
+        id: "inspect-architecture",
+        label: "Inspect existing architecture and design system",
+        required: true,
+        evidence: "Name the routing, component, styling, token, and test/build surfaces inspected before implementation.",
+      },
+      {
+        id: "apply-focused-task",
+        label: "Apply one focused Website Improvement task",
+        required: true,
+        evidence: "Identify the completed task id/title, changed files, and why the scope stayed limited.",
+      },
+      {
+        id: "verify-quality-gates",
+        label: "Run target repo quality gates",
+        required: true,
+        evidence: "Record lint/typecheck/build/test results plus browser, viewport, accessibility, and deployment checks that were available.",
+      },
+      {
+        id: "record-handoff-evidence",
+        label: "Record implementation evidence and remaining risks",
+        required: true,
+        evidence: "Return executed work, verification results, remaining risks, next actions, and the bundle digest used.",
+      },
+    ],
+  });
     assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Strict-ready: no/);
     assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff\.md`/);
     assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "website-workspace.tasks.json"), "utf8")).siteProfile.name, "Company marketing site");

@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 554 — Website Bundle Target-Repo Execution Checklist (unreleased)
+
+Website Console handoff bundles now carry an explicit target-repo execution checklist so company dogfood implementation starts with repo confirmation, architecture inspection, focused task scope, verification gates, and evidence recording.
+
+### Added
+- Added `summary.json.handoff.executionChecklist` with stable ids, labels, required flags, and evidence expectations for target-repo implementation.
+- Added the same checklist to generated bundle README files and `bundle-handoff` target-repo prompts.
+- Added bundle-check validation and unit/packed-tarball smoke assertions so generated bundles fail closed if the execution checklist contract drifts.
+
+### Impact
+- Company website implementation handoffs now tell Codex exactly what must be confirmed before editing and what evidence must be returned after verification.
+- The flow remains deterministic/local: it does not call external MCPs, mutate target website repos from design-ai, add dependencies, or run automatic Lighthouse/axe/visual-diff checks.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 553 — Website Bundle Handoff Readiness Guidance (unreleased)
 
 Website Console handoff bundles now explain whether the generated bundle is strict-ready or should be treated as a draft handoff while readiness warnings remain.
