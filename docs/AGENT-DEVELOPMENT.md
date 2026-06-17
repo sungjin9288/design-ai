@@ -125,6 +125,432 @@ design-ai learn --propose-skills --from-file . --patch --out skill-proposals.pat
 
 The patch output is a unified diff preview that appends proposal review notes to candidate `skills/*/SKILL.md` files for manual review. It still does not mutate `learning.json`, edit skill files, call external AI APIs, add embeddings/fine-tuning, or add dependencies.
 
+### Phase 549: apply-plan decision manual apply status tones
+
+Added selected-branch manual-apply status tones under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyStatusToneByKey`
+- `decision.nextCommandOutputArtifactManualApplyStatusTone`
+
+Wrappers can now style apply badges without keeping a local status-to-tone map. Current tones are `neutral` for review-only artifacts, `warning` for blocked patch previews, and `success` for ready manual-apply artifacts.
+
+### Phase 548: apply-plan decision manual apply status labels
+
+Added selected-branch manual-apply status display labels under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyStatusLabelByKey`
+- `decision.nextCommandOutputArtifactManualApplyStatusLabel`
+
+Wrappers can now render apply badges without keeping a local enum-to-label map. Current labels are `Review only`, `Blocked`, and `Ready to apply`.
+
+### Phase 547: apply-plan decision manual apply status
+
+Added selected-branch manual-apply status metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyStatusByKey`
+- `decision.nextCommandOutputArtifactManualApplyStatus`
+
+Wrappers can now render apply badges from one enum. The values are `not-applicable` for review-only artifacts, `blocked` for manual-apply candidates with pending required preconditions, and `ready` once a manual-apply candidate has no required pending preconditions.
+
+### Phase 546: apply-plan decision manual apply blocked reasons
+
+Added selected-branch manual-apply blocked reason metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyBlockedReasonByKey`
+- `decision.commandOutputArtifactManualApplyBlockedReasonCodeByKey`
+- `decision.nextCommandOutputArtifactManualApplyBlockedReason`
+- `decision.nextCommandOutputArtifactManualApplyBlockedReasonCode`
+
+Wrappers can now render disabled patch-apply copy from explicit reason fields. Current review reports return `not-manual-apply-candidate`, while patch previews return `required-preconditions-pending` until manual review and clean-workspace preconditions are satisfied.
+
+### Phase 545: apply-plan decision manual apply readiness
+
+Added selected-branch manual-apply readiness booleans under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyReadyByKey`
+- `decision.nextCommandOutputArtifactManualApplyReady`
+
+Wrappers can now gate patch-apply affordances from one boolean. The field is true only when the artifact is a manual-apply candidate and all required apply preconditions are satisfied; current patch-preview output remains false until manual review and clean-workspace preconditions are explicitly satisfied.
+
+### Phase 544: apply-plan decision apply precondition state counts
+
+Added selected-branch apply-precondition state counts under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactSatisfiedApplyPreconditionCountByKey`
+- `decision.commandOutputArtifactPendingApplyPreconditionCountByKey`
+- `decision.commandOutputArtifactRequiredPendingApplyPreconditionCountByKey`
+- `decision.nextCommandOutputArtifactSatisfiedApplyPreconditionCount`
+- `decision.nextCommandOutputArtifactPendingApplyPreconditionCount`
+- `decision.nextCommandOutputArtifactRequiredPendingApplyPreconditionCount`
+
+Wrappers can now render checklist progress and disabled apply affordances without reducing row objects. Current patch-preview preconditions are pending by default; a precondition counts as satisfied only when it explicitly carries `satisfied: true`.
+
+### Phase 543: apply-plan decision apply precondition counts
+
+Added selected-branch apply-precondition summary counts under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactApplyPreconditionCountByKey`
+- `decision.commandOutputArtifactRequiredApplyPreconditionCountByKey`
+- `decision.nextCommandOutputArtifactApplyPreconditionCount`
+- `decision.nextCommandOutputArtifactRequiredApplyPreconditionCount`
+
+Wrappers can now render checklist summaries without iterating over compact precondition objects. Use the compact `{ id, label, required }` array for row rendering and these count fields for summary or disabled-state copy.
+
+### Phase 542: apply-plan decision compact apply preconditions
+
+Added selected-branch compact apply-precondition objects under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactApplyPreconditionsByKey.reviewCheckReport`
+- `decision.commandOutputArtifactApplyPreconditionsByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactApplyPreconditions`
+
+Wrappers can now render checklist rows from `{ id, label, required }` objects without zipping parallel id and label arrays. Keep using split id/label arrays when a host needs separate automation and display surfaces.
+
+### Phase 541: apply-plan decision apply precondition labels
+
+Added selected-branch ordered apply-precondition labels under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactApplyPreconditionLabelsByKey.reviewCheckReport`
+- `decision.commandOutputArtifactApplyPreconditionLabelsByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactApplyPreconditionLabels`
+
+Wrappers can now render checklist copy without maintaining a local label map for precondition ids. Use `decision.commandOutputArtifactApplyPreconditionIdsByKey.<key>` for stable automation ids and `decision.commandOutputArtifactApplyPreconditionLabelsByKey.<key>` for display copy in the same order.
+
+### Phase 540: apply-plan decision apply precondition ids
+
+Added selected-branch ordered apply-precondition ids under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactApplyPreconditionIdsByKey.reviewCheckReport`
+- `decision.commandOutputArtifactApplyPreconditionIdsByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactApplyPreconditionIds`
+
+Wrappers can now render patch-apply checklist items from a stable array instead of recombining multiple booleans. Use `decision.commandOutputArtifactApplyPreconditionIdsByKey.proposalPatchPreview` for ordered apply checklist ids, then use the corresponding boolean fields for gate state and confirmation logic.
+
+### Phase 539: apply-plan decision clean workspace apply gates
+
+Added selected-branch clean-workspace apply gates under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.reviewCheckReport`
+- `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply`
+
+Wrappers can now require a clean workspace before manually applying a patch preview without blocking the preview-generation command itself. Treat `decision.nextCommandSafety.requiresCleanWorkspace` as the safety requirement for running the selected command, and `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply` as the safety requirement for applying the generated artifact after review.
+
+### Phase 538: apply-plan decision output artifact review instructions
+
+Added selected-branch output artifact review guidance under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactReviewInstructionByKey.reviewCheckReport`
+- `decision.commandOutputArtifactReviewInstructionByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactReviewInstruction`
+
+Wrappers can now render artifact-specific review guidance for Markdown reports and patch previews without hard-coding command keys, artifact names, or copy. Use `decision.commandOutputArtifactReviewInstructionByKey.<key>` for review copy, `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` for review gates, and `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` for boolean apply affordances.
+
+### Phase 537: apply-plan decision manual review gates
+
+Added selected-branch manual-review-required metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactRequiresManualReviewByKey.reviewCheckReport`
+- `decision.commandOutputArtifactRequiresManualReviewByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactRequiresManualReview`
+
+Wrappers can now require human review before enabling patch-preview apply affordances without parsing command keys, disposition strings, or manual-apply candidate flags. Use `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` for review gates, `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` for boolean apply affordances, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 536: apply-plan decision manual-apply candidate flags
+
+Added selected-branch manual-apply candidate metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactManualApplyCandidateByKey.reviewCheckReport`
+- `decision.commandOutputArtifactManualApplyCandidateByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactManualApplyCandidate`
+
+Wrappers can now show manual-apply buttons, warnings, or confirmation affordances only for patch previews without parsing artifact disposition strings or hard-coding command keys. Use `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` for boolean UI gates, `decision.commandOutputArtifactDispositionByKey.<key>` for post-render handling, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 535: apply-plan decision output artifact dispositions
+
+Added selected-branch output artifact disposition metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactDispositionByKey.reviewCheckReport`
+- `decision.commandOutputArtifactDispositionByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactDisposition`
+
+Wrappers can now distinguish review-only artifacts from manual-apply previews without hard-coding command keys, parsing file names, or inferring behavior from media types. Use `decision.commandOutputArtifactDispositionByKey.<key>` for post-render handling, `decision.commandOutputArtifactMediaTypeByKey.<key>` for content type handling, `decision.commandOutputArtifactActionByKey.<key>` for preview behavior, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 534: apply-plan decision output artifact media types
+
+Added selected-branch output artifact media type metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactMediaTypeByKey.reviewCheckReport`
+- `decision.commandOutputArtifactMediaTypeByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactMediaType`
+
+Wrappers can now configure Markdown and diff viewers, clipboard behavior, or download content types without parsing file extensions, artifact type strings, command strings, or argv arrays. Use `decision.commandOutputArtifactMediaTypeByKey.<key>` for content type handling, `decision.commandOutputArtifactActionByKey.<key>` for preview behavior, `decision.commandOutputArtifactTypeByKey.<key>` for artifact type, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 533: apply-plan decision output artifact actions
+
+Added selected-branch output artifact action metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactActionByKey.reviewCheckReport`
+- `decision.commandOutputArtifactActionByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactAction`
+
+Wrappers can now choose Markdown report rendering or unified diff preview rendering without deriving UI behavior from artifact type strings, file names, command strings, or argv arrays. Use `decision.commandOutputArtifactActionByKey.<key>` for preview behavior, `decision.commandOutputArtifactTypeByKey.<key>` for artifact type, `decision.commandOutputArtifactByKey.<key>` for artifact names, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 532: apply-plan decision output artifact types
+
+Added selected-branch output artifact type metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactTypeByKey.reviewCheckReport`
+- `decision.commandOutputArtifactTypeByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifactType`
+
+Wrappers can now distinguish Markdown review reports from unified diff previews without parsing file extensions, command strings, or argv arrays. Use `decision.commandOutputArtifactTypeByKey.<key>` for preview/rendering type decisions, `decision.commandOutputArtifactByKey.<key>` for artifact names, `decision.commandDisplayLabelByKey.<key>` for UI labels, `decision.commandDescriptionByKey.<key>` for helper text, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 531: apply-plan decision output artifacts
+
+Added selected-branch output artifact metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandOutputArtifactByKey.reviewCheckReport`
+- `decision.commandOutputArtifactByKey.proposalPatchPreview`
+- `decision.nextCommandOutputArtifact`
+
+Wrappers can now display selected optional preview artifact targets without parsing `--out` arguments from command strings or argv arrays. Use `decision.commandOutputArtifactByKey.<key>` for UI/export artifact names, `decision.commandDisplayLabelByKey.<key>` for UI labels, `decision.commandDescriptionByKey.<key>` for helper text, `decision.commandStringByKey.<key>` for copy/display command strings, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 530: apply-plan decision command descriptions
+
+Added selected-branch command description metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandDescriptionByKey.reviewCheckReport`
+- `decision.commandDescriptionByKey.proposalPatchPreview`
+- `decision.nextCommandDescription`
+
+Wrappers can now render selected optional preview command tooltips or secondary descriptions without hard-coding command semantics or scanning `decision.commands`. Use `decision.commandDisplayLabelByKey.<key>` for UI labels, `decision.commandDescriptionByKey.<key>` for helper text, `decision.commandStringByKey.<key>` for copy/display command strings, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 529: apply-plan decision command display labels
+
+Added selected-branch command display-label metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandDisplayLabelByKey.reviewCheckReport`
+- `decision.commandDisplayLabelByKey.proposalPatchPreview`
+- `decision.nextCommandDisplayLabel`
+
+Wrappers can now render selected optional preview command labels without deriving UI copy from camelCase command keys or scanning `decision.commands`. Use `decision.commandDisplayLabelByKey.<key>` for UI labels, `decision.commandStringByKey.<key>` for copy/display command strings, and `decision.commandArgsByKey.<key>` for automation execution.
+
+### Phase 528: apply-plan decision command string lookup
+
+Added selected-branch command-string lookup metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandStringByKey.reviewCheckReport`
+- `decision.commandStringByKey.proposalPatchPreview`
+
+Wrappers can now display or copy selected optional preview command strings by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commands` object. Use `decision.commandArgsByKey.<key>` for automation execution and `decision.commandStringByKey.<key>` for human-readable copy/display handoffs.
+
+### Phase 527: apply-plan decision command args lookup
+
+Added selected-branch command-args lookup metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandArgsByKey.reviewCheckReport`
+- `decision.commandArgsByKey.proposalPatchPreview`
+
+Wrappers can now retrieve selected optional preview command argv by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commandArgs` object. The lookup currently maps both selected preview commands to their full structured argv arrays; use `decision.commandByKey.<key>` when a full command object is needed.
+
+### Phase 526: apply-plan decision command safety-level lookup
+
+Added selected-branch safety-level lookup metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandSafetyLevelByKey.reviewCheckReport`
+- `decision.commandSafetyLevelByKey.proposalPatchPreview`
+
+Wrappers can now validate selected optional preview command safety levels by key without scanning `decision.commands` or opening `decision.commandByKey`. The lookup currently maps both selected preview commands to `local-output`; use `decision.commandByKey.<key>.safety` when full mutation details are needed.
+
+### Phase 525: apply-plan decision command run-policy lookup
+
+Added selected-branch run-policy lookup metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandRunPolicyByKey.reviewCheckReport`
+- `decision.commandRunPolicyByKey.proposalPatchPreview`
+
+Wrappers can now validate the selected optional preview branch's execution policy by key without scanning `decision.commands` or reading the full `commandSequence`. The lookup currently maps both selected preview commands to `output-artifact`.
+
+### Phase 524: apply-plan decision command step lookup
+
+Added selected-branch step lookup metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commandStepByKey.reviewCheckReport`
+- `decision.commandStepByKey.proposalPatchPreview`
+
+Wrappers can now validate the selected optional preview branch's original command order by key without scanning `decision.commands` or reading the full `commandSequence`. The lookup currently maps `reviewCheckReport` to `2` and `proposalPatchPreview` to `3`.
+
+### Phase 523: apply-plan decision command step metadata
+
+Added command-sequence step metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commands[*].step`
+- `decision.commandByKey.<key>.step`
+- `decision.nextCommandEntry.step`
+- `decision.nextCommandStep`
+
+Wrappers can now preserve the selected optional preview branch's original command order without reading the full `commandSequence`. The selected next command currently reports `nextCommandStep: 2` for `reviewCheckReport`, after the read-only `reviewCheckJson` command at step 1.
+
+### Phase 522: apply-plan decision next command safety
+
+Added selected next-command safety metadata under `operatorRunbook.stageSelection.decision`:
+
+- `decision.nextCommandSafety`: the full safety object for the command named by `decision.nextCommandKey`
+
+This lets wrappers that already consume `decision.nextCommand`, `decision.nextCommandArgs`, and `decision.nextCommandRunPolicy` gate the selected optional preview command without reading `decision.nextCommandEntry`. The field mirrors `decision.nextCommandEntry.safety` and keeps the existing `decision.nextCommandSafetyLevel` string for compatibility.
+
+### Phase 521: apply-plan decision command safety objects
+
+Added nested command-level safety objects under `operatorRunbook.stageSelection.decision`:
+
+- `decision.commands[*].safety`
+- `decision.commandByKey.<key>.safety`
+- `decision.nextCommandEntry.safety`
+
+Wrappers can now inspect `level`, local-output writes, mutation boundaries, external-AI usage, clean-workspace requirements, and the command-specific `reason` directly from the selected decision command object. The older `safetyLevel` and flattened boolean flags remain for compatibility, while `commandSequenceByKey` remains the canonical full-command lookup.
+
+### Phase 520: apply-plan decision next command entry
+
+Added a compact full command object under `operatorRunbook.stageSelection.decision`:
+
+- `nextCommandEntry`: the first selected optional preview command object, currently `reviewCheckReport`
+
+Wrappers should prefer `decision.nextCommandEntry` when rendering or running the first optional preview handoff because it carries the command string, structured args, run policy, safety level, write/mutation flags, external-AI flags, and clean-workspace requirement in one object. The separate `decision.nextCommand*` fields remain for compatibility, while `decision.commandByKey` remains the lookup surface for explicit operator command choice.
+
+### Phase 519: apply-plan decision command lookup
+
+Added direct lookup fields under `operatorRunbook.stageSelection.decision`:
+
+- `commandByKey`: compact lookup for selected-branch commands
+- `nextCommandKey`: currently `reviewCheckReport`
+- `nextCommand` / `nextCommandArgs`: executable first optional preview command handoff
+- `nextCommandRunPolicy` / `nextCommandSafetyLevel`: quick gate metadata for the first command
+
+Wrappers should use `decision.nextCommand*` when offering the first optional preview command and `decision.commandByKey` when the operator chooses a specific preview artifact. The full canonical command contract remains `commandSequenceByKey`.
+
+### Phase 518: apply-plan decision command handoff
+
+Added compact selected-branch command handoffs under `operatorRunbook.stageSelection.decision`:
+
+- `commandCount`: currently `2`
+- `commandKeys`: `reviewCheckReport`, `proposalPatchPreview`
+- `commands`: compact command objects with command string, structured args, run policy, safety level, write/mutation flags, and external-AI flags
+
+Wrappers can now branch on `decision.action`, gate on `decision.safety`, then offer or execute `decision.commands` for optional local preview artifacts. `commandSequenceByKey` remains the full canonical command lookup for later gates.
+
+### Phase 517: apply-plan decision safety summary
+
+Added `operatorRunbook.stageSelection.decision.safety` so wrappers can gate the selected decision directly:
+
+- `level`: currently `local-output`
+- `writesLocalFiles` / `writesOutputArtifacts`: true for optional preview artifacts
+- `mutatesProfile` / `mutatesReviewFile` / `mutatesSkillFiles`: false
+- `callsExternalAiApis`: false
+- `requiresCleanWorkspace`: false
+
+Wrappers should branch on `decision.action`, then inspect `decision.safety` before executing or offering commands. The selected-stage summaries remain available for fuller detail, but the decision object is now self-contained for first-branch gating.
+
+### Phase 516: apply-plan stage decision enum
+
+Added `operatorRunbook.stageSelection.decision` as the first branch decision for apply-plan wrappers:
+
+- `action`: currently `offer-optional-preview`
+- `stageKey` / `stageKind`: the selected optional preview branch
+- `commandKeys` / `runPolicy`: the commands and execution policy for that branch
+- `nextRequiredStageKey` / `nextRequiredCommandStageKey`: the mandatory path after optional preview
+- `requiresOperatorActionBeforeRequiredCommands`: currently `true`, because accepted skill deltas remain manual
+
+Wrappers should branch on `decision.action` before reading the selected-stage summaries. The decision enum is the routing surface; the summaries are the safety/detail surface.
+
+### Phase 515: apply-plan selected stage summaries
+
+Added compact selected-stage summaries under `operatorRunbook.stageSelection`:
+
+- `nextStage`: the optional selected preview branch, currently `previewArtifacts`
+- `nextRequiredStage`: the first mandatory branch, currently `manualSkillEdit`
+- `nextRequiredCommandStage`: the first mandatory command-bearing branch, currently `reviewReadiness`
+
+Each summary includes command count, command keys, optional/required state, stage kind, local-output flags, mutation flags, external-AI flags, clean-workspace requirement, and reason. Wrappers should use these summaries for branch safety checks before consulting `stageByKey` for full stage details.
+
+### Phase 514: apply-plan stage selection summary
+
+Added `operatorRunbook.stageSelection` to group the stage-selection policy in one object:
+
+- `strategy`: currently `optional-preview-before-required-manual-edit`
+- `stageOrder`: stable operator stage order
+- `nextStageKey` / `nextStageCommandKeys`: optional preview artifacts
+- `nextRequiredStageKey` / `nextRequiredStageCommandKeys`: required manual skill edit stage
+- `nextRequiredCommandStageKey` / `nextRequiredCommandStageCommandKeys`: required read-only review gate
+
+Wrappers should use this object when they need a single branch point for optional previews versus mandatory operator work. The top-level fields remain for backward compatibility, and invalid command contracts still return an empty `stageSelection` object.
+
+### Phase 513: apply-plan required stage handoff
+
+Added required-stage handoff fields to `operatorRunbook` so local AI/agent wrappers can distinguish optional local preview artifacts from required operator work:
+
+- `nextRequiredStageKey`: the first required stage, currently `manualSkillEdit`
+- `nextRequiredStageCommandKeys`: commands on that required stage, currently empty because skill-file edits remain manual
+- `nextRequiredCommandStageKey`: the first required stage that has commands, currently `reviewReadiness`
+- `nextRequiredCommandStageCommandKeys`: commands for that stage, currently `reviewCheckJson`
+
+This lets automation offer optional `previewArtifacts` while still routing the mandatory path through manual skill edits and read-only review gates. Invalid command contracts stay fail-closed with empty required-stage fields.
+
+### Phase 512: apply-plan runbook stage index
+
+Added `operatorRunbook.stageKeys` and `operatorRunbook.stageByKey` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can retrieve runbook stages by stable key without scanning the ordered `stages` array.
+
+The index exposes the same four runbook stages:
+
+- `previewArtifacts`
+- `manualSkillEdit`
+- `reviewReadiness`
+- `strictGate`
+
+Invalid command contracts stay fail-closed with an empty `stageKeys` list and empty `stageByKey` map. This mirrors the command-level `commandSequenceKeys` / `commandSequenceByKey` contract at the operator-runbook layer while preserving the same no-mutation boundary for learning profiles, review files, skill files, external AI APIs, embeddings, and fine-tuning jobs.
+
+### Phase 511: apply-plan operator runbook
+
+Added `operatorRunbook` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can follow the accepted-proposal handoff at the operator stage level.
+
+The runbook exposes four deterministic stages:
+
+- `previewArtifacts`: optional local-output previews for `reviewCheckReport` and `proposalPatchPreview`
+- `manualSkillEdit`: required manual review/edit of accepted skill deltas
+- `reviewReadiness`: required read-only `reviewCheckJson` validation after manual edits
+- `strictGate`: required read-only strict gate before marking proposals applied
+
+Invalid command contracts stay fail-closed with `blocked: true`, zero stages, and no next stage. The runbook is additive and preserves the existing boundary: preview artifact commands may write explicit `--out` files, but apply-plan output still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Phase 510: apply-plan sequence key index
+
+Added `commandSequenceKeys` and `commandSequenceByKey` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can retrieve named follow-up commands without scanning the ordered `commandSequence` array.
+
+The index preserves the same validated command items:
+
+- `reviewCheckJson`
+- `reviewCheckReport`
+- `proposalPatchPreview`
+- `strictGate`
+
+Invalid command contracts stay fail-closed with an empty key list and empty key map. The key index is additive and keeps the same boundary as the ordered sequence: local output previews may write requested `--out` artifacts, but the apply plan still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Phase 509: apply-plan sequence safety summary
+
+Added `commandSequenceSummary` to `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` so local AI/agent wrappers can branch on the full follow-up handoff without reducing the full `commandSequence` array.
+
+The summary reports:
+
+- whether the sequence is executable or blocked
+- total step count
+- read-only vs local-output step counts
+- local write/output artifact flags
+- profile, review-file, and skill-file mutation flags
+- external AI API and clean-workspace boundaries
+- aggregate run policy
+
+This keeps the apply-plan handoff deterministic and explicit: preview/report/patch artifacts may write local output files when requested with `--out`, but the sequence still does not mutate `learning.json`, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
 ### Phase 275: Website Console MCP probes
 
 Implemented `design-ai site --mcp-check --probes` and `design-ai site --mcp-plan --probes` as optional read-only probe overlays for the existing Website Console MCP readiness matrix:

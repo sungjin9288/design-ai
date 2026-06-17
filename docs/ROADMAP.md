@@ -1,5 +1,1437 @@
 # Roadmap
 
+## Phase 549 — Apply-Plan Decision Manual Apply Status Tones (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status tone fields for output artifacts in the selected optional preview branch. Phase 548 added display labels; this phase lets wrappers style apply badges without maintaining their own status-to-tone map.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyStatusToneByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyStatusTone`.
+- The tone lookup currently maps `reviewCheckReport` to `neutral` and `proposalPatchPreview` to `warning`.
+- The possible tones are `neutral`, `warning`, and `success`.
+- Kept manual-apply status labels, status enums, blocked reasons, readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply status tone metadata.
+
+### Impact
+- Wrappers can style apply badges from `decision.commandOutputArtifactManualApplyStatusToneByKey.<key>` without shipping a duplicate status-tone map.
+- Tone is a display hint; the status enum remains the canonical machine-readable state.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply status tones, manual-apply status labels, manual-apply status, manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 548 — Apply-Plan Decision Manual Apply Status Labels (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status display labels for output artifacts in the selected optional preview branch. Phase 547 added status enums; this phase lets wrappers render apply badges without maintaining their own enum-to-label map.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyStatusLabelByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyStatusLabel`.
+- The label lookup currently maps `reviewCheckReport` to `Review only` and `proposalPatchPreview` to `Blocked`.
+- The possible labels are `Review only`, `Blocked`, and `Ready to apply`.
+- Kept manual-apply status enums, blocked reasons, readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply status label metadata.
+
+### Impact
+- Wrappers can render apply badge copy from `decision.commandOutputArtifactManualApplyStatusLabelByKey.<key>` without shipping a duplicate enum display map.
+- The status enum remains the machine-readable state, while label fields are the display surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply status labels, manual-apply status, manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 547 — Apply-Plan Decision Manual Apply Status (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status enum fields for output artifacts in the selected optional preview branch. Phase 546 added blocked reason code/message fields; this phase lets wrappers render apply badges without recomputing readiness, applicability, and blocked state from multiple booleans.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyStatusByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyStatus`.
+- The status enum is `not-applicable`, `blocked`, or `ready`.
+- The lookup currently maps `reviewCheckReport` to `not-applicable` and `proposalPatchPreview` to `blocked`.
+- Kept manual-apply blocked reasons, manual-apply readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply status metadata.
+
+### Impact
+- Wrappers can render apply status badges from `decision.commandOutputArtifactManualApplyStatusByKey.<key>` without deriving status from readiness and blocked reason fields.
+- The status remains fail-closed for current generated patch previews until required apply preconditions are satisfied.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply status, manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 546 — Apply-Plan Decision Manual Apply Blocked Reasons (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply blocked reason code/message fields for output artifacts in the selected optional preview branch. Phase 545 added readiness booleans; this phase lets wrappers render disabled patch-apply copy without recomputing the readiness explanation from candidate flags and precondition counts.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyBlockedReasonByKey`.
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyBlockedReasonCodeByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyBlockedReason`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyBlockedReasonCode`.
+- The lookup currently maps `reviewCheckReport` to `not-manual-apply-candidate` and `proposalPatchPreview` to `required-preconditions-pending`.
+- Kept manual-apply readiness booleans, manual-apply candidate flags, precondition state counts, compact precondition rows, total/required counts, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply blocked reason metadata.
+
+### Impact
+- Wrappers can render disabled apply button copy from `decision.commandOutputArtifactManualApplyBlockedReasonByKey.<key>` without deriving explanation text from several fields.
+- The blocked reason is explicit and fail-closed for current generated patch previews until required apply preconditions are satisfied.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply blocked reasons, manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 545 — Apply-Plan Decision Manual Apply Readiness (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply readiness booleans for output artifacts in the selected optional preview branch. Phase 544 added satisfied and pending precondition counts; this phase lets wrappers gate patch-apply affordances without recomputing the manual-apply candidate flag and required-pending precondition state.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyReadyByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyReady`.
+- `manualApplyReady` is true only when the artifact is a manual-apply candidate and `requiredPendingApplyPreconditionCount` is `0`.
+- The lookup currently maps `reviewCheckReport` to `false` because it is not a manual-apply candidate and `proposalPatchPreview` to `false` because its required manual-review and clean-workspace preconditions are pending by default.
+- Kept manual-apply candidate flags, state counts, compact precondition rows, total/required counts, split id/label arrays, review gates, clean-workspace gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply readiness metadata.
+
+### Impact
+- Wrappers can show or disable patch-apply buttons from `decision.commandOutputArtifactManualApplyReadyByKey.<key>` without deriving readiness from several fields.
+- The readiness boolean is fail-closed for current generated patch previews until manual review and clean-workspace preconditions are explicitly satisfied.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply readiness, apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 544 — Apply-Plan Decision Apply Precondition State Counts (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose apply-precondition state counts for output artifacts in the selected optional preview branch. Phase 543 added total and required counts; this phase lets wrappers render checklist progress, pending summaries, and disabled apply affordances without reducing the row-level precondition objects.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactSatisfiedApplyPreconditionCountByKey`.
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactPendingApplyPreconditionCountByKey`.
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactRequiredPendingApplyPreconditionCountByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactSatisfiedApplyPreconditionCount`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactPendingApplyPreconditionCount`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactRequiredPendingApplyPreconditionCount`.
+- The lookup currently maps `reviewCheckReport` to `0` state counts and `proposalPatchPreview` to `0` satisfied / `2` pending / `2` required-pending preconditions.
+- Kept compact precondition rows, total/required counts, split id/label arrays, apply gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch apply-precondition state count metadata.
+
+### Impact
+- Wrappers can render checklist progress and disabled apply copy from count fields without iterating over `decision.commandOutputArtifactApplyPreconditionsByKey`.
+- A precondition counts as satisfied only when it explicitly carries `satisfied: true`; current patch-preview preconditions remain pending by default.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose apply-precondition state counts, apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 543 — Apply-Plan Decision Apply Precondition Counts (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose apply-precondition summary counts for output artifacts in the selected optional preview branch. Phase 542 added compact checklist objects; this phase lets wrappers render checklist summaries without recounting those objects.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactApplyPreconditionCountByKey`.
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactRequiredApplyPreconditionCountByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactApplyPreconditionCount`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactRequiredApplyPreconditionCount`.
+- The lookup currently maps `reviewCheckReport` to `0` counts and `proposalPatchPreview` to `2` total / `2` required preconditions.
+- Kept `decision.commandOutputArtifactApplyPreconditionsByKey`, split id/label arrays, apply gates, artifact metadata, and selected command metadata intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch apply-precondition count metadata.
+
+### Impact
+- Wrappers can show checklist summary copy from count fields without iterating over `decision.commandOutputArtifactApplyPreconditionsByKey`.
+- The compact `{ id, label, required }` objects remain the row-level checklist surface, while count fields are the stable summary surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose apply-precondition counts, compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 542 — Apply-Plan Decision Compact Apply Preconditions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose compact apply-precondition objects for output artifacts in the selected optional preview branch. Phase 541 added labels beside ids; this phase lets wrappers consume `{ id, label, required }` checklist items without zipping parallel arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactApplyPreconditionsByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactApplyPreconditions`.
+- The lookup currently maps `reviewCheckReport` to `[]` and `proposalPatchPreview` to required `manual-review` and `clean-workspace` checklist objects.
+- Kept `decision.commandOutputArtifactApplyPreconditionLabelsByKey`, `decision.commandOutputArtifactApplyPreconditionIdsByKey`, `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey`, `decision.commandOutputArtifactReviewInstructionByKey`, `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch compact apply-precondition metadata.
+
+### Impact
+- Wrappers can render patch-apply checklist rows from `decision.commandOutputArtifactApplyPreconditionsByKey.proposalPatchPreview` without pairing id and label arrays.
+- `decision.commandOutputArtifactApplyPreconditionIdsByKey.<key>` and `decision.commandOutputArtifactApplyPreconditionLabelsByKey.<key>` remain available for consumers that prefer split automation/display surfaces.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose compact apply preconditions, apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 541 — Apply-Plan Decision Apply Precondition Labels (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose ordered apply-precondition labels for output artifacts in the selected optional preview branch. Phase 540 added stable ids; this phase lets wrappers render checklist copy without hard-coding labels for those ids.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactApplyPreconditionLabelsByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactApplyPreconditionLabels`.
+- The lookup currently maps `reviewCheckReport` to `[]` and `proposalPatchPreview` to `["Manual review completed", "Clean workspace confirmed"]`.
+- Kept `decision.commandOutputArtifactApplyPreconditionIdsByKey`, `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey`, `decision.commandOutputArtifactReviewInstructionByKey`, `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch apply-precondition label metadata.
+
+### Impact
+- Wrappers can render checklist copy from `decision.commandOutputArtifactApplyPreconditionLabelsByKey.proposalPatchPreview` without maintaining a local label map for precondition ids.
+- `decision.commandOutputArtifactApplyPreconditionIdsByKey.<key>` remains the stable automation/checklist-id surface, while `commandOutputArtifactApplyPreconditionLabelsByKey.<key>` is the stable display-copy surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose apply precondition labels, apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 540 — Apply-Plan Decision Apply Precondition IDs (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose ordered apply-precondition ids for output artifacts in the selected optional preview branch. Phase 539 separated preview safety from manual apply safety; this phase gives wrappers a stable checklist surface without recombining review and clean-workspace booleans.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactApplyPreconditionIdsByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactApplyPreconditionIds`.
+- The lookup currently maps `reviewCheckReport` to `[]` and `proposalPatchPreview` to `["manual-review", "clean-workspace"]`.
+- Kept `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey`, `decision.commandOutputArtifactReviewInstructionByKey`, `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch apply-precondition metadata.
+
+### Impact
+- Wrappers can render ordered patch-apply checklist items from `decision.commandOutputArtifactApplyPreconditionIdsByKey.proposalPatchPreview` without re-deriving them from multiple booleans.
+- `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` and `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.<key>` remain the stable boolean gates, while `commandOutputArtifactApplyPreconditionIdsByKey.<key>` is the stable ordered checklist surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose apply preconditions, clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 539 — Apply-Plan Decision Clean Workspace Apply Gates (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose clean-workspace-before-apply flags for output artifacts in the selected optional preview branch. Phase 538 added artifact review instructions; this phase separates preview command safety from manual patch-apply safety so wrappers do not infer apply requirements from the preview command's `requiresCleanWorkspace: false`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply`.
+- The lookup currently maps `reviewCheckReport` to `false` and `proposalPatchPreview` to `true`.
+- Kept `decision.commandOutputArtifactReviewInstructionByKey`, `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch clean-workspace apply-gate metadata.
+
+### Impact
+- Wrappers can require a clean workspace before manual patch application from `decision.commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey.proposalPatchPreview` without blocking the preview-generation command itself.
+- `decision.nextCommandSafety.requiresCleanWorkspace` remains scoped to running the selected command, while `decision.nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply` is scoped to applying the generated artifact after review.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose clean-workspace apply gates, review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 538 — Apply-Plan Decision Output Artifact Review Instructions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose artifact-specific review instructions for output artifacts in the selected optional preview branch. Phase 537 added manual-review-required flags; this phase lets wrappers render review guidance for Markdown reports and patch previews without hard-coding command keys, artifact names, or copy.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactReviewInstructionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactReviewInstruction`.
+- The lookup currently maps `reviewCheckReport` to Markdown readiness report review guidance and `proposalPatchPreview` to unified diff manual-review guidance before skill-file edits.
+- Kept `decision.commandOutputArtifactRequiresManualReviewByKey`, `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch review-instruction metadata.
+
+### Impact
+- Wrappers can render guidance from `decision.commandOutputArtifactReviewInstructionByKey.reviewCheckReport`, `decision.commandOutputArtifactReviewInstructionByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactReviewInstruction`.
+- `decision.commandOutputArtifactRequiresManualReviewByKey.<key>` remains the stable review-gate surface, while `commandOutputArtifactReviewInstructionByKey.<key>` is the stable review-copy surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose review instructions, manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 537 — Apply-Plan Decision Manual Review Gates (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-review-required flags for output artifacts in the selected optional preview branch. Phase 536 added manual-apply candidate flags; this phase lets wrappers require human review before applying patch previews without parsing command keys, disposition strings, or manual-apply candidate flags.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactRequiresManualReviewByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactRequiresManualReview`.
+- The lookup currently maps `reviewCheckReport` to `false` and `proposalPatchPreview` to `true`.
+- Kept `decision.commandOutputArtifactManualApplyCandidateByKey`, `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-review gate metadata.
+
+### Impact
+- Wrappers can branch review gates, confirmation copy, or disabled apply states from `decision.commandOutputArtifactRequiresManualReviewByKey.reviewCheckReport`, `decision.commandOutputArtifactRequiresManualReviewByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactRequiresManualReview`.
+- `decision.commandOutputArtifactManualApplyCandidateByKey.<key>` remains the stable boolean affordance surface, while `commandOutputArtifactRequiresManualReviewByKey.<key>` is the stable review-gate surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-review gates, manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 536 — Apply-Plan Decision Manual Apply Candidate Flags (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply candidate flags for output artifacts in the selected optional preview branch. Phase 535 added artifact dispositions; this phase lets wrappers show manual-apply affordances only for patch previews without parsing disposition strings or hard-coding command keys.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactManualApplyCandidateByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactManualApplyCandidate`.
+- The lookup currently maps `reviewCheckReport` to `false` and `proposalPatchPreview` to `true`.
+- Kept `decision.commandOutputArtifactDispositionByKey`, `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch manual-apply candidate metadata.
+
+### Impact
+- Wrappers can branch manual-apply buttons, warning banners, or copy from `decision.commandOutputArtifactManualApplyCandidateByKey.reviewCheckReport`, `decision.commandOutputArtifactManualApplyCandidateByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactManualApplyCandidate`.
+- `decision.commandOutputArtifactDispositionByKey.<key>` remains the stable post-render handling surface, while `commandOutputArtifactManualApplyCandidateByKey.<key>` is the stable boolean affordance surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose manual-apply candidate flags, decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 535 — Apply-Plan Decision Output Artifact Dispositions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact dispositions for the selected optional preview branch. Phase 534 added media types; this phase lets wrappers distinguish review-only artifacts from manual-apply previews without hard-coding command keys, parsing file names, or inferring behavior from media types.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactDispositionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactDisposition`.
+- The lookup currently maps `reviewCheckReport` to `review-only` and `proposalPatchPreview` to `manual-apply-preview`.
+- Kept `decision.commandOutputArtifactMediaTypeByKey`, `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact disposition metadata.
+
+### Impact
+- Wrappers can branch post-render copy, warning text, or manual-apply affordances from `decision.commandOutputArtifactDispositionByKey.reviewCheckReport`, `decision.commandOutputArtifactDispositionByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactDisposition`.
+- `decision.commandOutputArtifactMediaTypeByKey.<key>` remains the stable content-type surface, while `commandOutputArtifactDispositionByKey.<key>` is the stable post-render handling surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact dispositions, decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 534 — Apply-Plan Decision Output Artifact Media Types (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact media types for the selected optional preview branch. Phase 533 added preview actions; this phase lets wrappers configure Markdown and diff viewers, clipboard behavior, or download content types without parsing file extensions, artifact type strings, command strings, or argv arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactMediaTypeByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactMediaType`.
+- The lookup currently maps `reviewCheckReport` to `text/markdown` and `proposalPatchPreview` to `text/x-diff`.
+- Kept `decision.commandOutputArtifactActionByKey`, `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact media type metadata.
+
+### Impact
+- Wrappers can branch viewer/editor/download content handling from `decision.commandOutputArtifactMediaTypeByKey.reviewCheckReport`, `decision.commandOutputArtifactMediaTypeByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactMediaType`.
+- `decision.commandOutputArtifactActionByKey.<key>` remains the stable preview behavior surface, while `commandOutputArtifactMediaTypeByKey.<key>` is the stable content-type surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact media types, decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 533 — Apply-Plan Decision Output Artifact Actions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact handling actions for the selected optional preview branch. Phase 532 added artifact types; this phase lets wrappers choose Markdown report rendering or unified diff preview rendering without deriving UI behavior from type strings, file names, command strings, or argv arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactActionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactAction`.
+- The lookup currently maps `reviewCheckReport` to `render-markdown-report` and `proposalPatchPreview` to `render-unified-diff-preview`.
+- Kept `decision.commandOutputArtifactTypeByKey`, `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact action metadata.
+
+### Impact
+- Wrappers can branch UI behavior from `decision.commandOutputArtifactActionByKey.reviewCheckReport`, `decision.commandOutputArtifactActionByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactAction`.
+- `decision.commandOutputArtifactTypeByKey.<key>` remains the stable artifact type surface, while `commandOutputArtifactActionByKey.<key>` is the stable preview behavior surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact actions, decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 532 — Apply-Plan Decision Output Artifact Types (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact types for the selected optional preview branch. Phase 531 added artifact target names; this phase lets wrappers distinguish Markdown review reports from unified diff previews without parsing file extensions, command strings, or argv arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactTypeByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifactType`.
+- The lookup currently maps `reviewCheckReport` to `markdown-report` and `proposalPatchPreview` to `unified-diff`.
+- Kept `decision.commandOutputArtifactByKey`, `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact type metadata.
+
+### Impact
+- Wrappers can branch rendering or download behavior from `decision.commandOutputArtifactTypeByKey.reviewCheckReport`, `decision.commandOutputArtifactTypeByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifactType`.
+- `decision.commandOutputArtifactByKey.<key>` remains the stable file target surface, while `commandOutputArtifactTypeByKey.<key>` is the stable artifact rendering/type surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact types, decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 531 — Apply-Plan Decision Output Artifact Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose output artifact targets for the selected optional preview branch. Phase 530 added command descriptions; this phase lets wrappers display generated artifact names without parsing `--out` arguments from command strings or argv arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandOutputArtifactByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandOutputArtifact`.
+- The lookup currently maps `reviewCheckReport` to `skill-proposal-review-check.md` and `proposalPatchPreview` to `skill-proposals.patch`.
+- Kept `decision.commandArgsByKey`, `decision.commandStringByKey`, `decision.commandDisplayLabelByKey`, and `decision.commandDescriptionByKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch output artifact metadata.
+
+### Impact
+- Wrappers can render selected preview artifact targets from `decision.commandOutputArtifactByKey.reviewCheckReport`, `decision.commandOutputArtifactByKey.proposalPatchPreview`, and `decision.nextCommandOutputArtifact`.
+- `decision.commandArgsByKey.<key>` remains the automation execution surface, while `commandOutputArtifactByKey.<key>` is the stable UI/export target surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision output artifact lookup, decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 530 — Apply-Plan Decision Command Descriptions (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose descriptions for the selected optional preview branch. Phase 529 added display labels; this phase lets wrappers render tooltips or secondary command descriptions without hard-coding command semantics or scanning `decision.commands`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandDescriptionByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandDescription`.
+- The lookup currently maps `reviewCheckReport` to `Generate a Markdown review-check artifact for accepted proposal readiness.` and `proposalPatchPreview` to `Generate a unified diff preview for accepted skill proposal edits.`.
+- Kept `decision.commandDisplayLabelByKey`, `decision.commandStringByKey`, `decision.commandArgsByKey`, and `decision.nextCommandDisplayLabel` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch description metadata.
+
+### Impact
+- Wrappers can render selected preview command tooltips or secondary copy from `decision.commandDescriptionByKey.reviewCheckReport`, `decision.commandDescriptionByKey.proposalPatchPreview`, and `decision.nextCommandDescription`.
+- `decision.commandDisplayLabelByKey.<key>` remains the UI label surface, `decision.commandStringByKey.<key>` remains the copy/display command surface, and `decision.commandArgsByKey.<key>` remains the automation execution surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command descriptions, display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 529 — Apply-Plan Decision Command Display Labels (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose display labels for the selected optional preview branch. Phase 528 added key-to-command-string lookup; this phase lets wrappers render stable human-readable labels without deriving UI copy from camelCase command keys or scanning `decision.commands`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandDisplayLabelByKey`.
+- Added `operatorRunbook.stageSelection.decision.nextCommandDisplayLabel`.
+- The lookup currently maps `reviewCheckReport` to `Review check Markdown report` and `proposalPatchPreview` to `Skill proposal patch preview`.
+- Kept `decision.commandKeys`, `decision.commandStringByKey`, `decision.commandArgsByKey`, and `decision.nextCommandKey` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch display label metadata.
+
+### Impact
+- Wrappers can render selected preview command labels from `decision.commandDisplayLabelByKey.reviewCheckReport`, `decision.commandDisplayLabelByKey.proposalPatchPreview`, and `decision.nextCommandDisplayLabel`.
+- `decision.commandStringByKey.<key>` remains the human-readable command copy surface, while `decision.commandArgsByKey.<key>` remains the automation execution surface.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command display labels, command string lookup, command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 528 — Apply-Plan Decision Command String Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-command-string lookup for the selected optional preview branch. Phase 527 added key-to-argv lookup; this phase lets wrappers display or copy selected preview command strings by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commands` object.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandStringByKey`.
+- The lookup currently maps `reviewCheckReport` and `proposalPatchPreview` to their full shell command strings.
+- Kept `decision.commands[*].command`, `decision.commandByKey.<key>.command`, `decision.nextCommand`, and top-level `commands` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch command-string lookup metadata.
+
+### Impact
+- Wrappers can display or copy selected preview commands from `decision.commandStringByKey.reviewCheckReport` and `decision.commandStringByKey.proposalPatchPreview` without reducing arrays.
+- `decision.commandArgsByKey.<key>` remains the safer execution surface for automation, while `commandStringByKey` is optimized for human-readable display/copy handoffs.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command string lookup, decision command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 527 — Apply-Plan Decision Command Args Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-argv lookup for the selected optional preview branch. Phase 526 added key-to-safety-level lookup; this phase lets wrappers retrieve selected preview command args by key without scanning `decision.commands`, opening `decision.commandByKey`, or jumping to the top-level `commandArgs` object.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandArgsByKey`.
+- The lookup currently maps `reviewCheckReport` and `proposalPatchPreview` to their full structured argv arrays.
+- Kept `decision.commands[*].commandArgs`, `decision.commandByKey.<key>.commandArgs`, `decision.nextCommandArgs`, and top-level `commandArgs` intact for existing consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch command-args lookup metadata.
+
+### Impact
+- Wrappers can execute or display selected preview commands from `decision.commandArgsByKey.reviewCheckReport` and `decision.commandArgsByKey.proposalPatchPreview` without reducing arrays.
+- `decision.commandByKey.<key>` remains available for full command objects, and `commandSequenceByKey.<key>` remains the canonical full ordered command contract.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command args lookup, decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 526 — Apply-Plan Decision Command Safety Level Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-safety-level lookup for the selected optional preview branch. Phase 525 added key-to-run-policy lookup; this phase lets wrappers validate selected command safety levels by key without scanning `decision.commands` or opening `commandByKey`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandSafetyLevelByKey`.
+- The lookup currently maps `reviewCheckReport` and `proposalPatchPreview` to `local-output`.
+- Kept `decision.commands[*].safetyLevel`, `decision.commandByKey.<key>.safetyLevel`, `decision.nextCommandSafetyLevel`, and full nested `safety` objects intact.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch safety-level lookup metadata.
+
+### Impact
+- Wrappers can validate selected preview command safety from `decision.commandSafetyLevelByKey.reviewCheckReport` and `decision.commandSafetyLevelByKey.proposalPatchPreview` without reducing arrays.
+- `decision.commandByKey.<key>.safety` and `commandSequenceByKey.<key>.safety` remain available for full safety objects.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command safety-level lookup, decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 525 — Apply-Plan Decision Command Run Policy Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-run-policy lookup for the selected optional preview branch. Phase 524 added key-to-step lookup; this phase lets wrappers validate selected command execution policy by key without scanning `decision.commands` or loading the full `commandSequence`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandRunPolicyByKey`.
+- The lookup currently maps `reviewCheckReport` and `proposalPatchPreview` to `output-artifact`.
+- Kept `decision.commands[*].runPolicy`, `decision.commandByKey.<key>.runPolicy`, `decision.nextCommandRunPolicy`, and `commandSequenceByKey.<key>.runPolicy` intact.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch run-policy lookup metadata.
+
+### Impact
+- Wrappers can validate selected preview command run policy from `decision.commandRunPolicyByKey.reviewCheckReport` and `decision.commandRunPolicyByKey.proposalPatchPreview` without reducing arrays.
+- `commandSequence` and `commandSequenceByKey` remain the canonical full ordered command contract.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command run-policy lookup, decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 524 — Apply-Plan Decision Command Step Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose a compact key-to-step lookup for the selected optional preview branch. Phase 523 added step metadata to compact command objects; this phase lets wrappers validate selected command order by key without scanning `decision.commands` or loading the full `commandSequence`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandStepByKey`.
+- The lookup currently maps `reviewCheckReport` to step `2` and `proposalPatchPreview` to step `3`.
+- Kept `decision.commands[*].step`, `decision.commandByKey.<key>.step`, `decision.nextCommandEntry.step`, and `decision.nextCommandStep` intact for object-based consumers.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch step lookup metadata.
+
+### Impact
+- Wrappers can validate command order from `decision.commandStepByKey.reviewCheckReport` and `decision.commandStepByKey.proposalPatchPreview` without reducing arrays.
+- `commandSequence` and `commandSequenceByKey` remain the canonical full ordered command contract.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command step lookup, decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 523 — Apply-Plan Decision Command Step Metadata (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decision commands now carry their original command-sequence step numbers. Phase 522 made the selected preview command's safety available from the `nextCommand*` field family; this phase lets wrappers preserve command order and display step context without reading the full `commandSequence`.
+
+### Changed
+- Added `step` to compact `operatorRunbook.stageSelection.decision.commands` entries.
+- Added `step` to `decision.commandByKey.<key>` and `decision.nextCommandEntry`.
+- Added `decision.nextCommandStep` for wrappers consuming the separate `nextCommand*` fields.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves selected-branch step metadata.
+
+### Impact
+- Wrappers can show or execute the selected optional preview branch with stable command-sequence step context.
+- `decision.nextCommandStep` currently reports `2` for `reviewCheckReport`, matching the full command sequence after the read-only `reviewCheckJson` gate.
+- `commandSequence` and `commandSequenceByKey` remain the canonical full ordered command contract.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command step metadata, selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 522 — Apply-Plan Decision Next Command Safety (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected preview command's full safety object next to the existing `nextCommand*` fields. Phase 521 made compact decision command objects self-contained; this phase lets wrappers that already consume `decision.nextCommandKey`, `decision.nextCommand`, `decision.nextCommandArgs`, and `decision.nextCommandRunPolicy` gate the same command without reading `nextCommandEntry`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.nextCommandSafety`.
+- The field mirrors `decision.nextCommandEntry.safety` for the selected optional preview command, currently `reviewCheckReport`.
+- Kept `decision.nextCommandSafetyLevel` and flattened fields for backward compatibility.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves the selected next-command safety object.
+
+### Impact
+- Wrappers can gate the selected optional preview handoff from the `nextCommand*` field family alone.
+- `decision.nextCommandEntry.safety`, `decision.commandByKey.<key>.safety`, and `commandSequenceByKey.<key>.safety` remain available for full object and lookup-based consumers.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected next-command safety, decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 521 — Apply-Plan Decision Command Safety Objects (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decision commands now carry their own nested command-level `safety` objects. Phase 520 exposed the selected optional preview command as `nextCommandEntry`; this phase makes `decision.commands`, `decision.commandByKey`, and `decision.nextCommandEntry` self-contained for safety gating without requiring wrappers to jump to `commandSequenceByKey`.
+
+### Changed
+- Added nested `safety` objects to compact decision command summaries.
+- Preserved existing `safetyLevel` and flattened write/mutation/external-AI flags for backward compatibility.
+- Kept the command-level `safety.reason` on selected preview commands, distinguishing local output artifact writes from learning profile, review file, skill file, external AI, embedding, and fine-tuning mutations.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves nested decision command safety objects.
+
+### Impact
+- Wrappers can gate selected optional preview commands directly from `decision.commands[*].safety`, `decision.commandByKey.<key>.safety`, or `decision.nextCommandEntry.safety`.
+- `commandSequenceByKey` remains the canonical full command lookup, but decision command objects now carry enough safety detail for selected-branch rendering and approval checks.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command safety objects, selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 520 — Apply-Plan Decision Next Command Entry (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose the selected optional preview command as one compact object. Phase 519 added direct lookup and separate `nextCommand*` fields; this phase removes the need for wrappers to reconstruct the first preview command from separate fields before rendering or execution.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.nextCommandEntry`.
+- The entry mirrors the first `decision.commands` item, currently `reviewCheckReport`, including command string, structured args, run policy, safety level, write/mutation flags, external-AI flags, and clean-workspace requirement.
+- Kept existing `nextCommandKey`, `nextCommand`, `nextCommandArgs`, `nextCommandRunPolicy`, and `nextCommandSafetyLevel` fields for backward compatibility.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON preserves the selected command entry contract.
+
+### Impact
+- Wrappers can branch on `decision.action`, gate on `decision.safety`, then consume `decision.nextCommandEntry` as the first optional local-output preview handoff.
+- `decision.commandByKey` remains available for explicit operator choices, and `commandSequenceByKey` remains the canonical full command lookup.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected command entries, decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 519 — Apply-Plan Decision Command Lookup (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose direct command lookup metadata for the selected optional preview branch. Phase 518 added compact decision commands; this phase makes the first command and per-key command lookup addressable without scanning arrays.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandByKey`.
+- Added `decision.nextCommandKey`, `decision.nextCommand`, `decision.nextCommandArgs`, `decision.nextCommandRunPolicy`, and `decision.nextCommandSafetyLevel`.
+- Rendered the decision next command key in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision command lookup contract.
+
+### Impact
+- Automation can branch on `decision.action`, gate on `decision.safety`, then fetch `reviewCheckReport` or `proposalPatchPreview` directly from `decision.commandByKey`.
+- Wrappers can offer the first optional preview command from `decision.nextCommand*` without scanning `decision.commands`.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command lookup, decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 518 — Apply-Plan Decision Command Handoff (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now include compact command handoffs for the selected branch. Phase 517 made the decision safe to gate; this phase makes the optional preview branch executable without requiring wrappers to look up `commandSequenceByKey`.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.commandCount` and `decision.commands`.
+- Each decision command reports `key`, command string, structured `commandArgs`, `runPolicy`, `safetyLevel`, local-output flags, mutation flags, external-AI flags, and clean-workspace requirement.
+- Rendered decision command keys in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision command handoff.
+
+### Impact
+- Automation can read one decision object to choose the optional preview branch, inspect safety, and run or offer the two local-output preview commands.
+- `commandSequenceByKey` remains the canonical full command lookup; decision commands are a compact first-branch handoff.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision command handoffs, decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 517 — Apply-Plan Decision Safety Summary (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now carry their own safety summary. Phase 516 added the branch decision enum; this phase lets wrappers evaluate the selected decision's local-output and mutation boundary without jumping to the selected-stage detail object.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision.safety`.
+- The decision safety summary reports `level`, local file writes, output artifact writes, local-state mutation, profile/review/skill mutation, external-AI calls, clean-workspace requirement, and reason.
+- Rendered decision safety in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision safety contract.
+
+### Impact
+- Automation can branch on `decision.action` and immediately gate execution from `decision.safety`.
+- The current selected decision is explicitly `local-output`: optional preview artifacts may write files, but learning profiles, review files, skill files, external AI APIs, embeddings, and fine-tuning remain untouched.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- Existing selected-stage summaries and stage lookup fields remain additive and backward compatible.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose decision safety summaries, branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 516 — Apply-Plan Stage Decision Enum (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now exposes a compact decision enum for the current branch. Phase 515 made selected stages self-describing; this phase adds a single machine-readable action that tells local AI/agent wrappers what to offer first.
+
+### Changed
+- Added `operatorRunbook.stageSelection.decision` for valid apply-plan command contracts.
+- The decision reports `action: offer-optional-preview`, selected `stageKey`, `stageKind`, `required`, `hasCommands`, `commandKeys`, `runPolicy`, required follow-up stage keys, and whether operator action is required before required commands.
+- Rendered the decision action in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the decision enum.
+
+### Impact
+- Automation can branch on one enum instead of combining strategy text, selected-stage summaries, and required-stage keys.
+- The first branch remains optional local preview artifacts; the mandatory path still begins with manual skill edits before read-only command gates.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose branch decision enums, selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 515 — Apply-Plan Selected Stage Summaries (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection output now includes compact summaries for the selected optional preview stage, first required manual stage, and first required command-bearing stage. Phase 514 grouped the branch strategy into one object; this phase makes each selected branch self-describing without requiring wrappers to scan `stageByKey`.
+
+### Changed
+- Added `stageSelection.nextStage`, `stageSelection.nextRequiredStage`, and `stageSelection.nextRequiredCommandStage`.
+- Each selected-stage summary reports `key`, `step`, `label`, `kind`, `required`, command count, command keys, local-output flags, mutation flags, external-AI flags, clean-workspace requirement, and reason.
+- Rendered the selected optional stage in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the selected-stage summary contract.
+
+### Impact
+- Automation can decide whether the selected branch is optional, manual, command-bearing, local-output-producing, read-only, or external-call-free without scanning the full stage list.
+- The summary stays compact and additive; `stageByKey` remains the canonical full stage lookup.
+- Invalid command contracts still fail closed with an empty `stageSelection` object.
+- The change does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose selected-stage summaries, stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 514 — Apply-Plan Stage Selection Summary (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now expose a compact stage-selection summary. Phase 513 added direct required-stage handoff fields; this phase groups the optional preview path, first required manual stage, and first required command-bearing gate into one machine-readable object.
+
+### Changed
+- Added `operatorRunbook.stageSelection` for valid apply-plan command contracts.
+- The selection summary reports `strategy`, `stageOrder`, `nextStageKey`, optional preview command keys, `nextRequiredStageKey`, and `nextRequiredCommandStageKey`.
+- Rendered the stage-selection strategy in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the stage-selection contract.
+
+### Impact
+- Automation can read one object to decide whether to offer optional preview artifacts, route the operator to manual skill edits, or continue to the read-only review gate.
+- The strategy value makes the optional-before-required policy explicit without parsing prose.
+- Invalid command contracts stay fail-closed with an empty `stageSelection` object.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose stage-selection strategy, optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 513 — Apply-Plan Required Stage Handoff Index (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now separate the optional next stage from the first required operator stage. Phase 512 made every stage addressable by key; this phase lets local AI/agent wrappers branch directly to `manualSkillEdit` or the next required command-bearing gate without scanning stage metadata.
+
+### Changed
+- Added `operatorRunbook.nextRequiredStageKey` and `operatorRunbook.nextRequiredStageCommandKeys`.
+- Added `operatorRunbook.nextRequiredCommandStageKey` and `operatorRunbook.nextRequiredCommandStageCommandKeys`.
+- Rendered the next required stage and next required command stage in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the required-stage handoff contract.
+
+### Impact
+- Automation can distinguish optional `previewArtifacts` output generation from required `manualSkillEdit` work.
+- Wrappers can jump to the next required command-bearing stage, `reviewReadiness`, after the manual edit is complete.
+- Invalid command contracts stay fail-closed with empty required-stage handoff fields.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose optional stages, required stages, command-bearing gates, operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 512 — Apply-Plan Operator Runbook Stage Index (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` operator runbooks now expose a stable stage key index. Phase 511 added the ordered runbook stages; this phase lets local AI/agent wrappers retrieve `previewArtifacts`, `manualSkillEdit`, `reviewReadiness`, or `strictGate` directly without scanning the `stages` array.
+
+### Changed
+- Added `operatorRunbook.stageKeys` to preserve validated operator stage order as a top-level list.
+- Added `operatorRunbook.stageByKey` so each runbook stage is addressable by its stable key.
+- Rendered runbook stage keys in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the stage-index contract.
+
+### Impact
+- Automation can select a named operator stage directly while still using `operatorRunbook.stages` for deterministic execution order.
+- The index mirrors the existing `commandSequenceKeys` / `commandSequenceByKey` contract at the higher operator-runbook layer.
+- Invalid command contracts stay fail-closed with an empty stage key list and empty stage map.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose operator stage lookup, operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 511 — Apply-Plan Operator Runbook Contract (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a staged operator runbook for accepted skill proposal handoffs. Phase 510 made named command lookup direct; this phase makes the higher-level operator order explicit: optional preview artifacts, manual skill edits, review readiness, then strict gate.
+
+### Changed
+- Added `operatorRunbook` to apply-plan command contracts.
+- The runbook reports executable/blocked state, stage counts, required stage counts, command-bearing stage counts, next stage metadata, and ordered stages.
+- Added four deterministic stages: `previewArtifacts`, `manualSkillEdit`, `reviewReadiness`, and `strictGate`.
+- Rendered runbook summaries and stage lists in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the operator runbook contract.
+
+### Impact
+- Local AI/agent wrappers can follow the reviewed apply-plan workflow without inferring stage order from prose or from the raw command sequence.
+- The runbook distinguishes optional local preview artifacts from the required manual skill-file edit and required read-only verification gates.
+- Invalid command contracts stay fail-closed with zero stages and blocked runbook state.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose operator stage order, command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 510 — Apply-Plan Command Sequence Key Index (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a key index for the follow-up command sequence. Phase 509 added aggregate sequence safety; this phase lets local AI/agent wrappers jump directly to `reviewCheckJson`, `reviewCheckReport`, `proposalPatchPreview`, or `strictGate` without scanning the ordered array.
+
+### Changed
+- Added `commandSequenceKeys` to preserve the validated follow-up command key order as a top-level list.
+- Added `commandSequenceByKey` so each sequence item is addressable by its stable key.
+- Rendered command sequence keys in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the key-index contract.
+
+### Impact
+- Automation can retrieve named follow-up commands directly while still using `commandSequence` for deterministic execution order.
+- The index remains fail-closed: invalid command contracts expose an empty key list and empty key map.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, key lookup, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 509 — Apply-Plan Command Sequence Summary Contract (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose a top-level summary for the full follow-up command sequence. Phase 508 made each step executable from structured args; this phase lets local AI/agent wrappers decide whether the whole sequence is executable, blocked, read-only, local-output-producing, mutating, or external-call-free without reducing the full array.
+
+### Changed
+- Added `commandSequenceSummary` to apply-plan command contracts.
+- The summary reports `executable`, `blocked`, step counts, read-only vs local-output counts, local write/output flags, mutation flags, external AI API flags, clean-workspace requirements, and an aggregate run policy.
+- Rendered sequence summary fields in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the summary contract.
+
+### Impact
+- Automation can branch on the full sequence boundary before running any follow-up command.
+- Wrappers can distinguish local preview artifact writes from profile/review/skill mutation.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, aggregate safety, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 508 — Apply-Plan Follow-Up Command Sequence Contract (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose the full follow-up command sequence. Phase 507 made the first next command safety-checkable; this phase lets local AI/agent wrappers run the complete operator handoff in a deterministic order without reparsing human prose.
+
+### Changed
+- Added `commandSequenceCount` and `commandSequence` to valid apply-plan command contracts.
+- Each sequence item includes `step`, `key`, `command`, `commandArgs`, `runPolicy`, and per-command safety metadata.
+- Marked pure validation commands as `read-only` and local `--out` preview commands as `local-output`, preserving explicit `writesLocalFiles` and `writesOutputArtifact` booleans.
+- Kept invalid command contracts fail-closed by returning an empty command sequence when contract checks fail.
+- Rendered command sequence count and ordered command sequence in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the sequence contract.
+
+### Impact
+- Automation can execute the review-check JSON command first, produce optional local report/patch preview artifacts, and finish with the strict readiness gate from structured `commandArgs`.
+- Wrappers can distinguish read-only validation commands from local output artifact commands before execution.
+- The change remains additive and does not mutate learning profiles, review files, skill files, external AI APIs, embeddings, or fine-tuning jobs.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, ordered execution, per-command safety, readiness counts, and failure recovery guidance.
+
+## Phase 507 — Apply-Plan Next Command Safety Metadata (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now describe the selected next command's run policy and safety profile. Phase 506 made the first safe follow-up command directly executable from `nextCommandArgs`; this phase lets local AI/agent wrappers verify that the selected command is read-only and non-mutating before running it.
+
+### Changed
+- Added `nextCommandRunPolicy: "preview-only"` for valid apply-plan command contracts.
+- Added `nextCommandSafety` metadata for the selected next command, including read-only level, no local file writes, no local-state mutation, no learning/review/skill file mutation, no external AI calls, and no clean-workspace requirement.
+- Kept invalid command contracts fail-closed by returning an empty run policy and empty safety object when contract checks fail.
+- Rendered next-command policy and safety level in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the safety contract.
+
+### Impact
+- Automation can execute `commandContract.nextCommandArgs` only after confirming `nextCommandSafety.level === "read-only"` and `nextCommandRunPolicy === "preview-only"`.
+- Manual operators see whether the recommended follow-up command is safe before copying it.
+- The change remains additive and read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose command choice, execution policy, safety metadata, readiness counts, and failure recovery guidance.
+
+## Phase 506 — Apply-Plan Next Command Contract Handoff (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now identify the first safe follow-up command directly. Earlier phases exposed reproducible command strings, structured args, contract validity, failure diagnostics, and pass/warn/fail counts; this phase adds the single next-command handoff fields that local AI/agent wrappers can execute without reparsing command prose.
+
+### Changed
+- Added `nextCommandKey`, `nextCommand`, and `nextCommandArgs` to valid apply-plan command contracts.
+- Kept invalid contracts non-executable by returning empty next-command fields when any command-contract check fails.
+- Rendered the next command key and command in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the next-command contract.
+
+### Impact
+- Automation can run the first read-only review-check command from `commandContract.nextCommandArgs` without selecting from the full command map.
+- Invalid command contracts remain fail-closed, so wrappers can avoid running follow-up commands until contract failures are fixed.
+- The change remains additive and read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from apply-plan contracts that expose both readiness diagnostics and a fail-closed next-command handoff.
+
+## Phase 505 — Apply-Plan Command Contract Check Summary Counts (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now expose top-level check summary counts. Phase 504 made failures easy to recover from; this phase also makes the valid/pass path cheap for local AI/agent wrappers to summarize without scanning the full `checks` array.
+
+### Changed
+- Added `checkCount`, `passCount`, and `warningCount` next to the existing `failureCount` apply-plan command contract diagnostics.
+- Added `warnings` to `commandContract.summary` so nested summaries and top-level counts stay aligned.
+- Rendered check, pass, and warning counts in human and Markdown apply-plan command contract summaries.
+- Extended unit coverage and package-smoke self-test fixtures so packaged JSON, Markdown, and human outputs preserve the count contract.
+
+### Impact
+- Automation can branch on pass/warn/fail counts directly instead of reducing the full contract check list.
+- Operators see the whole contract health summary before running read-only follow-up commands.
+- The change is additive and keeps apply-plan read-only: no learning profile, review file, skill file, external AI API, embedding, or fine-tuning mutation is introduced.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from command contracts that expose direct pass, warn, and fail readiness counts.
+
+## Phase 504 — Apply-Plan Command Contract Failure Diagnostics (unreleased)
+
+`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contracts now include fail-focused diagnostics in addition to the full check list. Local AI/agent wrappers can branch on `failureCount`, `failedCheckIds`, and `failedChecks`, while human and Markdown outputs show a concise failed-check summary and a deterministic next action.
+
+### Changed
+- Added `failureCount`, `failedCheckIds`, `failedChecks`, and `nextAction` to apply-plan `commandContract` metadata.
+- Rendered failure count, failed-check ids, and next action in human and Markdown apply-plan command contract summaries.
+- Added unit coverage for both valid contracts and missing-review-file contract failures.
+- Extended packed-tarball smoke assertions so packaged apply-plan JSON, Markdown, and human output preserve the new diagnostics.
+
+### Impact
+- Automation no longer has to scan every command-contract check to decide whether the apply-plan follow-up command set is usable.
+- Operators get explicit recovery guidance when the command contract fails, while valid contracts continue to point at `reviewCheckJson` followed by `strictGate`.
+- The change is additive and keeps the read-only apply-plan boundary intact.
+
+### Verification Plan
+- `node --check cli/commands/learn.mjs cli/lib/skill-proposals.mjs`
+- `node --test cli/lib/learn.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run package:smoke`
+- `git diff --check`
+
+### What's still ahead
+- Continue local AI/agent learning development from command contracts that expose both pass summaries and fail-focused recovery metadata.
+
 ## Phase 503 — Apply-Plan Human Command Contract Release Guard (unreleased)
 
 Release metadata now protects the packed-tarball smoke wording for the default human `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` command contract summary. Phase 502 added the console output and package smoke assertion; this phase makes release-facing docs fail metadata checks if they stop mentioning the human apply-plan `Command contract` path.

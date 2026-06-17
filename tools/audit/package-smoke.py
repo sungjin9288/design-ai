@@ -6823,6 +6823,189 @@ def assert_skill_proposal_apply_plan_json(
         ],
         "strictGate": [*command_context_args, "--strict", "--json"],
     }
+    command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
+    command_sequence_summary = command_contract.get("commandSequenceSummary") if isinstance(command_contract, dict) else None
+    command_sequence_by_key = command_contract.get("commandSequenceByKey") if isinstance(command_contract, dict) else None
+    operator_runbook = command_contract.get("operatorRunbook") if isinstance(command_contract, dict) else None
+    operator_stage_selection = operator_runbook.get("stageSelection") if isinstance(operator_runbook, dict) else None
+    operator_stage_decision = (
+        operator_stage_selection.get("decision") if isinstance(operator_stage_selection, dict) else None
+    )
+    operator_stage_decision_safety = (
+        operator_stage_decision.get("safety") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_commands = (
+        operator_stage_decision.get("commands") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_by_key = (
+        operator_stage_decision.get("commandByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_step_by_key = (
+        operator_stage_decision.get("commandStepByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_run_policy_by_key = (
+        operator_stage_decision.get("commandRunPolicyByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_safety_level_by_key = (
+        operator_stage_decision.get("commandSafetyLevelByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_args_by_key = (
+        operator_stage_decision.get("commandArgsByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_string_by_key = (
+        operator_stage_decision.get("commandStringByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_display_label_by_key = (
+        operator_stage_decision.get("commandDisplayLabelByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_description_by_key = (
+        operator_stage_decision.get("commandDescriptionByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_output_artifact_by_key = (
+        operator_stage_decision.get("commandOutputArtifactByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_output_artifact_type_by_key = (
+        operator_stage_decision.get("commandOutputArtifactTypeByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_output_artifact_action_by_key = (
+        operator_stage_decision.get("commandOutputArtifactActionByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_output_artifact_media_type_by_key = (
+        operator_stage_decision.get("commandOutputArtifactMediaTypeByKey") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_stage_decision_command_output_artifact_disposition_by_key = (
+        operator_stage_decision.get("commandOutputArtifactDispositionByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_candidate_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyCandidateByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_requires_manual_review_by_key = (
+        operator_stage_decision.get("commandOutputArtifactRequiresManualReviewByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_review_instruction_by_key = (
+        operator_stage_decision.get("commandOutputArtifactReviewInstructionByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_requires_clean_workspace_before_apply_by_key = (
+        operator_stage_decision.get("commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_apply_precondition_ids_by_key = (
+        operator_stage_decision.get("commandOutputArtifactApplyPreconditionIdsByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_apply_precondition_labels_by_key = (
+        operator_stage_decision.get("commandOutputArtifactApplyPreconditionLabelsByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_apply_preconditions_by_key = (
+        operator_stage_decision.get("commandOutputArtifactApplyPreconditionsByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_apply_precondition_count_by_key = (
+        operator_stage_decision.get("commandOutputArtifactApplyPreconditionCountByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_required_apply_precondition_count_by_key = (
+        operator_stage_decision.get("commandOutputArtifactRequiredApplyPreconditionCountByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_satisfied_apply_precondition_count_by_key = (
+        operator_stage_decision.get("commandOutputArtifactSatisfiedApplyPreconditionCountByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_pending_apply_precondition_count_by_key = (
+        operator_stage_decision.get("commandOutputArtifactPendingApplyPreconditionCountByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_required_pending_apply_precondition_count_by_key = (
+        operator_stage_decision.get("commandOutputArtifactRequiredPendingApplyPreconditionCountByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_ready_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyReadyByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_status_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyStatusByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_status_label_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyStatusLabelByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyStatusToneByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyBlockedReasonByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_code_by_key = (
+        operator_stage_decision.get("commandOutputArtifactManualApplyBlockedReasonCodeByKey")
+        if isinstance(operator_stage_decision, dict)
+        else None
+    )
+    operator_stage_decision_next_command_entry = (
+        operator_stage_decision.get("nextCommandEntry") if isinstance(operator_stage_decision, dict) else None
+    )
+    operator_selected_stage = (
+        operator_stage_selection.get("nextStage") if isinstance(operator_stage_selection, dict) else None
+    )
+    operator_selected_required_stage = (
+        operator_stage_selection.get("nextRequiredStage") if isinstance(operator_stage_selection, dict) else None
+    )
+    operator_selected_required_command_stage = (
+        operator_stage_selection.get("nextRequiredCommandStage")
+        if isinstance(operator_stage_selection, dict)
+        else None
+    )
+    expected_command_sequence = [
+        (1, "reviewCheckJson", "preview-only", "read-only", False),
+        (2, "reviewCheckReport", "output-artifact", "local-output", True),
+        (3, "proposalPatchPreview", "output-artifact", "local-output", True),
+        (4, "strictGate", "strict-readiness-gate", "read-only", False),
+    ]
+    expected_local_output_decision_safety = {
+        "level": "local-output",
+        "writesLocalFiles": True,
+        "writesOutputArtifact": True,
+        "mutatesLocalState": True,
+        "mutatesProfile": False,
+        "mutatesReviewFile": False,
+        "mutatesSkillFiles": False,
+        "callsExternalAiApis": False,
+        "requiresCleanWorkspace": False,
+        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+    }
+    expected_operator_runbook_stages = [
+        (1, "previewArtifacts", "local-output-preview", False, ["reviewCheckReport", "proposalPatchPreview"]),
+        (2, "manualSkillEdit", "manual-review", True, []),
+        (3, "reviewReadiness", "read-only-check", True, ["reviewCheckJson"]),
+        (4, "strictGate", "read-only-gate", True, ["strictGate"]),
+    ]
     require_package_smoke(
         payload.get("kind") == "skill-proposal-apply-plan"
         and payload.get("version") == 1
@@ -6857,6 +7040,9 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract.get("valid") is True
         and command_contract.get("status") == "pass"
         and command_contract.get("commandCount") == 4
+        and command_contract.get("checkCount") == 18
+        and command_contract.get("passCount") == 18
+        and command_contract.get("warningCount") == 0
         and command_contract.get("requiredKeys") == list(expected_command_args.keys())
         and command_contract.get("missingCommandKeys") == []
         and command_contract.get("unexpectedCommandKeys") == []
@@ -6864,8 +7050,355 @@ def assert_skill_proposal_apply_plan_json(
         and command_contract.get("reviewFileRequired") is True
         and command_contract.get("reviewFile") == str(review_path)
         and command_contract.get("forbiddenFlags") == ["--yes"]
+        and command_contract.get("failureCount") == 0
+        and command_contract.get("failedCheckIds") == []
+        and command_contract.get("failedChecks") == []
+        and command_contract.get("nextCommandKey") == "reviewCheckJson"
+        and command_contract.get("nextCommand") == review_check_json_command
+        and command_contract.get("nextCommandArgs") == expected_command_args["reviewCheckJson"]
+        and command_contract.get("nextCommandRunPolicy") == "preview-only"
+        and isinstance(command_contract.get("nextCommandSafety"), dict)
+        and command_contract["nextCommandSafety"].get("level") == "read-only"
+        and command_contract["nextCommandSafety"].get("writesLocalFiles") is False
+        and command_contract["nextCommandSafety"].get("mutatesLocalState") is False
+        and command_contract["nextCommandSafety"].get("mutatesProfile") is False
+        and command_contract["nextCommandSafety"].get("mutatesReviewFile") is False
+        and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
+        and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
+        and command_contract.get("commandSequenceCount") == 4
+        and command_contract.get("commandSequenceKeys") == list(expected_command_args.keys())
+        and isinstance(command_sequence_summary, dict)
+        and command_sequence_summary.get("executable") is True
+        and command_sequence_summary.get("blocked") is False
+        and command_sequence_summary.get("stepCount") == 4
+        and command_sequence_summary.get("readOnlyStepCount") == 2
+        and command_sequence_summary.get("localOutputStepCount") == 2
+        and command_sequence_summary.get("writesLocalFiles") is True
+        and command_sequence_summary.get("writesOutputArtifacts") is True
+        and command_sequence_summary.get("mutatesProfile") is False
+        and command_sequence_summary.get("mutatesReviewFile") is False
+        and command_sequence_summary.get("mutatesSkillFiles") is False
+        and command_sequence_summary.get("callsExternalAiApis") is False
+        and command_sequence_summary.get("requiresCleanWorkspace") is False
+        and command_sequence_summary.get("runPolicy") == "mixed-preview-local-output"
+        and isinstance(command_sequence, list)
+        and len(command_sequence) == 4
+        and isinstance(command_sequence_by_key, dict)
+        and list(command_sequence_by_key.keys()) == list(expected_command_args.keys())
+        and isinstance(operator_runbook, dict)
+        and operator_runbook.get("version") == 1
+        and operator_runbook.get("executable") is True
+        and operator_runbook.get("blocked") is False
+        and operator_runbook.get("stageCount") == 4
+        and operator_runbook.get("requiredStageCount") == 3
+        and operator_runbook.get("commandStageCount") == 3
+        and operator_runbook.get("nextStageKey") == "previewArtifacts"
+        and operator_runbook.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and operator_runbook.get("nextRequiredStageKey") == "manualSkillEdit"
+        and operator_runbook.get("nextRequiredStageCommandKeys") == []
+        and operator_runbook.get("nextRequiredCommandStageKey") == "reviewReadiness"
+        and operator_runbook.get("nextRequiredCommandStageCommandKeys") == ["reviewCheckJson"]
+        and isinstance(operator_stage_selection, dict)
+        and operator_stage_selection.get("strategy") == "optional-preview-before-required-manual-edit"
+        and isinstance(operator_stage_decision, dict)
+        and operator_stage_decision.get("action") == "offer-optional-preview"
+        and operator_stage_decision.get("stageKey") == "previewArtifacts"
+        and operator_stage_decision.get("stageKind") == "local-output-preview"
+        and operator_stage_decision.get("required") is False
+        and operator_stage_decision.get("hasCommands") is True
+        and operator_stage_decision.get("commandCount") == 2
+        and operator_stage_decision.get("commandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and isinstance(operator_stage_decision_commands, list)
+        and len(operator_stage_decision_commands) == 2
+        and [command.get("key") for command in operator_stage_decision_commands] == [
+            "reviewCheckReport",
+            "proposalPatchPreview",
+        ]
+        and [command.get("step") for command in operator_stage_decision_commands] == [2, 3]
+        and operator_stage_decision_commands[0].get("command") == commands.get("reviewCheckReport")
+        and operator_stage_decision_commands[0].get("commandArgs") == expected_command_args["reviewCheckReport"]
+        and operator_stage_decision_commands[0].get("runPolicy") == "output-artifact"
+        and operator_stage_decision_commands[0].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[0].get("safety") == expected_local_output_decision_safety
+        and operator_stage_decision_commands[0].get("writesLocalFiles") is True
+        and operator_stage_decision_commands[0].get("mutatesSkillFiles") is False
+        and operator_stage_decision_commands[1].get("command") == commands.get("proposalPatchPreview")
+        and operator_stage_decision_commands[1].get("commandArgs") == expected_command_args["proposalPatchPreview"]
+        and operator_stage_decision_commands[1].get("runPolicy") == "output-artifact"
+        and operator_stage_decision_commands[1].get("safetyLevel") == "local-output"
+        and operator_stage_decision_commands[1].get("safety") == expected_local_output_decision_safety
+        and operator_stage_decision_commands[1].get("writesLocalFiles") is True
+        and operator_stage_decision_commands[1].get("mutatesSkillFiles") is False
+        and isinstance(operator_stage_decision_command_by_key, dict)
+        and list(operator_stage_decision_command_by_key.keys()) == [
+            "reviewCheckReport",
+            "proposalPatchPreview",
+        ]
+        and operator_stage_decision_command_by_key["reviewCheckReport"] == operator_stage_decision_commands[0]
+        and operator_stage_decision_command_by_key["proposalPatchPreview"] == operator_stage_decision_commands[1]
+        and operator_stage_decision_command_step_by_key == {
+            "reviewCheckReport": 2,
+            "proposalPatchPreview": 3,
+        }
+        and operator_stage_decision_command_run_policy_by_key == {
+            "reviewCheckReport": "output-artifact",
+            "proposalPatchPreview": "output-artifact",
+        }
+        and operator_stage_decision_command_safety_level_by_key == {
+            "reviewCheckReport": "local-output",
+            "proposalPatchPreview": "local-output",
+        }
+        and operator_stage_decision_command_args_by_key == {
+            "reviewCheckReport": expected_command_args["reviewCheckReport"],
+            "proposalPatchPreview": expected_command_args["proposalPatchPreview"],
+        }
+        and operator_stage_decision_command_string_by_key == {
+            "reviewCheckReport": commands.get("reviewCheckReport"),
+            "proposalPatchPreview": commands.get("proposalPatchPreview"),
+        }
+        and operator_stage_decision_command_display_label_by_key == {
+            "reviewCheckReport": "Review check Markdown report",
+            "proposalPatchPreview": "Skill proposal patch preview",
+        }
+        and operator_stage_decision_command_description_by_key == {
+            "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+            "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
+        }
+        and operator_stage_decision_command_output_artifact_by_key == {
+            "reviewCheckReport": "skill-proposal-review-check.md",
+            "proposalPatchPreview": "skill-proposals.patch",
+        }
+        and operator_stage_decision_command_output_artifact_type_by_key == {
+            "reviewCheckReport": "markdown-report",
+            "proposalPatchPreview": "unified-diff",
+        }
+        and operator_stage_decision_command_output_artifact_action_by_key == {
+            "reviewCheckReport": "render-markdown-report",
+            "proposalPatchPreview": "render-unified-diff-preview",
+        }
+        and operator_stage_decision_command_output_artifact_media_type_by_key == {
+            "reviewCheckReport": "text/markdown",
+            "proposalPatchPreview": "text/x-diff",
+        }
+        and operator_stage_decision_command_output_artifact_disposition_by_key == {
+            "reviewCheckReport": "review-only",
+            "proposalPatchPreview": "manual-apply-preview",
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_candidate_by_key == {
+            "reviewCheckReport": False,
+            "proposalPatchPreview": True,
+        }
+        and operator_stage_decision_command_output_artifact_requires_manual_review_by_key == {
+            "reviewCheckReport": False,
+            "proposalPatchPreview": True,
+        }
+        and operator_stage_decision_command_output_artifact_review_instruction_by_key == {
+            "reviewCheckReport": "Review the Markdown readiness report before changing proposal review status.",
+            "proposalPatchPreview": "Review the unified diff manually before applying any skill-file edits.",
+        }
+        and operator_stage_decision_command_output_artifact_requires_clean_workspace_before_apply_by_key == {
+            "reviewCheckReport": False,
+            "proposalPatchPreview": True,
+        }
+        and operator_stage_decision_command_output_artifact_apply_precondition_ids_by_key == {
+            "reviewCheckReport": [],
+            "proposalPatchPreview": ["manual-review", "clean-workspace"],
+        }
+        and operator_stage_decision_command_output_artifact_apply_precondition_labels_by_key == {
+            "reviewCheckReport": [],
+            "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
+        }
+        and operator_stage_decision_command_output_artifact_apply_preconditions_by_key == {
+            "reviewCheckReport": [],
+            "proposalPatchPreview": [
+                {"id": "manual-review", "label": "Manual review completed", "required": True},
+                {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
+            ],
+        }
+        and operator_stage_decision_command_output_artifact_apply_precondition_count_by_key == {
+            "reviewCheckReport": 0,
+            "proposalPatchPreview": 2,
+        }
+        and operator_stage_decision_command_output_artifact_required_apply_precondition_count_by_key == {
+            "reviewCheckReport": 0,
+            "proposalPatchPreview": 2,
+        }
+        and operator_stage_decision_command_output_artifact_satisfied_apply_precondition_count_by_key == {
+            "reviewCheckReport": 0,
+            "proposalPatchPreview": 0,
+        }
+        and operator_stage_decision_command_output_artifact_pending_apply_precondition_count_by_key == {
+            "reviewCheckReport": 0,
+            "proposalPatchPreview": 2,
+        }
+        and operator_stage_decision_command_output_artifact_required_pending_apply_precondition_count_by_key == {
+            "reviewCheckReport": 0,
+            "proposalPatchPreview": 2,
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_ready_by_key == {
+            "reviewCheckReport": False,
+            "proposalPatchPreview": False,
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_status_by_key == {
+            "reviewCheckReport": "not-applicable",
+            "proposalPatchPreview": "blocked",
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_status_label_by_key == {
+            "reviewCheckReport": "Review only",
+            "proposalPatchPreview": "Blocked",
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key == {
+            "reviewCheckReport": "neutral",
+            "proposalPatchPreview": "warning",
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key == {
+            "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
+            "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
+        }
+        and operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_code_by_key == {
+            "reviewCheckReport": "not-manual-apply-candidate",
+            "proposalPatchPreview": "required-preconditions-pending",
+        }
+        and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
+        and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
+        and operator_stage_decision.get("nextCommandKey") == "reviewCheckReport"
+        and operator_stage_decision.get("nextCommandDisplayLabel") == "Review check Markdown report"
+        and operator_stage_decision.get("nextCommandDescription") == "Generate a Markdown review-check artifact for accepted proposal readiness."
+        and operator_stage_decision.get("nextCommandOutputArtifact") == "skill-proposal-review-check.md"
+        and operator_stage_decision.get("nextCommandOutputArtifactType") == "markdown-report"
+        and operator_stage_decision.get("nextCommandOutputArtifactAction") == "render-markdown-report"
+        and operator_stage_decision.get("nextCommandOutputArtifactMediaType") == "text/markdown"
+        and operator_stage_decision.get("nextCommandOutputArtifactDisposition") == "review-only"
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyCandidate") is False
+        and operator_stage_decision.get("nextCommandOutputArtifactRequiresManualReview") is False
+        and operator_stage_decision.get("nextCommandOutputArtifactReviewInstruction") == "Review the Markdown readiness report before changing proposal review status."
+        and operator_stage_decision.get("nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply") is False
+        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionIds") == []
+        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionLabels") == []
+        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditions") == []
+        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionCount") == 0
+        and operator_stage_decision.get("nextCommandOutputArtifactRequiredApplyPreconditionCount") == 0
+        and operator_stage_decision.get("nextCommandOutputArtifactSatisfiedApplyPreconditionCount") == 0
+        and operator_stage_decision.get("nextCommandOutputArtifactPendingApplyPreconditionCount") == 0
+        and operator_stage_decision.get("nextCommandOutputArtifactRequiredPendingApplyPreconditionCount") == 0
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyReady") is False
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatus") == "not-applicable"
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusLabel") == "Review only"
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusTone") == "neutral"
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReason") == "This output artifact is review-only and cannot be applied."
+        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReasonCode") == "not-manual-apply-candidate"
+        and operator_stage_decision.get("nextCommandStep") == 2
+        and operator_stage_decision.get("nextCommand") == commands.get("reviewCheckReport")
+        and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
+        and operator_stage_decision.get("nextCommandRunPolicy") == "output-artifact"
+        and operator_stage_decision.get("nextCommandSafetyLevel") == "local-output"
+        and operator_stage_decision.get("nextCommandSafety") == expected_local_output_decision_safety
+        and operator_stage_decision.get("runPolicy") == "optional-local-output-preview"
+        and isinstance(operator_stage_decision_safety, dict)
+        and operator_stage_decision_safety.get("level") == "local-output"
+        and operator_stage_decision_safety.get("writesLocalFiles") is True
+        and operator_stage_decision_safety.get("writesOutputArtifacts") is True
+        and operator_stage_decision_safety.get("mutatesLocalState") is True
+        and operator_stage_decision_safety.get("mutatesProfile") is False
+        and operator_stage_decision_safety.get("mutatesReviewFile") is False
+        and operator_stage_decision_safety.get("mutatesSkillFiles") is False
+        and operator_stage_decision_safety.get("callsExternalAiApis") is False
+        and operator_stage_decision_safety.get("requiresCleanWorkspace") is False
+        and operator_stage_decision.get("nextRequiredStageKey") == "manualSkillEdit"
+        and operator_stage_decision.get("nextRequiredCommandStageKey") == "reviewReadiness"
+        and operator_stage_decision.get("requiresOperatorActionBeforeRequiredCommands") is True
+        and operator_stage_selection.get("stageOrder") == [stage[1] for stage in expected_operator_runbook_stages]
+        and operator_stage_selection.get("nextStageKey") == "previewArtifacts"
+        and operator_stage_selection.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
+        and isinstance(operator_selected_stage, dict)
+        and operator_selected_stage.get("key") == "previewArtifacts"
+        and operator_selected_stage.get("kind") == "local-output-preview"
+        and operator_selected_stage.get("required") is False
+        and operator_selected_stage.get("hasCommands") is True
+        and operator_selected_stage.get("commandCount") == 2
+        and operator_selected_stage.get("writesOutputArtifacts") is True
+        and operator_selected_stage.get("mutatesSkillFiles") is False
+        and operator_stage_selection.get("nextRequiredStageKey") == "manualSkillEdit"
+        and operator_stage_selection.get("nextRequiredStageCommandKeys") == []
+        and isinstance(operator_selected_required_stage, dict)
+        and operator_selected_required_stage.get("key") == "manualSkillEdit"
+        and operator_selected_required_stage.get("kind") == "manual-review"
+        and operator_selected_required_stage.get("required") is True
+        and operator_selected_required_stage.get("hasCommands") is False
+        and operator_selected_required_stage.get("commandCount") == 0
+        and operator_stage_selection.get("nextRequiredCommandStageKey") == "reviewReadiness"
+        and operator_stage_selection.get("nextRequiredCommandStageCommandKeys") == ["reviewCheckJson"]
+        and isinstance(operator_selected_required_command_stage, dict)
+        and operator_selected_required_command_stage.get("key") == "reviewReadiness"
+        and operator_selected_required_command_stage.get("kind") == "read-only-check"
+        and operator_selected_required_command_stage.get("required") is True
+        and operator_selected_required_command_stage.get("hasCommands") is True
+        and operator_selected_required_command_stage.get("commandCount") == 1
+        and operator_selected_required_command_stage.get("writesLocalFiles") is False
+        and operator_selected_required_command_stage.get("callsExternalAiApis") is False
+        and operator_runbook.get("stageKeys") == [stage[1] for stage in expected_operator_runbook_stages]
+        and isinstance(operator_runbook.get("stageByKey"), dict)
+        and list(operator_runbook["stageByKey"].keys()) == [stage[1] for stage in expected_operator_runbook_stages]
+        and isinstance(operator_runbook.get("stages"), list)
+        and len(operator_runbook["stages"]) == 4
+        and all(
+            isinstance(operator_runbook["stageByKey"].get(key), dict)
+            and operator_runbook["stageByKey"][key].get("step") == step
+            and operator_runbook["stageByKey"][key].get("kind") == kind
+            and operator_runbook["stageByKey"][key].get("required") is required
+            and operator_runbook["stageByKey"][key].get("commandKeys") == command_keys
+            for step, key, kind, required, command_keys
+            in expected_operator_runbook_stages
+        )
+        and all(
+            isinstance(stage, dict)
+            and stage.get("step") == step
+            and stage.get("key") == key
+            and stage.get("kind") == kind
+            and stage.get("required") is required
+            and stage.get("commandKeys") == command_keys
+            and [
+                command.get("key")
+                for command in stage.get("commands", [])
+                if isinstance(command, dict)
+            ] == command_keys
+            for stage, (step, key, kind, required, command_keys)
+            in zip(operator_runbook["stages"], expected_operator_runbook_stages, strict=True)
+        )
+        and "Generate optional local review artifacts" in str(operator_runbook.get("reason", ""))
+        and all(
+            isinstance(command_sequence_by_key.get(key), dict)
+            and command_sequence_by_key[key].get("key") == key
+            and command_sequence_by_key[key].get("command") == str(commands.get(key, ""))
+            and command_sequence_by_key[key].get("runPolicy") == run_policy
+            and isinstance(command_sequence_by_key[key].get("safety"), dict)
+            and command_sequence_by_key[key]["safety"].get("level") == safety_level
+            for _, key, run_policy, safety_level, _
+            in expected_command_sequence
+        )
+        and all(
+            isinstance(item, dict)
+            and item.get("step") == step
+            and item.get("key") == key
+            and item.get("command") == str(commands.get(key, ""))
+            and item.get("commandArgs") == expected_command_args[key]
+            and item.get("runPolicy") == run_policy
+            and isinstance(item.get("safety"), dict)
+            and item["safety"].get("level") == safety_level
+            and item["safety"].get("writesLocalFiles") is writes_local_files
+            and item["safety"].get("writesOutputArtifact") is writes_local_files
+            and item["safety"].get("mutatesProfile") is False
+            and item["safety"].get("mutatesReviewFile") is False
+            and item["safety"].get("mutatesSkillFiles") is False
+            and item["safety"].get("callsExternalAiApis") is False
+            for item, (step, key, run_policy, safety_level, writes_local_files)
+            in zip(command_sequence, expected_command_sequence, strict=True)
+        )
+        and "Run reviewCheckJson after manual skill edits" in str(command_contract.get("nextAction", ""))
         and isinstance(command_contract.get("summary"), dict)
         and command_contract["summary"].get("failures") == 0
+        and command_contract["summary"].get("warnings") == 0
+        and command_contract["summary"].get("passes") == 18
         and command_contract["summary"].get("total") == 18
         and isinstance(command_contract.get("checks"), list)
         and all(check.get("passed") is True for check in command_contract.get("checks", []))
@@ -6907,6 +7440,46 @@ def assert_skill_proposal_apply_plan_markdown(
         "## Command Contract",
         "- Valid: yes",
         "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- Check count: 18",
+        "- Pass count: 18",
+        "- Warning count: 0",
+        "- Failure count: 0",
+        "- Failed checks: none",
+        "- Next command key: reviewCheckJson",
+        "- Next command policy: preview-only",
+        "- Next command safety: read-only",
+        "- Next command: `design-ai learn --propose-skills",
+        "- Command sequence count: 4",
+        "- Command sequence policy: mixed-preview-local-output",
+        "- Command sequence executable: yes",
+        "- Command sequence local outputs: 2",
+        "- Command sequence mutates profile: no",
+        "- Command sequence mutates review file: no",
+        "- Command sequence mutates skill files: no",
+        "- Command sequence calls external AI APIs: no",
+        "- Operator runbook stages: 4",
+        "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+        "- Operator runbook required stages: 3",
+        "- Operator runbook next stage: previewArtifacts",
+        "- Operator runbook next required stage: manualSkillEdit",
+        "- Operator runbook next required command stage: reviewReadiness",
+        "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- Operator runbook decision: offer-optional-preview",
+        "- Operator runbook decision safety: local-output",
+        "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+        "- Operator runbook decision next command: reviewCheckReport",
+        "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+        "Command sequence:",
+        "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
+        "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
+        "Operator runbook:",
+        "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit (required / manual-review): manual",
+        "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
+        "- 4. strictGate (required / read-only-gate): strictGate",
+        "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "## Privacy And Boundaries",
         "- Mutates learning profile: no",
         "- Mutates review file: no",
@@ -6937,6 +7510,46 @@ def assert_skill_proposal_apply_plan_human(
         "- status: pass",
         "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
         "- forbidden flags: --yes",
+        "- check count: 18",
+        "- pass count: 18",
+        "- warning count: 0",
+        "- failure count: 0",
+        "- failed checks: none",
+        "- next command key: reviewCheckJson",
+        "- next command policy: preview-only",
+        "- next command safety: read-only",
+        "- next command: design-ai learn --propose-skills",
+        "- command sequence count: 4",
+        "- command sequence policy: mixed-preview-local-output",
+        "- command sequence executable: yes",
+        "- command sequence local outputs: 2",
+        "- command sequence mutates profile: no",
+        "- command sequence mutates review file: no",
+        "- command sequence mutates skill files: no",
+        "- command sequence calls external AI APIs: no",
+        "- operator runbook stages: 4",
+        "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+        "- operator runbook required stages: 3",
+        "- operator runbook next stage: previewArtifacts",
+        "- operator runbook next required stage: manualSkillEdit",
+        "- operator runbook next required command stage: reviewReadiness",
+        "- operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- operator runbook decision: offer-optional-preview",
+        "- operator runbook decision safety: local-output",
+        "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+        "- operator runbook decision next command: reviewCheckReport",
+        "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+        "Command sequence:",
+        "- 1. reviewCheckJson: preview-only / read-only",
+        "- 2. reviewCheckReport: output-artifact / local-output",
+        "- 3. proposalPatchPreview: output-artifact / local-output",
+        "- 4. strictGate: strict-readiness-gate / read-only",
+        "Operator runbook:",
+        "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit: required / manual-review / manual",
+        "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
+        "- 4. strictGate: required / read-only-gate / strictGate",
+        "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
         "Privacy: apply plan is read-only",
     ):
         require_package_smoke(
@@ -12761,6 +13374,18 @@ def run_self_test() -> None:
             cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
         )
         learning_skill_proposal_apply_plan_review_path = learning_profile_path.with_name("skill-proposals.accepted.review.json")
+        learning_skill_proposal_apply_plan_decision_command_safety = {
+            "level": "local-output",
+            "writesLocalFiles": True,
+            "writesOutputArtifact": True,
+            "mutatesLocalState": True,
+            "mutatesProfile": False,
+            "mutatesReviewFile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "requiresCleanWorkspace": False,
+            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+        }
         learning_skill_proposal_apply_plan_payload = {
             "version": 1,
             "kind": "skill-proposal-apply-plan",
@@ -12866,6 +13491,9 @@ def run_self_test() -> None:
                 "valid": True,
                 "status": "pass",
                 "commandCount": 4,
+                "checkCount": 18,
+                "passCount": 18,
+                "warningCount": 0,
                 "requiredKeys": [
                     "reviewCheckJson",
                     "reviewCheckReport",
@@ -12878,6 +13506,665 @@ def run_self_test() -> None:
                 "reviewFileRequired": True,
                 "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
                 "forbiddenFlags": ["--yes"],
+                "failureCount": 0,
+                "failedCheckIds": [],
+                "failedChecks": [],
+                "nextCommandKey": "reviewCheckJson",
+                "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                "nextCommandArgs": [
+                    "design-ai", "learn", "--propose-skills",
+                    "--file", str(learning_profile_path),
+                    "--usage-file", str(learning_usage_path),
+                    "--from-file", str(Path(tmp)),
+                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                    "--review-check", "--json",
+                ],
+                "nextCommandRunPolicy": "preview-only",
+                "nextCommandSafety": {
+                    "level": "read-only",
+                    "writesLocalFiles": False,
+                    "mutatesLocalState": False,
+                    "mutatesProfile": False,
+                    "mutatesReviewFile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "requiresCleanWorkspace": False,
+                    "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+                },
+                "commandSequenceCount": 4,
+                "commandSequenceSummary": {
+                    "executable": True,
+                    "blocked": False,
+                    "stepCount": 4,
+                    "readOnlyStepCount": 2,
+                    "localOutputStepCount": 2,
+                    "writesLocalFiles": True,
+                    "writesOutputArtifacts": True,
+                    "mutatesProfile": False,
+                    "mutatesReviewFile": False,
+                    "mutatesSkillFiles": False,
+                    "callsExternalAiApis": False,
+                    "requiresCleanWorkspace": False,
+                    "runPolicy": "mixed-preview-local-output",
+                    "reason": "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
+                },
+                "commandSequenceKeys": [
+                    "reviewCheckJson",
+                    "reviewCheckReport",
+                    "proposalPatchPreview",
+                    "strictGate",
+                ],
+                "commandSequenceByKey": {
+                    "reviewCheckJson": {
+                        "key": "reviewCheckJson",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                        "runPolicy": "preview-only",
+                        "safety": {"level": "read-only"},
+                    },
+                    "reviewCheckReport": {
+                        "key": "reviewCheckReport",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                        "runPolicy": "output-artifact",
+                        "safety": {"level": "local-output"},
+                    },
+                    "proposalPatchPreview": {
+                        "key": "proposalPatchPreview",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                        "runPolicy": "output-artifact",
+                        "safety": {"level": "local-output"},
+                    },
+                    "strictGate": {
+                        "key": "strictGate",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                        "runPolicy": "strict-readiness-gate",
+                        "safety": {"level": "read-only"},
+                    },
+                },
+                "commandSequence": [
+                    {
+                        "step": 1,
+                        "key": "reviewCheckJson",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--review-check", "--json",
+                        ],
+                        "runPolicy": "preview-only",
+                        "safety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "writesOutputArtifact": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                        },
+                    },
+                    {
+                        "step": 2,
+                        "key": "reviewCheckReport",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                        ],
+                        "runPolicy": "output-artifact",
+                        "safety": {
+                            "level": "local-output",
+                            "writesLocalFiles": True,
+                            "writesOutputArtifact": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                        },
+                    },
+                    {
+                        "step": 3,
+                        "key": "proposalPatchPreview",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--patch", "--out", "skill-proposals.patch",
+                        ],
+                        "runPolicy": "output-artifact",
+                        "safety": {
+                            "level": "local-output",
+                            "writesLocalFiles": True,
+                            "writesOutputArtifact": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                        },
+                    },
+                    {
+                        "step": 4,
+                        "key": "strictGate",
+                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                        "commandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--strict", "--json",
+                        ],
+                        "runPolicy": "strict-readiness-gate",
+                        "safety": {
+                            "level": "read-only",
+                            "writesLocalFiles": False,
+                            "writesOutputArtifact": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                        },
+                    },
+                ],
+                "operatorRunbook": {
+                    "version": 1,
+                    "executable": True,
+                    "blocked": False,
+                    "stageCount": 4,
+                    "requiredStageCount": 3,
+                    "commandStageCount": 3,
+                    "nextStageKey": "previewArtifacts",
+                    "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                    "nextRequiredStageKey": "manualSkillEdit",
+                    "nextRequiredStageCommandKeys": [],
+                    "nextRequiredCommandStageKey": "reviewReadiness",
+                    "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
+                    "stageSelection": {
+                        "strategy": "optional-preview-before-required-manual-edit",
+                        "decision": {
+                            "action": "offer-optional-preview",
+                            "stageKey": "previewArtifacts",
+                            "stageKind": "local-output-preview",
+                            "required": False,
+                            "hasCommands": True,
+                            "commandCount": 2,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [
+                                {
+                                    "step": 2,
+                                    "key": "reviewCheckReport",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                                {
+                                    "step": 3,
+                                    "key": "proposalPatchPreview",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--patch", "--out", "skill-proposals.patch",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                            ],
+                            "commandByKey": {
+                                "reviewCheckReport": {
+                                    "step": 2,
+                                    "key": "reviewCheckReport",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                                "proposalPatchPreview": {
+                                    "step": 3,
+                                    "key": "proposalPatchPreview",
+                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                                    "commandArgs": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--file", str(learning_profile_path),
+                                        "--usage-file", str(learning_usage_path),
+                                        "--from-file", str(Path(tmp)),
+                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                        "--patch", "--out", "skill-proposals.patch",
+                                    ],
+                                    "runPolicy": "output-artifact",
+                                    "safetyLevel": "local-output",
+                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                    "writesLocalFiles": True,
+                                    "writesOutputArtifact": True,
+                                    "mutatesLocalState": True,
+                                    "mutatesProfile": False,
+                                    "mutatesReviewFile": False,
+                                    "mutatesSkillFiles": False,
+                                    "callsExternalAiApis": False,
+                                    "requiresCleanWorkspace": False,
+                                },
+                            },
+                            "commandStepByKey": {
+                                "reviewCheckReport": 2,
+                                "proposalPatchPreview": 3,
+                            },
+                            "commandRunPolicyByKey": {
+                                "reviewCheckReport": "output-artifact",
+                                "proposalPatchPreview": "output-artifact",
+                            },
+                            "commandSafetyLevelByKey": {
+                                "reviewCheckReport": "local-output",
+                                "proposalPatchPreview": "local-output",
+                            },
+                            "commandArgsByKey": {
+                                "reviewCheckReport": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                ],
+                                "proposalPatchPreview": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--patch", "--out", "skill-proposals.patch",
+                                ],
+                            },
+                            "commandStringByKey": {
+                                "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                            },
+                            "commandDisplayLabelByKey": {
+                                "reviewCheckReport": "Review check Markdown report",
+                                "proposalPatchPreview": "Skill proposal patch preview",
+                            },
+                            "commandDescriptionByKey": {
+                                "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+                                "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
+                            },
+                            "commandOutputArtifactByKey": {
+                                "reviewCheckReport": "skill-proposal-review-check.md",
+                                "proposalPatchPreview": "skill-proposals.patch",
+                            },
+                            "commandOutputArtifactTypeByKey": {
+                                "reviewCheckReport": "markdown-report",
+                                "proposalPatchPreview": "unified-diff",
+                            },
+                            "commandOutputArtifactActionByKey": {
+                                "reviewCheckReport": "render-markdown-report",
+                                "proposalPatchPreview": "render-unified-diff-preview",
+                            },
+                            "commandOutputArtifactMediaTypeByKey": {
+                                "reviewCheckReport": "text/markdown",
+                                "proposalPatchPreview": "text/x-diff",
+                            },
+                            "commandOutputArtifactDispositionByKey": {
+                                "reviewCheckReport": "review-only",
+                                "proposalPatchPreview": "manual-apply-preview",
+                            },
+                            "commandOutputArtifactManualApplyCandidateByKey": {
+                                "reviewCheckReport": False,
+                                "proposalPatchPreview": True,
+                            },
+                            "commandOutputArtifactRequiresManualReviewByKey": {
+                                "reviewCheckReport": False,
+                                "proposalPatchPreview": True,
+                            },
+                            "commandOutputArtifactReviewInstructionByKey": {
+                                "reviewCheckReport": "Review the Markdown readiness report before changing proposal review status.",
+                                "proposalPatchPreview": "Review the unified diff manually before applying any skill-file edits.",
+                            },
+                            "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
+                                "reviewCheckReport": False,
+                                "proposalPatchPreview": True,
+                            },
+                            "commandOutputArtifactApplyPreconditionIdsByKey": {
+                                "reviewCheckReport": [],
+                                "proposalPatchPreview": ["manual-review", "clean-workspace"],
+                            },
+                            "commandOutputArtifactApplyPreconditionLabelsByKey": {
+                                "reviewCheckReport": [],
+                                "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
+                            },
+                            "commandOutputArtifactApplyPreconditionsByKey": {
+                                "reviewCheckReport": [],
+                                "proposalPatchPreview": [
+                                    {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                    {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
+                                ],
+                            },
+                            "commandOutputArtifactApplyPreconditionCountByKey": {
+                                "reviewCheckReport": 0,
+                                "proposalPatchPreview": 2,
+                            },
+                            "commandOutputArtifactRequiredApplyPreconditionCountByKey": {
+                                "reviewCheckReport": 0,
+                                "proposalPatchPreview": 2,
+                            },
+                            "commandOutputArtifactSatisfiedApplyPreconditionCountByKey": {
+                                "reviewCheckReport": 0,
+                                "proposalPatchPreview": 0,
+                            },
+                            "commandOutputArtifactPendingApplyPreconditionCountByKey": {
+                                "reviewCheckReport": 0,
+                                "proposalPatchPreview": 2,
+                            },
+                            "commandOutputArtifactRequiredPendingApplyPreconditionCountByKey": {
+                                "reviewCheckReport": 0,
+                                "proposalPatchPreview": 2,
+                            },
+                            "commandOutputArtifactManualApplyReadyByKey": {
+                                "reviewCheckReport": False,
+                                "proposalPatchPreview": False,
+                            },
+                            "commandOutputArtifactManualApplyStatusByKey": {
+                                "reviewCheckReport": "not-applicable",
+                                "proposalPatchPreview": "blocked",
+                            },
+                            "commandOutputArtifactManualApplyStatusLabelByKey": {
+                                "reviewCheckReport": "Review only",
+                                "proposalPatchPreview": "Blocked",
+                            },
+                            "commandOutputArtifactManualApplyStatusToneByKey": {
+                                "reviewCheckReport": "neutral",
+                                "proposalPatchPreview": "warning",
+                            },
+                            "commandOutputArtifactManualApplyBlockedReasonByKey": {
+                                "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
+                                "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
+                            },
+                            "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
+                                "reviewCheckReport": "not-manual-apply-candidate",
+                                "proposalPatchPreview": "required-preconditions-pending",
+                            },
+                            "nextCommandEntry": {
+                                "step": 2,
+                                "key": "reviewCheckReport",
+                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                "commandArgs": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                ],
+                                "runPolicy": "output-artifact",
+                                "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                "writesLocalFiles": True,
+                                "writesOutputArtifact": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                            },
+                            "nextCommandKey": "reviewCheckReport",
+                            "nextCommandDisplayLabel": "Review check Markdown report",
+                            "nextCommandDescription": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+                            "nextCommandOutputArtifact": "skill-proposal-review-check.md",
+                            "nextCommandOutputArtifactType": "markdown-report",
+                            "nextCommandOutputArtifactAction": "render-markdown-report",
+                            "nextCommandOutputArtifactMediaType": "text/markdown",
+                            "nextCommandOutputArtifactDisposition": "review-only",
+                            "nextCommandOutputArtifactManualApplyCandidate": False,
+                            "nextCommandOutputArtifactRequiresManualReview": False,
+                            "nextCommandOutputArtifactReviewInstruction": "Review the Markdown readiness report before changing proposal review status.",
+                            "nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply": False,
+                            "nextCommandOutputArtifactApplyPreconditionIds": [],
+                            "nextCommandOutputArtifactApplyPreconditionLabels": [],
+                            "nextCommandOutputArtifactApplyPreconditions": [],
+                            "nextCommandOutputArtifactApplyPreconditionCount": 0,
+                            "nextCommandOutputArtifactRequiredApplyPreconditionCount": 0,
+                            "nextCommandOutputArtifactSatisfiedApplyPreconditionCount": 0,
+                            "nextCommandOutputArtifactPendingApplyPreconditionCount": 0,
+                            "nextCommandOutputArtifactRequiredPendingApplyPreconditionCount": 0,
+                            "nextCommandOutputArtifactManualApplyReady": False,
+                            "nextCommandOutputArtifactManualApplyStatus": "not-applicable",
+                            "nextCommandOutputArtifactManualApplyStatusLabel": "Review only",
+                            "nextCommandOutputArtifactManualApplyStatusTone": "neutral",
+                            "nextCommandOutputArtifactManualApplyBlockedReason": "This output artifact is review-only and cannot be applied.",
+                            "nextCommandOutputArtifactManualApplyBlockedReasonCode": "not-manual-apply-candidate",
+                            "nextCommandStep": 2,
+                            "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                            "nextCommandArgs": [
+                                "design-ai", "learn", "--propose-skills",
+                                "--file", str(learning_profile_path),
+                                "--usage-file", str(learning_usage_path),
+                                "--from-file", str(Path(tmp)),
+                                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                            ],
+                            "nextCommandRunPolicy": "output-artifact",
+                            "nextCommandSafetyLevel": "local-output",
+                            "nextCommandSafety": learning_skill_proposal_apply_plan_decision_command_safety,
+                            "runPolicy": "optional-local-output-preview",
+                            "safety": {
+                                "level": "local-output",
+                                "writesLocalFiles": True,
+                                "writesOutputArtifacts": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                                "reason": "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+                            },
+                            "nextRequiredStageKey": "manualSkillEdit",
+                            "nextRequiredCommandStageKey": "reviewReadiness",
+                            "requiresOperatorActionBeforeRequiredCommands": True,
+                            "reason": "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+                        },
+                        "stageOrder": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+                        "nextStageKey": "previewArtifacts",
+                        "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "nextStage": {
+                            "key": "previewArtifacts",
+                            "step": 1,
+                            "label": "Generate optional review artifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "hasCommands": True,
+                            "commandCount": 2,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "writesLocalFiles": True,
+                            "writesOutputArtifacts": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+                        },
+                        "nextRequiredStageKey": "manualSkillEdit",
+                        "nextRequiredStageCommandKeys": [],
+                        "nextRequiredStage": {
+                            "key": "manualSkillEdit",
+                            "step": 2,
+                            "label": "Apply accepted skill deltas manually",
+                            "kind": "manual-review",
+                            "required": True,
+                            "hasCommands": False,
+                            "commandCount": 0,
+                            "commandKeys": [],
+                            "writesLocalFiles": False,
+                            "writesOutputArtifacts": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+                        },
+                        "nextRequiredCommandStageKey": "reviewReadiness",
+                        "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
+                        "nextRequiredCommandStage": {
+                            "key": "reviewReadiness",
+                            "step": 3,
+                            "label": "Run review readiness check",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "hasCommands": True,
+                            "commandCount": 1,
+                            "commandKeys": ["reviewCheckJson"],
+                            "writesLocalFiles": False,
+                            "writesOutputArtifacts": False,
+                            "mutatesLocalState": False,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "Run the read-only review check after manual skill edits to verify proposal review state.",
+                        },
+                        "reason": "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
+                    },
+                    "stageKeys": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+                    "stageByKey": {
+                        "previewArtifacts": {
+                            "step": 1,
+                            "key": "previewArtifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                        },
+                        "manualSkillEdit": {
+                            "step": 2,
+                            "key": "manualSkillEdit",
+                            "kind": "manual-review",
+                            "required": True,
+                            "commandKeys": [],
+                            "commands": [],
+                        },
+                        "reviewReadiness": {
+                            "step": 3,
+                            "key": "reviewReadiness",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "commandKeys": ["reviewCheckJson"],
+                            "commands": [{"key": "reviewCheckJson"}],
+                        },
+                        "strictGate": {
+                            "step": 4,
+                            "key": "strictGate",
+                            "kind": "read-only-gate",
+                            "required": True,
+                            "commandKeys": ["strictGate"],
+                            "commands": [{"key": "strictGate"}],
+                        },
+                    },
+                    "stages": [
+                        {
+                            "step": 1,
+                            "key": "previewArtifacts",
+                            "kind": "local-output-preview",
+                            "required": False,
+                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                        },
+                        {
+                            "step": 2,
+                            "key": "manualSkillEdit",
+                            "kind": "manual-review",
+                            "required": True,
+                            "commandKeys": [],
+                            "commands": [],
+                        },
+                        {
+                            "step": 3,
+                            "key": "reviewReadiness",
+                            "kind": "read-only-check",
+                            "required": True,
+                            "commandKeys": ["reviewCheckJson"],
+                            "commands": [{"key": "reviewCheckJson"}],
+                        },
+                        {
+                            "step": 4,
+                            "key": "strictGate",
+                            "kind": "read-only-gate",
+                            "required": True,
+                            "commandKeys": ["strictGate"],
+                            "commands": [{"key": "strictGate"}],
+                        },
+                    ],
+                    "reason": "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
+                },
+                "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
                 "checks": [
                     {"id": "required-command-keys-present", "level": "pass", "passed": True},
                     {"id": "no-unexpected-command-keys", "level": "pass", "passed": True},
@@ -12900,6 +14187,7 @@ def run_self_test() -> None:
                 ],
                 "summary": {
                     "failures": 0,
+                    "warnings": 0,
                     "passes": 18,
                     "total": 18,
                 },
@@ -12938,6 +14226,47 @@ def run_self_test() -> None:
             "- status: pass",
             "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
             "- forbidden flags: --yes",
+            "- check count: 18",
+            "- pass count: 18",
+            "- warning count: 0",
+            "- failure count: 0",
+            "- failed checks: none",
+            "- next command key: reviewCheckJson",
+            "- next command policy: preview-only",
+            "- next command safety: read-only",
+            f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "- command sequence count: 4",
+            "- command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+            "- command sequence policy: mixed-preview-local-output",
+            "- command sequence executable: yes",
+            "- command sequence local outputs: 2",
+            "- command sequence mutates profile: no",
+            "- command sequence mutates review file: no",
+            "- command sequence mutates skill files: no",
+            "- command sequence calls external AI APIs: no",
+            "- operator runbook stages: 4",
+            "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+            "- operator runbook required stages: 3",
+            "- operator runbook next stage: previewArtifacts",
+            "- operator runbook next required stage: manualSkillEdit",
+            "- operator runbook next required command stage: reviewReadiness",
+            "- operator runbook stage selection: optional-preview-before-required-manual-edit",
+            "- operator runbook decision: offer-optional-preview",
+            "- operator runbook decision safety: local-output",
+            "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+            "- operator runbook decision next command: reviewCheckReport",
+            "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+            "Command sequence:",
+            "- 1. reviewCheckJson: preview-only / read-only",
+            "- 2. reviewCheckReport: output-artifact / local-output",
+            "- 3. proposalPatchPreview: output-artifact / local-output",
+            "- 4. strictGate: strict-readiness-gate / read-only",
+            "Operator runbook:",
+            "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
+            "- 2. manualSkillEdit: required / manual-review / manual",
+            "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
+            "- 4. strictGate: required / read-only-gate / strictGate",
+            "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
         ])
@@ -12978,6 +14307,49 @@ def run_self_test() -> None:
             "",
             "- Valid: yes",
             "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+            "- Check count: 18",
+            "- Pass count: 18",
+            "- Warning count: 0",
+            "- Failure count: 0",
+            "- Failed checks: none",
+            "- Next command key: reviewCheckJson",
+            "- Next command policy: preview-only",
+            "- Next command safety: read-only",
+            f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+            "- Command sequence count: 4",
+            "- Command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+            "- Command sequence policy: mixed-preview-local-output",
+            "- Command sequence executable: yes",
+            "- Command sequence local outputs: 2",
+            "- Command sequence mutates profile: no",
+            "- Command sequence mutates review file: no",
+            "- Command sequence mutates skill files: no",
+            "- Command sequence calls external AI APIs: no",
+            "- Operator runbook stages: 4",
+            "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+            "- Operator runbook required stages: 3",
+            "- Operator runbook next stage: previewArtifacts",
+            "- Operator runbook next required stage: manualSkillEdit",
+            "- Operator runbook next required command stage: reviewReadiness",
+            "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
+            "- Operator runbook decision: offer-optional-preview",
+            "- Operator runbook decision safety: local-output",
+            "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+            "- Operator runbook decision next command: reviewCheckReport",
+            "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+            "",
+            "Command sequence:",
+            "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
+            "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
+            "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
+            "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
+            "",
+            "Operator runbook:",
+            "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
+            "- 2. manualSkillEdit (required / manual-review): manual",
+            "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
+            "- 4. strictGate (required / read-only-gate): strictGate",
+            "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
             "",
             "## Privacy And Boundaries",
             "",
@@ -13256,6 +14628,1206 @@ def run_self_test() -> None:
             scope="package smoke",
         )
         expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactRequiresManualReviewByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresManualReviewByKey"],
+                                        "proposalPatchPreview": False,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyStatusToneByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusToneByKey"],
+                                        "proposalPatchPreview": "success",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyStatusLabelByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusLabelByKey"],
+                                        "proposalPatchPreview": "Ready to apply",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyStatusByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusByKey"],
+                                        "proposalPatchPreview": "ready",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyBlockedReasonCodeByKey"],
+                                        "proposalPatchPreview": "",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyReadyByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyReadyByKey"],
+                                        "proposalPatchPreview": True,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactPendingApplyPreconditionCountByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactPendingApplyPreconditionCountByKey"],
+                                        "proposalPatchPreview": 1,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactApplyPreconditionCountByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionCountByKey"],
+                                        "proposalPatchPreview": 1,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactApplyPreconditionsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionsByKey"],
+                                        "proposalPatchPreview": [
+                                            {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactApplyPreconditionLabelsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionLabelsByKey"],
+                                        "proposalPatchPreview": ["Manual review completed"],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactApplyPreconditionIdsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionIdsByKey"],
+                                        "proposalPatchPreview": ["manual-review"],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey"],
+                                        "proposalPatchPreview": False,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactReviewInstructionByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactReviewInstructionByKey"],
+                                        "proposalPatchPreview": "",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactManualApplyCandidateByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyCandidateByKey"],
+                                        "proposalPatchPreview": False,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactDispositionByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactDispositionByKey"],
+                                        "proposalPatchPreview": "review-only",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactMediaTypeByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactMediaTypeByKey"],
+                                        "proposalPatchPreview": "text/plain",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactActionByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactActionByKey"],
+                                        "proposalPatchPreview": "download-file",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandDescriptionByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDescriptionByKey"],
+                                        "reviewCheckReport": "Generate review report.",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactTypeByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactTypeByKey"],
+                                        "reviewCheckReport": "markdown",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandOutputArtifactByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactByKey"],
+                                        "proposalPatchPreview": "proposal.patch",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandDisplayLabelByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDisplayLabelByKey"],
+                                        "proposalPatchPreview": "Patch preview",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageCount": 3,
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandStringByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStringByKey"],
+                                        "reviewCheckReport": "design-ai learn --propose-skills --review-check --report",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandArgsByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandArgsByKey"],
+                                        "proposalPatchPreview": [
+                                            "design-ai", "learn", "--propose-skills",
+                                            "--patch",
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandSafetyLevelByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandSafetyLevelByKey"],
+                                        "reviewCheckReport": "read-only",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandRunPolicyByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandRunPolicyByKey"],
+                                        "proposalPatchPreview": "preview-only",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandStepByKey": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStepByKey"],
+                                        "reviewCheckReport": 3,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "nextCommandStep": 3,
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "nextCommandSafety": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandSafety"],
+                                        "level": "read-only",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commands": [
+                                        {
+                                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0],
+                                            "safety": {
+                                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0]["safety"],
+                                                "reason": "drift",
+                                            },
+                                        },
+                                        *learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][1:],
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "nextCommandEntry": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandEntry"],
+                                        "key": "proposalPatchPreview",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commandByKey": {},
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "nextCommandKey": "proposalPatchPreview",
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "commands": [],
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "safety": {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["safety"],
+                                        "level": "read-only",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "decision": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                    "action": "run-required-command",
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageKeys": [],
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "nextRequiredCommandStageKey": "",
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "strategy": "",
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_json(
+                json.dumps({
+                    **learning_skill_proposal_apply_plan_payload,
+                    "commandContract": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"],
+                        "operatorRunbook": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                            "stageSelection": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                                "nextStage": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["nextStage"],
+                                    "kind": "manual-review",
+                                },
+                            },
+                        },
+                    },
+                }),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                signal_source=Path(tmp),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+            ),
+            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
             lambda: assert_skill_proposal_apply_plan_human(
                 learning_skill_proposal_apply_plan_human.replace(
                     "Command contract:",
@@ -13265,6 +15837,18 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
             ),
             expected="learn skill proposal apply-plan human output missing 'Command contract:'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_human(
+                learning_skill_proposal_apply_plan_human.replace(
+                    "Operator runbook:",
+                    "Operator stages:",
+                ),
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+            ),
+            expected="learn skill proposal apply-plan human output missing 'Operator runbook:'",
             scope="package smoke",
         )
         expect_self_test_failure(
@@ -13280,6 +15864,21 @@ def run_self_test() -> None:
                 cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
             ),
             expected="learn skill proposal apply-plan Markdown report missing '- Mutates skill files: no'",
+            scope="package smoke",
+        )
+        expect_self_test_failure(
+            lambda: assert_skill_proposal_apply_plan_markdown(
+                learning_skill_proposal_apply_plan_markdown.replace(
+                    "Operator runbook:",
+                    "Operator stages:",
+                ),
+                profile_path=learning_profile_path,
+                usage_path=learning_usage_path,
+                review_path=learning_skill_proposal_apply_plan_review_path,
+                context=context,
+                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+            ),
+            expected="learn skill proposal apply-plan Markdown report missing 'Operator runbook:'",
             scope="package smoke",
         )
         expect_self_test_failure(

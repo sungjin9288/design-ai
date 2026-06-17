@@ -22,6 +22,68 @@ const APPLY_PLAN_FOLLOW_UP_COMMAND_SPECS = Object.freeze({
   proposalPatchPreview: ["--patch", "--out", "skill-proposals.patch"],
   strictGate: ["--strict", "--json"],
 });
+const APPLY_PLAN_FOLLOW_UP_COMMAND_POLICIES = Object.freeze({
+  reviewCheckJson: "preview-only",
+  reviewCheckReport: "output-artifact",
+  proposalPatchPreview: "output-artifact",
+  strictGate: "strict-readiness-gate",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS = Object.freeze({
+  reviewCheckJson: "Review check JSON",
+  reviewCheckReport: "Review check Markdown report",
+  proposalPatchPreview: "Skill proposal patch preview",
+  strictGate: "Strict proposal readiness gate",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS = Object.freeze({
+  reviewCheckJson: "Check proposal review readiness as machine-readable JSON without writing local files.",
+  reviewCheckReport: "Generate a Markdown review-check artifact for accepted proposal readiness.",
+  proposalPatchPreview: "Generate a unified diff preview for accepted skill proposal edits.",
+  strictGate: "Run the strict proposal readiness gate before marking accepted proposals applied.",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACTS = Object.freeze({
+  reviewCheckReport: "skill-proposal-review-check.md",
+  proposalPatchPreview: "skill-proposals.patch",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_TYPES = Object.freeze({
+  reviewCheckReport: "markdown-report",
+  proposalPatchPreview: "unified-diff",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS = Object.freeze({
+  reviewCheckReport: "render-markdown-report",
+  proposalPatchPreview: "render-unified-diff-preview",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MEDIA_TYPES = Object.freeze({
+  reviewCheckReport: "text/markdown",
+  proposalPatchPreview: "text/x-diff",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_DISPOSITIONS = Object.freeze({
+  reviewCheckReport: "review-only",
+  proposalPatchPreview: "manual-apply-preview",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MANUAL_APPLY_CANDIDATES = Object.freeze({
+  reviewCheckReport: false,
+  proposalPatchPreview: true,
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_MANUAL_REVIEW = Object.freeze({
+  reviewCheckReport: false,
+  proposalPatchPreview: true,
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REVIEW_INSTRUCTIONS = Object.freeze({
+  reviewCheckReport: "Review the Markdown readiness report before changing proposal review status.",
+  proposalPatchPreview: "Review the unified diff manually before applying any skill-file edits.",
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_CLEAN_WORKSPACE_BEFORE_APPLY = Object.freeze({
+  reviewCheckReport: false,
+  proposalPatchPreview: true,
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS = Object.freeze({
+  reviewCheckReport: Object.freeze([]),
+  proposalPatchPreview: Object.freeze(["manual-review", "clean-workspace"]),
+});
+const APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS = Object.freeze({
+  reviewCheckReport: Object.freeze([]),
+  proposalPatchPreview: Object.freeze(["Manual review completed", "Clean workspace confirmed"]),
+});
 const APPLY_PLAN_BASE_COMMAND = Object.freeze(["design-ai", "learn", "--propose-skills"]);
 const APPLY_PLAN_FORBIDDEN_FLAGS = Object.freeze(["--yes"]);
 const CATEGORY_FALLBACK_SKILLS = {
@@ -50,6 +112,54 @@ function previewText(text, maxLength = 180) {
   const normalized = String(text || "").replace(/\s+/g, " ").trim();
   if (normalized.length <= maxLength) return normalized;
   return `${normalized.slice(0, maxLength - 1)}...`;
+}
+
+function applyPreconditionsForCommandKey(commandKey) {
+  const ids = APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS[commandKey] || [];
+  const labels = APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS[commandKey] || [];
+  return ids.map((id, index) => ({
+    id,
+    label: labels[index] || id,
+    required: true,
+  }));
+}
+
+function applyPreconditionIsSatisfied(precondition) {
+  return precondition?.satisfied === true;
+}
+
+function manualApplyBlockedReason({ manualApplyCandidate, requiredPendingApplyPreconditionCount }) {
+  if (!manualApplyCandidate) {
+    return {
+      code: "not-manual-apply-candidate",
+      message: "This output artifact is review-only and cannot be applied.",
+    };
+  }
+  if (requiredPendingApplyPreconditionCount > 0) {
+    return {
+      code: "required-preconditions-pending",
+      message: "Complete required apply preconditions before applying this patch preview.",
+    };
+  }
+  return { code: "", message: "" };
+}
+
+function manualApplyStatus({ manualApplyCandidate, manualApplyReady }) {
+  if (manualApplyReady) return "ready";
+  if (manualApplyCandidate) return "blocked";
+  return "not-applicable";
+}
+
+function manualApplyStatusLabel(status) {
+  if (status === "ready") return "Ready to apply";
+  if (status === "blocked") return "Blocked";
+  return "Review only";
+}
+
+function manualApplyStatusTone(status) {
+  if (status === "ready") return "success";
+  if (status === "blocked") return "warning";
+  return "neutral";
 }
 
 function routeIdFromSource(source) {
@@ -676,6 +786,585 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
   }
 
   const failures = checks.filter((check) => check.level === "fail").length;
+  const warnings = checks.filter((check) => check.level === "warn").length;
+  const passes = checks.filter((check) => check.level === "pass").length;
+  const checkCount = checks.length;
+  const failedChecks = checks
+    .filter((check) => check.level === "fail")
+    .map((check) => ({
+      id: check.id,
+      message: check.message,
+      evidence: check.evidence || {},
+    }));
+  const nextCommandKey = failures > 0 ? "" : "reviewCheckJson";
+  const nextCommand = nextCommandKey ? followUpCommands[nextCommandKey]?.command || "" : "";
+  const nextCommandArgs = nextCommandKey ? commandArgs[nextCommandKey] || [] : [];
+  const nextCommandRunPolicy = nextCommandKey ? "preview-only" : "";
+  const nextCommandSafety = nextCommandKey
+    ? {
+      level: "read-only",
+      writesLocalFiles: false,
+      mutatesLocalState: false,
+      mutatesProfile: false,
+      mutatesReviewFile: false,
+      mutatesSkillFiles: false,
+      callsExternalAiApis: false,
+      requiresCleanWorkspace: false,
+      reason: "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+    }
+    : {};
+  const commandSequence = failures > 0
+    ? []
+    : requiredKeys.map((key, index) => {
+      const writesOutputArtifact = key === "reviewCheckReport" || key === "proposalPatchPreview";
+      return {
+        step: index + 1,
+        key,
+        command: followUpCommands[key]?.command || "",
+        commandArgs: commandArgs[key] || [],
+        runPolicy: APPLY_PLAN_FOLLOW_UP_COMMAND_POLICIES[key] || "preview-only",
+        safety: {
+          level: writesOutputArtifact ? "local-output" : "read-only",
+          writesLocalFiles: writesOutputArtifact,
+          writesOutputArtifact,
+          mutatesLocalState: writesOutputArtifact,
+          mutatesProfile: false,
+          mutatesReviewFile: false,
+          mutatesSkillFiles: false,
+          callsExternalAiApis: false,
+          requiresCleanWorkspace: false,
+          reason: writesOutputArtifact
+            ? "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files."
+            : "This follow-up command validates readiness without writing local files or mutating local state.",
+        },
+      };
+    });
+  const commandSequenceSummary = {
+    executable: failures === 0,
+    blocked: failures > 0,
+    stepCount: commandSequence.length,
+    readOnlyStepCount: commandSequence.filter((item) => item.safety?.level === "read-only").length,
+    localOutputStepCount: commandSequence.filter((item) => item.safety?.level === "local-output").length,
+    writesLocalFiles: commandSequence.some((item) => Boolean(item.safety?.writesLocalFiles)),
+    writesOutputArtifacts: commandSequence.some((item) => Boolean(item.safety?.writesOutputArtifact)),
+    mutatesProfile: commandSequence.some((item) => Boolean(item.safety?.mutatesProfile)),
+    mutatesReviewFile: commandSequence.some((item) => Boolean(item.safety?.mutatesReviewFile)),
+    mutatesSkillFiles: commandSequence.some((item) => Boolean(item.safety?.mutatesSkillFiles)),
+    callsExternalAiApis: commandSequence.some((item) => Boolean(item.safety?.callsExternalAiApis)),
+    requiresCleanWorkspace: commandSequence.some((item) => Boolean(item.safety?.requiresCleanWorkspace)),
+    runPolicy: failures > 0 ? "blocked" : "mixed-preview-local-output",
+    reason: failures > 0
+      ? "Command contract failures must be fixed before running follow-up commands."
+      : "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
+  };
+  const commandSequenceKeys = commandSequence.map((item) => item.key);
+  const commandSequenceByKey = Object.fromEntries(commandSequence.map((item) => [item.key, item]));
+  const operatorRunbookStages = failures > 0
+    ? []
+    : [
+      {
+        step: 1,
+        key: "previewArtifacts",
+        label: "Generate optional review artifacts",
+        kind: "local-output-preview",
+        required: false,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        commands: ["reviewCheckReport", "proposalPatchPreview"].map((key) => commandSequenceByKey[key]),
+        reason: "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+      },
+      {
+        step: 2,
+        key: "manualSkillEdit",
+        label: "Apply accepted skill deltas manually",
+        kind: "manual-review",
+        required: true,
+        commandKeys: [],
+        commands: [],
+        reason: "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+      },
+      {
+        step: 3,
+        key: "reviewReadiness",
+        label: "Run review readiness check",
+        kind: "read-only-check",
+        required: true,
+        commandKeys: ["reviewCheckJson"],
+        commands: [commandSequenceByKey.reviewCheckJson],
+        reason: "Run the read-only review check after manual skill edits to verify proposal review state.",
+      },
+      {
+        step: 4,
+        key: "strictGate",
+        label: "Run strict readiness gate",
+        kind: "read-only-gate",
+        required: true,
+        commandKeys: ["strictGate"],
+        commands: [commandSequenceByKey.strictGate],
+        reason: "Run the strict gate before marking accepted proposals applied.",
+      },
+    ];
+  const operatorRunbookStageKeys = operatorRunbookStages.map((stage) => stage.key);
+  const operatorRunbookStageByKey = Object.fromEntries(operatorRunbookStages.map((stage) => [stage.key, stage]));
+  const summarizeOperatorRunbookStage = (stage) => {
+    if (!stage) return {};
+    const commandSafetyItems = stage.commands
+      .map((command) => command?.safety)
+      .filter((safety) => safety && typeof safety === "object");
+    const writesLocalFiles = commandSafetyItems.some((safety) => Boolean(safety.writesLocalFiles));
+    const writesOutputArtifacts = commandSafetyItems.some((safety) => Boolean(safety.writesOutputArtifact));
+    const mutatesLocalState = commandSafetyItems.some((safety) => Boolean(safety.mutatesLocalState));
+    const mutatesProfile = commandSafetyItems.some((safety) => Boolean(safety.mutatesProfile));
+    const mutatesReviewFile = commandSafetyItems.some((safety) => Boolean(safety.mutatesReviewFile));
+    const mutatesSkillFiles = commandSafetyItems.some((safety) => Boolean(safety.mutatesSkillFiles));
+    const callsExternalAiApis = commandSafetyItems.some((safety) => Boolean(safety.callsExternalAiApis));
+    const requiresCleanWorkspace = commandSafetyItems.some((safety) => Boolean(safety.requiresCleanWorkspace));
+    return {
+      key: stage.key,
+      step: stage.step,
+      label: stage.label,
+      kind: stage.kind,
+      required: stage.required,
+      hasCommands: stage.commandKeys.length > 0,
+      commandCount: stage.commandKeys.length,
+      commandKeys: stage.commandKeys,
+      writesLocalFiles,
+      writesOutputArtifacts,
+      mutatesLocalState,
+      mutatesProfile,
+      mutatesReviewFile,
+      mutatesSkillFiles,
+      callsExternalAiApis,
+      requiresCleanWorkspace,
+      reason: stage.reason,
+    };
+  };
+  const nextStage = failures > 0
+    ? null
+    : operatorRunbookStageByKey.previewArtifacts || null;
+  const nextRequiredStage = failures > 0
+    ? null
+    : operatorRunbookStages.find((stage) => stage.required) || null;
+  const nextRequiredCommandStage = failures > 0
+    ? null
+    : operatorRunbookStages.find((stage) => stage.required && stage.commandKeys.length > 0) || null;
+  const nextStageSummary = summarizeOperatorRunbookStage(nextStage);
+  const nextRequiredStageSummary = summarizeOperatorRunbookStage(nextRequiredStage);
+  const nextRequiredCommandStageSummary = summarizeOperatorRunbookStage(nextRequiredCommandStage);
+  const summarizeDecisionCommand = (command) => command
+    ? {
+      step: command.step,
+      key: command.key,
+      command: command.command,
+      commandArgs: command.commandArgs,
+      runPolicy: command.runPolicy,
+      safetyLevel: command.safety?.level || "",
+      safety: {
+        level: command.safety?.level || "",
+        writesLocalFiles: Boolean(command.safety?.writesLocalFiles),
+        writesOutputArtifact: Boolean(command.safety?.writesOutputArtifact),
+        mutatesLocalState: Boolean(command.safety?.mutatesLocalState),
+        mutatesProfile: Boolean(command.safety?.mutatesProfile),
+        mutatesReviewFile: Boolean(command.safety?.mutatesReviewFile),
+        mutatesSkillFiles: Boolean(command.safety?.mutatesSkillFiles),
+        callsExternalAiApis: Boolean(command.safety?.callsExternalAiApis),
+        requiresCleanWorkspace: Boolean(command.safety?.requiresCleanWorkspace),
+        reason: command.safety?.reason || "",
+      },
+      writesLocalFiles: Boolean(command.safety?.writesLocalFiles),
+      writesOutputArtifact: Boolean(command.safety?.writesOutputArtifact),
+      mutatesLocalState: Boolean(command.safety?.mutatesLocalState),
+      mutatesProfile: Boolean(command.safety?.mutatesProfile),
+      mutatesReviewFile: Boolean(command.safety?.mutatesReviewFile),
+      mutatesSkillFiles: Boolean(command.safety?.mutatesSkillFiles),
+      callsExternalAiApis: Boolean(command.safety?.callsExternalAiApis),
+      requiresCleanWorkspace: Boolean(command.safety?.requiresCleanWorkspace),
+    }
+    : {};
+  const decisionCommands = failures > 0
+    ? []
+    : (nextStage?.commands || []).map((command) => summarizeDecisionCommand(command));
+  const decisionCommandByKey = Object.fromEntries(decisionCommands.map((command) => [command.key, command]));
+  const decisionCommandStepByKey = Object.fromEntries(decisionCommands.map((command) => [command.key, command.step]));
+  const decisionCommandRunPolicyByKey = Object.fromEntries(
+    decisionCommands.map((command) => [command.key, command.runPolicy]),
+  );
+  const decisionCommandSafetyLevelByKey = Object.fromEntries(
+    decisionCommands.map((command) => [command.key, command.safetyLevel]),
+  );
+  const decisionCommandArgsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [command.key, command.commandArgs]),
+  );
+  const decisionCommandStringByKey = Object.fromEntries(
+    decisionCommands.map((command) => [command.key, command.command]),
+  );
+  const decisionCommandDisplayLabelByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_DISPLAY_LABELS[command.key] || command.key,
+    ]),
+  );
+  const decisionCommandDescriptionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_DESCRIPTIONS[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACTS[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactTypeByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_TYPES[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactActionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_ACTIONS[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactMediaTypeByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MEDIA_TYPES[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactDispositionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_DISPOSITIONS[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyCandidateByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_MANUAL_APPLY_CANDIDATES[command.key] || false,
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiresManualReviewByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_MANUAL_REVIEW[command.key] || false,
+    ]),
+  );
+  const decisionCommandOutputArtifactReviewInstructionByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REVIEW_INSTRUCTIONS[command.key] || "",
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_REQUIRES_CLEAN_WORKSPACE_BEFORE_APPLY[command.key] || false,
+    ]),
+  );
+  const decisionCommandOutputArtifactApplyPreconditionIdsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      [...(APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_IDS[command.key] || [])],
+    ]),
+  );
+  const decisionCommandOutputArtifactApplyPreconditionLabelsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      [...(APPLY_PLAN_FOLLOW_UP_COMMAND_OUTPUT_ARTIFACT_APPLY_PRECONDITION_LABELS[command.key] || [])],
+    ]),
+  );
+  const decisionCommandOutputArtifactApplyPreconditionsByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      applyPreconditionsForCommandKey(command.key),
+    ]),
+  );
+  const decisionCommandOutputArtifactApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      decisionCommandOutputArtifactApplyPreconditionsByKey[command.key]?.length || 0,
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => precondition.required).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactPendingApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => !applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      (decisionCommandOutputArtifactApplyPreconditionsByKey[command.key] || [])
+        .filter((precondition) => precondition.required && !applyPreconditionIsSatisfied(precondition)).length,
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyReadyByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key])
+        && (decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0) === 0,
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyStatusByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyStatus({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        manualApplyReady: Boolean(decisionCommandOutputArtifactManualApplyReadyByKey[command.key]),
+      }),
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyStatusLabelByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyStatusLabel(decisionCommandOutputArtifactManualApplyStatusByKey[command.key]),
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyStatusToneByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyStatusTone(decisionCommandOutputArtifactManualApplyStatusByKey[command.key]),
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyBlockedReasonByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyBlockedReason({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        requiredPendingApplyPreconditionCount: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0,
+      }).message,
+    ]),
+  );
+  const decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey = Object.fromEntries(
+    decisionCommands.map((command) => [
+      command.key,
+      manualApplyBlockedReason({
+        manualApplyCandidate: Boolean(decisionCommandOutputArtifactManualApplyCandidateByKey[command.key]),
+        requiredPendingApplyPreconditionCount: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[command.key] || 0,
+      }).code,
+    ]),
+  );
+  const decisionNextCommand = decisionCommands[0] || {};
+  const decisionNextCommandDisplayLabel = decisionNextCommand.key
+    ? decisionCommandDisplayLabelByKey[decisionNextCommand.key] || decisionNextCommand.key
+    : "";
+  const decisionNextCommandDescription = decisionNextCommand.key
+    ? decisionCommandDescriptionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifact = decisionNextCommand.key
+    ? decisionCommandOutputArtifactByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactType = decisionNextCommand.key
+    ? decisionCommandOutputArtifactTypeByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactAction = decisionNextCommand.key
+    ? decisionCommandOutputArtifactActionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactMediaType = decisionNextCommand.key
+    ? decisionCommandOutputArtifactMediaTypeByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactDisposition = decisionNextCommand.key
+    ? decisionCommandOutputArtifactDispositionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactManualApplyCandidate = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyCandidateByKey[decisionNextCommand.key] || false
+    : false;
+  const decisionNextCommandOutputArtifactRequiresManualReview = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiresManualReviewByKey[decisionNextCommand.key] || false
+    : false;
+  const decisionNextCommandOutputArtifactReviewInstruction = decisionNextCommand.key
+    ? decisionCommandOutputArtifactReviewInstructionByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey[decisionNextCommand.key] || false
+    : false;
+  const decisionNextCommandOutputArtifactApplyPreconditionIds = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionIdsByKey[decisionNextCommand.key] || []
+    : [];
+  const decisionNextCommandOutputArtifactApplyPreconditionLabels = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionLabelsByKey[decisionNextCommand.key] || []
+    : [];
+  const decisionNextCommandOutputArtifactApplyPreconditions = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionsByKey[decisionNextCommand.key] || []
+    : [];
+  const decisionNextCommandOutputArtifactApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactRequiredApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactSatisfiedApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactPendingApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactPendingApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount = decisionNextCommand.key
+    ? decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey[decisionNextCommand.key] || 0
+    : 0;
+  const decisionNextCommandOutputArtifactManualApplyReady = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyReadyByKey[decisionNextCommand.key] || false
+    : false;
+  const decisionNextCommandOutputArtifactManualApplyStatus = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyStatusByKey[decisionNextCommand.key] || "not-applicable"
+    : "not-applicable";
+  const decisionNextCommandOutputArtifactManualApplyStatusLabel = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyStatusLabelByKey[decisionNextCommand.key] || "Review only"
+    : "Review only";
+  const decisionNextCommandOutputArtifactManualApplyStatusTone = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyStatusToneByKey[decisionNextCommand.key] || "neutral"
+    : "neutral";
+  const decisionNextCommandOutputArtifactManualApplyBlockedReason = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyBlockedReasonByKey[decisionNextCommand.key] || ""
+    : "";
+  const decisionNextCommandOutputArtifactManualApplyBlockedReasonCode = decisionNextCommand.key
+    ? decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey[decisionNextCommand.key] || ""
+    : "";
+  const operatorRunbookStageSelection = failures > 0
+    ? {}
+    : {
+      strategy: "optional-preview-before-required-manual-edit",
+      decision: {
+        action: "offer-optional-preview",
+        stageKey: "previewArtifacts",
+        stageKind: "local-output-preview",
+        required: false,
+        hasCommands: true,
+        commandCount: decisionCommands.length,
+        commandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+        commands: decisionCommands,
+        commandByKey: decisionCommandByKey,
+        commandStepByKey: decisionCommandStepByKey,
+        commandRunPolicyByKey: decisionCommandRunPolicyByKey,
+        commandSafetyLevelByKey: decisionCommandSafetyLevelByKey,
+        commandArgsByKey: decisionCommandArgsByKey,
+        commandStringByKey: decisionCommandStringByKey,
+        commandDisplayLabelByKey: decisionCommandDisplayLabelByKey,
+        commandDescriptionByKey: decisionCommandDescriptionByKey,
+        commandOutputArtifactByKey: decisionCommandOutputArtifactByKey,
+        commandOutputArtifactTypeByKey: decisionCommandOutputArtifactTypeByKey,
+        commandOutputArtifactActionByKey: decisionCommandOutputArtifactActionByKey,
+        commandOutputArtifactMediaTypeByKey: decisionCommandOutputArtifactMediaTypeByKey,
+        commandOutputArtifactDispositionByKey: decisionCommandOutputArtifactDispositionByKey,
+        commandOutputArtifactManualApplyCandidateByKey: decisionCommandOutputArtifactManualApplyCandidateByKey,
+        commandOutputArtifactRequiresManualReviewByKey: decisionCommandOutputArtifactRequiresManualReviewByKey,
+        commandOutputArtifactReviewInstructionByKey: decisionCommandOutputArtifactReviewInstructionByKey,
+        commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey: decisionCommandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey,
+        commandOutputArtifactApplyPreconditionIdsByKey: decisionCommandOutputArtifactApplyPreconditionIdsByKey,
+        commandOutputArtifactApplyPreconditionLabelsByKey: decisionCommandOutputArtifactApplyPreconditionLabelsByKey,
+        commandOutputArtifactApplyPreconditionsByKey: decisionCommandOutputArtifactApplyPreconditionsByKey,
+        commandOutputArtifactApplyPreconditionCountByKey: decisionCommandOutputArtifactApplyPreconditionCountByKey,
+        commandOutputArtifactRequiredApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredApplyPreconditionCountByKey,
+        commandOutputArtifactSatisfiedApplyPreconditionCountByKey: decisionCommandOutputArtifactSatisfiedApplyPreconditionCountByKey,
+        commandOutputArtifactPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactPendingApplyPreconditionCountByKey,
+        commandOutputArtifactRequiredPendingApplyPreconditionCountByKey: decisionCommandOutputArtifactRequiredPendingApplyPreconditionCountByKey,
+        commandOutputArtifactManualApplyReadyByKey: decisionCommandOutputArtifactManualApplyReadyByKey,
+        commandOutputArtifactManualApplyStatusByKey: decisionCommandOutputArtifactManualApplyStatusByKey,
+        commandOutputArtifactManualApplyStatusLabelByKey: decisionCommandOutputArtifactManualApplyStatusLabelByKey,
+        commandOutputArtifactManualApplyStatusToneByKey: decisionCommandOutputArtifactManualApplyStatusToneByKey,
+        commandOutputArtifactManualApplyBlockedReasonByKey: decisionCommandOutputArtifactManualApplyBlockedReasonByKey,
+        commandOutputArtifactManualApplyBlockedReasonCodeByKey: decisionCommandOutputArtifactManualApplyBlockedReasonCodeByKey,
+        nextCommandEntry: decisionNextCommand,
+        nextCommandKey: decisionNextCommand.key || "",
+        nextCommandDisplayLabel: decisionNextCommandDisplayLabel,
+        nextCommandDescription: decisionNextCommandDescription,
+        nextCommandOutputArtifact: decisionNextCommandOutputArtifact,
+        nextCommandOutputArtifactType: decisionNextCommandOutputArtifactType,
+        nextCommandOutputArtifactAction: decisionNextCommandOutputArtifactAction,
+        nextCommandOutputArtifactMediaType: decisionNextCommandOutputArtifactMediaType,
+        nextCommandOutputArtifactDisposition: decisionNextCommandOutputArtifactDisposition,
+        nextCommandOutputArtifactManualApplyCandidate: decisionNextCommandOutputArtifactManualApplyCandidate,
+        nextCommandOutputArtifactRequiresManualReview: decisionNextCommandOutputArtifactRequiresManualReview,
+        nextCommandOutputArtifactReviewInstruction: decisionNextCommandOutputArtifactReviewInstruction,
+        nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply: decisionNextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply,
+        nextCommandOutputArtifactApplyPreconditionIds: decisionNextCommandOutputArtifactApplyPreconditionIds,
+        nextCommandOutputArtifactApplyPreconditionLabels: decisionNextCommandOutputArtifactApplyPreconditionLabels,
+        nextCommandOutputArtifactApplyPreconditions: decisionNextCommandOutputArtifactApplyPreconditions,
+        nextCommandOutputArtifactApplyPreconditionCount: decisionNextCommandOutputArtifactApplyPreconditionCount,
+        nextCommandOutputArtifactRequiredApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredApplyPreconditionCount,
+        nextCommandOutputArtifactSatisfiedApplyPreconditionCount: decisionNextCommandOutputArtifactSatisfiedApplyPreconditionCount,
+        nextCommandOutputArtifactPendingApplyPreconditionCount: decisionNextCommandOutputArtifactPendingApplyPreconditionCount,
+        nextCommandOutputArtifactRequiredPendingApplyPreconditionCount: decisionNextCommandOutputArtifactRequiredPendingApplyPreconditionCount,
+        nextCommandOutputArtifactManualApplyReady: decisionNextCommandOutputArtifactManualApplyReady,
+        nextCommandOutputArtifactManualApplyStatus: decisionNextCommandOutputArtifactManualApplyStatus,
+        nextCommandOutputArtifactManualApplyStatusLabel: decisionNextCommandOutputArtifactManualApplyStatusLabel,
+        nextCommandOutputArtifactManualApplyStatusTone: decisionNextCommandOutputArtifactManualApplyStatusTone,
+        nextCommandOutputArtifactManualApplyBlockedReason: decisionNextCommandOutputArtifactManualApplyBlockedReason,
+        nextCommandOutputArtifactManualApplyBlockedReasonCode: decisionNextCommandOutputArtifactManualApplyBlockedReasonCode,
+        nextCommandStep: decisionNextCommand.step || 0,
+        nextCommand: decisionNextCommand.command || "",
+        nextCommandArgs: decisionNextCommand.commandArgs || [],
+        nextCommandRunPolicy: decisionNextCommand.runPolicy || "",
+        nextCommandSafetyLevel: decisionNextCommand.safetyLevel || "",
+        nextCommandSafety: decisionNextCommand.safety || {},
+        runPolicy: "optional-local-output-preview",
+        safety: {
+          level: nextStageSummary.writesLocalFiles ? "local-output" : "read-only",
+          writesLocalFiles: nextStageSummary.writesLocalFiles,
+          writesOutputArtifacts: nextStageSummary.writesOutputArtifacts,
+          mutatesLocalState: nextStageSummary.mutatesLocalState,
+          mutatesProfile: nextStageSummary.mutatesProfile,
+          mutatesReviewFile: nextStageSummary.mutatesReviewFile,
+          mutatesSkillFiles: nextStageSummary.mutatesSkillFiles,
+          callsExternalAiApis: nextStageSummary.callsExternalAiApis,
+          requiresCleanWorkspace: nextStageSummary.requiresCleanWorkspace,
+          reason: "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+        },
+        nextRequiredStageKey: nextRequiredStage?.key || "",
+        nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+        requiresOperatorActionBeforeRequiredCommands: true,
+        reason: "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+      },
+      stageOrder: operatorRunbookStageKeys,
+      nextStageKey: "previewArtifacts",
+      nextStageCommandKeys: ["reviewCheckReport", "proposalPatchPreview"],
+      nextStage: nextStageSummary,
+      nextRequiredStageKey: nextRequiredStage?.key || "",
+      nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
+      nextRequiredStage: nextRequiredStageSummary,
+      nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+      nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
+      nextRequiredCommandStage: nextRequiredCommandStageSummary,
+      reason: "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
+    };
+  const operatorRunbook = {
+    version: 1,
+    executable: failures === 0,
+    blocked: failures > 0,
+    stageCount: operatorRunbookStages.length,
+    requiredStageCount: operatorRunbookStages.filter((stage) => stage.required).length,
+    commandStageCount: operatorRunbookStages.filter((stage) => stage.commandKeys.length > 0).length,
+    nextStageKey: failures > 0 ? "" : "previewArtifacts",
+    nextStageCommandKeys: failures > 0 ? [] : ["reviewCheckReport", "proposalPatchPreview"],
+    nextRequiredStageKey: nextRequiredStage?.key || "",
+    nextRequiredStageCommandKeys: nextRequiredStage?.commandKeys || [],
+    nextRequiredCommandStageKey: nextRequiredCommandStage?.key || "",
+    nextRequiredCommandStageCommandKeys: nextRequiredCommandStage?.commandKeys || [],
+    stageSelection: operatorRunbookStageSelection,
+    stageKeys: operatorRunbookStageKeys,
+    stageByKey: operatorRunbookStageByKey,
+    stages: operatorRunbookStages,
+    reason: failures > 0
+      ? "Command contract failures must be fixed before running the operator runbook."
+      : "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
+  };
   return {
     version: 1,
     valid: failures === 0,
@@ -688,11 +1377,32 @@ function buildApplyPlanCommandContract(followUpCommands, reviewFile) {
     reviewFileRequired: true,
     reviewFile,
     forbiddenFlags: [...APPLY_PLAN_FORBIDDEN_FLAGS],
+    checkCount,
+    passCount: passes,
+    warningCount: warnings,
+    failureCount: failures,
+    failedCheckIds: failedChecks.map((check) => check.id),
+    failedChecks,
+    nextCommandKey,
+    nextCommand,
+    nextCommandArgs,
+    nextCommandRunPolicy,
+    nextCommandSafety,
+    commandSequenceCount: commandSequence.length,
+    commandSequence,
+    commandSequenceSummary,
+    commandSequenceKeys,
+    commandSequenceByKey,
+    operatorRunbook,
+    nextAction: failures > 0
+      ? "Fix command contract failures before running follow-up commands."
+      : "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
     checks,
     summary: {
       failures,
-      passes: checks.length - failures,
-      total: checks.length,
+      warnings,
+      passes,
+      total: checkCount,
     },
   };
 }
@@ -1178,13 +1888,88 @@ export function renderSkillProposalApplyPlanReport(payload, {
   lines.push(listItem("Valid", yesNo(Boolean(commandContract.valid))));
   lines.push(listItem("Status", commandContract.status || "unknown"));
   lines.push(listItem("Command count", commandContract.commandCount || 0));
+  lines.push(listItem("Check count", commandContract.checkCount || 0));
+  lines.push(listItem("Pass count", commandContract.passCount || 0));
+  lines.push(listItem("Warning count", commandContract.warningCount || 0));
   lines.push(listItem("Required keys", (commandContract.requiredKeys || []).join(", ") || "none"));
   lines.push(listItem("Review file required", yesNo(Boolean(commandContract.reviewFileRequired))));
   lines.push(listItem("Forbidden flags", (commandContract.forbiddenFlags || []).join(", ") || "none"));
+  lines.push(listItem("Failure count", commandContract.failureCount || 0));
+  lines.push(listItem("Failed checks", (commandContract.failedCheckIds || []).join(", ") || "none"));
+  lines.push(listItem("Next command key", commandContract.nextCommandKey || "none"));
+  lines.push(listItem("Next command policy", commandContract.nextCommandRunPolicy || "none"));
+  if (commandContract.nextCommandSafety?.level) lines.push(listItem("Next command safety", commandContract.nextCommandSafety.level));
+  if (commandContract.nextCommand) lines.push(listItem("Next command", `\`${commandContract.nextCommand}\``));
+  lines.push(listItem("Command sequence count", commandContract.commandSequenceCount || 0));
+  lines.push(listItem("Command sequence keys", (commandContract.commandSequenceKeys || []).join(", ") || "none"));
+  const sequenceSummary = commandContract.commandSequenceSummary || {};
+  lines.push(listItem("Command sequence policy", sequenceSummary.runPolicy || "none"));
+  lines.push(listItem("Command sequence executable", yesNo(Boolean(sequenceSummary.executable))));
+  lines.push(listItem("Command sequence local outputs", sequenceSummary.localOutputStepCount || 0));
+  lines.push(listItem("Command sequence mutates profile", yesNo(Boolean(sequenceSummary.mutatesProfile))));
+  lines.push(listItem("Command sequence mutates review file", yesNo(Boolean(sequenceSummary.mutatesReviewFile))));
+  lines.push(listItem("Command sequence mutates skill files", yesNo(Boolean(sequenceSummary.mutatesSkillFiles))));
+  lines.push(listItem("Command sequence calls external AI APIs", yesNo(Boolean(sequenceSummary.callsExternalAiApis))));
+  const operatorRunbook = commandContract.operatorRunbook || {};
+  lines.push(listItem("Operator runbook stages", operatorRunbook.stageCount || 0));
+  lines.push(listItem("Operator runbook keys", (operatorRunbook.stageKeys || []).join(", ") || "none"));
+  lines.push(listItem("Operator runbook required stages", operatorRunbook.requiredStageCount || 0));
+  lines.push(listItem("Operator runbook next stage", operatorRunbook.nextStageKey || "none"));
+  lines.push(listItem("Operator runbook next required stage", operatorRunbook.nextRequiredStageKey || "none"));
+  lines.push(listItem("Operator runbook next required command stage", operatorRunbook.nextRequiredCommandStageKey || "none"));
+  if (operatorRunbook.stageSelection?.strategy) {
+    lines.push(listItem("Operator runbook stage selection", operatorRunbook.stageSelection.strategy));
+    if (operatorRunbook.stageSelection.decision?.action) {
+      lines.push(listItem("Operator runbook decision", operatorRunbook.stageSelection.decision.action));
+      if (operatorRunbook.stageSelection.decision.safety?.level) {
+        lines.push(listItem("Operator runbook decision safety", operatorRunbook.stageSelection.decision.safety.level));
+      }
+      if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
+        lines.push(listItem("Operator runbook decision commands", operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"));
+      }
+      if (operatorRunbook.stageSelection.decision.nextCommandKey) {
+        lines.push(listItem("Operator runbook decision next command", operatorRunbook.stageSelection.decision.nextCommandKey));
+      }
+    }
+    if (operatorRunbook.stageSelection.nextStage?.key) {
+      const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
+      lines.push(listItem("Operator runbook selected stage", `${operatorRunbook.stageSelection.nextStage.key} (${nextStageLabel}, ${operatorRunbook.stageSelection.nextStage.kind})`));
+    }
+  }
+  const commandSequence = Array.isArray(commandContract.commandSequence) ? commandContract.commandSequence : [];
+  if (commandSequence.length > 0) {
+    lines.push("");
+    lines.push("Command sequence:");
+    for (const item of commandSequence) {
+      const safetyLevel = item.safety?.level || "unknown";
+      lines.push(`- ${item.step}. ${item.key} (${item.runPolicy || "unknown"} / ${safetyLevel}): \`${item.command}\``);
+    }
+  }
+  const runbookStages = Array.isArray(operatorRunbook.stages) ? operatorRunbook.stages : [];
+  if (runbookStages.length > 0) {
+    lines.push("");
+    lines.push("Operator runbook:");
+    for (const stage of runbookStages) {
+      const required = stage.required ? "required" : "optional";
+      const commandKeys = Array.isArray(stage.commandKeys) && stage.commandKeys.length > 0
+        ? stage.commandKeys.join(", ")
+        : "manual";
+      lines.push(`- ${stage.step}. ${stage.key} (${required} / ${stage.kind || "unknown"}): ${commandKeys}`);
+    }
+  }
+  if (commandContract.nextAction) lines.push(listItem("Next action", commandContract.nextAction));
   const missingCommandKeys = Array.isArray(commandContract.missingCommandKeys) ? commandContract.missingCommandKeys : [];
   const unexpectedCommandKeys = Array.isArray(commandContract.unexpectedCommandKeys) ? commandContract.unexpectedCommandKeys : [];
   if (missingCommandKeys.length > 0) lines.push(listItem("Missing command keys", missingCommandKeys.join(", ")));
   if (unexpectedCommandKeys.length > 0) lines.push(listItem("Unexpected command keys", unexpectedCommandKeys.join(", ")));
+  const failedChecks = Array.isArray(commandContract.failedChecks) ? commandContract.failedChecks : [];
+  if (failedChecks.length > 0) {
+    lines.push("");
+    lines.push("Failed command checks:");
+    for (const check of failedChecks) {
+      lines.push(`- ${check.id}: ${check.message}`);
+    }
+  }
 
   lines.push("", "## Recommendations", "");
   for (const recommendation of payload.recommendations || []) {

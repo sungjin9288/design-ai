@@ -878,13 +878,88 @@ function printSkillProposalApplyPlan(payload) {
     console.log(`- status: ${contract.status || "unknown"}`);
     console.log(`- required keys: ${(contract.requiredKeys || []).join(", ") || "none"}`);
     console.log(`- command count: ${contract.commandCount || 0}`);
+    console.log(`- check count: ${contract.checkCount || 0}`);
+    console.log(`- pass count: ${contract.passCount || 0}`);
+    console.log(`- warning count: ${contract.warningCount || 0}`);
     console.log(`- review file required: ${contract.reviewFileRequired ? "yes" : "no"}`);
     console.log(`- forbidden flags: ${(contract.forbiddenFlags || []).join(", ") || "none"}`);
+    console.log(`- failure count: ${contract.failureCount || 0}`);
+    console.log(`- failed checks: ${(contract.failedCheckIds || []).join(", ") || "none"}`);
+    console.log(`- next command key: ${contract.nextCommandKey || "none"}`);
+    console.log(`- next command policy: ${contract.nextCommandRunPolicy || "none"}`);
+    if (contract.nextCommandSafety?.level) {
+      console.log(`- next command safety: ${contract.nextCommandSafety.level}`);
+    }
+    if (contract.nextCommand) {
+      console.log(`- next command: ${contract.nextCommand}`);
+    }
+    console.log(`- command sequence count: ${contract.commandSequenceCount || 0}`);
+    console.log(`- command sequence keys: ${(contract.commandSequenceKeys || []).join(", ") || "none"}`);
+    const sequenceSummary = contract.commandSequenceSummary || {};
+    console.log(`- command sequence policy: ${sequenceSummary.runPolicy || "none"}`);
+    console.log(`- command sequence executable: ${sequenceSummary.executable ? "yes" : "no"}`);
+    console.log(`- command sequence local outputs: ${sequenceSummary.localOutputStepCount || 0}`);
+    console.log(`- command sequence mutates profile: ${sequenceSummary.mutatesProfile ? "yes" : "no"}`);
+    console.log(`- command sequence mutates review file: ${sequenceSummary.mutatesReviewFile ? "yes" : "no"}`);
+    console.log(`- command sequence mutates skill files: ${sequenceSummary.mutatesSkillFiles ? "yes" : "no"}`);
+    console.log(`- command sequence calls external AI APIs: ${sequenceSummary.callsExternalAiApis ? "yes" : "no"}`);
+    const operatorRunbook = contract.operatorRunbook || {};
+    console.log(`- operator runbook stages: ${operatorRunbook.stageCount || 0}`);
+    console.log(`- operator runbook keys: ${(operatorRunbook.stageKeys || []).join(", ") || "none"}`);
+    console.log(`- operator runbook required stages: ${operatorRunbook.requiredStageCount || 0}`);
+    console.log(`- operator runbook next stage: ${operatorRunbook.nextStageKey || "none"}`);
+    console.log(`- operator runbook next required stage: ${operatorRunbook.nextRequiredStageKey || "none"}`);
+    console.log(`- operator runbook next required command stage: ${operatorRunbook.nextRequiredCommandStageKey || "none"}`);
+    if (operatorRunbook.stageSelection?.strategy) {
+      console.log(`- operator runbook stage selection: ${operatorRunbook.stageSelection.strategy}`);
+      if (operatorRunbook.stageSelection.decision?.action) {
+        console.log(`- operator runbook decision: ${operatorRunbook.stageSelection.decision.action}`);
+        if (operatorRunbook.stageSelection.decision.safety?.level) {
+          console.log(`- operator runbook decision safety: ${operatorRunbook.stageSelection.decision.safety.level}`);
+        }
+        if (Array.isArray(operatorRunbook.stageSelection.decision.commands)) {
+          console.log(`- operator runbook decision commands: ${operatorRunbook.stageSelection.decision.commands.map((command) => command.key).join(", ") || "none"}`);
+        }
+        if (operatorRunbook.stageSelection.decision.nextCommandKey) {
+          console.log(`- operator runbook decision next command: ${operatorRunbook.stageSelection.decision.nextCommandKey}`);
+        }
+      }
+      if (operatorRunbook.stageSelection.nextStage?.key) {
+        const nextStageLabel = operatorRunbook.stageSelection.nextStage.required ? "required" : "optional";
+        console.log(`- operator runbook selected stage: ${operatorRunbook.stageSelection.nextStage.key} (${nextStageLabel}, ${operatorRunbook.stageSelection.nextStage.kind})`);
+      }
+    }
+    if (Array.isArray(contract.commandSequence) && contract.commandSequence.length > 0) {
+      console.log("Command sequence:");
+      for (const item of contract.commandSequence) {
+        const safetyLevel = item.safety?.level || "unknown";
+        console.log(`- ${item.step}. ${item.key}: ${item.runPolicy || "unknown"} / ${safetyLevel}`);
+      }
+    }
+    if (Array.isArray(operatorRunbook.stages) && operatorRunbook.stages.length > 0) {
+      console.log("Operator runbook:");
+      for (const stage of operatorRunbook.stages) {
+        const required = stage.required ? "required" : "optional";
+        const commandKeys = Array.isArray(stage.commandKeys) && stage.commandKeys.length > 0
+          ? stage.commandKeys.join(", ")
+          : "manual";
+        console.log(`- ${stage.step}. ${stage.key}: ${required} / ${stage.kind || "unknown"} / ${commandKeys}`);
+      }
+    }
+    if (contract.nextAction) {
+      console.log(`- next action: ${contract.nextAction}`);
+    }
     if (Array.isArray(contract.missingCommandKeys) && contract.missingCommandKeys.length > 0) {
       console.log(`- missing command keys: ${contract.missingCommandKeys.join(", ")}`);
     }
     if (Array.isArray(contract.unexpectedCommandKeys) && contract.unexpectedCommandKeys.length > 0) {
       console.log(`- unexpected command keys: ${contract.unexpectedCommandKeys.join(", ")}`);
+    }
+    if (Array.isArray(contract.failedChecks) && contract.failedChecks.length > 0) {
+      console.log("Failed command checks:");
+      for (const check of contract.failedChecks) {
+        console.log(`- ${check.id}: ${check.message}`);
+      }
     }
   }
 
