@@ -861,6 +861,32 @@ def assert_site_init_bundle_smoke(
         raise SystemExit(f"site init bundle after {context} expected zero starter tasks")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site init bundle after {context} file manifest changed")
+    handoff = summary.get("handoff")
+    strict_ready = summary.get("status") == "pass"
+    strict_command = "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md"
+    draft_command = "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md"
+    expected_handoff = {
+        "strictReady": strict_ready,
+        "readiness": "ready-for-strict-handoff" if strict_ready else "review-warnings-before-strict-handoff",
+        "recommendedCommand": strict_command if strict_ready else draft_command,
+        "strictCommand": strict_command,
+        "draftCommand": draft_command,
+        "verifyCommand": "design-ai site <bundle-dir> --bundle-check --strict --json",
+        "note": (
+            "Use the strict handoff command before target-repo implementation."
+            if strict_ready
+            else "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority."
+        ),
+    }
+    if handoff != expected_handoff:
+        raise SystemExit(f"site init bundle after {context} handoff guidance changed: {handoff!r}")
+
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    expected_strict_ready = "yes" if strict_ready else "no"
+    if f"Strict-ready: {expected_strict_ready}" not in readme:
+        raise SystemExit(f"site init bundle after {context} README missing strict-ready guidance")
+    if f"Recommended command: `{expected_handoff['recommendedCommand']}`" not in readme:
+        raise SystemExit(f"site init bundle after {context} README missing recommended handoff command")
 
     workspace = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
     if workspace.get("siteProfile", {}).get("name") != "Company marketing site":

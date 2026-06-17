@@ -1040,6 +1040,8 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   assert.match(files["README.md"], /Website improvement handoff bundle/);
   assert.match(files["README.md"], /does not call external MCPs/);
   assert.match(files["README.md"], /MCP probes: 4\/4 passing/);
+  assert.match(files["README.md"], /Strict-ready: yes/);
+  assert.match(files["README.md"], /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff\.md`/);
   assert.match(files["mcp-probes.json"], /"mode": "read-only-local"/);
   assert.match(files["mcp-probes.json"], /"externalCalls": false/);
   assert.match(files["mcp-action-plan.md"], /Website improvement MCP action plan/);
@@ -1050,6 +1052,15 @@ test("buildSiteHandoffBundle creates a complete deterministic handoff package", 
   const summaryPayload = JSON.parse(files["summary.json"]);
   assert.equal(summaryPayload.status, "pass");
   assert.equal(summaryPayload.generatedAt, workspace.updatedAt);
+  assert.deepEqual(summaryPayload.handoff, {
+    strictReady: true,
+    readiness: "ready-for-strict-handoff",
+    recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+    strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+    draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+    verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
+    note: "Use the strict handoff command before target-repo implementation.",
+  });
   assert.equal(summaryPayload.taskGeneration.totalTasks, 3);
   assert.equal(summaryPayload.taskGeneration.createdCount, 2);
   assert.equal(summaryPayload.mcp.probeStatus, "pass");
@@ -2101,6 +2112,17 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.equal(bundleSummary.source, "website-workspace.json");
     assert.equal(bundleSummary.counts.refactorTasks, 0);
     assert.equal(bundleSummary.taskGeneration.totalTasks, 0);
+    assert.deepEqual(bundleSummary.handoff, {
+      strictReady: false,
+      readiness: "review-warnings-before-strict-handoff",
+      recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+      strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+      draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+      verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
+      note: "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
+    });
+    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Strict-ready: no/);
+    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff\.md`/);
     assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "website-workspace.tasks.json"), "utf8")).siteProfile.name, "Company marketing site");
     assert.equal(buildSiteBundleCheckReport({ target: bundleDir }).valid, true);
 

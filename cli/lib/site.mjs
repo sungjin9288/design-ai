@@ -2566,8 +2566,27 @@ export function formatSiteWorkflowGraphMarkdown(graph) {
   ].join("\n");
 }
 
+function buildSiteBundleHandoffGuidance(bundleStatus) {
+  const strictCommand = "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md";
+  const draftCommand = "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md";
+  const verifyCommand = "design-ai site <bundle-dir> --bundle-check --strict --json";
+  const strictReady = bundleStatus === "pass";
+  return {
+    strictReady,
+    readiness: strictReady ? "ready-for-strict-handoff" : "review-warnings-before-strict-handoff",
+    recommendedCommand: strictReady ? strictCommand : draftCommand,
+    strictCommand,
+    draftCommand,
+    verifyCommand,
+    note: strictReady
+      ? "Use the strict handoff command before target-repo implementation."
+      : "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
+  };
+}
+
 function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeReport, filePaths) {
   const commandTarget = bundleSummary.source === "stdin" ? "<workspace.json>" : bundleSummary.source;
+  const handoff = bundleSummary.handoff;
   return [
     `# Website improvement handoff bundle: ${workspace.siteProfile.name}`,
     "",
@@ -2603,10 +2622,19 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeRepo
     `- MCP ready: ${mcpReport.counts.ready}/${mcpReport.counts.total}`,
     `- MCP probes: ${mcpProbeReport.pass}/${mcpProbeReport.count} passing`,
     "",
+    "## Handoff Readiness",
+    `- Strict-ready: ${handoff.strictReady ? "yes" : "no"}`,
+    `- Readiness: ${handoff.readiness}`,
+    `- Recommended command: \`${handoff.recommendedCommand}\``,
+    `- Strict command: \`${handoff.strictCommand}\``,
+    `- Draft command: \`${handoff.draftCommand}\``,
+    `- Verify command: \`${handoff.verifyCommand}\``,
+    `- Note: ${handoff.note}`,
+    "",
     "## Suggested Sequence",
     "1. Read `summary.json`, `mcp-check.json`, `mcp-probes.json`, and `mcp-action-plan.md` first.",
-    "2. Fix required MCP readiness or probe gaps, then re-run the strict gate.",
-    "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
+    "2. Run `design-ai site <bundle-dir> --bundle-check --strict --json`; if it exits non-zero, review the warnings or failures before implementation.",
+    "3. Run the recommended handoff command above. Use the draft command only for planning while readiness warnings remain.",
     "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
     "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
     "6. Record target-repo executed work, verification results, remaining risks, and next actions in `website-handoff.md` after implementation.",
@@ -2659,6 +2687,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const mcpProbeReport = buildSiteMcpProbeReport(taskWorkspace);
   const filePaths = SITE_BUNDLE_FILES;
   const bundleStatus = combineStatuses(mcpReport.status, mcpProbeReport.status);
+  const handoffGuidance = buildSiteBundleHandoffGuidance(bundleStatus);
   const bundleSummary = {
     version: 1,
     generatedAt: taskWorkspace.updatedAt,
@@ -2692,6 +2721,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
       },
     },
     files: filePaths,
+    handoff: handoffGuidance,
     boundaries: [
       "deterministic-local",
       "no-external-mcp-calls",
