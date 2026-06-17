@@ -88,6 +88,7 @@ from smoke_assertions import (
     assert_status_output,
     assert_smoke_json_keys,
     assert_site_json,
+    assert_site_init_json,
     assert_site_mcp_check_json,
     assert_site_mcp_check_probes_human,
     assert_site_mcp_check_probes_human_file_output,
@@ -178,6 +179,32 @@ EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS = [
     "figma-url-reference",
     "browser-smoke-target",
     "deploy-provider-reference",
+]
+SITE_INIT_SMOKE_ARGS = [
+    "site",
+    "--init",
+    "--name",
+    "Company marketing site",
+    "--live-url",
+    "https://example.com",
+    "--repo-url",
+    "https://github.com/acme/site",
+    "--deploy",
+    "vercel",
+    "--cms",
+    "none",
+    "--database",
+    "none",
+    "--page",
+    "/",
+    "--page",
+    "/pricing",
+    "--flow",
+    "Visitor compares plans and starts signup",
+    "--viewport",
+    "desktop",
+    "--viewport",
+    "mobile",
 ]
 
 
@@ -784,6 +811,17 @@ def assert_site_sample_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_site_sample_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_init_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_init_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_site_tasks_json_smoke(
@@ -16828,6 +16866,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site sample JSON",
         )
+        assert_site_init_json_smoke(
+            [str(bin_path), *SITE_INIT_SMOKE_ARGS],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site init JSON",
+        )
         assert_site_prompt_templates_json_smoke(
             [str(bin_path), "site", "--prompt-list", "--json"],
             cwd=install_root,
@@ -17915,6 +17959,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site sample JSON",
+        )
+        assert_site_init_json_smoke(
+            npm_exec_cmd(tarball, *SITE_INIT_SMOKE_ARGS),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site init JSON",
         )
         assert_site_prompt_templates_json_smoke(
             npm_exec_cmd(tarball, "site", "--prompt-list", "--json"),

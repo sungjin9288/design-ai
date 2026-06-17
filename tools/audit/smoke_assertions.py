@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -223,6 +223,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "Usage:",
         "design-ai site <workspace.json> [--strict] [--json]",
         "cat workspace.json | design-ai site --stdin [--strict] [--json]",
+        "design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site --prompt-list [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]",
@@ -240,6 +241,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json",
         "design-ai site website-workspace.json --next-actions --json",
         "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
+        "design-ai site --init --name \"Company marketing site\"",
+        "--init",
+        "--name text",
+        "--live-url url",
+        "--page path",
+        "--viewport kind",
         "--sample",
         "--prompt-list",
         "--mcp-check",
@@ -281,6 +288,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site <workspace.json|--stdin>",
+    "site --init",
     "site --sample",
     "site --prompt-list",
     "[--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
@@ -4114,7 +4122,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -4546,6 +4554,79 @@ def passing_site_sample_json() -> str:
                 "nextActions": [],
             },
             "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
+def passing_site_init_json() -> str:
+    return json.dumps(
+        {
+            "version": 1,
+            "updatedAt": "2026-06-17T00:00:00.000Z",
+            "siteProfile": {
+                "id": "company-marketing-site",
+                "name": "Company marketing site",
+                "liveUrl": "https://example.com",
+                "repoUrl": "https://github.com/acme/site",
+                "localPath": "",
+                "figmaUrl": "",
+                "brandNotes": "",
+                "deployProvider": "vercel",
+                "sentryProject": "",
+                "cms": "none",
+                "database": "none",
+                "pages": ["/", "/pricing"],
+                "userFlows": ["Visitor compares plans and starts signup"],
+                "viewports": ["desktop", "mobile"],
+            },
+            "auditChecklist": {
+                "visual-design": {
+                    "status": "todo",
+                    "notes": "Review layout, typography, color, spacing, hierarchy, and CTA treatment across /, /pricing.",
+                    "findings": [],
+                },
+                "ux-flow": {
+                    "status": "todo",
+                    "notes": "Map and test the primary flow(s): Visitor compares plans and starts signup.",
+                    "findings": [],
+                },
+                "responsive": {"status": "todo", "notes": "Verify configured viewports: desktop, mobile.", "findings": []},
+                "accessibility": {"status": "todo", "notes": "Check keyboard navigation, focus indicators, semantic structure, ARIA usage, and contrast before implementation handoff.", "findings": []},
+                "performance": {"status": "todo", "notes": "Run target-repo or deployment performance checks after the first visual/UX pass.", "findings": []},
+                "seo": {"status": "todo", "notes": "Inspect title, description, canonical, OG metadata, sitemap exposure, and heading order for priority pages.", "findings": []},
+                "technical-quality": {"status": "todo", "notes": "Inspect target repo architecture before editing; preserve existing components, tokens, styling conventions, and verification commands.", "findings": []},
+                "runtime-issues": {"status": "todo", "notes": "Use Browser/Chrome DevTools or deployment logs to check console errors, network failures, hydration issues, and broken assets.", "findings": []},
+                "content-quality": {"status": "todo", "notes": "Review copy clarity, information architecture, proof points, trust signals, Korean/English tone, and CTA wording.", "findings": []},
+            },
+            "mcpReadiness": {
+                "github": "required",
+                "figma": "unused",
+                "browser": "required",
+                "chromeDevtools": "optional",
+                "deploy": "required",
+                "sentry": "unused",
+                "database": "unused",
+                "cms": "unused",
+                "collaboration": "optional",
+                "research": "optional",
+            },
+            "refactorTasks": [],
+            "implementationEvidence": {
+                "executedWork": [],
+                "verificationResults": [],
+                "remainingRisks": [
+                    "MCP readiness gaps may limit verification depth.",
+                    "Copy or brand changes may require stakeholder review.",
+                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
+                ],
+                "nextActions": [
+                    "Run `design-ai site <workspace.json> --mcp-check --probes --json` before target-repo implementation.",
+                    "Add audit findings in the Website Console, then run `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`.",
+                ],
+            },
+            "reportNotes": "Generated by `design-ai site --init` for real-project Website Improvement intake. Actual target repo code changes happen outside this design-ai repository.",
         },
         ensure_ascii=False,
         indent=2,
@@ -6599,6 +6680,97 @@ def assert_site_sample_json(raw: str, *, context: str, cmd: list[str]) -> None:
 
     if not isinstance(payload.get("reportNotes"), str) or "target website repo" not in payload["reportNotes"]:
         raise SystemExit(f"site sample JSON after {context} reportNotes must preserve target repo boundary")
+
+
+def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site init JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_SAMPLE_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site init JSON",
+    )
+    if payload.get("version") != 1:
+        raise SystemExit(f"site init JSON after {context} expected workspace version 1")
+    if not isinstance(payload.get("updatedAt"), str) or not payload["updatedAt"]:
+        raise SystemExit(f"site init JSON after {context} updatedAt is missing")
+
+    profile = assert_smoke_json_keys(
+        payload.get("siteProfile"),
+        EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
+        label="siteProfile",
+        context=context,
+        command_label="site init JSON",
+    )
+    expected_profile = {
+        "id": "company-marketing-site",
+        "name": "Company marketing site",
+        "liveUrl": "https://example.com",
+        "repoUrl": "https://github.com/acme/site",
+        "localPath": "",
+        "figmaUrl": "",
+        "deployProvider": "vercel",
+        "sentryProject": "",
+        "cms": "none",
+        "database": "none",
+    }
+    for key, expected in expected_profile.items():
+        if profile.get(key) != expected:
+            raise SystemExit(f"site init JSON after {context} profile {key} differs from expected project init workspace")
+    if profile.get("pages") != ["/", "/pricing"]:
+        raise SystemExit(f"site init JSON after {context} pages differ from expected project init workspace")
+    if profile.get("userFlows") != ["Visitor compares plans and starts signup"]:
+        raise SystemExit(f"site init JSON after {context} user flows differ from expected project init workspace")
+    if profile.get("viewports") != ["desktop", "mobile"]:
+        raise SystemExit(f"site init JSON after {context} viewports differ from expected project init workspace")
+    if not isinstance(profile.get("brandNotes"), str):
+        raise SystemExit(f"site init JSON after {context} brand notes must be a string")
+
+    checklist = payload.get("auditChecklist")
+    if not isinstance(checklist, dict) or len(checklist) != 9:
+        raise SystemExit(f"site init JSON after {context} auditChecklist must contain all nine audit categories")
+    if any(row.get("status") != "todo" for row in checklist.values() if isinstance(row, dict)):
+        raise SystemExit(f"site init JSON after {context} checklist rows should start in todo state")
+    if "Visitor compares plans" not in checklist.get("ux-flow", {}).get("notes", ""):
+        raise SystemExit(f"site init JSON after {context} UX flow notes should include the provided flow")
+
+    readiness = payload.get("mcpReadiness")
+    if not isinstance(readiness, dict):
+        raise SystemExit(f"site init JSON after {context} mcpReadiness must be an object")
+    expected_readiness = {
+        "github": "required",
+        "browser": "required",
+        "deploy": "required",
+        "figma": "unused",
+        "cms": "unused",
+        "database": "unused",
+    }
+    for key, expected in expected_readiness.items():
+        if readiness.get(key) != expected:
+            raise SystemExit(f"site init JSON after {context} MCP readiness {key} differs from expected project init workspace")
+
+    tasks = payload.get("refactorTasks")
+    if tasks != []:
+        raise SystemExit(f"site init JSON after {context} refactorTasks should start empty")
+
+    evidence = payload.get("implementationEvidence")
+    if not isinstance(evidence, dict):
+        raise SystemExit(f"site init JSON after {context} implementationEvidence must be an object")
+    if evidence.get("executedWork") or evidence.get("verificationResults"):
+        raise SystemExit(f"site init JSON after {context} implementation evidence should start empty")
+    if len(evidence.get("remainingRisks", [])) != 3:
+        raise SystemExit(f"site init JSON after {context} remaining risks should use the default risk set")
+    if not any("--mcp-check --probes --json" in item for item in evidence.get("nextActions", [])):
+        raise SystemExit(f"site init JSON after {context} nextActions should include the MCP probe command")
+    if not isinstance(payload.get("reportNotes"), str) or "design-ai site --init" not in payload["reportNotes"]:
+        raise SystemExit(f"site init JSON after {context} reportNotes must preserve init provenance")
 
 
 def assert_site_tasks_json(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -9946,6 +10118,7 @@ def run_self_test() -> None:
         "site <bundle-dir> --bundle-compare other-bundle-dir [--json] | "
         "site <bundle-dir> --bundle-handoff [--json] | "
         "site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | "
+        "site --init --name name --live-url url [--out file] | "
         "site --sample [--out file] | site --prompt-list [--json]"
     )
     expect_self_test_failure(
@@ -10615,6 +10788,8 @@ def run_self_test() -> None:
     )
     site_sample_cmd = ["design-ai", "site", "--sample"]
     assert_site_sample_json(passing_site_sample_json(), context=context, cmd=site_sample_cmd)
+    site_init_cmd = ["design-ai", "site", "--init", "--name", "Company marketing site", "--live-url", "https://example.com"]
+    assert_site_init_json(passing_site_init_json(), context=context, cmd=site_init_cmd)
     site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
     assert_site_tasks_json(passing_site_tasks_json(), context=context, cmd=site_tasks_cmd)
     site_prompt_cmd = ["design-ai", "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"]
@@ -11028,6 +11203,17 @@ def run_self_test() -> None:
             cmd=site_sample_cmd,
         ),
         expected="sample workspace",
+        scope="smoke assertions",
+    )
+    stale_site_init_payload = json.loads(passing_site_init_json())
+    stale_site_init_payload["siteProfile"]["pages"] = ["/"]
+    expect_self_test_failure(
+        lambda: assert_site_init_json(
+            json.dumps(stale_site_init_payload),
+            context=context,
+            cmd=site_init_cmd,
+        ),
+        expected="project init workspace",
         scope="smoke assertions",
     )
     missing_site_sample_task_payload = json.loads(passing_site_sample_json())

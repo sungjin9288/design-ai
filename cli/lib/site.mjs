@@ -17,6 +17,20 @@ export const SITE_OPTIONS = [
   "--help",
   "--json",
   "--stdin",
+  "--init",
+  "--name",
+  "--live-url",
+  "--repo-url",
+  "--local-path",
+  "--figma-url",
+  "--brand-notes",
+  "--deploy",
+  "--sentry",
+  "--cms",
+  "--database",
+  "--page",
+  "--flow",
+  "--viewport",
   "--sample",
   "--tasks",
   "--bundle",
@@ -240,10 +254,34 @@ if (SITE_PROMPT_TEMPLATE_IDS.join("\n") !== SITE_PROMPT_TEMPLATES.map((template)
   throw new Error("SITE_PROMPT_TEMPLATES must match SITE_PROMPT_TEMPLATE_IDS order");
 }
 
+function readOptionValue(args, index, flag) {
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${flag} requires a value`);
+  }
+  return value;
+}
+
 export function parseSiteArgs(args) {
   const out = {
     target: "",
     stdin: false,
+    init: false,
+    initProfile: {
+      name: "",
+      liveUrl: "",
+      repoUrl: "",
+      localPath: "",
+      figmaUrl: "",
+      brandNotes: "",
+      deployProvider: "none",
+      sentryProject: "",
+      cms: "none",
+      database: "none",
+      pages: [],
+      userFlows: [],
+      viewports: [],
+    },
     sample: false,
     tasks: false,
     bundle: false,
@@ -279,6 +317,63 @@ export function parseSiteArgs(args) {
       out.json = true;
     } else if (arg === "--stdin") {
       out.stdin = true;
+    } else if (arg === "--init") {
+      out.init = true;
+    } else if (arg === "--name") {
+      out.initProfile.name = readOptionValue(args, i, "--name");
+      i += 1;
+    } else if (arg === "--live-url") {
+      out.initProfile.liveUrl = readOptionValue(args, i, "--live-url");
+      i += 1;
+    } else if (arg === "--repo-url") {
+      out.initProfile.repoUrl = readOptionValue(args, i, "--repo-url");
+      i += 1;
+    } else if (arg === "--local-path") {
+      out.initProfile.localPath = readOptionValue(args, i, "--local-path");
+      i += 1;
+    } else if (arg === "--figma-url") {
+      out.initProfile.figmaUrl = readOptionValue(args, i, "--figma-url");
+      i += 1;
+    } else if (arg === "--brand-notes") {
+      out.initProfile.brandNotes = readOptionValue(args, i, "--brand-notes");
+      i += 1;
+    } else if (arg === "--deploy") {
+      const value = readOptionValue(args, i, "--deploy");
+      if (!DEPLOY_OPTIONS.includes(value)) {
+        throw new Error(`--deploy must be one of: ${DEPLOY_OPTIONS.join(", ")}`);
+      }
+      out.initProfile.deployProvider = value;
+      i += 1;
+    } else if (arg === "--sentry") {
+      out.initProfile.sentryProject = readOptionValue(args, i, "--sentry");
+      i += 1;
+    } else if (arg === "--cms") {
+      const value = readOptionValue(args, i, "--cms");
+      if (!CMS_OPTIONS.includes(value)) {
+        throw new Error(`--cms must be one of: ${CMS_OPTIONS.join(", ")}`);
+      }
+      out.initProfile.cms = value;
+      i += 1;
+    } else if (arg === "--database") {
+      const value = readOptionValue(args, i, "--database");
+      if (!DATABASE_OPTIONS.includes(value)) {
+        throw new Error(`--database must be one of: ${DATABASE_OPTIONS.join(", ")}`);
+      }
+      out.initProfile.database = value;
+      i += 1;
+    } else if (arg === "--page") {
+      out.initProfile.pages.push(readOptionValue(args, i, "--page"));
+      i += 1;
+    } else if (arg === "--flow") {
+      out.initProfile.userFlows.push(readOptionValue(args, i, "--flow"));
+      i += 1;
+    } else if (arg === "--viewport") {
+      const value = readOptionValue(args, i, "--viewport");
+      if (!VIEWPORT_OPTIONS.includes(value)) {
+        throw new Error(`--viewport must be one of: ${VIEWPORT_OPTIONS.join(", ")}`);
+      }
+      out.initProfile.viewports.push(value);
+      i += 1;
     } else if (arg === "--sample") {
       out.sample = true;
     } else if (arg === "--tasks") {
@@ -350,6 +445,36 @@ export function parseSiteArgs(args) {
   if (sources.length > 1) {
     throw new Error("Use either a workspace JSON file path or --stdin, not both");
   }
+  const hasInitProfileFields = Boolean(
+    out.initProfile.name
+      || out.initProfile.liveUrl
+      || out.initProfile.repoUrl
+      || out.initProfile.localPath
+      || out.initProfile.figmaUrl
+      || out.initProfile.brandNotes
+      || out.initProfile.sentryProject
+      || out.initProfile.deployProvider !== "none"
+      || out.initProfile.cms !== "none"
+      || out.initProfile.database !== "none"
+      || out.initProfile.pages.length > 0
+      || out.initProfile.userFlows.length > 0
+      || out.initProfile.viewports.length > 0,
+  );
+  if (hasInitProfileFields && !out.init) {
+    throw new Error("Use --name, --live-url, --repo-url, --local-path, --figma-url, --brand-notes, --deploy, --sentry, --cms, --database, --page, --flow, or --viewport only with --init");
+  }
+  if (out.init && sources.length > 0) {
+    throw new Error("Use --init without a workspace JSON file path or --stdin");
+  }
+  if (out.init && !out.initProfile.name.trim()) {
+    throw new Error("--init requires --name");
+  }
+  if (out.init && !out.initProfile.liveUrl.trim()) {
+    throw new Error("--init requires --live-url");
+  }
+  if (out.init && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
+    throw new Error("Use --init without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
+  }
   if (out.sample && sources.length > 0) {
     throw new Error("Use --sample without a workspace JSON file path or --stdin");
   }
@@ -410,8 +535,8 @@ export function parseSiteArgs(args) {
   if (out.yes && !out.bundleRepair) {
     throw new Error("Use --yes only with --bundle-repair");
   }
-  if (out.sample && (out.tasks || out.bundle)) {
-    throw new Error("Use only one generated workspace mode: --sample, --tasks, or --bundle");
+  if ([out.init, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
+    throw new Error("Use only one generated workspace mode: --init, --sample, --tasks, or --bundle");
   }
   if (out.sample && out.strict) {
     throw new Error("Use --sample without --strict; validate the generated file in a separate command");
@@ -441,8 +566,8 @@ export function parseSiteArgs(args) {
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
   const { index, ...parsed } = out;
@@ -646,6 +771,126 @@ export function createSampleSiteWorkspace() {
     },
     reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
   };
+}
+
+function uniqueNormalizedStrings(items, fallback = []) {
+  const seen = new Set();
+  const result = [];
+  const normalized = normalizeStringArray(items);
+  const source = normalized.length > 0 ? normalized : normalizeStringArray(fallback);
+  for (const item of source) {
+    const key = item.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
+function slugifySiteId(value) {
+  const slug = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "website-project";
+}
+
+function buildInitAuditChecklist(profile) {
+  const pageList = profile.pages.slice(0, 4).join(", ");
+  const flowList = profile.userFlows.slice(0, 3).join("; ");
+  return Object.fromEntries(
+    AUDIT_CATEGORIES.map((category) => {
+      const notes = {
+        "visual-design": `Review layout, typography, color, spacing, hierarchy, and CTA treatment across ${pageList}.`,
+        "ux-flow": `Map and test the primary flow(s): ${flowList}.`,
+        responsive: `Verify configured viewports: ${profile.viewports.join(", ")}.`,
+        accessibility: "Check keyboard navigation, focus indicators, semantic structure, ARIA usage, and contrast before implementation handoff.",
+        performance: "Run target-repo or deployment performance checks after the first visual/UX pass.",
+        seo: "Inspect title, description, canonical, OG metadata, sitemap exposure, and heading order for priority pages.",
+        "technical-quality": "Inspect target repo architecture before editing; preserve existing components, tokens, styling conventions, and verification commands.",
+        "runtime-issues": "Use Browser/Chrome DevTools or deployment logs to check console errors, network failures, hydration issues, and broken assets.",
+        "content-quality": "Review copy clarity, information architecture, proof points, trust signals, Korean/English tone, and CTA wording.",
+      }[category.id];
+      return [
+        category.id,
+        {
+          status: "todo",
+          notes,
+          findings: [],
+        },
+      ];
+    }),
+  );
+}
+
+function buildInitMcpReadiness(profile) {
+  const hasRepoReference = Boolean(profile.repoUrl || profile.localPath);
+  return {
+    github: hasRepoReference ? "required" : "optional",
+    figma: profile.figmaUrl ? "optional" : "unused",
+    browser: "required",
+    chromeDevtools: "optional",
+    deploy: profile.deployProvider && profile.deployProvider !== "none" ? "required" : "optional",
+    sentry: profile.sentryProject ? "optional" : "unused",
+    database: profile.database && profile.database !== "none" ? "optional" : "unused",
+    cms: profile.cms && profile.cms !== "none" ? "optional" : "unused",
+    collaboration: "optional",
+    research: "optional",
+  };
+}
+
+export function createSiteWorkspaceFromInitOptions(options = {}) {
+  const name = String(options.name || "").trim();
+  const liveUrl = String(options.liveUrl || "").trim();
+  if (!name) {
+    throw new Error("--init requires --name");
+  }
+  if (!liveUrl) {
+    throw new Error("--init requires --live-url");
+  }
+
+  const profile = {
+    id: slugifySiteId(name),
+    name,
+    liveUrl,
+    repoUrl: String(options.repoUrl || "").trim(),
+    localPath: String(options.localPath || "").trim(),
+    figmaUrl: String(options.figmaUrl || "").trim(),
+    brandNotes: String(options.brandNotes || "").trim(),
+    deployProvider: normalizeEnum(options.deployProvider, DEPLOY_OPTIONS, "none"),
+    sentryProject: String(options.sentryProject || "").trim(),
+    cms: normalizeEnum(options.cms, CMS_OPTIONS, "none"),
+    database: normalizeEnum(options.database, DATABASE_OPTIONS, "none"),
+    pages: uniqueNormalizedStrings(options.pages, ["/"]),
+    userFlows: uniqueNormalizedStrings(options.userFlows, [
+      "Visitor reviews the site and completes the primary conversion flow",
+    ]),
+    viewports: uniqueNormalizedStrings(options.viewports, ["desktop", "tablet", "mobile"])
+      .filter((viewport) => VIEWPORT_OPTIONS.includes(viewport)),
+  };
+  if (profile.viewports.length === 0) {
+    profile.viewports = ["desktop", "tablet", "mobile"];
+  }
+
+  return normalizeSiteWorkspace({
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    siteProfile: profile,
+    auditChecklist: buildInitAuditChecklist(profile),
+    mcpReadiness: buildInitMcpReadiness(profile),
+    refactorTasks: [],
+    implementationEvidence: {
+      executedWork: [],
+      verificationResults: [],
+      remainingRisks: [...DEFAULT_IMPLEMENTATION_RISKS],
+      nextActions: [
+        "Run `design-ai site <workspace.json> --mcp-check --probes --json` before target-repo implementation.",
+        "Add audit findings in the Website Console, then run `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`.",
+      ],
+    },
+    reportNotes: "Generated by `design-ai site --init` for real-project Website Improvement intake. Actual target repo code changes happen outside this design-ai repository.",
+  });
 }
 
 function normalizeEnum(value, allowed, fallback) {

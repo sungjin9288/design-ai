@@ -941,6 +941,26 @@ RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --init`",
+        "design-ai site --init",
+        "site --init",
+    ),
+    (
+        "Website Console project init workspace",
+        "Website Improvement project init workspace",
+        "site project init workspace",
+        "Website Console real-project workspace",
+        "Website Console project init workspace 생성",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_PROMPT_LIST_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --prompt-list --json`",
@@ -2968,6 +2988,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "workspace restore-backups package smoke phrase",
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
+    "site init package smoke phrase",
     "site prompt-list package smoke phrase",
     "site mcp-check package smoke phrase",
     "site mcp-plan package smoke phrase",
@@ -3259,6 +3280,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site sample package smoke phrase",
         RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site init package smoke phrase",
+        RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site prompt-list package smoke phrase",
@@ -3997,6 +4022,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --sample` Website Console sample workspace coverage,
+`design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness check,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command,
@@ -4101,6 +4127,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
+`design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths도 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
 `design-ai site --stdin --mcp-check --json` Website Console MCP readiness 검증도 확인하고,
 `design-ai site --stdin --mcp-check --probes --json` Website Console MCP readiness probe JSON `--out` file 저장 확인, shared MCP probe output-file smoke assertions, MCP check 내장 probe next-step commands, MCP check 내장 command 실행 smoke coverage, human MCP check probe command guidance and output-file smoke coverage plus MCP check 내장 human report output command도 확인하고,
@@ -4489,6 +4516,9 @@ Product readiness covers Website Console handoff bundle compare through `design-
             ).replace(
                 "next-action human checklist output-file persistence in installed-bin and one-shot paths",
                 "next-action human checklist output-file persistence in packaged paths",
+            ).replace(
+                "Website Console project init workspace coverage in installed-bin and one-shot paths",
+                "Website Console project init workspace coverage in packaged paths",
             ).replace(
                 "checkpoint summaries in installed-bin and one-shot paths",
                 "checkpoint summaries in packaged paths",
