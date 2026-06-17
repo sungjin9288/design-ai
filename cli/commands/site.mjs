@@ -17,6 +17,7 @@ import {
   buildSitePromptBundle,
   buildSiteReport,
   buildSiteWorkflowGraph,
+  createSiteWorkspaceFromInitOptions,
   createSampleSiteWorkspace,
   formatSiteJson,
   formatSiteBundleCompareHuman,
@@ -45,6 +46,7 @@ import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
+  console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
@@ -63,6 +65,29 @@ function printHelp() {
   console.log("Validates Website Improvement Console JSON exports and turns them into local handoff artifacts.\n");
   console.log("Options:");
   console.log("  --stdin     Read workspace JSON from standard input");
+  console.log("  --init      Generate a real-project Website Improvement workspace JSON from CLI fields");
+  console.log("  --name text Site name for --init");
+  console.log("  --live-url url");
+  console.log("              Live website URL for --init");
+  console.log("  --repo-url url");
+  console.log("              Target website repository URL for --init; this repo is not mutated");
+  console.log("  --local-path path");
+  console.log("              Target website local path for --init; this repo is not mutated");
+  console.log("  --figma-url url");
+  console.log("              Figma reference URL for --init");
+  console.log("  --brand-notes text");
+  console.log("              Design system, brand, voice, or constraint notes for --init");
+  console.log("  --deploy provider");
+  console.log("              Deployment provider for --init: vercel, netlify, cloudflare, other, none");
+  console.log("  --sentry project");
+  console.log("              Sentry project reference for --init");
+  console.log("  --cms kind  CMS for --init: sanity, contentful, wordpress, shopify, none, other");
+  console.log("  --database kind");
+  console.log("              Database for --init: supabase, neon, postgres, none, other");
+  console.log("  --page path Add a priority page for --init; repeatable");
+  console.log("  --flow text Add a key user flow for --init; repeatable");
+  console.log("  --viewport kind");
+  console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
   console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
   console.log("  --prompt-list");
   console.log("              List Website Improvement prompt template ids and intended use");
@@ -94,10 +119,11 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
-  console.log("  --out file  Write --json, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --init, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
+  console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow \"Visitor compares plans and starts signup\" --out website-workspace.json");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
@@ -179,6 +205,21 @@ export async function runSite(args) {
   const parsed = parseSiteArgs(args);
   if (parsed.help) {
     printHelp();
+    return;
+  }
+
+  if (parsed.init) {
+    const content = `${JSON.stringify(createSiteWorkspaceFromInitOptions(parsed.initProfile), null, 2)}\n`;
+    if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
     return;
   }
 

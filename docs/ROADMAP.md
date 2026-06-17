@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 550 — Website Project Init Workspace Generation (unreleased)
+
+`design-ai site --init` now creates a real-project Website Improvement workspace JSON from CLI fields so company dogfood can start from actual site metadata instead of editing the sample fixture by hand.
+
+### Added
+- Added `design-ai site --init --name ... --live-url ...` with optional repo, local path, Figma, brand notes, deploy provider, Sentry, CMS, database, repeatable page, repeatable flow, repeatable viewport, `--out`, and `--force` support.
+- Added deterministic workspace generation for Site Profile, audit checklist notes, MCP readiness, implementation evidence placeholders, and report provenance while keeping refactor tasks empty until audit findings exist.
+- Added unit coverage for parser validation, generated workspace shape, CLI stdout output, CLI file output, and help text.
+- Added packed-tarball smoke coverage for installed-bin and one-shot `npm exec --package` paths.
+
+### Impact
+- Operators can bootstrap a company website improvement workspace directly from known project facts.
+- The command remains deterministic/local and does not call external MCPs, mutate target website repos, add dependencies, or run automatic website audits.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run release:self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 549 — Apply-Plan Decision Manual Apply Status Tones (unreleased)
 
 `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` stage-selection decisions now expose manual-apply status tone fields for output artifacts in the selected optional preview branch. Phase 548 added display labels; this phase lets wrappers style apply badges without maintaining their own status-to-tone map.

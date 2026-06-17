@@ -26,6 +26,7 @@ import {
   buildSitePromptBundle,
   buildSiteReport,
   buildSiteWorkflowGraph,
+  createSiteWorkspaceFromInitOptions,
   createSampleSiteWorkspace,
   SITE_BUNDLE_FILES,
   SITE_BUNDLE_CHECKSUM_FILES,
@@ -93,6 +94,22 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.deepEqual(parseSiteArgs(["workspace.json", "--strict", "--json"]), {
     target: "workspace.json",
     stdin: false,
+    init: false,
+    initProfile: {
+      name: "",
+      liveUrl: "",
+      repoUrl: "",
+      localPath: "",
+      figmaUrl: "",
+      brandNotes: "",
+      deployProvider: "none",
+      sentryProject: "",
+      cms: "none",
+      database: "none",
+      pages: [],
+      userFlows: [],
+      viewports: [],
+    },
     sample: false,
     tasks: false,
     bundle: false,
@@ -121,6 +138,22 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.deepEqual(parseSiteArgs(["--stdin", "--report", "--out", "handoff.md", "--force"]), {
     target: "",
     stdin: true,
+    init: false,
+    initProfile: {
+      name: "",
+      liveUrl: "",
+      repoUrl: "",
+      localPath: "",
+      figmaUrl: "",
+      brandNotes: "",
+      deployProvider: "none",
+      sentryProject: "",
+      cms: "none",
+      database: "none",
+      pages: [],
+      userFlows: [],
+      viewports: [],
+    },
     sample: false,
     tasks: false,
     bundle: false,
@@ -169,8 +202,83 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json", "--out", "repair.json"]).outPath, "repair.json");
 });
 
+test("parseSiteArgs supports Website Improvement project init fields", () => {
+  const parsed = parseSiteArgs([
+    "--init",
+    "--name",
+    "Company marketing site",
+    "--live-url",
+    "https://example.com",
+    "--repo-url",
+    "https://github.com/acme/site",
+    "--local-path",
+    "/Users/sungjin/dev/acme-site",
+    "--figma-url",
+    "https://figma.com/file/acme",
+    "--brand-notes",
+    "Korean B2B SaaS tone",
+    "--deploy",
+    "vercel",
+    "--sentry",
+    "acme/site",
+    "--cms",
+    "sanity",
+    "--database",
+    "supabase",
+    "--page",
+    "/",
+    "--page",
+    "/pricing",
+    "--flow",
+    "Visitor compares plans and starts signup",
+    "--flow",
+    "Buyer checks proof before contacting sales",
+    "--viewport",
+    "desktop",
+    "--viewport",
+    "mobile",
+    "--out",
+    "website-workspace.json",
+    "--force",
+  ]);
+
+  assert.equal(parsed.init, true);
+  assert.equal(parsed.outPath, "website-workspace.json");
+  assert.equal(parsed.force, true);
+  assert.deepEqual(parsed.initProfile, {
+    name: "Company marketing site",
+    liveUrl: "https://example.com",
+    repoUrl: "https://github.com/acme/site",
+    localPath: "/Users/sungjin/dev/acme-site",
+    figmaUrl: "https://figma.com/file/acme",
+    brandNotes: "Korean B2B SaaS tone",
+    deployProvider: "vercel",
+    sentryProject: "acme/site",
+    cms: "sanity",
+    database: "supabase",
+    pages: ["/", "/pricing"],
+    userFlows: [
+      "Visitor compares plans and starts signup",
+      "Buyer checks proof before contacting sales",
+    ],
+    viewports: ["desktop", "mobile"],
+  });
+});
+
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--stdin"]), /either a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--init"]), /--init requires --name/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company"]), /--init requires --live-url/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--init", "--name", "Company", "--live-url", "https://example.com"]), /Use --init without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--init", "--name", "Company", "--live-url", "https://example.com"]), /Use --init without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--name", "Company"]), /only with --init/);
+  assert.throws(() => parseSiteArgs(["--init", "--name"]), /--name requires a value/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--deploy", "bad"]), /--deploy must be one of/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--cms", "bad"]), /--cms must be one of/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--database", "bad"]), /--database must be one of/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--viewport", "watch"]), /--viewport must be one of/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--sample"]), /Use --init without --sample/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--mcp-check"]), /Use --init without --sample/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
@@ -243,6 +351,57 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
   assert.throws(() => parseSiteArgs(["workspace.json", "extra.json"]), /Unexpected argument/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--jsn"]), /Did you mean `--json`\?/);
+});
+
+test("createSiteWorkspaceFromInitOptions creates a valid real-project workspace", () => {
+  const workspace = createSiteWorkspaceFromInitOptions({
+    name: "Company marketing site",
+    liveUrl: "https://example.com",
+    repoUrl: "https://github.com/acme/site",
+    localPath: "/Users/sungjin/dev/acme-site",
+    figmaUrl: "https://figma.com/file/acme",
+    brandNotes: "Korean B2B SaaS tone",
+    deployProvider: "vercel",
+    sentryProject: "acme/site",
+    cms: "sanity",
+    database: "supabase",
+    pages: ["/", "/pricing", "/pricing"],
+    userFlows: ["Visitor compares plans and starts signup"],
+    viewports: ["desktop", "mobile"],
+  });
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "company.json" });
+
+  assert.equal(workspace.version, 1);
+  assert.match(workspace.updatedAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(workspace.siteProfile.id, "company-marketing-site");
+  assert.equal(workspace.siteProfile.name, "Company marketing site");
+  assert.equal(workspace.siteProfile.liveUrl, "https://example.com");
+  assert.deepEqual(workspace.siteProfile.pages, ["/", "/pricing"]);
+  assert.deepEqual(workspace.siteProfile.viewports, ["desktop", "mobile"]);
+  assert.equal(workspace.mcpReadiness.github, "required");
+  assert.equal(workspace.mcpReadiness.browser, "required");
+  assert.equal(workspace.mcpReadiness.deploy, "required");
+  assert.equal(workspace.mcpReadiness.figma, "optional");
+  assert.equal(workspace.mcpReadiness.cms, "optional");
+  assert.equal(workspace.mcpReadiness.database, "optional");
+  assert.deepEqual(workspace.refactorTasks, []);
+  assert.match(workspace.auditChecklist["ux-flow"].notes, /Visitor compares plans/);
+  assert.match(workspace.reportNotes, /design-ai site --init/);
+  assert.equal(summary.status, "pass");
+  assert.equal(summary.counts.pages, 2);
+  assert.equal(summary.counts.refactorTasks, 0);
+
+  const minimal = createSiteWorkspaceFromInitOptions({
+    name: "Internal site",
+    liveUrl: "https://internal.example.com",
+  });
+  assert.deepEqual(minimal.siteProfile.pages, ["/"]);
+  assert.deepEqual(minimal.siteProfile.viewports, ["desktop", "tablet", "mobile"]);
+  assert.equal(minimal.mcpReadiness.github, "optional");
+  assert.equal(minimal.mcpReadiness.deploy, "optional");
+  assert.equal(minimal.mcpReadiness.figma, "unused");
+  assert.equal(minimal.mcpReadiness.cms, "unused");
+  assert.equal(minimal.mcpReadiness.database, "unused");
 });
 
 test("formatSitePromptTemplates lists all Website Improvement prompt templates", () => {
@@ -1811,6 +1970,66 @@ test("runSite emits and writes a valid sample workspace", async () => {
   });
 });
 
+test("runSite emits and writes a valid project init workspace", async () => {
+  await withTempDir(async (dir) => {
+    const outFile = path.join(dir, "company-workspace.json");
+
+    const initOutput = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Company marketing site",
+      "--live-url",
+      "https://example.com",
+      "--repo-url",
+      "https://github.com/acme/site",
+      "--page",
+      "/",
+      "--page",
+      "/pricing",
+      "--flow",
+      "Visitor compares plans and starts signup",
+      "--viewport",
+      "desktop",
+      "--viewport",
+      "mobile",
+    ]));
+    const workspace = JSON.parse(initOutput.stdout);
+    assert.equal(workspace.siteProfile.name, "Company marketing site");
+    assert.equal(workspace.siteProfile.id, "company-marketing-site");
+    assert.deepEqual(workspace.siteProfile.pages, ["/", "/pricing"]);
+    assert.deepEqual(workspace.siteProfile.viewports, ["desktop", "mobile"]);
+    assert.equal(workspace.mcpReadiness.github, "required");
+    assert.equal(workspace.mcpReadiness.browser, "required");
+    assert.deepEqual(workspace.refactorTasks, []);
+    assert.equal(initOutput.exitCode, undefined);
+
+    const writeOutput = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Company marketing site",
+      "--live-url",
+      "https://example.com",
+      "--repo-url",
+      "https://github.com/acme/site",
+      "--deploy",
+      "vercel",
+      "--cms",
+      "none",
+      "--database",
+      "none",
+      "--out",
+      outFile,
+    ]));
+    assert.match(writeOutput.stdout, /Wrote /);
+
+    const report = buildSiteReport({ target: outFile });
+    assert.equal(report.summary.status, "pass");
+    assert.equal(report.summary.site.name, "Company marketing site");
+    assert.equal(report.summary.counts.refactorTasks, 0);
+    assert.ok(report.summary.issues.some((issue) => issue.id === "workspace-ready"));
+  });
+});
+
 test("runSite emits and writes workspace JSON with generated refactor tasks", async () => {
   await withTempDir(async (dir) => {
     const file = path.join(dir, "workspace.json");
@@ -1967,6 +2186,7 @@ test("runSite strict exits non-zero on warnings", async () => {
 test("runSite prints command-specific help", async () => {
   const output = await captureConsole(() => runSite(["--help"]));
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
+  assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -1979,11 +2199,17 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-handoff \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /--init\s+Generate a real-project Website Improvement workspace JSON from CLI fields/);
+  assert.match(output.stdout, /--name text Site name for --init/);
+  assert.match(output.stdout, /--live-url url/);
+  assert.match(output.stdout, /--page path Add a priority page for --init; repeatable/);
+  assert.match(output.stdout, /--viewport kind/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
   assert.match(output.stdout, /--probes\s+Add read-only local URL\/path\/tool-handoff probes/);
   assert.match(output.stdout, /--mcp-plan\s+Generate a Markdown or JSON MCP readiness action plan/);
+  assert.match(output.stdout, /design-ai site --init --name "Company marketing site"/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
