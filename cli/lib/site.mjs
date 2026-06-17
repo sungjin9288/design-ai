@@ -169,6 +169,39 @@ export const SITE_PROMPT_TEMPLATE_IDS = [
   "handoff-report",
 ];
 
+const SITE_TARGET_REPO_EXECUTION_CHECKLIST = [
+  {
+    id: "confirm-target-repo",
+    label: "Confirm target repo working directory",
+    required: true,
+    evidence: "State the target repo path and confirm it is not the design-ai repo before editing.",
+  },
+  {
+    id: "inspect-architecture",
+    label: "Inspect existing architecture and design system",
+    required: true,
+    evidence: "Name the routing, component, styling, token, and test/build surfaces inspected before implementation.",
+  },
+  {
+    id: "apply-focused-task",
+    label: "Apply one focused Website Improvement task",
+    required: true,
+    evidence: "Identify the completed task id/title, changed files, and why the scope stayed limited.",
+  },
+  {
+    id: "verify-quality-gates",
+    label: "Run target repo quality gates",
+    required: true,
+    evidence: "Record lint/typecheck/build/test results plus browser, viewport, accessibility, and deployment checks that were available.",
+  },
+  {
+    id: "record-handoff-evidence",
+    label: "Record implementation evidence and remaining risks",
+    required: true,
+    evidence: "Return executed work, verification results, remaining risks, next actions, and the bundle digest used.",
+  },
+];
+
 export const SITE_BUNDLE_FILES = [
   "README.md",
   "summary.json",
@@ -2566,8 +2599,28 @@ export function formatSiteWorkflowGraphMarkdown(graph) {
   ].join("\n");
 }
 
+function buildSiteBundleHandoffGuidance(bundleStatus) {
+  const strictCommand = "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md";
+  const draftCommand = "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md";
+  const verifyCommand = "design-ai site <bundle-dir> --bundle-check --strict --json";
+  const strictReady = bundleStatus === "pass";
+  return {
+    strictReady,
+    readiness: strictReady ? "ready-for-strict-handoff" : "review-warnings-before-strict-handoff",
+    recommendedCommand: strictReady ? strictCommand : draftCommand,
+    strictCommand,
+    draftCommand,
+    verifyCommand,
+    note: strictReady
+      ? "Use the strict handoff command before target-repo implementation."
+      : "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
+    executionChecklist: SITE_TARGET_REPO_EXECUTION_CHECKLIST,
+  };
+}
+
 function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeReport, filePaths) {
   const commandTarget = bundleSummary.source === "stdin" ? "<workspace.json>" : bundleSummary.source;
+  const handoff = bundleSummary.handoff;
   return [
     `# Website improvement handoff bundle: ${workspace.siteProfile.name}`,
     "",
@@ -2603,10 +2656,22 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeRepo
     `- MCP ready: ${mcpReport.counts.ready}/${mcpReport.counts.total}`,
     `- MCP probes: ${mcpProbeReport.pass}/${mcpProbeReport.count} passing`,
     "",
+    "## Handoff Readiness",
+    `- Strict-ready: ${handoff.strictReady ? "yes" : "no"}`,
+    `- Readiness: ${handoff.readiness}`,
+    `- Recommended command: \`${handoff.recommendedCommand}\``,
+    `- Strict command: \`${handoff.strictCommand}\``,
+    `- Draft command: \`${handoff.draftCommand}\``,
+    `- Verify command: \`${handoff.verifyCommand}\``,
+    `- Note: ${handoff.note}`,
+    "",
+    "## Target Repo Execution Checklist",
+    ...handoff.executionChecklist.map((item) => `- [ ] ${item.label}: ${item.evidence}`),
+    "",
     "## Suggested Sequence",
     "1. Read `summary.json`, `mcp-check.json`, `mcp-probes.json`, and `mcp-action-plan.md` first.",
-    "2. Fix required MCP readiness or probe gaps, then re-run the strict gate.",
-    "3. Run `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md` to generate the target-repo Codex prompt.",
+    "2. Run `design-ai site <bundle-dir> --bundle-check --strict --json`; if it exits non-zero, review the warnings or failures before implementation.",
+    "3. Run the recommended handoff command above. Use the draft command only for planning while readiness warnings remain.",
     "4. Use `codex-implementation.md` in the target website repo for the top-priority task when you need the raw task prompt.",
     "5. Use `website-prompts.md` for deeper Codex/Claude review, visual QA, deployment verification, competitor research, and final handoff.",
     "6. Record target-repo executed work, verification results, remaining risks, and next actions in `website-handoff.md` after implementation.",
@@ -2659,6 +2724,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
   const mcpProbeReport = buildSiteMcpProbeReport(taskWorkspace);
   const filePaths = SITE_BUNDLE_FILES;
   const bundleStatus = combineStatuses(mcpReport.status, mcpProbeReport.status);
+  const handoffGuidance = buildSiteBundleHandoffGuidance(bundleStatus);
   const bundleSummary = {
     version: 1,
     generatedAt: taskWorkspace.updatedAt,
@@ -2692,6 +2758,7 @@ export function buildSiteHandoffBundle(workspace, summary = {}) {
       },
     },
     files: filePaths,
+    handoff: handoffGuidance,
     boundaries: [
       "deterministic-local",
       "no-external-mcp-calls",
@@ -3082,6 +3149,7 @@ function summarizeBundlePayload(summaryPayload) {
   const mcp = normalizeObject(summaryPayload?.mcp);
   const probeCounts = normalizeObject(mcp.probeCounts);
   const checksums = normalizeObject(summaryPayload?.checksums);
+  const handoff = normalizeObject(summaryPayload?.handoff);
   return {
     source: String(summaryPayload?.source || ""),
     status: String(summaryPayload?.status || "unknown"),
@@ -3101,7 +3169,32 @@ function summarizeBundlePayload(summaryPayload) {
     checksumAlgorithm: String(checksums.algorithm || ""),
     checksumBundleDigest: String(checksums.bundleDigest || ""),
     checksumFiles: normalizeObject(checksums.files),
+    handoffExecutionChecklist: Array.isArray(handoff.executionChecklist)
+      ? handoff.executionChecklist.map((item) => normalizeObject(item))
+      : [],
   };
+}
+
+function validateBundleHandoffExecutionChecklist(summary, issues) {
+  const expectedIds = SITE_TARGET_REPO_EXECUTION_CHECKLIST.map((item) => item.id);
+  const actual = Array.isArray(summary.handoffExecutionChecklist) ? summary.handoffExecutionChecklist : [];
+  const actualIds = actual.map((item) => String(item.id || ""));
+  if (!arraysEqual(actualIds, expectedIds)) {
+    addIssue(issues, "fail", "bundle-handoff-execution-checklist", "summary.json handoff.executionChecklist must match the target-repo execution checklist contract");
+    return;
+  }
+  for (const [index, expected] of SITE_TARGET_REPO_EXECUTION_CHECKLIST.entries()) {
+    const actualItem = actual[index] || {};
+    if (actualItem.label !== expected.label) {
+      addIssue(issues, "fail", `bundle-handoff-execution-checklist-${expected.id}-label`, `summary.json handoff.executionChecklist.${expected.id}.label changed`);
+    }
+    if (actualItem.required !== expected.required) {
+      addIssue(issues, "fail", `bundle-handoff-execution-checklist-${expected.id}-required`, `summary.json handoff.executionChecklist.${expected.id}.required changed`);
+    }
+    if (actualItem.evidence !== expected.evidence) {
+      addIssue(issues, "fail", `bundle-handoff-execution-checklist-${expected.id}-evidence`, `summary.json handoff.executionChecklist.${expected.id}.evidence changed`);
+    }
+  }
 }
 
 function summarizeBundleBoundaries(summaryPayload) {
@@ -3184,6 +3277,7 @@ export function buildSiteBundleCheckReport({
     if (!arraysEqual(summary.files, SITE_BUNDLE_FILES)) {
       addIssue(issues, "fail", "bundle-summary-files", "summary.json files must match the expected handoff bundle manifest");
     }
+    validateBundleHandoffExecutionChecklist(summary, issues);
     if (summaryPayload.implementationEvidence !== undefined) {
       const evidenceCounts = normalizeObject(summaryPayload.implementationEvidence);
       if (summaryPayload.implementationEvidence === null || typeof summaryPayload.implementationEvidence !== "object" || Array.isArray(summaryPayload.implementationEvidence)) {
@@ -3342,6 +3436,8 @@ export function buildSiteBundleCheckReport({
     addBundleMarkdownIssue(directory, "README.md", [
       "Website improvement handoff bundle",
       "does not call external MCPs",
+      "Target Repo Execution Checklist",
+      "Confirm target repo working directory",
     ], issues);
     addBundleMarkdownIssue(directory, "mcp-action-plan.md", [
       "# Website improvement MCP action plan",
@@ -3665,6 +3761,9 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "6. Verify desktop, tablet, and mobile behavior plus target repo lint/typecheck/build commands when available.",
     "7. Keep the handoff bundle files read-only; record implementation evidence in the target repo final response or report.",
     "",
+    "## Target Repo Execution Checklist",
+    ...SITE_TARGET_REPO_EXECUTION_CHECKLIST.map((item) => `- [ ] ${item.label}: ${item.evidence}`),
+    "",
     "## Primary Codex Implementation Prompt",
     bundleTexts.codexImplementation || "_codex-implementation.md was not readable from the bundle._",
     "",
@@ -3745,6 +3844,7 @@ export function buildSiteBundleHandoffReport({
       externalCalls: false,
       targetRepoMutation: false,
       repairGuidance: { ...checkReport.repairGuidance },
+      executionChecklist: SITE_TARGET_REPO_EXECUTION_CHECKLIST,
     },
     prompt,
     files: checkReport.files.map((file) => ({

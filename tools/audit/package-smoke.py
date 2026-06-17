@@ -861,6 +861,67 @@ def assert_site_init_bundle_smoke(
         raise SystemExit(f"site init bundle after {context} expected zero starter tasks")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site init bundle after {context} file manifest changed")
+    handoff = summary.get("handoff")
+    strict_ready = summary.get("status") == "pass"
+    strict_command = "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md"
+    draft_command = "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md"
+    expected_execution_checklist = [
+        {
+            "id": "confirm-target-repo",
+            "label": "Confirm target repo working directory",
+            "required": True,
+            "evidence": "State the target repo path and confirm it is not the design-ai repo before editing.",
+        },
+        {
+            "id": "inspect-architecture",
+            "label": "Inspect existing architecture and design system",
+            "required": True,
+            "evidence": "Name the routing, component, styling, token, and test/build surfaces inspected before implementation.",
+        },
+        {
+            "id": "apply-focused-task",
+            "label": "Apply one focused Website Improvement task",
+            "required": True,
+            "evidence": "Identify the completed task id/title, changed files, and why the scope stayed limited.",
+        },
+        {
+            "id": "verify-quality-gates",
+            "label": "Run target repo quality gates",
+            "required": True,
+            "evidence": "Record lint/typecheck/build/test results plus browser, viewport, accessibility, and deployment checks that were available.",
+        },
+        {
+            "id": "record-handoff-evidence",
+            "label": "Record implementation evidence and remaining risks",
+            "required": True,
+            "evidence": "Return executed work, verification results, remaining risks, next actions, and the bundle digest used.",
+        },
+    ]
+    expected_handoff = {
+        "strictReady": strict_ready,
+        "readiness": "ready-for-strict-handoff" if strict_ready else "review-warnings-before-strict-handoff",
+        "recommendedCommand": strict_command if strict_ready else draft_command,
+        "strictCommand": strict_command,
+        "draftCommand": draft_command,
+        "verifyCommand": "design-ai site <bundle-dir> --bundle-check --strict --json",
+        "note": (
+            "Use the strict handoff command before target-repo implementation."
+            if strict_ready
+            else "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority."
+        ),
+        "executionChecklist": expected_execution_checklist,
+    }
+    if handoff != expected_handoff:
+        raise SystemExit(f"site init bundle after {context} handoff guidance changed: {handoff!r}")
+
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    expected_strict_ready = "yes" if strict_ready else "no"
+    if f"Strict-ready: {expected_strict_ready}" not in readme:
+        raise SystemExit(f"site init bundle after {context} README missing strict-ready guidance")
+    if f"Recommended command: `{expected_handoff['recommendedCommand']}`" not in readme:
+        raise SystemExit(f"site init bundle after {context} README missing recommended handoff command")
+    if "Target Repo Execution Checklist" not in readme or "Confirm target repo working directory" not in readme:
+        raise SystemExit(f"site init bundle after {context} README missing target repo execution checklist")
 
     workspace = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
     if workspace.get("siteProfile", {}).get("name") != "Company marketing site":
@@ -1248,6 +1309,15 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} implementation evidence counts changed")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site bundle after {context} file manifest changed")
+    execution_checklist = summary.get("handoff", {}).get("executionChecklist")
+    if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
+        "confirm-target-repo",
+        "inspect-architecture",
+        "apply-focused-task",
+        "verify-quality-gates",
+        "record-handoff-evidence",
+    ]:
+        raise SystemExit(f"site bundle after {context} handoff execution checklist changed")
     checksums = summary.get("checksums", {})
     checksum_files = checksums.get("files", {})
     if checksums.get("algorithm") != "sha256":
@@ -1288,6 +1358,8 @@ def assert_site_bundle_smoke(
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
     if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+    if "Target Repo Execution Checklist" not in readme or "Run target repo quality gates" not in readme:
+        raise SystemExit(f"site bundle after {context} README missing target repo execution checklist")
 
 
 def assert_site_warning_bundle_smoke(
@@ -1576,6 +1648,15 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
     if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
         raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
+    execution_checklist = bundle.get("executionChecklist")
+    if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
+        "confirm-target-repo",
+        "inspect-architecture",
+        "apply-focused-task",
+        "verify-quality-gates",
+        "record-handoff-evidence",
+    ]:
+        raise SystemExit(f"site bundle handoff after {context} execution checklist changed")
     if bundle.get("mcpProbeStatus") != "pass":
         raise SystemExit(f"site bundle handoff after {context} MCP probe status changed")
     assert_site_mcp_probe_counts(
@@ -1621,6 +1702,8 @@ def assert_site_bundle_handoff_json_smoke(
         "Generated drift files: none",
         "Handoff generation boundary flags: external calls no; target repo mutation no",
         "Handoff boundaries: deterministic-local, no-external-mcp-calls, no-target-repo-mutation, no-lighthouse-axe-visual-diff, target-repo-work-after-handoff",
+        "Target Repo Execution Checklist",
+        "Run target repo quality gates",
         "Repair guidance:",
         "Regenerate: design-ai site ",
         "website-workspace.tasks.json --bundle --out ",
