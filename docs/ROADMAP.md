@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 569 — Website Bundle Handoff Task Selection (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` now lets company website pilots choose a specific refactor task from a verified handoff bundle before pasting the target-repo Codex prompt.
+
+### Added
+- Allowed `--task` with `--bundle-handoff` while preserving the existing `--prompt codex-implementation --task` behavior.
+- Regenerated the handoff implementation prompt from bundled `website-workspace.tasks.json` when a task selector is provided.
+- Added `bundle.selectedTask` JSON metadata so wrappers can display which task was selected for target-repo execution.
+- Added command help, Website Improvement docs, company dogfood docs, and packed-tarball installed-bin/one-shot smoke coverage for selected-task bundle handoff.
+
+### Impact
+- Internal company website pilots can keep one verified bundle, then hand off task 1, task 2, or a named task without editing generated Markdown manually.
+- The flow remains deterministic and local: it does not call external MCPs, mutate the target website repo, run Lighthouse/axe, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 568 — Website From-Intake Task Bundle Command (unreleased)
 
 `design-ai site --from-intake file.md|--stdin --bundle --tasks --out <dir>` now gives company website pilots a task-explicit one-command path from filled intake Markdown to a local handoff bundle.

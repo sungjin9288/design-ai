@@ -935,10 +935,10 @@ export function parseSiteArgs(args) {
   if (out.sample && out.strict) {
     throw new Error("Use --sample without --strict; validate the generated file in a separate command");
   }
-  if (out.taskSelector && !out.promptTemplate) {
-    throw new Error("Use --task only with --prompt");
+  if (out.taskSelector && !out.promptTemplate && !out.bundleHandoff) {
+    throw new Error("Use --task only with --prompt or --bundle-handoff");
   }
-  if (out.taskSelector && out.promptTemplate !== "codex-implementation") {
+  if (out.taskSelector && out.promptTemplate && out.promptTemplate !== "codex-implementation") {
     throw new Error("Use --task only with --prompt codex-implementation");
   }
   if (out.tasks && (out.json || out.nextActions || out.graph || out.report || out.prompts)) {
@@ -4388,6 +4388,37 @@ function readBundleTextIfPresent(directory, relativePath) {
   return readFileSync(targetPath, "utf8").trim();
 }
 
+function loadSiteBundleWorkspace(directory) {
+  const relativePath = "website-workspace.tasks.json";
+  const targetPath = path.join(directory, relativePath);
+  if (!existsSync(targetPath) || !statSync(targetPath).isFile()) {
+    throw new Error(`Cannot select a handoff task because ${relativePath} is missing from the bundle`);
+  }
+
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(targetPath, "utf8"));
+  } catch (error) {
+    throw new Error(`Cannot select a handoff task because ${relativePath} is invalid JSON: ${error.message}`);
+  }
+
+  return analyzeSiteWorkspace(raw, { filePath: targetPath }).workspace;
+}
+
+function summarizeSelectedTask(task, taskSelector, source) {
+  if (!task) return null;
+  return {
+    id: task.id,
+    title: task.title,
+    category: task.category,
+    priority: task.priority,
+    impact: task.impact,
+    effort: task.effort,
+    selector: String(taskSelector || "").trim(),
+    source,
+  };
+}
+
 function formatBundleHandoffIssueLines(issues) {
   const actionable = issues.filter((issue) => issue.level !== "pass");
   if (actionable.length === 0) return "- No blocking bundle-check issues were found.";
@@ -4398,6 +4429,9 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
   const bundleDigest = checkReport.summary.checksumBundleDigest || "not recorded";
   const checksumStatus = `${checkReport.counts.verifiedChecksumFiles}/${checkReport.counts.expectedChecksumFiles} verified`;
   const handoffBoundaries = buildSiteBundleHandoffBoundaries(checkReport);
+  const taskSelectionLine = bundleTexts.selectedTask
+    ? `${bundleTexts.selectedTask.id} (${bundleTexts.selectedTask.title}; ${bundleTexts.selectedTask.source})`
+    : "bundled codex-implementation.md default";
   const bundleReadinessLine = checkReport.status === "pass"
     ? "The bundle passed local bundle-check validation. Proceed in the target website repo after confirming the repo path."
     : "The bundle did not fully pass local bundle-check validation. Resolve the listed bundle issues before treating this as implementation authority.";
@@ -4417,6 +4451,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- MCP probe status: ${checkReport.mcpProbeStatus}`,
     `- MCP probes: ${checkReport.mcpProbeCounts.pass}/${checkReport.mcpProbeCounts.count} passing, ${checkReport.mcpProbeCounts.warn} warning, ${checkReport.mcpProbeCounts.fail} failing`,
     `- Tasks: ${checkReport.summary.totalTasks}`,
+    `- Primary task selection: ${taskSelectionLine}`,
     `- Evidence counts: executed work ${checkReport.summary.implementationEvidence.executedWork}, verification ${checkReport.summary.implementationEvidence.verificationResults}, risks ${checkReport.summary.implementationEvidence.remainingRisks}, next actions ${checkReport.summary.implementationEvidence.nextActions}`,
     `- Generated files: ${checkReport.counts.verifiedGeneratedFiles}/${checkReport.counts.expectedGeneratedFiles} match the current CLI bundle contract`,
     `- Generated drift files: ${formatGeneratedContractDriftSummary(checkReport.generatedContract)}`,
@@ -4478,6 +4513,7 @@ function buildSiteBundleHandoffBoundaries(checkReport) {
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
+  taskSelector = "",
 } = {}) {
   const checkReport = buildSiteBundleCheckReport({ target, cwd });
   const includedFilePaths = [
@@ -4488,8 +4524,18 @@ export function buildSiteBundleHandoffReport({
     "website-prompts.md",
     "codex-implementation.md",
   ];
+  let selectedTask = null;
+  let codexImplementation = readBundleTextIfPresent(checkReport.directory, "codex-implementation.md");
+  if (String(taskSelector || "").trim()) {
+    const workspace = loadSiteBundleWorkspace(checkReport.directory);
+    const task = resolveSitePromptTask(workspace, taskSelector);
+    selectedTask = summarizeSelectedTask(task, taskSelector, "bundle-workspace");
+    codexImplementation = buildSitePrompt(workspace, "codex-implementation", { taskSelector });
+  }
+
   const bundleTexts = {
-    codexImplementation: readBundleTextIfPresent(checkReport.directory, "codex-implementation.md"),
+    selectedTask,
+    codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
   };
   const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
@@ -4520,6 +4566,7 @@ export function buildSiteBundleHandoffReport({
       verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
       generatedFailures: checkReport.counts.generatedFailures,
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
+      selectedTask,
       boundaries,
       externalCalls: false,
       targetRepoMutation: false,

@@ -223,6 +223,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-check", "--json"]).bundleCheck, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-compare", "handoff-bundle.previous", "--json"]).bundleCompareTarget, "handoff-bundle.previous");
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-handoff", "--json"]).bundleHandoff, true);
+  assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-handoff", "--task", "task-content-quality", "--json"]).taskSelector, "task-content-quality");
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json"]).bundleRepair, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--yes", "--json"]).yes, true);
   assert.equal(parseSiteArgs(["handoff-bundle", "--bundle-repair", "--json", "--out", "repair.json"]).outPath, "repair.json");
@@ -395,7 +396,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt"]), /--prompt requires a template id/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "bad-template"]), /--prompt must be one of/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--task"]), /--task requires a refactor task id/);
-  assert.throws(() => parseSiteArgs(["workspace.json", "--task", "task-homepage-cta"]), /Use --task only with --prompt/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--task", "task-homepage-cta"]), /Use --task only with --prompt or --bundle-handoff/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt", "claude-design-review", "--task", "task-homepage-cta"]), /Use --task only with --prompt codex-implementation/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--out", "x.md"]), /--out requires/);
   assert.throws(() => parseSiteArgs(["workspace.json", "extra.json"]), /Unexpected argument/);
@@ -1626,6 +1627,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.externalCalls, false);
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
+  assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(report.bundle.mcpProbeCounts, {
     count: 4,
@@ -1666,6 +1668,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
   assert.match(report.prompt, /MCP probe status: pass/);
+  assert.match(report.prompt, /Primary task selection: bundled codex-implementation\.md default/);
   assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);
   assert.match(report.prompt, /Generated drift files: none/);
@@ -1704,8 +1707,26 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.bundle.externalCalls, false);
   assert.equal(json.bundle.targetRepoMutation, false);
   assert.equal(json.bundle.repairGuidance.available, true);
+  assert.equal(json.bundle.selectedTask, null);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);
+
+  const selectedReport = buildSiteBundleHandoffReport({ target: dir, taskSelector: "task-content-quality" });
+  const selectedJson = JSON.parse(formatSiteBundleHandoffJson(selectedReport));
+  assert.equal(selectedReport.status, "pass");
+  assert.equal(selectedReport.bundle.selectedTask.id, "task-content-quality");
+  assert.equal(selectedReport.bundle.selectedTask.source, "bundle-workspace");
+  assert.equal(selectedJson.bundle.selectedTask.selector, "task-content-quality");
+  assert.match(selectedReport.prompt, /Primary task selection: task-content-quality/);
+  assert.match(selectedReport.prompt, /Task ID: task-content-quality/);
+
+  const selectedByNumberReport = buildSiteBundleHandoffReport({ target: dir, taskSelector: "3" });
+  assert.equal(selectedByNumberReport.bundle.selectedTask.id, "task-content-quality");
+  assert.match(selectedByNumberReport.prompt, /Task ID: task-content-quality/);
+  assert.throws(
+    () => buildSiteBundleHandoffReport({ target: dir, taskSelector: "missing-task" }),
+    /Unknown refactor task: missing-task/,
+  );
 
   writeFileSync(path.join(dir, "codex-implementation.md"), "tampered\n", "utf8");
   const tampered = buildSiteBundleHandoffReport({ target: dir });
@@ -2176,10 +2197,21 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.match(bundleHandoffPayload.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
     assert.match(bundleHandoffPayload.prompt, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
 
+    const selectedBundleHandoffJsonOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--task", "task-content-quality", "--json"]));
+    const selectedBundleHandoffPayload = JSON.parse(selectedBundleHandoffJsonOutput.stdout);
+    assert.equal(selectedBundleHandoffPayload.status, "pass");
+    assert.equal(selectedBundleHandoffPayload.bundle.selectedTask.id, "task-content-quality");
+    assert.match(selectedBundleHandoffPayload.prompt, /Task ID: task-content-quality/);
+
     const bundleHandoffFile = path.join(dir, "out", "target-repo-handoff.md");
     const bundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--out", bundleHandoffFile]));
     assert.match(bundleHandoffWriteOutput.stdout, /Wrote /);
     assert.match(readFileSync(bundleHandoffFile, "utf8"), /Website improvement target-repo handoff prompt/);
+
+    const selectedBundleHandoffFile = path.join(dir, "out", "target-repo-task-handoff.md");
+    const selectedBundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--task", "3", "--out", selectedBundleHandoffFile]));
+    assert.match(selectedBundleHandoffWriteOutput.stdout, /Wrote /);
+    assert.match(readFileSync(selectedBundleHandoffFile, "utf8"), /Task ID: task-content-quality/);
 
     const repairHandoffPath = path.join(bundleDir, "website-handoff.md");
     const originalRepairHandoff = readFileSync(repairHandoffPath, "utf8");
@@ -2755,7 +2787,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site <workspace\.json> --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-check \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-compare other-bundle-dir \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-handoff \[--strict\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site <bundle-dir> --bundle-handoff \[--task id-or-number\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --prompt template-id \[--task id-or-number\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /--init\s+Generate a real-project Website Improvement workspace JSON from CLI fields/);
   assert.match(output.stdout, /--name text Site name for --init/);
@@ -2786,6 +2818,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --intake-template --language ko --out company-website-intake\.ko\.md/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
+  assert.match(output.stdout, /design-ai site website-handoff-bundle --bundle-handoff --task task-accessibility --out target-repo-task-prompt\.md/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(output.stdout, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(output.stdout, /--bundle\s+Write a complete local handoff bundle directory; can be combined with --init/);

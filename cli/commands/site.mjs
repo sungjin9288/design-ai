@@ -69,7 +69,7 @@ function printHelp() {
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <bundle-dir> --bundle-handoff [--task id-or-number] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
@@ -136,7 +136,7 @@ function printHelp() {
   console.log("  --prompts   Generate a Markdown bundle of Codex and Claude prompts");
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
-  console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
+  console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation or --bundle-handoff");
   console.log("  --out file  Write --json, --init, --intake-template, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
@@ -171,6 +171,7 @@ function printHelp() {
   console.log("  design-ai site website-handoff-bundle --bundle-check --json");
   console.log("  design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --json");
   console.log("  design-ai site website-handoff-bundle --bundle-handoff --out target-repo-prompt.md");
+  console.log("  design-ai site website-handoff-bundle --bundle-handoff --task task-accessibility --out target-repo-task-prompt.md");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --json");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --json --out bundle-repair-preview.json");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --yes --json");
@@ -431,6 +432,7 @@ export async function runSite(args) {
   if (parsed.bundleHandoff) {
     const handoffReport = buildSiteBundleHandoffReport({
       target: parsed.target,
+      taskSelector: parsed.taskSelector,
     });
     const content = `${parsed.json ? formatSiteBundleHandoffJson(handoffReport) : formatSiteBundleHandoffHuman(handoffReport)}\n`;
     if (parsed.outPath) {

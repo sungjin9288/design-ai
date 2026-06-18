@@ -2126,6 +2126,8 @@ def assert_site_bundle_handoff_json_smoke(
     cwd: Path | None = None,
     context: str,
     expected_evidence_counts: dict[str, int] | None = None,
+    expected_task_id: str = "task-accessibility",
+    expected_selected_task_id: str | None = None,
 ) -> None:
     if expected_evidence_counts is None:
         expected_evidence_counts = {
@@ -2179,6 +2181,12 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+    selected_task = bundle.get("selectedTask")
+    if expected_selected_task_id is None:
+        if selected_task is not None:
+            raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
+    elif not isinstance(selected_task, dict) or selected_task.get("id") != expected_selected_task_id:
+        raise SystemExit(f"site bundle handoff after {context} selected task changed: {selected_task!r}")
     repair_guidance = bundle.get("repairGuidance")
     if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
         raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
@@ -2205,7 +2213,7 @@ def assert_site_bundle_handoff_json_smoke(
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Primary Codex Implementation Prompt",
-        "Task ID: task-accessibility",
+        f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Generated files: 8/8 match the current CLI bundle contract",
         "Generated drift files: none",
@@ -18037,6 +18045,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff JSON",
         )
+        assert_site_bundle_handoff_json_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
+        )
         assert_site_bundle_repair_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-repair", "--json"],
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-repair", "--yes", "--json"],
@@ -19375,6 +19391,14 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
         )
         assert_site_bundle_repair_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-repair", "--json"),

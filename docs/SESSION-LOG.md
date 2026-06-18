@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 569 (unreleased)** — Added `design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` so verified Website Console bundles can generate target-repo prompts for a selected refactor task.
 - **Phase 568 (unreleased)** — Added explicit `design-ai site --from-intake file.md|--stdin --bundle --tasks --out <dir>` task handoff bundle commands with package smoke and release metadata guard coverage.
 - **Phase 567 (unreleased)** — Added `design-ai site --from-intake file.md|--stdin --tasks` so filled company website intake Markdown can generate task-ready workspace JSON directly, with package smoke and release metadata guard coverage.
 - **Phase 566 (unreleased)** — Added `design-ai site --help` examples and release metadata guard coverage for from-intake stdin workspace, next-actions, and bundle commands.
