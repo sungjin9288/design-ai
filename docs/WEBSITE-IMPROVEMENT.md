@@ -6,6 +6,8 @@ Open the MVP app:
 
 [Open Website Improvement Console](website-console/index.html)
 
+For the first real company-site pilot, follow the [Company Website Dogfood Runbook](COMPANY-WEBSITE-DOGFOOD.md) before opening the target repository.
+
 ## What It Does
 
 - Tracks a Site Profile with live URL, target repo reference, Figma link, pages, user flows, platform notes, and viewport coverage.

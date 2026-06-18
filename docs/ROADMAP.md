@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 555 — Company Website Dogfood Runbook (unreleased)
+
+The first real company-site pilot now has a documented runbook that turns Website Improvement bundle readiness into a concrete operator sequence before target-repo implementation begins.
+
+### Added
+- Added English and Korean Company Website Dogfood Runbook docs covering required intake, workspace/bundle creation, bundle verification, target-repo execution, evidence return, stop conditions, and first-pilot done criteria.
+- Linked the runbook from Website Improvement docs and added it to MkDocs navigation.
+- Kept the process aligned with the existing boundary: design-ai remains the planning and handoff control tower, while actual code edits happen inside the target website repo.
+
+### Impact
+- Company dogfood can start from a repeatable checklist instead of ad hoc commands.
+- The runbook reduces the chance of editing the wrong repo, skipping bundle verification, or losing implementation evidence after the target-repo pass.
+
+### Verification Plan
+- `python3 -B tools/audit/link-check.py`
+- `python3 -B tools/audit/korean-copy-check.py`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 554 — Website Bundle Target-Repo Execution Checklist (unreleased)
 
 Website Console handoff bundles now carry an explicit target-repo execution checklist so company dogfood implementation starts with repo confirmation, architecture inspection, focused task scope, verification gates, and evidence recording.

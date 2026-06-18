@@ -96,6 +96,8 @@ plugins:
             Architecture: 아키텍처
             Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
+            Overview: 개요
+            Company Dogfood: 회사 프로젝트 테스트
             Knowledge: 지식
             Skills: 스킬
             Commands: 명령어
@@ -171,7 +173,9 @@ nav:
   - Distribution: docs/DISTRIBUTION.md
   - Architecture: docs/ARCHITECTURE.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
-  - Website Improvement: docs/WEBSITE-IMPROVEMENT.md
+  - Website Improvement:
+      - Overview: docs/WEBSITE-IMPROVEMENT.md
+      - Company Dogfood: docs/COMPANY-WEBSITE-DOGFOOD.md
   - Knowledge:
       - Principles: knowledge/PRINCIPLES.md
       - Coverage report: knowledge/COVERAGE.md
