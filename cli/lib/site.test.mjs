@@ -1676,6 +1676,49 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     requiresReviewBeforeMutation: false,
     strict: true,
   });
+  assert.deepEqual(report.commandManifest, report.bundle.commandManifest);
+  assert.equal(report.commandManifest.version, 1);
+  assert.equal(report.commandManifest.source, "bundle-handoff");
+  assert.equal(report.commandManifest.commandCount, 10);
+  assert.equal(report.commandManifest.sourceCommandCount, 4);
+  assert.equal(report.commandManifest.taskCommandCount, 6);
+  assert.equal(report.commandManifest.readOnlyCount, 4);
+  assert.equal(report.commandManifest.localOutputFileCount, 6);
+  assert.equal(report.commandManifest.externalCallCount, 0);
+  assert.equal(report.commandManifest.targetRepoMutationCount, 0);
+  assert.equal(report.commandManifest.requiresCleanWorkspaceCount, 0);
+  assert.equal(report.commandManifest.requiresReviewBeforeMutationCount, 0);
+  assert.equal(report.commandManifest.defaultTaskId, "task-accessibility");
+  assert.equal(report.commandManifest.selectedTaskId, "");
+  assert.equal(report.commandManifest.effectiveTaskId, "task-accessibility");
+  assert.equal(report.commandManifest.defaultStrictTaskCommandKey, "task.task-accessibility.handoff.strict");
+  assert.equal(report.commandManifest.selectedStrictTaskCommandKey, "");
+  assert.equal(report.commandManifest.effectiveStrictTaskCommandKey, "task.task-accessibility.handoff.strict");
+  assert.deepEqual(report.commandManifest.commands.map((command) => command.key), [
+    "source.bundleCheck",
+    "source.bundleCheck.strict",
+    "source.bundleHandoff",
+    "source.bundleHandoff.strict",
+    "task.task-accessibility.handoff.default",
+    "task.task-accessibility.handoff.strict",
+    "task.task-homepage-cta.handoff.default",
+    "task.task-homepage-cta.handoff.strict",
+    "task.task-content-quality.handoff.default",
+    "task.task-content-quality.handoff.strict",
+  ]);
+  assert.equal(report.commandManifest.commands[0].scope, "source-bundle");
+  assert.equal(report.commandManifest.commands[0].runPolicy, "read-only");
+  assert.deepEqual(report.commandManifest.commands[0].commandArgs, ["design-ai", "site", dir, "--bundle-check", "--json"]);
+  assert.equal(report.commandManifest.commands[0].safety.safetyLevel, "local-read-only");
+  assert.equal(report.commandManifest.commands[5].scope, "task-handoff");
+  assert.equal(report.commandManifest.commands[5].taskId, "task-accessibility");
+  assert.equal(report.commandManifest.commands[5].taskNumber, 1);
+  assert.equal(report.commandManifest.commands[5].runPolicy, "writes-local-file");
+  assert.equal(report.commandManifest.commands[5].outputFile, "target-repo-task-accessibility-handoff.md");
+  assert.equal(report.commandManifest.commands[5].defaultTask, true);
+  assert.equal(report.commandManifest.commands[5].selectedTask, false);
+  assert.equal(report.commandManifest.commands[5].effectiveTask, true);
+  assert.equal(report.commandManifest.commands[5].safety.outputFile, "target-repo-task-accessibility-handoff.md");
   assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.taskCatalog.count, 3);
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
@@ -1789,6 +1832,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.status, "pass");
   assert.deepEqual(json.sourceBundle, report.sourceBundle);
   assert.deepEqual(json.bundle.sourceBundle, report.sourceBundle);
+  assert.deepEqual(json.commandManifest, report.commandManifest);
+  assert.deepEqual(json.bundle.commandManifest, report.commandManifest);
+  assert.equal(json.commandManifest.commandCount, 10);
+  assert.equal(json.commandManifest.readOnlyCount, 4);
+  assert.equal(json.commandManifest.localOutputFileCount, 6);
+  assert.equal(json.commandManifest.effectiveStrictTaskCommandKey, "task.task-accessibility.handoff.strict");
+  assert.equal(json.commandManifest.commands[3].key, "source.bundleHandoff.strict");
+  assert.equal(json.commandManifest.commands[3].safety.strict, true);
+  assert.equal(json.commandManifest.commands[5].key, "task.task-accessibility.handoff.strict");
+  assert.equal(json.commandManifest.commands[5].safety.targetRepoMutation, false);
   assert.equal(json.sourceBundle.checkCommandRunPolicy, "read-only");
   assert.equal(json.sourceBundle.checkCommandSafety.safetyLevel, "local-read-only");
   assert.equal(json.sourceBundle.strictCheckCommandSafety.strict, true);
@@ -1872,7 +1925,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(selectedReport.bundle.effectiveTask.strictHandoffCommandSafety.outputFile, "target-repo-task-content-quality-handoff.md");
   assert.equal(selectedReport.bundle.taskCatalog.selectedTaskId, "task-content-quality");
   assert.equal(selectedReport.bundle.taskCatalog.selectionMode, "explicit");
+  assert.equal(selectedReport.commandManifest.defaultTaskId, "task-accessibility");
+  assert.equal(selectedReport.commandManifest.selectedTaskId, "task-content-quality");
+  assert.equal(selectedReport.commandManifest.effectiveTaskId, "task-content-quality");
+  assert.equal(selectedReport.commandManifest.defaultStrictTaskCommandKey, "task.task-accessibility.handoff.strict");
+  assert.equal(selectedReport.commandManifest.selectedStrictTaskCommandKey, "task.task-content-quality.handoff.strict");
+  assert.equal(selectedReport.commandManifest.effectiveStrictTaskCommandKey, "task.task-content-quality.handoff.strict");
+  assert.equal(selectedReport.commandManifest.commandCount, 10);
+  assert.equal(selectedReport.commandManifest.commands[9].taskId, "task-content-quality");
+  assert.equal(selectedReport.commandManifest.commands[9].defaultTask, false);
+  assert.equal(selectedReport.commandManifest.commands[9].selectedTask, true);
+  assert.equal(selectedReport.commandManifest.commands[9].effectiveTask, true);
   assert.equal(selectedJson.bundle.selectedTask.selector, "task-content-quality");
+  assert.equal(selectedJson.commandManifest.selectedStrictTaskCommandKey, "task.task-content-quality.handoff.strict");
+  assert.equal(selectedJson.bundle.commandManifest.effectiveStrictTaskCommandKey, "task.task-content-quality.handoff.strict");
   assert.equal(selectedJson.bundle.selectedTask.handoffOutFile, "target-repo-task-content-quality-handoff.md");
   assert.match(selectedJson.bundle.selectedTask.strictHandoffCommand, /--bundle-handoff --task task-content-quality --strict --out target-repo-task-content-quality-handoff\.md/);
   assert.deepEqual(selectedJson.bundle.selectedTask.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--task", "task-content-quality", "--strict", "--out", "target-repo-task-content-quality-handoff.md"]);

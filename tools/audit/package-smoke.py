@@ -2231,6 +2231,77 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
     if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
         raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
+    command_manifest = payload.get("commandManifest")
+    if not isinstance(command_manifest, dict) or bundle.get("commandManifest") != command_manifest:
+        raise SystemExit(f"site bundle handoff after {context} command manifest missing or not mirrored")
+    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
+    expected_command_keys = [
+        "source.bundleCheck",
+        "source.bundleCheck.strict",
+        "source.bundleHandoff",
+        "source.bundleHandoff.strict",
+        "task.task-accessibility.handoff.default",
+        "task.task-accessibility.handoff.strict",
+        "task.task-homepage-cta.handoff.default",
+        "task.task-homepage-cta.handoff.strict",
+        "task.task-content-quality.handoff.default",
+        "task.task-content-quality.handoff.strict",
+    ]
+    manifest_commands = command_manifest.get("commands")
+    if (
+        command_manifest.get("version") != 1
+        or command_manifest.get("source") != "bundle-handoff"
+        or command_manifest.get("commandCount") != 10
+        or command_manifest.get("sourceCommandCount") != 4
+        or command_manifest.get("taskCommandCount") != 6
+        or command_manifest.get("readOnlyCount") != 4
+        or command_manifest.get("localOutputFileCount") != 6
+        or command_manifest.get("externalCallCount") != 0
+        or command_manifest.get("targetRepoMutationCount") != 0
+        or command_manifest.get("requiresCleanWorkspaceCount") != 0
+        or command_manifest.get("requiresReviewBeforeMutationCount") != 0
+        or command_manifest.get("defaultTaskId") != "task-accessibility"
+        or command_manifest.get("selectedTaskId") != (expected_selected_task_id or "")
+        or command_manifest.get("effectiveTaskId") != expected_effective_task_id
+        or command_manifest.get("defaultStrictTaskCommandKey") != "task.task-accessibility.handoff.strict"
+        or command_manifest.get("selectedStrictTaskCommandKey") != (f"task.{expected_selected_task_id}.handoff.strict" if expected_selected_task_id else "")
+        or command_manifest.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
+        or not isinstance(manifest_commands, list)
+        or [command.get("key") for command in manifest_commands] != expected_command_keys
+    ):
+        raise SystemExit(f"site bundle handoff after {context} command manifest summary changed: {command_manifest!r}")
+    source_manifest_command = manifest_commands[0]
+    effective_manifest_command = next(
+        (command for command in manifest_commands if command.get("key") == f"task.{expected_effective_task_id}.handoff.strict"),
+        None,
+    )
+    if (
+        source_manifest_command.get("scope") != "source-bundle"
+        or source_manifest_command.get("runPolicy") != "read-only"
+        or source_manifest_command.get("strict") is not False
+        or source_manifest_command.get("taskId") != ""
+        or source_manifest_command.get("outputFile") != ""
+        or not isinstance(source_manifest_command.get("commandArgs"), list)
+        or source_manifest_command["commandArgs"][-2:] != ["--bundle-check", "--json"]
+        or not isinstance(source_manifest_command.get("safety"), dict)
+        or source_manifest_command["safety"].get("safetyLevel") != "local-read-only"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source command manifest entry changed: {source_manifest_command!r}")
+    if (
+        not isinstance(effective_manifest_command, dict)
+        or effective_manifest_command.get("scope") != "task-handoff"
+        or effective_manifest_command.get("runPolicy") != "writes-local-file"
+        or effective_manifest_command.get("strict") is not True
+        or effective_manifest_command.get("taskId") != expected_effective_task_id
+        or effective_manifest_command.get("outputFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or effective_manifest_command.get("effectiveTask") is not True
+        or effective_manifest_command.get("selectedTask") is not bool(expected_selected_task_id)
+        or effective_manifest_command.get("defaultTask") is not (expected_effective_task_id == "task-accessibility")
+        or not isinstance(effective_manifest_command.get("safety"), dict)
+        or effective_manifest_command["safety"].get("outputFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or effective_manifest_command["safety"].get("targetRepoMutation") is not False
+    ):
+        raise SystemExit(f"site bundle handoff after {context} effective command manifest entry changed: {effective_manifest_command!r}")
     execution_checklist = bundle.get("executionChecklist")
     if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
         "confirm-target-repo",
@@ -2303,7 +2374,6 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} default task command metadata changed: {default_task!r}")
     assert_task_command_args(default_task, "task-accessibility", "default task")
     selected_task = bundle.get("selectedTask")
-    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
     effective_task = bundle.get("effectiveTask")
     if (
         not isinstance(effective_task, dict)

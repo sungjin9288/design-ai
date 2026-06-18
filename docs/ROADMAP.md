@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 582 — Website Bundle Handoff Command Manifest (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes a unified command manifest for source-bundle revalidation and selectable task handoff commands.
+
+### Added
+- Added top-level `commandManifest` and mirrored `bundle.commandManifest` to bundle handoff JSON.
+- Added source command entries for default/strict bundle-check and default/strict bundle-handoff JSON generation.
+- Added task command entries for default/strict handoff prompt generation for every task in `bundle.taskCatalog.items[]`.
+- Added manifest-level command counts, source/task command counts, read-only/local-output counts, mutation boundary counts, default/selected/effective task ids, and active strict task command keys.
+- Preserved existing `sourceBundle`, `taskCatalog`, `defaultTask`, `selectedTask`, and `effectiveTask` command fields for backward compatibility.
+- Added unit and packed-tarball smoke assertions for command manifest shape and safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can render or execute handoff commands from one ordered manifest instead of scanning several JSON branches.
+- Company website pilots can distinguish source-bundle read-only commands from task-level local output-file commands before any target-repo work.
+- The change is additive and local/read-only with respect to target repos; it does not call external MCPs, mutate target repos, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 581 — Website Bundle Source Command Safety Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes source-bundle command safety metadata alongside source command strings and argv arrays.

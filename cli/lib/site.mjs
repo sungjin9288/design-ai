@@ -4727,6 +4727,94 @@ function summarizeSiteBundleHandoffSource(checkReport) {
   };
 }
 
+function buildBundleHandoffCommandManifest({
+  sourceBundle,
+  taskCatalog,
+  defaultTask = null,
+  selectedTask = null,
+  effectiveTask = null,
+} = {}) {
+  const commands = [];
+  const pushCommand = (entry) => {
+    if (!entry || !entry.command || !Array.isArray(entry.commandArgs) || entry.commandArgs.length === 0) return;
+    commands.push(entry);
+  };
+  const pushSourceCommand = (key, label, commandKey, argsKey, policyKey, safetyKey) => {
+    pushCommand({
+      key,
+      scope: "source-bundle",
+      label,
+      command: sourceBundle?.[commandKey] || "",
+      commandArgs: sourceBundle?.[argsKey] || [],
+      runPolicy: sourceBundle?.[policyKey] || "",
+      safety: sourceBundle?.[safetyKey] || null,
+      strict: Boolean(sourceBundle?.[safetyKey]?.strict),
+      taskId: "",
+      outputFile: "",
+      defaultTask: false,
+      selectedTask: false,
+      effectiveTask: false,
+    });
+  };
+  const pushTaskCommand = (task, { strict = false } = {}) => {
+    if (!task?.id) return;
+    const commandKey = strict ? "strictHandoffCommand" : "handoffCommand";
+    const argsKey = strict ? "strictHandoffCommandArgs" : "handoffCommandArgs";
+    const policyKey = strict ? "strictHandoffCommandRunPolicy" : "handoffCommandRunPolicy";
+    const safetyKey = strict ? "strictHandoffCommandSafety" : "handoffCommandSafety";
+    pushCommand({
+      key: `task.${task.id}.handoff.${strict ? "strict" : "default"}`,
+      scope: "task-handoff",
+      label: `${strict ? "Strict " : ""}Task handoff: ${task.id}`,
+      command: task[commandKey] || "",
+      commandArgs: task[argsKey] || [],
+      runPolicy: task[policyKey] || "",
+      safety: task[safetyKey] || null,
+      strict,
+      taskId: task.id,
+      taskNumber: Number.isInteger(task.number) ? task.number : null,
+      outputFile: task.handoffOutFile || task[safetyKey]?.outputFile || "",
+      defaultTask: task.id === defaultTask?.id,
+      selectedTask: task.id === selectedTask?.id,
+      effectiveTask: task.id === effectiveTask?.id,
+    });
+  };
+
+  pushSourceCommand("source.bundleCheck", "Bundle check JSON", "checkCommand", "checkCommandArgs", "checkCommandRunPolicy", "checkCommandSafety");
+  pushSourceCommand("source.bundleCheck.strict", "Strict bundle check JSON", "strictCheckCommand", "strictCheckCommandArgs", "strictCheckCommandRunPolicy", "strictCheckCommandSafety");
+  pushSourceCommand("source.bundleHandoff", "Bundle handoff JSON", "handoffCommand", "handoffCommandArgs", "handoffCommandRunPolicy", "handoffCommandSafety");
+  pushSourceCommand("source.bundleHandoff.strict", "Strict bundle handoff JSON", "strictHandoffCommand", "strictHandoffCommandArgs", "strictHandoffCommandRunPolicy", "strictHandoffCommandSafety");
+  for (const task of taskCatalog?.items || []) {
+    pushTaskCommand(task);
+    pushTaskCommand(task, { strict: true });
+  }
+
+  const countBy = (predicate) => commands.filter(predicate).length;
+  const effectiveTaskId = effectiveTask?.id || "";
+  const selectedTaskId = selectedTask?.id || "";
+  const defaultTaskId = defaultTask?.id || "";
+  return {
+    version: 1,
+    source: "bundle-handoff",
+    commandCount: commands.length,
+    sourceCommandCount: countBy((command) => command.scope === "source-bundle"),
+    taskCommandCount: countBy((command) => command.scope === "task-handoff"),
+    readOnlyCount: countBy((command) => command.runPolicy === "read-only"),
+    localOutputFileCount: countBy((command) => command.runPolicy === "writes-local-file"),
+    externalCallCount: countBy((command) => command.safety?.externalCalls === true),
+    targetRepoMutationCount: countBy((command) => command.safety?.targetRepoMutation === true),
+    requiresCleanWorkspaceCount: countBy((command) => command.safety?.requiresCleanWorkspace === true),
+    requiresReviewBeforeMutationCount: countBy((command) => command.safety?.requiresReviewBeforeMutation === true),
+    defaultTaskId,
+    selectedTaskId,
+    effectiveTaskId,
+    defaultStrictTaskCommandKey: defaultTaskId ? `task.${defaultTaskId}.handoff.strict` : "",
+    selectedStrictTaskCommandKey: selectedTaskId ? `task.${selectedTaskId}.handoff.strict` : "",
+    effectiveStrictTaskCommandKey: effectiveTaskId ? `task.${effectiveTaskId}.handoff.strict` : "",
+    commands,
+  };
+}
+
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
@@ -4775,11 +4863,19 @@ export function buildSiteBundleHandoffReport({
   const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
   const boundaries = buildSiteBundleHandoffBoundaries(checkReport);
   const sourceBundle = summarizeSiteBundleHandoffSource(checkReport);
+  const commandManifest = buildBundleHandoffCommandManifest({
+    sourceBundle,
+    taskCatalog,
+    defaultTask,
+    selectedTask,
+    effectiveTask,
+  });
   return {
     status: checkReport.status,
     valid: checkReport.valid,
     directory: checkReport.directory,
     sourceBundle,
+    commandManifest,
     boundaries,
     externalCalls: false,
     targetRepoMutation: false,
@@ -4807,6 +4903,7 @@ export function buildSiteBundleHandoffReport({
       defaultTask,
       effectiveTask,
       selectedTask,
+      commandManifest,
       boundaries,
       externalCalls: false,
       targetRepoMutation: false,
