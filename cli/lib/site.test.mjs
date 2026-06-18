@@ -1636,9 +1636,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.sourceBundle.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.sourceBundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.match(report.sourceBundle.checkCommand, /design-ai site .* --bundle-check --json/);
+  assert.deepEqual(report.sourceBundle.checkCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--json"]);
   assert.match(report.sourceBundle.strictCheckCommand, /design-ai site .* --bundle-check --strict --json/);
+  assert.deepEqual(report.sourceBundle.strictCheckCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"]);
   assert.match(report.sourceBundle.handoffCommand, /design-ai site .* --bundle-handoff --json/);
+  assert.deepEqual(report.sourceBundle.handoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--json"]);
   assert.match(report.sourceBundle.strictHandoffCommand, /design-ai site .* --bundle-handoff --strict --json/);
+  assert.deepEqual(report.sourceBundle.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--strict", "--json"]);
   assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.taskCatalog.count, 3);
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
@@ -2259,7 +2263,9 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleHandoffPayload.sourceBundle.status, "pass");
     assert.equal(bundleHandoffPayload.sourceBundle.valid, true);
     assert.match(bundleHandoffPayload.sourceBundle.strictCheckCommand, /design-ai site .* --bundle-check --strict --json/);
+    assert.deepEqual(bundleHandoffPayload.sourceBundle.strictCheckCommandArgs, ["design-ai", "site", bundleDir, "--bundle-check", "--strict", "--json"]);
     assert.match(bundleHandoffPayload.sourceBundle.strictHandoffCommand, /design-ai site .* --bundle-handoff --strict --json/);
+    assert.deepEqual(bundleHandoffPayload.sourceBundle.strictHandoffCommandArgs, ["design-ai", "site", bundleDir, "--bundle-handoff", "--strict", "--json"]);
     assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);

@@ -4423,28 +4423,40 @@ function buildBundleTaskHandoffCommand(directory, task, { strict = false } = {})
   return parts.join(" ");
 }
 
-function buildBundleCheckCommand(directory, { strict = false } = {}) {
-  const parts = [
-    "design-ai",
-    "site",
-    shellQuote(directory),
-    "--bundle-check",
-  ];
-  if (strict) parts.push("--strict");
-  parts.push("--json");
-  return parts.join(" ");
+function commandFromArgs(args) {
+  return args.map((arg) => shellQuote(arg)).join(" ");
 }
 
-function buildBundleHandoffCommand(directory, { strict = false } = {}) {
-  const parts = [
+function buildBundleCheckCommandArgs(directory, { strict = false } = {}) {
+  const args = [
     "design-ai",
     "site",
-    shellQuote(directory),
+    String(directory || ""),
+    "--bundle-check",
+  ];
+  if (strict) args.push("--strict");
+  args.push("--json");
+  return args;
+}
+
+function buildBundleCheckCommand(directory, options = {}) {
+  return commandFromArgs(buildBundleCheckCommandArgs(directory, options));
+}
+
+function buildBundleHandoffCommandArgs(directory, { strict = false } = {}) {
+  const args = [
+    "design-ai",
+    "site",
+    String(directory || ""),
     "--bundle-handoff",
   ];
-  if (strict) parts.push("--strict");
-  parts.push("--json");
-  return parts.join(" ");
+  if (strict) args.push("--strict");
+  args.push("--json");
+  return args;
+}
+
+function buildBundleHandoffCommand(directory, options = {}) {
+  return commandFromArgs(buildBundleHandoffCommandArgs(directory, options));
 }
 
 function summarizeBundleTaskItem(task, index, directory) {
@@ -4651,9 +4663,13 @@ function summarizeSiteBundleHandoffSource(checkReport) {
     warningCount: checkReport.counts.warnings,
     failureCount: checkReport.counts.failures,
     checkCommand: buildBundleCheckCommand(checkReport.directory),
+    checkCommandArgs: buildBundleCheckCommandArgs(checkReport.directory),
     strictCheckCommand: buildBundleCheckCommand(checkReport.directory, { strict: true }),
+    strictCheckCommandArgs: buildBundleCheckCommandArgs(checkReport.directory, { strict: true }),
     handoffCommand: buildBundleHandoffCommand(checkReport.directory),
+    handoffCommandArgs: buildBundleHandoffCommandArgs(checkReport.directory),
     strictHandoffCommand: buildBundleHandoffCommand(checkReport.directory, { strict: true }),
+    strictHandoffCommandArgs: buildBundleHandoffCommandArgs(checkReport.directory, { strict: true }),
   };
 }
 

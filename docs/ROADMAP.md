@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 578 — Website Bundle Source Command Args (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes structured source-bundle command argument arrays alongside the copy-ready command strings.
+
+### Added
+- Added `sourceBundle.checkCommandArgs`, `sourceBundle.strictCheckCommandArgs`, `sourceBundle.handoffCommandArgs`, and `sourceBundle.strictHandoffCommandArgs`.
+- Mirrored the same structured command argument arrays under `bundle.sourceBundle`.
+- Kept the existing `sourceBundle.*Command` strings for human copy/paste and backward compatibility.
+- Added unit and packed-tarball smoke assertions for the command argument contract.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can execute source-bundle revalidation without parsing shell-quoted strings.
+- Operators still get the same human-readable command strings in JSON and prompts.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 577 — Website Bundle Source Verification Commands (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes copy-ready source-bundle verification commands.

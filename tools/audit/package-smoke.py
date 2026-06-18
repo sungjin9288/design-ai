@@ -2181,6 +2181,21 @@ def assert_site_bundle_handoff_json_smoke(
         command = source_bundle.get(key)
         if not isinstance(command, str) or expected_fragment not in command:
             raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command!r}")
+    for key, expected_tail in {
+        "checkCommandArgs": ["--bundle-check", "--json"],
+        "strictCheckCommandArgs": ["--bundle-check", "--strict", "--json"],
+        "handoffCommandArgs": ["--bundle-handoff", "--json"],
+        "strictHandoffCommandArgs": ["--bundle-handoff", "--strict", "--json"],
+    }.items():
+        command_args = source_bundle.get(key)
+        if (
+            not isinstance(command_args, list)
+            or len(command_args) != len(expected_tail) + 3
+            or command_args[:2] != ["design-ai", "site"]
+            or not isinstance(command_args[2], str)
+            or command_args[-len(expected_tail):] != expected_tail
+        ):
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command_args!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("boundaries") != expected_boundaries:
