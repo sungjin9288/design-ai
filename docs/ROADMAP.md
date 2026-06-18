@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 568 — Website From-Intake Task Bundle Command (unreleased)
+
+`design-ai site --from-intake file.md|--stdin --bundle --tasks --out <dir>` now gives company website pilots a task-explicit one-command path from filled intake Markdown to a local handoff bundle.
+
+### Added
+- Allowed `--from-intake ... --bundle --tasks` while keeping ordinary workspace `--bundle --tasks` rejected.
+- Updated command help, Website Improvement docs, company dogfood docs, and release-facing policy docs to show the task-explicit handoff bundle command.
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for file and stdin from-intake task handoff bundles.
+- Added release metadata guard wording so release-facing docs preserve the from-intake task handoff bundle package smoke contract.
+
+### Impact
+- Company website pilots can use one copy/paste command that communicates the intended output: a handoff bundle with generated refactor tasks from grounded intake findings.
+- The command still does not call external MCPs or mutate the target website repo; it only writes local handoff artifacts.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 567 — Website From-Intake Task Generation (unreleased)
 
 `design-ai site --from-intake file.md|--stdin --tasks` now converts filled company website intake Markdown with grounded initial audit findings into a task-ready `website-workspace.tasks.json` workspace without requiring an intermediate workspace command.
@@ -32,7 +55,7 @@
 ### Added
 - Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`.
 - Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`.
-- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle`.
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`.
 - Added unit, shared smoke assertion, and release metadata guard coverage so release-facing docs keep the from-intake stdin help examples.
 
 ### Impact

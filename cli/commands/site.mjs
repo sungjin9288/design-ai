@@ -57,7 +57,7 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
-  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle --out dir] [--out file] [--strict] [--force]");
+  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
@@ -151,8 +151,8 @@ function printHelp() {
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --tasks --out website-workspace.tasks.json");
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force");
-  console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle");
-  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --tasks --out website-handoff-bundle");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
   console.log("  design-ai site --intake-template --language ko --out company-website-intake.ko.md");
   console.log("  design-ai site --sample --out website-workspace.json");

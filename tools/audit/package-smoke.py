@@ -1325,6 +1325,7 @@ def assert_site_init_bundle_smoke(
     cwd: Path | None = None,
     context: str,
     input_text: str | None = None,
+    expected_refactor_task_ids: list[str] | None = None,
 ) -> None:
     result = (
         run_plain_with_input(cmd, input_text=input_text, cwd=cwd, env=env)
@@ -1355,8 +1356,15 @@ def assert_site_init_bundle_smoke(
         raise SystemExit(f"site init bundle after {context} site name changed")
     if summary.get("source") != "website-workspace.json":
         raise SystemExit(f"site init bundle after {context} source changed: {summary.get('source')!r}")
-    if summary.get("counts", {}).get("refactorTasks") != 0 or summary.get("taskGeneration", {}).get("totalTasks") != 0:
-        raise SystemExit(f"site init bundle after {context} expected zero starter tasks")
+    expected_refactor_task_ids = expected_refactor_task_ids or []
+    expected_refactor_task_count = len(expected_refactor_task_ids)
+    if (
+        summary.get("counts", {}).get("refactorTasks") != expected_refactor_task_count
+        or summary.get("taskGeneration", {}).get("totalTasks") != expected_refactor_task_count
+    ):
+        raise SystemExit(
+            f"site init bundle after {context} expected {expected_refactor_task_count} starter task(s)"
+        )
     if summary.get("files") != expected_files:
         raise SystemExit(f"site init bundle after {context} file manifest changed")
     handoff = summary.get("handoff")
@@ -1424,8 +1432,11 @@ def assert_site_init_bundle_smoke(
     workspace = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
     if workspace.get("siteProfile", {}).get("name") != "Company marketing site":
         raise SystemExit(f"site init bundle after {context} workspace site name changed")
-    if workspace.get("refactorTasks") != []:
-        raise SystemExit(f"site init bundle after {context} expected no starter refactor tasks")
+    refactor_task_ids = [task.get("id") for task in workspace.get("refactorTasks", []) if isinstance(task, dict)]
+    if refactor_task_ids != expected_refactor_task_ids:
+        raise SystemExit(
+            f"site init bundle after {context} expected refactor tasks {expected_refactor_task_ids!r}, got {refactor_task_ids!r}"
+        )
 
 
 def assert_site_tasks_json_smoke(
@@ -17699,6 +17710,24 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake handoff bundle",
         )
+        installed_site_from_intake_task_bundle_dir = install_root / "site-from-intake-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake_tasks),
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_task_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_task_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake task handoff bundle",
+            expected_refactor_task_ids=["task-accessibility"],
+        )
         installed_site_from_intake_stdin_bundle_dir = install_root / "site-from-intake-stdin-handoff-bundle"
         assert_site_init_bundle_smoke(
             [
@@ -17715,6 +17744,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake stdin handoff bundle",
             input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        )
+        installed_site_from_intake_stdin_task_bundle_dir = install_root / "site-from-intake-stdin-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_stdin_task_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_stdin_task_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin task handoff bundle",
+            input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+            expected_refactor_task_ids=["task-accessibility"],
         )
         installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
@@ -19001,6 +19049,24 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site from-intake handoff bundle",
         )
+        npx_site_from_intake_task_bundle_dir = npx_root / "site-from-intake-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake_tasks),
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_task_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_task_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake task handoff bundle",
+            expected_refactor_task_ids=["task-accessibility"],
+        )
         npx_site_from_intake_stdin_bundle_dir = npx_root / "site-from-intake-stdin-handoff-bundle"
         assert_site_init_bundle_smoke(
             npm_exec_cmd(
@@ -19017,6 +19083,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site from-intake stdin handoff bundle",
             input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        )
+        npx_site_from_intake_stdin_task_bundle_dir = npx_root / "site-from-intake-stdin-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_stdin_task_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_stdin_task_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin task handoff bundle",
+            input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+            expected_refactor_task_ids=["task-accessibility"],
         )
         npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(

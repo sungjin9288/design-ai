@@ -91,7 +91,7 @@ If this intake file is filled, use it directly:
 design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
 design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
 design-ai site --from-intake company-website-intake.md --tasks --out website-workspace.tasks.json --force
-design-ai site --from-intake company-website-intake.md --bundle --out website-handoff-bundle --strict --force
+design-ai site --from-intake company-website-intake.md --bundle --tasks --out website-handoff-bundle --strict --force
 ```
 
 If no intake file is available, use direct fields:

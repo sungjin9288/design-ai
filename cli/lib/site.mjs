@@ -887,7 +887,7 @@ export function parseSiteArgs(args) {
   if (out.probes && !(out.mcpCheck || out.mcpPlan)) {
     throw new Error("Use --probes only with --mcp-check or --mcp-plan");
   }
-  if (out.bundle && (out.sample || out.tasks || out.graph || out.report || out.prompts || out.promptTemplate)) {
+  if (out.bundle && (out.sample || (out.tasks && !out.fromIntake) || out.graph || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --bundle without --sample, --tasks, --graph, --report, --prompts, or --prompt");
   }
   if (out.bundleCheck && out.stdin) {
