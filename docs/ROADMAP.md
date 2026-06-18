@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 557 — Website Intake Template CLI Export (unreleased)
+
+`design-ai site --intake-template` now emits the company website intake template directly from the CLI, with optional JSON metadata for wrappers that need the template content, privacy boundary, and next commands in one payload.
+
+### Added
+- Added `--intake-template [--json] [--out file] [--force]` as a workspace-free Website Improvement CLI mode.
+- Added Markdown output for the blank company-site intake form and JSON output with template metadata, section ids, privacy flags, recommended file name, follow-up commands, and Markdown content.
+- Updated command-specific help, top-level help catalog, Website Improvement docs, release-facing command lists, and unit coverage.
+
+### Impact
+- Company pilots can generate a blank intake artifact from terminal before the real site metadata is known.
+- Wrappers can consume the same template without scraping docs or carrying their own copy.
+- The mode remains deterministic/local and does not call external MCPs, mutate target website repos, add dependencies, or store private project details.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/link-check.py`
+- `python3 -B tools/audit/korean-copy-check.py`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 556 — Company Website Intake Template (unreleased)
 
 Company-site pilots now have fill-in intake templates before bundle generation, reducing ambiguity around live URL, target repo, priority pages, user flows, MCP readiness, initial findings, and target-repo verification gates.

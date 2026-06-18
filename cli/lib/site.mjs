@@ -31,6 +31,7 @@ export const SITE_OPTIONS = [
   "--page",
   "--flow",
   "--viewport",
+  "--intake-template",
   "--sample",
   "--tasks",
   "--bundle",
@@ -202,6 +203,163 @@ const SITE_TARGET_REPO_EXECUTION_CHECKLIST = [
   },
 ];
 
+const SITE_INTAKE_TEMPLATE_SECTIONS = [
+  "site-profile",
+  "priority-pages",
+  "primary-user-flows",
+  "brand-and-content-notes",
+  "mcp-readiness-notes",
+  "initial-audit-findings",
+  "first-bundle-commands",
+  "target-repo-verification-plan",
+  "stop-conditions",
+];
+
+const SITE_INTAKE_TEMPLATE_MARKDOWN = `# Company Website Intake Template
+
+Fill this template before the first Website Improvement dogfood pass. Keep sensitive credentials, private tokens, production secrets, and customer data out of this document.
+
+## Site Profile
+
+| Field | Value |
+|---|---|
+| Site name | |
+| Live URL | |
+| Target repo URL | |
+| Target repo local path | |
+| Figma URL | |
+| Deploy provider | \`vercel\` / \`netlify\` / \`cloudflare\` / \`other\` / \`none\` |
+| Sentry project | |
+| CMS | \`sanity\` / \`contentful\` / \`wordpress\` / \`shopify\` / \`none\` / \`other\` |
+| Database | \`supabase\` / \`neon\` / \`postgres\` / \`none\` / \`other\` |
+
+## Priority Pages
+
+List 2-5 pages for the first pilot. Start with pages that affect conversion, trust, signup, inquiry, purchase, or onboarding.
+
+| Priority | Path or URL | Why it matters |
+|---:|---|---|
+| 1 | \`/\` | |
+| 2 | | |
+| 3 | | |
+| 4 | | |
+| 5 | | |
+
+## Primary User Flows
+
+| Priority | Flow | Success signal |
+|---:|---|---|
+| 1 | | |
+| 2 | | |
+| 3 | | |
+
+## Brand And Content Notes
+
+| Area | Notes |
+|---|---|
+| Brand tone | |
+| Typography constraints | |
+| Color constraints | |
+| Korean copy rules | |
+| Legal or compliance copy | |
+| Trust signals | |
+| Competitors or references | |
+
+## MCP Readiness Notes
+
+Mark each external system as \`required\`, \`optional\`, \`unused\`, or \`unavailable\`.
+
+| System | Status | Evidence or fallback |
+|---|---|---|
+| GitHub | | |
+| Figma | | |
+| Browser / Playwright | | |
+| Chrome DevTools | | |
+| Deploy provider | | |
+| Sentry | | |
+| Database | | |
+| CMS | | |
+| Collaboration tool | | |
+| Research tool | | |
+
+## Initial Audit Findings
+
+Capture only findings that are grounded in inspection. Do not invent Lighthouse, axe, crawler, or analytics results unless those tools were actually run in the target repo or browser.
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Visual design | | | |
+| UX flow | | | |
+| Responsive | | | |
+| Accessibility | | | |
+| Performance | | | |
+| SEO | | | |
+| Technical quality | | | |
+| Runtime issues | | | |
+| Content quality | | | |
+
+## First Bundle Commands
+
+Replace placeholders and run from the \`design-ai\` repository.
+
+\`\`\`bash
+design-ai site --init \\
+  --name "<site name>" \\
+  --live-url <live-url> \\
+  --local-path <absolute-target-repo-path> \\
+  --page / \\
+  --page <priority-page-2> \\
+  --flow "<primary user flow>" \\
+  --next-actions \\
+  --out website-next-actions.md \\
+  --force
+\`\`\`
+
+\`\`\`bash
+design-ai site --init \\
+  --name "<site name>" \\
+  --live-url <live-url> \\
+  --local-path <absolute-target-repo-path> \\
+  --page / \\
+  --page <priority-page-2> \\
+  --flow "<primary user flow>" \\
+  --bundle \\
+  --out website-handoff-bundle \\
+  --strict \\
+  --force
+\`\`\`
+
+\`\`\`bash
+design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force
+design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force
+\`\`\`
+
+## Target Repo Verification Plan
+
+Fill this before implementation so the target-repo agent has a clear quality gate.
+
+| Gate | Command or manual check | Required for pilot |
+|---|---|---:|
+| Install | | yes |
+| Lint | | yes |
+| Typecheck | | if available |
+| Unit tests | | if available |
+| Build | | yes |
+| Browser smoke | | yes |
+| Accessibility spot check | | yes |
+| Deployment preview | | if available |
+
+## Stop Conditions
+
+Stop before target-repo edits when any answer is unclear:
+
+- Which repo and branch should be modified?
+- Which single task should be implemented first?
+- Which verification commands must pass?
+- Which credentials or production systems are off limits?
+- Where should implementation evidence be recorded after the target-repo pass?
+`;
+
 export const SITE_BUNDLE_FILES = [
   "README.md",
   "summary.json",
@@ -315,6 +473,7 @@ export function parseSiteArgs(args) {
       userFlows: [],
       viewports: [],
     },
+    intakeTemplate: false,
     sample: false,
     tasks: false,
     bundle: false,
@@ -407,6 +566,8 @@ export function parseSiteArgs(args) {
       }
       out.initProfile.viewports.push(value);
       i += 1;
+    } else if (arg === "--intake-template") {
+      out.intakeTemplate = true;
     } else if (arg === "--sample") {
       out.sample = true;
     } else if (arg === "--tasks") {
@@ -499,6 +660,12 @@ export function parseSiteArgs(args) {
   if (out.init && sources.length > 0) {
     throw new Error("Use --init without a workspace JSON file path or --stdin");
   }
+  if (out.intakeTemplate && (sources.length > 0 || out.init || hasInitProfileFields)) {
+    throw new Error("Use --intake-template without a workspace JSON file path, --stdin, --init, or init profile fields");
+  }
+  if (out.intakeTemplate && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.probes || out.report || out.prompts || out.promptTemplate || out.strict || out.yes)) {
+    throw new Error("Use --intake-template only with --json, --out, or --force");
+  }
   if (out.init && !out.initProfile.name.trim()) {
     throw new Error("--init requires --name");
   }
@@ -572,8 +739,8 @@ export function parseSiteArgs(args) {
     throw new Error("Use --yes only with --bundle-repair");
   }
   const initBundleMode = out.init && out.bundle;
-  if (!initBundleMode && [out.init, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
-    throw new Error("Use only one generated workspace mode: --init, --sample, --tasks, or --bundle");
+  if (!initBundleMode && [out.init, out.intakeTemplate, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
+    throw new Error("Use only one generated workspace mode: --init, --intake-template, --sample, --tasks, or --bundle");
   }
   if (out.sample && out.strict) {
     throw new Error("Use --sample without --strict; validate the generated file in a separate command");
@@ -603,12 +770,38 @@ export function parseSiteArgs(args) {
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.intakeTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --intake-template, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
   const { index, ...parsed } = out;
   return parsed;
+}
+
+export function buildSiteIntakeTemplateMarkdown() {
+  return SITE_INTAKE_TEMPLATE_MARKDOWN;
+}
+
+export function formatSiteIntakeTemplateJson() {
+  return JSON.stringify({
+    kind: "website-improvement-intake-template",
+    version: 1,
+    format: "markdown",
+    recommendedFileName: "company-website-intake.md",
+    sections: SITE_INTAKE_TEMPLATE_SECTIONS,
+    privacy: {
+      storesCredentials: false,
+      storesProductionSecrets: false,
+      storesCustomerData: false,
+    },
+    commands: {
+      nextActions: "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --next-actions --out website-next-actions.md --force",
+      bundle: "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --bundle --out website-handoff-bundle --strict --force",
+      bundleCheck: "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
+      bundleHandoff: "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
+    },
+    content: SITE_INTAKE_TEMPLATE_MARKDOWN,
+  }, null, 2);
 }
 
 function recommendedMcpForCategory(categoryId) {
