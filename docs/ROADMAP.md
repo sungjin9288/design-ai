@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 580 — Website Bundle Task Command Safety Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes task-level handoff command safety metadata alongside task command strings and argv arrays.
+
+### Added
+- Added `handoffCommandRunPolicy` and `strictHandoffCommandRunPolicy` to `bundle.taskCatalog.items[]`, `bundle.defaultTask`, `bundle.selectedTask`, and `bundle.effectiveTask`.
+- Added `handoffCommandSafety` and `strictHandoffCommandSafety` objects with local output-file mutation boundaries, external-call flags, target-repo mutation flags, output file names, and strict-mode markers.
+- Kept the existing task command strings and command argument arrays for backward compatibility.
+- Added unit and packed-tarball smoke assertions for task-level safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can gate task handoff execution without inferring safety from command text.
+- Company website pilots can distinguish local prompt-file generation from target-repo implementation work before running selected task handoffs.
+- The change is local/read-only with respect to target repos; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 579 — Website Bundle Task Command Args (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes structured task-level command argument arrays alongside the copy-ready task handoff command strings.

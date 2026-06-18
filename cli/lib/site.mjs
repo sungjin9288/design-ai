@@ -4427,6 +4427,21 @@ function buildBundleTaskHandoffCommand(directory, task, options = {}) {
   return commandFromArgs(buildBundleTaskHandoffCommandArgs(directory, task, options));
 }
 
+function buildBundleTaskHandoffCommandSafety(task, { strict = false } = {}) {
+  return {
+    runPolicy: "writes-local-file",
+    safetyLevel: "local-output-file",
+    writesLocalFile: true,
+    outputFile: taskHandoffOutFile(task),
+    mutates: "local-output-file-only",
+    externalCalls: false,
+    targetRepoMutation: false,
+    requiresCleanWorkspace: false,
+    requiresReviewBeforeMutation: false,
+    strict: Boolean(strict),
+  };
+}
+
 function commandFromArgs(args) {
   return args.map((arg) => shellQuote(arg)).join(" ");
 }
@@ -4478,8 +4493,12 @@ function summarizeBundleTaskItem(task, index, directory) {
     handoffOutFile: taskHandoffOutFile(task),
     handoffCommand: buildBundleTaskHandoffCommand(directory, task),
     handoffCommandArgs: buildBundleTaskHandoffCommandArgs(directory, task),
+    handoffCommandRunPolicy: "writes-local-file",
+    handoffCommandSafety: buildBundleTaskHandoffCommandSafety(task),
     strictHandoffCommand: buildBundleTaskHandoffCommand(directory, task, { strict: true }),
     strictHandoffCommandArgs: buildBundleTaskHandoffCommandArgs(directory, task, { strict: true }),
+    strictHandoffCommandRunPolicy: "writes-local-file",
+    strictHandoffCommandSafety: buildBundleTaskHandoffCommandSafety(task, { strict: true }),
   };
 }
 
@@ -4523,8 +4542,12 @@ function summarizeSelectedTask(task, taskSelector, source, directory = "") {
     handoffOutFile: taskHandoffOutFile(task),
     handoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task) : "",
     handoffCommandArgs: directory ? buildBundleTaskHandoffCommandArgs(directory, task) : [],
+    handoffCommandRunPolicy: directory ? "writes-local-file" : "",
+    handoffCommandSafety: directory ? buildBundleTaskHandoffCommandSafety(task) : null,
     strictHandoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task, { strict: true }) : "",
     strictHandoffCommandArgs: directory ? buildBundleTaskHandoffCommandArgs(directory, task, { strict: true }) : [],
+    strictHandoffCommandRunPolicy: directory ? "writes-local-file" : "",
+    strictHandoffCommandSafety: directory ? buildBundleTaskHandoffCommandSafety(task, { strict: true }) : null,
   };
 }
 

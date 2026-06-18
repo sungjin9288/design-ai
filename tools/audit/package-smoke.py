@@ -2240,6 +2240,28 @@ def assert_site_bundle_handoff_json_smoke(
                 or command_args[-len(expected_tail):] != expected_tail
             ):
                 raise SystemExit(f"site bundle handoff after {context} {label} {key} changed: {command_args!r}")
+        for policy_key in ["handoffCommandRunPolicy", "strictHandoffCommandRunPolicy"]:
+            if task.get(policy_key) != "writes-local-file":
+                raise SystemExit(f"site bundle handoff after {context} {label} {policy_key} changed: {task.get(policy_key)!r}")
+        for key, expected_strict in {
+            "handoffCommandSafety": False,
+            "strictHandoffCommandSafety": True,
+        }.items():
+            safety = task.get(key) if isinstance(task, dict) else None
+            if (
+                not isinstance(safety, dict)
+                or safety.get("runPolicy") != "writes-local-file"
+                or safety.get("safetyLevel") != "local-output-file"
+                or safety.get("writesLocalFile") is not True
+                or safety.get("outputFile") != expected_out_file
+                or safety.get("mutates") != "local-output-file-only"
+                or safety.get("externalCalls") is not False
+                or safety.get("targetRepoMutation") is not False
+                or safety.get("requiresCleanWorkspace") is not False
+                or safety.get("requiresReviewBeforeMutation") is not False
+                or safety.get("strict") is not expected_strict
+            ):
+                raise SystemExit(f"site bundle handoff after {context} {label} {key} changed: {safety!r}")
 
     default_task = bundle.get("defaultTask")
     if (
