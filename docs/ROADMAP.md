@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 558 — Website Intake Template Package Smoke Coverage (unreleased)
+
+`design-ai site --intake-template` is now covered by packed-tarball smoke tests across installed-bin and one-shot `npm exec --package` execution paths.
+
+### Added
+- Added smoke assertions for intake template JSON shape, Markdown content, privacy flags, section metadata, and follow-up command hints.
+- Added installed-bin smoke coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out`.
+- Added one-shot `npm exec --package <tarball>` smoke coverage for the same intake template output modes.
+
+### Impact
+- Release packaging now fails if the company website intake template command is missing from the tarball, emits the wrong payload shape, drops privacy boundaries, or regresses file-output behavior.
+- The guard remains deterministic/local and does not call external MCPs, mutate target website repos, or add dependencies.
+
+### Verification Plan
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 557 — Website Intake Template CLI Export (unreleased)
 
 `design-ai site --intake-template` now emits the company website intake template directly from the CLI, with optional JSON metadata for wrappers that need the template content, privacy boundary, and next commands in one payload.

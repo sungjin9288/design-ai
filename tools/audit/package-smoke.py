@@ -89,6 +89,10 @@ from smoke_assertions import (
     assert_smoke_json_keys,
     assert_site_json,
     assert_site_init_json,
+    assert_site_intake_template_json,
+    assert_site_intake_template_json_file_output,
+    assert_site_intake_template_markdown,
+    assert_site_intake_template_markdown_file_output,
     assert_site_mcp_check_json,
     assert_site_mcp_check_probes_human,
     assert_site_mcp_check_probes_human_file_output,
@@ -811,6 +815,72 @@ def assert_site_sample_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_site_sample_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_intake_template_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_intake_template_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_intake_template_markdown_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_intake_template_markdown(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_intake_template_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site intake template JSON out file after {context}: {out_file}") from error
+    assert_site_intake_template_json_file_output(
+        result.stdout,
+        contents,
+        output_path=str(out_file),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_site_intake_template_markdown_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site intake template Markdown out file after {context}: {out_file}") from error
+    assert_site_intake_template_markdown_file_output(
+        result.stdout,
+        contents,
+        output_path=str(out_file),
+        context=context,
+        cmd=cmd,
+    )
 
 
 def assert_site_init_json_smoke(
@@ -16994,6 +17064,49 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site sample JSON",
         )
+        assert_site_intake_template_json_smoke(
+            [str(bin_path), "site", "--intake-template", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template JSON",
+        )
+        assert_site_intake_template_markdown_smoke(
+            [str(bin_path), "site", "--intake-template"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Markdown",
+        )
+        installed_site_intake_markdown_out = install_root / "company-website-intake.md"
+        assert_site_intake_template_markdown_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--intake-template",
+                "--out",
+                str(installed_site_intake_markdown_out),
+                "--force",
+            ],
+            installed_site_intake_markdown_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Markdown out file",
+        )
+        installed_site_intake_json_out = install_root / "company-website-intake.json"
+        assert_site_intake_template_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--intake-template",
+                "--json",
+                "--out",
+                str(installed_site_intake_json_out),
+                "--force",
+            ],
+            installed_site_intake_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template JSON out file",
+        )
         assert_site_init_json_smoke(
             [str(bin_path), *SITE_INIT_SMOKE_ARGS],
             cwd=install_root,
@@ -18095,6 +18208,49 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site sample JSON",
+        )
+        assert_site_intake_template_json_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template JSON",
+        )
+        assert_site_intake_template_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Markdown",
+        )
+        npx_site_intake_markdown_out = npx_root / "company-website-intake.md"
+        assert_site_intake_template_markdown_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--intake-template",
+                "--out",
+                str(npx_site_intake_markdown_out),
+                "--force",
+            ),
+            npx_site_intake_markdown_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Markdown out file",
+        )
+        npx_site_intake_json_out = npx_root / "company-website-intake.json"
+        assert_site_intake_template_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--intake-template",
+                "--json",
+                "--out",
+                str(npx_site_intake_json_out),
+                "--force",
+            ),
+            npx_site_intake_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template JSON out file",
         )
         assert_site_init_json_smoke(
             npm_exec_cmd(tarball, *SITE_INIT_SMOKE_ARGS),

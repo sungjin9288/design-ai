@@ -1029,6 +1029,27 @@ EXPECTED_SITE_SAMPLE_TASK_KEYS = [
     "verification",
     "risks",
 ]
+EXPECTED_SITE_INTAKE_TEMPLATE_KEYS = [
+    "kind",
+    "version",
+    "format",
+    "recommendedFileName",
+    "sections",
+    "privacy",
+    "commands",
+    "content",
+]
+EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS = [
+    "storesCredentials",
+    "storesProductionSecrets",
+    "storesCustomerData",
+]
+EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS = [
+    "nextActions",
+    "bundle",
+    "bundleCheck",
+    "bundleHandoff",
+]
 EXPECTED_SITE_PROMPT_TEMPLATE_PAYLOAD_KEYS = ["count", "templates"]
 EXPECTED_SITE_PROMPT_TEMPLATE_KEYS = [
     "id",
@@ -4468,6 +4489,74 @@ def passing_site_next_actions_human() -> str:
     )
 
 
+def passing_site_intake_template_json() -> str:
+    return json.dumps(
+        {
+            "kind": "website-improvement-intake-template",
+            "version": 1,
+            "format": "markdown",
+            "recommendedFileName": "company-website-intake.md",
+            "sections": [
+                "site-profile",
+                "priority-pages",
+                "primary-user-flows",
+                "brand-and-content-notes",
+                "mcp-readiness-notes",
+                "initial-audit-findings",
+                "first-bundle-commands",
+                "target-repo-verification-plan",
+                "stop-conditions",
+            ],
+            "privacy": {
+                "storesCredentials": False,
+                "storesProductionSecrets": False,
+                "storesCustomerData": False,
+            },
+            "commands": {
+                "nextActions": "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --next-actions --out website-next-actions.md --force",
+                "bundle": "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --bundle --out website-handoff-bundle --strict --force",
+                "bundleCheck": "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
+                "bundleHandoff": "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
+            },
+            "content": "\n".join(
+                [
+                    "# Company Website Intake Template",
+                    "",
+                    "## Site Profile",
+                    "- Site name:",
+                    "- Live URL:",
+                    "- Target repo URL or local path:",
+                    "",
+                    "## Priority Pages",
+                    "- /",
+                    "",
+                    "## Primary User Flows",
+                    "- Visitor evaluates value and starts signup",
+                    "",
+                    "## MCP Readiness Notes",
+                    "- GitHub: required",
+                    "",
+                    "## Initial Audit Findings",
+                    "- Visual Design: todo",
+                    "",
+                    "## First Bundle Commands",
+                    "design-ai site --init \\",
+                    "  --bundle \\",
+                    "  --out website-handoff-bundle \\",
+                    "",
+                    "## Target Repo Verification Plan",
+                    "- Run lint, typecheck, build, and visual QA in the target repo.",
+                    "",
+                    "## Stop Conditions",
+                    "- Stop before mutating production secrets, customer data, or live deployments.",
+                ]
+            ),
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def passing_site_sample_json() -> str:
     return json.dumps(
         {
@@ -6776,6 +6865,121 @@ def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"site init JSON after {context} nextActions should include the MCP probe command")
     if not isinstance(payload.get("reportNotes"), str) or "design-ai site --init" not in payload["reportNotes"]:
         raise SystemExit(f"site init JSON after {context} reportNotes must preserve init provenance")
+
+
+def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site intake template JSON after {context} is not valid JSON: {error}") from error
+
+    payload = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_INTAKE_TEMPLATE_KEYS,
+        label="top-level",
+        context=context,
+        command_label="site intake template JSON",
+    )
+    if payload.get("kind") != "website-improvement-intake-template":
+        raise SystemExit(f"site intake template JSON after {context} kind changed")
+    if payload.get("version") != 1:
+        raise SystemExit(f"site intake template JSON after {context} expected version 1")
+    if payload.get("format") != "markdown":
+        raise SystemExit(f"site intake template JSON after {context} expected markdown format")
+    if payload.get("recommendedFileName") != "company-website-intake.md":
+        raise SystemExit(f"site intake template JSON after {context} recommended file name changed")
+
+    sections = payload.get("sections")
+    if not isinstance(sections, list) or len(sections) < 8:
+        raise SystemExit(f"site intake template JSON after {context} expected section metadata")
+    for section in ("site-profile", "priority-pages", "mcp-readiness-notes", "stop-conditions"):
+        if section not in sections:
+            raise SystemExit(f"site intake template JSON after {context} missing section metadata: {section}")
+
+    privacy = assert_smoke_json_keys(
+        payload.get("privacy"),
+        EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS,
+        label="privacy",
+        context=context,
+        command_label="site intake template JSON",
+    )
+    for key in EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS:
+        if privacy.get(key) is not False:
+            raise SystemExit(f"site intake template JSON after {context} privacy flag {key} must remain false")
+
+    commands = assert_smoke_json_keys(
+        payload.get("commands"),
+        EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS,
+        label="commands",
+        context=context,
+        command_label="site intake template JSON",
+    )
+    if "design-ai site --init" not in commands.get("bundle", "") or "--bundle --out website-handoff-bundle" not in commands.get("bundle", ""):
+        raise SystemExit(f"site intake template JSON after {context} bundle command changed")
+    if "--bundle-check --strict --json" not in commands.get("bundleCheck", ""):
+        raise SystemExit(f"site intake template JSON after {context} bundle check command changed")
+
+    content = payload.get("content")
+    assert_site_intake_template_markdown(content, context=context, cmd=cmd)
+
+
+def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str]) -> None:
+    if not isinstance(raw, str):
+        raise SystemExit(f"site intake template Markdown after {context} did not emit text")
+    assert_no_ansi(raw, cmd)
+    if raw.lstrip().startswith("{"):
+        raise SystemExit(f"site intake template Markdown after {context} unexpectedly emitted JSON")
+    required_fragments = [
+        "# Company Website Intake Template",
+        "## Site Profile",
+        "## Priority Pages",
+        "## Primary User Flows",
+        "## MCP Readiness Notes",
+        "## Initial Audit Findings",
+        "## First Bundle Commands",
+        "## Target Repo Verification Plan",
+        "## Stop Conditions",
+        "design-ai site --init",
+        "--bundle",
+        "--out website-handoff-bundle",
+    ]
+    for fragment in required_fragments:
+        if fragment not in raw:
+            raise SystemExit(f"site intake template Markdown after {context} missing fragment: {fragment!r}")
+
+
+def assert_site_intake_template_markdown_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_intake_template_markdown(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
+
+
+def assert_site_intake_template_json_file_output(
+    raw_stdout: str,
+    file_contents: str,
+    *,
+    output_path: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
+    assert_site_intake_template_json(
+        file_contents,
+        context=f"{context} out file",
+        cmd=cmd,
+    )
 
 
 def assert_site_tasks_json(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -10793,6 +10997,30 @@ def run_self_test() -> None:
     )
     site_sample_cmd = ["design-ai", "site", "--sample"]
     assert_site_sample_json(passing_site_sample_json(), context=context, cmd=site_sample_cmd)
+    site_intake_template_cmd = ["design-ai", "site", "--intake-template", "--json"]
+    assert_site_intake_template_json(
+        passing_site_intake_template_json(),
+        context=context,
+        cmd=site_intake_template_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_intake_template_json(
+            passing_site_intake_template_json().replace('"storesCredentials": false', '"storesCredentials": true'),
+            context=context,
+            cmd=site_intake_template_cmd,
+        ),
+        expected="privacy flag storesCredentials must remain false",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_intake_template_markdown(
+            "# Company Website Intake Template\n\n## Site Profile\n",
+            context=context,
+            cmd=["design-ai", "site", "--intake-template"],
+        ),
+        expected="missing fragment",
+        scope="smoke assertions",
+    )
     site_init_cmd = ["design-ai", "site", "--init", "--name", "Company marketing site", "--live-url", "https://example.com"]
     assert_site_init_json(passing_site_init_json(), context=context, cmd=site_init_cmd)
     site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
