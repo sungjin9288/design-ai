@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 579 — Website Bundle Task Command Args (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes structured task-level command argument arrays alongside the copy-ready task handoff command strings.
+
+### Added
+- Added `handoffCommandArgs` and `strictHandoffCommandArgs` to `bundle.taskCatalog.items[]`.
+- Added the same structured command argument arrays to `bundle.defaultTask`, `bundle.selectedTask`, and `bundle.effectiveTask`.
+- Kept the existing task `handoffCommand` and `strictHandoffCommand` strings for human copy/paste and backward compatibility.
+- Added unit and packed-tarball smoke assertions for task-level command argument contracts.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can execute selected Website bundle task handoffs without parsing shell-quoted command strings.
+- Company website pilots can move from verified bundle review to one focused target-repo task with a stable argv payload.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 578 — Website Bundle Source Command Args (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes structured source-bundle command argument arrays alongside the copy-ready command strings.

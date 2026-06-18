@@ -4409,18 +4409,22 @@ function taskHandoffOutFile(task) {
   return `target-repo-${task.id}-handoff.md`;
 }
 
-function buildBundleTaskHandoffCommand(directory, task, { strict = false } = {}) {
-  const parts = [
+function buildBundleTaskHandoffCommandArgs(directory, task, { strict = false } = {}) {
+  const args = [
     "design-ai",
     "site",
-    shellQuote(directory),
+    String(directory || ""),
     "--bundle-handoff",
     "--task",
-    shellQuote(task.id),
+    String(task.id || ""),
   ];
-  if (strict) parts.push("--strict");
-  parts.push("--out", shellQuote(taskHandoffOutFile(task)));
-  return parts.join(" ");
+  if (strict) args.push("--strict");
+  args.push("--out", taskHandoffOutFile(task));
+  return args;
+}
+
+function buildBundleTaskHandoffCommand(directory, task, options = {}) {
+  return commandFromArgs(buildBundleTaskHandoffCommandArgs(directory, task, options));
 }
 
 function commandFromArgs(args) {
@@ -4473,7 +4477,9 @@ function summarizeBundleTaskItem(task, index, directory) {
     handoffTaskArg: task.id,
     handoffOutFile: taskHandoffOutFile(task),
     handoffCommand: buildBundleTaskHandoffCommand(directory, task),
+    handoffCommandArgs: buildBundleTaskHandoffCommandArgs(directory, task),
     strictHandoffCommand: buildBundleTaskHandoffCommand(directory, task, { strict: true }),
+    strictHandoffCommandArgs: buildBundleTaskHandoffCommandArgs(directory, task, { strict: true }),
   };
 }
 
@@ -4516,7 +4522,9 @@ function summarizeSelectedTask(task, taskSelector, source, directory = "") {
     handoffTaskArg: task.id,
     handoffOutFile: taskHandoffOutFile(task),
     handoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task) : "",
+    handoffCommandArgs: directory ? buildBundleTaskHandoffCommandArgs(directory, task) : [],
     strictHandoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task, { strict: true }) : "",
+    strictHandoffCommandArgs: directory ? buildBundleTaskHandoffCommandArgs(directory, task, { strict: true }) : [],
   };
 }
 

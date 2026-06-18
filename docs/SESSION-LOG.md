@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 579 (unreleased)** — Added structured task-level command argument arrays to Website Console bundle handoff JSON.
 - **Phase 578 (unreleased)** — Added structured source-bundle command argument arrays to Website Console bundle handoff JSON.
 - **Phase 577 (unreleased)** — Added source-bundle verification command metadata to Website Console bundle handoff JSON and human prompts.
 - **Phase 576 (unreleased)** — Added Website Console bundle handoff source provenance metadata in JSON and human target-repo prompts.

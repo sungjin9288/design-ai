@@ -2224,6 +2224,23 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+
+    def assert_task_command_args(task, task_id, label):
+        expected_out_file = f"target-repo-{task_id}-handoff.md"
+        for key, expected_tail in {
+            "handoffCommandArgs": ["--bundle-handoff", "--task", task_id, "--out", expected_out_file],
+            "strictHandoffCommandArgs": ["--bundle-handoff", "--task", task_id, "--strict", "--out", expected_out_file],
+        }.items():
+            command_args = task.get(key) if isinstance(task, dict) else None
+            if (
+                not isinstance(command_args, list)
+                or len(command_args) != len(expected_tail) + 3
+                or command_args[:2] != ["design-ai", "site"]
+                or not isinstance(command_args[2], str)
+                or command_args[-len(expected_tail):] != expected_tail
+            ):
+                raise SystemExit(f"site bundle handoff after {context} {label} {key} changed: {command_args!r}")
+
     default_task = bundle.get("defaultTask")
     if (
         not isinstance(default_task, dict)
@@ -2233,6 +2250,7 @@ def assert_site_bundle_handoff_json_smoke(
         or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in default_task.get("strictHandoffCommand")
     ):
         raise SystemExit(f"site bundle handoff after {context} default task command metadata changed: {default_task!r}")
+    assert_task_command_args(default_task, "task-accessibility", "default task")
     selected_task = bundle.get("selectedTask")
     expected_effective_task_id = expected_selected_task_id or "task-accessibility"
     effective_task = bundle.get("effectiveTask")
@@ -2244,6 +2262,7 @@ def assert_site_bundle_handoff_json_smoke(
         or f"--bundle-handoff --task {expected_effective_task_id} --strict --out target-repo-{expected_effective_task_id}-handoff.md" not in effective_task.get("strictHandoffCommand")
     ):
         raise SystemExit(f"site bundle handoff after {context} effective task command metadata changed: {effective_task!r}")
+    assert_task_command_args(effective_task, expected_effective_task_id, "effective task")
     if expected_selected_task_id is None:
         if selected_task is not None:
             raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
@@ -2255,6 +2274,8 @@ def assert_site_bundle_handoff_json_smoke(
         or f"--bundle-handoff --task {expected_selected_task_id} --strict --out target-repo-{expected_selected_task_id}-handoff.md" not in selected_task.get("strictHandoffCommand")
     ):
         raise SystemExit(f"site bundle handoff after {context} selected task command metadata changed: {selected_task!r}")
+    elif expected_selected_task_id:
+        assert_task_command_args(selected_task, expected_selected_task_id, "selected task")
     task_catalog = bundle.get("taskCatalog")
     if not isinstance(task_catalog, dict):
         raise SystemExit(f"site bundle handoff after {context} task catalog missing")
@@ -2280,6 +2301,7 @@ def assert_site_bundle_handoff_json_smoke(
         or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in strict_handoff_command
     ):
         raise SystemExit(f"site bundle handoff after {context} task catalog strict command changed: {strict_handoff_command!r}")
+    assert_task_command_args(first_task, "task-accessibility", "task catalog first task")
     repair_guidance = bundle.get("repairGuidance")
     if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
         raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
