@@ -1627,6 +1627,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.externalCalls, false);
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
+  assert.deepEqual(report.sourceBundle, report.bundle.sourceBundle);
+  assert.equal(report.sourceBundle.directory, dir);
+  assert.equal(report.sourceBundle.sourceWorkspace, "stdin");
+  assert.equal(report.sourceBundle.siteName, "Korean SaaS marketing site");
+  assert.equal(report.sourceBundle.status, "pass");
+  assert.equal(report.sourceBundle.valid, true);
+  assert.equal(report.sourceBundle.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.equal(report.sourceBundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.taskCatalog.count, 3);
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
@@ -1682,6 +1690,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.files.find((file) => file.path === "codex-implementation.md").included, true);
   assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
+  assert.match(report.prompt, /Source bundle provenance: pass\/valid from /);
   assert.match(report.prompt, /SHA-256 bundle digest: [a-f0-9]{64}/);
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
@@ -1711,6 +1720,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Task ID: task-accessibility/);
   assert.match(report.prompt, /Required Final Response/);
   assert.equal(json.status, "pass");
+  assert.deepEqual(json.sourceBundle, report.sourceBundle);
+  assert.deepEqual(json.bundle.sourceBundle, report.sourceBundle);
   assert.deepEqual(json.boundaries, report.boundaries);
   assert.equal(json.externalCalls, false);
   assert.equal(json.targetRepoMutation, false);
@@ -2237,6 +2248,11 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleHandoffJsonOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--json"]));
     const bundleHandoffPayload = JSON.parse(bundleHandoffJsonOutput.stdout);
     assert.equal(bundleHandoffPayload.status, "pass");
+    assert.deepEqual(bundleHandoffPayload.sourceBundle, bundleHandoffPayload.bundle.sourceBundle);
+    assert.equal(bundleHandoffPayload.sourceBundle.directory, bundleDir);
+    assert.equal(bundleHandoffPayload.sourceBundle.sourceWorkspace, file);
+    assert.equal(bundleHandoffPayload.sourceBundle.status, "pass");
+    assert.equal(bundleHandoffPayload.sourceBundle.valid, true);
     assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
@@ -2264,6 +2280,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       nextActions: 0,
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
+    assert.match(bundleHandoffPayload.prompt, /Source bundle provenance: pass\/valid from /);
     assert.match(bundleHandoffPayload.prompt, /Default task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /Effective task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);

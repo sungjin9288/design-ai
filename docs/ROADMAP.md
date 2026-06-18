@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 576 — Website Bundle Handoff Source Provenance (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the verified source bundle summary as first-class provenance metadata.
+
+### Added
+- Added top-level `sourceBundle` and mirrored `bundle.sourceBundle` metadata for bundle handoff reports.
+- Added source bundle provenance to the human target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for source workspace, status, checksum counts, generated contract counts, and prompt provenance wording.
+
+### Impact
+- Wrappers and operators can confirm which verified bundle directory and digest/status produced the target-repo handoff without recomputing fields from separate report sections.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 575 — Website Bundle Effective Task Human Smoke Coverage (unreleased)
 
 Packed-tarball smoke now verifies human `--bundle-handoff` output keeps effective-task command metadata in both default and selected task flows.

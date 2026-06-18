@@ -2153,6 +2153,25 @@ def assert_site_bundle_handoff_json_smoke(
     if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
         raise SystemExit(f"site bundle handoff after {context} boundary flags changed")
     bundle = payload.get("bundle", {})
+    source_bundle = payload.get("sourceBundle")
+    if not isinstance(source_bundle, dict):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance missing")
+    if bundle.get("sourceBundle") != source_bundle:
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance is not mirrored under bundle")
+    if (
+        source_bundle.get("status") != "pass"
+        or source_bundle.get("valid") is not True
+        or source_bundle.get("sourceWorkspace") != "stdin"
+        or source_bundle.get("siteName") != "Korean SaaS marketing site"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance summary changed: {source_bundle!r}")
+    if (
+        source_bundle.get("verifiedGeneratedFiles") != 8
+        or source_bundle.get("expectedGeneratedFiles") != 8
+        or source_bundle.get("verifiedChecksumFiles") != 8
+        or source_bundle.get("expectedChecksumFiles") != 8
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance verification counts changed: {source_bundle!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("boundaries") != expected_boundaries:
@@ -2262,6 +2281,7 @@ def assert_site_bundle_handoff_json_smoke(
     for fragment in (
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Source bundle provenance: pass/valid from ",
         "Primary Codex Implementation Prompt",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
@@ -2310,6 +2330,7 @@ def assert_site_bundle_handoff_human_smoke(
     fragments = [
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Source bundle provenance: pass/valid from ",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
         "Default task strict command: `",

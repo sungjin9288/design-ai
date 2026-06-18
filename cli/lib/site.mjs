@@ -4521,6 +4521,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "",
     "## Verified Bundle",
     `- Bundle directory: ${checkReport.directory}`,
+    `- Source bundle provenance: ${checkReport.status}/${checkReport.valid ? "valid" : "invalid"} from ${checkReport.directory}`,
     `- Site: ${checkReport.summary.siteName || "unknown"}`,
     `- Source workspace: ${checkReport.summary.source || "unknown"}`,
     `- Bundle status: ${checkReport.status}`,
@@ -4605,6 +4606,28 @@ function buildSiteBundleHandoffBoundaries(checkReport) {
   ]));
 }
 
+function summarizeSiteBundleHandoffSource(checkReport) {
+  return {
+    directory: checkReport.directory,
+    sourceWorkspace: checkReport.summary.source || "",
+    siteName: checkReport.summary.siteName || "",
+    status: checkReport.status,
+    valid: checkReport.valid,
+    workspaceStatus: checkReport.workspaceStatus || "unknown",
+    mcpStatus: checkReport.mcpStatus || "unknown",
+    mcpProbeStatus: checkReport.mcpProbeStatus || "unknown",
+    checksumAlgorithm: checkReport.summary.checksumAlgorithm || "",
+    checksumBundleDigest: checkReport.summary.checksumBundleDigest || "",
+    verifiedChecksumFiles: checkReport.counts.verifiedChecksumFiles,
+    expectedChecksumFiles: checkReport.counts.expectedChecksumFiles,
+    verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
+    expectedGeneratedFiles: checkReport.counts.expectedGeneratedFiles,
+    issueCount: checkReport.issues.length,
+    warningCount: checkReport.counts.warnings,
+    failureCount: checkReport.counts.failures,
+  };
+}
+
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
@@ -4652,10 +4675,12 @@ export function buildSiteBundleHandoffReport({
   };
   const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
   const boundaries = buildSiteBundleHandoffBoundaries(checkReport);
+  const sourceBundle = summarizeSiteBundleHandoffSource(checkReport);
   return {
     status: checkReport.status,
     valid: checkReport.valid,
     directory: checkReport.directory,
+    sourceBundle,
     boundaries,
     externalCalls: false,
     targetRepoMutation: false,
@@ -4663,6 +4688,7 @@ export function buildSiteBundleHandoffReport({
       directory: checkReport.directory,
       siteName: checkReport.summary.siteName || "",
       source: checkReport.summary.source || "",
+      sourceBundle,
       workspaceStatus: checkReport.workspaceStatus || "unknown",
       mcpStatus: checkReport.mcpStatus || "unknown",
       mcpProbeStatus: checkReport.mcpProbeStatus || "unknown",
