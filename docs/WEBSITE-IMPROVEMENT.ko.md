@@ -6,6 +6,8 @@
 
 정적 앱은 [`docs/website-console/index.html`](website-console/index.html)에 있습니다. 별도 build나 dependency 없이 브라우저에서 열 수 있고, 상태는 `localStorage`에 저장됩니다.
 
+첫 실제 회사 사이트 pilot은 대상 repo를 열기 전에 [회사 웹사이트 Dogfood Runbook](COMPANY-WEBSITE-DOGFOOD.ko.md)을 먼저 따릅니다.
+
 주요 섹션:
 
 | 섹션 | 역할 |
