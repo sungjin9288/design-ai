@@ -2187,6 +2187,22 @@ def assert_site_bundle_handoff_json_smoke(
             raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
     elif not isinstance(selected_task, dict) or selected_task.get("id") != expected_selected_task_id:
         raise SystemExit(f"site bundle handoff after {context} selected task changed: {selected_task!r}")
+    task_catalog = bundle.get("taskCatalog")
+    if not isinstance(task_catalog, dict):
+        raise SystemExit(f"site bundle handoff after {context} task catalog missing")
+    if task_catalog.get("count") != 3 or task_catalog.get("defaultTaskId") != "task-accessibility":
+        raise SystemExit(f"site bundle handoff after {context} task catalog summary changed: {task_catalog!r}")
+    if task_catalog.get("selectedTaskId") != (expected_selected_task_id or ""):
+        raise SystemExit(f"site bundle handoff after {context} task catalog selected id changed: {task_catalog!r}")
+    if task_catalog.get("selectionMode") != ("explicit" if expected_selected_task_id else "bundled-default"):
+        raise SystemExit(f"site bundle handoff after {context} task catalog selection mode changed: {task_catalog!r}")
+    task_items = task_catalog.get("items")
+    if not isinstance(task_items, list) or [f"{item.get('number')}:{item.get('id')}" for item in task_items] != [
+        "1:task-accessibility",
+        "2:task-homepage-cta",
+        "3:task-content-quality",
+    ]:
+        raise SystemExit(f"site bundle handoff after {context} task catalog items changed: {task_items!r}")
     repair_guidance = bundle.get("repairGuidance")
     if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
         raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
@@ -2213,6 +2229,8 @@ def assert_site_bundle_handoff_json_smoke(
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Primary Codex Implementation Prompt",
+        "Available Bundle Tasks",
+        "Default task: task-accessibility",
         f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Generated files: 8/8 match the current CLI bundle contract",

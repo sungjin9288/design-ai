@@ -4405,6 +4405,46 @@ function loadSiteBundleWorkspace(directory) {
   return analyzeSiteWorkspace(raw, { filePath: targetPath }).workspace;
 }
 
+function summarizeBundleTaskItem(task, index) {
+  return {
+    number: index + 1,
+    id: task.id,
+    title: task.title,
+    category: task.category,
+    priority: task.priority,
+    impact: task.impact,
+    effort: task.effort,
+    pages: normalizeStringArray(task.pages),
+    recommendedMcp: normalizeStringArray(task.recommendedMcp),
+    handoffTaskArg: task.id,
+  };
+}
+
+function summarizeBundleTaskCatalog(workspace, selectedTask = null) {
+  const items = orderedRefactorTasks(workspace).map((task, index) => summarizeBundleTaskItem(task, index));
+  const selectedTaskId = selectedTask?.id || "";
+  return {
+    source: "website-workspace.tasks.json",
+    count: items.length,
+    defaultTaskId: items[0]?.id || "",
+    selectedTaskId,
+    selectionMode: selectedTaskId ? "explicit" : "bundled-default",
+    items,
+  };
+}
+
+function emptyBundleTaskCatalog(error = "") {
+  return {
+    source: "website-workspace.tasks.json",
+    count: 0,
+    defaultTaskId: "",
+    selectedTaskId: "",
+    selectionMode: "unavailable",
+    items: [],
+    error,
+  };
+}
+
 function summarizeSelectedTask(task, taskSelector, source) {
   if (!task) return null;
   return {
@@ -4417,6 +4457,18 @@ function summarizeSelectedTask(task, taskSelector, source) {
     selector: String(taskSelector || "").trim(),
     source,
   };
+}
+
+function formatBundleHandoffTaskCatalogLines(taskCatalog) {
+  if (!taskCatalog || !Array.isArray(taskCatalog.items) || taskCatalog.items.length === 0) {
+    const reason = taskCatalog?.error ? ` ${taskCatalog.error}` : "";
+    return [`- No bundle task catalog is available.${reason}`];
+  }
+  return taskCatalog.items.map((task) => {
+    const pages = task.pages.length ? task.pages.join(", ") : "all pages";
+    const mcps = task.recommendedMcp.length ? task.recommendedMcp.join(", ") : "none";
+    return `- ${task.number}. [${task.priority}/${task.impact}/${task.effort}] ${task.id}: ${task.title} (pages: ${pages}; MCP: ${mcps})`;
+  });
 }
 
 function formatBundleHandoffIssueLines(issues) {
@@ -4459,6 +4511,13 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `- Checksums: ${checksumStatus}`,
     `- Handoff generation boundary flags: external calls no; target repo mutation no`,
     `- Handoff boundaries: ${handoffBoundaries.join(", ")}`,
+    "",
+    "## Available Bundle Tasks",
+    `Task catalog source: ${bundleTexts.taskCatalog?.source || "unknown"}`,
+    `Default task: ${bundleTexts.taskCatalog?.defaultTaskId || "none"}`,
+    `Selected task: ${bundleTexts.taskCatalog?.selectedTaskId || "none"}`,
+    "To choose a specific task, re-run this handoff with `--task <number-or-id>`.",
+    ...formatBundleHandoffTaskCatalogLines(bundleTexts.taskCatalog),
     "",
     "## Bundle Gate",
     bundleReadinessLine,
@@ -4524,16 +4583,29 @@ export function buildSiteBundleHandoffReport({
     "website-prompts.md",
     "codex-implementation.md",
   ];
+  let bundleWorkspace = null;
+  let taskCatalogError = "";
   let selectedTask = null;
   let codexImplementation = readBundleTextIfPresent(checkReport.directory, "codex-implementation.md");
-  if (String(taskSelector || "").trim()) {
-    const workspace = loadSiteBundleWorkspace(checkReport.directory);
-    const task = resolveSitePromptTask(workspace, taskSelector);
-    selectedTask = summarizeSelectedTask(task, taskSelector, "bundle-workspace");
-    codexImplementation = buildSitePrompt(workspace, "codex-implementation", { taskSelector });
+  try {
+    bundleWorkspace = loadSiteBundleWorkspace(checkReport.directory);
+  } catch (error) {
+    taskCatalogError = error.message;
   }
+  if (String(taskSelector || "").trim()) {
+    if (!bundleWorkspace) {
+      throw new Error(taskCatalogError || "Cannot select a handoff task because the bundle workspace is unavailable");
+    }
+    const task = resolveSitePromptTask(bundleWorkspace, taskSelector);
+    selectedTask = summarizeSelectedTask(task, taskSelector, "bundle-workspace");
+    codexImplementation = buildSitePrompt(bundleWorkspace, "codex-implementation", { taskSelector });
+  }
+  const taskCatalog = bundleWorkspace
+    ? summarizeBundleTaskCatalog(bundleWorkspace, selectedTask)
+    : emptyBundleTaskCatalog(taskCatalogError);
 
   const bundleTexts = {
+    taskCatalog,
     selectedTask,
     codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
@@ -4566,6 +4638,7 @@ export function buildSiteBundleHandoffReport({
       verifiedGeneratedFiles: checkReport.counts.verifiedGeneratedFiles,
       generatedFailures: checkReport.counts.generatedFailures,
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
+      taskCatalog,
       selectedTask,
       boundaries,
       externalCalls: false,

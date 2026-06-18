@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 570 — Website Bundle Handoff Task Catalog (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now includes a task catalog before target-repo implementation, so company website pilots can choose the right refactor task without opening `website-workspace.tasks.json` manually.
+
+### Added
+- Added JSON `bundle.taskCatalog` metadata with task numbers, ids, priority, impact, effort, pages, recommended MCPs, default task id, selected task id, and selection mode.
+- Added an “Available Bundle Tasks” section to the target-repo handoff prompt.
+- Preserved default handoff behavior while making the implicit bundled default task visible.
+- Added unit and packed-tarball smoke assertion coverage for the task catalog contract.
+
+### Impact
+- Operators can generate one verified bundle, inspect the task catalog in the handoff output, then re-run `--bundle-handoff --task <number-or-id>` for the chosen implementation task.
+- The catalog is local/read-only and does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 569 — Website Bundle Handoff Task Selection (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` now lets company website pilots choose a specific refactor task from a verified handoff bundle before pasting the target-repo Codex prompt.

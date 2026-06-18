@@ -1628,6 +1628,15 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.targetRepoMutation, false);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
   assert.equal(report.bundle.selectedTask, null);
+  assert.equal(report.bundle.taskCatalog.count, 3);
+  assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
+  assert.equal(report.bundle.taskCatalog.selectedTaskId, "");
+  assert.equal(report.bundle.taskCatalog.selectionMode, "bundled-default");
+  assert.deepEqual(report.bundle.taskCatalog.items.map((task) => `${task.number}:${task.id}`), [
+    "1:task-accessibility",
+    "2:task-homepage-cta",
+    "3:task-content-quality",
+  ]);
   assert.equal(report.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(report.bundle.mcpProbeCounts, {
     count: 4,
@@ -1669,6 +1678,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
   assert.match(report.prompt, /MCP probe status: pass/);
   assert.match(report.prompt, /Primary task selection: bundled codex-implementation\.md default/);
+  assert.match(report.prompt, /Available Bundle Tasks/);
+  assert.match(report.prompt, /Default task: task-accessibility/);
+  assert.match(report.prompt, /Selected task: none/);
+  assert.match(report.prompt, /1\. \[p0\/high\/medium\] task-accessibility:/);
+  assert.match(report.prompt, /3\. \[p1\/medium\/medium\] task-content-quality:/);
   assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);
   assert.match(report.prompt, /Generated drift files: none/);
@@ -1708,6 +1722,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.bundle.targetRepoMutation, false);
   assert.equal(json.bundle.repairGuidance.available, true);
   assert.equal(json.bundle.selectedTask, null);
+  assert.equal(json.bundle.taskCatalog.count, 3);
+  assert.deepEqual(json.bundle.taskCatalog.items.map((task) => task.id), [
+    "task-accessibility",
+    "task-homepage-cta",
+    "task-content-quality",
+  ]);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);
 
@@ -1716,8 +1736,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(selectedReport.status, "pass");
   assert.equal(selectedReport.bundle.selectedTask.id, "task-content-quality");
   assert.equal(selectedReport.bundle.selectedTask.source, "bundle-workspace");
+  assert.equal(selectedReport.bundle.taskCatalog.selectedTaskId, "task-content-quality");
+  assert.equal(selectedReport.bundle.taskCatalog.selectionMode, "explicit");
   assert.equal(selectedJson.bundle.selectedTask.selector, "task-content-quality");
+  assert.equal(selectedJson.bundle.taskCatalog.selectedTaskId, "task-content-quality");
   assert.match(selectedReport.prompt, /Primary task selection: task-content-quality/);
+  assert.match(selectedReport.prompt, /Selected task: task-content-quality/);
   assert.match(selectedReport.prompt, /Task ID: task-content-quality/);
 
   const selectedByNumberReport = buildSiteBundleHandoffReport({ target: dir, taskSelector: "3" });
@@ -2183,6 +2207,13 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
     assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
+    assert.equal(bundleHandoffPayload.bundle.taskCatalog.count, 3);
+    assert.equal(bundleHandoffPayload.bundle.taskCatalog.defaultTaskId, "task-accessibility");
+    assert.deepEqual(bundleHandoffPayload.bundle.taskCatalog.items.map((task) => `${task.number}:${task.id}`), [
+      "1:task-accessibility",
+      "2:task-homepage-cta",
+      "3:task-content-quality",
+    ]);
     assert.equal(bundleHandoffPayload.bundle.repairGuidance.available, true);
     assert.match(bundleHandoffPayload.bundle.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
     assert.match(bundleHandoffPayload.bundle.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
@@ -2201,6 +2232,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const selectedBundleHandoffPayload = JSON.parse(selectedBundleHandoffJsonOutput.stdout);
     assert.equal(selectedBundleHandoffPayload.status, "pass");
     assert.equal(selectedBundleHandoffPayload.bundle.selectedTask.id, "task-content-quality");
+    assert.equal(selectedBundleHandoffPayload.bundle.taskCatalog.selectedTaskId, "task-content-quality");
     assert.match(selectedBundleHandoffPayload.prompt, /Task ID: task-content-quality/);
 
     const bundleHandoffFile = path.join(dir, "out", "target-repo-handoff.md");
