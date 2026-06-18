@@ -941,6 +941,32 @@ RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS = (
         "installed-bin과 one-shot",
     ),
 )
+RELEASE_SITE_INTAKE_TEMPLATE_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --intake-template`",
+        "design-ai site --intake-template",
+        "site --intake-template",
+    ),
+    (
+        "Website Console intake template",
+        "Website Improvement intake template",
+        "site intake template",
+        "company website intake template",
+        "Website Console intake template export",
+    ),
+    (
+        "JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out`",
+        "JSON stdout, Markdown stdout, Markdown --out, and JSON --out",
+        "JSON/Markdown stdout and output-file paths",
+        "JSON, Markdown, and output-file paths",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
 RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS = (
     (
         "`design-ai site --init`",
@@ -3009,6 +3035,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "workspace restore-backups package smoke phrase",
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
+    "site intake-template package smoke phrase",
     "site init package smoke phrase",
     "site init handoff bundle package smoke phrase",
     "site prompt-list package smoke phrase",
@@ -3302,6 +3329,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site sample package smoke phrase",
         RELEASE_SITE_SAMPLE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
+        "site intake-template package smoke phrase",
+        RELEASE_SITE_INTAKE_TEMPLATE_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
         "site init package smoke phrase",
@@ -4048,6 +4079,7 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --sample` Website Console sample workspace coverage,
+`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths,
 `design-ai site --init --bundle --out <dir>` Website Console init handoff bundle coverage in package bin path and one-shot paths,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
@@ -4154,6 +4186,7 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
+`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths도 확인하고,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths도 확인하고,
 `design-ai site --init --bundle --out <dir>` Website Console init handoff bundle도 설치된 binary와 one-shot 경로에서 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
@@ -4547,6 +4580,9 @@ Product readiness covers Website Console handoff bundle compare through `design-
             ).replace(
                 "Website Console project init workspace coverage in installed-bin and one-shot paths",
                 "Website Console project init workspace coverage in packaged paths",
+            ).replace(
+                "Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths",
+                "Website Console intake template package coverage",
             ).replace(
                 "checkpoint summaries in installed-bin and one-shot paths",
                 "checkpoint summaries in packaged paths",
@@ -5459,6 +5495,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in workspace_restore_backups_registry_smoke_drift_errors
         ),
         "release policy docs should mention public registry workspace restore-backups smoke",
+    )
+
+    site_intake_template_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths,",
+                "Website Console intake template package smoke coverage,",
+            ),
+        },
+        audit_count=8,
+    )
+    site_intake_template_package_smoke_drift_errors = "\n".join(
+        site_intake_template_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing site intake-template package smoke phrase"
+            in site_intake_template_package_smoke_drift_errors
+        ),
+        "release policy docs should mention Website Console intake template package smoke",
     )
 
     site_registry_smoke_drift = release_metadata_summary(

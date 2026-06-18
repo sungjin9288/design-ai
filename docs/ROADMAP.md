@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 559 — Website Intake Template Release Metadata Guard (unreleased)
+
+Release-facing policy docs now preserve the `design-ai site --intake-template` package smoke contract alongside the packed-tarball coverage added in Phase 558.
+
+### Added
+- Added release metadata guard term groups for `design-ai site --intake-template` Website Console intake template coverage.
+- Updated README, Korean README, Distribution docs, Korean Distribution docs, Release Checklist, and Product Readiness release confidence wording to mention JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` coverage in installed-bin and one-shot package paths.
+- Added release metadata self-test fixture coverage so removing the intake-template smoke phrase fails deterministically.
+
+### Impact
+- Release docs cannot silently drop the company website intake template distribution guarantee before company dogfood starts.
+- The guard remains local/deterministic and does not add dependencies, call external MCPs, or mutate target website repos.
+
+### Verification Plan
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -B tools/audit/release-metadata.py`
+- `python3 -m py_compile tools/audit/release-metadata.py`
+- `git diff --check`
+
 ## Phase 558 — Website Intake Template Package Smoke Coverage (unreleased)
 
 `design-ai site --intake-template` is now covered by packed-tarball smoke tests across installed-bin and one-shot `npm exec --package` execution paths.
