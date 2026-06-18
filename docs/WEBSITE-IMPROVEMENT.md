@@ -6,7 +6,7 @@ Open the MVP app:
 
 [Open Website Improvement Console](website-console/index.html)
 
-For the first real company-site pilot, follow the [Company Website Dogfood Runbook](COMPANY-WEBSITE-DOGFOOD.md) before opening the target repository.
+For the first real company-site pilot, complete the [Company Website Intake Template](COMPANY-WEBSITE-INTAKE-TEMPLATE.md), then follow the [Company Website Dogfood Runbook](COMPANY-WEBSITE-DOGFOOD.md) before opening the target repository.
 
 ## What It Does
 

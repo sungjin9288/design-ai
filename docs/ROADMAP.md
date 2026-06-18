@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 556 — Company Website Intake Template (unreleased)
+
+Company-site pilots now have fill-in intake templates before bundle generation, reducing ambiguity around live URL, target repo, priority pages, user flows, MCP readiness, initial findings, and target-repo verification gates.
+
+### Added
+- Added English and Korean Company Website Intake Template docs with site profile fields, priority page tables, user-flow tables, brand/content notes, MCP readiness notes, audit finding rows, first bundle commands, verification plan rows, and stop-condition questions.
+- Linked the templates from Website Improvement docs and the Company Website Dogfood Runbook.
+- Added the intake template to MkDocs Website Improvement navigation.
+
+### Impact
+- Company project setup can start from a safe blank form instead of mixing private project details into chat history.
+- Operators can fill the minimum fields required for `design-ai site --init --bundle` before switching to the target website repo.
+
+### Verification Plan
+- `python3 -B tools/audit/link-check.py`
+- `python3 -B tools/audit/korean-copy-check.py`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 555 — Company Website Dogfood Runbook (unreleased)
 
 The first real company-site pilot now has a documented runbook that turns Website Improvement bundle readiness into a concrete operator sequence before target-repo implementation begins.
