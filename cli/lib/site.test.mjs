@@ -114,6 +114,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
       viewports: [],
     },
     intakeTemplate: false,
+    language: "en",
     sample: false,
     tasks: false,
     bundle: false,
@@ -159,6 +160,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
       viewports: [],
     },
     intakeTemplate: false,
+    language: "en",
     sample: false,
     tasks: false,
     bundle: false,
@@ -191,6 +193,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--sample", "--out", "website-workspace.json"]).sample, true);
   assert.equal(parseSiteArgs(["--intake-template", "--out", "company-website-intake.md"]).intakeTemplate, true);
   assert.equal(parseSiteArgs(["--intake-template", "--json"]).json, true);
+  assert.equal(parseSiteArgs(["--intake-template", "--language", "ko"]).language, "ko");
   assert.equal(parseSiteArgs(["--prompt-list", "--json"]).promptList, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
@@ -295,9 +298,12 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--intake-template"]), /Use --intake-template without a workspace JSON file path/);
   assert.throws(() => parseSiteArgs(["--stdin", "--intake-template"]), /Use --intake-template without a workspace JSON file path/);
   assert.throws(() => parseSiteArgs(["--intake-template", "--init"]), /Use --intake-template without a workspace JSON file path/);
-  assert.throws(() => parseSiteArgs(["--intake-template", "--sample"]), /Use --intake-template only with --json, --out, or --force/);
-  assert.throws(() => parseSiteArgs(["--intake-template", "--strict"]), /Use --intake-template only with --json, --out, or --force/);
-  assert.throws(() => parseSiteArgs(["--intake-template", "--mcp-check"]), /Use --intake-template only with --json, --out, or --force/);
+  assert.throws(() => parseSiteArgs(["--intake-template", "--sample"]), /Use --intake-template only with --language, --json, --out, or --force/);
+  assert.throws(() => parseSiteArgs(["--intake-template", "--strict"]), /Use --intake-template only with --language, --json, --out, or --force/);
+  assert.throws(() => parseSiteArgs(["--intake-template", "--mcp-check"]), /Use --intake-template only with --language, --json, --out, or --force/);
+  assert.throws(() => parseSiteArgs(["--intake-template", "--language"]), /--language requires a value/);
+  assert.throws(() => parseSiteArgs(["--intake-template", "--language", "jp"]), /--language must be one of: en, ko/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--language", "ko"]), /Use --language only with --intake-template/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
@@ -467,6 +473,7 @@ test("buildSiteIntakeTemplateMarkdown emits a company pilot intake form", () => 
     "kind",
     "version",
     "format",
+    "language",
     "recommendedFileName",
     "sections",
     "privacy",
@@ -476,6 +483,7 @@ test("buildSiteIntakeTemplateMarkdown emits a company pilot intake form", () => 
   assert.equal(json.kind, "website-improvement-intake-template");
   assert.equal(json.version, 1);
   assert.equal(json.format, "markdown");
+  assert.equal(json.language, "en");
   assert.equal(json.recommendedFileName, "company-website-intake.md");
   assert.deepEqual(json.privacy, {
     storesCredentials: false,
@@ -485,6 +493,18 @@ test("buildSiteIntakeTemplateMarkdown emits a company pilot intake form", () => 
   assert.equal(json.sections.includes("first-bundle-commands"), true);
   assert.match(json.commands.bundle, /--bundle --out website-handoff-bundle --strict/);
   assert.equal(json.content, markdown);
+
+  const koreanMarkdown = buildSiteIntakeTemplateMarkdown({ language: "ko" });
+  const koreanJson = JSON.parse(formatSiteIntakeTemplateJson({ language: "ko" }));
+  assert.match(koreanMarkdown, /^# 회사 웹사이트 Intake Template/);
+  assert.match(koreanMarkdown, /민감한 credential, private token, production secret, 고객 데이터/);
+  assert.match(koreanMarkdown, /## 우선순위 페이지/);
+  assert.match(koreanMarkdown, /## 주요 사용자 흐름/);
+  assert.match(koreanMarkdown, /## 초기 Audit Findings/);
+  assert.match(koreanMarkdown, /design-ai site --init \\/);
+  assert.equal(koreanJson.language, "ko");
+  assert.equal(koreanJson.recommendedFileName, "company-website-intake.ko.md");
+  assert.equal(koreanJson.content, koreanMarkdown);
 });
 
 test("formatSitePromptTemplates lists all Website Improvement prompt templates", () => {
@@ -2098,8 +2118,15 @@ test("runSite emits and writes a company website intake template", async () => {
     const jsonOutput = await captureConsole(() => runSite(["--intake-template", "--json"]));
     const payload = JSON.parse(jsonOutput.stdout);
     assert.equal(payload.kind, "website-improvement-intake-template");
+    assert.equal(payload.language, "en");
     assert.match(payload.content, /^# Company Website Intake Template/);
     assert.equal(payload.commands.bundleCheck, "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force");
+
+    const koreanJsonOutput = await captureConsole(() => runSite(["--intake-template", "--language", "ko", "--json"]));
+    const koreanPayload = JSON.parse(koreanJsonOutput.stdout);
+    assert.equal(koreanPayload.language, "ko");
+    assert.equal(koreanPayload.recommendedFileName, "company-website-intake.ko.md");
+    assert.match(koreanPayload.content, /^# 회사 웹사이트 Intake Template/);
 
     const markdownWriteOutput = await captureConsole(() => runSite(["--intake-template", "--out", markdownFile]));
     assert.match(markdownWriteOutput.stdout, /Wrote /);
@@ -2108,6 +2135,11 @@ test("runSite emits and writes a company website intake template", async () => {
     const jsonWriteOutput = await captureConsole(() => runSite(["--intake-template", "--json", "--out", jsonFile]));
     assert.match(jsonWriteOutput.stdout, /Wrote /);
     assert.equal(JSON.parse(readFileSync(jsonFile, "utf8")).recommendedFileName, "company-website-intake.md");
+
+    const koreanMarkdownFile = path.join(dir, "company-website-intake.ko.md");
+    const koreanMarkdownWriteOutput = await captureConsole(() => runSite(["--intake-template", "--language", "ko", "--out", koreanMarkdownFile]));
+    assert.match(koreanMarkdownWriteOutput.stdout, /Wrote /);
+    assert.match(readFileSync(koreanMarkdownFile, "utf8"), /^# 회사 웹사이트 Intake Template/);
   });
 });
 
@@ -2463,7 +2495,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --bundle --out dir \[--strict\] \[--force\]/);
-  assert.match(output.stdout, /design-ai site --intake-template \[--json\] \[--out file\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site --intake-template \[--language en\|ko\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site <workspace\.json> --mcp-check \[--probes\] \[--strict\] \[--json\] \[--out file\] \[--force\]/);
@@ -2482,6 +2514,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--page path Add a priority page for --init; repeatable/);
   assert.match(output.stdout, /--viewport kind/);
   assert.match(output.stdout, /--intake-template\s+Emit a blank company website intake Markdown template/);
+  assert.match(output.stdout, /--language code\s+With --intake-template, emit en or ko template content/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
   assert.match(output.stdout, /--prompt-list\s+List Website Improvement prompt template ids/);
   assert.match(output.stdout, /--mcp-check\s+Check MCP readiness evidence and task\/MCP gaps/);
@@ -2492,6 +2525,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--next-actions --out website-next-actions\.md/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site --intake-template --out company-website-intake\.md/);
+  assert.match(output.stdout, /design-ai site --intake-template --language ko --out company-website-intake\.ko\.md/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(output.stdout, /--graph\s+Export a portable Website Improvement workflow graph/);

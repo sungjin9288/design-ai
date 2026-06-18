@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -226,7 +226,7 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]",
         "design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]",
         "design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]",
-        "design-ai site --intake-template [--json] [--out file] [--force]",
+        "design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site --prompt-list [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]",
@@ -1033,6 +1033,7 @@ EXPECTED_SITE_INTAKE_TEMPLATE_KEYS = [
     "kind",
     "version",
     "format",
+    "language",
     "recommendedFileName",
     "sections",
     "privacy",
@@ -4148,7 +4149,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -4489,13 +4490,84 @@ def passing_site_next_actions_human() -> str:
     )
 
 
-def passing_site_intake_template_json() -> str:
+def passing_site_intake_template_json(language: str = "en") -> str:
+    if language == "ko":
+        recommended_file_name = "company-website-intake.ko.md"
+        content = "\n".join(
+            [
+                "# 회사 웹사이트 Intake Template",
+                "",
+                "## Site Profile",
+                "- 사이트 이름:",
+                "- Live URL:",
+                "- 대상 repo URL 또는 local path:",
+                "",
+                "## 우선순위 페이지",
+                "- /",
+                "",
+                "## 주요 사용자 흐름",
+                "- 방문자가 가치를 비교하고 signup을 시작",
+                "",
+                "## MCP Readiness Notes",
+                "- GitHub: required",
+                "",
+                "## 초기 Audit Findings",
+                "- Visual Design: todo",
+                "",
+                "## 첫 Bundle Commands",
+                "design-ai site --init \\",
+                "  --bundle \\",
+                "  --out website-handoff-bundle \\",
+                "",
+                "## Target Repo Verification Plan",
+                "- target repo에서 lint, typecheck, build, visual QA를 실행합니다.",
+                "",
+                "## Stop Conditions",
+                "- production secret, 고객 데이터, live deployment 수정 전 멈춥니다.",
+            ]
+        )
+    else:
+        recommended_file_name = "company-website-intake.md"
+        content = "\n".join(
+            [
+                "# Company Website Intake Template",
+                "",
+                "## Site Profile",
+                "- Site name:",
+                "- Live URL:",
+                "- Target repo URL or local path:",
+                "",
+                "## Priority Pages",
+                "- /",
+                "",
+                "## Primary User Flows",
+                "- Visitor evaluates value and starts signup",
+                "",
+                "## MCP Readiness Notes",
+                "- GitHub: required",
+                "",
+                "## Initial Audit Findings",
+                "- Visual Design: todo",
+                "",
+                "## First Bundle Commands",
+                "design-ai site --init \\",
+                "  --bundle \\",
+                "  --out website-handoff-bundle \\",
+                "",
+                "## Target Repo Verification Plan",
+                "- Run lint, typecheck, build, and visual QA in the target repo.",
+                "",
+                "## Stop Conditions",
+                "- Stop before mutating production secrets, customer data, or live deployments.",
+            ]
+        )
     return json.dumps(
         {
             "kind": "website-improvement-intake-template",
             "version": 1,
             "format": "markdown",
-            "recommendedFileName": "company-website-intake.md",
+            "language": language,
+            "recommendedFileName": recommended_file_name,
             "sections": [
                 "site-profile",
                 "priority-pages",
@@ -4518,39 +4590,7 @@ def passing_site_intake_template_json() -> str:
                 "bundleCheck": "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
                 "bundleHandoff": "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
             },
-            "content": "\n".join(
-                [
-                    "# Company Website Intake Template",
-                    "",
-                    "## Site Profile",
-                    "- Site name:",
-                    "- Live URL:",
-                    "- Target repo URL or local path:",
-                    "",
-                    "## Priority Pages",
-                    "- /",
-                    "",
-                    "## Primary User Flows",
-                    "- Visitor evaluates value and starts signup",
-                    "",
-                    "## MCP Readiness Notes",
-                    "- GitHub: required",
-                    "",
-                    "## Initial Audit Findings",
-                    "- Visual Design: todo",
-                    "",
-                    "## First Bundle Commands",
-                    "design-ai site --init \\",
-                    "  --bundle \\",
-                    "  --out website-handoff-bundle \\",
-                    "",
-                    "## Target Repo Verification Plan",
-                    "- Run lint, typecheck, build, and visual QA in the target repo.",
-                    "",
-                    "## Stop Conditions",
-                    "- Stop before mutating production secrets, customer data, or live deployments.",
-                ]
-            ),
+            "content": content,
         },
         ensure_ascii=False,
         indent=2,
@@ -6867,7 +6907,7 @@ def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"site init JSON after {context} reportNotes must preserve init provenance")
 
 
-def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) -> None:
+def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str], language: str = "en") -> None:
     assert_no_ansi(raw, cmd)
 
     try:
@@ -6888,7 +6928,10 @@ def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) 
         raise SystemExit(f"site intake template JSON after {context} expected version 1")
     if payload.get("format") != "markdown":
         raise SystemExit(f"site intake template JSON after {context} expected markdown format")
-    if payload.get("recommendedFileName") != "company-website-intake.md":
+    if payload.get("language") != language:
+        raise SystemExit(f"site intake template JSON after {context} expected language {language}")
+    expected_file_name = "company-website-intake.ko.md" if language == "ko" else "company-website-intake.md"
+    if payload.get("recommendedFileName") != expected_file_name:
         raise SystemExit(f"site intake template JSON after {context} recommended file name changed")
 
     sections = payload.get("sections")
@@ -6922,29 +6965,45 @@ def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) 
         raise SystemExit(f"site intake template JSON after {context} bundle check command changed")
 
     content = payload.get("content")
-    assert_site_intake_template_markdown(content, context=context, cmd=cmd)
+    assert_site_intake_template_markdown(content, context=context, cmd=cmd, language=language)
 
 
-def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str]) -> None:
+def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str], language: str = "en") -> None:
     if not isinstance(raw, str):
         raise SystemExit(f"site intake template Markdown after {context} did not emit text")
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
         raise SystemExit(f"site intake template Markdown after {context} unexpectedly emitted JSON")
-    required_fragments = [
-        "# Company Website Intake Template",
-        "## Site Profile",
-        "## Priority Pages",
-        "## Primary User Flows",
-        "## MCP Readiness Notes",
-        "## Initial Audit Findings",
-        "## First Bundle Commands",
-        "## Target Repo Verification Plan",
-        "## Stop Conditions",
-        "design-ai site --init",
-        "--bundle",
-        "--out website-handoff-bundle",
-    ]
+    if language == "ko":
+        required_fragments = [
+            "# 회사 웹사이트 Intake Template",
+            "## Site Profile",
+            "## 우선순위 페이지",
+            "## 주요 사용자 흐름",
+            "## MCP Readiness Notes",
+            "## 초기 Audit Findings",
+            "## 첫 Bundle Commands",
+            "## Target Repo Verification Plan",
+            "## Stop Conditions",
+            "design-ai site --init",
+            "--bundle",
+            "--out website-handoff-bundle",
+        ]
+    else:
+        required_fragments = [
+            "# Company Website Intake Template",
+            "## Site Profile",
+            "## Priority Pages",
+            "## Primary User Flows",
+            "## MCP Readiness Notes",
+            "## Initial Audit Findings",
+            "## First Bundle Commands",
+            "## Target Repo Verification Plan",
+            "## Stop Conditions",
+            "design-ai site --init",
+            "--bundle",
+            "--out website-handoff-bundle",
+        ]
     for fragment in required_fragments:
         if fragment not in raw:
             raise SystemExit(f"site intake template Markdown after {context} missing fragment: {fragment!r}")
@@ -6957,12 +7016,14 @@ def assert_site_intake_template_markdown_file_output(
     output_path: str,
     context: str,
     cmd: list[str],
+    language: str = "en",
 ) -> None:
     assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
     assert_site_intake_template_markdown(
         file_contents,
         context=f"{context} out file",
         cmd=cmd,
+        language=language,
     )
 
 
@@ -6973,12 +7034,14 @@ def assert_site_intake_template_json_file_output(
     output_path: str,
     context: str,
     cmd: list[str],
+    language: str = "en",
 ) -> None:
     assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
     assert_site_intake_template_json(
         file_contents,
         context=f"{context} out file",
         cmd=cmd,
+        language=language,
     )
 
 
@@ -11003,6 +11066,13 @@ def run_self_test() -> None:
         context=context,
         cmd=site_intake_template_cmd,
     )
+    site_intake_template_ko_cmd = ["design-ai", "site", "--intake-template", "--language", "ko", "--json"]
+    assert_site_intake_template_json(
+        passing_site_intake_template_json(language="ko"),
+        context=context,
+        cmd=site_intake_template_ko_cmd,
+        language="ko",
+    )
     expect_self_test_failure(
         lambda: assert_site_intake_template_json(
             passing_site_intake_template_json().replace('"storesCredentials": false', '"storesCredentials": true'),
@@ -11019,6 +11089,16 @@ def run_self_test() -> None:
             cmd=["design-ai", "site", "--intake-template"],
         ),
         expected="missing fragment",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_intake_template_json(
+            passing_site_intake_template_json(language="ko").replace('"recommendedFileName": "company-website-intake.ko.md"', '"recommendedFileName": "company-website-intake.md"'),
+            context=context,
+            cmd=site_intake_template_ko_cmd,
+            language="ko",
+        ),
+        expected="recommended file name changed",
         scope="smoke assertions",
     )
     site_init_cmd = ["design-ai", "site", "--init", "--name", "Company marketing site", "--live-url", "https://example.com"]

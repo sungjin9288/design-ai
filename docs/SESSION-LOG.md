@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 560 (unreleased)** — Added `design-ai site --intake-template --language ko` Korean intake template output with JSON metadata and packed-tarball smoke coverage.
 - **Phase 559 (unreleased)** — Added release metadata guard coverage for `design-ai site --intake-template` package smoke wording across release-facing docs.
 - **Phase 558 (unreleased)** — Added packed-tarball installed-bin and `npm exec --package` smoke coverage for `design-ai site --intake-template` JSON, Markdown, and output-file paths.
 - **Phase 557 (unreleased)** — Added `design-ai site --intake-template` Markdown/JSON output so company pilot intake can start from the CLI.

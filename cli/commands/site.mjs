@@ -53,7 +53,7 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
-  console.log("        design-ai site --intake-template [--json] [--out file] [--force]");
+  console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
@@ -97,6 +97,8 @@ function printHelp() {
   console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
   console.log("  --intake-template");
   console.log("              Emit a blank company website intake Markdown template before --init or --bundle");
+  console.log("  --language code");
+  console.log("              With --intake-template, emit en or ko template content; default: en");
   console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
   console.log("  --prompt-list");
   console.log("              List Website Improvement prompt template ids and intended use");
@@ -136,6 +138,7 @@ function printHelp() {
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
+  console.log("  design-ai site --intake-template --language ko --out company-website-intake.ko.md");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
@@ -266,7 +269,8 @@ export async function runSite(args) {
   }
 
   if (parsed.intakeTemplate) {
-    const content = `${parsed.json ? formatSiteIntakeTemplateJson() : buildSiteIntakeTemplateMarkdown()}\n`;
+    const templateOptions = { language: parsed.language };
+    const content = `${parsed.json ? formatSiteIntakeTemplateJson(templateOptions) : buildSiteIntakeTemplateMarkdown(templateOptions)}\n`;
     if (parsed.outPath) {
       const written = writeOutputFile({
         outPath: parsed.outPath,

@@ -823,9 +823,10 @@ def assert_site_intake_template_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_site_intake_template_json(result.stdout, context=context, cmd=cmd)
+    assert_site_intake_template_json(result.stdout, context=context, cmd=cmd, language=language)
 
 
 def assert_site_intake_template_markdown_smoke(
@@ -834,9 +835,10 @@ def assert_site_intake_template_markdown_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_site_intake_template_markdown(result.stdout, context=context, cmd=cmd)
+    assert_site_intake_template_markdown(result.stdout, context=context, cmd=cmd, language=language)
 
 
 def assert_site_intake_template_json_file_smoke(
@@ -846,6 +848,7 @@ def assert_site_intake_template_json_file_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     try:
@@ -858,6 +861,7 @@ def assert_site_intake_template_json_file_smoke(
         output_path=str(out_file),
         context=context,
         cmd=cmd,
+        language=language,
     )
 
 
@@ -868,6 +872,7 @@ def assert_site_intake_template_markdown_file_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     try:
@@ -880,6 +885,7 @@ def assert_site_intake_template_markdown_file_smoke(
         output_path=str(out_file),
         context=context,
         cmd=cmd,
+        language=language,
     )
 
 
@@ -17076,6 +17082,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site intake template Markdown",
         )
+        assert_site_intake_template_json_smoke(
+            [str(bin_path), "site", "--intake-template", "--language", "ko", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean JSON",
+            language="ko",
+        )
+        assert_site_intake_template_markdown_smoke(
+            [str(bin_path), "site", "--intake-template", "--language", "ko"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean Markdown",
+            language="ko",
+        )
         installed_site_intake_markdown_out = install_root / "company-website-intake.md"
         assert_site_intake_template_markdown_file_smoke(
             [
@@ -17090,6 +17110,24 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site intake template Markdown out file",
+        )
+        installed_site_intake_korean_markdown_out = install_root / "company-website-intake.ko.md"
+        assert_site_intake_template_markdown_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--intake-template",
+                "--language",
+                "ko",
+                "--out",
+                str(installed_site_intake_korean_markdown_out),
+                "--force",
+            ],
+            installed_site_intake_korean_markdown_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean Markdown out file",
+            language="ko",
         )
         installed_site_intake_json_out = install_root / "company-website-intake.json"
         assert_site_intake_template_json_file_smoke(
@@ -18220,6 +18258,20 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site intake template Markdown",
+        )
+        assert_site_intake_template_json_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template", "--language", "ko", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Korean JSON",
+            language="ko",
+        )
+        assert_site_intake_template_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template", "--language", "ko"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Korean Markdown",
+            language="ko",
         )
         npx_site_intake_markdown_out = npx_root / "company-website-intake.md"
         assert_site_intake_template_markdown_file_smoke(

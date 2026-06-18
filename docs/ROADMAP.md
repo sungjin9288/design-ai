@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 560 — Korean Website Intake Template CLI Output (unreleased)
+
+`design-ai site --intake-template` now supports `--language ko` so Korean company pilots can generate the same intake artifact from the CLI without copying the docs template manually.
+
+### Added
+- Added `--language en|ko` to the workspace-free Website Improvement intake template mode.
+- Added Korean Markdown output, JSON `language` metadata, and `company-website-intake.ko.md` as the recommended Korean file name.
+- Added unit coverage plus packed-tarball installed-bin and one-shot smoke coverage for Korean JSON/Markdown output and Korean Markdown `--out`.
+
+### Impact
+- Company website pilots can start with a Korean intake artifact while preserving the deterministic local/no-external-MCP boundary.
+- Existing English intake-template output remains the default for compatibility.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 559 — Website Intake Template Release Metadata Guard (unreleased)
 
 Release-facing policy docs now preserve the `design-ai site --intake-template` package smoke contract alongside the packed-tarball coverage added in Phase 558.
