@@ -87,6 +87,7 @@ from smoke_assertions import (
     assert_status_json,
     assert_status_output,
     assert_smoke_json_keys,
+    assert_site_from_intake_json,
     assert_site_json,
     assert_site_init_json,
     assert_site_intake_template_json,
@@ -210,6 +211,62 @@ SITE_INIT_SMOKE_ARGS = [
     "--viewport",
     "mobile",
 ]
+SITE_FROM_INTAKE_SMOKE_MARKDOWN = """# Company Website Intake Template
+
+## Site Profile
+
+| Field | Value |
+|---|---|
+| Site name | Company marketing site |
+| Live URL | https://example.com |
+| Target repo URL | https://github.com/acme/site |
+| Target repo local path | |
+| Figma URL | |
+| Deploy provider | vercel |
+| Sentry project | |
+| CMS | none |
+| Database | none |
+
+## Priority Pages
+
+| Priority | Path or URL | Why it matters |
+|---:|---|---|
+| 1 | / | Primary conversion |
+| 2 | /pricing | Pricing comparison |
+
+## Primary User Flows
+
+| Priority | Flow | Success signal |
+|---:|---|---|
+| 1 | Visitor compares plans and starts signup | Signup intent |
+
+## Brand And Content Notes
+
+| Area | Notes |
+|---|---|
+| Brand tone | |
+
+## MCP Readiness Notes
+
+| System | Status | Evidence or fallback |
+|---|---|---|
+| GitHub | required | repo reference |
+| Figma | unused | no file |
+| Browser / Playwright | required | live URL |
+| Chrome DevTools | optional | manual debugging if needed |
+| Deploy provider | required | vercel |
+| Sentry | unused | none |
+| Database | unused | none |
+| CMS | unused | none |
+| Collaboration tool | optional | internal review |
+| Research tool | optional | competitor review |
+
+## Initial Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Visual design | | | |
+"""
 
 
 def assert_site_mcp_probe_counts(
@@ -898,6 +955,40 @@ def assert_site_init_json_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_site_init_json(result.stdout, context=context, cmd=cmd)
+
+
+def write_site_from_intake_fixture(root: Path, *, filename: str = "company-website-intake.filled.md") -> Path:
+    path = root / filename
+    path.write_text(SITE_FROM_INTAKE_SMOKE_MARKDOWN, encoding="utf-8")
+    return path
+
+
+def assert_site_from_intake_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_from_intake_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_json(contents, context=context, cmd=cmd)
 
 
 def assert_site_init_bundle_smoke(
@@ -17151,6 +17242,45 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site init JSON",
         )
+        installed_site_from_intake = write_site_from_intake_fixture(install_root)
+        assert_site_from_intake_json_smoke(
+            [str(bin_path), "site", "--from-intake", str(installed_site_from_intake), "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake JSON",
+        )
+        installed_site_from_intake_json_out = install_root / "site-from-intake-workspace.json"
+        assert_site_from_intake_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake),
+                "--out",
+                str(installed_site_from_intake_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake JSON out file",
+        )
+        installed_site_from_intake_bundle_dir = install_root / "site-from-intake-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake),
+                "--bundle",
+                "--out",
+                str(installed_site_from_intake_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake handoff bundle",
+        )
         installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
             [str(bin_path), *SITE_INIT_SMOKE_ARGS, "--bundle", "--out", str(installed_site_init_bundle_dir)],
@@ -18309,6 +18439,45 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site init JSON",
+        )
+        npx_site_from_intake = write_site_from_intake_fixture(npx_root)
+        assert_site_from_intake_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", str(npx_site_from_intake), "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake JSON",
+        )
+        npx_site_from_intake_json_out = npx_root / "site-from-intake-workspace.json"
+        assert_site_from_intake_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake),
+                "--out",
+                str(npx_site_from_intake_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake JSON out file",
+        )
+        npx_site_from_intake_bundle_dir = npx_root / "site-from-intake-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake),
+                "--bundle",
+                "--out",
+                str(npx_site_from_intake_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake handoff bundle",
         )
         npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(

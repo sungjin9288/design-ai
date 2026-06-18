@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 562 — Website From-Intake Package Smoke Coverage (unreleased)
+
+`design-ai site --from-intake` now has packed-tarball smoke coverage and release metadata guard coverage, closing the gap between the filled intake import feature and the package paths used before company dogfood.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for filled Markdown intake import to workspace JSON stdout.
+- Added `--from-intake --out <file>` smoke coverage so workspace JSON output-file persistence is verified from the packed tarball.
+- Added `--from-intake --bundle --out <dir>` smoke coverage and release metadata phrase guards for from-intake handoff bundle generation.
+
+### Impact
+- Company website pilots can rely on the packaged CLI to turn filled intake documents into workspace JSON or handoff bundles before target-repo implementation.
+- Release-facing docs now fail metadata checks if they drop the from-intake package smoke contract.
+
+### Verification Plan
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 561 — Website Intake Markdown Import (unreleased)
 
 `design-ai site --from-intake file.md` now turns a filled company website intake Markdown file into a Website Improvement workspace, next-actions runbook, or handoff bundle without retyping the same project fields into `--init`.
