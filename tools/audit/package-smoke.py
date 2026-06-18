@@ -974,6 +974,22 @@ def assert_site_from_intake_json_smoke(
     assert_site_from_intake_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_site_from_intake_stdin_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_from_intake_json(result.stdout, context=context, cmd=cmd)
+
+
 def assert_site_from_intake_json_file_smoke(
     cmd: list[str],
     out_file: Path,
@@ -17249,6 +17265,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake JSON",
         )
+        assert_site_from_intake_stdin_json_smoke(
+            [str(bin_path), "site", "--from-intake", "--stdin", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin JSON",
+        )
         installed_site_from_intake_json_out = install_root / "site-from-intake-workspace.json"
         assert_site_from_intake_json_file_smoke(
             [
@@ -18446,6 +18468,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site from-intake JSON",
+        )
+        assert_site_from_intake_stdin_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", "--stdin", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin JSON",
         )
         npx_site_from_intake_json_out = npx_root / "site-from-intake-workspace.json"
         assert_site_from_intake_json_file_smoke(

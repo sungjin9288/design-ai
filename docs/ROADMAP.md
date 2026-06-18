@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 563 — Website From-Intake Stdin Import (unreleased)
+
+`design-ai site --from-intake --stdin` now accepts filled company website intake Markdown from stdin, so operators can pipe a reviewed intake document directly into workspace JSON or next-actions generation before company dogfood.
+
+### Added
+- Added `--from-intake --stdin` as a deterministic local intake import source alongside `--from-intake file.md`.
+- Added stdin-aware provenance and next-actions commands so generated workspace notes and runbooks preserve the input path boundary.
+- Added unit coverage plus installed-bin and one-shot `npm exec --package <tarball>` package smoke coverage for stdin workspace JSON stdout.
+
+### Impact
+- Company website pilots can avoid temporary intake copies when working from secure notes or generated Markdown streams.
+- Existing workspace JSON `design-ai site --stdin` behavior remains unchanged; stdin is treated as intake Markdown only when combined with `--from-intake`.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 562 — Website From-Intake Package Smoke Coverage (unreleased)
 
 `design-ai site --from-intake` now has packed-tarball smoke coverage and release metadata guard coverage, closing the gap between the filled intake import feature and the package paths used before company dogfood.

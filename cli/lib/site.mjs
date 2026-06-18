@@ -621,6 +621,7 @@ export function parseSiteArgs(args) {
       userFlows: [],
       viewports: [],
     },
+    fromIntake: false,
     fromIntakePath: "",
     intakeTemplate: false,
     language: "en",
@@ -718,8 +719,12 @@ export function parseSiteArgs(args) {
       out.initProfile.viewports.push(value);
       i += 1;
     } else if (arg === "--from-intake") {
-      out.fromIntakePath = readOptionValue(args, i, "--from-intake");
-      i += 1;
+      out.fromIntake = true;
+      const value = args[i + 1];
+      if (value && !value.startsWith("--")) {
+        out.fromIntakePath = value;
+        i += 1;
+      }
     } else if (arg === "--language") {
       const value = readOptionValue(args, i, "--language");
       if (!SITE_INTAKE_TEMPLATE_LANGUAGE_OPTIONS.includes(value)) {
@@ -822,10 +827,16 @@ export function parseSiteArgs(args) {
   if (out.init && sources.length > 0) {
     throw new Error("Use --init without a workspace JSON file path or --stdin");
   }
-  if (out.fromIntakePath && sources.length > 0) {
-    throw new Error("Use --from-intake without a workspace JSON file path or --stdin");
+  if (out.fromIntake && out.target) {
+    throw new Error("Use --from-intake without a workspace JSON file path");
   }
-  if (out.fromIntakePath && (out.init || hasInitProfileFields)) {
+  if (out.fromIntake && out.stdin && out.fromIntakePath) {
+    throw new Error("Use --from-intake with either a file path or --stdin, not both");
+  }
+  if (out.fromIntake && !out.fromIntakePath && !out.stdin) {
+    throw new Error("--from-intake requires a file path or --stdin");
+  }
+  if (out.fromIntake && (out.init || hasInitProfileFields)) {
     throw new Error("Use --from-intake without --init or init profile fields");
   }
   if (out.intakeTemplate && (sources.length > 0 || out.init || hasInitProfileFields)) {
@@ -849,10 +860,10 @@ export function parseSiteArgs(args) {
   if (out.init && out.strict && !(out.nextActions || out.bundle)) {
     throw new Error("Use --init --strict only with --next-actions or --bundle");
   }
-  if (out.fromIntakePath && (out.intakeTemplate || out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
+  if (out.fromIntake && (out.intakeTemplate || out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
     throw new Error("Use --from-intake only with --json, --next-actions, --bundle, --out, --strict, or --force");
   }
-  if (out.fromIntakePath && out.strict && !(out.nextActions || out.bundle)) {
+  if (out.fromIntake && out.strict && !(out.nextActions || out.bundle)) {
     throw new Error("Use --from-intake --strict only with --next-actions or --bundle");
   }
   if (out.sample && sources.length > 0) {
@@ -916,8 +927,8 @@ export function parseSiteArgs(args) {
     throw new Error("Use --yes only with --bundle-repair");
   }
   const initBundleMode = out.init && out.bundle;
-  const fromIntakeBundleMode = out.fromIntakePath && out.bundle;
-  if (!initBundleMode && !fromIntakeBundleMode && [out.init, out.fromIntakePath, out.intakeTemplate, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
+  const fromIntakeBundleMode = out.fromIntake && out.bundle;
+  if (!initBundleMode && !fromIntakeBundleMode && [out.init, out.fromIntake, out.intakeTemplate, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
     throw new Error("Use only one generated workspace mode: --init, --from-intake, --intake-template, --sample, --tasks, or --bundle");
   }
   if (out.sample && out.strict) {
@@ -948,7 +959,7 @@ export function parseSiteArgs(args) {
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
     throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.fromIntakePath || out.intakeTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.fromIntake || out.intakeTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
     throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --from-intake, --intake-template, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
   }
 
@@ -2908,7 +2919,9 @@ export function buildSiteIntakeNextActionsReport(workspace, summary = {}, option
     ...summary,
     filePath: workspacePath,
   });
-  const createWorkspaceCommand = `design-ai site --from-intake ${quoteCliValue(intakePath)} --out ${quoteCliValue(workspacePath)} --force`;
+  const createWorkspaceCommand = options.stdin
+    ? `cat company-website-intake.md | design-ai site --from-intake --stdin --out ${quoteCliValue(workspacePath)} --force`
+    : `design-ai site --from-intake ${quoteCliValue(intakePath)} --out ${quoteCliValue(workspacePath)} --force`;
   const createWorkspaceAction = {
     rank: 1,
     ...nextActionEntry({

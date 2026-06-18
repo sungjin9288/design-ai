@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 563 (unreleased)** — Added `design-ai site --from-intake --stdin` so filled company website intake Markdown can be piped into workspace JSON or next-actions generation with package smoke coverage.
 - **Phase 562 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake` workspace JSON stdout, JSON `--out`, and handoff bundle generation.
 - **Phase 561 (unreleased)** — Added `design-ai site --from-intake file.md` so filled English/Korean company website intake Markdown can generate workspace JSON, next-actions runbooks, or handoff bundles.
 - **Phase 560 (unreleased)** — Added `design-ai site --intake-template --language ko` Korean intake template output with JSON metadata and packed-tarball smoke coverage.

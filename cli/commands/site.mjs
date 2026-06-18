@@ -57,7 +57,7 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
-  console.log("        design-ai site --from-intake file.md [--json|--next-actions [--json]|--bundle --out dir] [--out file] [--strict] [--force]");
+  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--bundle --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
@@ -100,8 +100,8 @@ function printHelp() {
   console.log("  --flow text Add a key user flow for --init; repeatable");
   console.log("  --viewport kind");
   console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
-  console.log("  --from-intake file");
-  console.log("              Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file");
+  console.log("  --from-intake file|--stdin");
+  console.log("              Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin");
   console.log("  --intake-template");
   console.log("              Emit a blank company website intake Markdown template before --init or --bundle");
   console.log("  --language code");
@@ -145,6 +145,7 @@ function printHelp() {
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --json");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
@@ -278,9 +279,10 @@ export async function runSite(args) {
     return;
   }
 
-  if (parsed.fromIntakePath) {
-    const markdown = readFileSync(parsed.fromIntakePath, "utf8");
-    const workspace = createSiteWorkspaceFromIntakeMarkdown(markdown, { filePath: parsed.fromIntakePath });
+  if (parsed.fromIntake) {
+    const intakeSource = parsed.stdin ? "--stdin" : parsed.fromIntakePath;
+    const markdown = parsed.stdin ? readFileSync(0, "utf8") : readFileSync(parsed.fromIntakePath, "utf8");
+    const workspace = createSiteWorkspaceFromIntakeMarkdown(markdown, { filePath: intakeSource });
     let content = `${JSON.stringify(workspace, null, 2)}\n`;
     let status = "pass";
     if (parsed.bundle) {
@@ -296,7 +298,8 @@ export async function runSite(args) {
     } else if (parsed.nextActions) {
       const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
       const nextActionsReport = buildSiteIntakeNextActionsReport(workspace, summary, {
-        intakePath: parsed.fromIntakePath,
+        intakePath: intakeSource,
+        stdin: parsed.stdin,
         workspacePath: "website-workspace.json",
       });
       status = nextActionsReport.status;
