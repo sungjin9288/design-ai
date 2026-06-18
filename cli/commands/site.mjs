@@ -146,8 +146,11 @@ function printHelp() {
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json");
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
   console.log("  design-ai site --intake-template --language ko --out company-website-intake.ko.md");
   console.log("  design-ai site --sample --out website-workspace.json");

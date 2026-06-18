@@ -2740,8 +2740,11 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--next-actions --out website-next-actions\.md/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --out website-workspace\.json/);
+  assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --out website-workspace\.json --force/);
   assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --next-actions --out website-next-actions\.md/);
+  assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --next-actions --out website-next-actions\.md --force/);
   assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --bundle --out website-handoff-bundle/);
+  assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site --intake-template --out company-website-intake\.md/);
   assert.match(output.stdout, /design-ai site --intake-template --language ko --out company-website-intake\.ko\.md/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);

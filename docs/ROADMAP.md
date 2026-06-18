@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 566 — Website From-Intake Stdin Help Discovery Guard (unreleased)
+
+`design-ai site --help` now lists the piped from-intake commands for saving workspace JSON, creating the next-actions runbook, and writing a handoff bundle, so company website pilots can discover the stdin intake workflow without reading long-form docs first.
+
+### Added
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`.
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`.
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle`.
+- Added unit, shared smoke assertion, and release metadata guard coverage so release-facing docs keep the from-intake stdin help examples.
+
+### Impact
+- Operators can move from a filled Korean company intake Markdown file to workspace, runbook, or bundle commands from CLI help alone.
+- The change is documentation and smoke-guard only; it does not call external MCPs, mutate target repos, or change `site` command behavior.
+
+### Verification Plan
+- `node --test cli/lib/help-command.test.mjs cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 565 — Website From-Intake Stdin Next-Actions Smoke Coverage (unreleased)
 
 `design-ai site --from-intake --stdin --next-actions` now has packed-tarball smoke coverage for JSON stdout, JSON `--out`, and human Markdown `--out`, so piped intake workflows can produce a verified operator checklist before target-repo implementation.

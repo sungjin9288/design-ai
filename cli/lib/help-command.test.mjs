@@ -293,6 +293,9 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.match(siteOutput, /design-ai site website-workspace\.json --mcp-plan --probes --json --out mcp-action-plan-probes\.json/);
   assert.match(siteOutput, /design-ai site website-workspace\.json --next-actions --json/);
   assert.match(siteOutput, /design-ai site website-workspace\.json --next-actions --out website-next-actions\.md/);
+  assert.match(siteOutput, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --out website-workspace\.json --force/);
+  assert.match(siteOutput, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --next-actions --out website-next-actions\.md --force/);
+  assert.match(siteOutput, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --bundle --out website-handoff-bundle/);
   assert.match(siteOutput, /--graph\s+Export a portable Website Improvement workflow graph/);
   assert.match(siteOutput, /--tasks\s+Emit workspace JSON with starter refactor tasks generated from audit findings/);
   assert.match(siteOutput, /--bundle\s+Write a complete local handoff bundle directory/);
