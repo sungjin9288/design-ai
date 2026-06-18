@@ -1,9 +1,12 @@
 // `design-ai site` — validate Website Improvement Console exports and generate handoff artifacts.
 
+import { readFileSync } from "node:fs";
+
 import {
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
   buildSiteInitNextActionsReport,
+  buildSiteIntakeNextActionsReport,
   buildSiteIntakeTemplateMarkdown,
   buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
@@ -21,6 +24,7 @@ import {
   buildSiteWorkflowGraph,
   analyzeSiteWorkspace,
   createSiteWorkspaceFromInitOptions,
+  createSiteWorkspaceFromIntakeMarkdown,
   createSampleSiteWorkspace,
   formatSiteJson,
   formatSiteIntakeTemplateJson,
@@ -53,6 +57,7 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
+  console.log("        design-ai site --from-intake file.md [--json|--next-actions [--json]|--bundle --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
@@ -95,6 +100,8 @@ function printHelp() {
   console.log("  --flow text Add a key user flow for --init; repeatable");
   console.log("  --viewport kind");
   console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
+  console.log("  --from-intake file");
+  console.log("              Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file");
   console.log("  --intake-template");
   console.log("              Emit a blank company website intake Markdown template before --init or --bundle");
   console.log("  --language code");
@@ -137,6 +144,9 @@ function printHelp() {
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow \"Visitor compares plans and starts signup\" --out website-workspace.json");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
   console.log("  design-ai site --intake-template --language ko --out company-website-intake.ko.md");
   console.log("  design-ai site --sample --out website-workspace.json");
@@ -246,6 +256,48 @@ export async function runSite(args) {
           id: "workspace-ready",
           message: "Generated init workspace is ready to save before continuing.",
         }],
+      });
+      status = nextActionsReport.status;
+      content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
+    }
+    if (parsed.bundle) {
+      // Bundle output writes multiple files above.
+    } else if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
+    if (shouldFail({ status }, parsed.strict)) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
+  if (parsed.fromIntakePath) {
+    const markdown = readFileSync(parsed.fromIntakePath, "utf8");
+    const workspace = createSiteWorkspaceFromIntakeMarkdown(markdown, { filePath: parsed.fromIntakePath });
+    let content = `${JSON.stringify(workspace, null, 2)}\n`;
+    let status = "pass";
+    if (parsed.bundle) {
+      const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+      const bundle = buildSiteHandoffBundle(workspace, summary);
+      status = bundle.status;
+      const written = writeOutputFiles({
+        outPath: parsed.outPath,
+        files: bundle.files,
+        force: parsed.force,
+      });
+      success(`Wrote Website Improvement handoff bundle to ${written.directory} (${written.files.length} files)`);
+    } else if (parsed.nextActions) {
+      const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+      const nextActionsReport = buildSiteIntakeNextActionsReport(workspace, summary, {
+        intakePath: parsed.fromIntakePath,
+        workspacePath: "website-workspace.json",
       });
       status = nextActionsReport.status;
       content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;

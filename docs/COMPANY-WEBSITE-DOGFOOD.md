@@ -26,6 +26,15 @@ Use the [Company Website Intake Template](COMPANY-WEBSITE-INTAKE-TEMPLATE.md) wh
 
 Run this from the `design-ai` repository:
 
+If the intake template is already filled, convert it first:
+
+```bash
+design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
+design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
+```
+
+Use direct `--init` fields when no intake file exists yet:
+
 ```bash
 design-ai site --init \
   --name "Company marketing site" \
@@ -40,6 +49,16 @@ design-ai site --init \
 ```
 
 Then create the portable handoff bundle:
+
+```bash
+design-ai site --from-intake company-website-intake.md \
+  --bundle \
+  --out website-handoff-bundle \
+  --strict \
+  --force
+```
+
+Or create it from direct fields:
 
 ```bash
 design-ai site --init \

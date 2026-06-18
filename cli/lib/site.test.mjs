@@ -15,6 +15,7 @@ import {
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
   buildSiteInitNextActionsReport,
+  buildSiteIntakeNextActionsReport,
   buildSiteIntakeTemplateMarkdown,
   buildSiteBundleRepairBundle,
   buildSiteBundleRepairPreview,
@@ -29,6 +30,7 @@ import {
   buildSiteReport,
   buildSiteWorkflowGraph,
   createSiteWorkspaceFromInitOptions,
+  createSiteWorkspaceFromIntakeMarkdown,
   createSampleSiteWorkspace,
   SITE_BUNDLE_FILES,
   SITE_BUNDLE_CHECKSUM_FILES,
@@ -113,6 +115,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
       userFlows: [],
       viewports: [],
     },
+    fromIntakePath: "",
     intakeTemplate: false,
     language: "en",
     sample: false,
@@ -159,6 +162,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
       userFlows: [],
       viewports: [],
     },
+    fromIntakePath: "",
     intakeTemplate: false,
     language: "en",
     sample: false,
@@ -194,6 +198,8 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--intake-template", "--out", "company-website-intake.md"]).intakeTemplate, true);
   assert.equal(parseSiteArgs(["--intake-template", "--json"]).json, true);
   assert.equal(parseSiteArgs(["--intake-template", "--language", "ko"]).language, "ko");
+  assert.equal(parseSiteArgs(["--from-intake", "company-website-intake.ko.md", "--next-actions", "--json"]).fromIntakePath, "company-website-intake.ko.md");
+  assert.equal(parseSiteArgs(["--from-intake", "company-website-intake.ko.md", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["--prompt-list", "--json"]).promptList, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
@@ -304,6 +310,15 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--intake-template", "--language"]), /--language requires a value/);
   assert.throws(() => parseSiteArgs(["--intake-template", "--language", "jp"]), /--language must be one of: en, ko/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--language", "ko"]), /Use --language only with --intake-template/);
+  assert.throws(() => parseSiteArgs(["--from-intake"]), /--from-intake requires a value/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--from-intake", "company-website-intake.md"]), /Use --from-intake without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--stdin", "--from-intake", "company-website-intake.md"]), /Use --from-intake without a workspace JSON file path or --stdin/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--init"]), /Use --from-intake without --init or init profile fields/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--name", "Company"]), /only with --init/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--mcp-check"]), /Use --from-intake only with --json, --next-actions, --bundle, --out, --strict, or --force/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--strict"]), /Use --from-intake --strict only with --next-actions or --bundle/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--bundle"]), /--bundle requires --out directory/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--bundle", "--json", "--out", "bundle"]), /--json is not supported with --bundle/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompt-list"]), /Use --prompt-list without a workspace JSON file path or --stdin/);
@@ -453,6 +468,100 @@ test("buildSiteInitNextActionsReport prepends a durable workspace save action", 
   assert.match(json.commands.tasks, /design-ai site website-workspace\.json --tasks/);
   assert.match(human, /Save the generated Website Improvement workspace/);
   assert.match(human, /This init next-action report is deterministic and local/);
+});
+
+test("createSiteWorkspaceFromIntakeMarkdown parses a filled Korean company intake", () => {
+  const markdown = `# 회사 웹사이트 Intake Template
+
+## Site Profile
+
+| 항목 | 값 |
+|---|---|
+| 사이트 이름 | RAPA company site |
+| Live URL | https://rapa.example.com |
+| 대상 repo URL | https://github.com/acme/rapa-site |
+| 대상 repo local path | /Users/sungjin/dev/rapa-site |
+| Figma URL | https://figma.com/file/rapa |
+| 배포 플랫폼 | vercel |
+| Sentry 프로젝트 | acme/rapa-web |
+| CMS | wordpress |
+| Database | none |
+
+## 우선순위 페이지
+
+| 우선순위 | Path 또는 URL | 중요한 이유 |
+|---:|---|---|
+| 1 | / | 첫 인상과 CTA |
+| 2 | /programs | 교육 과정 전환 |
+
+## 주요 사용자 흐름
+
+| 우선순위 | Flow | 성공 신호 |
+|---:|---|---|
+| 1 | 방문자가 교육 과정을 비교하고 신청 CTA를 클릭 | 신청 CTA 클릭 |
+
+## Brand And Content Notes
+
+| 영역 | 메모 |
+|---|---|
+| 브랜드 톤 | 공공기관 신뢰감과 명확한 한국어 카피 |
+| 한국어 카피 규칙 | 과장 표현을 피하고 지원 요건을 먼저 보여줌 |
+
+## MCP Readiness Notes
+
+| 시스템 | 상태 | 근거 또는 fallback |
+|---|---|---|
+| GitHub | required | repo 접근 필요 |
+| Figma | optional | 디자인 파일 확인 가능 |
+| Browser / Playwright | required | 실제 페이지 QA |
+| Chrome DevTools | optional | console/network 확인 |
+| 배포 플랫폼 | required | Vercel preview 확인 |
+| Sentry | optional | production issue 확인 |
+| Database | unused | DB 없음 |
+| CMS | required | WordPress 콘텐츠 |
+| 협업 도구 | optional | 내부 피드백 |
+| 리서치 도구 | unused | 이번 pilot 제외 |
+
+## 초기 Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Visual design | Hero CTA hierarchy is weak | Primary and secondary buttons compete | / |
+| Accessibility | Mobile menu focus state is unclear | Keyboard focus ring not documented | / |
+`;
+
+  const workspace = createSiteWorkspaceFromIntakeMarkdown(markdown, {
+    filePath: "company-website-intake.ko.md",
+  });
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+  const taskWorkspace = generateSiteRefactorTasks(workspace).workspace;
+  const nextActions = buildSiteIntakeNextActionsReport(workspace, summary, {
+    intakePath: "company-website-intake.ko.md",
+  });
+
+  assert.equal(workspace.siteProfile.id, "rapa-company-site");
+  assert.equal(workspace.siteProfile.name, "RAPA company site");
+  assert.equal(workspace.siteProfile.liveUrl, "https://rapa.example.com");
+  assert.equal(workspace.siteProfile.repoUrl, "https://github.com/acme/rapa-site");
+  assert.equal(workspace.siteProfile.localPath, "/Users/sungjin/dev/rapa-site");
+  assert.equal(workspace.siteProfile.deployProvider, "vercel");
+  assert.equal(workspace.siteProfile.cms, "wordpress");
+  assert.deepEqual(workspace.siteProfile.pages, ["/", "/programs"]);
+  assert.deepEqual(workspace.siteProfile.userFlows, ["방문자가 교육 과정을 비교하고 신청 CTA를 클릭"]);
+  assert.match(workspace.siteProfile.brandNotes, /공공기관 신뢰감/);
+  assert.equal(workspace.mcpReadiness.github, "required");
+  assert.equal(workspace.mcpReadiness.cms, "required");
+  assert.equal(workspace.mcpReadiness.research, "unused");
+  assert.equal(workspace.auditChecklist["visual-design"].status, "in-progress");
+  assert.match(workspace.auditChecklist["visual-design"].findings[0], /Hero CTA hierarchy is weak/);
+  assert.match(workspace.auditChecklist.accessibility.findings[0], /Keyboard focus ring not documented/);
+  assert.match(workspace.reportNotes, /--from-intake company-website-intake\.ko\.md/);
+  assert.equal(summary.status, "pass");
+  assert.ok(taskWorkspace.refactorTasks.some((task) => task.id === "task-visual-design"));
+  assert.ok(taskWorkspace.refactorTasks.some((task) => task.id === "task-accessibility"));
+  assert.equal(nextActions.mode, "from-intake-next-actions");
+  assert.equal(nextActions.actions[0].title, "Save the parsed Website Improvement workspace");
+  assert.equal(nextActions.commands.createWorkspace, "design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json --force");
 });
 
 test("buildSiteIntakeTemplateMarkdown emits a company pilot intake form", () => {
@@ -2143,6 +2252,79 @@ test("runSite emits and writes a company website intake template", async () => {
   });
 });
 
+test("runSite converts a filled intake Markdown into workspace outputs", async () => {
+  await withTempDir(async (dir) => {
+    const intakeFile = path.join(dir, "company-website-intake.ko.md");
+    const workspaceFile = path.join(dir, "website-workspace.json");
+    const nextActionsFile = path.join(dir, "website-next-actions.json");
+    const bundleDir = path.join(dir, "website-handoff-bundle");
+
+    writeFileSync(intakeFile, `# 회사 웹사이트 Intake Template
+
+## Site Profile
+
+| 항목 | 값 |
+|---|---|
+| 사이트 이름 | RAPA company site |
+| Live URL | https://rapa.example.com |
+| 대상 repo URL | https://github.com/acme/rapa-site |
+| 배포 플랫폼 | vercel |
+| CMS | wordpress |
+
+## 우선순위 페이지
+
+| 우선순위 | Path 또는 URL | 중요한 이유 |
+|---:|---|---|
+| 1 | / | 첫 인상 |
+| 2 | /programs | 전환 |
+
+## 주요 사용자 흐름
+
+| 우선순위 | Flow | 성공 신호 |
+|---:|---|---|
+| 1 | 방문자가 프로그램을 비교하고 신청 CTA를 클릭 | 신청 CTA 클릭 |
+
+## MCP Readiness Notes
+
+| 시스템 | 상태 | 근거 또는 fallback |
+|---|---|---|
+| GitHub | required | repo 접근 |
+| Browser / Playwright | required | 실제 페이지 QA |
+| 배포 플랫폼 | required | preview 확인 |
+| CMS | required | WordPress 콘텐츠 |
+
+## 초기 Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Accessibility | Mobile menu focus state is unclear | Keyboard focus ring not documented | / |
+`, "utf8");
+
+    const workspaceOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--out", workspaceFile]));
+    assert.match(workspaceOutput.stdout, /Wrote /);
+    const workspace = JSON.parse(readFileSync(workspaceFile, "utf8"));
+    assert.equal(workspace.siteProfile.name, "RAPA company site");
+    assert.equal(workspace.siteProfile.liveUrl, "https://rapa.example.com");
+    assert.deepEqual(workspace.siteProfile.pages, ["/", "/programs"]);
+    assert.equal(workspace.mcpReadiness.cms, "required");
+    assert.match(workspace.auditChecklist.accessibility.findings[0], /Mobile menu focus state is unclear/);
+
+    const jsonOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--json"]));
+    assert.equal(JSON.parse(jsonOutput.stdout).siteProfile.name, "RAPA company site");
+
+    const nextActionsOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--next-actions", "--json", "--out", nextActionsFile]));
+    assert.match(nextActionsOutput.stdout, /Wrote /);
+    const nextActions = JSON.parse(readFileSync(nextActionsFile, "utf8"));
+    assert.equal(nextActions.mode, "from-intake-next-actions");
+    assert.match(nextActions.commands.createWorkspace, /design-ai site --from-intake/);
+
+    const bundleOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--bundle", "--out", bundleDir]));
+    assert.match(bundleOutput.stdout, /Wrote Website Improvement handoff bundle/);
+    assert.equal(existsSync(path.join(bundleDir, "summary.json")), true);
+    assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "summary.json"), "utf8")).taskGeneration.totalTasks, 1);
+  });
+});
+
 test("runSite emits and writes a valid sample workspace", async () => {
   await withTempDir(async (dir) => {
     const outFile = path.join(dir, "website-workspace.json");
@@ -2495,6 +2677,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --bundle --out dir \[--strict\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site --from-intake file\.md \[--json\|--next-actions \[--json\]\|--bundle --out dir\] \[--out file\] \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --intake-template \[--language en\|ko\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
@@ -2513,6 +2696,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--live-url url/);
   assert.match(output.stdout, /--page path Add a priority page for --init; repeatable/);
   assert.match(output.stdout, /--viewport kind/);
+  assert.match(output.stdout, /--from-intake file\s+Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file/);
   assert.match(output.stdout, /--intake-template\s+Emit a blank company website intake Markdown template/);
   assert.match(output.stdout, /--language code\s+With --intake-template, emit en or ko template content/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
@@ -2524,6 +2708,9 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site"/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--next-actions --out website-next-actions\.md/);
   assert.match(output.stdout, /design-ai site --init --name "Company marketing site".*--bundle --out website-handoff-bundle/);
+  assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --out website-workspace\.json/);
+  assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --next-actions --out website-next-actions\.md/);
+  assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site --intake-template --out company-website-intake\.md/);
   assert.match(output.stdout, /design-ai site --intake-template --language ko --out company-website-intake\.ko\.md/);
   assert.match(output.stdout, /design-ai site website-workspace\.json --mcp-check --probes --json --out mcp-check-probes\.json/);

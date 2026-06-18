@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 561 — Website Intake Markdown Import (unreleased)
+
+`design-ai site --from-intake file.md` now turns a filled company website intake Markdown file into a Website Improvement workspace, next-actions runbook, or handoff bundle without retyping the same project fields into `--init`.
+
+### Added
+- Added `--from-intake file.md` as a workspace-free Website Improvement mode that accepts English or Korean intake Markdown.
+- Parsed Site Profile fields, priority pages, primary user flows, brand/content notes, MCP readiness statuses, and initial audit findings into the existing workspace schema.
+- Added `--from-intake ... --next-actions` so operators get a save-first runbook, and `--from-intake ... --bundle --out <dir>` so filled intake files can create handoff bundles directly.
+
+### Impact
+- Company website pilots can move from a completed intake document to `website-workspace.json` and `website-handoff-bundle` without duplicating data entry.
+- The feature stays deterministic/local: it reads Markdown from disk, does not call external MCPs, and does not mutate the target website repo.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 560 — Korean Website Intake Template CLI Output (unreleased)
 
 `design-ai site --intake-template` now supports `--language ko` so Korean company pilots can generate the same intake artifact from the CLI without copying the docs template manually.

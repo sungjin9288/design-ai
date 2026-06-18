@@ -85,6 +85,16 @@ Capture only findings that are grounded in inspection. Do not invent Lighthouse,
 
 Replace placeholders and run from the `design-ai` repository.
 
+If this intake file is filled, use it directly:
+
+```bash
+design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
+design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
+design-ai site --from-intake company-website-intake.md --bundle --out website-handoff-bundle --strict --force
+```
+
+If no intake file is available, use direct fields:
+
 ```bash
 design-ai site --init \
   --name "<site name>" \
