@@ -48,6 +48,7 @@ design-ai site --intake-template --language ko --out company-website-intake.ko.m
 design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json
 cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force
 design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md
+cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force
 design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle
 cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle
 design-ai site --init --name "Company marketing site" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow "Visitor compares plans and starts signup" --out website-workspace.json

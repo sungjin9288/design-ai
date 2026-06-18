@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 565 — Website From-Intake Stdin Next-Actions Smoke Coverage (unreleased)
+
+`design-ai site --from-intake --stdin --next-actions` now has packed-tarball smoke coverage for JSON stdout, JSON `--out`, and human Markdown `--out`, so piped intake workflows can produce a verified operator checklist before target-repo implementation.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for `--from-intake --stdin --next-actions --json`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --next-actions --json --out <file>`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --next-actions --out <file>` human Markdown output.
+- Added release metadata guard wording so release-facing docs preserve stdin next-actions JSON stdout, JSON output-file persistence, and human output-file persistence coverage.
+
+### Impact
+- Company website pilots can pipe a filled intake document and get a durable `website-next-actions.md` runbook without first writing an intake file.
+- The flow remains deterministic and local; it does not call external MCPs or mutate the target website repo.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 564 — Website From-Intake Stdin Artifact Smoke Coverage (unreleased)
 
 `design-ai site --from-intake --stdin` now has packed-tarball smoke coverage for saved workspace JSON and handoff bundle outputs, closing the remaining stdin artifact path before company website dogfood.

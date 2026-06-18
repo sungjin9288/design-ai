@@ -1029,6 +1029,170 @@ def assert_site_from_intake_stdin_json_file_smoke(
     assert_site_from_intake_json(contents, context=context, cmd=cmd)
 
 
+def assert_site_from_intake_next_actions_json_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} is not valid JSON: {error}") from error
+
+    if payload.get("kind") != "website-improvement-next-actions" or payload.get("version") != 1:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} kind/version changed")
+    if payload.get("mode") != "from-intake-next-actions" or payload.get("intakePath") != "--stdin":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} source mode changed")
+    for key in ("status", "workspaceStatus", "mcpStatus", "mcpProbeStatus"):
+        if payload.get(key) != "pass":
+            raise SystemExit(f"site from-intake next-actions JSON after {context} expected pass {key}")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} boundary flags must remain false")
+
+    site = payload.get("site")
+    if not isinstance(site, dict) or site.get("name") != "Company marketing site":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} site summary changed")
+    if site.get("liveUrl") != "https://example.com" or site.get("repoUrl") != "https://github.com/acme/site":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} site URLs changed")
+
+    counts = payload.get("counts")
+    if not isinstance(counts, dict):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} counts missing")
+    expected_counts = {
+        "actions": 4,
+        "blocking": 0,
+        "warnings": 0,
+        "tasks": 0,
+        "requiredMcpMissing": 0,
+        "taskGaps": 0,
+        "probeGaps": 0,
+    }
+    for key, expected in expected_counts.items():
+        if counts.get(key) != expected:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} count {key} changed: {counts.get(key)!r}")
+
+    if payload.get("mcpProbeCounts") != {"count": 3, "pass": 3, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
+    if payload.get("topTasks") != []:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} topTasks should start empty")
+
+    actions = payload.get("actions")
+    if not isinstance(actions, list) or len(actions) != 4:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} actions changed")
+    expected_action_fragments = [
+        "--from-intake --stdin --out website-workspace.json --force",
+        "--tasks --out website-workspace.tasks.json",
+        "--report --out website-handoff.md",
+        "--bundle --out website-handoff-bundle",
+    ]
+    for index, fragment in enumerate(expected_action_fragments):
+        action = actions[index]
+        if not isinstance(action, dict) or action.get("rank") != index + 1:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} action rank changed")
+        command = action.get("command")
+        if not isinstance(command, str) or fragment not in command:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} action command missing {fragment!r}: {command!r}")
+
+    commands = payload.get("commands")
+    if not isinstance(commands, dict):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} commands missing")
+    if "--from-intake --stdin --out website-workspace.json --force" not in commands.get("createWorkspace", ""):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} createWorkspace command changed")
+    for key, fragment in (
+        ("tasks", "--tasks --out website-workspace.tasks.json"),
+        ("handoffReport", "--report --out website-handoff.md"),
+        ("handoffBundle", "--bundle --out website-handoff-bundle"),
+    ):
+        if fragment not in commands.get(key, ""):
+            raise SystemExit(f"site from-intake next-actions JSON after {context} command {key} changed")
+
+    boundary_text = "\n".join(str(item) for item in payload.get("boundaries", []))
+    for fragment in ("intake next-action report is deterministic and local", "does not call external MCPs", "mutate the target website repo"):
+        if fragment not in boundary_text:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} boundary guidance missing {fragment!r}")
+
+
+def assert_site_from_intake_next_actions_human_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    required_fragments = (
+        "Website Improvement next actions: Company marketing site",
+        "Status: pass",
+        "MCP probes: 3/3 passing, 0 warning, 0 failing",
+        "Actions: 4 (0 blocking, 0 warning)",
+        "Save the parsed Website Improvement workspace",
+        "--from-intake --stdin --out website-workspace.json --force",
+        "--tasks --out website-workspace.tasks.json",
+        "--report --out website-handoff.md",
+        "--bundle --out website-handoff-bundle",
+        "Boundaries:",
+        "deterministic and local",
+        "does not call external MCPs",
+        "mutate the target website repo",
+    )
+    for fragment in required_fragments:
+        if fragment not in raw:
+            raise SystemExit(f"site from-intake next-actions human after {context} missing fragment: {fragment!r}")
+    if '"kind": "website-improvement-next-actions"' in raw:
+        raise SystemExit(f"site from-intake next-actions human after {context} unexpectedly emitted JSON")
+
+
+def assert_site_from_intake_stdin_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_from_intake_next_actions_json_payload(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_next_actions_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin next-actions JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_next_actions_json_payload(contents, context=f"{context} out file", cmd=cmd)
+
+
+def assert_site_from_intake_stdin_next_actions_human_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin next-actions human out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_next_actions_human_payload(contents, context=f"{context} out file", cmd=cmd)
+
+
 def assert_site_init_bundle_smoke(
     cmd: list[str],
     *,
@@ -17298,6 +17462,47 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake stdin JSON",
         )
+        assert_site_from_intake_stdin_next_actions_json_smoke(
+            [str(bin_path), "site", "--from-intake", "--stdin", "--next-actions", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions JSON",
+        )
+        installed_site_from_intake_stdin_next_actions_json_out = install_root / "site-from-intake-stdin-next-actions.json"
+        assert_site_from_intake_stdin_next_actions_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(installed_site_from_intake_stdin_next_actions_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_next_actions_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions JSON out file",
+        )
+        installed_site_from_intake_stdin_next_actions_human_out = install_root / "site-from-intake-stdin-next-actions.md"
+        assert_site_from_intake_stdin_next_actions_human_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(installed_site_from_intake_stdin_next_actions_human_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_next_actions_human_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions human out file",
+        )
         installed_site_from_intake_json_out = install_root / "site-from-intake-workspace.json"
         assert_site_from_intake_json_file_smoke(
             [
@@ -18534,6 +18739,47 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site from-intake stdin JSON",
+        )
+        assert_site_from_intake_stdin_next_actions_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions JSON",
+        )
+        npx_site_from_intake_stdin_next_actions_json_out = npx_root / "site-from-intake-stdin-next-actions.json"
+        assert_site_from_intake_stdin_next_actions_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(npx_site_from_intake_stdin_next_actions_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_next_actions_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions JSON out file",
+        )
+        npx_site_from_intake_stdin_next_actions_human_out = npx_root / "site-from-intake-stdin-next-actions.md"
+        assert_site_from_intake_stdin_next_actions_human_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(npx_site_from_intake_stdin_next_actions_human_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_next_actions_human_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions human out file",
         )
         npx_site_from_intake_json_out = npx_root / "site-from-intake-workspace.json"
         assert_site_from_intake_json_file_smoke(
