@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 571 — Website Bundle Handoff Task Commands (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now turns the bundle task catalog into copy-ready follow-up commands for each selectable refactor task.
+
+### Added
+- Added `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand` to each JSON `bundle.taskCatalog.items[]` entry.
+- Added each task's strict handoff command to the “Available Bundle Tasks” section in the target-repo prompt.
+- Added unit and packed-tarball smoke assertions for the per-task handoff command contract.
+
+### Impact
+- Company website pilots can inspect one verified bundle handoff output and immediately copy the strict command for task 1, task 2, or a named task.
+- The command metadata is deterministic and local; it does not call external MCPs, mutate target repos, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 570 — Website Bundle Handoff Task Catalog (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff` now includes a task catalog before target-repo implementation, so company website pilots can choose the right refactor task without opening `website-workspace.tasks.json` manually.

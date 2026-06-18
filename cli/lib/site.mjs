@@ -4405,7 +4405,25 @@ function loadSiteBundleWorkspace(directory) {
   return analyzeSiteWorkspace(raw, { filePath: targetPath }).workspace;
 }
 
-function summarizeBundleTaskItem(task, index) {
+function taskHandoffOutFile(task) {
+  return `target-repo-${task.id}-handoff.md`;
+}
+
+function buildBundleTaskHandoffCommand(directory, task, { strict = false } = {}) {
+  const parts = [
+    "design-ai",
+    "site",
+    shellQuote(directory),
+    "--bundle-handoff",
+    "--task",
+    shellQuote(task.id),
+  ];
+  if (strict) parts.push("--strict");
+  parts.push("--out", shellQuote(taskHandoffOutFile(task)));
+  return parts.join(" ");
+}
+
+function summarizeBundleTaskItem(task, index, directory) {
   return {
     number: index + 1,
     id: task.id,
@@ -4417,11 +4435,14 @@ function summarizeBundleTaskItem(task, index) {
     pages: normalizeStringArray(task.pages),
     recommendedMcp: normalizeStringArray(task.recommendedMcp),
     handoffTaskArg: task.id,
+    handoffOutFile: taskHandoffOutFile(task),
+    handoffCommand: buildBundleTaskHandoffCommand(directory, task),
+    strictHandoffCommand: buildBundleTaskHandoffCommand(directory, task, { strict: true }),
   };
 }
 
-function summarizeBundleTaskCatalog(workspace, selectedTask = null) {
-  const items = orderedRefactorTasks(workspace).map((task, index) => summarizeBundleTaskItem(task, index));
+function summarizeBundleTaskCatalog(workspace, directory, selectedTask = null) {
+  const items = orderedRefactorTasks(workspace).map((task, index) => summarizeBundleTaskItem(task, index, directory));
   const selectedTaskId = selectedTask?.id || "";
   return {
     source: "website-workspace.tasks.json",
@@ -4467,7 +4488,8 @@ function formatBundleHandoffTaskCatalogLines(taskCatalog) {
   return taskCatalog.items.map((task) => {
     const pages = task.pages.length ? task.pages.join(", ") : "all pages";
     const mcps = task.recommendedMcp.length ? task.recommendedMcp.join(", ") : "none";
-    return `- ${task.number}. [${task.priority}/${task.impact}/${task.effort}] ${task.id}: ${task.title} (pages: ${pages}; MCP: ${mcps})`;
+    const command = task.strictHandoffCommand || task.handoffCommand || `design-ai site <bundle-dir> --bundle-handoff --task ${task.handoffTaskArg}`;
+    return `- ${task.number}. [${task.priority}/${task.impact}/${task.effort}] ${task.id}: ${task.title} (pages: ${pages}; MCP: ${mcps}; command: \`${command}\`)`;
   });
 }
 
@@ -4601,7 +4623,7 @@ export function buildSiteBundleHandoffReport({
     codexImplementation = buildSitePrompt(bundleWorkspace, "codex-implementation", { taskSelector });
   }
   const taskCatalog = bundleWorkspace
-    ? summarizeBundleTaskCatalog(bundleWorkspace, selectedTask)
+    ? summarizeBundleTaskCatalog(bundleWorkspace, checkReport.directory, selectedTask)
     : emptyBundleTaskCatalog(taskCatalogError);
 
   const bundleTexts = {

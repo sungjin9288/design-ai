@@ -2203,6 +2203,15 @@ def assert_site_bundle_handoff_json_smoke(
         "3:task-content-quality",
     ]:
         raise SystemExit(f"site bundle handoff after {context} task catalog items changed: {task_items!r}")
+    first_task = task_items[0]
+    if first_task.get("handoffOutFile") != "target-repo-task-accessibility-handoff.md":
+        raise SystemExit(f"site bundle handoff after {context} task catalog out file changed: {first_task!r}")
+    strict_handoff_command = first_task.get("strictHandoffCommand")
+    if (
+        not isinstance(strict_handoff_command, str)
+        or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in strict_handoff_command
+    ):
+        raise SystemExit(f"site bundle handoff after {context} task catalog strict command changed: {strict_handoff_command!r}")
     repair_guidance = bundle.get("repairGuidance")
     if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
         raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
@@ -2231,6 +2240,7 @@ def assert_site_bundle_handoff_json_smoke(
         "Primary Codex Implementation Prompt",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
+        "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md",
         f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Generated files: 8/8 match the current CLI bundle contract",

@@ -95,7 +95,7 @@ The bundle is ready for implementation only when `bundle-check` passes. The hand
 - quality gate commands to run in the target repo
 - implementation evidence and remaining-risk requirements
 
-Use the plain `--bundle-handoff` command when the top-priority bundled implementation prompt is correct. The generated handoff now includes an “Available Bundle Tasks” catalog with each task number, id, priority, impact, effort, pages, and recommended MCPs. Add `--task <id-or-number>` when the company pilot has chosen a specific task from that catalog or from `website-workspace.tasks.json`.
+Use the plain `--bundle-handoff` command when the top-priority bundled implementation prompt is correct. The generated handoff now includes an “Available Bundle Tasks” catalog with each task number, id, priority, impact, effort, pages, recommended MCPs, and a copy-ready strict handoff command. Add `--task <id-or-number>` when the company pilot has chosen a specific task from that catalog or from `website-workspace.tasks.json`.
 
 ## Step 3: Execute In The Target Website Repo
 

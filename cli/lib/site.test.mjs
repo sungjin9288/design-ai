@@ -1637,6 +1637,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "2:task-homepage-cta",
     "3:task-content-quality",
   ]);
+  assert.equal(report.bundle.taskCatalog.items[0].handoffOutFile, "target-repo-task-accessibility-handoff.md");
+  assert.match(report.bundle.taskCatalog.items[0].handoffCommand, /design-ai site .* --bundle-handoff --task task-accessibility --out target-repo-task-accessibility-handoff\.md/);
+  assert.match(report.bundle.taskCatalog.items[0].strictHandoffCommand, /design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md/);
   assert.equal(report.bundle.mcpProbeStatus, "pass");
   assert.deepEqual(report.bundle.mcpProbeCounts, {
     count: 4,
@@ -1682,6 +1685,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Default task: task-accessibility/);
   assert.match(report.prompt, /Selected task: none/);
   assert.match(report.prompt, /1\. \[p0\/high\/medium\] task-accessibility:/);
+  assert.match(report.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
   assert.match(report.prompt, /3\. \[p1\/medium\/medium\] task-content-quality:/);
   assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);
@@ -1728,6 +1732,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "task-homepage-cta",
     "task-content-quality",
   ]);
+  assert.equal(json.bundle.taskCatalog.items[2].handoffOutFile, "target-repo-task-content-quality-handoff.md");
+  assert.match(json.bundle.taskCatalog.items[2].strictHandoffCommand, /--task task-content-quality --strict --out target-repo-task-content-quality-handoff\.md/);
   assert.match(json.prompt, /Primary Codex Implementation Prompt/);
   assert.match(human, /Bundle Gate/);
 
@@ -2214,6 +2220,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       "2:task-homepage-cta",
       "3:task-content-quality",
     ]);
+    assert.equal(bundleHandoffPayload.bundle.taskCatalog.items[0].handoffOutFile, "target-repo-task-accessibility-handoff.md");
+    assert.match(bundleHandoffPayload.bundle.taskCatalog.items[0].strictHandoffCommand, /--task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md/);
     assert.equal(bundleHandoffPayload.bundle.repairGuidance.available, true);
     assert.match(bundleHandoffPayload.bundle.repairGuidance.previewReportCommand, /--bundle-repair --json --out .*repair-preview\.json/);
     assert.match(bundleHandoffPayload.bundle.repairGuidance.applyReportCommand, /--bundle-repair --yes --json --out .*repair-applied\.json/);
@@ -2224,6 +2232,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       nextActions: 0,
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
+    assert.match(bundleHandoffPayload.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /Repair guidance:\n- Available: yes/);
     assert.match(bundleHandoffPayload.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);
     assert.match(bundleHandoffPayload.prompt, /Apply report: design-ai site .* --bundle-repair --yes --json --out .*repair-applied\.json/);
