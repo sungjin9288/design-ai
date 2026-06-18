@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 573 — Website Bundle Default Task Command Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the bundled default refactor task as a first-class JSON object.
+
+### Added
+- Added JSON `bundle.defaultTask` with `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand`.
+- Added a “Default task strict command” line to the target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for default-task command metadata.
+
+### Impact
+- Operators and wrappers can read the default implementation task directly without assuming `taskCatalog.items[0]` is the active default.
+- The output remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 572 — Website Bundle Selected Task Command Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --task <id-or-number> --json` now makes the selected refactor task self-contained for wrappers and company website pilots.

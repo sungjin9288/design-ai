@@ -4541,6 +4541,9 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "## Available Bundle Tasks",
     `Task catalog source: ${bundleTexts.taskCatalog?.source || "unknown"}`,
     `Default task: ${bundleTexts.taskCatalog?.defaultTaskId || "none"}`,
+    ...(bundleTexts.defaultTask?.strictHandoffCommand
+      ? [`Default task strict command: \`${bundleTexts.defaultTask.strictHandoffCommand}\``]
+      : []),
     `Selected task: ${bundleTexts.taskCatalog?.selectedTaskId || "none"}`,
     ...(bundleTexts.selectedTask?.strictHandoffCommand
       ? [`Selected task strict command: \`${bundleTexts.selectedTask.strictHandoffCommand}\``]
@@ -4632,9 +4635,11 @@ export function buildSiteBundleHandoffReport({
   const taskCatalog = bundleWorkspace
     ? summarizeBundleTaskCatalog(bundleWorkspace, checkReport.directory, selectedTask)
     : emptyBundleTaskCatalog(taskCatalogError);
+  const defaultTask = taskCatalog.items[0] || null;
 
   const bundleTexts = {
     taskCatalog,
+    defaultTask,
     selectedTask,
     codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
@@ -4668,6 +4673,7 @@ export function buildSiteBundleHandoffReport({
       generatedFailures: checkReport.counts.generatedFailures,
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
       taskCatalog,
+      defaultTask,
       selectedTask,
       boundaries,
       externalCalls: false,

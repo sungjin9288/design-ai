@@ -1632,6 +1632,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
   assert.equal(report.bundle.taskCatalog.selectedTaskId, "");
   assert.equal(report.bundle.taskCatalog.selectionMode, "bundled-default");
+  assert.equal(report.bundle.defaultTask.id, "task-accessibility");
+  assert.equal(report.bundle.defaultTask.handoffOutFile, "target-repo-task-accessibility-handoff.md");
+  assert.match(report.bundle.defaultTask.strictHandoffCommand, /--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md/);
   assert.deepEqual(report.bundle.taskCatalog.items.map((task) => `${task.number}:${task.id}`), [
     "1:task-accessibility",
     "2:task-homepage-cta",
@@ -1683,6 +1686,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Primary task selection: bundled codex-implementation\.md default/);
   assert.match(report.prompt, /Available Bundle Tasks/);
   assert.match(report.prompt, /Default task: task-accessibility/);
+  assert.match(report.prompt, /Default task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
   assert.match(report.prompt, /Selected task: none/);
   assert.match(report.prompt, /1\. \[p0\/high\/medium\] task-accessibility:/);
   assert.match(report.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
@@ -1727,6 +1731,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.bundle.repairGuidance.available, true);
   assert.equal(json.bundle.selectedTask, null);
   assert.equal(json.bundle.taskCatalog.count, 3);
+  assert.equal(json.bundle.defaultTask.id, "task-accessibility");
+  assert.match(json.bundle.defaultTask.strictHandoffCommand, /--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md/);
   assert.deepEqual(json.bundle.taskCatalog.items.map((task) => task.id), [
     "task-accessibility",
     "task-homepage-cta",
@@ -2221,6 +2227,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.deepEqual(bundleHandoffPayload.bundle.generatedDriftFiles, []);
     assert.equal(bundleHandoffPayload.bundle.taskCatalog.count, 3);
     assert.equal(bundleHandoffPayload.bundle.taskCatalog.defaultTaskId, "task-accessibility");
+    assert.equal(bundleHandoffPayload.bundle.defaultTask.id, "task-accessibility");
+    assert.match(bundleHandoffPayload.bundle.defaultTask.strictHandoffCommand, /--task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md/);
     assert.deepEqual(bundleHandoffPayload.bundle.taskCatalog.items.map((task) => `${task.number}:${task.id}`), [
       "1:task-accessibility",
       "2:task-homepage-cta",
@@ -2238,6 +2246,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
       nextActions: 0,
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
+    assert.match(bundleHandoffPayload.prompt, /Default task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /Repair guidance:\n- Available: yes/);
     assert.match(bundleHandoffPayload.prompt, /Preview report: design-ai site .* --bundle-repair --json --out .*repair-preview\.json/);

@@ -2181,6 +2181,15 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+    default_task = bundle.get("defaultTask")
+    if (
+        not isinstance(default_task, dict)
+        or default_task.get("id") != "task-accessibility"
+        or default_task.get("handoffOutFile") != "target-repo-task-accessibility-handoff.md"
+        or not isinstance(default_task.get("strictHandoffCommand"), str)
+        or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in default_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} default task command metadata changed: {default_task!r}")
     selected_task = bundle.get("selectedTask")
     if expected_selected_task_id is None:
         if selected_task is not None:
@@ -2246,6 +2255,7 @@ def assert_site_bundle_handoff_json_smoke(
         "Primary Codex Implementation Prompt",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
+        "Default task strict command: `",
         "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md",
         f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
