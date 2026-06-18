@@ -8,6 +8,8 @@
 
 첫 bundle을 만들기 전에 아래 값을 모읍니다.
 
+사이트 정보가 아직 정리되지 않았다면 [회사 웹사이트 Intake Template](COMPANY-WEBSITE-INTAKE-TEMPLATE.ko.md)을 먼저 채웁니다.
+
 | 항목 | 필수 | 예시 |
 |---|---:|---|
 | 사이트 이름 | 예 | `Company marketing site` |

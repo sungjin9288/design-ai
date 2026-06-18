@@ -8,6 +8,8 @@ This repository remains the planning and handoff control tower. Do not copy the 
 
 Collect these values before generating the first bundle:
 
+Use the [Company Website Intake Template](COMPANY-WEBSITE-INTAKE-TEMPLATE.md) when the site details are not ready yet.
+
 | Field | Required | Example |
 |---|---:|---|
 | Site name | yes | `Company marketing site` |
