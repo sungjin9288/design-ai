@@ -268,6 +268,50 @@ SITE_FROM_INTAKE_SMOKE_MARKDOWN = """# Company Website Intake Template
 | Visual design | | | |
 """
 
+SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN = """# Company Website Intake Template
+
+## Site Profile
+
+| Field | Value |
+|---|---|
+| Site name | Company marketing site |
+| Live URL | https://example.com |
+| Target repo URL | https://github.com/acme/site |
+| Target repo local path | |
+| Figma URL | |
+| Deploy provider | vercel |
+| Sentry project | |
+| CMS | none |
+| Database | none |
+
+## Priority Pages
+
+| Priority | Path or URL | Why it matters |
+|---:|---|---|
+| 1 | / | Primary conversion |
+| 2 | /pricing | Pricing comparison |
+
+## Primary User Flows
+
+| Priority | Flow | Success signal |
+|---:|---|---|
+| 1 | Visitor compares plans and starts signup | Signup intent |
+
+## MCP Readiness Notes
+
+| System | Status | Evidence or fallback |
+|---|---|---|
+| GitHub | required | repo reference |
+| Browser / Playwright | required | live URL |
+| Deploy provider | required | vercel |
+
+## Initial Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Accessibility | Mobile nav focus is unclear | Keyboard focus ring is missing from the menu trigger | / |
+"""
+
 
 def assert_site_mcp_probe_counts(
     actual: object,
@@ -963,6 +1007,12 @@ def write_site_from_intake_fixture(root: Path, *, filename: str = "company-websi
     return path
 
 
+def write_site_from_intake_tasks_fixture(root: Path, *, filename: str = "company-website-intake.tasks.md") -> Path:
+    path = root / filename
+    path.write_text(SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN, encoding="utf-8")
+    return path
+
+
 def assert_site_from_intake_json_smoke(
     cmd: list[str],
     *,
@@ -1027,6 +1077,80 @@ def assert_site_from_intake_stdin_json_file_smoke(
         raise SystemExit(f"failed to read site from-intake stdin JSON out file after {context}: {out_file}") from error
     assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
     assert_site_from_intake_json(contents, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_tasks_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site from-intake tasks JSON after {context} is not valid JSON: {error}") from error
+
+    profile = payload.get("siteProfile")
+    if not isinstance(profile, dict) or profile.get("name") != "Company marketing site":
+        raise SystemExit(f"site from-intake tasks JSON after {context} site profile changed")
+    if profile.get("liveUrl") != "https://example.com" or profile.get("repoUrl") != "https://github.com/acme/site":
+        raise SystemExit(f"site from-intake tasks JSON after {context} site URLs changed")
+
+    tasks = payload.get("refactorTasks")
+    if not isinstance(tasks, list) or len(tasks) != 1:
+        raise SystemExit(f"site from-intake tasks JSON after {context} expected one generated task")
+    task = tasks[0]
+    if not isinstance(task, dict):
+        raise SystemExit(f"site from-intake tasks JSON after {context} task is not an object")
+    expected = {
+        "id": "task-accessibility",
+        "category": "accessibility",
+        "priority": "p0",
+        "impact": "high",
+        "effort": "medium",
+    }
+    for key, value in expected.items():
+        if task.get(key) != value:
+            raise SystemExit(f"site from-intake tasks JSON after {context} task {key} changed: {task.get(key)!r}")
+    if "Mobile nav focus is unclear" not in task.get("problem", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} task problem missing intake finding")
+    if task.get("pages") != ["/", "/pricing"]:
+        raise SystemExit(f"site from-intake tasks JSON after {context} task pages changed")
+    if "chromeDevtools" not in task.get("recommendedMcp", []):
+        raise SystemExit(f"site from-intake tasks JSON after {context} accessibility task should recommend Chrome DevTools")
+    if "target website repo" not in task.get("codexPrompt", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} generated prompt must preserve target repo boundary")
+    if "design-ai site --from-intake" not in payload.get("reportNotes", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} reportNotes provenance changed")
+
+
+def assert_site_from_intake_tasks_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_from_intake_tasks_payload(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_tasks_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin tasks JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_tasks_payload(contents, context=f"{context} out file", cmd=cmd)
 
 
 def assert_site_from_intake_next_actions_json_payload(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -17462,6 +17586,30 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake stdin JSON",
         )
+        installed_site_from_intake_tasks = write_site_from_intake_tasks_fixture(install_root)
+        assert_site_from_intake_tasks_json_smoke(
+            [str(bin_path), "site", "--from-intake", str(installed_site_from_intake_tasks), "--tasks"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake tasks JSON",
+        )
+        installed_site_from_intake_stdin_tasks_out = install_root / "site-from-intake-stdin-tasks.json"
+        assert_site_from_intake_stdin_tasks_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_stdin_tasks_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_tasks_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin tasks JSON out file",
+        )
         assert_site_from_intake_stdin_next_actions_json_smoke(
             [str(bin_path), "site", "--from-intake", "--stdin", "--next-actions", "--json"],
             cwd=install_root,
@@ -18739,6 +18887,30 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site from-intake stdin JSON",
+        )
+        npx_site_from_intake_tasks = write_site_from_intake_tasks_fixture(npx_root)
+        assert_site_from_intake_tasks_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", str(npx_site_from_intake_tasks), "--tasks"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake tasks JSON",
+        )
+        npx_site_from_intake_stdin_tasks_out = npx_root / "site-from-intake-stdin-tasks.json"
+        assert_site_from_intake_stdin_tasks_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_stdin_tasks_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_tasks_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin tasks JSON out file",
         )
         assert_site_from_intake_stdin_next_actions_json_smoke(
             npm_exec_cmd(tarball, "site", "--from-intake", "--stdin", "--next-actions", "--json"),

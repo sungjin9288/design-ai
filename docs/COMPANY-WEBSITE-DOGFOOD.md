@@ -31,6 +31,7 @@ If the intake template is already filled, convert it first:
 ```bash
 design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
 design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
+design-ai site --from-intake company-website-intake.md --tasks --out website-workspace.tasks.json --force
 ```
 
 Use direct `--init` fields when no intake file exists yet:

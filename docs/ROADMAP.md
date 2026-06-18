@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 567 — Website From-Intake Task Generation (unreleased)
+
+`design-ai site --from-intake file.md|--stdin --tasks` now converts filled company website intake Markdown with grounded initial audit findings into a task-ready `website-workspace.tasks.json` workspace without requiring an intermediate workspace command.
+
+### Added
+- Added `--from-intake ... --tasks` as a deterministic local task generation mode for filled English/Korean intake Markdown.
+- Added command-specific help examples for file and stdin task output.
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for from-intake task JSON stdout and stdin task JSON `--out` file persistence.
+- Added release metadata guard wording so release-facing docs preserve the from-intake task generation package smoke contract.
+
+### Impact
+- Company website pilots can move from a completed intake document to starter refactor tasks in one command before target-repo implementation.
+- The flow still does not call external MCPs or mutate the target website repo; it only reads local intake Markdown and writes local operator artifacts.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 566 — Website From-Intake Stdin Help Discovery Guard (unreleased)
 
 `design-ai site --help` now lists the piped from-intake commands for saving workspace JSON, creating the next-actions runbook, and writing a handoff bundle, so company website pilots can discover the stdin intake workflow without reading long-form docs first.

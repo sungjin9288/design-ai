@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 567 (unreleased)** — Added `design-ai site --from-intake file.md|--stdin --tasks` so filled company website intake Markdown can generate task-ready workspace JSON directly, with package smoke and release metadata guard coverage.
 - **Phase 566 (unreleased)** — Added `design-ai site --help` examples and release metadata guard coverage for from-intake stdin workspace, next-actions, and bundle commands.
 - **Phase 565 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake --stdin --next-actions` JSON stdout, JSON `--out`, and human Markdown `--out`.
 - **Phase 564 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake --stdin --out <file>` and stdin handoff bundle generation.

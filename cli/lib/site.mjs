@@ -860,11 +860,11 @@ export function parseSiteArgs(args) {
   if (out.init && out.strict && !(out.nextActions || out.bundle)) {
     throw new Error("Use --init --strict only with --next-actions or --bundle");
   }
-  if (out.fromIntake && (out.intakeTemplate || out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
-    throw new Error("Use --from-intake only with --json, --next-actions, --bundle, --out, --strict, or --force");
+  if (out.fromIntake && (out.intakeTemplate || out.sample || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
+    throw new Error("Use --from-intake only with --json, --next-actions, --tasks, --bundle, --out, --strict, or --force");
   }
-  if (out.fromIntake && out.strict && !(out.nextActions || out.bundle)) {
-    throw new Error("Use --from-intake --strict only with --next-actions or --bundle");
+  if (out.fromIntake && out.strict && !(out.nextActions || out.tasks || out.bundle)) {
+    throw new Error("Use --from-intake --strict only with --next-actions, --tasks, or --bundle");
   }
   if (out.sample && sources.length > 0) {
     throw new Error("Use --sample without a workspace JSON file path or --stdin");
@@ -928,7 +928,8 @@ export function parseSiteArgs(args) {
   }
   const initBundleMode = out.init && out.bundle;
   const fromIntakeBundleMode = out.fromIntake && out.bundle;
-  if (!initBundleMode && !fromIntakeBundleMode && [out.init, out.fromIntake, out.intakeTemplate, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
+  const fromIntakeTasksMode = out.fromIntake && out.tasks;
+  if (!initBundleMode && !fromIntakeBundleMode && !fromIntakeTasksMode && [out.init, out.fromIntake, out.intakeTemplate, out.sample, out.tasks, out.bundle].filter(Boolean).length > 1) {
     throw new Error("Use only one generated workspace mode: --init, --from-intake, --intake-template, --sample, --tasks, or --bundle");
   }
   if (out.sample && out.strict) {

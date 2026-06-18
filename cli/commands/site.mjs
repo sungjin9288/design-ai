@@ -57,7 +57,7 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
-  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--bundle --out dir] [--out file] [--strict] [--force]");
+  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
@@ -101,7 +101,7 @@ function printHelp() {
   console.log("  --viewport kind");
   console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
   console.log("  --from-intake file|--stdin");
-  console.log("              Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin");
+  console.log("              Generate a workspace, task-ready workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin");
   console.log("  --intake-template");
   console.log("              Emit a blank company website intake Markdown template before --init or --bundle");
   console.log("  --language code");
@@ -149,6 +149,8 @@ function printHelp() {
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md");
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --tasks --out website-workspace.tasks.json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force");
   console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle");
   console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
@@ -307,6 +309,11 @@ export async function runSite(args) {
       });
       status = nextActionsReport.status;
       content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
+    } else if (parsed.tasks) {
+      const taskWorkspace = generateSiteRefactorTasks(workspace).workspace;
+      const { summary } = analyzeSiteWorkspace(taskWorkspace, { filePath: "website-workspace.tasks.json" });
+      status = summary.status;
+      content = `${JSON.stringify(taskWorkspace, null, 2)}\n`;
     }
     if (parsed.bundle) {
       // Bundle output writes multiple files above.

@@ -90,6 +90,7 @@ If this intake file is filled, use it directly:
 ```bash
 design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
 design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
+design-ai site --from-intake company-website-intake.md --tasks --out website-workspace.tasks.json --force
 design-ai site --from-intake company-website-intake.md --bundle --out website-handoff-bundle --strict --force
 ```
 

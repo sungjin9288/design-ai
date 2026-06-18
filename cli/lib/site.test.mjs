@@ -204,6 +204,8 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["--from-intake", "--stdin", "--json"]).fromIntake, true);
   assert.equal(parseSiteArgs(["--from-intake", "--stdin", "--json"]).stdin, true);
   assert.equal(parseSiteArgs(["--from-intake", "company-website-intake.ko.md", "--next-actions", "--json"]).fromIntakePath, "company-website-intake.ko.md");
+  assert.equal(parseSiteArgs(["--from-intake", "company-website-intake.ko.md", "--tasks", "--out", "website-workspace.tasks.json"]).tasks, true);
+  assert.equal(parseSiteArgs(["--from-intake", "--stdin", "--tasks", "--out", "website-workspace.tasks.json"]).stdin, true);
   assert.equal(parseSiteArgs(["--from-intake", "company-website-intake.ko.md", "--bundle", "--out", "handoff-bundle"]).bundle, true);
   assert.equal(parseSiteArgs(["--prompt-list", "--json"]).promptList, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
@@ -320,8 +322,8 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--stdin"]), /Use --from-intake with either a file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--init"]), /Use --from-intake without --init or init profile fields/);
   assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--name", "Company"]), /only with --init/);
-  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--mcp-check"]), /Use --from-intake only with --json, --next-actions, --bundle, --out, --strict, or --force/);
-  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--strict"]), /Use --from-intake --strict only with --next-actions or --bundle/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--mcp-check"]), /Use --from-intake only with --json, --next-actions, --tasks, --bundle, --out, --strict, or --force/);
+  assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--strict"]), /Use --from-intake --strict only with --next-actions, --tasks, or --bundle/);
   assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--bundle"]), /--bundle requires --out directory/);
   assert.throws(() => parseSiteArgs(["--from-intake", "company-website-intake.md", "--bundle", "--json", "--out", "bundle"]), /--json is not supported with --bundle/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--sample"]), /Use --sample without a workspace JSON file path or --stdin/);
@@ -2261,6 +2263,8 @@ test("runSite converts a filled intake Markdown into workspace outputs", async (
   await withTempDir(async (dir) => {
     const intakeFile = path.join(dir, "company-website-intake.ko.md");
     const workspaceFile = path.join(dir, "website-workspace.json");
+    const tasksFile = path.join(dir, "website-workspace.tasks.json");
+    const stdinTasksFile = path.join(dir, "website-workspace.stdin.tasks.json");
     const nextActionsFile = path.join(dir, "website-next-actions.json");
     const bundleDir = path.join(dir, "website-handoff-bundle");
 
@@ -2348,6 +2352,27 @@ test("runSite converts a filled intake Markdown into workspace outputs", async (
     const nextActions = JSON.parse(readFileSync(nextActionsFile, "utf8"));
     assert.equal(nextActions.mode, "from-intake-next-actions");
     assert.match(nextActions.commands.createWorkspace, /design-ai site --from-intake/);
+
+    const tasksOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--tasks", "--out", tasksFile]));
+    assert.match(tasksOutput.stdout, /Wrote /);
+    const tasksWorkspace = JSON.parse(readFileSync(tasksFile, "utf8"));
+    assert.equal(tasksWorkspace.siteProfile.name, "RAPA company site");
+    assert.deepEqual(tasksWorkspace.refactorTasks.map((task) => task.id), ["task-accessibility"]);
+    assert.match(tasksWorkspace.refactorTasks[0].problem, /Mobile menu focus state is unclear/);
+
+    const stdinTasksOutput = spawnSync(
+      process.execPath,
+      [path.join(process.cwd(), "cli/bin/design-ai.mjs"), "site", "--from-intake", "--stdin", "--tasks", "--out", stdinTasksFile, "--force"],
+      {
+        input: readFileSync(intakeFile, "utf8"),
+        encoding: "utf8",
+      },
+    );
+    assert.equal(stdinTasksOutput.status, 0, stdinTasksOutput.stderr);
+    assert.match(stdinTasksOutput.stdout, /Wrote /);
+    const stdinTasksWorkspace = JSON.parse(readFileSync(stdinTasksFile, "utf8"));
+    assert.equal(stdinTasksWorkspace.siteProfile.name, "RAPA company site");
+    assert.deepEqual(stdinTasksWorkspace.refactorTasks.map((task) => task.id), ["task-accessibility"]);
 
     const bundleOutput = await captureConsole(() => runSite(["--from-intake", intakeFile, "--bundle", "--out", bundleDir]));
     assert.match(bundleOutput.stdout, /Wrote Website Improvement handoff bundle/);
@@ -2708,7 +2733,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
   assert.match(output.stdout, /design-ai site --init --name name --live-url url --bundle --out dir \[--strict\] \[--force\]/);
-  assert.match(output.stdout, /design-ai site --from-intake file\.md\|--stdin \[--json\|--next-actions \[--json\]\|--bundle --out dir\] \[--out file\] \[--strict\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site --from-intake file\.md\|--stdin \[--json\|--next-actions \[--json\]\|--tasks\|--bundle --out dir\] \[--out file\] \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --intake-template \[--language en\|ko\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --prompt-list \[--json\] \[--out file\] \[--force\]/);
@@ -2727,7 +2752,7 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /--live-url url/);
   assert.match(output.stdout, /--page path Add a priority page for --init; repeatable/);
   assert.match(output.stdout, /--viewport kind/);
-  assert.match(output.stdout, /--from-intake file\|--stdin\s+Generate a workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin/);
+  assert.match(output.stdout, /--from-intake file\|--stdin\s+Generate a workspace, task-ready workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin/);
   assert.match(output.stdout, /--intake-template\s+Emit a blank company website intake Markdown template/);
   assert.match(output.stdout, /--language code\s+With --intake-template, emit en or ko template content/);
   assert.match(output.stdout, /--sample\s+Emit a valid sample Website Improvement workspace JSON/);
@@ -2743,6 +2768,8 @@ test("runSite prints command-specific help", async () => {
   assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --out website-workspace\.json --force/);
   assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --next-actions --out website-next-actions\.md/);
   assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --next-actions --out website-next-actions\.md --force/);
+  assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --tasks --out website-workspace\.tasks\.json/);
+  assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --tasks --out website-workspace\.tasks\.json --force/);
   assert.match(output.stdout, /design-ai site --from-intake company-website-intake\.ko\.md --bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /cat company-website-intake\.ko\.md \| design-ai site --from-intake --stdin --bundle --out website-handoff-bundle/);
   assert.match(output.stdout, /design-ai site --intake-template --out company-website-intake\.md/);
