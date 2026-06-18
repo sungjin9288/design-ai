@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 581 — Website Bundle Source Command Safety Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes source-bundle command safety metadata alongside source command strings and argv arrays.
+
+### Added
+- Added `checkCommandRunPolicy`, `strictCheckCommandRunPolicy`, `handoffCommandRunPolicy`, and `strictHandoffCommandRunPolicy` to `sourceBundle` and its mirrored `bundle.sourceBundle`.
+- Added `checkCommandSafety`, `strictCheckCommandSafety`, `handoffCommandSafety`, and `strictHandoffCommandSafety` objects with read-only mutation boundaries, external-call flags, target-repo mutation flags, and strict-mode markers.
+- Kept the existing source command strings and command argument arrays for backward compatibility.
+- Added unit and packed-tarball smoke assertions for source-bundle read-only safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can gate source bundle revalidation and handoff prompt generation without inferring safety from command text.
+- Company website pilots can distinguish read-only bundle-check / bundle-handoff JSON generation from local output-file task handoff commands before target-repo work.
+- The change is additive and local/read-only; it does not call external MCPs, mutate target repos, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 580 — Website Bundle Task Command Safety Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes task-level handoff command safety metadata alongside task command strings and argv arrays.

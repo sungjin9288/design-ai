@@ -1637,12 +1637,45 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.sourceBundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.match(report.sourceBundle.checkCommand, /design-ai site .* --bundle-check --json/);
   assert.deepEqual(report.sourceBundle.checkCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--json"]);
+  assert.equal(report.sourceBundle.checkCommandRunPolicy, "read-only");
+  assert.deepEqual(report.sourceBundle.checkCommandSafety, {
+    runPolicy: "read-only",
+    safetyLevel: "local-read-only",
+    writesLocalFile: false,
+    outputFile: "",
+    mutates: "none",
+    externalCalls: false,
+    targetRepoMutation: false,
+    requiresCleanWorkspace: false,
+    requiresReviewBeforeMutation: false,
+    strict: false,
+  });
   assert.match(report.sourceBundle.strictCheckCommand, /design-ai site .* --bundle-check --strict --json/);
   assert.deepEqual(report.sourceBundle.strictCheckCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"]);
+  assert.equal(report.sourceBundle.strictCheckCommandRunPolicy, "read-only");
+  assert.equal(report.sourceBundle.strictCheckCommandSafety.strict, true);
+  assert.equal(report.sourceBundle.strictCheckCommandSafety.externalCalls, false);
+  assert.equal(report.sourceBundle.strictCheckCommandSafety.targetRepoMutation, false);
   assert.match(report.sourceBundle.handoffCommand, /design-ai site .* --bundle-handoff --json/);
   assert.deepEqual(report.sourceBundle.handoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--json"]);
+  assert.equal(report.sourceBundle.handoffCommandRunPolicy, "read-only");
+  assert.equal(report.sourceBundle.handoffCommandSafety.writesLocalFile, false);
+  assert.equal(report.sourceBundle.handoffCommandSafety.mutates, "none");
   assert.match(report.sourceBundle.strictHandoffCommand, /design-ai site .* --bundle-handoff --strict --json/);
   assert.deepEqual(report.sourceBundle.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--strict", "--json"]);
+  assert.equal(report.sourceBundle.strictHandoffCommandRunPolicy, "read-only");
+  assert.deepEqual(report.sourceBundle.strictHandoffCommandSafety, {
+    runPolicy: "read-only",
+    safetyLevel: "local-read-only",
+    writesLocalFile: false,
+    outputFile: "",
+    mutates: "none",
+    externalCalls: false,
+    targetRepoMutation: false,
+    requiresCleanWorkspace: false,
+    requiresReviewBeforeMutation: false,
+    strict: true,
+  });
   assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.taskCatalog.count, 3);
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
@@ -1756,6 +1789,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(json.status, "pass");
   assert.deepEqual(json.sourceBundle, report.sourceBundle);
   assert.deepEqual(json.bundle.sourceBundle, report.sourceBundle);
+  assert.equal(json.sourceBundle.checkCommandRunPolicy, "read-only");
+  assert.equal(json.sourceBundle.checkCommandSafety.safetyLevel, "local-read-only");
+  assert.equal(json.sourceBundle.strictCheckCommandSafety.strict, true);
+  assert.equal(json.sourceBundle.handoffCommandRunPolicy, "read-only");
+  assert.equal(json.sourceBundle.handoffCommandSafety.targetRepoMutation, false);
+  assert.equal(json.sourceBundle.strictHandoffCommandSafety.externalCalls, false);
   assert.deepEqual(json.boundaries, report.boundaries);
   assert.equal(json.externalCalls, false);
   assert.equal(json.targetRepoMutation, false);

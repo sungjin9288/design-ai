@@ -4442,6 +4442,21 @@ function buildBundleTaskHandoffCommandSafety(task, { strict = false } = {}) {
   };
 }
 
+function buildBundleSourceCommandSafety({ strict = false } = {}) {
+  return {
+    runPolicy: "read-only",
+    safetyLevel: "local-read-only",
+    writesLocalFile: false,
+    outputFile: "",
+    mutates: "none",
+    externalCalls: false,
+    targetRepoMutation: false,
+    requiresCleanWorkspace: false,
+    requiresReviewBeforeMutation: false,
+    strict: Boolean(strict),
+  };
+}
+
 function commandFromArgs(args) {
   return args.map((arg) => shellQuote(arg)).join(" ");
 }
@@ -4695,12 +4710,20 @@ function summarizeSiteBundleHandoffSource(checkReport) {
     failureCount: checkReport.counts.failures,
     checkCommand: buildBundleCheckCommand(checkReport.directory),
     checkCommandArgs: buildBundleCheckCommandArgs(checkReport.directory),
+    checkCommandRunPolicy: "read-only",
+    checkCommandSafety: buildBundleSourceCommandSafety(),
     strictCheckCommand: buildBundleCheckCommand(checkReport.directory, { strict: true }),
     strictCheckCommandArgs: buildBundleCheckCommandArgs(checkReport.directory, { strict: true }),
+    strictCheckCommandRunPolicy: "read-only",
+    strictCheckCommandSafety: buildBundleSourceCommandSafety({ strict: true }),
     handoffCommand: buildBundleHandoffCommand(checkReport.directory),
     handoffCommandArgs: buildBundleHandoffCommandArgs(checkReport.directory),
+    handoffCommandRunPolicy: "read-only",
+    handoffCommandSafety: buildBundleSourceCommandSafety(),
     strictHandoffCommand: buildBundleHandoffCommand(checkReport.directory, { strict: true }),
     strictHandoffCommandArgs: buildBundleHandoffCommandArgs(checkReport.directory, { strict: true }),
+    strictHandoffCommandRunPolicy: "read-only",
+    strictHandoffCommandSafety: buildBundleSourceCommandSafety({ strict: true }),
   };
 }
 

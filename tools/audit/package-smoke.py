@@ -2196,6 +2196,35 @@ def assert_site_bundle_handoff_json_smoke(
             or command_args[-len(expected_tail):] != expected_tail
         ):
             raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command_args!r}")
+    for policy_key in [
+        "checkCommandRunPolicy",
+        "strictCheckCommandRunPolicy",
+        "handoffCommandRunPolicy",
+        "strictHandoffCommandRunPolicy",
+    ]:
+        if source_bundle.get(policy_key) != "read-only":
+            raise SystemExit(f"site bundle handoff after {context} source bundle {policy_key} changed: {source_bundle.get(policy_key)!r}")
+    for key, expected_strict in {
+        "checkCommandSafety": False,
+        "strictCheckCommandSafety": True,
+        "handoffCommandSafety": False,
+        "strictHandoffCommandSafety": True,
+    }.items():
+        safety = source_bundle.get(key)
+        if (
+            not isinstance(safety, dict)
+            or safety.get("runPolicy") != "read-only"
+            or safety.get("safetyLevel") != "local-read-only"
+            or safety.get("writesLocalFile") is not False
+            or safety.get("outputFile") != ""
+            or safety.get("mutates") != "none"
+            or safety.get("externalCalls") is not False
+            or safety.get("targetRepoMutation") is not False
+            or safety.get("requiresCleanWorkspace") is not False
+            or safety.get("requiresReviewBeforeMutation") is not False
+            or safety.get("strict") is not expected_strict
+        ):
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {safety!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("boundaries") != expected_boundaries:
