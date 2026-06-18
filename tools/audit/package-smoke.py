@@ -2172,6 +2172,15 @@ def assert_site_bundle_handoff_json_smoke(
         or source_bundle.get("expectedChecksumFiles") != 8
     ):
         raise SystemExit(f"site bundle handoff after {context} source bundle provenance verification counts changed: {source_bundle!r}")
+    for key, expected_fragment in {
+        "checkCommand": "--bundle-check --json",
+        "strictCheckCommand": "--bundle-check --strict --json",
+        "handoffCommand": "--bundle-handoff --json",
+        "strictHandoffCommand": "--bundle-handoff --strict --json",
+    }.items():
+        command = source_bundle.get(key)
+        if not isinstance(command, str) or expected_fragment not in command:
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("boundaries") != expected_boundaries:
@@ -2282,6 +2291,8 @@ def assert_site_bundle_handoff_json_smoke(
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Source bundle provenance: pass/valid from ",
+        "Source bundle strict check command: `",
+        "--bundle-check --strict --json",
         "Primary Codex Implementation Prompt",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
@@ -2331,6 +2342,8 @@ def assert_site_bundle_handoff_human_smoke(
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
         "Source bundle provenance: pass/valid from ",
+        "Source bundle strict check command: `",
+        "--bundle-check --strict --json",
         "Available Bundle Tasks",
         "Default task: task-accessibility",
         "Default task strict command: `",

@@ -4423,6 +4423,30 @@ function buildBundleTaskHandoffCommand(directory, task, { strict = false } = {})
   return parts.join(" ");
 }
 
+function buildBundleCheckCommand(directory, { strict = false } = {}) {
+  const parts = [
+    "design-ai",
+    "site",
+    shellQuote(directory),
+    "--bundle-check",
+  ];
+  if (strict) parts.push("--strict");
+  parts.push("--json");
+  return parts.join(" ");
+}
+
+function buildBundleHandoffCommand(directory, { strict = false } = {}) {
+  const parts = [
+    "design-ai",
+    "site",
+    shellQuote(directory),
+    "--bundle-handoff",
+  ];
+  if (strict) parts.push("--strict");
+  parts.push("--json");
+  return parts.join(" ");
+}
+
 function summarizeBundleTaskItem(task, index, directory) {
   return {
     number: index + 1,
@@ -4522,6 +4546,7 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "## Verified Bundle",
     `- Bundle directory: ${checkReport.directory}`,
     `- Source bundle provenance: ${checkReport.status}/${checkReport.valid ? "valid" : "invalid"} from ${checkReport.directory}`,
+    `- Source bundle strict check command: \`${buildBundleCheckCommand(checkReport.directory, { strict: true })}\``,
     `- Site: ${checkReport.summary.siteName || "unknown"}`,
     `- Source workspace: ${checkReport.summary.source || "unknown"}`,
     `- Bundle status: ${checkReport.status}`,
@@ -4625,6 +4650,10 @@ function summarizeSiteBundleHandoffSource(checkReport) {
     issueCount: checkReport.issues.length,
     warningCount: checkReport.counts.warnings,
     failureCount: checkReport.counts.failures,
+    checkCommand: buildBundleCheckCommand(checkReport.directory),
+    strictCheckCommand: buildBundleCheckCommand(checkReport.directory, { strict: true }),
+    handoffCommand: buildBundleHandoffCommand(checkReport.directory),
+    strictHandoffCommand: buildBundleHandoffCommand(checkReport.directory, { strict: true }),
   };
 }
 

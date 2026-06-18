@@ -1635,6 +1635,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.sourceBundle.valid, true);
   assert.equal(report.sourceBundle.verifiedChecksumFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
   assert.equal(report.sourceBundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
+  assert.match(report.sourceBundle.checkCommand, /design-ai site .* --bundle-check --json/);
+  assert.match(report.sourceBundle.strictCheckCommand, /design-ai site .* --bundle-check --strict --json/);
+  assert.match(report.sourceBundle.handoffCommand, /design-ai site .* --bundle-handoff --json/);
+  assert.match(report.sourceBundle.strictHandoffCommand, /design-ai site .* --bundle-handoff --strict --json/);
   assert.equal(report.bundle.selectedTask, null);
   assert.equal(report.bundle.taskCatalog.count, 3);
   assert.equal(report.bundle.taskCatalog.defaultTaskId, "task-accessibility");
@@ -1691,6 +1695,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Website improvement target-repo handoff prompt/);
   assert.match(report.prompt, /You are Codex working in the target website repository, not in the design-ai repository/);
   assert.match(report.prompt, /Source bundle provenance: pass\/valid from /);
+  assert.match(report.prompt, /Source bundle strict check command: `design-ai site .* --bundle-check --strict --json`/);
   assert.match(report.prompt, /SHA-256 bundle digest: [a-f0-9]{64}/);
   assert.match(report.prompt, /Evidence counts: executed work 0, verification 0, risks 3, next actions 0/);
   assert.match(report.prompt, new RegExp(`Generated files: ${SITE_BUNDLE_CHECKSUM_FILES.length}/${SITE_BUNDLE_CHECKSUM_FILES.length} match the current CLI bundle contract`));
@@ -2253,6 +2258,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     assert.equal(bundleHandoffPayload.sourceBundle.sourceWorkspace, file);
     assert.equal(bundleHandoffPayload.sourceBundle.status, "pass");
     assert.equal(bundleHandoffPayload.sourceBundle.valid, true);
+    assert.match(bundleHandoffPayload.sourceBundle.strictCheckCommand, /design-ai site .* --bundle-check --strict --json/);
+    assert.match(bundleHandoffPayload.sourceBundle.strictHandoffCommand, /design-ai site .* --bundle-handoff --strict --json/);
     assert.match(bundleHandoffPayload.bundle.checksumBundleDigest, /^[a-f0-9]{64}$/);
     assert.equal(bundleHandoffPayload.bundle.verifiedGeneratedFiles, SITE_BUNDLE_CHECKSUM_FILES.length);
     assert.equal(bundleHandoffPayload.bundle.generatedFailures, 0);
@@ -2281,6 +2288,7 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     });
     assert.match(bundleHandoffPayload.prompt, /Primary Codex Implementation Prompt/);
     assert.match(bundleHandoffPayload.prompt, /Source bundle provenance: pass\/valid from /);
+    assert.match(bundleHandoffPayload.prompt, /Source bundle strict check command: `design-ai site .* --bundle-check --strict --json`/);
     assert.match(bundleHandoffPayload.prompt, /Default task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /Effective task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
     assert.match(bundleHandoffPayload.prompt, /command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);

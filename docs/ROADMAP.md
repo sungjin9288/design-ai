@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 577 — Website Bundle Source Verification Commands (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes copy-ready source-bundle verification commands.
+
+### Added
+- Added `sourceBundle.checkCommand`, `sourceBundle.strictCheckCommand`, `sourceBundle.handoffCommand`, and `sourceBundle.strictHandoffCommand`.
+- Mirrored the same command metadata under `bundle.sourceBundle`.
+- Added the strict bundle-check command to the human target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for source-bundle command metadata and prompt wording.
+
+### Impact
+- Wrappers can render reverify/rehandoff actions directly from the handoff payload without rebuilding shell commands from the bundle directory.
+- Operators can copy the strict source-bundle check from the target-repo prompt before implementation.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 576 — Website Bundle Handoff Source Provenance (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes the verified source bundle summary as first-class provenance metadata.
