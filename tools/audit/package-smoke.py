@@ -2187,6 +2187,12 @@ def assert_site_bundle_handoff_json_smoke(
             raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
     elif not isinstance(selected_task, dict) or selected_task.get("id") != expected_selected_task_id:
         raise SystemExit(f"site bundle handoff after {context} selected task changed: {selected_task!r}")
+    elif (
+        selected_task.get("handoffOutFile") != f"target-repo-{expected_selected_task_id}-handoff.md"
+        or not isinstance(selected_task.get("strictHandoffCommand"), str)
+        or f"--bundle-handoff --task {expected_selected_task_id} --strict --out target-repo-{expected_selected_task_id}-handoff.md" not in selected_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} selected task command metadata changed: {selected_task!r}")
     task_catalog = bundle.get("taskCatalog")
     if not isinstance(task_catalog, dict):
         raise SystemExit(f"site bundle handoff after {context} task catalog missing")
@@ -2256,6 +2262,8 @@ def assert_site_bundle_handoff_json_smoke(
     ):
         if fragment not in prompt:
             raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
+    if expected_selected_task_id and f"Selected task strict command: `" not in prompt:
+        raise SystemExit(f"site bundle handoff after {context} prompt missing selected task strict command")
     included = {
         item.get("path")
         for item in payload.get("files", [])

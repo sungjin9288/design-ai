@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 572 (unreleased)** — Added selected-task Website Console bundle handoff command metadata in JSON and target-repo prompts.
 - **Phase 571 (unreleased)** — Added copy-ready per-task Website Console bundle handoff commands in JSON and target-repo prompts.
 - **Phase 570 (unreleased)** — Added Website Console bundle handoff task catalogs so target-repo prompts expose selectable task numbers, ids, priorities, pages, and recommended MCPs before implementation.
 - **Phase 569 (unreleased)** — Added `design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` so verified Website Console bundles can generate target-repo prompts for a selected refactor task.

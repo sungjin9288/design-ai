@@ -4466,7 +4466,7 @@ function emptyBundleTaskCatalog(error = "") {
   };
 }
 
-function summarizeSelectedTask(task, taskSelector, source) {
+function summarizeSelectedTask(task, taskSelector, source, directory = "") {
   if (!task) return null;
   return {
     id: task.id,
@@ -4477,6 +4477,10 @@ function summarizeSelectedTask(task, taskSelector, source) {
     effort: task.effort,
     selector: String(taskSelector || "").trim(),
     source,
+    handoffTaskArg: task.id,
+    handoffOutFile: taskHandoffOutFile(task),
+    handoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task) : "",
+    strictHandoffCommand: directory ? buildBundleTaskHandoffCommand(directory, task, { strict: true }) : "",
   };
 }
 
@@ -4538,6 +4542,9 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     `Task catalog source: ${bundleTexts.taskCatalog?.source || "unknown"}`,
     `Default task: ${bundleTexts.taskCatalog?.defaultTaskId || "none"}`,
     `Selected task: ${bundleTexts.taskCatalog?.selectedTaskId || "none"}`,
+    ...(bundleTexts.selectedTask?.strictHandoffCommand
+      ? [`Selected task strict command: \`${bundleTexts.selectedTask.strictHandoffCommand}\``]
+      : []),
     "To choose a specific task, re-run this handoff with `--task <number-or-id>`.",
     ...formatBundleHandoffTaskCatalogLines(bundleTexts.taskCatalog),
     "",
@@ -4619,7 +4626,7 @@ export function buildSiteBundleHandoffReport({
       throw new Error(taskCatalogError || "Cannot select a handoff task because the bundle workspace is unavailable");
     }
     const task = resolveSitePromptTask(bundleWorkspace, taskSelector);
-    selectedTask = summarizeSelectedTask(task, taskSelector, "bundle-workspace");
+    selectedTask = summarizeSelectedTask(task, taskSelector, "bundle-workspace", checkReport.directory);
     codexImplementation = buildSitePrompt(bundleWorkspace, "codex-implementation", { taskSelector });
   }
   const taskCatalog = bundleWorkspace

@@ -84,7 +84,7 @@ If the target repo is already cloned locally, prefer `--local-path /absolute/pat
 ```bash
 design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json
 design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md
-design-ai site website-handoff-bundle --bundle-handoff --task 1 --strict --out target-repo-task-handoff.md
+design-ai site website-handoff-bundle --bundle-handoff --task 1 --strict --out target-repo-task-accessibility-handoff.md
 ```
 
 The bundle is ready for implementation only when `bundle-check` passes. The handoff prompt must carry:
@@ -95,11 +95,11 @@ The bundle is ready for implementation only when `bundle-check` passes. The hand
 - quality gate commands to run in the target repo
 - implementation evidence and remaining-risk requirements
 
-Use the plain `--bundle-handoff` command when the top-priority bundled implementation prompt is correct. The generated handoff now includes an “Available Bundle Tasks” catalog with each task number, id, priority, impact, effort, pages, recommended MCPs, and a copy-ready strict handoff command. Add `--task <id-or-number>` when the company pilot has chosen a specific task from that catalog or from `website-workspace.tasks.json`.
+Use the plain `--bundle-handoff` command when the top-priority bundled implementation prompt is correct. The generated handoff now includes an “Available Bundle Tasks” catalog with each task number, id, priority, impact, effort, pages, recommended MCPs, and a copy-ready strict handoff command. Add `--task <id-or-number>` when the company pilot has chosen a specific task from that catalog or from `website-workspace.tasks.json`; JSON output also includes the selected task's own `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand`.
 
 ## Step 3: Execute In The Target Website Repo
 
-Open the target website repository in Codex or Claude Code and paste `target-repo-handoff.md` or the task-selected `target-repo-task-handoff.md`.
+Open the target website repository in Codex or Claude Code and paste `target-repo-handoff.md` or the task-selected `target-repo-task-accessibility-handoff.md`.
 
 The implementation agent must:
 

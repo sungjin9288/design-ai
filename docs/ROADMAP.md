@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 572 — Website Bundle Selected Task Command Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --task <id-or-number> --json` now makes the selected refactor task self-contained for wrappers and company website pilots.
+
+### Added
+- Added `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand` to JSON `bundle.selectedTask` when an explicit bundle handoff task is selected.
+- Added a “Selected task strict command” line to the target-repo handoff prompt for explicit task handoffs.
+- Added unit and packed-tarball smoke assertions for selected-task command metadata.
+
+### Impact
+- Operators and wrappers no longer need to cross-reference `bundle.taskCatalog.items[]` after selecting a specific task; the selected task carries its own copy-ready handoff command.
+- The change remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 571 — Website Bundle Handoff Task Commands (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff` now turns the bundle task catalog into copy-ready follow-up commands for each selectable refactor task.
