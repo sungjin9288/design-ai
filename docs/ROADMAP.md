@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 564 — Website From-Intake Stdin Artifact Smoke Coverage (unreleased)
+
+`design-ai site --from-intake --stdin` now has packed-tarball smoke coverage for saved workspace JSON and handoff bundle outputs, closing the remaining stdin artifact path before company website dogfood.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for `--from-intake --stdin --out <file>`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --bundle --out <dir>`.
+- Added release metadata guard wording so release-facing docs preserve stdin workspace JSON stdout, stdin output-file persistence, and stdin handoff bundle coverage.
+
+### Impact
+- Company website pilots can pipe intake Markdown from secure notes or generated streams and still produce durable `website-workspace.json` and handoff bundles from the packaged CLI.
+- The target website repo remains untouched; this phase only verifies local artifact generation and release documentation.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 563 — Website From-Intake Stdin Import (unreleased)
 
 `design-ai site --from-intake --stdin` now accepts filled company website intake Markdown from stdin, so operators can pipe a reviewed intake document directly into workspace JSON or next-actions generation before company dogfood.

@@ -1007,6 +1007,28 @@ def assert_site_from_intake_json_file_smoke(
     assert_site_from_intake_json(contents, context=context, cmd=cmd)
 
 
+def assert_site_from_intake_stdin_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_json(contents, context=context, cmd=cmd)
+
+
 def assert_site_init_bundle_smoke(
     cmd: list[str],
     *,
@@ -1014,8 +1036,13 @@ def assert_site_init_bundle_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    input_text: str | None = None,
 ) -> None:
-    result = run_plain(cmd, cwd=cwd, env=env)
+    result = (
+        run_plain_with_input(cmd, input_text=input_text, cwd=cwd, env=env)
+        if input_text is not None
+        else run_plain(cmd, cwd=cwd, env=env)
+    )
     assert_no_ansi(result.stdout, cmd)
     assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
 
@@ -17287,6 +17314,22 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake JSON out file",
         )
+        installed_site_from_intake_stdin_json_out = install_root / "site-from-intake-stdin-workspace.json"
+        assert_site_from_intake_stdin_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--out",
+                str(installed_site_from_intake_stdin_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin JSON out file",
+        )
         installed_site_from_intake_bundle_dir = install_root / "site-from-intake-handoff-bundle"
         assert_site_init_bundle_smoke(
             [
@@ -17302,6 +17345,23 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site from-intake handoff bundle",
+        )
+        installed_site_from_intake_stdin_bundle_dir = install_root / "site-from-intake-stdin-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--out",
+                str(installed_site_from_intake_stdin_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_stdin_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin handoff bundle",
+            input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
         )
         installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
@@ -18491,6 +18551,22 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site from-intake JSON out file",
         )
+        npx_site_from_intake_stdin_json_out = npx_root / "site-from-intake-stdin-workspace.json"
+        assert_site_from_intake_stdin_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--out",
+                str(npx_site_from_intake_stdin_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin JSON out file",
+        )
         npx_site_from_intake_bundle_dir = npx_root / "site-from-intake-handoff-bundle"
         assert_site_init_bundle_smoke(
             npm_exec_cmd(
@@ -18506,6 +18582,23 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site from-intake handoff bundle",
+        )
+        npx_site_from_intake_stdin_bundle_dir = npx_root / "site-from-intake-stdin-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--out",
+                str(npx_site_from_intake_stdin_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_stdin_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin handoff bundle",
+            input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
         )
         npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
