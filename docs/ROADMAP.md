@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 575 — Website Bundle Effective Task Human Smoke Coverage (unreleased)
+
+Packed-tarball smoke now verifies human `--bundle-handoff` output keeps effective-task command metadata in both default and selected task flows.
+
+### Added
+- Added installed-bin human smoke coverage for default and explicit `--task` Website Console bundle handoff prompts.
+- Added one-shot `npm exec --package <tarball>` human smoke coverage for the same effective-task prompt contract.
+- Added focused unit assertions for human stdout and output-file handoff prompts.
+
+### Impact
+- Package smoke now catches regressions where JSON keeps `bundle.effectiveTask` but human target-repo prompts lose the copy-ready strict command.
+- The change only strengthens local verification; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 574 — Website Bundle Effective Task Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes the actual task used by the handoff prompt as `bundle.effectiveTask`.

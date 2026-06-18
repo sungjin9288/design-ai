@@ -2295,6 +2295,43 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} included files changed: {sorted(included)!r}")
 
 
+def assert_site_bundle_handoff_human_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+    expected_task_id: str = "task-accessibility",
+    expected_selected_task_id: str | None = None,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    output = result.stdout
+    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
+    fragments = [
+        "Website improvement target-repo handoff prompt",
+        "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Available Bundle Tasks",
+        "Default task: task-accessibility",
+        "Default task strict command: `",
+        f"Effective task: {expected_effective_task_id}",
+        "Effective task strict command: `",
+        f"--bundle-handoff --task {expected_effective_task_id} --strict --out target-repo-{expected_effective_task_id}-handoff.md",
+        f"Task ID: {expected_task_id}",
+        "Target Repo Execution Checklist",
+        "Required Final Response",
+    ]
+    if expected_selected_task_id:
+        fragments.extend([
+            f"Selected task: {expected_selected_task_id}",
+            "Selected task strict command: `",
+        ])
+    else:
+        fragments.append("Selected task: none")
+    for fragment in fragments:
+        if fragment not in output:
+            raise SystemExit(f"site bundle handoff human after {context} missing fragment: {fragment!r}")
+
+
 def assert_site_bundle_repair_json_smoke(
     preview_cmd: list[str],
     apply_cmd: list[str],
@@ -18103,11 +18140,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff JSON",
         )
+        assert_site_bundle_handoff_human_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--strict"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff human",
+        )
         assert_site_bundle_handoff_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff selected task human",
             expected_task_id="task-content-quality",
             expected_selected_task_id="task-content-quality",
         )
@@ -19450,11 +19501,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site bundle-handoff JSON",
         )
+        assert_site_bundle_handoff_human_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--strict"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff human",
+        )
         assert_site_bundle_handoff_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff selected task human",
             expected_task_id="task-content-quality",
             expected_selected_task_id="task-content-quality",
         )

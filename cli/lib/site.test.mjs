@@ -2231,6 +2231,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const bundleHandoffOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff"]));
     assert.match(bundleHandoffOutput.stdout, /Website improvement target-repo handoff prompt/);
     assert.match(bundleHandoffOutput.stdout, /Task ID: task-accessibility/);
+    assert.match(bundleHandoffOutput.stdout, /Effective task: task-accessibility/);
+    assert.match(bundleHandoffOutput.stdout, /Effective task strict command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md`/);
 
     const bundleHandoffJsonOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--json"]));
     const bundleHandoffPayload = JSON.parse(bundleHandoffJsonOutput.stdout);
@@ -2291,6 +2293,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const selectedBundleHandoffWriteOutput = await captureConsole(() => runSite([bundleDir, "--bundle-handoff", "--task", "3", "--out", selectedBundleHandoffFile]));
     assert.match(selectedBundleHandoffWriteOutput.stdout, /Wrote /);
     assert.match(readFileSync(selectedBundleHandoffFile, "utf8"), /Task ID: task-content-quality/);
+    assert.match(readFileSync(selectedBundleHandoffFile, "utf8"), /Effective task: task-content-quality/);
+    assert.match(readFileSync(selectedBundleHandoffFile, "utf8"), /Effective task strict command: `design-ai site .* --bundle-handoff --task task-content-quality --strict --out target-repo-task-content-quality-handoff\.md`/);
 
     const repairHandoffPath = path.join(bundleDir, "website-handoff.md");
     const originalRepairHandoff = readFileSync(repairHandoffPath, "utf8");

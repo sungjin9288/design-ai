@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 575 (unreleased)** — Added human-output package smoke coverage for Website Console bundle handoff effective-task command metadata.
 - **Phase 574 (unreleased)** — Added effective-task Website Console bundle handoff command metadata so wrappers can read the actual handoff task from one field.
 - **Phase 573 (unreleased)** — Added default-task Website Console bundle handoff command metadata in JSON and target-repo prompts.
 - **Phase 572 (unreleased)** — Added selected-task Website Console bundle handoff command metadata in JSON and target-repo prompts.
