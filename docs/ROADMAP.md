@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 574 — Website Bundle Effective Task Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the actual task used by the handoff prompt as `bundle.effectiveTask`.
+
+### Added
+- Added JSON `bundle.effectiveTask` for both bundled-default and explicit `--task` handoff flows.
+- Added an “Effective task strict command” line to the target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for effective-task command metadata.
+
+### Impact
+- Operators and wrappers can read one field for the task that the handoff prompt will execute, instead of branching between `defaultTask` and `selectedTask`.
+- The output remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 573 — Website Bundle Default Task Command Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes the bundled default refactor task as a first-class JSON object.

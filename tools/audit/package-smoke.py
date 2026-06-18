@@ -2191,6 +2191,16 @@ def assert_site_bundle_handoff_json_smoke(
     ):
         raise SystemExit(f"site bundle handoff after {context} default task command metadata changed: {default_task!r}")
     selected_task = bundle.get("selectedTask")
+    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
+    effective_task = bundle.get("effectiveTask")
+    if (
+        not isinstance(effective_task, dict)
+        or effective_task.get("id") != expected_effective_task_id
+        or effective_task.get("handoffOutFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or not isinstance(effective_task.get("strictHandoffCommand"), str)
+        or f"--bundle-handoff --task {expected_effective_task_id} --strict --out target-repo-{expected_effective_task_id}-handoff.md" not in effective_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} effective task command metadata changed: {effective_task!r}")
     if expected_selected_task_id is None:
         if selected_task is not None:
             raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
@@ -2256,6 +2266,8 @@ def assert_site_bundle_handoff_json_smoke(
         "Available Bundle Tasks",
         "Default task: task-accessibility",
         "Default task strict command: `",
+        f"Effective task: {expected_effective_task_id}",
+        "Effective task strict command: `",
         "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md",
         f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",

@@ -4548,6 +4548,10 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     ...(bundleTexts.selectedTask?.strictHandoffCommand
       ? [`Selected task strict command: \`${bundleTexts.selectedTask.strictHandoffCommand}\``]
       : []),
+    `Effective task: ${bundleTexts.effectiveTask?.id || "none"}`,
+    ...(bundleTexts.effectiveTask?.strictHandoffCommand
+      ? [`Effective task strict command: \`${bundleTexts.effectiveTask.strictHandoffCommand}\``]
+      : []),
     "To choose a specific task, re-run this handoff with `--task <number-or-id>`.",
     ...formatBundleHandoffTaskCatalogLines(bundleTexts.taskCatalog),
     "",
@@ -4636,10 +4640,12 @@ export function buildSiteBundleHandoffReport({
     ? summarizeBundleTaskCatalog(bundleWorkspace, checkReport.directory, selectedTask)
     : emptyBundleTaskCatalog(taskCatalogError);
   const defaultTask = taskCatalog.items[0] || null;
+  const effectiveTask = selectedTask || defaultTask;
 
   const bundleTexts = {
     taskCatalog,
     defaultTask,
+    effectiveTask,
     selectedTask,
     codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
@@ -4674,6 +4680,7 @@ export function buildSiteBundleHandoffReport({
       generatedDriftFiles: [...checkReport.generatedContract.driftFiles],
       taskCatalog,
       defaultTask,
+      effectiveTask,
       selectedTask,
       boundaries,
       externalCalls: false,
