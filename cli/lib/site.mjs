@@ -4639,6 +4639,11 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "To choose a specific task, re-run this handoff with `--task <number-or-id>`.",
     ...formatBundleHandoffTaskCatalogLines(bundleTexts.taskCatalog),
     "",
+    "## Operator Runbook",
+    `Runbook stages: ${bundleTexts.operatorRunbook?.stageCount || 0} (${bundleTexts.operatorRunbook?.requiredStageCount || 0} required, ${bundleTexts.operatorRunbook?.optionalStageCount || 0} optional)`,
+    `Next command key: ${bundleTexts.operatorRunbook?.nextCommandKey || "none"}`,
+    ...formatBundleHandoffOperatorRunbookLines(bundleTexts.operatorRunbook),
+    "",
     "## Bundle Gate",
     bundleReadinessLine,
     formatBundleHandoffIssueLines(checkReport.issues),
@@ -4815,6 +4820,124 @@ function buildBundleHandoffCommandManifest({
   };
 }
 
+function buildBundleHandoffOperatorRunbook(commandManifest) {
+  const commands = Array.isArray(commandManifest?.commands) ? commandManifest.commands : [];
+  const commandByKey = new Map(commands.map((command) => [command.key, command]));
+  const buildStage = ({
+    step,
+    key,
+    label,
+    kind,
+    required,
+    commandKeys = [],
+    reason,
+    manual = false,
+  }) => {
+    const stageCommands = commandKeys
+      .map((commandKey) => commandByKey.get(commandKey))
+      .filter(Boolean);
+    return {
+      step,
+      key,
+      label,
+      kind,
+      required,
+      commandKeys,
+      commands: stageCommands,
+      commandCount: stageCommands.length,
+      runPolicy: manual ? "manual-target-repo" : (stageCommands[0]?.runPolicy || ""),
+      safetyLevel: manual ? "operator-controlled-target-repo" : (stageCommands[0]?.safety?.safetyLevel || ""),
+      writesLocalFile: stageCommands.some((command) => command.safety?.writesLocalFile === true),
+      outputFiles: stageCommands.map((command) => command.outputFile).filter(Boolean),
+      externalCalls: stageCommands.some((command) => command.safety?.externalCalls === true),
+      targetRepoMutation: stageCommands.some((command) => command.safety?.targetRepoMutation === true),
+      reason,
+    };
+  };
+  const effectiveStrictTaskCommandKey = commandManifest?.effectiveStrictTaskCommandKey || "";
+  const stages = [
+    buildStage({
+      step: 1,
+      key: "verifySourceBundle",
+      label: "Verify source bundle integrity",
+      kind: "read-only-gate",
+      required: true,
+      commandKeys: ["source.bundleCheck.strict"],
+      reason: "Confirm the bundle still matches its checksum and generated-file contract before handoff execution.",
+    }),
+    buildStage({
+      step: 2,
+      key: "refreshHandoffSnapshot",
+      label: "Refresh strict handoff JSON snapshot",
+      kind: "read-only-preview",
+      required: false,
+      commandKeys: ["source.bundleHandoff.strict"],
+      reason: "Regenerate the machine-readable handoff snapshot when a wrapper or GUI needs the latest JSON contract.",
+    }),
+    buildStage({
+      step: 3,
+      key: "writeEffectiveTaskPrompt",
+      label: "Write effective task handoff prompt",
+      kind: "local-output",
+      required: true,
+      commandKeys: effectiveStrictTaskCommandKey ? [effectiveStrictTaskCommandKey] : [],
+      reason: "Create the selected task prompt as a local file before moving into the target website repository.",
+    }),
+    buildStage({
+      step: 4,
+      key: "executeInTargetRepo",
+      label: "Execute the task in the target website repo",
+      kind: "manual-target-repo",
+      required: true,
+      manual: true,
+      reason: "Open the generated task prompt in the target repo, inspect architecture first, then implement and verify there.",
+    }),
+    buildStage({
+      step: 5,
+      key: "recordEvidence",
+      label: "Record implementation evidence",
+      kind: "manual-reporting",
+      required: true,
+      manual: true,
+      reason: "Return changed files, verification commands, browser/viewport checks, remaining risks, and the bundle digest.",
+    }),
+  ];
+  const commandStages = stages.filter((stage) => stage.commandCount > 0);
+  const countBy = (predicate) => stages.filter(predicate).length;
+  return {
+    version: 1,
+    source: "bundle-handoff",
+    stageCount: stages.length,
+    commandStageCount: commandStages.length,
+    manualStageCount: countBy((stage) => stage.commandCount === 0),
+    requiredStageCount: countBy((stage) => stage.required),
+    optionalStageCount: countBy((stage) => !stage.required),
+    readOnlyCommandStageCount: countBy((stage) => stage.runPolicy === "read-only"),
+    localOutputCommandStageCount: countBy((stage) => stage.runPolicy === "writes-local-file"),
+    externalCallCommandStageCount: countBy((stage) => stage.externalCalls),
+    targetRepoMutationCommandStageCount: countBy((stage) => stage.targetRepoMutation),
+    effectiveTaskId: commandManifest?.effectiveTaskId || "",
+    effectiveStrictTaskCommandKey,
+    nextStageKey: "verifySourceBundle",
+    nextCommandKey: "source.bundleCheck.strict",
+    stages,
+  };
+}
+
+function formatBundleHandoffOperatorRunbookLines(operatorRunbook) {
+  if (!operatorRunbook || !Array.isArray(operatorRunbook.stages) || operatorRunbook.stages.length === 0) {
+    return ["- No operator runbook is available."];
+  }
+  return operatorRunbook.stages.map((stage) => {
+    const required = stage.required ? "required" : "optional";
+    const commandText = stage.commands.length
+      ? ` command: \`${stage.commands[0].command}\``
+      : " command: manual";
+    const outputText = stage.outputFiles.length ? ` output: ${stage.outputFiles.join(", ")}` : "";
+    return `- ${stage.step}. ${stage.key} (${required}, ${stage.runPolicy || stage.kind}): ${stage.label}.${commandText}${outputText}`;
+  });
+}
+
 export function buildSiteBundleHandoffReport({
   target,
   cwd = process.cwd(),
@@ -4860,7 +4983,6 @@ export function buildSiteBundleHandoffReport({
     codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
   };
-  const prompt = buildSiteBundleHandoffPrompt(checkReport, bundleTexts);
   const boundaries = buildSiteBundleHandoffBoundaries(checkReport);
   const sourceBundle = summarizeSiteBundleHandoffSource(checkReport);
   const commandManifest = buildBundleHandoffCommandManifest({
@@ -4870,12 +4992,18 @@ export function buildSiteBundleHandoffReport({
     selectedTask,
     effectiveTask,
   });
+  const operatorRunbook = buildBundleHandoffOperatorRunbook(commandManifest);
+  const runbookPrompt = buildSiteBundleHandoffPrompt(checkReport, {
+    ...bundleTexts,
+    operatorRunbook,
+  });
   return {
     status: checkReport.status,
     valid: checkReport.valid,
     directory: checkReport.directory,
     sourceBundle,
     commandManifest,
+    operatorRunbook,
     boundaries,
     externalCalls: false,
     targetRepoMutation: false,
@@ -4904,13 +5032,14 @@ export function buildSiteBundleHandoffReport({
       effectiveTask,
       selectedTask,
       commandManifest,
+      operatorRunbook,
       boundaries,
       externalCalls: false,
       targetRepoMutation: false,
       repairGuidance: { ...checkReport.repairGuidance },
       executionChecklist: SITE_TARGET_REPO_EXECUTION_CHECKLIST,
     },
-    prompt,
+    prompt: runbookPrompt,
     files: checkReport.files.map((file) => ({
       ...file,
       included: includedFilePaths.includes(file.path),

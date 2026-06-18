@@ -2302,6 +2302,67 @@ def assert_site_bundle_handoff_json_smoke(
         or effective_manifest_command["safety"].get("targetRepoMutation") is not False
     ):
         raise SystemExit(f"site bundle handoff after {context} effective command manifest entry changed: {effective_manifest_command!r}")
+    operator_runbook = payload.get("operatorRunbook")
+    if not isinstance(operator_runbook, dict) or bundle.get("operatorRunbook") != operator_runbook:
+        raise SystemExit(f"site bundle handoff after {context} operator runbook missing or not mirrored")
+    runbook_stages = operator_runbook.get("stages")
+    expected_stage_keys = [
+        "verifySourceBundle",
+        "refreshHandoffSnapshot",
+        "writeEffectiveTaskPrompt",
+        "executeInTargetRepo",
+        "recordEvidence",
+    ]
+    if (
+        operator_runbook.get("version") != 1
+        or operator_runbook.get("source") != "bundle-handoff"
+        or operator_runbook.get("stageCount") != 5
+        or operator_runbook.get("commandStageCount") != 3
+        or operator_runbook.get("manualStageCount") != 2
+        or operator_runbook.get("requiredStageCount") != 4
+        or operator_runbook.get("optionalStageCount") != 1
+        or operator_runbook.get("readOnlyCommandStageCount") != 2
+        or operator_runbook.get("localOutputCommandStageCount") != 1
+        or operator_runbook.get("externalCallCommandStageCount") != 0
+        or operator_runbook.get("targetRepoMutationCommandStageCount") != 0
+        or operator_runbook.get("effectiveTaskId") != expected_effective_task_id
+        or operator_runbook.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
+        or operator_runbook.get("nextStageKey") != "verifySourceBundle"
+        or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
+        or not isinstance(runbook_stages, list)
+        or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook summary changed: {operator_runbook!r}")
+    verify_stage = runbook_stages[0]
+    task_prompt_stage = runbook_stages[2]
+    manual_stage = runbook_stages[3]
+    if (
+        verify_stage.get("commandKeys") != ["source.bundleCheck.strict"]
+        or verify_stage.get("runPolicy") != "read-only"
+        or verify_stage.get("safetyLevel") != "local-read-only"
+        or verify_stage.get("commandCount") != 1
+        or verify_stage.get("externalCalls") is not False
+        or verify_stage.get("targetRepoMutation") is not False
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook verify stage changed: {verify_stage!r}")
+    if (
+        task_prompt_stage.get("commandKeys") != [f"task.{expected_effective_task_id}.handoff.strict"]
+        or task_prompt_stage.get("runPolicy") != "writes-local-file"
+        or task_prompt_stage.get("safetyLevel") != "local-output-file"
+        or task_prompt_stage.get("outputFiles") != [f"target-repo-{expected_effective_task_id}-handoff.md"]
+        or task_prompt_stage.get("commandCount") != 1
+        or not isinstance(task_prompt_stage.get("commands"), list)
+        or task_prompt_stage["commands"][0].get("key") != f"task.{expected_effective_task_id}.handoff.strict"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook task prompt stage changed: {task_prompt_stage!r}")
+    if (
+        manual_stage.get("runPolicy") != "manual-target-repo"
+        or manual_stage.get("safetyLevel") != "operator-controlled-target-repo"
+        or manual_stage.get("commandCount") != 0
+        or manual_stage.get("commands") != []
+        or manual_stage.get("required") is not True
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook manual stage changed: {manual_stage!r}")
     execution_checklist = bundle.get("executionChecklist")
     if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
         "confirm-target-repo",

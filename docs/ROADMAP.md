@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 583 — Website Bundle Handoff Operator Runbook (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes an operator runbook derived from the unified command manifest, so wrappers and company website pilots can follow one staged handoff sequence.
+
+### Added
+- Added top-level `operatorRunbook` and mirrored `bundle.operatorRunbook` to bundle handoff JSON.
+- Added five stages: strict source-bundle verification, optional strict handoff JSON refresh, effective task prompt local output, manual target-repo execution, and manual evidence recording.
+- Added stage counts for command/manual stages, required/optional stages, read-only/local-output stages, and mutation boundary checks.
+- Linked the runbook to `commandManifest.effectiveStrictTaskCommandKey`, so default and explicit `--task` handoffs generate the correct active task prompt stage.
+- Added human target-repo prompt guidance under `## Operator Runbook`.
+- Added unit and packed-tarball smoke assertions for runbook shape, active command keys, local output files, and manual target-repo stage boundaries.
+
+### Impact
+- Wrappers, GUI surfaces, and operators can render a ready-to-follow sequence without deriving execution order from raw command lists.
+- Company website pilots get a clearer boundary between local design-ai validation/output commands and the manual implementation that happens in the target website repo.
+- The change is additive and keeps design-ai commands local: no external MCP calls, no target repo mutation by design-ai, no crawler/Lighthouse/axe execution, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 582 — Website Bundle Handoff Command Manifest (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes a unified command manifest for source-bundle revalidation and selectable task handoff commands.
