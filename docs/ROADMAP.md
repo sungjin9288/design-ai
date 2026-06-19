@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 590 — Website Bundle Handoff Runbook Action Affordance Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action guidance and UI affordance metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render command buttons, optional refresh controls, local-output actions, manual target-repo steps, and evidence-return steps without hard-coded copy.
+
+### Added
+- Added `operatorRunbook.stageActionInstructionsByKey` for stable stage-key to operator guidance copy lookup.
+- Added `operatorRunbook.stageActionButtonLabelsByKey` so wrappers can render button labels for run, refresh, local output, target repo, and evidence actions without local string maps.
+- Added `operatorRunbook.stageActionAffordanceByKey` with `primary-command-button`, `secondary-command-button`, `local-output-button`, `manual-target-repo-step`, and `manual-evidence-step` values.
+- Added `actionInstruction`, `actionButtonLabel`, and `actionAffordance` to each `stageActionRows[]` item.
+- Added `nextStageActionInstruction`, `nextStageActionButtonLabel`, and `nextStageActionAffordance` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for action guidance, button label, affordance, and next-stage mirror metadata.
+
+### Impact
+- Wrappers can render Website bundle handoff controls with consistent operator copy and affordance types from the JSON contract.
+- Company website pilots get clearer UI guidance for local validation, prompt output generation, target-repo work, and evidence return.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 589 — Website Bundle Handoff Runbook Action Summary (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact action metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the local run gate, optional refresh, local prompt output, manual target-repo implementation, and evidence return actions without scanning ordered stage arrays.

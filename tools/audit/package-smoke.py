@@ -2412,6 +2412,27 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": "Implement in target repo",
             "recordEvidence": "Record verification evidence",
         }
+        or operator_runbook.get("stageActionButtonLabelsByKey") != {
+            "verifySourceBundle": "Run Check",
+            "refreshHandoffSnapshot": "Refresh JSON",
+            "writeEffectiveTaskPrompt": "Write Prompt",
+            "executeInTargetRepo": "Open Target Repo",
+            "recordEvidence": "Record Evidence",
+        }
+        or operator_runbook.get("stageActionAffordanceByKey") != {
+            "verifySourceBundle": "primary-command-button",
+            "refreshHandoffSnapshot": "secondary-command-button",
+            "writeEffectiveTaskPrompt": "local-output-button",
+            "executeInTargetRepo": "manual-target-repo-step",
+            "recordEvidence": "manual-evidence-step",
+        }
+        or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
+        or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
+        != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
+        or operator_runbook["stageActionInstructionsByKey"].get("writeEffectiveTaskPrompt")
+        != "Write the selected task prompt to a local Markdown file before switching into the target website repo."
+        or operator_runbook["stageActionInstructionsByKey"].get("executeInTargetRepo")
+        != "Manual: open the generated prompt in the target website repo, inspect architecture, implement the scoped task, and run target-repo verification."
         or operator_runbook.get("actionSummary") != {
             "totalActionCount": 5,
             "commandActionCount": 3,
@@ -2486,6 +2507,10 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
         or operator_runbook.get("nextStageActionType") != "run-local-gate"
         or operator_runbook.get("nextStageActionLabel") != "Run strict bundle check"
+        or operator_runbook.get("nextStageActionInstruction")
+        != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
+        or operator_runbook.get("nextStageActionButtonLabel") != "Run Check"
+        or operator_runbook.get("nextStageActionAffordance") != "primary-command-button"
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2523,12 +2548,18 @@ def assert_site_bundle_handoff_json_smoke(
         or [stage.get("key") for stage in action_rows] != expected_stage_keys
         or action_rows[0].get("actionType") != "run-local-gate"
         or action_rows[0].get("actionLabel") != "Run strict bundle check"
+        or action_rows[0].get("actionButtonLabel") != "Run Check"
+        or action_rows[0].get("actionAffordance") != "primary-command-button"
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
+        or action_rows[2].get("actionButtonLabel") != "Write Prompt"
+        or action_rows[2].get("actionAffordance") != "local-output-button"
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
+        or action_rows[3].get("actionButtonLabel") != "Open Target Repo"
+        or action_rows[3].get("actionAffordance") != "manual-target-repo-step"
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")

@@ -4918,12 +4918,37 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     executeInTargetRepo: "Implement in target repo",
     recordEvidence: "Record verification evidence",
   }[stage.key] || stage.label);
+  const getStageActionInstruction = (stage) => ({
+    verifySourceBundle: "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
+    refreshHandoffSnapshot: "Optional: regenerate the strict handoff JSON snapshot when a wrapper or GUI needs the latest contract.",
+    writeEffectiveTaskPrompt: "Write the selected task prompt to a local Markdown file before switching into the target website repo.",
+    executeInTargetRepo: "Manual: open the generated prompt in the target website repo, inspect architecture, implement the scoped task, and run target-repo verification.",
+    recordEvidence: "Manual: record changed files, verification commands, viewport checks, accessibility checks, remaining risks, and the bundle digest.",
+  }[stage.key] || stage.reason);
+  const getStageActionButtonLabel = (stage) => ({
+    verifySourceBundle: "Run Check",
+    refreshHandoffSnapshot: "Refresh JSON",
+    writeEffectiveTaskPrompt: "Write Prompt",
+    executeInTargetRepo: "Open Target Repo",
+    recordEvidence: "Record Evidence",
+  }[stage.key] || getStageActionLabel(stage));
+  const getStageActionAffordance = (stage) => {
+    if (stage.commandCount > 0 && stage.writesLocalFile) return "local-output-button";
+    if (stage.commandCount > 0 && stage.required) return "primary-command-button";
+    if (stage.commandCount > 0) return "secondary-command-button";
+    if (stage.kind === "manual-target-repo") return "manual-target-repo-step";
+    if (stage.kind === "manual-reporting") return "manual-evidence-step";
+    return "review-step";
+  };
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
     label: stage.label,
     actionType: getStageActionType(stage),
     actionLabel: getStageActionLabel(stage),
+    actionInstruction: getStageActionInstruction(stage),
+    actionButtonLabel: getStageActionButtonLabel(stage),
+    actionAffordance: getStageActionAffordance(stage),
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -4941,6 +4966,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageSummaryByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.reason]));
   const stageActionTypeByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionType]));
   const stageActionLabelByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionLabel]));
+  const stageActionInstructionsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionInstruction]));
+  const stageActionButtonLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionButtonLabel]));
+  const stageActionAffordanceByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionAffordance]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5014,6 +5042,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionRows,
     stageActionTypeByKey,
     stageActionLabelByKey,
+    stageActionInstructionsByKey,
+    stageActionButtonLabelsByKey,
+    stageActionAffordanceByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5040,6 +5071,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageSummary: nextStage?.reason || "",
     nextStageActionType: nextStageActionRow?.actionType || "",
     nextStageActionLabel: nextStageActionRow?.actionLabel || "",
+    nextStageActionInstruction: nextStageActionRow?.actionInstruction || "",
+    nextStageActionButtonLabel: nextStageActionRow?.actionButtonLabel || "",
+    nextStageActionAffordance: nextStageActionRow?.actionAffordance || "",
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",
