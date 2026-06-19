@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 602 (unreleased)** — Added action evidence capture display metadata to the Website Console bundle handoff operator runbook.
 - **Phase 601 (unreleased)** — Added action evidence capture default/empty-value metadata to the Website Console bundle handoff operator runbook.
 - **Phase 600 (unreleased)** — Added action evidence capture value-shape metadata to the Website Console bundle handoff operator runbook.
 - **Phase 599 (unreleased)** — Added action evidence capture validation metadata to the Website Console bundle handoff operator runbook.

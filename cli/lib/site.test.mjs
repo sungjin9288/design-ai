@@ -1971,6 +1971,25 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "Strict bundle-check output",
     "Bundle digest",
   ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldPlaceholdersByKey.verifySourceBundle, [
+    "Paste the strict bundle-check pass output or JSON status.",
+    "Record the bundle digest or checksum summary.",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldRequirementLabelsByKey, {
+    verifySourceBundle: ["Required", "Required"],
+    refreshHandoffSnapshot: ["Optional"],
+    writeEffectiveTaskPrompt: ["Required", "Required"],
+    executeInTargetRepo: ["Required", "Required", "Required"],
+    recordEvidence: ["Required", "Required"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldAriaLabelsByKey.verifySourceBundle, [
+    "Strict bundle-check output evidence (required)",
+    "Bundle digest evidence (required)",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldHelpTextsByKey.verifySourceBundle, [
+    "Required: paste a passing strict bundle-check result.",
+    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+  ]);
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey, {
     verifySourceBundle: ["textarea", "text"],
     refreshHandoffSnapshot: ["textarea"],
@@ -2089,6 +2108,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     acceptsMultiple: false,
     defaultValue: "",
     emptyValue: "",
+    requirementLabel: "Required",
+    ariaLabel: "Strict bundle-check output evidence (required)",
+    helpText: "Required: paste a passing strict bundle-check result.",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.executeInTargetRepo[2], {
     key: "viewportAccessibilityNotes",
@@ -2105,6 +2127,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     acceptsMultiple: false,
     defaultValue: "",
     emptyValue: "",
+    requirementLabel: "Required",
+    ariaLabel: "Viewport and accessibility notes evidence (required)",
+    helpText: "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
   });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
@@ -2144,6 +2169,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceTargetLabel: stage.actionEvidenceTargetLabel,
     actionEvidenceCaptureFieldKeys: stage.actionEvidenceCaptureFieldKeys,
     actionEvidenceCaptureFieldLabels: stage.actionEvidenceCaptureFieldLabels,
+    actionEvidenceCaptureFieldPlaceholders: stage.actionEvidenceCaptureFieldPlaceholders,
+    actionEvidenceCaptureFieldRequirementLabels: stage.actionEvidenceCaptureFieldRequirementLabels,
+    actionEvidenceCaptureFieldAriaLabels: stage.actionEvidenceCaptureFieldAriaLabels,
+    actionEvidenceCaptureFieldHelpTexts: stage.actionEvidenceCaptureFieldHelpTexts,
     actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
     actionEvidenceCaptureFieldValueShapes: stage.actionEvidenceCaptureFieldValueShapes,
     actionEvidenceCaptureFieldAcceptsMultiple: stage.actionEvidenceCaptureFieldAcceptsMultiple,
@@ -2193,6 +2222,19 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTargetLabel: "Local command output",
       actionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
       actionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
+      actionEvidenceCaptureFieldPlaceholders: [
+        "Paste the strict bundle-check pass output or JSON status.",
+        "Record the bundle digest or checksum summary.",
+      ],
+      actionEvidenceCaptureFieldRequirementLabels: ["Required", "Required"],
+      actionEvidenceCaptureFieldAriaLabels: [
+        "Strict bundle-check output evidence (required)",
+        "Bundle digest evidence (required)",
+      ],
+      actionEvidenceCaptureFieldHelpTexts: [
+        "Required: paste a passing strict bundle-check result.",
+        "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+      ],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2242,6 +2284,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTargetLabel: "Local command output",
       actionEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
       actionEvidenceCaptureFieldLabels: ["Strict handoff JSON snapshot"],
+      actionEvidenceCaptureFieldPlaceholders: [
+        "Paste or link the refreshed strict handoff JSON snapshot when used.",
+      ],
+      actionEvidenceCaptureFieldRequirementLabels: ["Optional"],
+      actionEvidenceCaptureFieldAriaLabels: [
+        "Strict handoff JSON snapshot evidence (optional)",
+      ],
+      actionEvidenceCaptureFieldHelpTexts: [
+        "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+      ],
       actionEvidenceCaptureFieldInputTypes: ["textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false],
@@ -2291,6 +2343,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTargetLabel: "Local output file",
       actionEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
       actionEvidenceCaptureFieldLabels: ["Prompt output file", "Selected task id"],
+      actionEvidenceCaptureFieldPlaceholders: ["target-repo-task-...-handoff.md", "task-..."],
+      actionEvidenceCaptureFieldRequirementLabels: ["Required", "Required"],
+      actionEvidenceCaptureFieldAriaLabels: [
+        "Prompt output file evidence (required)",
+        "Selected task id evidence (required)",
+      ],
+      actionEvidenceCaptureFieldHelpTexts: [
+        "Required: record the local Markdown prompt file path generated for the selected task.",
+        "Required: record the bundle task id used for the target-repo handoff prompt.",
+      ],
       actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
       actionEvidenceCaptureFieldValueShapes: ["file-path", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2347,6 +2409,22 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         "Target repo changed files",
         "Target repo verification results",
         "Viewport and accessibility notes",
+      ],
+      actionEvidenceCaptureFieldPlaceholders: [
+        "List changed files from the target website repo.",
+        "Record lint, typecheck, build, test, or equivalent command results.",
+        "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+      ],
+      actionEvidenceCaptureFieldRequirementLabels: ["Required", "Required", "Required"],
+      actionEvidenceCaptureFieldAriaLabels: [
+        "Target repo changed files evidence (required)",
+        "Target repo verification results evidence (required)",
+        "Viewport and accessibility notes evidence (required)",
+      ],
+      actionEvidenceCaptureFieldHelpTexts: [
+        "Required: list at least one changed target-repo file or a no-change justification.",
+        "Required: record target-repo verification commands and results.",
+        "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
       ],
       actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["string-list", "long-text", "long-text"],
@@ -2405,6 +2483,19 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTargetLabel: "Handoff evidence record",
       actionEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
       actionEvidenceCaptureFieldLabels: ["Final evidence record", "Remaining risks"],
+      actionEvidenceCaptureFieldPlaceholders: [
+        "Summarize changed files, verification, viewport/accessibility checks, risks, and digest.",
+        "List unresolved risks, skipped checks, or follow-up tasks.",
+      ],
+      actionEvidenceCaptureFieldRequirementLabels: ["Required", "Required"],
+      actionEvidenceCaptureFieldAriaLabels: [
+        "Final evidence record evidence (required)",
+        "Remaining risks evidence (required)",
+      ],
+      actionEvidenceCaptureFieldHelpTexts: [
+        "Required: summarize changes, verification, viewport/accessibility checks, risks, and digest.",
+        "Required: record unresolved risks, skipped checks, or confirm none remain.",
+      ],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2470,6 +2561,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     singleValueEvidenceCaptureFieldCount: 9,
     emptyStringEvidenceCaptureFieldCount: 9,
     emptyListEvidenceCaptureFieldCount: 1,
+    placeholderEvidenceCaptureFieldCount: 10,
+    ariaLabelEvidenceCaptureFieldCount: 10,
+    helpTextEvidenceCaptureFieldCount: 10,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -2530,6 +2624,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         acceptsMultiple: false,
         defaultValue: "",
         emptyValue: "",
+        requirementLabel: "Required",
+        ariaLabel: "Strict bundle-check output evidence (required)",
+        helpText: "Required: paste a passing strict bundle-check result.",
       },
       {
         key: "bundleDigest",
@@ -2546,10 +2643,26 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         acceptsMultiple: false,
         defaultValue: "",
         emptyValue: "",
+        requirementLabel: "Required",
+        ariaLabel: "Bundle digest evidence (required)",
+        helpText: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
       },
     ],
     nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
     nextActionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
+    nextActionEvidenceCaptureFieldPlaceholders: [
+      "Paste the strict bundle-check pass output or JSON status.",
+      "Record the bundle digest or checksum summary.",
+    ],
+    nextActionEvidenceCaptureFieldRequirementLabels: ["Required", "Required"],
+    nextActionEvidenceCaptureFieldAriaLabels: [
+      "Strict bundle-check output evidence (required)",
+      "Bundle digest evidence (required)",
+    ],
+    nextActionEvidenceCaptureFieldHelpTexts: [
+      "Required: paste a passing strict bundle-check result.",
+      "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+    ],
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
     nextActionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2781,6 +2894,22 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "Strict bundle-check output",
     "Bundle digest",
   ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldPlaceholders, [
+    "Paste the strict bundle-check pass output or JSON status.",
+    "Record the bundle digest or checksum summary.",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldRequirementLabels, [
+    "Required",
+    "Required",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldAriaLabels, [
+    "Strict bundle-check output evidence (required)",
+    "Bundle digest evidence (required)",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldHelpTexts, [
+    "Required: paste a passing strict bundle-check result.",
+    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+  ]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValueShapes, ["long-text", "short-text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldAcceptsMultiple, [false, false]);
@@ -2823,6 +2952,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     acceptsMultiple: false,
     defaultValue: "",
     emptyValue: "",
+    requirementLabel: "Required",
+    ariaLabel: "Bundle digest evidence (required)",
+    helpText: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
   });
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);

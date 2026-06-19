@@ -2359,6 +2359,70 @@ def assert_site_bundle_handoff_json_smoke(
         "executeInTargetRepo": [[], "", ""],
         "recordEvidence": ["", ""],
     }
+    expected_capture_field_placeholders = {
+        "verifySourceBundle": [
+            "Paste the strict bundle-check pass output or JSON status.",
+            "Record the bundle digest or checksum summary.",
+        ],
+        "refreshHandoffSnapshot": ["Paste or link the refreshed strict handoff JSON snapshot when used."],
+        "writeEffectiveTaskPrompt": ["target-repo-task-...-handoff.md", "task-..."],
+        "executeInTargetRepo": [
+            "List changed files from the target website repo.",
+            "Record lint, typecheck, build, test, or equivalent command results.",
+            "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+        ],
+        "recordEvidence": [
+            "Summarize changed files, verification, viewport/accessibility checks, risks, and digest.",
+            "List unresolved risks, skipped checks, or follow-up tasks.",
+        ],
+    }
+    expected_capture_field_requirement_labels = {
+        "verifySourceBundle": ["Required", "Required"],
+        "refreshHandoffSnapshot": ["Optional"],
+        "writeEffectiveTaskPrompt": ["Required", "Required"],
+        "executeInTargetRepo": ["Required", "Required", "Required"],
+        "recordEvidence": ["Required", "Required"],
+    }
+    expected_capture_field_aria_labels = {
+        "verifySourceBundle": [
+            "Strict bundle-check output evidence (required)",
+            "Bundle digest evidence (required)",
+        ],
+        "refreshHandoffSnapshot": ["Strict handoff JSON snapshot evidence (optional)"],
+        "writeEffectiveTaskPrompt": [
+            "Prompt output file evidence (required)",
+            "Selected task id evidence (required)",
+        ],
+        "executeInTargetRepo": [
+            "Target repo changed files evidence (required)",
+            "Target repo verification results evidence (required)",
+            "Viewport and accessibility notes evidence (required)",
+        ],
+        "recordEvidence": [
+            "Final evidence record evidence (required)",
+            "Remaining risks evidence (required)",
+        ],
+    }
+    expected_capture_field_help_texts = {
+        "verifySourceBundle": [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ],
+        "refreshHandoffSnapshot": ["Optional: paste the refreshed strict handoff JSON snapshot when available."],
+        "writeEffectiveTaskPrompt": [
+            "Required: record the local Markdown prompt file path generated for the selected task.",
+            "Required: record the bundle task id used for the target-repo handoff prompt.",
+        ],
+        "executeInTargetRepo": [
+            "Required: list at least one changed target-repo file or a no-change justification.",
+            "Required: record target-repo verification commands and results.",
+            "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
+        ],
+        "recordEvidence": [
+            "Required: summarize changes, verification, viewport/accessibility checks, risks, and digest.",
+            "Required: record unresolved risks, skipped checks, or confirm none remain.",
+        ],
+    }
     expected_capture_field_validation_rules = {
         "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
         "refreshHandoffSnapshot": ["optional-json-snapshot"],
@@ -2407,6 +2471,9 @@ def assert_site_bundle_handoff_json_smoke(
             "acceptsMultiple": False,
             "defaultValue": "",
             "emptyValue": "",
+            "requirementLabel": "Required",
+            "ariaLabel": "Strict bundle-check output evidence (required)",
+            "helpText": "Required: paste a passing strict bundle-check result.",
         },
         {
             "key": "bundleDigest",
@@ -2423,6 +2490,9 @@ def assert_site_bundle_handoff_json_smoke(
             "acceptsMultiple": False,
             "defaultValue": "",
             "emptyValue": "",
+            "requirementLabel": "Required",
+            "ariaLabel": "Bundle digest evidence (required)",
+            "helpText": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
         },
     ]
     if (
@@ -2703,6 +2773,10 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureFieldAcceptsMultipleByKey") != expected_capture_field_accepts_multiple
         or operator_runbook.get("stageActionEvidenceCaptureFieldDefaultValuesByKey") != expected_capture_field_default_values
         or operator_runbook.get("stageActionEvidenceCaptureFieldEmptyValuesByKey") != expected_capture_field_empty_values
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPlaceholdersByKey") != expected_capture_field_placeholders
+        or operator_runbook.get("stageActionEvidenceCaptureFieldRequirementLabelsByKey") != expected_capture_field_requirement_labels
+        or operator_runbook.get("stageActionEvidenceCaptureFieldAriaLabelsByKey") != expected_capture_field_aria_labels
+        or operator_runbook.get("stageActionEvidenceCaptureFieldHelpTextsByKey") != expected_capture_field_help_texts
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -2797,6 +2871,9 @@ def assert_site_bundle_handoff_json_smoke(
             "singleValueEvidenceCaptureFieldCount": 9,
             "emptyStringEvidenceCaptureFieldCount": 9,
             "emptyListEvidenceCaptureFieldCount": 1,
+            "placeholderEvidenceCaptureFieldCount": 10,
+            "ariaLabelEvidenceCaptureFieldCount": 10,
+            "helpTextEvidenceCaptureFieldCount": 10,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -2847,6 +2924,19 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCaptureFields": expected_next_capture_fields,
             "nextActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
             "nextActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
+            "nextActionEvidenceCaptureFieldPlaceholders": [
+                "Paste the strict bundle-check pass output or JSON status.",
+                "Record the bundle digest or checksum summary.",
+            ],
+            "nextActionEvidenceCaptureFieldRequirementLabels": ["Required", "Required"],
+            "nextActionEvidenceCaptureFieldAriaLabels": [
+                "Strict bundle-check output evidence (required)",
+                "Bundle digest evidence (required)",
+            ],
+            "nextActionEvidenceCaptureFieldHelpTexts": [
+                "Required: paste a passing strict bundle-check result.",
+                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            ],
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
             "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
@@ -2980,6 +3070,22 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageActionEvidenceCaptureFields") != expected_next_capture_fields
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPlaceholders")
+        != [
+            "Paste the strict bundle-check pass output or JSON status.",
+            "Record the bundle digest or checksum summary.",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldRequirementLabels") != ["Required", "Required"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAriaLabels")
+        != [
+            "Strict bundle-check output evidence (required)",
+            "Bundle digest evidence (required)",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldHelpTexts")
+        != [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
