@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 608 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation States (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes initial validation state objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize form validity, blocking status, and empty-state messages without running a separate validator before first render.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationStatesByKey` so wrappers can consume per-action initial state rows with field key, label, rule id, status, validity, blocking state, severity, required state, empty-value policy, pristine flags, min length, value shape, payload path, and message.
+- Added row-level `actionEvidenceCaptureInitialValidationStates` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for initial validation-state actions, total states, valid/invalid states, blocking states, optional-empty states, missing-required states, and pristine states.
+- Added matching `nextActionEvidenceCaptureInitialValidationStates` and `nextStageActionEvidenceCaptureInitialValidationStates` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for initial validation-state maps, optional/required state semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms with deterministic first-render validity and blocking state from the CLI JSON contract alone.
+- Company website pilots get consistent required-field blocking for strict bundle output, bundle digest, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks while optional handoff JSON starts as non-blocking.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 607 — Website Bundle Handoff Runbook Action Evidence Capture Validation Specs (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact validation spec objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate required and optional evidence values without maintaining a separate rule schema.
