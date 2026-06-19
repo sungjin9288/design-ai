@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 588 — Website Bundle Handoff Runbook Stage Command Lookups (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage command lookup maps, so wrappers and GUI surfaces can render copy-ready commands, execution argv, run policies, and command safety levels for each runbook stage without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageCommandKeysByKey` for stable stage-key to command-key list lookup.
+- Added `operatorRunbook.stageCommandLabelsByKey` and `stageCommandStringsByKey` so wrappers can render stage command labels and copy-ready command text without opening stage objects.
+- Added `operatorRunbook.stageCommandArgsByKey` so automation can retrieve stage-level argv arrays without parsing command strings.
+- Added `operatorRunbook.stageCommandRunPoliciesByKey` and `stageCommandSafetyLevelsByKey` for command-level gate chips within each stage.
+- Added `nextStageCommandLabels`, `nextStageCommands`, `nextStageCommandArgsList`, `nextStageCommandRunPolicies`, and `nextStageCommandSafetyLevels` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage command lookup parity against the command manifest.
+
+### Impact
+- Wrappers can render stage command rows, copy buttons, and execution previews directly from lookup maps.
+- Company website pilots get a clearer operator UI contract for the strict bundle-check gate and selected task handoff prompt generation.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 587 — Website Bundle Handoff Runbook Stage Capability Flags (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage capability flags as stable lookup maps, so wrappers and GUI surfaces can distinguish command-bearing stages, manual target-repo stages, local output writes, external calls, and target-repo mutation boundaries without scanning ordered stage arrays.

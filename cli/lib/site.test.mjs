@@ -1795,6 +1795,45 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: 0,
     recordEvidence: 0,
   });
+  assert.deepEqual(report.operatorRunbook.stageCommandKeysByKey, {
+    verifySourceBundle: ["source.bundleCheck.strict"],
+    refreshHandoffSnapshot: ["source.bundleHandoff.strict"],
+    writeEffectiveTaskPrompt: ["task.task-accessibility.handoff.strict"],
+    executeInTargetRepo: [],
+    recordEvidence: [],
+  });
+  assert.deepEqual(report.operatorRunbook.stageCommandLabelsByKey.verifySourceBundle, [
+    "Strict bundle check JSON",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandLabelsByKey.writeEffectiveTaskPrompt, [
+    "Strict Task handoff: task-accessibility",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandStringsByKey.verifySourceBundle, [
+    report.commandManifest.commands[1].command,
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandStringsByKey.writeEffectiveTaskPrompt, [
+    report.commandManifest.commands[5].command,
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandArgsByKey.verifySourceBundle, [
+    ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"],
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandArgsByKey.writeEffectiveTaskPrompt, [
+    ["design-ai", "site", dir, "--bundle-handoff", "--task", "task-accessibility", "--strict", "--out", "target-repo-task-accessibility-handoff.md"],
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageCommandRunPoliciesByKey, {
+    verifySourceBundle: ["read-only"],
+    refreshHandoffSnapshot: ["read-only"],
+    writeEffectiveTaskPrompt: ["writes-local-file"],
+    executeInTargetRepo: [],
+    recordEvidence: [],
+  });
+  assert.deepEqual(report.operatorRunbook.stageCommandSafetyLevelsByKey, {
+    verifySourceBundle: ["local-read-only"],
+    refreshHandoffSnapshot: ["local-read-only"],
+    writeEffectiveTaskPrompt: ["local-output-file"],
+    executeInTargetRepo: [],
+    recordEvidence: [],
+  });
   assert.deepEqual(report.operatorRunbook.stageOutputFilesByKey, {
     verifySourceBundle: [],
     refreshHandoffSnapshot: [],
@@ -1854,6 +1893,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");
   assert.equal(report.operatorRunbook.nextStageSafetyLevel, "local-read-only");
   assert.equal(report.operatorRunbook.nextStageCommandCount, 1);
+  assert.deepEqual(report.operatorRunbook.nextStageCommandLabels, ["Strict bundle check JSON"]);
+  assert.deepEqual(report.operatorRunbook.nextStageCommands, [report.commandManifest.commands[1].command]);
+  assert.deepEqual(report.operatorRunbook.nextStageCommandArgsList, [
+    ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"],
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageCommandRunPolicies, ["read-only"]);
+  assert.deepEqual(report.operatorRunbook.nextStageCommandSafetyLevels, ["local-read-only"]);
   assert.deepEqual(report.operatorRunbook.nextStageOutputFiles, []);
   assert.equal(report.operatorRunbook.nextStageHasCommands, true);
   assert.equal(report.operatorRunbook.nextStageManual, false);

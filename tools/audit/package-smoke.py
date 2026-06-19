@@ -2370,6 +2370,34 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": 0,
             "recordEvidence": 0,
         }
+        or operator_runbook.get("stageCommandKeysByKey") != {
+            "verifySourceBundle": ["source.bundleCheck.strict"],
+            "refreshHandoffSnapshot": ["source.bundleHandoff.strict"],
+            "writeEffectiveTaskPrompt": [f"task.{expected_effective_task_id}.handoff.strict"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandLabelsByKey") != {
+            "verifySourceBundle": ["Strict bundle check JSON"],
+            "refreshHandoffSnapshot": ["Strict bundle handoff JSON"],
+            "writeEffectiveTaskPrompt": [f"Strict Task handoff: {expected_effective_task_id}"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandRunPoliciesByKey") != {
+            "verifySourceBundle": ["read-only"],
+            "refreshHandoffSnapshot": ["read-only"],
+            "writeEffectiveTaskPrompt": ["writes-local-file"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandSafetyLevelsByKey") != {
+            "verifySourceBundle": ["local-read-only"],
+            "refreshHandoffSnapshot": ["local-read-only"],
+            "writeEffectiveTaskPrompt": ["local-output-file"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
         or operator_runbook.get("stageHasCommandsByKey") != {
             "verifySourceBundle": True,
             "refreshHandoffSnapshot": True,
@@ -2421,6 +2449,9 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
         or operator_runbook.get("nextStageSafetyLevel") != "local-read-only"
         or operator_runbook.get("nextStageCommandCount") != 1
+        or operator_runbook.get("nextStageCommandLabels") != ["Strict bundle check JSON"]
+        or operator_runbook.get("nextStageCommandRunPolicies") != ["read-only"]
+        or operator_runbook.get("nextStageCommandSafetyLevels") != ["local-read-only"]
         or operator_runbook.get("nextStageOutputFiles") != []
         or operator_runbook.get("nextStageHasCommands") is not True
         or operator_runbook.get("nextStageManual") is not False
@@ -2431,6 +2462,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
         or not isinstance(operator_runbook.get("stageByKey"), dict)
         or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
+        or not isinstance(operator_runbook.get("stageCommandStringsByKey"), dict)
+        or not isinstance(operator_runbook.get("stageCommandArgsByKey"), dict)
         or not isinstance(operator_runbook.get("stageOutputFilesByKey"), dict)
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
@@ -2447,6 +2480,12 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
         or operator_runbook["stageSummaryByKey"].get("verifySourceBundle") != verify_stage.get("reason")
         or operator_runbook["stageSummaryByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("reason")
+        or operator_runbook["stageCommandStringsByKey"].get("verifySourceBundle") != [verify_stage["commands"][0].get("command")]
+        or operator_runbook["stageCommandStringsByKey"].get("writeEffectiveTaskPrompt") != [task_prompt_stage["commands"][0].get("command")]
+        or operator_runbook["stageCommandArgsByKey"].get("verifySourceBundle") != [verify_stage["commands"][0].get("commandArgs")]
+        or operator_runbook["stageCommandArgsByKey"].get("writeEffectiveTaskPrompt") != [task_prompt_stage["commands"][0].get("commandArgs")]
+        or operator_runbook.get("nextStageCommands") != [verify_stage["commands"][0].get("command")]
+        or operator_runbook.get("nextStageCommandArgsList") != [verify_stage["commands"][0].get("commandArgs")]
         or operator_runbook["stageOutputFilesByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("outputFiles")
         or operator_runbook["stageOutputFilesByKey"].get("verifySourceBundle") != []
         or operator_runbook["stageHasCommandsByKey"].get("verifySourceBundle") != (verify_stage.get("commandCount") > 0)

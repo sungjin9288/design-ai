@@ -4912,6 +4912,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
   const stageSafetyLevelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.safetyLevel]));
   const stageCommandCountByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount]));
+  const stageCommandKeysByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandKeys]));
+  const stageCommandLabelsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commands.map((command) => command.label)]));
+  const stageCommandStringsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commands.map((command) => command.command)]));
+  const stageCommandArgsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commands.map((command) => command.commandArgs)]));
+  const stageCommandRunPoliciesByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commands.map((command) => command.runPolicy)]));
+  const stageCommandSafetyLevelsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commands.map((command) => command.safety?.safetyLevel || "")]));
   const stageOutputFilesByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.outputFiles]));
   const stageHasCommandsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount > 0]));
   const stageManualByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount === 0]));
@@ -4948,6 +4954,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageRunPolicyByKey,
     stageSafetyLevelByKey,
     stageCommandCountByKey,
+    stageCommandKeysByKey,
+    stageCommandLabelsByKey,
+    stageCommandStringsByKey,
+    stageCommandArgsByKey,
+    stageCommandRunPoliciesByKey,
+    stageCommandSafetyLevelsByKey,
     stageOutputFilesByKey,
     stageHasCommandsByKey,
     stageManualByKey,
@@ -4965,6 +4977,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageRunPolicy: nextStage?.runPolicy || "",
     nextStageSafetyLevel: nextStage?.safetyLevel || "",
     nextStageCommandCount: nextStage?.commandCount || 0,
+    nextStageCommandLabels: nextStage?.commands?.map((command) => command.label) || [],
+    nextStageCommands: nextStage?.commands?.map((command) => command.command) || [],
+    nextStageCommandArgsList: nextStage?.commands?.map((command) => command.commandArgs) || [],
+    nextStageCommandRunPolicies: nextStage?.commands?.map((command) => command.runPolicy) || [],
+    nextStageCommandSafetyLevels: nextStage?.commands?.map((command) => command.safety?.safetyLevel || "") || [],
     nextStageOutputFiles: nextStage?.outputFiles || [],
     nextStageHasCommands: (nextStage?.commandCount || 0) > 0,
     nextStageManual: (nextStage?.commandCount || 0) === 0,
