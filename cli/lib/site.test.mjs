@@ -2062,6 +2062,62 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: 1,
     recordEvidence: 1,
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCapturePayloadTemplateByKey, {
+    verifySourceBundle: {
+      sourceBundle: {
+        verification: {
+          strictBundleCheckOutput: "",
+          bundleDigest: "",
+        },
+      },
+    },
+    refreshHandoffSnapshot: {
+      handoffSnapshot: {
+        strictJson: "",
+      },
+    },
+    writeEffectiveTaskPrompt: {
+      handoffPrompt: {
+        outputFile: "",
+        selectedTaskId: "",
+      },
+    },
+    executeInTargetRepo: {
+      targetRepo: {
+        changedFiles: [],
+        verificationResults: "",
+        viewportAccessibilityNotes: "",
+      },
+    },
+    recordEvidence: {
+      handoffEvidence: {
+        finalRecord: "",
+        remainingRisks: "",
+      },
+    },
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCapturePayloadFlatTemplateByKey, {
+    verifySourceBundle: {
+      "sourceBundle.verification.strictBundleCheckOutput": "",
+      "sourceBundle.verification.bundleDigest": "",
+    },
+    refreshHandoffSnapshot: {
+      "handoffSnapshot.strictJson": "",
+    },
+    writeEffectiveTaskPrompt: {
+      "handoffPrompt.outputFile": "",
+      "handoffPrompt.selectedTaskId": "",
+    },
+    executeInTargetRepo: {
+      "targetRepo.changedFiles": [],
+      "targetRepo.verificationResults": "",
+      "targetRepo.viewportAccessibilityNotes": "",
+    },
+    recordEvidence: {
+      "handoffEvidence.finalRecord": "",
+      "handoffEvidence.remainingRisks": "",
+    },
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey, {
     verifySourceBundle: ["textarea", "text"],
     refreshHandoffSnapshot: ["textarea"],
@@ -2262,6 +2318,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceCaptureFieldPayloadPaths: stage.actionEvidenceCaptureFieldPayloadPaths,
     actionEvidenceCapturePayloadNamespaces: stage.actionEvidenceCapturePayloadNamespaces,
     actionEvidenceCapturePayloadNamespaceCount: stage.actionEvidenceCapturePayloadNamespaceCount,
+    actionEvidenceCapturePayloadTemplate: stage.actionEvidenceCapturePayloadTemplate,
+    actionEvidenceCapturePayloadFlatTemplate: stage.actionEvidenceCapturePayloadFlatTemplate,
     actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
     actionEvidenceCaptureFieldValueShapes: stage.actionEvidenceCaptureFieldValueShapes,
     actionEvidenceCaptureFieldAcceptsMultiple: stage.actionEvidenceCaptureFieldAcceptsMultiple,
@@ -2339,6 +2397,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       ],
       actionEvidenceCapturePayloadNamespaces: ["sourceBundle"],
       actionEvidenceCapturePayloadNamespaceCount: 1,
+      actionEvidenceCapturePayloadTemplate: {
+        sourceBundle: {
+          verification: {
+            strictBundleCheckOutput: "",
+            bundleDigest: "",
+          },
+        },
+      },
+      actionEvidenceCapturePayloadFlatTemplate: {
+        "sourceBundle.verification.strictBundleCheckOutput": "",
+        "sourceBundle.verification.bundleDigest": "",
+      },
       actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2407,6 +2477,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldPayloadPaths: ["handoffSnapshot.strictJson"],
       actionEvidenceCapturePayloadNamespaces: ["handoffSnapshot"],
       actionEvidenceCapturePayloadNamespaceCount: 1,
+      actionEvidenceCapturePayloadTemplate: {
+        handoffSnapshot: {
+          strictJson: "",
+        },
+      },
+      actionEvidenceCapturePayloadFlatTemplate: {
+        "handoffSnapshot.strictJson": "",
+      },
       actionEvidenceCaptureFieldInputTypes: ["textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false],
@@ -2481,6 +2559,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       ],
       actionEvidenceCapturePayloadNamespaces: ["handoffPrompt"],
       actionEvidenceCapturePayloadNamespaceCount: 1,
+      actionEvidenceCapturePayloadTemplate: {
+        handoffPrompt: {
+          outputFile: "",
+          selectedTaskId: "",
+        },
+      },
+      actionEvidenceCapturePayloadFlatTemplate: {
+        "handoffPrompt.outputFile": "",
+        "handoffPrompt.selectedTaskId": "",
+      },
       actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
       actionEvidenceCaptureFieldValueShapes: ["file-path", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2583,6 +2671,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       ],
       actionEvidenceCapturePayloadNamespaces: ["targetRepo"],
       actionEvidenceCapturePayloadNamespaceCount: 1,
+      actionEvidenceCapturePayloadTemplate: {
+        targetRepo: {
+          changedFiles: [],
+          verificationResults: "",
+          viewportAccessibilityNotes: "",
+        },
+      },
+      actionEvidenceCapturePayloadFlatTemplate: {
+        "targetRepo.changedFiles": [],
+        "targetRepo.verificationResults": "",
+        "targetRepo.viewportAccessibilityNotes": "",
+      },
       actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["string-list", "long-text", "long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [true, false, false],
@@ -2665,6 +2765,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       ],
       actionEvidenceCapturePayloadNamespaces: ["handoffEvidence"],
       actionEvidenceCapturePayloadNamespaceCount: 1,
+      actionEvidenceCapturePayloadTemplate: {
+        handoffEvidence: {
+          finalRecord: "",
+          remainingRisks: "",
+        },
+      },
+      actionEvidenceCapturePayloadFlatTemplate: {
+        "handoffEvidence.finalRecord": "",
+        "handoffEvidence.remainingRisks": "",
+      },
       actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2741,6 +2851,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     uniqueEvidenceCapturePayloadNamespaceCount: 5,
     actionWithMultipleEvidenceCapturePayloadNamespaceCount: 0,
     maxActionEvidenceCapturePayloadNamespaceCount: 1,
+    actionWithEvidenceCapturePayloadTemplateCount: 5,
+    evidenceCapturePayloadTemplatePathCount: 10,
+    maxActionEvidenceCapturePayloadTemplatePathCount: 3,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -2863,6 +2976,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     nextActionEvidenceCapturePayloadNamespaces: ["sourceBundle"],
     nextActionEvidenceCapturePayloadNamespaceCount: 1,
+    nextActionEvidenceCapturePayloadTemplate: {
+      sourceBundle: {
+        verification: {
+          strictBundleCheckOutput: "",
+          bundleDigest: "",
+        },
+      },
+    },
+    nextActionEvidenceCapturePayloadFlatTemplate: {
+      "sourceBundle.verification.strictBundleCheckOutput": "",
+      "sourceBundle.verification.bundleDigest": "",
+    },
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
     nextActionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -3137,6 +3262,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "sourceBundle",
   ]);
   assert.equal(report.operatorRunbook.nextStageActionEvidenceCapturePayloadNamespaceCount, 1);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCapturePayloadTemplate, {
+    sourceBundle: {
+      verification: {
+        strictBundleCheckOutput: "",
+        bundleDigest: "",
+      },
+    },
+  });
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCapturePayloadFlatTemplate, {
+    "sourceBundle.verification.strictBundleCheckOutput": "",
+    "sourceBundle.verification.bundleDigest": "",
+  });
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValueShapes, ["long-text", "short-text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldAcceptsMultiple, [false, false]);

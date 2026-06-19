@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 605 — Website Bundle Handoff Runbook Action Evidence Capture Payload Templates (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes nested and flat payload templates for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize handoff evidence payload objects without constructing nested storage objects from field paths.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadTemplateByKey` so wrappers can initialize per-action nested evidence payloads such as `sourceBundle.verification`, `handoffPrompt`, `targetRepo`, and `handoffEvidence`.
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadFlatTemplateByKey` so wrappers can also initialize path-keyed form stores with deterministic empty values.
+- Added row-level `actionEvidenceCapturePayloadTemplate` and `actionEvidenceCapturePayloadFlatTemplate` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for payload-template actions, total payload-template paths, and max payload-template paths per action.
+- Added matching `nextAction*` and `nextStageAction*` payload-template mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for nested templates, flat templates, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can bootstrap Website bundle handoff evidence form state directly from the CLI JSON contract without maintaining local nested-object construction logic.
+- Company website pilots can carry source bundle verification, refreshed handoff JSON, prompt output, target repo change/verification/QA values, final evidence, and remaining risks through a stable payload shape.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 604 — Website Bundle Handoff Runbook Action Evidence Capture Payload Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes payload metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can persist evidence form values without hard-coding source-bundle, handoff prompt, target-repo, or final handoff record paths.
