@@ -2027,6 +2027,41 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: 3,
     recordEvidence: 2,
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldPayloadNamespacesByKey, {
+    verifySourceBundle: ["sourceBundle", "sourceBundle"],
+    refreshHandoffSnapshot: ["handoffSnapshot"],
+    writeEffectiveTaskPrompt: ["handoffPrompt", "handoffPrompt"],
+    executeInTargetRepo: ["targetRepo", "targetRepo", "targetRepo"],
+    recordEvidence: ["handoffEvidence", "handoffEvidence"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldPayloadPathsByKey, {
+    verifySourceBundle: [
+      "sourceBundle.verification.strictBundleCheckOutput",
+      "sourceBundle.verification.bundleDigest",
+    ],
+    refreshHandoffSnapshot: ["handoffSnapshot.strictJson"],
+    writeEffectiveTaskPrompt: ["handoffPrompt.outputFile", "handoffPrompt.selectedTaskId"],
+    executeInTargetRepo: [
+      "targetRepo.changedFiles",
+      "targetRepo.verificationResults",
+      "targetRepo.viewportAccessibilityNotes",
+    ],
+    recordEvidence: ["handoffEvidence.finalRecord", "handoffEvidence.remainingRisks"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCapturePayloadNamespacesByKey, {
+    verifySourceBundle: ["sourceBundle"],
+    refreshHandoffSnapshot: ["handoffSnapshot"],
+    writeEffectiveTaskPrompt: ["handoffPrompt"],
+    executeInTargetRepo: ["targetRepo"],
+    recordEvidence: ["handoffEvidence"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCapturePayloadNamespaceCountByKey, {
+    verifySourceBundle: 1,
+    refreshHandoffSnapshot: 1,
+    writeEffectiveTaskPrompt: 1,
+    executeInTargetRepo: 1,
+    recordEvidence: 1,
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey, {
     verifySourceBundle: ["textarea", "text"],
     refreshHandoffSnapshot: ["textarea"],
@@ -2150,6 +2185,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     helpText: "Required: paste a passing strict bundle-check result.",
     sectionKey: "source-bundle-verification",
     sectionLabel: "Source bundle verification",
+    payloadNamespace: "sourceBundle",
+    payloadPath: "sourceBundle.verification.strictBundleCheckOutput",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.executeInTargetRepo[2], {
     key: "viewportAccessibilityNotes",
@@ -2171,6 +2208,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     helpText: "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
     sectionKey: "viewport-accessibility-qa",
     sectionLabel: "Viewport and accessibility QA",
+    payloadNamespace: "targetRepo",
+    payloadPath: "targetRepo.viewportAccessibilityNotes",
   });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
@@ -2219,6 +2258,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceCaptureSectionKeys: stage.actionEvidenceCaptureSectionKeys,
     actionEvidenceCaptureSectionLabels: stage.actionEvidenceCaptureSectionLabels,
     actionEvidenceCaptureSectionCount: stage.actionEvidenceCaptureSectionCount,
+    actionEvidenceCaptureFieldPayloadNamespaces: stage.actionEvidenceCaptureFieldPayloadNamespaces,
+    actionEvidenceCaptureFieldPayloadPaths: stage.actionEvidenceCaptureFieldPayloadPaths,
+    actionEvidenceCapturePayloadNamespaces: stage.actionEvidenceCapturePayloadNamespaces,
+    actionEvidenceCapturePayloadNamespaceCount: stage.actionEvidenceCapturePayloadNamespaceCount,
     actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
     actionEvidenceCaptureFieldValueShapes: stage.actionEvidenceCaptureFieldValueShapes,
     actionEvidenceCaptureFieldAcceptsMultiple: stage.actionEvidenceCaptureFieldAcceptsMultiple,
@@ -2289,6 +2332,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureSectionKeys: ["source-bundle-verification"],
       actionEvidenceCaptureSectionLabels: ["Source bundle verification"],
       actionEvidenceCaptureSectionCount: 1,
+      actionEvidenceCaptureFieldPayloadNamespaces: ["sourceBundle", "sourceBundle"],
+      actionEvidenceCaptureFieldPayloadPaths: [
+        "sourceBundle.verification.strictBundleCheckOutput",
+        "sourceBundle.verification.bundleDigest",
+      ],
+      actionEvidenceCapturePayloadNamespaces: ["sourceBundle"],
+      actionEvidenceCapturePayloadNamespaceCount: 1,
       actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2353,6 +2403,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureSectionKeys: ["handoff-snapshot"],
       actionEvidenceCaptureSectionLabels: ["Handoff snapshot"],
       actionEvidenceCaptureSectionCount: 1,
+      actionEvidenceCaptureFieldPayloadNamespaces: ["handoffSnapshot"],
+      actionEvidenceCaptureFieldPayloadPaths: ["handoffSnapshot.strictJson"],
+      actionEvidenceCapturePayloadNamespaces: ["handoffSnapshot"],
+      actionEvidenceCapturePayloadNamespaceCount: 1,
       actionEvidenceCaptureFieldInputTypes: ["textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false],
@@ -2420,6 +2474,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureSectionKeys: ["handoff-prompt-output"],
       actionEvidenceCaptureSectionLabels: ["Handoff prompt output"],
       actionEvidenceCaptureSectionCount: 1,
+      actionEvidenceCaptureFieldPayloadNamespaces: ["handoffPrompt", "handoffPrompt"],
+      actionEvidenceCaptureFieldPayloadPaths: [
+        "handoffPrompt.outputFile",
+        "handoffPrompt.selectedTaskId",
+      ],
+      actionEvidenceCapturePayloadNamespaces: ["handoffPrompt"],
+      actionEvidenceCapturePayloadNamespaceCount: 1,
       actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
       actionEvidenceCaptureFieldValueShapes: ["file-path", "short-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2514,6 +2575,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         "Viewport and accessibility QA",
       ],
       actionEvidenceCaptureSectionCount: 3,
+      actionEvidenceCaptureFieldPayloadNamespaces: ["targetRepo", "targetRepo", "targetRepo"],
+      actionEvidenceCaptureFieldPayloadPaths: [
+        "targetRepo.changedFiles",
+        "targetRepo.verificationResults",
+        "targetRepo.viewportAccessibilityNotes",
+      ],
+      actionEvidenceCapturePayloadNamespaces: ["targetRepo"],
+      actionEvidenceCapturePayloadNamespaceCount: 1,
       actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["string-list", "long-text", "long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [true, false, false],
@@ -2589,6 +2658,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureSectionKeys: ["final-handoff-evidence", "risk-record"],
       actionEvidenceCaptureSectionLabels: ["Final handoff evidence", "Risk record"],
       actionEvidenceCaptureSectionCount: 2,
+      actionEvidenceCaptureFieldPayloadNamespaces: ["handoffEvidence", "handoffEvidence"],
+      actionEvidenceCaptureFieldPayloadPaths: [
+        "handoffEvidence.finalRecord",
+        "handoffEvidence.remainingRisks",
+      ],
+      actionEvidenceCapturePayloadNamespaces: ["handoffEvidence"],
+      actionEvidenceCapturePayloadNamespaceCount: 1,
       actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
       actionEvidenceCaptureFieldValueShapes: ["long-text", "long-text"],
       actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -2661,6 +2737,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     uniqueEvidenceCaptureSectionCount: 8,
     actionWithMultipleEvidenceCaptureSectionCount: 2,
     maxActionEvidenceCaptureSectionCount: 3,
+    payloadMappedEvidenceCaptureFieldCount: 10,
+    uniqueEvidenceCapturePayloadNamespaceCount: 5,
+    actionWithMultipleEvidenceCapturePayloadNamespaceCount: 0,
+    maxActionEvidenceCapturePayloadNamespaceCount: 1,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -2726,6 +2806,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         helpText: "Required: paste a passing strict bundle-check result.",
         sectionKey: "source-bundle-verification",
         sectionLabel: "Source bundle verification",
+        payloadNamespace: "sourceBundle",
+        payloadPath: "sourceBundle.verification.strictBundleCheckOutput",
       },
       {
         key: "bundleDigest",
@@ -2747,6 +2829,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         helpText: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
         sectionKey: "source-bundle-verification",
         sectionLabel: "Source bundle verification",
+        payloadNamespace: "sourceBundle",
+        payloadPath: "sourceBundle.verification.bundleDigest",
       },
     ],
     nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
@@ -2772,6 +2856,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionEvidenceCaptureSectionKeys: ["source-bundle-verification"],
     nextActionEvidenceCaptureSectionLabels: ["Source bundle verification"],
     nextActionEvidenceCaptureSectionCount: 1,
+    nextActionEvidenceCaptureFieldPayloadNamespaces: ["sourceBundle", "sourceBundle"],
+    nextActionEvidenceCaptureFieldPayloadPaths: [
+      "sourceBundle.verification.strictBundleCheckOutput",
+      "sourceBundle.verification.bundleDigest",
+    ],
+    nextActionEvidenceCapturePayloadNamespaces: ["sourceBundle"],
+    nextActionEvidenceCapturePayloadNamespaceCount: 1,
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
     nextActionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -3034,6 +3125,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "Source bundle verification",
   ]);
   assert.equal(report.operatorRunbook.nextStageActionEvidenceCaptureSectionCount, 1);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldPayloadNamespaces, [
+    "sourceBundle",
+    "sourceBundle",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldPayloadPaths, [
+    "sourceBundle.verification.strictBundleCheckOutput",
+    "sourceBundle.verification.bundleDigest",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCapturePayloadNamespaces, [
+    "sourceBundle",
+  ]);
+  assert.equal(report.operatorRunbook.nextStageActionEvidenceCapturePayloadNamespaceCount, 1);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValueShapes, ["long-text", "short-text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldAcceptsMultiple, [false, false]);
@@ -3081,6 +3184,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     helpText: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
     sectionKey: "source-bundle-verification",
     sectionLabel: "Source bundle verification",
+    payloadNamespace: "sourceBundle",
+    payloadPath: "sourceBundle.verification.bundleDigest",
   });
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);

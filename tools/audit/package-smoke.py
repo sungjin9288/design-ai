@@ -2467,6 +2467,34 @@ def assert_site_bundle_handoff_json_smoke(
         ],
         "recordEvidence": ["Final handoff evidence", "Risk record"],
     }
+    expected_capture_field_payload_namespaces = {
+        "verifySourceBundle": ["sourceBundle", "sourceBundle"],
+        "refreshHandoffSnapshot": ["handoffSnapshot"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt", "handoffPrompt"],
+        "executeInTargetRepo": ["targetRepo", "targetRepo", "targetRepo"],
+        "recordEvidence": ["handoffEvidence", "handoffEvidence"],
+    }
+    expected_capture_field_payload_paths = {
+        "verifySourceBundle": [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ],
+        "refreshHandoffSnapshot": ["handoffSnapshot.strictJson"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt.outputFile", "handoffPrompt.selectedTaskId"],
+        "executeInTargetRepo": [
+            "targetRepo.changedFiles",
+            "targetRepo.verificationResults",
+            "targetRepo.viewportAccessibilityNotes",
+        ],
+        "recordEvidence": ["handoffEvidence.finalRecord", "handoffEvidence.remainingRisks"],
+    }
+    expected_capture_payload_namespaces = {
+        "verifySourceBundle": ["sourceBundle"],
+        "refreshHandoffSnapshot": ["handoffSnapshot"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt"],
+        "executeInTargetRepo": ["targetRepo"],
+        "recordEvidence": ["handoffEvidence"],
+    }
     expected_capture_field_validation_rules = {
         "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
         "refreshHandoffSnapshot": ["optional-json-snapshot"],
@@ -2520,6 +2548,8 @@ def assert_site_bundle_handoff_json_smoke(
             "helpText": "Required: paste a passing strict bundle-check result.",
             "sectionKey": "source-bundle-verification",
             "sectionLabel": "Source bundle verification",
+            "payloadNamespace": "sourceBundle",
+            "payloadPath": "sourceBundle.verification.strictBundleCheckOutput",
         },
         {
             "key": "bundleDigest",
@@ -2541,6 +2571,8 @@ def assert_site_bundle_handoff_json_smoke(
             "helpText": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
             "sectionKey": "source-bundle-verification",
             "sectionLabel": "Source bundle verification",
+            "payloadNamespace": "sourceBundle",
+            "payloadPath": "sourceBundle.verification.bundleDigest",
         },
     ]
     if (
@@ -2836,6 +2868,20 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": 3,
             "recordEvidence": 2,
         }
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadNamespacesByKey")
+        != expected_capture_field_payload_namespaces
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadPathsByKey")
+        != expected_capture_field_payload_paths
+        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespacesByKey")
+        != expected_capture_payload_namespaces
+        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespaceCountByKey")
+        != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 1,
+            "recordEvidence": 1,
+        }
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -2937,6 +2983,10 @@ def assert_site_bundle_handoff_json_smoke(
             "uniqueEvidenceCaptureSectionCount": 8,
             "actionWithMultipleEvidenceCaptureSectionCount": 2,
             "maxActionEvidenceCaptureSectionCount": 3,
+            "payloadMappedEvidenceCaptureFieldCount": 10,
+            "uniqueEvidenceCapturePayloadNamespaceCount": 5,
+            "actionWithMultipleEvidenceCapturePayloadNamespaceCount": 0,
+            "maxActionEvidenceCapturePayloadNamespaceCount": 1,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3011,6 +3061,13 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
             "nextActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
             "nextActionEvidenceCaptureSectionCount": 1,
+            "nextActionEvidenceCaptureFieldPayloadNamespaces": ["sourceBundle", "sourceBundle"],
+            "nextActionEvidenceCaptureFieldPayloadPaths": [
+                "sourceBundle.verification.strictBundleCheckOutput",
+                "sourceBundle.verification.bundleDigest",
+            ],
+            "nextActionEvidenceCapturePayloadNamespaces": ["sourceBundle"],
+            "nextActionEvidenceCapturePayloadNamespaceCount": 1,
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
             "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
@@ -3167,6 +3224,15 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageActionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
         or operator_runbook.get("nextStageActionEvidenceCaptureSectionLabels") != ["Source bundle verification"]
         or operator_runbook.get("nextStageActionEvidenceCaptureSectionCount") != 1
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadNamespaces")
+        != ["sourceBundle", "sourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaces") != ["sourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaceCount") != 1
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3252,6 +3318,14 @@ def assert_site_bundle_handoff_json_smoke(
         != ["source-bundle-verification", "source-bundle-verification"]
         or action_rows[0].get("actionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
         or action_rows[0].get("actionEvidenceCaptureSectionCount") != 1
+        or action_rows[0].get("actionEvidenceCaptureFieldPayloadNamespaces") != ["sourceBundle", "sourceBundle"]
+        or action_rows[0].get("actionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ]
+        or action_rows[0].get("actionEvidenceCapturePayloadNamespaces") != ["sourceBundle"]
+        or action_rows[0].get("actionEvidenceCapturePayloadNamespaceCount") != 1
         or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or action_rows[0].get("actionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or action_rows[0].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3289,6 +3363,11 @@ def assert_site_bundle_handoff_json_smoke(
         != ["handoff-prompt-output", "handoff-prompt-output"]
         or action_rows[2].get("actionEvidenceCaptureSectionKeys") != ["handoff-prompt-output"]
         or action_rows[2].get("actionEvidenceCaptureSectionCount") != 1
+        or action_rows[2].get("actionEvidenceCaptureFieldPayloadNamespaces") != ["handoffPrompt", "handoffPrompt"]
+        or action_rows[2].get("actionEvidenceCaptureFieldPayloadPaths")
+        != ["handoffPrompt.outputFile", "handoffPrompt.selectedTaskId"]
+        or action_rows[2].get("actionEvidenceCapturePayloadNamespaces") != ["handoffPrompt"]
+        or action_rows[2].get("actionEvidenceCapturePayloadNamespaceCount") != 1
         or action_rows[2].get("actionEvidenceCaptureFieldInputTypes") != ["file-path", "text"]
         or action_rows[2].get("actionEvidenceCaptureFieldValueShapes") != ["file-path", "short-text"]
         or action_rows[2].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3327,6 +3406,16 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionEvidenceCaptureSectionKeys")
         != ["target-repo-changes", "target-repo-verification", "viewport-accessibility-qa"]
         or action_rows[3].get("actionEvidenceCaptureSectionCount") != 3
+        or action_rows[3].get("actionEvidenceCaptureFieldPayloadNamespaces")
+        != ["targetRepo", "targetRepo", "targetRepo"]
+        or action_rows[3].get("actionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "targetRepo.changedFiles",
+            "targetRepo.verificationResults",
+            "targetRepo.viewportAccessibilityNotes",
+        ]
+        or action_rows[3].get("actionEvidenceCapturePayloadNamespaces") != ["targetRepo"]
+        or action_rows[3].get("actionEvidenceCapturePayloadNamespaceCount") != 1
         or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
         or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
         or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]
