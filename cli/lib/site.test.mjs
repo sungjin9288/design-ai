@@ -1967,6 +1967,35 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     recordEvidence: ["finalEvidenceRecord", "remainingRisks"],
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldLabelsByKey.verifySourceBundle, [
+    "Strict bundle-check output",
+    "Bundle digest",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey, {
+    verifySourceBundle: ["textarea", "text"],
+    refreshHandoffSnapshot: ["textarea"],
+    writeEffectiveTaskPrompt: ["file-path", "text"],
+    executeInTargetRepo: ["list", "textarea", "textarea"],
+    recordEvidence: ["textarea", "textarea"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionRequiredEvidenceCaptureFieldKeysByKey, {
+    verifySourceBundle: ["strictBundleCheckOutput", "bundleDigest"],
+    refreshHandoffSnapshot: [],
+    writeEffectiveTaskPrompt: ["promptOutputFile", "selectedTaskId"],
+    executeInTargetRepo: [
+      "targetRepoChangedFiles",
+      "targetRepoVerificationResults",
+      "viewportAccessibilityNotes",
+    ],
+    recordEvidence: ["finalEvidenceRecord", "remainingRisks"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionOptionalEvidenceCaptureFieldKeysByKey, {
+    verifySourceBundle: [],
+    refreshHandoffSnapshot: ["handoffJsonSnapshot"],
+    writeEffectiveTaskPrompt: [],
+    executeInTargetRepo: [],
+    recordEvidence: [],
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldCountByKey, {
     verifySourceBundle: 2,
     refreshHandoffSnapshot: 1,
@@ -1980,6 +2009,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     writeEffectiveTaskPrompt: 2,
     executeInTargetRepo: 3,
     recordEvidence: 2,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionOptionalEvidenceCaptureFieldCountByKey, {
+    verifySourceBundle: 0,
+    refreshHandoffSnapshot: 1,
+    writeEffectiveTaskPrompt: 0,
+    executeInTargetRepo: 0,
+    recordEvidence: 0,
   });
   assert.deepEqual(report.operatorRunbook.stageActionHasEvidenceCaptureFieldsByKey, {
     verifySourceBundle: true,
@@ -2041,8 +2077,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceTarget: stage.actionEvidenceTarget,
     actionEvidenceTargetLabel: stage.actionEvidenceTargetLabel,
     actionEvidenceCaptureFieldKeys: stage.actionEvidenceCaptureFieldKeys,
+    actionEvidenceCaptureFieldLabels: stage.actionEvidenceCaptureFieldLabels,
+    actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
+    actionRequiredEvidenceCaptureFieldKeys: stage.actionRequiredEvidenceCaptureFieldKeys,
+    actionOptionalEvidenceCaptureFieldKeys: stage.actionOptionalEvidenceCaptureFieldKeys,
     actionEvidenceCaptureFieldCount: stage.actionEvidenceCaptureFieldCount,
     actionRequiredEvidenceCaptureFieldCount: stage.actionRequiredEvidenceCaptureFieldCount,
+    actionOptionalEvidenceCaptureFieldCount: stage.actionOptionalEvidenceCaptureFieldCount,
     actionHasEvidenceCaptureFields: stage.actionHasEvidenceCaptureFields,
     required: stage.required,
     runPolicy: stage.runPolicy,
@@ -2079,8 +2120,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTarget: "local-command-output",
       actionEvidenceTargetLabel: "Local command output",
       actionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+      actionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
+      actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+      actionRequiredEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+      actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
       actionRequiredEvidenceCaptureFieldCount: 2,
+      actionOptionalEvidenceCaptureFieldCount: 0,
       actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "read-only",
@@ -2117,8 +2163,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTarget: "local-command-output",
       actionEvidenceTargetLabel: "Local command output",
       actionEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
+      actionEvidenceCaptureFieldLabels: ["Strict handoff JSON snapshot"],
+      actionEvidenceCaptureFieldInputTypes: ["textarea"],
+      actionRequiredEvidenceCaptureFieldKeys: [],
+      actionOptionalEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
       actionEvidenceCaptureFieldCount: 1,
       actionRequiredEvidenceCaptureFieldCount: 0,
+      actionOptionalEvidenceCaptureFieldCount: 1,
       actionHasEvidenceCaptureFields: true,
       required: false,
       runPolicy: "read-only",
@@ -2155,8 +2206,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTarget: "local-output-file",
       actionEvidenceTargetLabel: "Local output file",
       actionEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
+      actionEvidenceCaptureFieldLabels: ["Prompt output file", "Selected task id"],
+      actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
+      actionRequiredEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
+      actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
       actionRequiredEvidenceCaptureFieldCount: 2,
+      actionOptionalEvidenceCaptureFieldCount: 0,
       actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "writes-local-file",
@@ -2197,8 +2253,21 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         "targetRepoVerificationResults",
         "viewportAccessibilityNotes",
       ],
+      actionEvidenceCaptureFieldLabels: [
+        "Target repo changed files",
+        "Target repo verification results",
+        "Viewport and accessibility notes",
+      ],
+      actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
+      actionRequiredEvidenceCaptureFieldKeys: [
+        "targetRepoChangedFiles",
+        "targetRepoVerificationResults",
+        "viewportAccessibilityNotes",
+      ],
+      actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 3,
       actionRequiredEvidenceCaptureFieldCount: 3,
+      actionOptionalEvidenceCaptureFieldCount: 0,
       actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "manual-target-repo",
@@ -2235,8 +2304,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceTarget: "handoff-evidence-record",
       actionEvidenceTargetLabel: "Handoff evidence record",
       actionEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
+      actionEvidenceCaptureFieldLabels: ["Final evidence record", "Remaining risks"],
+      actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
+      actionRequiredEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
+      actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
       actionRequiredEvidenceCaptureFieldCount: 2,
+      actionOptionalEvidenceCaptureFieldCount: 0,
       actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "manual-target-repo",
@@ -2272,9 +2346,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     targetRepoEvidenceActionCount: 1,
     handoffRecordEvidenceActionCount: 1,
     actionWithEvidenceCaptureFieldCount: 5,
+    actionWithRequiredEvidenceCaptureFieldCount: 4,
+    actionWithOptionalEvidenceCaptureFieldCount: 1,
     totalActionEvidenceCaptureFieldCount: 10,
     totalRequiredActionEvidenceCaptureFieldCount: 9,
+    totalOptionalActionEvidenceCaptureFieldCount: 1,
     maxActionEvidenceCaptureFieldCount: 3,
+    textareaEvidenceCaptureFieldCount: 6,
+    textEvidenceCaptureFieldCount: 2,
+    filePathEvidenceCaptureFieldCount: 1,
+    listEvidenceCaptureFieldCount: 1,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2333,8 +2414,13 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       },
     ],
     nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+    nextActionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
+    nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+    nextActionRequiredEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+    nextActionOptionalEvidenceCaptureFieldKeys: [],
     nextActionEvidenceCaptureFieldCount: 2,
     nextActionRequiredEvidenceCaptureFieldCount: 2,
+    nextActionOptionalEvidenceCaptureFieldCount: 0,
     nextActionHasEvidenceCaptureFields: true,
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
@@ -2356,6 +2442,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstTargetRepoEvidenceActionKey: "executeInTargetRepo",
     firstLocalOutputEvidenceActionKey: "writeEffectiveTaskPrompt",
     firstActionWithEvidenceCaptureFieldKey: "verifySourceBundle",
+    firstActionWithOptionalEvidenceCaptureFieldKey: "refreshHandoffSnapshot",
     firstManualActionWithEvidenceCaptureFieldKey: "executeInTargetRepo",
     firstTextareaEvidenceCaptureActionKey: "verifySourceBundle",
     requiresTargetRepoWork: true,
@@ -2539,8 +2626,19 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "strictBundleCheckOutput",
     "bundleDigest",
   ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldLabels, [
+    "Strict bundle-check output",
+    "Bundle digest",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionRequiredEvidenceCaptureFieldKeys, [
+    "strictBundleCheckOutput",
+    "bundleDigest",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionOptionalEvidenceCaptureFieldKeys, []);
   assert.equal(report.operatorRunbook.nextStageActionEvidenceCaptureFieldCount, 2);
   assert.equal(report.operatorRunbook.nextStageActionRequiredEvidenceCaptureFieldCount, 2);
+  assert.equal(report.operatorRunbook.nextStageActionOptionalEvidenceCaptureFieldCount, 0);
   assert.equal(report.operatorRunbook.nextStageActionHasEvidenceCaptureFields, true);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFields[1], {
     key: "bundleDigest",
