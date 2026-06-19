@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 599 — Website Bundle Handoff Runbook Action Evidence Capture Validation Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes validation metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate evidence forms without scanning full field objects or carrying local schema maps.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldValidationRulesByKey` so wrappers can apply stable validation rule ids per action.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldMinLengthsByKey` so evidence forms can enforce minimum text length or list item count from the JSON contract.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldExamplesByKey` and `stageActionEvidenceCaptureFieldValidationHintsByKey` so forms can show compact operator guidance without hard-coded field copy.
+- Added row-level `actionEvidenceCaptureFieldValidationRules`, `actionEvidenceCaptureFieldMinLengths`, `actionEvidenceCaptureFieldExamples`, and `actionEvidenceCaptureFieldValidationHints`.
+- Added `actionSummary` validation totals for all, required, optional, total min-length, max min-length, and first validation-rule action lookup.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for validation rule maps, min-length maps, examples, hints, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render and validate bundle handoff evidence capture forms from the CLI JSON contract alone.
+- Company website pilots get clearer validation for strict bundle output, digest, prompt output, target-repo files, verification results, viewport/accessibility notes, final evidence, and remaining risk records.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 598 — Website Bundle Handoff Runbook Action Evidence Capture Field Indexes (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence capture field index metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render required-only, optional-only, and input-type-specific evidence forms without scanning full capture field arrays.

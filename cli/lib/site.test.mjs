@@ -1978,6 +1978,28 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: ["list", "textarea", "textarea"],
     recordEvidence: ["textarea", "textarea"],
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldValidationRulesByKey, {
+    verifySourceBundle: ["non-empty-text", "checksum-or-digest-text"],
+    refreshHandoffSnapshot: ["optional-json-snapshot"],
+    writeEffectiveTaskPrompt: ["local-markdown-file-path", "task-id"],
+    executeInTargetRepo: ["non-empty-file-list", "verification-results", "viewport-accessibility-notes"],
+    recordEvidence: ["final-evidence-record", "risk-notes"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldMinLengthsByKey, {
+    verifySourceBundle: [20, 8],
+    refreshHandoffSnapshot: [0],
+    writeEffectiveTaskPrompt: [12, 5],
+    executeInTargetRepo: [1, 20, 20],
+    recordEvidence: [30, 10],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldExamplesByKey.verifySourceBundle, [
+    "Status: pass; checksumFailures: 0; generatedFailures: 0",
+    "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldValidationHintsByKey.verifySourceBundle, [
+    "Required: paste a passing strict bundle-check result.",
+    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+  ]);
   assert.deepEqual(report.operatorRunbook.stageActionRequiredEvidenceCaptureFieldKeysByKey, {
     verifySourceBundle: ["strictBundleCheckOutput", "bundleDigest"],
     refreshHandoffSnapshot: [],
@@ -2031,6 +2053,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     required: true,
     evidenceTarget: "local-command-output",
     placeholder: "Paste the strict bundle-check pass output or JSON status.",
+    validationRule: "non-empty-text",
+    minLength: 20,
+    example: "Status: pass; checksumFailures: 0; generatedFailures: 0",
+    validationHint: "Required: paste a passing strict bundle-check result.",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.executeInTargetRepo[2], {
     key: "viewportAccessibilityNotes",
@@ -2039,6 +2065,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     required: true,
     evidenceTarget: "target-repo-working-tree",
     placeholder: "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+    validationRule: "viewport-accessibility-notes",
+    minLength: 20,
+    example: "desktop/tablet/mobile checked; focus visible; contrast AA",
+    validationHint: "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
   });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
@@ -2079,6 +2109,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceCaptureFieldKeys: stage.actionEvidenceCaptureFieldKeys,
     actionEvidenceCaptureFieldLabels: stage.actionEvidenceCaptureFieldLabels,
     actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
+    actionEvidenceCaptureFieldValidationRules: stage.actionEvidenceCaptureFieldValidationRules,
+    actionEvidenceCaptureFieldMinLengths: stage.actionEvidenceCaptureFieldMinLengths,
     actionRequiredEvidenceCaptureFieldKeys: stage.actionRequiredEvidenceCaptureFieldKeys,
     actionOptionalEvidenceCaptureFieldKeys: stage.actionOptionalEvidenceCaptureFieldKeys,
     actionEvidenceCaptureFieldCount: stage.actionEvidenceCaptureFieldCount,
@@ -2122,6 +2154,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
       actionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+      actionEvidenceCaptureFieldValidationRules: ["non-empty-text", "checksum-or-digest-text"],
+      actionEvidenceCaptureFieldMinLengths: [20, 8],
       actionRequiredEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
       actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
@@ -2165,6 +2199,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
       actionEvidenceCaptureFieldLabels: ["Strict handoff JSON snapshot"],
       actionEvidenceCaptureFieldInputTypes: ["textarea"],
+      actionEvidenceCaptureFieldValidationRules: ["optional-json-snapshot"],
+      actionEvidenceCaptureFieldMinLengths: [0],
       actionRequiredEvidenceCaptureFieldKeys: [],
       actionOptionalEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
       actionEvidenceCaptureFieldCount: 1,
@@ -2208,6 +2244,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
       actionEvidenceCaptureFieldLabels: ["Prompt output file", "Selected task id"],
       actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
+      actionEvidenceCaptureFieldValidationRules: ["local-markdown-file-path", "task-id"],
+      actionEvidenceCaptureFieldMinLengths: [12, 5],
       actionRequiredEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
       actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
@@ -2259,6 +2297,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         "Viewport and accessibility notes",
       ],
       actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
+      actionEvidenceCaptureFieldValidationRules: [
+        "non-empty-file-list",
+        "verification-results",
+        "viewport-accessibility-notes",
+      ],
+      actionEvidenceCaptureFieldMinLengths: [1, 20, 20],
       actionRequiredEvidenceCaptureFieldKeys: [
         "targetRepoChangedFiles",
         "targetRepoVerificationResults",
@@ -2306,6 +2350,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
       actionEvidenceCaptureFieldLabels: ["Final evidence record", "Remaining risks"],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
+      actionEvidenceCaptureFieldValidationRules: ["final-evidence-record", "risk-notes"],
+      actionEvidenceCaptureFieldMinLengths: [30, 10],
       actionRequiredEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
       actionOptionalEvidenceCaptureFieldKeys: [],
       actionEvidenceCaptureFieldCount: 2,
@@ -2356,6 +2402,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     textEvidenceCaptureFieldCount: 2,
     filePathEvidenceCaptureFieldCount: 1,
     listEvidenceCaptureFieldCount: 1,
+    validatedEvidenceCaptureFieldCount: 10,
+    requiredValidatedEvidenceCaptureFieldCount: 9,
+    optionalValidatedEvidenceCaptureFieldCount: 1,
+    minEvidenceCaptureFieldLengthTotal: 126,
+    maxEvidenceCaptureFieldMinLength: 30,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2403,6 +2454,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         required: true,
         evidenceTarget: "local-command-output",
         placeholder: "Paste the strict bundle-check pass output or JSON status.",
+        validationRule: "non-empty-text",
+        minLength: 20,
+        example: "Status: pass; checksumFailures: 0; generatedFailures: 0",
+        validationHint: "Required: paste a passing strict bundle-check result.",
       },
       {
         key: "bundleDigest",
@@ -2411,11 +2466,25 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         required: true,
         evidenceTarget: "local-command-output",
         placeholder: "Record the bundle digest or checksum summary.",
+        validationRule: "checksum-or-digest-text",
+        minLength: 8,
+        example: "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+        validationHint: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
       },
     ],
     nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
     nextActionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+    nextActionEvidenceCaptureFieldValidationRules: ["non-empty-text", "checksum-or-digest-text"],
+    nextActionEvidenceCaptureFieldMinLengths: [20, 8],
+    nextActionEvidenceCaptureFieldExamples: [
+      "Status: pass; checksumFailures: 0; generatedFailures: 0",
+      "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+    ],
+    nextActionEvidenceCaptureFieldValidationHints: [
+      "Required: paste a passing strict bundle-check result.",
+      "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+    ],
     nextActionRequiredEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
     nextActionOptionalEvidenceCaptureFieldKeys: [],
     nextActionEvidenceCaptureFieldCount: 2,
@@ -2445,6 +2514,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstActionWithOptionalEvidenceCaptureFieldKey: "refreshHandoffSnapshot",
     firstManualActionWithEvidenceCaptureFieldKey: "executeInTargetRepo",
     firstTextareaEvidenceCaptureActionKey: "verifySourceBundle",
+    firstValidationRuleEvidenceCaptureActionKey: "verifySourceBundle",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2631,6 +2701,19 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "Bundle digest",
   ]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValidationRules, [
+    "non-empty-text",
+    "checksum-or-digest-text",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldMinLengths, [20, 8]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldExamples, [
+    "Status: pass; checksumFailures: 0; generatedFailures: 0",
+    "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValidationHints, [
+    "Required: paste a passing strict bundle-check result.",
+    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+  ]);
   assert.deepEqual(report.operatorRunbook.nextStageActionRequiredEvidenceCaptureFieldKeys, [
     "strictBundleCheckOutput",
     "bundleDigest",
@@ -2647,6 +2730,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     required: true,
     evidenceTarget: "local-command-output",
     placeholder: "Record the bundle digest or checksum summary.",
+    validationRule: "checksum-or-digest-text",
+    minLength: 8,
+    example: "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+    validationHint: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
   });
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);

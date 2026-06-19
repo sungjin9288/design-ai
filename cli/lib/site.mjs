@@ -5054,6 +5054,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Paste the strict bundle-check pass output or JSON status.",
+        validationRule: "non-empty-text",
+        minLength: 20,
+        example: "Status: pass; checksumFailures: 0; generatedFailures: 0",
+        validationHint: "Required: paste a passing strict bundle-check result.",
       },
       {
         key: "bundleDigest",
@@ -5062,6 +5066,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Record the bundle digest or checksum summary.",
+        validationRule: "checksum-or-digest-text",
+        minLength: 8,
+        example: "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+        validationHint: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
       },
     ],
     refreshHandoffSnapshot: [
@@ -5072,6 +5080,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: false,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Paste or link the refreshed strict handoff JSON snapshot when used.",
+        validationRule: "optional-json-snapshot",
+        minLength: 0,
+        example: "{ \"status\": \"pass\", \"operatorRunbook\": { ... } }",
+        validationHint: "Optional: paste the refreshed strict handoff JSON snapshot when available.",
       },
     ],
     writeEffectiveTaskPrompt: [
@@ -5082,6 +5094,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "target-repo-task-...-handoff.md",
+        validationRule: "local-markdown-file-path",
+        minLength: 12,
+        example: "target-repo-task-accessibility-handoff.md",
+        validationHint: "Required: record the local Markdown prompt file path generated for the selected task.",
       },
       {
         key: "selectedTaskId",
@@ -5090,6 +5106,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "task-...",
+        validationRule: "task-id",
+        minLength: 5,
+        example: "task-accessibility",
+        validationHint: "Required: record the bundle task id used for the target-repo handoff prompt.",
       },
     ],
     executeInTargetRepo: [
@@ -5100,6 +5120,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "List changed files from the target website repo.",
+        validationRule: "non-empty-file-list",
+        minLength: 1,
+        example: "src/components/Header.tsx",
+        validationHint: "Required: list at least one changed target-repo file or a no-change justification.",
       },
       {
         key: "targetRepoVerificationResults",
@@ -5108,6 +5132,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Record lint, typecheck, build, test, or equivalent command results.",
+        validationRule: "verification-results",
+        minLength: 20,
+        example: "npm test: pass; npm run build: pass",
+        validationHint: "Required: record target-repo verification commands and results.",
       },
       {
         key: "viewportAccessibilityNotes",
@@ -5116,6 +5144,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+        validationRule: "viewport-accessibility-notes",
+        minLength: 20,
+        example: "desktop/tablet/mobile checked; focus visible; contrast AA",
+        validationHint: "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
       },
     ],
     recordEvidence: [
@@ -5126,6 +5158,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "Summarize changed files, verification, viewport/accessibility checks, risks, and digest.",
+        validationRule: "final-evidence-record",
+        minLength: 30,
+        example: "Changed files recorded; verification passed; digest captured",
+        validationHint: "Required: summarize changes, verification, viewport/accessibility checks, risks, and digest.",
       },
       {
         key: "remainingRisks",
@@ -5134,6 +5170,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         required: true,
         evidenceTarget: getStageActionEvidenceTarget(stage),
         placeholder: "List unresolved risks, skipped checks, or follow-up tasks.",
+        validationRule: "risk-notes",
+        minLength: 10,
+        example: "Stakeholder copy review still pending",
+        validationHint: "Required: record unresolved risks, skipped checks, or confirm none remain.",
       },
     ],
   }[stage.key] || []);
@@ -5174,6 +5214,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).map((field) => field.key),
     actionEvidenceCaptureFieldLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.label),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
+    actionEvidenceCaptureFieldValidationRules: getStageActionEvidenceCaptureFields(stage).map((field) => field.validationRule),
+    actionEvidenceCaptureFieldMinLengths: getStageActionEvidenceCaptureFields(stage).map((field) => field.minLength),
+    actionEvidenceCaptureFieldExamples: getStageActionEvidenceCaptureFields(stage).map((field) => field.example),
+    actionEvidenceCaptureFieldValidationHints: getStageActionEvidenceCaptureFields(stage).map((field) => field.validationHint),
     actionRequiredEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).filter((field) => field.required).map((field) => field.key),
     actionOptionalEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).filter((field) => !field.required).map((field) => field.key),
     actionEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).length,
@@ -5228,6 +5272,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureFieldKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldKeys]));
   const stageActionEvidenceCaptureFieldLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldLabels]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
+  const stageActionEvidenceCaptureFieldValidationRulesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValidationRules]));
+  const stageActionEvidenceCaptureFieldMinLengthsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldMinLengths]));
+  const stageActionEvidenceCaptureFieldExamplesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldExamples]));
+  const stageActionEvidenceCaptureFieldValidationHintsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValidationHints]));
   const stageActionRequiredEvidenceCaptureFieldKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionRequiredEvidenceCaptureFieldKeys]));
   const stageActionOptionalEvidenceCaptureFieldKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionOptionalEvidenceCaptureFieldKeys]));
   const stageActionEvidenceCaptureFieldCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldCount]));
@@ -5293,6 +5341,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     textEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "text").length, 0),
     filePathEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "file-path").length, 0),
     listEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "list").length, 0),
+    validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
+    requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
+    optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
+    minEvidenceCaptureFieldLengthTotal: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.reduce((fieldSum, field) => fieldSum + field.minLength, 0), 0),
+    maxEvidenceCaptureFieldMinLength: Math.max(0, ...stageActionRows.flatMap((stage) => stage.actionEvidenceCaptureFields.map((field) => field.minLength))),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5330,6 +5383,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
     nextActionEvidenceCaptureFieldLabels: nextStageActionRow?.actionEvidenceCaptureFieldLabels || [],
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
+    nextActionEvidenceCaptureFieldValidationRules: nextStageActionRow?.actionEvidenceCaptureFieldValidationRules || [],
+    nextActionEvidenceCaptureFieldMinLengths: nextStageActionRow?.actionEvidenceCaptureFieldMinLengths || [],
+    nextActionEvidenceCaptureFieldExamples: nextStageActionRow?.actionEvidenceCaptureFieldExamples || [],
+    nextActionEvidenceCaptureFieldValidationHints: nextStageActionRow?.actionEvidenceCaptureFieldValidationHints || [],
     nextActionRequiredEvidenceCaptureFieldKeys: nextStageActionRow?.actionRequiredEvidenceCaptureFieldKeys || [],
     nextActionOptionalEvidenceCaptureFieldKeys: nextStageActionRow?.actionOptionalEvidenceCaptureFieldKeys || [],
     nextActionEvidenceCaptureFieldCount: nextStageActionRow?.actionEvidenceCaptureFieldCount || 0,
@@ -5359,6 +5416,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionWithOptionalEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0)?.key || "",
     firstManualActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.manual && stage.actionHasEvidenceCaptureFields)?.key || "",
     firstTextareaEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea"))?.key || "",
+    firstValidationRuleEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.validationRule))?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5416,6 +5474,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureFieldKeysByKey,
     stageActionEvidenceCaptureFieldLabelsByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
+    stageActionEvidenceCaptureFieldValidationRulesByKey,
+    stageActionEvidenceCaptureFieldMinLengthsByKey,
+    stageActionEvidenceCaptureFieldExamplesByKey,
+    stageActionEvidenceCaptureFieldValidationHintsByKey,
     stageActionRequiredEvidenceCaptureFieldKeysByKey,
     stageActionOptionalEvidenceCaptureFieldKeysByKey,
     stageActionEvidenceCaptureFieldCountByKey,
@@ -5479,6 +5541,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
     nextStageActionEvidenceCaptureFieldLabels: nextStageActionRow?.actionEvidenceCaptureFieldLabels || [],
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
+    nextStageActionEvidenceCaptureFieldValidationRules: nextStageActionRow?.actionEvidenceCaptureFieldValidationRules || [],
+    nextStageActionEvidenceCaptureFieldMinLengths: nextStageActionRow?.actionEvidenceCaptureFieldMinLengths || [],
+    nextStageActionEvidenceCaptureFieldExamples: nextStageActionRow?.actionEvidenceCaptureFieldExamples || [],
+    nextStageActionEvidenceCaptureFieldValidationHints: nextStageActionRow?.actionEvidenceCaptureFieldValidationHints || [],
     nextStageActionRequiredEvidenceCaptureFieldKeys: nextStageActionRow?.actionRequiredEvidenceCaptureFieldKeys || [],
     nextStageActionOptionalEvidenceCaptureFieldKeys: nextStageActionRow?.actionOptionalEvidenceCaptureFieldKeys || [],
     nextStageActionEvidenceCaptureFieldCount: nextStageActionRow?.actionEvidenceCaptureFieldCount || 0,
