@@ -2423,6 +2423,50 @@ def assert_site_bundle_handoff_json_smoke(
             "Required: record unresolved risks, skipped checks, or confirm none remain.",
         ],
     }
+    expected_capture_field_section_keys = {
+        "verifySourceBundle": ["source-bundle-verification", "source-bundle-verification"],
+        "refreshHandoffSnapshot": ["handoff-snapshot"],
+        "writeEffectiveTaskPrompt": ["handoff-prompt-output", "handoff-prompt-output"],
+        "executeInTargetRepo": [
+            "target-repo-changes",
+            "target-repo-verification",
+            "viewport-accessibility-qa",
+        ],
+        "recordEvidence": ["final-handoff-evidence", "risk-record"],
+    }
+    expected_capture_field_section_labels = {
+        "verifySourceBundle": ["Source bundle verification", "Source bundle verification"],
+        "refreshHandoffSnapshot": ["Handoff snapshot"],
+        "writeEffectiveTaskPrompt": ["Handoff prompt output", "Handoff prompt output"],
+        "executeInTargetRepo": [
+            "Target repo changes",
+            "Target repo verification",
+            "Viewport and accessibility QA",
+        ],
+        "recordEvidence": ["Final handoff evidence", "Risk record"],
+    }
+    expected_capture_section_keys = {
+        "verifySourceBundle": ["source-bundle-verification"],
+        "refreshHandoffSnapshot": ["handoff-snapshot"],
+        "writeEffectiveTaskPrompt": ["handoff-prompt-output"],
+        "executeInTargetRepo": [
+            "target-repo-changes",
+            "target-repo-verification",
+            "viewport-accessibility-qa",
+        ],
+        "recordEvidence": ["final-handoff-evidence", "risk-record"],
+    }
+    expected_capture_section_labels = {
+        "verifySourceBundle": ["Source bundle verification"],
+        "refreshHandoffSnapshot": ["Handoff snapshot"],
+        "writeEffectiveTaskPrompt": ["Handoff prompt output"],
+        "executeInTargetRepo": [
+            "Target repo changes",
+            "Target repo verification",
+            "Viewport and accessibility QA",
+        ],
+        "recordEvidence": ["Final handoff evidence", "Risk record"],
+    }
     expected_capture_field_validation_rules = {
         "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
         "refreshHandoffSnapshot": ["optional-json-snapshot"],
@@ -2474,6 +2518,8 @@ def assert_site_bundle_handoff_json_smoke(
             "requirementLabel": "Required",
             "ariaLabel": "Strict bundle-check output evidence (required)",
             "helpText": "Required: paste a passing strict bundle-check result.",
+            "sectionKey": "source-bundle-verification",
+            "sectionLabel": "Source bundle verification",
         },
         {
             "key": "bundleDigest",
@@ -2493,6 +2539,8 @@ def assert_site_bundle_handoff_json_smoke(
             "requirementLabel": "Required",
             "ariaLabel": "Bundle digest evidence (required)",
             "helpText": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            "sectionKey": "source-bundle-verification",
+            "sectionLabel": "Source bundle verification",
         },
     ]
     if (
@@ -2777,6 +2825,17 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureFieldRequirementLabelsByKey") != expected_capture_field_requirement_labels
         or operator_runbook.get("stageActionEvidenceCaptureFieldAriaLabelsByKey") != expected_capture_field_aria_labels
         or operator_runbook.get("stageActionEvidenceCaptureFieldHelpTextsByKey") != expected_capture_field_help_texts
+        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionKeysByKey") != expected_capture_field_section_keys
+        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionLabelsByKey") != expected_capture_field_section_labels
+        or operator_runbook.get("stageActionEvidenceCaptureSectionKeysByKey") != expected_capture_section_keys
+        or operator_runbook.get("stageActionEvidenceCaptureSectionLabelsByKey") != expected_capture_section_labels
+        or operator_runbook.get("stageActionEvidenceCaptureSectionCountByKey") != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 2,
+        }
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -2874,6 +2933,10 @@ def assert_site_bundle_handoff_json_smoke(
             "placeholderEvidenceCaptureFieldCount": 10,
             "ariaLabelEvidenceCaptureFieldCount": 10,
             "helpTextEvidenceCaptureFieldCount": 10,
+            "sectionedEvidenceCaptureFieldCount": 10,
+            "uniqueEvidenceCaptureSectionCount": 8,
+            "actionWithMultipleEvidenceCaptureSectionCount": 2,
+            "maxActionEvidenceCaptureSectionCount": 3,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -2937,6 +3000,17 @@ def assert_site_bundle_handoff_json_smoke(
                 "Required: paste a passing strict bundle-check result.",
                 "Required: record a digest, checksum, or equivalent bundle integrity summary.",
             ],
+            "nextActionEvidenceCaptureFieldSectionKeys": [
+                "source-bundle-verification",
+                "source-bundle-verification",
+            ],
+            "nextActionEvidenceCaptureFieldSectionLabels": [
+                "Source bundle verification",
+                "Source bundle verification",
+            ],
+            "nextActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
+            "nextActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
+            "nextActionEvidenceCaptureSectionCount": 1,
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
             "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
@@ -3086,6 +3160,13 @@ def assert_site_bundle_handoff_json_smoke(
             "Required: paste a passing strict bundle-check result.",
             "Required: record a digest, checksum, or equivalent bundle integrity summary.",
         ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionKeys")
+        != ["source-bundle-verification", "source-bundle-verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionLabels")
+        != ["Source bundle verification", "Source bundle verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionLabels") != ["Source bundle verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionCount") != 1
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3167,6 +3248,10 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionEvidenceTargetLabel") != "Local command output"
         or action_rows[0].get("actionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
         or action_rows[0].get("actionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
+        or action_rows[0].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["source-bundle-verification", "source-bundle-verification"]
+        or action_rows[0].get("actionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
+        or action_rows[0].get("actionEvidenceCaptureSectionCount") != 1
         or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or action_rows[0].get("actionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or action_rows[0].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3200,6 +3285,10 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionEvidenceTarget") != "local-output-file"
         or action_rows[2].get("actionEvidenceTargetLabel") != "Local output file"
         or action_rows[2].get("actionEvidenceCaptureFieldKeys") != ["promptOutputFile", "selectedTaskId"]
+        or action_rows[2].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["handoff-prompt-output", "handoff-prompt-output"]
+        or action_rows[2].get("actionEvidenceCaptureSectionKeys") != ["handoff-prompt-output"]
+        or action_rows[2].get("actionEvidenceCaptureSectionCount") != 1
         or action_rows[2].get("actionEvidenceCaptureFieldInputTypes") != ["file-path", "text"]
         or action_rows[2].get("actionEvidenceCaptureFieldValueShapes") != ["file-path", "short-text"]
         or action_rows[2].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3233,6 +3322,11 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionEvidenceTargetLabel") != "Target repo working tree"
         or action_rows[3].get("actionEvidenceCaptureFieldKeys")
         != ["targetRepoChangedFiles", "targetRepoVerificationResults", "viewportAccessibilityNotes"]
+        or action_rows[3].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["target-repo-changes", "target-repo-verification", "viewport-accessibility-qa"]
+        or action_rows[3].get("actionEvidenceCaptureSectionKeys")
+        != ["target-repo-changes", "target-repo-verification", "viewport-accessibility-qa"]
+        or action_rows[3].get("actionEvidenceCaptureSectionCount") != 3
         or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
         or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
         or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]
