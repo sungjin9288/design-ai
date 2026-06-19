@@ -1956,6 +1956,54 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: "Target repo working tree",
     recordEvidence: "Handoff evidence record",
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldKeysByKey, {
+    verifySourceBundle: ["strictBundleCheckOutput", "bundleDigest"],
+    refreshHandoffSnapshot: ["handoffJsonSnapshot"],
+    writeEffectiveTaskPrompt: ["promptOutputFile", "selectedTaskId"],
+    executeInTargetRepo: [
+      "targetRepoChangedFiles",
+      "targetRepoVerificationResults",
+      "viewportAccessibilityNotes",
+    ],
+    recordEvidence: ["finalEvidenceRecord", "remainingRisks"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldCountByKey, {
+    verifySourceBundle: 2,
+    refreshHandoffSnapshot: 1,
+    writeEffectiveTaskPrompt: 2,
+    executeInTargetRepo: 3,
+    recordEvidence: 2,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionRequiredEvidenceCaptureFieldCountByKey, {
+    verifySourceBundle: 2,
+    refreshHandoffSnapshot: 0,
+    writeEffectiveTaskPrompt: 2,
+    executeInTargetRepo: 3,
+    recordEvidence: 2,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionHasEvidenceCaptureFieldsByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: true,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: true,
+    recordEvidence: true,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.verifySourceBundle[0], {
+    key: "strictBundleCheckOutput",
+    label: "Strict bundle-check output",
+    inputType: "textarea",
+    required: true,
+    evidenceTarget: "local-command-output",
+    placeholder: "Paste the strict bundle-check pass output or JSON status.",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.executeInTargetRepo[2], {
+    key: "viewportAccessibilityNotes",
+    label: "Viewport and accessibility notes",
+    inputType: "textarea",
+    required: true,
+    evidenceTarget: "target-repo-working-tree",
+    placeholder: "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+  });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1992,6 +2040,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionRequiresEvidence: stage.actionRequiresEvidence,
     actionEvidenceTarget: stage.actionEvidenceTarget,
     actionEvidenceTargetLabel: stage.actionEvidenceTargetLabel,
+    actionEvidenceCaptureFieldKeys: stage.actionEvidenceCaptureFieldKeys,
+    actionEvidenceCaptureFieldCount: stage.actionEvidenceCaptureFieldCount,
+    actionRequiredEvidenceCaptureFieldCount: stage.actionRequiredEvidenceCaptureFieldCount,
+    actionHasEvidenceCaptureFields: stage.actionHasEvidenceCaptureFields,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -2026,6 +2078,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionRequiresEvidence: true,
       actionEvidenceTarget: "local-command-output",
       actionEvidenceTargetLabel: "Local command output",
+      actionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+      actionEvidenceCaptureFieldCount: 2,
+      actionRequiredEvidenceCaptureFieldCount: 2,
+      actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2060,6 +2116,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionRequiresEvidence: true,
       actionEvidenceTarget: "local-command-output",
       actionEvidenceTargetLabel: "Local command output",
+      actionEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
+      actionEvidenceCaptureFieldCount: 1,
+      actionRequiredEvidenceCaptureFieldCount: 0,
+      actionHasEvidenceCaptureFields: true,
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2094,6 +2154,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionRequiresEvidence: true,
       actionEvidenceTarget: "local-output-file",
       actionEvidenceTargetLabel: "Local output file",
+      actionEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
+      actionEvidenceCaptureFieldCount: 2,
+      actionRequiredEvidenceCaptureFieldCount: 2,
+      actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -2128,6 +2192,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionRequiresEvidence: true,
       actionEvidenceTarget: "target-repo-working-tree",
       actionEvidenceTargetLabel: "Target repo working tree",
+      actionEvidenceCaptureFieldKeys: [
+        "targetRepoChangedFiles",
+        "targetRepoVerificationResults",
+        "viewportAccessibilityNotes",
+      ],
+      actionEvidenceCaptureFieldCount: 3,
+      actionRequiredEvidenceCaptureFieldCount: 3,
+      actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2162,6 +2234,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionRequiresEvidence: true,
       actionEvidenceTarget: "handoff-evidence-record",
       actionEvidenceTargetLabel: "Handoff evidence record",
+      actionEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
+      actionEvidenceCaptureFieldCount: 2,
+      actionRequiredEvidenceCaptureFieldCount: 2,
+      actionHasEvidenceCaptureFields: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2195,6 +2271,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     localOutputEvidenceActionCount: 1,
     targetRepoEvidenceActionCount: 1,
     handoffRecordEvidenceActionCount: 1,
+    actionWithEvidenceCaptureFieldCount: 5,
+    totalActionEvidenceCaptureFieldCount: 10,
+    totalRequiredActionEvidenceCaptureFieldCount: 9,
+    maxActionEvidenceCaptureFieldCount: 3,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2234,6 +2314,28 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionRequiresEvidence: true,
     nextActionEvidenceTarget: "local-command-output",
     nextActionEvidenceTargetLabel: "Local command output",
+    nextActionEvidenceCaptureFields: [
+      {
+        key: "strictBundleCheckOutput",
+        label: "Strict bundle-check output",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: "local-command-output",
+        placeholder: "Paste the strict bundle-check pass output or JSON status.",
+      },
+      {
+        key: "bundleDigest",
+        label: "Bundle digest",
+        inputType: "text",
+        required: true,
+        evidenceTarget: "local-command-output",
+        placeholder: "Record the bundle digest or checksum summary.",
+      },
+    ],
+    nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
+    nextActionEvidenceCaptureFieldCount: 2,
+    nextActionRequiredEvidenceCaptureFieldCount: 2,
+    nextActionHasEvidenceCaptureFields: true,
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -2253,6 +2355,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstEvidenceRecordingActionKey: "recordEvidence",
     firstTargetRepoEvidenceActionKey: "executeInTargetRepo",
     firstLocalOutputEvidenceActionKey: "writeEffectiveTaskPrompt",
+    firstActionWithEvidenceCaptureFieldKey: "verifySourceBundle",
+    firstManualActionWithEvidenceCaptureFieldKey: "executeInTargetRepo",
+    firstTextareaEvidenceCaptureActionKey: "verifySourceBundle",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2430,6 +2535,21 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.operatorRunbook.nextStageActionRequiresEvidence, true);
   assert.equal(report.operatorRunbook.nextStageActionEvidenceTarget, "local-command-output");
   assert.equal(report.operatorRunbook.nextStageActionEvidenceTargetLabel, "Local command output");
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldKeys, [
+    "strictBundleCheckOutput",
+    "bundleDigest",
+  ]);
+  assert.equal(report.operatorRunbook.nextStageActionEvidenceCaptureFieldCount, 2);
+  assert.equal(report.operatorRunbook.nextStageActionRequiredEvidenceCaptureFieldCount, 2);
+  assert.equal(report.operatorRunbook.nextStageActionHasEvidenceCaptureFields, true);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFields[1], {
+    key: "bundleDigest",
+    label: "Bundle digest",
+    inputType: "text",
+    required: true,
+    evidenceTarget: "local-command-output",
+    placeholder: "Record the bundle digest or checksum summary.",
+  });
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

@@ -5045,6 +5045,98 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     "handoff-evidence-record": "Handoff evidence record",
     "not-applicable": "Not applicable",
   }[getStageActionEvidenceTarget(stage)]);
+  const getStageActionEvidenceCaptureFields = (stage) => ({
+    verifySourceBundle: [
+      {
+        key: "strictBundleCheckOutput",
+        label: "Strict bundle-check output",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Paste the strict bundle-check pass output or JSON status.",
+      },
+      {
+        key: "bundleDigest",
+        label: "Bundle digest",
+        inputType: "text",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Record the bundle digest or checksum summary.",
+      },
+    ],
+    refreshHandoffSnapshot: [
+      {
+        key: "handoffJsonSnapshot",
+        label: "Strict handoff JSON snapshot",
+        inputType: "textarea",
+        required: false,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Paste or link the refreshed strict handoff JSON snapshot when used.",
+      },
+    ],
+    writeEffectiveTaskPrompt: [
+      {
+        key: "promptOutputFile",
+        label: "Prompt output file",
+        inputType: "file-path",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "target-repo-task-...-handoff.md",
+      },
+      {
+        key: "selectedTaskId",
+        label: "Selected task id",
+        inputType: "text",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "task-...",
+      },
+    ],
+    executeInTargetRepo: [
+      {
+        key: "targetRepoChangedFiles",
+        label: "Target repo changed files",
+        inputType: "list",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "List changed files from the target website repo.",
+      },
+      {
+        key: "targetRepoVerificationResults",
+        label: "Target repo verification results",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Record lint, typecheck, build, test, or equivalent command results.",
+      },
+      {
+        key: "viewportAccessibilityNotes",
+        label: "Viewport and accessibility notes",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+      },
+    ],
+    recordEvidence: [
+      {
+        key: "finalEvidenceRecord",
+        label: "Final evidence record",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "Summarize changed files, verification, viewport/accessibility checks, risks, and digest.",
+      },
+      {
+        key: "remainingRisks",
+        label: "Remaining risks",
+        inputType: "textarea",
+        required: true,
+        evidenceTarget: getStageActionEvidenceTarget(stage),
+        placeholder: "List unresolved risks, skipped checks, or follow-up tasks.",
+      },
+    ],
+  }[stage.key] || []);
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -5078,6 +5170,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionRequiresEvidence: getStageActionEvidenceRequirements(stage).length > 0,
     actionEvidenceTarget: getStageActionEvidenceTarget(stage),
     actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
+    actionEvidenceCaptureFields: getStageActionEvidenceCaptureFields(stage),
+    actionEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).map((field) => field.key),
+    actionEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).length,
+    actionRequiredEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).filter((field) => field.required).length,
+    actionHasEvidenceCaptureFields: getStageActionEvidenceCaptureFields(stage).length > 0,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -5122,6 +5219,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionRequiresEvidenceByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionRequiresEvidence]));
   const stageActionEvidenceTargetByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceTarget]));
   const stageActionEvidenceTargetLabelByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceTargetLabel]));
+  const stageActionEvidenceCaptureFieldsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFields]));
+  const stageActionEvidenceCaptureFieldKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldKeys]));
+  const stageActionEvidenceCaptureFieldCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldCount]));
+  const stageActionRequiredEvidenceCaptureFieldCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionRequiredEvidenceCaptureFieldCount]));
+  const stageActionHasEvidenceCaptureFieldsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionHasEvidenceCaptureFields]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5170,6 +5272,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     localOutputEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "local-output-file").length,
     targetRepoEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "target-repo-working-tree").length,
     handoffRecordEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "handoff-evidence-record").length,
+    actionWithEvidenceCaptureFieldCount: stageActionRows.filter((stage) => stage.actionHasEvidenceCaptureFields).length,
+    totalActionEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFieldCount, 0),
+    totalRequiredActionEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionRequiredEvidenceCaptureFieldCount, 0),
+    maxActionEvidenceCaptureFieldCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionEvidenceCaptureFieldCount)),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5203,6 +5309,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
     nextActionEvidenceTarget: nextStageActionRow?.actionEvidenceTarget || "",
     nextActionEvidenceTargetLabel: nextStageActionRow?.actionEvidenceTargetLabel || "",
+    nextActionEvidenceCaptureFields: nextStageActionRow?.actionEvidenceCaptureFields || [],
+    nextActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
+    nextActionEvidenceCaptureFieldCount: nextStageActionRow?.actionEvidenceCaptureFieldCount || 0,
+    nextActionRequiredEvidenceCaptureFieldCount: nextStageActionRow?.actionRequiredEvidenceCaptureFieldCount || 0,
+    nextActionHasEvidenceCaptureFields: nextStageActionRow?.actionHasEvidenceCaptureFields === true,
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5222,6 +5333,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstEvidenceRecordingActionKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence)?.key || "",
     firstTargetRepoEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "target-repo-working-tree")?.key || "",
     firstLocalOutputEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "local-output-file")?.key || "",
+    firstActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.actionHasEvidenceCaptureFields)?.key || "",
+    firstManualActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.manual && stage.actionHasEvidenceCaptureFields)?.key || "",
+    firstTextareaEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea"))?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5275,6 +5389,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionRequiresEvidenceByKey,
     stageActionEvidenceTargetByKey,
     stageActionEvidenceTargetLabelByKey,
+    stageActionEvidenceCaptureFieldsByKey,
+    stageActionEvidenceCaptureFieldKeysByKey,
+    stageActionEvidenceCaptureFieldCountByKey,
+    stageActionRequiredEvidenceCaptureFieldCountByKey,
+    stageActionHasEvidenceCaptureFieldsByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5328,6 +5447,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
     nextStageActionEvidenceTarget: nextStageActionRow?.actionEvidenceTarget || "",
     nextStageActionEvidenceTargetLabel: nextStageActionRow?.actionEvidenceTargetLabel || "",
+    nextStageActionEvidenceCaptureFields: nextStageActionRow?.actionEvidenceCaptureFields || [],
+    nextStageActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
+    nextStageActionEvidenceCaptureFieldCount: nextStageActionRow?.actionEvidenceCaptureFieldCount || 0,
+    nextStageActionRequiredEvidenceCaptureFieldCount: nextStageActionRow?.actionRequiredEvidenceCaptureFieldCount || 0,
+    nextStageActionHasEvidenceCaptureFields: nextStageActionRow?.actionHasEvidenceCaptureFields === true,
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",

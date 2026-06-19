@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 597 — Website Bundle Handoff Runbook Action Evidence Capture Fields (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence capture field metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render evidence input forms for command output, prompt files, target-repo implementation proof, verification results, viewport/accessibility notes, risks, and final handoff records without hard-coded field schemas.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldsByKey` so wrappers can render per-action evidence input schemas from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldKeysByKey`, `stageActionEvidenceCaptureFieldCountByKey`, `stageActionRequiredEvidenceCaptureFieldCountByKey`, and `stageActionHasEvidenceCaptureFieldsByKey` for compact dashboards and conditional evidence form UI.
+- Added `actionEvidenceCaptureFields`, `actionEvidenceCaptureFieldKeys`, `actionEvidenceCaptureFieldCount`, `actionRequiredEvidenceCaptureFieldCount`, and `actionHasEvidenceCaptureFields` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceCaptureFields`, `nextStageActionEvidenceCaptureFieldKeys`, `nextStageActionEvidenceCaptureFieldCount`, `nextStageActionRequiredEvidenceCaptureFieldCount`, and `nextStageActionHasEvidenceCaptureFields` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithEvidenceCaptureFieldCount`, `totalActionEvidenceCaptureFieldCount`, `totalRequiredActionEvidenceCaptureFieldCount`, `maxActionEvidenceCaptureFieldCount`, and first capture-field action keys for evidence dashboards.
+- Added unit and packed-tarball smoke assertions for capture field lookup maps, row-level capture metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render evidence capture textareas, file-path fields, text fields, and list fields directly from the JSON contract.
+- Company website pilots get clearer handoff evidence collection before target-repo changes are considered ready for review.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 596 — Website Bundle Handoff Runbook Action Evidence Targets (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence target metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can distinguish local command output, local output files, target-repo working-tree evidence, and final handoff evidence records without hard-coded evidence source rules.
