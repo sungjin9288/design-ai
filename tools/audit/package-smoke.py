@@ -2426,6 +2426,46 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": "manual-target-repo-step",
             "recordEvidence": "manual-evidence-step",
         }
+        or operator_runbook.get("stageActionEnabledByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageActionStatusByKey") != {
+            "verifySourceBundle": "ready",
+            "refreshHandoffSnapshot": "optional",
+            "writeEffectiveTaskPrompt": "ready",
+            "executeInTargetRepo": "manual",
+            "recordEvidence": "manual",
+        }
+        or operator_runbook.get("stageActionStatusLabelsByKey") != {
+            "verifySourceBundle": "Ready",
+            "refreshHandoffSnapshot": "Optional",
+            "writeEffectiveTaskPrompt": "Ready",
+            "executeInTargetRepo": "Manual",
+            "recordEvidence": "Manual",
+        }
+        or operator_runbook.get("stageActionStatusToneByKey") != {
+            "verifySourceBundle": "success",
+            "refreshHandoffSnapshot": "neutral",
+            "writeEffectiveTaskPrompt": "success",
+            "executeInTargetRepo": "info",
+            "recordEvidence": "info",
+        }
+        or operator_runbook.get("stageActionDisabledReasonCodeByKey") != {
+            "verifySourceBundle": "",
+            "refreshHandoffSnapshot": "",
+            "writeEffectiveTaskPrompt": "",
+            "executeInTargetRepo": "manual-target-repo-step",
+            "recordEvidence": "manual-evidence-step",
+        }
+        or not isinstance(operator_runbook.get("stageActionDisabledReasonByKey"), dict)
+        or operator_runbook["stageActionDisabledReasonByKey"].get("executeInTargetRepo")
+        != "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo."
+        or operator_runbook["stageActionDisabledReasonByKey"].get("recordEvidence")
+        != "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification."
         or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
         or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
@@ -2437,6 +2477,9 @@ def assert_site_bundle_handoff_json_smoke(
             "totalActionCount": 5,
             "commandActionCount": 3,
             "manualActionCount": 2,
+            "enabledActionCount": 3,
+            "disabledActionCount": 2,
+            "manualDisabledActionCount": 2,
             "requiredActionCount": 4,
             "optionalActionCount": 1,
             "readOnlyActionCount": 2,
@@ -2447,6 +2490,11 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionKey": "verifySourceBundle",
             "nextActionType": "run-local-gate",
             "nextActionLabel": "Run strict bundle check",
+            "nextActionEnabled": True,
+            "nextActionStatus": "ready",
+            "nextActionStatusLabel": "Ready",
+            "nextActionStatusTone": "success",
+            "nextActionDisabledReasonCode": "",
             "nextActionRunPolicy": "read-only",
             "nextActionSafetyLevel": "local-read-only",
             "firstRequiredCommandStageKey": "verifySourceBundle",
@@ -2511,6 +2559,12 @@ def assert_site_bundle_handoff_json_smoke(
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
         or operator_runbook.get("nextStageActionButtonLabel") != "Run Check"
         or operator_runbook.get("nextStageActionAffordance") != "primary-command-button"
+        or operator_runbook.get("nextStageActionEnabled") is not True
+        or operator_runbook.get("nextStageActionStatus") != "ready"
+        or operator_runbook.get("nextStageActionStatusLabel") != "Ready"
+        or operator_runbook.get("nextStageActionStatusTone") != "success"
+        or operator_runbook.get("nextStageActionDisabledReasonCode") != ""
+        or operator_runbook.get("nextStageActionDisabledReason") != ""
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2550,16 +2604,24 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionLabel") != "Run strict bundle check"
         or action_rows[0].get("actionButtonLabel") != "Run Check"
         or action_rows[0].get("actionAffordance") != "primary-command-button"
+        or action_rows[0].get("actionEnabled") is not True
+        or action_rows[0].get("actionStatus") != "ready"
+        or action_rows[0].get("actionStatusTone") != "success"
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
         or action_rows[2].get("actionButtonLabel") != "Write Prompt"
         or action_rows[2].get("actionAffordance") != "local-output-button"
+        or action_rows[2].get("actionEnabled") is not True
+        or action_rows[2].get("actionStatus") != "ready"
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
         or action_rows[3].get("actionButtonLabel") != "Open Target Repo"
         or action_rows[3].get("actionAffordance") != "manual-target-repo-step"
+        or action_rows[3].get("actionEnabled") is not False
+        or action_rows[3].get("actionStatus") != "manual"
+        or action_rows[3].get("actionDisabledReasonCode") != "manual-target-repo-step"
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")

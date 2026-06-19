@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 591 (unreleased)** — Added action readiness metadata to the Website Console bundle handoff operator runbook.
 - **Phase 590 (unreleased)** — Added action guidance and affordance metadata to the Website Console bundle handoff operator runbook.
 - **Phase 589 (unreleased)** — Added action summary metadata to the Website Console bundle handoff operator runbook.
 - **Phase 588 (unreleased)** — Added stage command lookup metadata to the Website Console bundle handoff operator runbook.

@@ -1788,6 +1788,49 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: "manual-target-repo-step",
     recordEvidence: "manual-evidence-step",
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEnabledByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: true,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: false,
+    recordEvidence: false,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionStatusByKey, {
+    verifySourceBundle: "ready",
+    refreshHandoffSnapshot: "optional",
+    writeEffectiveTaskPrompt: "ready",
+    executeInTargetRepo: "manual",
+    recordEvidence: "manual",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionStatusLabelsByKey, {
+    verifySourceBundle: "Ready",
+    refreshHandoffSnapshot: "Optional",
+    writeEffectiveTaskPrompt: "Ready",
+    executeInTargetRepo: "Manual",
+    recordEvidence: "Manual",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionStatusToneByKey, {
+    verifySourceBundle: "success",
+    refreshHandoffSnapshot: "neutral",
+    writeEffectiveTaskPrompt: "success",
+    executeInTargetRepo: "info",
+    recordEvidence: "info",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionDisabledReasonCodeByKey, {
+    verifySourceBundle: "",
+    refreshHandoffSnapshot: "",
+    writeEffectiveTaskPrompt: "",
+    executeInTargetRepo: "manual-target-repo-step",
+    recordEvidence: "manual-evidence-step",
+  });
+  assert.equal(
+    report.operatorRunbook.stageActionDisabledReasonByKey.executeInTargetRepo,
+    "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo.",
+  );
+  assert.equal(
+    report.operatorRunbook.stageActionDisabledReasonByKey.recordEvidence,
+    "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification.",
+  );
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1806,6 +1849,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionLabel: stage.actionLabel,
     actionButtonLabel: stage.actionButtonLabel,
     actionAffordance: stage.actionAffordance,
+    actionEnabled: stage.actionEnabled,
+    actionStatus: stage.actionStatus,
+    actionStatusLabel: stage.actionStatusLabel,
+    actionStatusTone: stage.actionStatusTone,
+    actionDisabledReasonCode: stage.actionDisabledReasonCode,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -1822,6 +1870,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionLabel: "Run strict bundle check",
       actionButtonLabel: "Run Check",
       actionAffordance: "primary-command-button",
+      actionEnabled: true,
+      actionStatus: "ready",
+      actionStatusLabel: "Ready",
+      actionStatusTone: "success",
+      actionDisabledReasonCode: "",
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1838,6 +1891,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionLabel: "Refresh strict handoff JSON",
       actionButtonLabel: "Refresh JSON",
       actionAffordance: "secondary-command-button",
+      actionEnabled: true,
+      actionStatus: "optional",
+      actionStatusLabel: "Optional",
+      actionStatusTone: "neutral",
+      actionDisabledReasonCode: "",
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1854,6 +1912,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionLabel: "Write selected task prompt",
       actionButtonLabel: "Write Prompt",
       actionAffordance: "local-output-button",
+      actionEnabled: true,
+      actionStatus: "ready",
+      actionStatusLabel: "Ready",
+      actionStatusTone: "success",
+      actionDisabledReasonCode: "",
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -1870,6 +1933,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionLabel: "Implement in target repo",
       actionButtonLabel: "Open Target Repo",
       actionAffordance: "manual-target-repo-step",
+      actionEnabled: false,
+      actionStatus: "manual",
+      actionStatusLabel: "Manual",
+      actionStatusTone: "info",
+      actionDisabledReasonCode: "manual-target-repo-step",
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -1886,6 +1954,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionLabel: "Record verification evidence",
       actionButtonLabel: "Record Evidence",
       actionAffordance: "manual-evidence-step",
+      actionEnabled: false,
+      actionStatus: "manual",
+      actionStatusLabel: "Manual",
+      actionStatusTone: "info",
+      actionDisabledReasonCode: "manual-evidence-step",
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -1901,6 +1974,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     totalActionCount: 5,
     commandActionCount: 3,
     manualActionCount: 2,
+    enabledActionCount: 3,
+    disabledActionCount: 2,
+    manualDisabledActionCount: 2,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -1911,6 +1987,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionKey: "verifySourceBundle",
     nextActionType: "run-local-gate",
     nextActionLabel: "Run strict bundle check",
+    nextActionEnabled: true,
+    nextActionStatus: "ready",
+    nextActionStatusLabel: "Ready",
+    nextActionStatusTone: "success",
+    nextActionDisabledReasonCode: "",
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -2059,6 +2140,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   );
   assert.equal(report.operatorRunbook.nextStageActionButtonLabel, "Run Check");
   assert.equal(report.operatorRunbook.nextStageActionAffordance, "primary-command-button");
+  assert.equal(report.operatorRunbook.nextStageActionEnabled, true);
+  assert.equal(report.operatorRunbook.nextStageActionStatus, "ready");
+  assert.equal(report.operatorRunbook.nextStageActionStatusLabel, "Ready");
+  assert.equal(report.operatorRunbook.nextStageActionStatusTone, "success");
+  assert.equal(report.operatorRunbook.nextStageActionDisabledReasonCode, "");
+  assert.equal(report.operatorRunbook.nextStageActionDisabledReason, "");
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

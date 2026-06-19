@@ -4940,6 +4940,36 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     if (stage.kind === "manual-reporting") return "manual-evidence-step";
     return "review-step";
   };
+  const getStageActionEnabled = (stage) => stage.commandCount > 0;
+  const getStageActionStatus = (stage) => {
+    if (stage.commandCount > 0 && stage.required) return "ready";
+    if (stage.commandCount > 0) return "optional";
+    if (stage.kind === "manual-target-repo" || stage.kind === "manual-reporting") return "manual";
+    return "blocked";
+  };
+  const getStageActionStatusLabel = (stage) => ({
+    ready: "Ready",
+    optional: "Optional",
+    manual: "Manual",
+    blocked: "Blocked",
+  }[getStageActionStatus(stage)]);
+  const getStageActionStatusTone = (stage) => ({
+    ready: "success",
+    optional: "neutral",
+    manual: "info",
+    blocked: "danger",
+  }[getStageActionStatus(stage)]);
+  const getStageActionDisabledReasonCode = (stage) => {
+    if (getStageActionEnabled(stage)) return "";
+    if (stage.kind === "manual-target-repo") return "manual-target-repo-step";
+    if (stage.kind === "manual-reporting") return "manual-evidence-step";
+    return "missing-local-command";
+  };
+  const getStageActionDisabledReason = (stage) => ({
+    "manual-target-repo-step": "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo.",
+    "manual-evidence-step": "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification.",
+    "missing-local-command": "No local command is available for this stage.",
+  }[getStageActionDisabledReasonCode(stage)] || "");
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -4949,6 +4979,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionInstruction: getStageActionInstruction(stage),
     actionButtonLabel: getStageActionButtonLabel(stage),
     actionAffordance: getStageActionAffordance(stage),
+    actionEnabled: getStageActionEnabled(stage),
+    actionStatus: getStageActionStatus(stage),
+    actionStatusLabel: getStageActionStatusLabel(stage),
+    actionStatusTone: getStageActionStatusTone(stage),
+    actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
+    actionDisabledReason: getStageActionDisabledReason(stage),
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -4969,6 +5005,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionInstructionsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionInstruction]));
   const stageActionButtonLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionButtonLabel]));
   const stageActionAffordanceByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionAffordance]));
+  const stageActionEnabledByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEnabled]));
+  const stageActionStatusByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionStatus]));
+  const stageActionStatusLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionStatusLabel]));
+  const stageActionStatusToneByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionStatusTone]));
+  const stageActionDisabledReasonCodeByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDisabledReasonCode]));
+  const stageActionDisabledReasonByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDisabledReason]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -4999,6 +5041,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     totalActionCount: stages.length,
     commandActionCount: commandStages.length,
     manualActionCount: countBy((stage) => stage.commandCount === 0),
+    enabledActionCount: stageActionRows.filter((stage) => stage.actionEnabled).length,
+    disabledActionCount: stageActionRows.filter((stage) => !stage.actionEnabled).length,
+    manualDisabledActionCount: stageActionRows.filter((stage) => !stage.actionEnabled && stage.manual).length,
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5009,6 +5054,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionKey: nextStageKey,
     nextActionType: nextStageActionRow?.actionType || "",
     nextActionLabel: nextStageActionRow?.actionLabel || "",
+    nextActionEnabled: nextStageActionRow?.actionEnabled === true,
+    nextActionStatus: nextStageActionRow?.actionStatus || "",
+    nextActionStatusLabel: nextStageActionRow?.actionStatusLabel || "",
+    nextActionStatusTone: nextStageActionRow?.actionStatusTone || "",
+    nextActionDisabledReasonCode: nextStageActionRow?.actionDisabledReasonCode || "",
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5045,6 +5095,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionInstructionsByKey,
     stageActionButtonLabelsByKey,
     stageActionAffordanceByKey,
+    stageActionEnabledByKey,
+    stageActionStatusByKey,
+    stageActionStatusLabelsByKey,
+    stageActionStatusToneByKey,
+    stageActionDisabledReasonCodeByKey,
+    stageActionDisabledReasonByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5074,6 +5130,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionInstruction: nextStageActionRow?.actionInstruction || "",
     nextStageActionButtonLabel: nextStageActionRow?.actionButtonLabel || "",
     nextStageActionAffordance: nextStageActionRow?.actionAffordance || "",
+    nextStageActionEnabled: nextStageActionRow?.actionEnabled === true,
+    nextStageActionStatus: nextStageActionRow?.actionStatus || "",
+    nextStageActionStatusLabel: nextStageActionRow?.actionStatusLabel || "",
+    nextStageActionStatusTone: nextStageActionRow?.actionStatusTone || "",
+    nextStageActionDisabledReasonCode: nextStageActionRow?.actionDisabledReasonCode || "",
+    nextStageActionDisabledReason: nextStageActionRow?.actionDisabledReason || "",
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",

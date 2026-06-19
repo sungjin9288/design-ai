@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 591 — Website Bundle Handoff Runbook Action Readiness Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action readiness metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render enabled command buttons, optional action status, manual-step badges, disabled reasons, and status tones without recomputing command availability from lower-level stage fields.
+
+### Added
+- Added `operatorRunbook.stageActionEnabledByKey` so wrappers can distinguish local command actions from target-repo/manual evidence steps without scanning command arrays.
+- Added `operatorRunbook.stageActionStatusByKey`, `stageActionStatusLabelsByKey`, and `stageActionStatusToneByKey` with `ready`, `optional`, and `manual` action states for compact button/badge rendering.
+- Added `operatorRunbook.stageActionDisabledReasonCodeByKey` and `stageActionDisabledReasonByKey` so manual target-repo and evidence stages carry explicit no-local-command guidance.
+- Added `actionEnabled`, `actionStatus`, `actionStatusLabel`, `actionStatusTone`, `actionDisabledReasonCode`, and `actionDisabledReason` to each `stageActionRows[]` item.
+- Added `nextStageActionEnabled`, `nextStageActionStatus`, `nextStageActionStatusLabel`, `nextStageActionStatusTone`, `nextStageActionDisabledReasonCode`, and `nextStageActionDisabledReason` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.enabledActionCount`, `disabledActionCount`, `manualDisabledActionCount`, and next-action readiness/status mirrors.
+- Added unit and packed-tarball smoke assertions for action readiness lookup maps, row metadata, disabled reasons, and next-stage mirrors.
+
+### Impact
+- Wrappers can render action buttons and manual checklist steps with consistent enabled state, badge labels, tones, and disabled copy from the JSON contract.
+- Company website pilots get clearer separation between local design-ai commands and target-repo/manual evidence work before handoff.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 590 — Website Bundle Handoff Runbook Action Affordance Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action guidance and UI affordance metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render command buttons, optional refresh controls, local-output actions, manual target-repo steps, and evidence-return steps without hard-coded copy.
